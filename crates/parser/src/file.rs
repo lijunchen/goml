@@ -480,6 +480,8 @@ fn variant(p: &mut Parser) {
     p.expect(T![ident]);
     if p.at(T!['(']) {
         type_list(p);
+    } else if p.at(T!['{']) {
+        struct_field_list(p);
     }
     p.close(m, MySyntaxKind::VARIANT);
 }

@@ -9,7 +9,7 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 11;
+pub const FORMAT_VERSION: u32 = 12;
 pub const COMPILER_ABI: u32 = 2;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

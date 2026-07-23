@@ -1,8 +1,8 @@
 use crate::hir;
 use crate::hir::{
-    Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternFn, Fn, HirIdent,
-    ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable, SourceFileHir, StructDef,
-    TraitDef, TraitMethodSignature, TraitRef, TypeExpr,
+    Arm, Attribute, ClosureParam, Def, DefId, EnumDef, EnumVariantFields, Expr, ExprId, ExternFn,
+    Fn, HirIdent, ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable, SourceFileHir,
+    StructDef, TraitDef, TraitMethodSignature, TraitRef, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -293,7 +293,7 @@ impl Expr {
                 }
             }
 
-            hir::Expr::EStructLiteral { name, fields } => {
+            hir::Expr::EStructLiteral { name, fields, .. } => {
                 if fields.is_empty() {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
@@ -540,6 +540,7 @@ impl Pat {
                 name,
                 fields,
                 has_rest,
+                ..
             } => {
                 if fields.is_empty() && !has_rest {
                     RcDoc::text(name.display())
@@ -681,27 +682,36 @@ impl EnumDef {
             .append(RcDoc::text(self.name.to_ident_name()))
             .append(generics_to_doc(&self.generics));
 
-        let variants_doc =
-            RcDoc::concat(self.variants.iter().enumerate().map(|(i, (name, types))| {
-                let variant = if i == 0 {
-                    RcDoc::hardline()
-                } else {
-                    RcDoc::text(",").append(RcDoc::hardline())
-                }
-                .append(RcDoc::text(name.to_ident_name()));
+        let variants_doc = RcDoc::concat(self.variants.iter().enumerate().map(|(i, variant)| {
+            let prefix = if i == 0 {
+                RcDoc::hardline()
+            } else {
+                RcDoc::text(",").append(RcDoc::hardline())
+            }
+            .append(RcDoc::text(variant.name.to_ident_name()));
 
-                if types.is_empty() {
-                    variant
-                } else {
-                    let types_doc =
-                        RcDoc::intersperse(types.iter().map(|ty| ty.to_doc()), RcDoc::text(", "));
-
-                    variant
-                        .append(RcDoc::text("("))
-                        .append(types_doc)
-                        .append(RcDoc::text(")"))
-                }
-            }));
+            match &variant.fields {
+                EnumVariantFields::Unit => prefix,
+                EnumVariantFields::Tuple(types) => prefix
+                    .append(RcDoc::text("("))
+                    .append(RcDoc::intersperse(
+                        types.iter().map(|ty| ty.to_doc()),
+                        RcDoc::text(", "),
+                    ))
+                    .append(RcDoc::text(")")),
+                EnumVariantFields::Struct(fields) => prefix
+                    .append(RcDoc::text(" { "))
+                    .append(RcDoc::intersperse(
+                        fields.iter().map(|(name, ty)| {
+                            RcDoc::text(name.to_ident_name())
+                                .append(RcDoc::text(": "))
+                                .append(ty.to_doc())
+                        }),
+                        RcDoc::text(", "),
+                    ))
+                    .append(RcDoc::text(" }")),
+            }
+        }));
 
         attrs_doc(&self.attrs).append(
             header

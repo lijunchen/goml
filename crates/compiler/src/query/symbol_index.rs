@@ -437,6 +437,23 @@ fn index_source_file_symbols(
                                 },
                             );
                         }
+                        if let Some(fields) = variant.field_list() {
+                            for field in fields.fields() {
+                                let Some(field_tok) = field.lident() else {
+                                    continue;
+                                };
+                                for tn in type_names.iter() {
+                                    index.add_struct_field(
+                                        format!("{}::{}", tn, var_tok),
+                                        field_tok.to_string(),
+                                        DefinitionLocation {
+                                            path: file_path.to_path_buf(),
+                                            range: field_tok.text_range(),
+                                        },
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
             }

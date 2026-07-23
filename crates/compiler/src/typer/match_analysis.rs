@@ -1172,17 +1172,19 @@ fn nominal_constructors(genv: &PackageTypeEnv, ty: &Ty) -> Option<Vec<Constructo
                 .variants
                 .iter()
                 .enumerate()
-                .map(|(index, (variant, fields))| Constructor {
+                .map(|(index, variant)| Constructor {
                     key: ConstructorKey::Enum {
                         type_name: definition.name.0.clone(),
                         index,
                     },
                     kind: ConstructorKind::Enum {
                         type_name: definition.name.0.clone(),
-                        variant: variant.0.clone(),
+                        variant: variant.name.0.clone(),
                     },
-                    field_tys: fields
-                        .iter()
+                    field_tys: variant
+                        .fields
+                        .types()
+                        .into_iter()
                         .map(|field| substitute_ty_params(field, &substitution))
                         .collect(),
                 })

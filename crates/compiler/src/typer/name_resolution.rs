@@ -96,6 +96,7 @@ fn internal_package_allowed(package: &str, current_package: &str) -> bool {
 
 struct ConstructorIndex {
     enums_by_package: HashMap<String, HashMap<String, HashSet<String>>>,
+    structs_by_package: HashMap<String, HashSet<String>>,
 }
 
 impl ConstructorIndex {
@@ -105,6 +106,7 @@ impl ConstructorIndex {
     ) -> Self {
         let mut index = Self {
             enums_by_package: HashMap::new(),
+            structs_by_package: HashMap::new(),
         };
         index.add_files(files);
         if !files
@@ -124,13 +126,22 @@ impl ConstructorIndex {
     fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
             let package = file.ast.package.0.clone();
-            let entry = self.enums_by_package.entry(package).or_default();
+            let entry = self.enums_by_package.entry(package.clone()).or_default();
             for item in &file.ast.toplevels {
-                if let ast::Item::EnumDef(def) = item {
-                    let variants = entry.entry(def.name.0.clone()).or_default();
-                    for (variant, _) in &def.variants {
-                        variants.insert(variant.0.clone());
+                match item {
+                    ast::Item::EnumDef(def) => {
+                        let variants = entry.entry(def.name.0.clone()).or_default();
+                        for variant in &def.variants {
+                            variants.insert(variant.name.0.clone());
+                        }
                     }
+                    ast::Item::StructDef(def) => {
+                        self.structs_by_package
+                            .entry(package.clone())
+                            .or_default()
+                            .insert(def.name.0.clone());
+                    }
+                    _ => {}
                 }
             }
         }
@@ -174,6 +185,12 @@ impl ConstructorIndex {
         self.enums_by_package
             .get(package)
             .is_some_and(|enums| enums.values().any(|vars| vars.contains(variant)))
+    }
+
+    fn has_struct(&self, package: &str, name: &str) -> bool {
+        self.structs_by_package
+            .get(package)
+            .is_some_and(|structs| structs.contains(name))
     }
 }
 
@@ -405,6 +422,13 @@ impl NameResolution {
         match segments.len() {
             1 => {
                 let variant = last;
+                if ctx
+                    .constructor_index
+                    .has_struct(ctx.current_package, variant)
+                    || ctx.constructor_index.has_struct(BUILTIN_PACKAGE, variant)
+                {
+                    return None;
+                }
                 if let Some(enum_name) = ctx
                     .constructor_index
                     .unique_enum_for_variant(ctx.current_package, variant)
@@ -1300,8 +1324,12 @@ impl NameResolution {
                         )
                     })
                     .collect();
+                let enum_constructor = self
+                    .constructor_path_for(name, ctx)
+                    .map(hir::ConstructorRef::Unresolved);
                 let qualified = self.resolve_qualified_path(name, ctx);
-                if let Some(package) = &qualified.package
+                if enum_constructor.is_none()
+                    && let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
                     self.error(format!(
@@ -1314,6 +1342,7 @@ impl NameResolution {
                     *astptr,
                     hir::Expr::EStructLiteral {
                         name: qualified,
+                        enum_constructor,
                         fields: new_fields,
                     },
                 )
@@ -1765,8 +1794,12 @@ impl NameResolution {
                         )
                     })
                     .collect();
+                let enum_constructor = self
+                    .constructor_path_for(name, ctx)
+                    .map(hir::ConstructorRef::Unresolved);
                 let qualified = self.resolve_qualified_path(name, ctx);
-                if let Some(package) = &qualified.package
+                if enum_constructor.is_none()
+                    && let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
                     self.error(format!(
@@ -1779,6 +1812,7 @@ impl NameResolution {
                     *astptr,
                     hir::Pat::PStruct {
                         name: qualified,
+                        enum_constructor,
                         fields: new_fields,
                         has_rest: *has_rest,
                     },
@@ -2094,14 +2128,28 @@ impl NameResolution {
         let variants = def
             .variants
             .iter()
-            .map(|(variant_name, tys)| {
-                let types = tys
-                    .iter()
-                    .map(|ty| {
-                        self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases)
-                    })
-                    .collect();
-                (HirIdent::name(&variant_name.0), types)
+            .map(|variant| {
+                let lower_ty = |this: &mut Self, ty: &ast::TypeExpr| {
+                    this.lower_type_expr(ty, &tparams, current_package, imports, use_aliases)
+                };
+                let fields = match &variant.fields {
+                    ast::EnumVariantFields::Unit => hir::EnumVariantFields::Unit,
+                    ast::EnumVariantFields::Tuple(types) => hir::EnumVariantFields::Tuple(
+                        types.iter().map(|ty| lower_ty(self, ty)).collect(),
+                    ),
+                    ast::EnumVariantFields::Struct(fields) => hir::EnumVariantFields::Struct(
+                        fields
+                            .iter()
+                            .map(|(field_name, ty)| {
+                                (HirIdent::name(&field_name.0), lower_ty(self, ty))
+                            })
+                            .collect(),
+                    ),
+                };
+                hir::EnumVariant {
+                    name: HirIdent::name(&variant.name.0),
+                    fields,
+                }
             })
             .collect();
         hir::EnumDef {

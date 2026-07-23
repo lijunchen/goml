@@ -820,13 +820,30 @@ fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int32) -> un
             ()
         };
         newline(builder, indent + 4);
-        builder.write_string(variant.0);
-        if variant.1.len() > 0 {
-            builder.write_char('(');
-            write_types(builder, variant.1, ", ");
-            builder.write_char(')')
-        } else {
-            ()
+        builder.write_string(variant.name);
+        match variant.fields {
+            EnumVariantFields::Unit => (),
+            EnumVariantFields::Tuple(types) => {
+                builder.write_char('(');
+                write_types(builder, types, ", ");
+                builder.write_char(')')
+            },
+            EnumVariantFields::Struct(fields) => {
+                builder.write_string(" { ");
+                let field_index = Ref::new(0);
+                for field in fields {
+                    if field_index.get() > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    builder.write_string(field.0);
+                    builder.write_string(": ");
+                    write_type(builder, field.1);
+                    field_index.set(field_index.get() + 1)
+                };
+                builder.write_string(" }")
+            },
         };
         index.set(index.get() + 1)
     };

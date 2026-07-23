@@ -253,12 +253,32 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
     encode_generics(builder, value.generics);
     encode_list(builder, value.variants.len());
     for variant in value.variants {
-        let (name, types) = variant;
         encode_open(builder, "Variant");
-        encode_string_value(builder, name);
-        encode_list(builder, types.len());
-        for ty in types {
-            encode_type(builder, ty)
+        encode_string_value(builder, variant.name);
+        match variant.fields {
+            EnumVariantFields::Unit => {
+                encode_open(builder, "Unit");
+                encode_close(builder)
+            },
+            EnumVariantFields::Tuple(types) => {
+                encode_open(builder, "Tuple");
+                encode_list(builder, types.len());
+                for ty in types {
+                    encode_type(builder, ty)
+                };
+                encode_close(builder)
+            },
+            EnumVariantFields::Struct(fields) => {
+                encode_open(builder, "Struct");
+                encode_list(builder, fields.len());
+                for field in fields {
+                    encode_open(builder, "Field");
+                    encode_string_value(builder, field.0);
+                    encode_type(builder, field.1);
+                    encode_close(builder)
+                };
+                encode_close(builder)
+            },
         };
         encode_close(builder)
     };

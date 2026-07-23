@@ -537,6 +537,10 @@ impl Variant {
     pub fn type_list(&self) -> Option<TypeList> {
         support::child(&self.syntax)
     }
+
+    pub fn field_list(&self) -> Option<StructFieldList> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(Variant, MySyntaxKind::VARIANT);

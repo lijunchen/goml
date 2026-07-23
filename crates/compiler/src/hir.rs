@@ -130,7 +130,7 @@ impl PackageInterface {
                     let variants = enum_def
                         .variants
                         .iter()
-                        .map(|(name, _)| name.to_ident_name())
+                        .map(|variant| variant.name.to_ident_name())
                         .collect();
                     enum_variants.insert(key, variants);
                 }
@@ -1177,7 +1177,30 @@ pub struct EnumDef {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
-    pub variants: Vec<(HirIdent, Vec<TypeExpr>)>,
+    pub variants: Vec<EnumVariant>,
+}
+
+#[derive(Debug, Clone)]
+pub struct EnumVariant {
+    pub name: HirIdent,
+    pub fields: EnumVariantFields,
+}
+
+#[derive(Debug, Clone)]
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec<TypeExpr>),
+    Struct(Vec<(HirIdent, TypeExpr)>),
+}
+
+impl EnumVariantFields {
+    pub fn types(&self) -> Vec<&TypeExpr> {
+        match self {
+            Self::Unit => Vec::new(),
+            Self::Tuple(types) => types.iter().collect(),
+            Self::Struct(fields) => fields.iter().map(|(_, ty)| ty).collect(),
+        }
+    }
 }
 
 impl From<&ast::EnumDef> for EnumDef {
@@ -1189,7 +1212,21 @@ impl From<&ast::EnumDef> for EnumDef {
             variants: e
                 .variants
                 .iter()
-                .map(|(i, tys)| (HirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
+                .map(|variant| EnumVariant {
+                    name: HirIdent::name(&variant.name.0),
+                    fields: match &variant.fields {
+                        ast::EnumVariantFields::Unit => EnumVariantFields::Unit,
+                        ast::EnumVariantFields::Tuple(types) => {
+                            EnumVariantFields::Tuple(types.iter().map(TypeExpr::from).collect())
+                        }
+                        ast::EnumVariantFields::Struct(fields) => EnumVariantFields::Struct(
+                            fields
+                                .iter()
+                                .map(|(name, ty)| (HirIdent::name(&name.0), TypeExpr::from(ty)))
+                                .collect(),
+                        ),
+                    },
+                })
                 .collect(),
         }
     }
@@ -1434,6 +1471,7 @@ pub enum Expr {
     },
     EStructLiteral {
         name: QualifiedPath,
+        enum_constructor: Option<ConstructorRef>,
         fields: Vec<(HirIdent, ExprId)>,
     },
     ETuple {
@@ -1580,6 +1618,7 @@ pub enum Pat {
     },
     PStruct {
         name: QualifiedPath,
+        enum_constructor: Option<ConstructorRef>,
         fields: Vec<(HirIdent, PatId)>,
         has_rest: bool,
     },
@@ -1627,12 +1666,12 @@ pub fn resolve_constructors(hir_table: &mut HirTable) -> Vec<ConstructorResoluti
     for (def_id, def) in hir_table.iter_defs() {
         if let Def::EnumDef(enum_def) = def {
             let enum_name = hir_table.def_path(def_id).display();
-            for (variant_idx, (variant_name, _)) in enum_def.variants.iter().enumerate() {
+            for (variant_idx, variant) in enum_def.variants.iter().enumerate() {
                 let ctor_id = ConstructorId::EnumVariant {
                     enum_def: def_id,
                     variant_idx: variant_idx as u32,
                 };
-                let variant_ident = variant_name.to_ident_name();
+                let variant_ident = variant.name.to_ident_name();
                 let full_name = format!("{}::{}", enum_name, variant_ident);
                 full_name_index.insert(full_name, ctor_id);
                 short_name_index
@@ -1650,15 +1689,40 @@ pub fn resolve_constructors(hir_table: &mut HirTable) -> Vec<ConstructorResoluti
             idx: i as u32,
         };
         let expr = hir_table.expr(expr_id).clone();
-        if let Expr::EConstr { constructor, args } = expr
-            && let ConstructorRef::Unresolved(path) = &constructor
-        {
-            let resolved =
-                resolve_constructor_path(path, &full_name_index, &short_name_index, &mut errors);
-            let new_expr = Expr::EConstr {
-                constructor: resolved,
-                args,
-            };
+        let new_expr = match expr {
+            Expr::EConstr { constructor, args }
+                if matches!(constructor, ConstructorRef::Unresolved(_)) =>
+            {
+                let ConstructorRef::Unresolved(path) = &constructor else {
+                    unreachable!()
+                };
+                Some(Expr::EConstr {
+                    constructor: resolve_constructor_path(
+                        path,
+                        &full_name_index,
+                        &short_name_index,
+                        &mut errors,
+                    ),
+                    args,
+                })
+            }
+            Expr::EStructLiteral {
+                name,
+                enum_constructor: Some(ConstructorRef::Unresolved(path)),
+                fields,
+            } => Some(Expr::EStructLiteral {
+                name,
+                enum_constructor: Some(resolve_constructor_path(
+                    &path,
+                    &full_name_index,
+                    &short_name_index,
+                    &mut errors,
+                )),
+                fields,
+            }),
+            _ => None,
+        };
+        if let Some(new_expr) = new_expr {
             let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.idx));
             hir_table.exprs[idx] = new_expr;
         }
@@ -1671,15 +1735,42 @@ pub fn resolve_constructors(hir_table: &mut HirTable) -> Vec<ConstructorResoluti
             idx: i as u32,
         };
         let pat = hir_table.pat(pat_id).clone();
-        if let Pat::PConstr { constructor, args } = pat
-            && let ConstructorRef::Unresolved(path) = &constructor
-        {
-            let resolved =
-                resolve_constructor_path(path, &full_name_index, &short_name_index, &mut errors);
-            let new_pat = Pat::PConstr {
-                constructor: resolved,
-                args,
-            };
+        let new_pat = match pat {
+            Pat::PConstr { constructor, args }
+                if matches!(constructor, ConstructorRef::Unresolved(_)) =>
+            {
+                let ConstructorRef::Unresolved(path) = &constructor else {
+                    unreachable!()
+                };
+                Some(Pat::PConstr {
+                    constructor: resolve_constructor_path(
+                        path,
+                        &full_name_index,
+                        &short_name_index,
+                        &mut errors,
+                    ),
+                    args,
+                })
+            }
+            Pat::PStruct {
+                name,
+                enum_constructor: Some(ConstructorRef::Unresolved(path)),
+                fields,
+                has_rest,
+            } => Some(Pat::PStruct {
+                name,
+                enum_constructor: Some(resolve_constructor_path(
+                    &path,
+                    &full_name_index,
+                    &short_name_index,
+                    &mut errors,
+                )),
+                fields,
+                has_rest,
+            }),
+            _ => None,
+        };
+        if let Some(new_pat) = new_pat {
             let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.idx));
             hir_table.pats[idx] = new_pat;
         }

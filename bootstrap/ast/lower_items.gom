@@ -82,16 +82,62 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
         Option::Some(name_token) => {
             let name = name_token.token.text;
             let (generics, _) = lower_generics(ctx, node);
-            let variants: Vec[(string, Vec[TypeExpr])] = Vec::new();
+            let variants: Vec[EnumVariant] = Vec::new();
             match first_child(node, cst::NodeKind::VARIANT_LIST) {
                 Option::Some(list) => for variant in children_of_kind(list, cst::NodeKind::VARIANT) {
                     match first_token(variant, lexer::TokenKind::Ident) {
                         Option::Some(variant_name) => {
-                            let types = match first_child(variant, cst::NodeKind::TYPE_LIST) {
-                                Option::Some(type_list) => lower_type_list(ctx, type_list),
-                                Option::None => Vec::new(),
+                            let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
+                                Option::Some(type_list) => {
+                                    EnumVariantFields::Tuple(lower_type_list(ctx, type_list))
+                                },
+                                Option::None => match first_child(
+                                    variant,
+                                    cst::NodeKind::STRUCT_FIELD_LIST,
+                                ) {
+                                    Option::Some(field_list) => {
+                                        let named: Vec[(string, TypeExpr)] = Vec::new();
+                                        for field in children_of_kind(
+                                            field_list,
+                                            cst::NodeKind::STRUCT_FIELD,
+                                        ) {
+                                            let field_name = first_token(
+                                                field,
+                                                lexer::TokenKind::Ident,
+                                            );
+                                            let types = type_children(field);
+                                            match field_name {
+                                                Option::Some(name) => if types.len() > 0 {
+                                                    match lower_ty(ctx, types.get(0)) {
+                                                        Option::Some(ty) => named.push((
+                                                            name.token.text,
+                                                            ty,
+                                                        )),
+                                                        Option::None => (),
+                                                    }
+                                                } else {
+                                                    push_error(
+                                                        ctx,
+                                                        node_span(field),
+                                                        "Struct-like enum variant field is malformed",
+                                                    )
+                                                },
+                                                Option::None => push_error(
+                                                    ctx,
+                                                    node_span(field),
+                                                    "Struct-like enum variant field is malformed",
+                                                ),
+                                            }
+                                        };
+                                        EnumVariantFields::Struct(named)
+                                    },
+                                    Option::None => EnumVariantFields::Unit,
+                                },
                             };
-                            variants.push((variant_name.token.text, types))
+                            variants.push(EnumVariant {
+                                name: variant_name.token.text,
+                                fields,
+                            })
                         },
                         Option::None => push_error(ctx, node_span(variant), "Enum variant is missing a name"),
                     }

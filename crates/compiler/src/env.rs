@@ -15,7 +15,53 @@ use std::collections::HashMap;
 pub struct EnumDef {
     pub name: TastIdent,
     pub generics: Vec<TastIdent>,
-    pub variants: Vec<(TastIdent, Vec<tast::Ty>)>,
+    pub variants: Vec<EnumVariantDef>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct EnumVariantDef {
+    pub name: TastIdent,
+    pub fields: EnumVariantFields,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec<tast::Ty>),
+    Struct(Vec<(TastIdent, tast::Ty)>),
+}
+
+impl EnumVariantFields {
+    pub fn types(&self) -> Vec<&tast::Ty> {
+        match self {
+            Self::Unit => Vec::new(),
+            Self::Tuple(types) => types.iter().collect(),
+            Self::Struct(fields) => fields.iter().map(|(_, ty)| ty).collect(),
+        }
+    }
+
+    pub fn cloned_types(&self) -> Vec<tast::Ty> {
+        self.types().into_iter().cloned().collect()
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Unit => 0,
+            Self::Tuple(types) => types.len(),
+            Self::Struct(fields) => fields.len(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn struct_fields(&self) -> Option<&[(TastIdent, tast::Ty)]> {
+        match self {
+            Self::Struct(fields) => Some(fields),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -214,7 +260,7 @@ impl TypeEnv {
             .variants
             .iter()
             .enumerate()
-            .find(|(_, (variant_name, _))| variant_name == constr)
+            .find(|(_, variant)| &variant.name == constr)
             .map(|(index, _)| Self::build_enum_constructor(enum_name, enum_def, index))
     }
 
@@ -223,7 +269,8 @@ impl TypeEnv {
         enum_def: &EnumDef,
         index: usize,
     ) -> (Constructor, tast::Ty) {
-        let (_, fields) = &enum_def.variants[index];
+        let variant = &enum_def.variants[index];
+        let fields = variant.fields.cloned_types();
         let base = tast::Ty::TEnum {
             name: enum_name.0.clone(),
         };
@@ -245,14 +292,14 @@ impl TypeEnv {
             ret_ty.clone()
         } else {
             tast::Ty::TFunc {
-                params: fields.clone(),
+                params: fields,
                 ret_ty: Box::new(ret_ty.clone()),
             }
         };
 
         let constructor = Constructor::Enum(common::EnumConstructor {
             type_name: enum_name.clone(),
-            variant: enum_def.variants[index].0.clone(),
+            variant: variant.name.clone(),
             index,
         });
         (constructor, ctor_ty)

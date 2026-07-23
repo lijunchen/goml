@@ -175,7 +175,13 @@ pub enum Item {
 
 pub struct EnumVariantDef {
     name: string,
-    fields: Vec[Type],
+    fields: EnumVariantFields,
+}
+
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec[Type]),
+    Struct(Vec[(string, Type)]),
 }
 
 pub struct EnumDef {

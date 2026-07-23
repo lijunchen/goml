@@ -388,7 +388,7 @@ fn discover_type_instance_dependencies(
     );
     match find_generic_enum(ctx, instance.base_name) {
         Option::Some(value) => for variant in value.variants {
-            for field in variant.fields {
+            for field in tast::enum_variant_field_types(variant.fields) {
                 let _ = collapse_type(ctx, substitute_type(field, bindings));
             }
         },

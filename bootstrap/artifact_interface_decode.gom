@@ -281,6 +281,42 @@ fn artifact_decode_type_pairs(
     Result::Ok(result)
 }
 
+fn artifact_decode_enum_variant_fields(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[tast::EnumVariantFields, string] {
+    match value {
+        ArtifactJsonValue::String(name) => if name == "Unit" {
+            Result::Ok(tast::EnumVariantFields::Unit)
+        } else {
+            Result::Err(artifact_decode_error("enum variant fields"))
+        },
+        ArtifactJsonValue::Object(object) => if object.len() == 1 {
+            let item = object.get(0);
+            if item.0 == "Tuple" {
+                match artifact_decode_type_array(context, item.1, "enum tuple fields") {
+                    Result::Ok(fields) => {
+                        Result::Ok(tast::EnumVariantFields::Tuple(fields))
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if item.0 == "Struct" {
+                match artifact_decode_type_pairs(context, item.1, "enum struct fields") {
+                    Result::Ok(fields) => {
+                        Result::Ok(tast::EnumVariantFields::Struct(fields))
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else {
+                Result::Err(artifact_decode_error("enum variant fields"))
+            }
+        } else {
+            Result::Err(artifact_decode_error("enum variant fields"))
+        },
+        _ => Result::Err(artifact_decode_error("enum variant fields")),
+    }
+}
+
 fn artifact_decode_enum_def(
     context: ArtifactDecodeContext,
     value: ArtifactJsonValue,
@@ -307,21 +343,20 @@ fn artifact_decode_enum_def(
     };
     let variants = Vec::new();
     for value in values {
-        let pair = match artifact_json_array(value, "enum variant") {
+        let variant = match artifact_json_object(value, "enum variant") {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(error),
         };
-        if pair.len() != 2 {
-            return Result::Err(artifact_decode_error("enum variant"))
-        } else {
-            ()
-        };
-        let variant_name = match artifact_json_string_value(pair.get(0), "enum variant name") {
+        let variant_name = match artifact_json_field_string(variant, "name") {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(error),
         };
-        let fields = match artifact_decode_type_array(context, pair.get(1), "enum fields") {
+        let fields_value = match artifact_json_required_field(variant, "fields") {
             Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let fields = match artifact_decode_enum_variant_fields(context, fields_value) {
+            Result::Ok(fields) => fields,
             Result::Err(error) => return Result::Err(error),
         };
         variants.push(tast::EnumVariantDef {
@@ -830,7 +865,7 @@ fn artifact_decode_interface_value(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "format_version", 11) {
+    match artifact_decode_version_field(object, "format_version", 12) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };

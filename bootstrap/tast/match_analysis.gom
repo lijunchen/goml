@@ -635,7 +635,7 @@ fn coverage_enum_domain(info: EnumInfo, ty: Type) -> Vec[CoverageConstructor] {
     let substitutions = coverage_substitutions(info.generics, ty);
     for index in range(0, info.variants.len()) {
         let fields = Vec::new();
-        for field in info.variants.get(index).fields {
+        for field in enum_variant_field_types(info.variants.get(index).fields) {
             fields.push(substitute_type(field, substitutions))
         };
         result.push(CoverageConstructor {

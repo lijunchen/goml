@@ -7,12 +7,20 @@ struct ResolvedConstructor {
     constructor: Constructor,
     fields: Vec[Type],
     ty: Type,
+    named: bool,
 }
 
 struct ResolvedStruct {
     constructor: Constructor,
     fields: Vec[(string, Type)],
     ty: Type,
+}
+
+enum NamedFieldConstructorResolution {
+    Found(ResolvedStruct),
+    WrongStyle,
+    Ambiguous,
+    Missing,
 }
 
 struct ResolvedCallable {
@@ -147,7 +155,7 @@ fn resolve_user_constructor(
         Option::Some(variant) => {
             let (ty, substitutions) = instantiate_enum(ctx, value);
             let fields: Vec[Type] = Vec::new();
-            for field in variant.fields {
+            for field in enum_variant_field_types(variant.fields) {
                 fields.push(substitute_type(field, substitutions))
             };
             Option::Some(ResolvedConstructor {
@@ -159,6 +167,10 @@ fn resolve_user_constructor(
                 },
                 fields,
                 ty,
+                named: match variant.fields {
+                    EnumVariantFields::Struct(_) => true,
+                    _ => false,
+                },
             })
         },
         Option::None => Option::None,
@@ -249,6 +261,7 @@ fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedCon
             },
             fields,
             ty,
+            named: false,
         })
     } else {
         Option::None
@@ -316,6 +329,105 @@ fn resolve_struct(ctx: Checker, name: string) -> Option[ResolvedStruct] {
     match find_struct_by_name(ctx, name) {
         Option::Some(value) => Option::Some(instantiate_struct(ctx, value)),
         Option::None => Option::None,
+    }
+}
+
+fn instantiate_named_variant(
+    ctx: Checker,
+    value: EnumInfo,
+    variant_index: int32,
+    named: Vec[(string, Type)],
+) -> ResolvedStruct {
+    let (ty, substitutions) = instantiate_enum(ctx, value);
+    let fields: Vec[(string, Type)] = Vec::new();
+    let names: Vec[string] = Vec::new();
+    for field in named {
+        fields.push((field.0, substitute_type(field.1, substitutions)));
+        names.push(field.0)
+    };
+    let variant = value.variants.get(variant_index);
+    ResolvedStruct {
+        constructor: Constructor {
+            name: value.name + "::" + variant.name,
+            fields: names,
+            is_struct: false,
+            tag: Option::Some(variant_index),
+        },
+        fields,
+        ty,
+    }
+}
+
+fn resolve_named_variant_in(
+    ctx: Checker,
+    value: EnumInfo,
+    variant_name: string,
+) -> NamedFieldConstructorResolution {
+    for index in range(0, value.variants.len()) {
+        let variant = value.variants.get(index);
+        if variant.name == variant_name {
+            return match enum_variant_named_fields(variant.fields) {
+                Option::Some(fields) => NamedFieldConstructorResolution::Found(
+                    instantiate_named_variant(ctx, value, index, fields),
+                ),
+                Option::None => NamedFieldConstructorResolution::WrongStyle,
+            }
+        } else {
+            ()
+        }
+    };
+    NamedFieldConstructorResolution::Missing
+}
+
+fn resolve_named_field_constructor(
+    ctx: Checker,
+    name: string,
+) -> NamedFieldConstructorResolution {
+    match resolve_struct(ctx, name) {
+        Option::Some(value) => return NamedFieldConstructorResolution::Found(value),
+        Option::None => (),
+    };
+    match split_constructor_name(name) {
+        Option::Some(parts) => return match find_enum_by_name(ctx, parts.0) {
+            Option::Some(value) => resolve_named_variant_in(ctx, value, parts.1),
+            Option::None => NamedFieldConstructorResolution::Missing,
+        },
+        Option::None => (),
+    };
+    let found_enum: Ref[Option[EnumInfo]] = Ref::new(Option::None);
+    let found_index = Ref::new(-1);
+    let count = Ref::new(0);
+    for value in ctx.enums {
+        for index in range(0, value.variants.len()) {
+            if value.variants.get(index).name == name {
+                count.set(count.get() + 1);
+                found_enum.set(Option::Some(value));
+                found_index.set(index)
+            } else {
+                ()
+            }
+        }
+    };
+    if count.get() > 1 {
+        NamedFieldConstructorResolution::Ambiguous
+    } else {
+        match found_enum.get() {
+            Option::Some(value) => {
+                let variant = value.variants.get(found_index.get());
+                match enum_variant_named_fields(variant.fields) {
+                    Option::Some(fields) => NamedFieldConstructorResolution::Found(
+                        instantiate_named_variant(
+                            ctx,
+                            value,
+                            found_index.get(),
+                            fields,
+                        ),
+                    ),
+                    Option::None => NamedFieldConstructorResolution::WrongStyle,
+                }
+            },
+            Option::None => NamedFieldConstructorResolution::Missing,
+        }
     }
 }
 
@@ -1562,11 +1674,12 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
             let empty = Ref::new(0);
             let payload = Ref::new(0);
             for variant in info.variants {
-                if variant.fields.len() == 0 {
+                let fields = enum_variant_field_types(variant.fields);
+                if fields.len() == 0 {
                     empty.set(empty.get() + 1)
-                } else if variant.fields.len() == 1
+                } else if fields.len() == 1
                     && types_equal(
-                        variant.fields.get(0),
+                        fields.get(0),
                         Type::Param(info.generics.get(0)),
                     )
                 {

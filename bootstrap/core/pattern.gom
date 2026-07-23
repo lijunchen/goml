@@ -653,7 +653,7 @@ fn lower_enum_pattern_rows(
         let variant = definition.variants.get(variant_index);
         let constructor_name = definition.name + "::" + variant.name;
         let variables: Vec[(string, tast::Type)] = Vec::new();
-        for field in variant.fields {
+        for field in tast::enum_variant_field_types(variant.fields) {
             variables.push((
                 gensym(ctx, "x"),
                 tast::substitute_params(field, definition.generics, type_args),

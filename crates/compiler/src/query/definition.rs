@@ -401,10 +401,17 @@ fn resolve_expr_definition(
             {
                 let field_name = token.to_string();
                 let struct_name = elab.constructor.type_name().0.clone();
-                let mut out = sym_index.find_struct_field(&struct_name, &field_name);
+                let owner = elab
+                    .constructor
+                    .as_enum()
+                    .map(|constructor| {
+                        format!("{}::{}", constructor.type_name.0, constructor.variant.0)
+                    })
+                    .unwrap_or_else(|| struct_name.clone());
+                let mut out = sym_index.find_struct_field(&owner, &field_name);
                 if out.is_empty()
-                    && struct_name.contains("::")
-                    && let Some(last) = struct_name.rsplit("::").next()
+                    && owner.contains("::")
+                    && let Some(last) = owner.rsplit_once("::").map(|(_, suffix)| suffix)
                 {
                     out.extend(sym_index.find_struct_field(last, &field_name));
                 }
@@ -477,6 +484,11 @@ fn resolve_pat_definition(
             if !out.is_empty() {
                 return Some(out);
             }
+        }
+        let owner = format!("{}::{}", enum_name, variant);
+        let out = sym_index.find_struct_field(&owner, token.text());
+        if !out.is_empty() {
+            return Some(out);
         }
     }
     None

@@ -1,6 +1,6 @@
 use ::ast::ast::{
-    self, Arm, AstIdent, Attribute, Block, EnumDef, Expr, ImplBlock, Item, LetStmt, Pat, Path,
-    Stmt, StructDef,
+    self, Arm, AstIdent, Attribute, Block, EnumDef, EnumVariant, EnumVariantFields, Expr,
+    ImplBlock, Item, LetStmt, Pat, Path, Stmt, StructDef,
 };
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
@@ -482,63 +482,75 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
     let arms: Vec<Arm> = enum_def
         .variants
         .iter()
-        .map(|(variant_name, fields)| {
-            let constructor = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
-            if fields.is_empty() {
-                Arm {
-                    pat: Pat::PConstr {
-                        constructor,
-                        args: Vec::new(),
-                        astptr: *attr_ptr,
-                    },
-                    guard: None,
-                    body: Expr::EString {
-                        value: format!("{}::{}", enum_def.name.0, variant_name.0),
-                        astptr: *attr_ptr,
-                    },
-                }
-            } else {
-                let bindings: Vec<AstIdent> = (0..fields.len())
-                    .map(|idx| AstIdent::new(&format!("__field{}", idx)))
-                    .collect();
-                let args = bindings
-                    .iter()
-                    .map(|binding| Pat::PVar {
-                        name: binding.clone(),
-                        astptr: *attr_ptr,
-                    })
-                    .collect();
-                let mut parts = Vec::new();
-                parts.push(Expr::EString {
-                    value: format!("{}::{}(", enum_def.name.0, variant_name.0),
+        .map(|variant| {
+            let fields = variant.fields.types();
+            let bindings: Vec<AstIdent> = (0..fields.len())
+                .map(|idx| AstIdent::new(&format!("__field{}", idx)))
+                .collect();
+            let mut parts = Vec::new();
+            match &variant.fields {
+                EnumVariantFields::Unit => parts.push(Expr::EString {
+                    value: format!("{}::{}", enum_def.name.0, variant.name.0),
                     astptr: *attr_ptr,
-                });
-                for (idx, (binding, field_ty)) in bindings.iter().zip(fields.iter()).enumerate() {
-                    if idx > 0 {
+                }),
+                EnumVariantFields::Tuple(_) => {
+                    parts.push(Expr::EString {
+                        value: format!("{}::{}(", enum_def.name.0, variant.name.0),
+                        astptr: *attr_ptr,
+                    });
+                    for (idx, (binding, field_ty)) in bindings.iter().zip(fields.iter()).enumerate()
+                    {
+                        if idx > 0 {
+                            parts.push(Expr::EString {
+                                value: ", ".to_string(),
+                                astptr: *attr_ptr,
+                            });
+                        }
+                        parts.push(call_to_string(
+                            var_expr(binding, attr_ptr),
+                            Some(field_ty),
+                            attr_ptr,
+                        ));
+                    }
+                    parts.push(Expr::EString {
+                        value: ")".to_string(),
+                        astptr: *attr_ptr,
+                    });
+                }
+                EnumVariantFields::Struct(named_fields) => {
+                    parts.push(Expr::EString {
+                        value: format!("{}::{} {{ ", enum_def.name.0, variant.name.0),
+                        astptr: *attr_ptr,
+                    });
+                    for (idx, ((field_name, field_ty), binding)) in
+                        named_fields.iter().zip(bindings.iter()).enumerate()
+                    {
+                        if idx > 0 {
+                            parts.push(Expr::EString {
+                                value: ", ".to_string(),
+                                astptr: *attr_ptr,
+                            });
+                        }
                         parts.push(Expr::EString {
-                            value: ", ".to_string(),
+                            value: format!("{}: ", field_name.0),
                             astptr: *attr_ptr,
                         });
+                        parts.push(call_to_string(
+                            var_expr(binding, attr_ptr),
+                            Some(field_ty),
+                            attr_ptr,
+                        ));
                     }
-                    parts.push(call_to_string(
-                        var_expr(binding, attr_ptr),
-                        Some(field_ty),
-                        attr_ptr,
-                    ));
-                }
-                parts.push(Expr::EString {
-                    value: ")".to_string(),
-                    astptr: *attr_ptr,
-                });
-                Arm {
-                    pat: Pat::PConstr {
-                        constructor,
-                        args,
+                    parts.push(Expr::EString {
+                        value: " }".to_string(),
                         astptr: *attr_ptr,
-                    },
-                    guard: None,
-                    body: concat_parts(parts, attr_ptr),
+                    });
                 }
+            }
+            Arm {
+                pat: enum_variant_pattern(enum_def, variant, &bindings, attr_ptr),
+                guard: None,
+                body: concat_parts(parts, attr_ptr),
             }
         })
         .collect();
@@ -547,6 +559,46 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
         expr,
         arms,
         astptr: *attr_ptr,
+    }
+}
+
+fn enum_variant_pattern(
+    enum_def: &EnumDef,
+    variant: &EnumVariant,
+    bindings: &[AstIdent],
+    attr_ptr: &MySyntaxNodePtr,
+) -> Pat {
+    let constructor = Path::from_idents(vec![enum_def.name.clone(), variant.name.clone()]);
+    match &variant.fields {
+        EnumVariantFields::Struct(fields) => Pat::PStruct {
+            name: constructor,
+            fields: fields
+                .iter()
+                .zip(bindings.iter())
+                .map(|((field_name, _), binding)| {
+                    (
+                        field_name.clone(),
+                        Pat::PVar {
+                            name: binding.clone(),
+                            astptr: *attr_ptr,
+                        },
+                    )
+                })
+                .collect(),
+            has_rest: false,
+            astptr: *attr_ptr,
+        },
+        _ => Pat::PConstr {
+            constructor,
+            args: bindings
+                .iter()
+                .map(|binding| Pat::PVar {
+                    name: binding.clone(),
+                    astptr: *attr_ptr,
+                })
+                .collect(),
+            astptr: *attr_ptr,
+        },
     }
 }
 
@@ -592,37 +644,16 @@ fn build_enum_eq_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
 
     let mut arms = Vec::new();
 
-    for (variant_idx, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
-        let left_bindings: Vec<AstIdent> = (0..fields.len())
+    for (variant_idx, variant) in enum_def.variants.iter().enumerate() {
+        let left_bindings: Vec<AstIdent> = (0..variant.fields.types().len())
             .map(|idx| AstIdent::new(&format!("__l{}_{}", variant_idx, idx)))
             .collect();
-        let right_bindings: Vec<AstIdent> = (0..fields.len())
+        let right_bindings: Vec<AstIdent> = (0..variant.fields.types().len())
             .map(|idx| AstIdent::new(&format!("__r{}_{}", variant_idx, idx)))
             .collect();
 
-        let constr = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
-        let left_pat = Pat::PConstr {
-            constructor: constr.clone(),
-            args: left_bindings
-                .iter()
-                .map(|b| Pat::PVar {
-                    name: b.clone(),
-                    astptr: *attr_ptr,
-                })
-                .collect(),
-            astptr: *attr_ptr,
-        };
-        let right_pat = Pat::PConstr {
-            constructor: constr,
-            args: right_bindings
-                .iter()
-                .map(|b| Pat::PVar {
-                    name: b.clone(),
-                    astptr: *attr_ptr,
-                })
-                .collect(),
-            astptr: *attr_ptr,
-        };
+        let left_pat = enum_variant_pattern(enum_def, variant, &left_bindings, attr_ptr);
+        let right_pat = enum_variant_pattern(enum_def, variant, &right_bindings, attr_ptr);
 
         let pat = Pat::PTuple {
             pats: vec![left_pat, right_pat],
@@ -726,19 +757,10 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
     let self_var = Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr));
     let mut arms = Vec::new();
 
-    for (idx, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
-        let constructor = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
-        let bindings: Vec<AstIdent> = (0..fields.len())
+    for (idx, variant) in enum_def.variants.iter().enumerate() {
+        let bindings: Vec<AstIdent> = (0..variant.fields.types().len())
             .map(|i| AstIdent::new(&format!("__field{}_{}", idx, i)))
             .collect();
-        let args = bindings
-            .iter()
-            .map(|binding| Pat::PVar {
-                name: binding.clone(),
-                astptr: *attr_ptr,
-            })
-            .collect();
-
         let tag = Expr::EUInt64 {
             value: (idx as u64 + 1).to_string(),
             astptr: *attr_ptr,
@@ -798,11 +820,7 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
         let body = block_expr(stmts, var_expr(&AstIdent::new("h"), attr_ptr), attr_ptr);
 
         arms.push(Arm {
-            pat: Pat::PConstr {
-                constructor,
-                args,
-                astptr: *attr_ptr,
-            },
+            pat: enum_variant_pattern(enum_def, variant, &bindings, attr_ptr),
             guard: None,
             body,
         });

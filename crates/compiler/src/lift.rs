@@ -1397,10 +1397,11 @@ fn get_enum_field_ty(
     field_index: usize,
 ) -> Option<Ty> {
     let enum_def = state.liftenv.get_enum(&constructor.type_name)?;
-    let (_, fields) = enum_def
+    let variant = enum_def
         .variants
         .iter()
-        .find(|(variant, _)| variant == &constructor.variant)?;
-    let raw_field_ty = fields.get(field_index)?.clone();
+        .find(|variant| variant.name == constructor.variant)?;
+    let fields = variant.fields.types();
+    let raw_field_ty = (*fields.get(field_index)?).clone();
     Some(raw_field_ty)
 }

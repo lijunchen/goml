@@ -1213,14 +1213,16 @@ fn compile_enum_case(
         .variants
         .iter()
         .enumerate()
-        .map(|(index, (variant, args))| ConstructorCase {
+        .map(|(index, variant)| ConstructorCase {
             constructor: Constructor::Enum(common::EnumConstructor {
                 type_name: name.clone(),
-                variant: variant.clone(),
+                variant: variant.name.clone(),
                 index,
             }),
-            vars: args
-                .iter()
+            vars: variant
+                .fields
+                .types()
+                .into_iter()
                 .map(|arg_ty| Variable {
                     name: gensym.gensym("x"),
                     ty: substitute_ty_params(arg_ty, &subst),

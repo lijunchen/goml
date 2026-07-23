@@ -1,7 +1,7 @@
 use crate::ast::{
-    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternFn, File, Fn,
-    ImplBlock, Item, LetStmt, Pat, Stmt, StructDef, TraitDef, TraitMethodSignature, TraitRef,
-    TypeExpr, Visibility,
+    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, EnumVariantFields, Expr,
+    ExternFn, File, Fn, ImplBlock, Item, LetStmt, Pat, Stmt, StructDef, TraitDef,
+    TraitMethodSignature, TraitRef, TypeExpr, Visibility,
 };
 use pretty::RcDoc;
 
@@ -700,27 +700,36 @@ impl EnumDef {
             .append(RcDoc::text(&self.name.0))
             .append(generics_to_doc(&self.generics));
 
-        let variants_doc =
-            RcDoc::concat(self.variants.iter().enumerate().map(|(i, (name, types))| {
-                let variant = if i == 0 {
-                    RcDoc::hardline()
-                } else {
-                    RcDoc::text(",").append(RcDoc::hardline())
-                }
-                .append(RcDoc::text(&name.0));
+        let variants_doc = RcDoc::concat(self.variants.iter().enumerate().map(|(i, variant)| {
+            let prefix = if i == 0 {
+                RcDoc::hardline()
+            } else {
+                RcDoc::text(",").append(RcDoc::hardline())
+            }
+            .append(RcDoc::text(&variant.name.0));
 
-                if types.is_empty() {
-                    variant
-                } else {
-                    let types_doc =
-                        RcDoc::intersperse(types.iter().map(|ty| ty.to_doc()), RcDoc::text(", "));
-
-                    variant
-                        .append(RcDoc::text("("))
-                        .append(types_doc)
-                        .append(RcDoc::text(")"))
-                }
-            }));
+            match &variant.fields {
+                EnumVariantFields::Unit => prefix,
+                EnumVariantFields::Tuple(types) => prefix
+                    .append(RcDoc::text("("))
+                    .append(RcDoc::intersperse(
+                        types.iter().map(|ty| ty.to_doc()),
+                        RcDoc::text(", "),
+                    ))
+                    .append(RcDoc::text(")")),
+                EnumVariantFields::Struct(fields) => prefix
+                    .append(RcDoc::text(" { "))
+                    .append(RcDoc::intersperse(
+                        fields.iter().map(|(name, ty)| {
+                            RcDoc::text(&name.0)
+                                .append(RcDoc::text(": "))
+                                .append(ty.to_doc())
+                        }),
+                        RcDoc::text(", "),
+                    ))
+                    .append(RcDoc::text(" }")),
+            }
+        }));
 
         attrs_doc(&self.attrs).append(
             header

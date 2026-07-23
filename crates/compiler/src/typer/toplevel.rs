@@ -312,8 +312,8 @@ fn validate_no_self_ty(
 fn validate_enum_variant_names(diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
     let mut seen = HashSet::new();
     let enum_name = enum_def.name.to_ident_name();
-    for (variant, _) in enum_def.variants.iter() {
-        let name = variant.to_ident_name();
+    for variant in enum_def.variants.iter() {
+        let name = variant.name.to_ident_name();
         if !seen.insert(name.clone()) {
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
@@ -323,6 +323,22 @@ fn validate_enum_variant_names(diagnostics: &mut Diagnostics, enum_def: &hir::En
                     name, enum_name
                 ),
             ));
+        }
+        if let hir::EnumVariantFields::Struct(fields) = &variant.fields {
+            let mut seen_fields = HashSet::new();
+            for (field, _) in fields {
+                let field_name = field.to_ident_name();
+                if !seen_fields.insert(field_name.clone()) {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "field {} is defined multiple times in variant {}::{}",
+                            field_name, enum_name, name
+                        ),
+                    ));
+                }
+            }
         }
     }
 }
@@ -860,22 +876,34 @@ fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def
     let variants = enum_def
         .variants
         .iter()
-        .map(|(vcon, typs)| {
-            let typs = typs
-                .iter()
-                .map(|ast_ty| {
-                    let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
-                    validate_decl_ty(
-                        env,
-                        diagnostics,
-                        &ty,
-                        type_expr_range(ast_ty),
-                        &tparam_names,
-                    );
-                    ty
-                })
-                .collect::<Vec<_>>();
-            (tast::TastIdent(vcon.to_ident_name()), typs)
+        .map(|variant| {
+            let mut lower_ty = |ast_ty: &hir::TypeExpr| {
+                let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
+                validate_decl_ty(
+                    env,
+                    diagnostics,
+                    &ty,
+                    type_expr_range(ast_ty),
+                    &tparam_names,
+                );
+                ty
+            };
+            let fields = match &variant.fields {
+                hir::EnumVariantFields::Unit => env::EnumVariantFields::Unit,
+                hir::EnumVariantFields::Tuple(types) => {
+                    env::EnumVariantFields::Tuple(types.iter().map(lower_ty).collect())
+                }
+                hir::EnumVariantFields::Struct(fields) => env::EnumVariantFields::Struct(
+                    fields
+                        .iter()
+                        .map(|(name, ty)| (tast::TastIdent(name.to_ident_name()), lower_ty(ty)))
+                        .collect(),
+                ),
+            };
+            env::EnumVariantDef {
+                name: tast::TastIdent(variant.name.to_ident_name()),
+                fields,
+            }
         })
         .collect();
     env.current_mut().insert_enum(env::EnumDef {

@@ -211,7 +211,30 @@ pub struct EnumDef {
     pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
-    pub variants: Vec<(AstIdent, Vec<TypeExpr>)>,
+    pub variants: Vec<EnumVariant>,
+}
+
+#[derive(Debug, Clone)]
+pub struct EnumVariant {
+    pub name: AstIdent,
+    pub fields: EnumVariantFields,
+}
+
+#[derive(Debug, Clone)]
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec<TypeExpr>),
+    Struct(Vec<(AstIdent, TypeExpr)>),
+}
+
+impl EnumVariantFields {
+    pub fn types(&self) -> Vec<&TypeExpr> {
+        match self {
+            Self::Unit => Vec::new(),
+            Self::Tuple(types) => types.iter().collect(),
+            Self::Struct(fields) => fields.iter().map(|(_, ty)| ty).collect(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

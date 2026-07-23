@@ -109,7 +109,18 @@ pub struct EnumDef {
     attrs: Vec[ast::Attribute],
     name: string,
     generics: Vec[string],
-    variants: Vec[(string, Vec[TypeExpr])],
+    variants: Vec[EnumVariant],
+}
+
+pub struct EnumVariant {
+    name: string,
+    fields: EnumVariantFields,
+}
+
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec[TypeExpr]),
+    Struct(Vec[(string, TypeExpr)]),
 }
 
 pub struct StructDef {

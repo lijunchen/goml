@@ -44,7 +44,11 @@ impl PackageInterface {
                 continue;
             }
             let key = relative_export_name(package, full);
-            let mut variants: Vec<String> = def.variants.iter().map(|(v, _)| v.0.clone()).collect();
+            let mut variants: Vec<String> = def
+                .variants
+                .iter()
+                .map(|variant| variant.name.0.clone())
+                .collect();
             variants.sort();
             variants.dedup();
             enum_variants.insert(key, variants);

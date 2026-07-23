@@ -521,13 +521,18 @@ impl Typer {
                     hint_ret_ty: None,
                 },
             ),
-            hir::Expr::EStructLiteral { name, fields } => self.infer_struct_literal_expr(
+            hir::Expr::EStructLiteral {
+                name,
+                enum_constructor,
+                fields,
+            } => self.infer_struct_literal_expr(
                 genv,
                 local_env,
                 diagnostics,
                 StructLiteralRequest {
                     expr_id: e,
                     name: &name,
+                    enum_constructor: enum_constructor.as_ref(),
                     fields: &fields,
                     hint_ret_ty: None,
                 },
@@ -897,21 +902,22 @@ impl Typer {
                     },
                 },
             ),
-            hir::Expr::EStructLiteral { name, fields }
-                if !matches!(expected, tast::Ty::TDyn { .. }) =>
-            {
-                self.infer_struct_literal_expr(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    StructLiteralRequest {
-                        expr_id: e,
-                        name: &name,
-                        fields: &fields,
-                        hint_ret_ty: Some(expected),
-                    },
-                )
-            }
+            hir::Expr::EStructLiteral {
+                name,
+                enum_constructor,
+                fields,
+            } if !matches!(expected, tast::Ty::TDyn { .. }) => self.infer_struct_literal_expr(
+                genv,
+                local_env,
+                diagnostics,
+                StructLiteralRequest {
+                    expr_id: e,
+                    name: &name,
+                    enum_constructor: enum_constructor.as_ref(),
+                    fields: &fields,
+                    hint_ret_ty: Some(expected),
+                },
+            ),
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
 
@@ -1188,10 +1194,10 @@ impl Typer {
             }
         } else {
             if let Some(enum_def) = type_env.enums().get(&type_ident) {
-                if let Some((_, fields)) = enum_def
+                if let Some(variant) = enum_def
                     .variants
                     .iter()
-                    .find(|(name, _)| name == &member_ident)
+                    .find(|variant| variant.name == member_ident)
                 {
                     super::util::push_error_with_range(
                         diagnostics,
@@ -1199,7 +1205,7 @@ impl Typer {
                             "Variant {} of enum {} expects {} arguments, but got 0",
                             member,
                             resolved_type_name,
-                            fields.len()
+                            variant.fields.len()
                         ),
                         astptr.map(|p| p.text_range()),
                     );
@@ -3374,10 +3380,9 @@ fn try_variant_indices(
             subst.insert(enum_def.generics[0].0.clone(), ok_ty.clone());
             (
                 try_payload_variant_index(enum_def, success_name, ok_ty, &subst),
-                enum_def
-                    .variants
-                    .iter()
-                    .position(|(name, fields)| name.0 == residual_name && fields.is_empty()),
+                enum_def.variants.iter().position(|variant| {
+                    variant.name.0 == residual_name && variant.fields.is_empty()
+                }),
             )
         }
     };
@@ -3397,10 +3402,11 @@ fn try_payload_variant_index(
     expected_ty: &tast::Ty,
     subst: &HashMap<String, tast::Ty>,
 ) -> Option<usize> {
-    enum_def.variants.iter().position(|(name, fields)| {
-        if name.0 != variant_name {
+    enum_def.variants.iter().position(|variant| {
+        if variant.name.0 != variant_name {
             return false;
         }
+        let fields = variant.fields.types();
         let [field_ty] = fields.as_slice() else {
             return false;
         };
@@ -3463,7 +3469,8 @@ fn validate_hashmap_get_option_ty(
         let mut empty_variants = 0usize;
         let mut payload_variants = 0usize;
         let mut matching_payload_variants = 0usize;
-        for (_, fields) in &enum_def.variants {
+        for variant in &enum_def.variants {
+            let fields = variant.fields.types();
             match fields.as_slice() {
                 [] => empty_variants += 1,
                 [field_ty] => {

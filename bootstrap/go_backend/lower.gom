@@ -2880,7 +2880,7 @@ fn collect_type_definition_fields(
     for definition in enums {
         if definition.generics.len() == 0 {
             for variant in definition.variants {
-                for field in variant.fields {
+                for field in tast::enum_variant_field_types(variant.fields) {
                     collect_type(result, instantiate_type(
                         field,
                         definition.generics,
@@ -2908,7 +2908,7 @@ fn collect_type_definition_fields(
             Option::None => match find_enum(enums, instance.base_name) {
                 Option::Some(definition) => {
                     for variant in definition.variants {
-                        for field in variant.fields {
+                        for field in tast::enum_variant_field_types(variant.fields) {
                             collect_type(result, instantiate_type(
                                 field,
                                 definition.generics,

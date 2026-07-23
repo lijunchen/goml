@@ -128,10 +128,26 @@ fn artifact_json_enum_def(
     artifact_json_name(writer, "variants");
     artifact_json_begin_array(writer);
     for variant in value.variants {
-        artifact_json_begin_array(writer);
+        artifact_json_begin_object(writer);
+        artifact_json_name(writer, "name");
         artifact_json_string(writer, variant.name);
-        artifact_json_type_array(writer, context, variant.fields);
-        artifact_json_end_array(writer)
+        artifact_json_name(writer, "fields");
+        match variant.fields {
+            tast::EnumVariantFields::Unit => artifact_json_string(writer, "Unit"),
+            tast::EnumVariantFields::Tuple(fields) => {
+                artifact_json_begin_object(writer);
+                artifact_json_name(writer, "Tuple");
+                artifact_json_type_array(writer, context, fields);
+                artifact_json_end_object(writer)
+            },
+            tast::EnumVariantFields::Struct(fields) => {
+                artifact_json_begin_object(writer);
+                artifact_json_name(writer, "Struct");
+                artifact_json_type_pairs(writer, context, fields);
+                artifact_json_end_object(writer)
+            },
+        };
+        artifact_json_end_object(writer)
     };
     artifact_json_end_array(writer);
     artifact_json_end_object(writer)
@@ -412,7 +428,7 @@ fn artifact_json_interface_hash_view(
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "format_version");
-    artifact_json_number(writer, "11");
+    artifact_json_number(writer, "12");
     artifact_json_name(writer, "compiler_abi");
     artifact_json_number(writer, "2");
     artifact_json_name(writer, "package");
@@ -465,7 +481,7 @@ fn artifact_json_interface_unit(
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "format_version");
-    artifact_json_number(writer, "11");
+    artifact_json_number(writer, "12");
     artifact_json_name(writer, "compiler_abi");
     artifact_json_number(writer, "2");
     artifact_json_name(writer, "package");

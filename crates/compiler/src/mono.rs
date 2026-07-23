@@ -1,6 +1,8 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
-use crate::env::{EnumDef, GlobalTypeEnv, PackageTypeEnv, StructDef};
+use crate::env::{
+    EnumDef, EnumVariantDef, EnumVariantFields, GlobalTypeEnv, PackageTypeEnv, StructDef,
+};
 use crate::intrinsics::{CallableBody, LangItemId};
 use crate::names::{
     parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name,
@@ -11,6 +13,24 @@ use indexmap::{IndexMap, IndexSet};
 use std::collections::{HashSet, VecDeque};
 
 const MONO_INSTANCE_LIMIT: usize = 4096;
+
+fn map_enum_variant_fields(
+    fields: EnumVariantFields,
+    mut map: impl FnMut(Ty) -> Ty,
+) -> EnumVariantFields {
+    match fields {
+        EnumVariantFields::Unit => EnumVariantFields::Unit,
+        EnumVariantFields::Tuple(types) => {
+            EnumVariantFields::Tuple(types.into_iter().map(map).collect())
+        }
+        EnumVariantFields::Struct(fields) => EnumVariantFields::Struct(
+            fields
+                .into_iter()
+                .map(|(name, ty)| (name, map(ty)))
+                .collect(),
+        ),
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct MonoFile {
@@ -2105,18 +2125,18 @@ impl<'a> TypeMono<'a> {
             }
 
             // Substitute variant field types and also collapse nested enum/struct apps
-            let mut new_variants: Vec<(TastIdent, Vec<Ty>)> = Vec::new();
-            // Clone needed data to limit immutable borrow scope
             let variants = generic_def.variants.clone();
-            for (vname, vfields) in variants.into_iter() {
-                let mut fields2 = Vec::new();
-                for t in vfields.into_iter() {
+            let mut new_variants = Vec::new();
+            for variant in variants {
+                let fields = map_enum_variant_fields(variant.fields, |t| {
                     let t1 = subst_ty(&t, &subst);
                     let t1 = normalize_associated_ty(&self.monoenv.genv, &t1);
-                    let t2 = self.collapse_type_apps(&t1);
-                    fields2.push(t2);
-                }
-                new_variants.push((vname.clone(), fields2));
+                    self.collapse_type_apps(&t1)
+                });
+                new_variants.push(EnumVariantDef {
+                    name: variant.name,
+                    fields,
+                });
             }
 
             let new_def = EnumDef {
@@ -2889,11 +2909,15 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
     for name in enum_names {
         let variants = m.monoenv.get_enum_mut(&name).map(|d| d.variants.clone());
         if let Some(variants) = variants {
-            let new_variants: Vec<(TastIdent, Vec<Ty>)> = variants
-                .iter()
-                .map(|(vname, vtys)| {
-                    let new_tys: Vec<Ty> = vtys.iter().map(|t| m.collapse_type_apps(t)).collect();
-                    (vname.clone(), new_tys)
+            let new_variants: Vec<EnumVariantDef> = variants
+                .into_iter()
+                .map(|variant| {
+                    let fields =
+                        map_enum_variant_fields(variant.fields, |ty| m.collapse_type_apps(&ty));
+                    EnumVariantDef {
+                        name: variant.name,
+                        fields,
+                    }
                 })
                 .collect();
             if let Some(error) = m.error.take() {

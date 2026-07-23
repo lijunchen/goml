@@ -3505,13 +3505,13 @@ fn option_variant_go_names(goenv: &GlobalGoEnv, option_name: &str) -> Option<(St
     let named_some = def
         .variants
         .iter()
-        .find(|(name, fields)| name.0 == "Some" && fields.len() == 1)
-        .map(|(name, _)| name.0.clone());
+        .find(|variant| variant.name.0 == "Some" && variant.fields.len() == 1)
+        .map(|variant| variant.name.0.clone());
     let named_none = def
         .variants
         .iter()
-        .find(|(name, fields)| name.0 == "None" && fields.is_empty())
-        .map(|(name, _)| name.0.clone());
+        .find(|variant| variant.name.0 == "None" && variant.fields.is_empty())
+        .map(|variant| variant.name.0.clone());
     if let (Some(some_variant), Some(none_variant)) = (named_some, named_none) {
         return Some((
             variant_struct_name(goenv, option_name, &some_variant),
@@ -3522,11 +3522,11 @@ fn option_variant_go_names(goenv: &GlobalGoEnv, option_name: &str) -> Option<(St
     let mut some_variants = Vec::new();
     let mut none_variants = Vec::new();
 
-    for (name, fields) in &def.variants {
-        if fields.len() == 1 {
-            some_variants.push(name.0.clone());
-        } else if fields.is_empty() {
-            none_variants.push(name.0.clone());
+    for variant in &def.variants {
+        if variant.fields.len() == 1 {
+            some_variants.push(variant.name.0.clone());
+        } else if variant.fields.is_empty() {
+            none_variants.push(variant.name.0.clone());
         }
     }
 

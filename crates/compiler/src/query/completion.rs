@@ -971,19 +971,29 @@ fn colon_colon_items_for_namespace(
     };
 
     if let Some(enum_def) = genv.enums().get(&tast::TastIdent(namespace.to_string())) {
-        for (variant_name, payload) in &enum_def.variants {
-            let detail = if payload.is_empty() {
-                Some(namespace.to_string())
-            } else {
-                let payload_str = payload
-                    .iter()
-                    .map(|ty| ty.to_pretty(80))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                Some(format!("({}) -> {}", payload_str, namespace))
+        for variant in &enum_def.variants {
+            let payload = variant.fields.types();
+            let detail = match &variant.fields {
+                crate::env::EnumVariantFields::Unit => Some(namespace.to_string()),
+                crate::env::EnumVariantFields::Tuple(_) => {
+                    let payload_str = payload
+                        .iter()
+                        .map(|ty| ty.to_pretty(80))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    Some(format!("({}) -> {}", payload_str, namespace))
+                }
+                crate::env::EnumVariantFields::Struct(fields) => {
+                    let payload_str = fields
+                        .iter()
+                        .map(|(name, ty)| format!("{}: {}", name.0, ty.to_pretty(80)))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    Some(format!("{{ {} }} -> {}", payload_str, namespace))
+                }
             };
             items.push(ColonColonCompletionItem {
-                name: variant_name.0.clone(),
+                name: variant.name.0.clone(),
                 kind: ColonColonCompletionKind::Variant,
                 detail,
             });

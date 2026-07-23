@@ -88,8 +88,8 @@ impl GlobalGoEnv {
             .collect();
         let mut counts = HashMap::new();
         for (_, definition) in self.enums() {
-            for (name, _) in definition.variants.iter() {
-                *counts.entry(name.0.clone()).or_insert(0usize) += 1;
+            for variant in definition.variants.iter() {
+                *counts.entry(variant.name.0.clone()).or_insert(0usize) += 1;
             }
         }
         self.colliding_variant_names = counts
@@ -567,10 +567,10 @@ fn collect_variant_go_names(goenv: &GlobalGoEnv) -> HashMap<String, HashMap<Stri
     for (enum_name, definition) in goenv.enums() {
         let enum_go_name = go_user_type_name(&enum_name.0);
         let mut names = HashMap::new();
-        for (variant_name, _) in definition.variants.iter() {
+        for variant in definition.variants.iter() {
             names.insert(
-                variant_name.0.clone(),
-                compute_variant_symbol_name(goenv, &enum_go_name, &variant_name.0),
+                variant.name.0.clone(),
+                compute_variant_symbol_name(goenv, &enum_go_name, &variant.name.0),
             );
         }
         result.insert(enum_go_name, names);
@@ -607,7 +607,7 @@ fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a Enum
 }
 
 fn is_tag_only_enum_def(def: &EnumDef) -> bool {
-    def.variants.iter().all(|(_, fields)| fields.is_empty())
+    def.variants.iter().all(|variant| variant.fields.is_empty())
 }
 
 fn enum_is_tag_only(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
@@ -624,16 +624,16 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
     if let Some(name) = specialized_name.as_deref()
         && let Some(def) = goenv.get_enum(&TastIdent::new(name))
     {
-        let (vname, _fields) = &def.variants[index];
-        return variant_symbol_name_for_go_enum(goenv, name, &vname.0);
+        let variant = &def.variants[index];
+        return variant_symbol_name_for_go_enum(goenv, name, &variant.name.0);
     }
 
     if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
-        let (vname, _fields) = &def.variants[index];
+        let variant = &def.variants[index];
         if let Some(enum_name) = specialized_name {
-            return variant_symbol_name_for_go_enum(goenv, &enum_name, &vname.0);
+            return variant_symbol_name_for_go_enum(goenv, &enum_name, &variant.name.0);
         }
-        return variant_symbol_name(goenv, &base_name, &vname.0);
+        return variant_symbol_name(goenv, &base_name, &variant.name.0);
     }
     if let Some(enum_name) = specialized_name.as_deref() {
         if extract_result_tys(goenv, ty).is_some() {
@@ -903,13 +903,13 @@ fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSe
                     || def
                         .variants
                         .iter()
-                        .flat_map(|(_, fields)| fields.iter())
+                        .flat_map(|variant| variant.fields.types())
                         .any(ty_contains_type_param)
                 {
                     continue;
                 }
-                for (_, fields) in &def.variants {
-                    for ty in fields {
+                for variant in &def.variants {
+                    for ty in variant.fields.types() {
                         self.collect_type(ty);
                     }
                 }
@@ -1479,8 +1479,8 @@ fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequire
         }
     }
     for (_, def) in goenv.enums() {
-        for (_, fields) in &def.variants {
-            for ty in fields {
+        for variant in &def.variants {
+            for ty in variant.fields.types() {
                 collect_ty(&mut req, ty);
             }
         }
@@ -2300,12 +2300,12 @@ fn compile_value_expr(
                 let variant_field_types = goenv
                     .get_enum(&enum_constructor.type_name)
                     .and_then(|def| def.variants.get(enum_constructor.index))
-                    .map(|(_, fields)| fields.as_slice());
+                    .map(|variant| variant.fields.types());
                 let fields = args
                     .iter()
                     .enumerate()
                     .map(|(i, a)| {
-                        let field_ty = variant_field_types.and_then(|f| f.get(i));
+                        let field_ty = variant_field_types.as_ref().and_then(|f| f.get(i).copied());
                         let arg_ty = imm_ty(a);
                         let val = if let Some(ft) = field_ty
                             && needs_closure_to_func_wrap(&arg_ty, ft)
@@ -2424,7 +2424,8 @@ fn compile_value_expr(
                     let def = goenv
                         .get_enum(&enum_constructor.type_name)
                         .expect("unknown enum in ConstrGet");
-                    let field_ty = def.variants[enum_constructor.index].1[*field_index].clone();
+                    let field_ty =
+                        def.variants[enum_constructor.index].fields.types()[*field_index].clone();
                     let scrut_ty = imm_ty(expr);
                     let variant_ty = variant_ty_by_index(goenv, &scrut_ty, enum_constructor.index);
                     let cast = goast::Expr::Cast {
@@ -4010,8 +4011,8 @@ fn entry_wrapper_function_name(goenv: &GlobalGoEnv, file: &anf::File) -> String 
             .map(|(enum_name, _)| go_user_type_name(&enum_name.0)),
     );
     for (enum_name, enum_def) in goenv.enums() {
-        for (variant_name, _) in enum_def.variants.iter() {
-            used_names.insert(variant_symbol_name(goenv, &enum_name.0, &variant_name.0));
+        for variant in enum_def.variants.iter() {
+            used_names.insert(variant_symbol_name(goenv, &enum_name.0, &variant.name.0));
         }
     }
 
@@ -4285,7 +4286,8 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             || def
                 .variants
                 .iter()
-                .any(|(_, fields)| fields.iter().any(|f| matches!(f, tast::Ty::TParam { .. })));
+                .flat_map(|variant| variant.fields.types())
+                .any(|field| matches!(field, tast::Ty::TParam { .. }));
         if has_type_param {
             continue;
         }
@@ -4301,8 +4303,8 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                     .variants
                     .iter()
                     .enumerate()
-                    .map(|(index, (variant_name, _))| goast::ConstSpec {
-                        name: variant_symbol_name(goenv, &name.0, &variant_name.0),
+                    .map(|(index, variant)| goast::ConstSpec {
+                        name: variant_symbol_name(goenv, &name.0, &variant.name.0),
                         ty: goty::GoType::TName {
                             name: enum_go_name.clone(),
                         },
@@ -4329,10 +4331,10 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                 ret: None,
             }],
         }));
-        for (variant_name, variant_fields) in def.variants.iter() {
-            let variant_name = variant_symbol_name(goenv, &name.0, &variant_name.0);
+        for variant in def.variants.iter() {
+            let variant_name = variant_symbol_name(goenv, &name.0, &variant.name.0);
             let mut fields = Vec::new();
-            for (i, field) in variant_fields.iter().enumerate() {
+            for (i, field) in variant.fields.types().into_iter().enumerate() {
                 fields.push(goast::Field {
                     name: format!("_{}", i),
                     ty: tast_ty_to_go_type(field),

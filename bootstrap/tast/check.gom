@@ -1063,6 +1063,24 @@ fn check_resolved_constructor_expr(
     args: Vec[hir::Expr],
     expected: Option[Type],
 ) -> Expr {
+    if info.named {
+        for arg in args {
+            let _ = check_expr(ctx, arg, Option::None);
+        };
+        push_diagnostic(
+            ctx,
+            "Constructor "
+                + info.constructor.name
+                + " is a struct-like enum variant and requires named fields",
+        );
+        return Expr::Constr(
+            info.constructor,
+            Vec::new(),
+            fresh_unresolved_inference(ctx),
+        )
+    } else {
+        ()
+    };
     match propagated_expected(expected) {
         Option::Some(ty) => expect_type(ctx, info.ty, ty),
         Option::None => (),
@@ -1128,13 +1146,34 @@ fn check_struct_expr(
     fields: Vec[(string, hir::Expr)],
     expected: Option[Type],
 ) -> Expr {
-    match resolve_struct(ctx, name) {
-        Option::Some(info) => {
+    match resolve_named_field_constructor(ctx, name) {
+        NamedFieldConstructorResolution::Found(info) => {
             match propagated_expected(expected) {
                 Option::Some(ty) => expect_type(ctx, info.ty, ty),
                 Option::None => (),
             };
-            for provided in fields {
+            for index in range(0, fields.len()) {
+                let provided = fields.get(index);
+                let duplicate = Ref::new(false);
+                for previous in range(0, index) {
+                    if fields.get(previous).0 == provided.0 {
+                        duplicate.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if duplicate.get() {
+                    push_diagnostic_at(
+                        ctx,
+                        "Duplicate field "
+                            + provided.0
+                            + " in struct literal "
+                            + name,
+                        Option::Some(provided.1.span),
+                    )
+                } else {
+                    ()
+                };
                 let known = Ref::new(false);
                 for field in info.fields {
                     if field.0 == provided.0 {
@@ -1176,17 +1215,55 @@ fn check_struct_expr(
                 expected,
             )
         },
-        Option::None => {
-            push_diagnostic(ctx, "struct not found: " + name);
+        NamedFieldConstructorResolution::WrongStyle => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            push_diagnostic(
+                ctx,
+                "Constructor " + name + " is not a struct-like enum variant",
+            );
             Expr::Constr(
                 Constructor {
                     name,
                     fields: Vec::new(),
-                    is_struct: true,
+                    is_struct: false,
                     tag: Option::None,
                 },
                 Vec::new(),
-                Type::Error,
+                fresh_unresolved_inference(ctx),
+            )
+        },
+        NamedFieldConstructorResolution::Ambiguous => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            push_diagnostic(ctx, "Ambiguous constructor " + name);
+            Expr::Constr(
+                Constructor {
+                    name,
+                    fields: Vec::new(),
+                    is_struct: false,
+                    tag: Option::None,
+                },
+                Vec::new(),
+                fresh_unresolved_inference(ctx),
+            )
+        },
+        NamedFieldConstructorResolution::Missing => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            push_diagnostic(ctx, "Constructor " + name + " not found in environment");
+            Expr::Constr(
+                Constructor {
+                    name,
+                    fields: Vec::new(),
+                    is_struct: false,
+                    tag: Option::None,
+                },
+                Vec::new(),
+                fresh_unresolved_inference(ctx),
             )
         },
     }
@@ -2322,7 +2399,7 @@ fn try_variant_fields(
             for variant in info.variants {
                 if variant.name == variant_name {
                     let fields: Vec[Type] = Vec::new();
-                    for field in variant.fields {
+                    for field in enum_variant_field_types(variant.fields) {
                         fields.push(substitute_params(
                             field,
                             info.generics,
@@ -3258,6 +3335,20 @@ fn check_constructor_pattern(
 ) -> Pat {
     match resolve_constructor(ctx, constructor) {
         Option::Some(info) => {
+            if info.named {
+                for value in args {
+                    mark_unresolved_pattern_locals(ctx, value)
+                };
+                push_diagnostic(
+                    ctx,
+                    "Constructor "
+                        + info.constructor.name
+                        + " is a struct-like enum variant and requires named fields",
+                );
+                return Pat::Wild(expected)
+            } else {
+                ()
+            };
             expect_type(ctx, info.ty, expected);
             let values: Vec[Pat] = Vec::new();
             if args.len() != info.fields.len() {
@@ -3348,8 +3439,8 @@ fn check_struct_pattern(
     has_rest: bool,
     expected: Type,
 ) -> Pat {
-    match resolve_struct(ctx, name) {
-        Option::Some(info) => {
+    match resolve_named_field_constructor(ctx, name) {
+        NamedFieldConstructorResolution::Found(info) => {
             expect_type(ctx, info.ty, expected);
             for index in range(0, fields.len()) {
                 let duplicate = Ref::new(false);
@@ -3426,8 +3517,31 @@ fn check_struct_pattern(
             };
             Pat::Constr(info.constructor, values, expected)
         },
-        Option::None => {
-            push_diagnostic(ctx, "struct pattern not found");
+        NamedFieldConstructorResolution::WrongStyle => {
+            for field in fields {
+                mark_unresolved_pattern_locals(ctx, field.1)
+            };
+            push_diagnostic(
+                ctx,
+                "Constructor " + name + " is not a struct-like enum variant",
+            );
+            Pat::Wild(expected)
+        },
+        NamedFieldConstructorResolution::Ambiguous => {
+            for field in fields {
+                mark_unresolved_pattern_locals(ctx, field.1)
+            };
+            push_diagnostic(ctx, "Ambiguous constructor " + name);
+            Pat::Wild(expected)
+        },
+        NamedFieldConstructorResolution::Missing => {
+            for field in fields {
+                mark_unresolved_pattern_locals(ctx, field.1)
+            };
+            push_diagnostic(
+                ctx,
+                "Constructor " + name + " not found when checking pattern",
+            );
             Pat::Wild(expected)
         },
     }

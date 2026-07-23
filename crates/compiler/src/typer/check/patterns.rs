@@ -365,7 +365,7 @@ impl Typer {
                             return self.check_pat_wild(ty, self.pat_astptr(pat));
                         };
                         let variant = def.variants.get(enum_constructor.index);
-                        let Some((_, tys)) = variant else {
+                        let Some(variant) = variant else {
                             util::push_ice(
                                 diagnostics,
                                 format!(
@@ -375,7 +375,18 @@ impl Typer {
                             );
                             return self.check_pat_wild(ty, self.pat_astptr(pat));
                         };
-                        tys.len()
+                        if matches!(variant.fields, crate::env::EnumVariantFields::Struct(_)) {
+                            util::push_error_with_range(
+                                diagnostics,
+                                format!(
+                                    "Constructor {} is a struct-like enum variant and requires named fields",
+                                    constructor_path.display()
+                                ),
+                                self.pat_range(pat),
+                            );
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
+                        }
+                        variant.fields.len()
                     }
                     common::Constructor::Struct(_) => {
                         util::push_error_with_range(
@@ -434,21 +445,114 @@ impl Typer {
             }
             hir::Pat::PStruct {
                 name,
+                enum_constructor,
                 fields,
                 has_rest,
             } => {
                 let name_display = name.display();
-                let (type_name, type_env) = util::resolve_type_name(genv, &name_display);
-                let struct_def = type_env.structs().get(&tast::TastIdent(type_name.clone()));
-                let Some(struct_def) = struct_def else {
+                let (type_name, type_env, ctor) = if let Some(constructor_ref) = enum_constructor {
+                    let constructor_path = match constructor_ref {
+                        hir::ConstructorRef::Resolved(constructor_id) => {
+                            self.constructor_path_from_id(diagnostics, &constructor_id)
+                        }
+                        hir::ConstructorRef::Unresolved(path) => path.clone(),
+                        hir::ConstructorRef::Ambiguous { path, .. } => {
+                            util::push_error_with_range(
+                                diagnostics,
+                                format!("Ambiguous constructor {}", path.display()),
+                                self.pat_range(pat),
+                            );
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
+                        }
+                    };
+                    let Some(variant_name) = constructor_path.last_ident() else {
+                        util::push_ice(diagnostics, "Constructor path missing final segment");
+                        return self.check_pat_wild(ty, self.pat_astptr(pat));
+                    };
+                    let namespace = constructor_path.namespace_segments();
+                    let (enum_name, type_env) = if namespace.is_empty() {
+                        (None, genv.current())
+                    } else {
+                        let name = namespace
+                            .iter()
+                            .map(|segment| segment.seg().clone())
+                            .collect::<Vec<_>>()
+                            .join("::");
+                        let (resolved, env) = util::resolve_type_name(genv, &name);
+                        (Some(tast::TastIdent(resolved)), env)
+                    };
+                    let variant_name = tast::TastIdent(variant_name.clone());
+                    (
+                        constructor_path.display(),
+                        type_env,
+                        type_env
+                            .lookup_constructor_with_namespace(enum_name.as_ref(), &variant_name),
+                    )
+                } else {
+                    let (type_name, type_env) = util::resolve_type_name(genv, &name_display);
+                    let ctor = type_env.lookup_constructor(&tast::TastIdent(type_name.clone()));
+                    (type_name, type_env, ctor)
+                };
+                let Some((constructor, constr_ty)) = ctor else {
                     util::push_error_with_range(
                         diagnostics,
-                        format!("Struct {} not found when checking pattern", type_name),
+                        format!("Constructor {} not found when checking pattern", type_name),
                         self.pat_range(pat),
                     );
                     return self.check_pat_wild(ty, self.pat_astptr(pat));
                 };
-                let struct_fields = struct_def.fields.clone();
+                let named_fields = match &constructor {
+                    common::Constructor::Struct(struct_constructor) => {
+                        let Some(struct_def) =
+                            type_env.structs().get(&struct_constructor.type_name)
+                        else {
+                            util::push_ice(
+                                diagnostics,
+                                format!(
+                                    "Struct {} not found when checking pattern",
+                                    struct_constructor.type_name.0
+                                ),
+                            );
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
+                        };
+                        struct_def.fields.clone()
+                    }
+                    common::Constructor::Enum(enum_constructor) => {
+                        let Some(enum_def) = type_env.enums().get(&enum_constructor.type_name)
+                        else {
+                            util::push_ice(
+                                diagnostics,
+                                format!(
+                                    "Enum {} not found when checking pattern",
+                                    enum_constructor.type_name.0
+                                ),
+                            );
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
+                        };
+                        let Some(variant) = enum_def.variants.get(enum_constructor.index) else {
+                            util::push_ice(
+                                diagnostics,
+                                format!(
+                                    "Enum {} variant index {} out of bounds",
+                                    enum_constructor.type_name.0, enum_constructor.index
+                                ),
+                            );
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
+                        };
+                        let Some(fields) = variant.fields.struct_fields() else {
+                            util::push_error_with_range(
+                                diagnostics,
+                                format!(
+                                    "Constructor {} is not a struct-like enum variant",
+                                    name_display
+                                ),
+                                self.pat_range(pat),
+                            );
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
+                        };
+                        fields.to_vec()
+                    }
+                };
                 let mut field_map: HashMap<String, hir::PatId> = HashMap::new();
                 for (fname, pat_id) in fields.iter() {
                     let field_name = fname.to_ident_name();
@@ -470,36 +574,27 @@ impl Typer {
                     }
                 }
 
-                let ctor = type_env.lookup_constructor(&tast::TastIdent(type_name.clone()));
-                let Some((constructor, constr_ty)) = ctor else {
-                    util::push_ice(
-                        diagnostics,
-                        format!("Struct {} not found when checking constructor", type_name),
-                    );
-                    return self.check_pat_wild(ty, self.pat_astptr(pat));
-                };
-
                 let inst_constr_ty = self.inst_ty(&constr_ty);
                 let (param_tys, ret_ty) = match &inst_constr_ty {
                     tast::Ty::TFunc { params, ret_ty } => (params.clone(), ret_ty.as_ref().clone()),
                     ty => (Vec::new(), ty.clone()),
                 };
 
-                if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
+                if !param_tys.is_empty() && param_tys.len() != named_fields.len() {
                     util::push_ice(
                         diagnostics,
                         format!(
                             "Constructor {} expects {} fields, but got {}",
                             type_name,
                             param_tys.len(),
-                            struct_fields.len()
+                            named_fields.len()
                         ),
                     );
                 }
 
-                let mut args_tast = Vec::with_capacity(struct_fields.len());
-                let mut elab_args = Vec::with_capacity(struct_fields.len());
-                for (idx, (field_name, _)) in struct_fields.iter().enumerate() {
+                let mut args_tast = Vec::with_capacity(named_fields.len());
+                let mut elab_args = Vec::with_capacity(named_fields.len());
+                for (idx, (field_name, _)) in named_fields.iter().enumerate() {
                     let expected_ty = param_tys
                         .get(idx)
                         .cloned()

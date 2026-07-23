@@ -13,6 +13,7 @@ pub(super) struct ConstructorRequest<'a> {
 pub(super) struct StructLiteralRequest<'a> {
     pub(super) expr_id: hir::ExprId,
     pub(super) name: &'a hir::QualifiedPath,
+    pub(super) enum_constructor: Option<&'a hir::ConstructorRef>,
     pub(super) fields: &'a [(hir::HirIdent, hir::ExprId)],
     pub(super) hint_ret_ty: Option<&'a tast::Ty>,
 }
@@ -36,7 +37,7 @@ impl Typer {
                         );
                         return hir::Path::from_ident("<error>".to_string());
                     };
-                    let Some((variant_ident, _)) = enum_def_data.variants.get(variant_idx) else {
+                    let Some(variant) = enum_def_data.variants.get(variant_idx) else {
                         util::push_ice(
                             diagnostics,
                             format!(
@@ -47,7 +48,7 @@ impl Typer {
                         );
                         return hir::Path::from_ident("<error>".to_string());
                     };
-                    let variant_name = variant_ident.to_ident_name();
+                    let variant_name = variant.name.to_ident_name();
                     let mut segments = self.hir_table.def_path(*enum_def).segments.clone();
                     segments.push(hir::PathSegment::new(variant_name));
                     hir::Path::new(segments)
@@ -83,6 +84,9 @@ impl Typer {
                     format!("Ambiguous constructor {}", path.display()),
                     self.expr_range(expr_id),
                 );
+                for arg in args {
+                    self.infer_expr(genv, local_env, diagnostics, *arg);
+                }
                 return self.error_expr(None);
             }
         };
@@ -132,7 +136,7 @@ impl Typer {
                     return self.error_expr(None);
                 };
                 let variant = def.variants.get(enum_constructor.index);
-                let Some((_, tys)) = variant else {
+                let Some(variant) = variant else {
                     util::push_ice(
                         diagnostics,
                         format!(
@@ -142,7 +146,21 @@ impl Typer {
                     );
                     return self.error_expr(None);
                 };
-                tys.len()
+                if matches!(variant.fields, crate::env::EnumVariantFields::Struct(_)) {
+                    util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Constructor {} is a struct-like enum variant and requires named fields",
+                            constructor_path.display()
+                        ),
+                        self.expr_range(expr_id),
+                    );
+                    for arg in args {
+                        self.infer_expr(genv, local_env, diagnostics, *arg);
+                    }
+                    return self.error_expr(None);
+                }
+                variant.fields.len()
             }
             common::Constructor::Struct(struct_constructor) => {
                 let def = enum_env.structs().get(&struct_constructor.type_name);
@@ -286,22 +304,69 @@ impl Typer {
         let StructLiteralRequest {
             expr_id,
             name,
+            enum_constructor,
             fields,
             hint_ret_ty,
         } = request;
         let name_display = name.display();
-        let (resolved_name, type_env) = util::resolve_type_name(genv, &name_display);
-        let ctor = type_env.lookup_constructor(&tast::TastIdent(resolved_name.clone()));
+        let (resolved_name, type_env, ctor) = if let Some(constructor_ref) = enum_constructor {
+            let constructor_path = match constructor_ref {
+                hir::ConstructorRef::Resolved(constructor_id) => {
+                    self.constructor_path_from_id(diagnostics, constructor_id)
+                }
+                hir::ConstructorRef::Unresolved(path) => path.clone(),
+                hir::ConstructorRef::Ambiguous { path, .. } => {
+                    util::push_error_with_range(
+                        diagnostics,
+                        format!("Ambiguous constructor {}", path.display()),
+                        self.expr_range(expr_id),
+                    );
+                    for (_, expr) in fields {
+                        self.infer_expr(genv, local_env, diagnostics, *expr);
+                    }
+                    return self.error_expr(None);
+                }
+            };
+            let Some(variant_name) = constructor_path.last_ident() else {
+                util::push_ice(diagnostics, "Constructor path missing final segment");
+                return self.error_expr(None);
+            };
+            let namespace = constructor_path.namespace_segments();
+            let (enum_name, type_env) = if namespace.is_empty() {
+                (None, genv.current())
+            } else {
+                let name = namespace
+                    .iter()
+                    .map(|segment| segment.seg().clone())
+                    .collect::<Vec<_>>()
+                    .join("::");
+                let (resolved, env) = util::resolve_type_name(genv, &name);
+                (Some(tast::TastIdent(resolved)), env)
+            };
+            let variant_name = tast::TastIdent(variant_name.clone());
+            (
+                constructor_path.display(),
+                type_env,
+                type_env.lookup_constructor_with_namespace(enum_name.as_ref(), &variant_name),
+            )
+        } else {
+            let (resolved_name, type_env) = util::resolve_type_name(genv, &name_display);
+            let ctor = type_env.lookup_constructor(&tast::TastIdent(resolved_name.clone()));
+            (resolved_name, type_env, ctor)
+        };
         let Some((constructor, constr_ty)) = ctor else {
             util::push_error_with_range(
                 diagnostics,
                 format!("Constructor {} not found in environment", resolved_name),
                 self.expr_range(expr_id),
             );
+            for (_, expr) in fields {
+                self.infer_expr(genv, local_env, diagnostics, *expr);
+            }
             return self.error_expr(None);
         };
 
-        let struct_fields = match &constructor {
+        let named_fields = match &constructor {
             common::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
                 let struct_def = type_env.structs().get(type_name);
@@ -317,16 +382,42 @@ impl Typer {
                 };
                 struct_def.fields.clone()
             }
-            common::Constructor::Enum { .. } => {
-                util::push_error_with_range(
-                    diagnostics,
-                    format!(
-                        "Constructor {} refers to an enum, but a struct literal was used",
-                        name_display
-                    ),
-                    self.expr_range(expr_id),
-                );
-                return self.error_expr(None);
+            common::Constructor::Enum(enum_constructor) => {
+                let Some(enum_def) = type_env.enums().get(&enum_constructor.type_name) else {
+                    util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Enum {} not found when checking literal {}",
+                            enum_constructor.type_name.0, resolved_name
+                        ),
+                    );
+                    return self.error_expr(None);
+                };
+                let Some(variant) = enum_def.variants.get(enum_constructor.index) else {
+                    util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Enum {} variant index {} out of bounds",
+                            enum_constructor.type_name.0, enum_constructor.index
+                        ),
+                    );
+                    return self.error_expr(None);
+                };
+                let Some(fields) = variant.fields.struct_fields() else {
+                    util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Constructor {} is not a struct-like enum variant",
+                            name_display
+                        ),
+                        self.expr_range(expr_id),
+                    );
+                    for (_, expr) in fields {
+                        self.infer_expr(genv, local_env, diagnostics, *expr);
+                    }
+                    return self.error_expr(None);
+                };
+                fields.to_vec()
             }
         };
 
@@ -343,25 +434,25 @@ impl Typer {
             _ => Vec::new(),
         };
 
-        if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
+        if !param_tys.is_empty() && param_tys.len() != named_fields.len() {
             util::push_ice(
                 diagnostics,
                 format!(
                     "Constructor {} expects {} fields, but got {}",
                     resolved_name,
                     param_tys.len(),
-                    struct_fields.len()
+                    named_fields.len()
                 ),
             );
         }
 
         let mut field_positions: HashMap<tast::TastIdent, usize> = HashMap::new();
-        for (idx, (fname, _)) in struct_fields.iter().enumerate() {
+        for (idx, (fname, _)) in named_fields.iter().enumerate() {
             field_positions.insert(fname.clone(), idx);
         }
 
-        let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
-        let mut ordered_hir_args: Vec<Option<hir::ExprId>> = vec![None; struct_fields.len()];
+        let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; named_fields.len()];
+        let mut ordered_hir_args: Vec<Option<hir::ExprId>> = vec![None; named_fields.len()];
         for (field_name, expr) in fields.iter() {
             let idx = field_positions.get(&tast::TastIdent(field_name.to_ident_name()));
             let Some(&idx) = idx else {
@@ -395,6 +486,11 @@ impl Typer {
                     ),
                     self.expr_range(*expr),
                 );
+                if let Some(expected_ty) = param_tys.get(idx) {
+                    self.check_expr(genv, local_env, diagnostics, *expr, expected_ty);
+                } else {
+                    self.infer_expr(genv, local_env, diagnostics, *expr);
+                }
                 continue;
             }
             let hir_slot = ordered_hir_args.get_mut(idx);
@@ -409,10 +505,10 @@ impl Typer {
             *slot = Some(field_expr);
         }
 
-        let mut elab_args = Vec::with_capacity(struct_fields.len());
+        let mut elab_args = Vec::with_capacity(named_fields.len());
         for (idx, slot) in ordered_args.iter_mut().enumerate() {
             if slot.is_none() {
-                let missing = struct_fields.get(idx).map(|(name, _)| name.0.as_str());
+                let missing = named_fields.get(idx).map(|(name, _)| name.0.as_str());
                 let Some(missing) = missing else {
                     util::push_ice(
                         diagnostics,

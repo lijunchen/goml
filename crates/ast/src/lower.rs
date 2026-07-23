@@ -601,10 +601,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
     })
 }
 
-fn lower_variant(
-    ctx: &mut LowerCtx,
-    node: cst::Variant,
-) -> Option<(ast::AstIdent, Vec<ast::TypeExpr>)> {
+fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<ast::EnumVariant> {
     let name = match node.uident() {
         Some(name) => name.to_string(),
         None => {
@@ -615,11 +612,22 @@ fn lower_variant(
             return None;
         }
     };
-    let typs = match node.type_list() {
-        None => vec![],
-        Some(xs) => xs.types().flat_map(|ty| lower_ty(ctx, ty)).collect(),
+    let fields = match (node.type_list(), node.field_list()) {
+        (Some(types), None) => ast::EnumVariantFields::Tuple(
+            types.types().filter_map(|ty| lower_ty(ctx, ty)).collect(),
+        ),
+        (None, Some(fields)) => ast::EnumVariantFields::Struct(
+            fields
+                .fields()
+                .filter_map(|field| lower_struct_field(ctx, field))
+                .collect(),
+        ),
+        _ => ast::EnumVariantFields::Unit,
     };
-    Some((ast::AstIdent::new(&name), typs))
+    Some(ast::EnumVariant {
+        name: ast::AstIdent::new(&name),
+        fields,
+    })
 }
 
 fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {

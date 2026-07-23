@@ -582,6 +582,8 @@ fn variant(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::Ident);
     if parser.at(lexer::TokenKind::LParen) {
         type_list(parser)
+    } else if parser.at(lexer::TokenKind::LBrace) {
+        struct_field_list(parser)
     } else {
         ()
     };

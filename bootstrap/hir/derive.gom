@@ -382,38 +382,57 @@ fn struct_to_string_body(value: ast::StructDef) -> ast::Expr {
 fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
     let arms: Vec[ast::Arm] = Vec::new();
     for variant in value.variants {
-        let constructor = two_segment_path(value.name, variant.0);
-        if variant.1.len() == 0 {
-            arms.push(ast::Arm {
-                pat: ast::Pat::Constr(constructor, Vec::new(), dummy_span()),
-                guard: Option::None,
-                body: string_expr(value.name + "::" + variant.0),
-            })
-        } else {
-            let bindings: Vec[string] = Vec::new();
-            let args: Vec[ast::Pat] = Vec::new();
-            let parts: Vec[ast::Expr] = Vec::new();
-            parts.push(string_expr(value.name + "::" + variant.0 + "("));
-            let index = Ref::new(0);
-            for field_ty in variant.1 {
-                let binding = "__field" + index.get().to_string();
-                bindings.push(binding);
-                args.push(ast::Pat::Var(binding, dummy_span()));
-                if index.get() > 0 {
-                    parts.push(string_expr(", "))
-                } else {
-                    ()
+        let fields = enum_field_types(variant.fields);
+        let bindings: Vec[string] = Vec::new();
+        for index in range(0, fields.len()) {
+            bindings.push("__field" + index.to_string())
+        };
+        let parts: Vec[ast::Expr] = Vec::new();
+        match variant.fields {
+            ast::EnumVariantFields::Unit => {
+                parts.push(string_expr(value.name + "::" + variant.name))
+            },
+            ast::EnumVariantFields::Tuple(_) => {
+                parts.push(string_expr(value.name + "::" + variant.name + "("));
+                for index in range(0, fields.len()) {
+                    if index > 0 {
+                        parts.push(string_expr(", "))
+                    } else {
+                        ()
+                    };
+                    parts.push(call_to_string(
+                        var_expr(bindings.get(index)),
+                        fields.get(index),
+                    ))
                 };
-                parts.push(call_to_string(var_expr(binding), field_ty));
-                index.set(index.get() + 1)
-            };
-            parts.push(string_expr(")"));
-            arms.push(ast::Arm {
-                pat: ast::Pat::Constr(constructor, args, dummy_span()),
-                guard: Option::None,
-                body: concat_parts(parts),
-            })
-        }
+                parts.push(string_expr(")"))
+            },
+            ast::EnumVariantFields::Struct(named) => {
+                parts.push(string_expr(value.name + "::" + variant.name + " { "));
+                for index in range(0, named.len()) {
+                    if index > 0 {
+                        parts.push(string_expr(", "))
+                    } else {
+                        ()
+                    };
+                    parts.push(string_expr(named.get(index).0 + ": "));
+                    parts.push(call_to_string(
+                        var_expr(bindings.get(index)),
+                        named.get(index).1,
+                    ))
+                };
+                parts.push(string_expr(" }"))
+            },
+        };
+        arms.push(ast::Arm {
+            pat: enum_variant_pat(
+                two_segment_path(value.name, variant.name),
+                variant.fields,
+                bindings,
+            ),
+            guard: Option::None,
+            body: concat_parts(parts),
+        })
     };
     ast::Expr::Match(var_expr("self"), arms, dummy_span())
 }
@@ -450,6 +469,40 @@ fn constr_pat(path: ast::Path, bindings: Vec[string]) -> ast::Pat {
     ast::Pat::Constr(path, args, dummy_span())
 }
 
+fn enum_field_types(fields: ast::EnumVariantFields) -> Vec[ast::TypeExpr] {
+    match fields {
+        ast::EnumVariantFields::Unit => Vec::new(),
+        ast::EnumVariantFields::Tuple(types) => types,
+        ast::EnumVariantFields::Struct(fields) => {
+            let types: Vec[ast::TypeExpr] = Vec::new();
+            for field in fields {
+                types.push(field.1)
+            };
+            types
+        },
+    }
+}
+
+fn enum_variant_pat(
+    path: ast::Path,
+    fields: ast::EnumVariantFields,
+    bindings: Vec[string],
+) -> ast::Pat {
+    match fields {
+        ast::EnumVariantFields::Struct(fields) => {
+            let patterns: Vec[(string, ast::Pat)] = Vec::new();
+            for index in range(0, fields.len()) {
+                patterns.push((
+                    fields.get(index).0,
+                    ast::Pat::Var(bindings.get(index), dummy_span()),
+                ))
+            };
+            ast::Pat::Struct(path, patterns, false, dummy_span())
+        },
+        _ => constr_pat(path, bindings),
+    }
+}
+
 fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
     let tuple_items: Vec[ast::Expr] = Vec::new();
     tuple_items.push(var_expr("self"));
@@ -457,15 +510,18 @@ fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
     let arms: Vec[ast::Arm] = Vec::new();
     let variant_index = Ref::new(0);
     for variant in value.variants {
-        let left = variant_bindings("__l", variant_index.get(), variant.1.len());
-        let right = variant_bindings("__r", variant_index.get(), variant.1.len());
+        let field_count = enum_field_types(variant.fields).len();
+        let left = variant_bindings("__l", variant_index.get(), field_count);
+        let right = variant_bindings("__r", variant_index.get(), field_count);
         let tuple_pats: Vec[ast::Pat] = Vec::new();
-        tuple_pats.push(constr_pat(
-            two_segment_path(value.name, variant.0),
+        tuple_pats.push(enum_variant_pat(
+            two_segment_path(value.name, variant.name),
+            variant.fields,
             left,
         ));
-        tuple_pats.push(constr_pat(
-            two_segment_path(value.name, variant.0),
+        tuple_pats.push(enum_variant_pat(
+            two_segment_path(value.name, variant.name),
+            variant.fields,
             right,
         ));
         let body = Ref::new(bool_expr(true));
@@ -539,7 +595,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
     let variant_index = Ref::new(0);
     for variant in value.variants {
         let bindings: Vec[string] = Vec::new();
-        for field_index in range(0, variant.1.len()) {
+        for field_index in range(0, enum_field_types(variant.fields).len()) {
             bindings.push(
                 "__field"
                     + variant_index.get().to_string()
@@ -561,7 +617,11 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
             stmts.push(h_binding(Option::None, hash_step(var_expr(binding))))
         };
         arms.push(ast::Arm {
-            pat: constr_pat(two_segment_path(value.name, variant.0), bindings),
+            pat: enum_variant_pat(
+                two_segment_path(value.name, variant.name),
+                variant.fields,
+                bindings,
+            ),
             guard: Option::None,
             body: block_expr(stmts, var_expr("h")),
         });

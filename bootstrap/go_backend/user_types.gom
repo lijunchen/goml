@@ -460,7 +460,7 @@ fn emit_enum_instance(
                 let fields_by_variant: Vec[Vec[tast::Type]] = Vec::new();
                 for variant in definition.variants {
                     fields_by_variant.push(instantiate_types(
-                        variant.fields,
+                        tast::enum_variant_field_types(variant.fields),
                         definition.generics,
                         instance.args,
                         instances,

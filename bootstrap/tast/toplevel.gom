@@ -611,7 +611,7 @@ fn validate_local_definitions(
 ) -> unit {
     for index in range(0, enum_count) {
         for variant in ctx.enums.get(index).variants {
-            for field in variant.fields {
+            for field in enum_variant_field_types(variant.fields) {
                 validate_signature_type(ctx, field)
             }
         }
@@ -661,11 +661,13 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
         variants: Vec::new()
             .pushed(EnumVariantDef {
                 name: "None",
-                fields: Vec::new(),
+                fields: EnumVariantFields::Unit,
             })
             .pushed(EnumVariantDef {
                 name: "Some",
-                fields: Vec::new().pushed(Type::Param("T")),
+                fields: EnumVariantFields::Tuple(
+                    Vec::new().pushed(Type::Param("T")),
+                ),
             }),
     });
     result.push(EnumDef {
@@ -674,11 +676,15 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
         variants: Vec::new()
             .pushed(EnumVariantDef {
                 name: "Ok",
-                fields: Vec::new().pushed(Type::Param("T")),
+                fields: EnumVariantFields::Tuple(
+                    Vec::new().pushed(Type::Param("T")),
+                ),
             })
             .pushed(EnumVariantDef {
                 name: "Err",
-                fields: Vec::new().pushed(Type::Param("E")),
+                fields: EnumVariantFields::Tuple(
+                    Vec::new().pushed(Type::Param("E")),
+                ),
             }),
     });
     result
@@ -731,16 +737,37 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
 fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
     let names: Vec[string] = Vec::new();
     for variant in value.variants {
-        if contains_name(names, variant.0) {
+        if contains_name(names, variant.name) {
             push_declaration_diagnostic(
                 ctx,
                 "variant "
-                    + variant.0
+                    + variant.name
                     + " is defined multiple times in enum "
                     + value.name,
             )
         } else {
-            names.push(variant.0)
+            names.push(variant.name)
+        };
+        match variant.fields {
+            hir::EnumVariantFields::Struct(fields) => {
+                let field_names: Vec[string] = Vec::new();
+                for field in fields {
+                    if contains_name(field_names, field.0) {
+                        push_declaration_diagnostic(
+                            ctx,
+                            "field "
+                                + field.0
+                                + " is defined multiple times in variant "
+                                + value.name
+                                + "::"
+                                + variant.name,
+                        )
+                    } else {
+                        field_names.push(field.0)
+                    }
+                }
+            },
+            _ => (),
         }
     }
 }

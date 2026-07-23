@@ -1145,13 +1145,32 @@ fn lower_extern(
 
 fn lower_enum(ctx: LowerCtx, value: ast::EnumDef, def_id: DefId) -> EnumDef {
     let type_params = copy_strings(value.generics);
-    let variants: Vec[(string, Vec[TypeExpr])] = Vec::new();
+    let variants: Vec[EnumVariant] = Vec::new();
     for variant in value.variants {
-        let types: Vec[TypeExpr] = Vec::new();
-        for ty in variant.1 {
-            types.push(lower_type(ctx, ty, type_params))
+        let fields = match variant.fields {
+            ast::EnumVariantFields::Unit => EnumVariantFields::Unit,
+            ast::EnumVariantFields::Tuple(types) => {
+                let lowered: Vec[TypeExpr] = Vec::new();
+                for ty in types {
+                    lowered.push(lower_type(ctx, ty, type_params))
+                };
+                EnumVariantFields::Tuple(lowered)
+            },
+            ast::EnumVariantFields::Struct(fields) => {
+                let lowered: Vec[(string, TypeExpr)] = Vec::new();
+                for field in fields {
+                    lowered.push((
+                        field.0,
+                        lower_type(ctx, field.1, type_params),
+                    ))
+                };
+                EnumVariantFields::Struct(lowered)
+            },
         };
-        variants.push((variant.0, types))
+        variants.push(EnumVariant {
+            name: variant.name,
+            fields,
+        })
     };
     EnumDef {
         def_id,
@@ -1302,7 +1321,7 @@ fn make_context(
                     nominal_types.push(value.name);
                     let variants: Vec[string] = Vec::new();
                     for variant in value.variants {
-                        variants.push(variant.0)
+                        variants.push(variant.name)
                     };
                     enums.push(EnumInfo {
                         name: value.name,
