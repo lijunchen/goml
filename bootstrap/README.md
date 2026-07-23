@@ -42,10 +42,10 @@ goml test core
 goml test mono
 ```
 
-The Rust differential tests build the bootstrap compiler and compare generated inputs, the repository corpus, compiler test suites, and pipeline snapshots byte for byte:
+The compiler bootstrap tests build the bootstrap compiler and compare generated inputs, the repository corpus, compiler test suites, and pipeline snapshots byte for byte:
 
 ```sh
-cargo test --manifest-path tools/rust-oracle/Cargo.toml --test alignment -- --test-threads=1
+cargo test -p compiler bootstrap:: -- --test-threads=1
 ```
 
-Set `GOML_REPO` when the Rust repository is not available at `../goml`.
+Set `GOML_REPO` to run the tests against a different `goml` checkout.

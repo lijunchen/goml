@@ -7,6 +7,10 @@ use std::process::{Command, Output, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 
+mod ast_encode;
+mod generated;
+mod oracle;
+
 static PREPARED: OnceLock<()> = OnceLock::new();
 static SERIAL: Mutex<()> = Mutex::new(());
 static NEXT_TEMP_DIR: AtomicUsize = AtomicUsize::new(0);
@@ -23,14 +27,15 @@ struct Repository {
 impl Repository {
     fn discover() -> Self {
         let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let bootstrap = manifest
+        let default_root = manifest
             .parent()
             .and_then(Path::parent)
             .unwrap()
             .to_path_buf();
         let root = env::var_os("GOML_REPO")
             .map(PathBuf::from)
-            .unwrap_or_else(|| bootstrap.parent().unwrap().to_path_buf());
+            .unwrap_or(default_root);
+        let bootstrap = root.join("bootstrap");
         let goml = env_path("GOML_BIN", root.join("target/debug/goml"));
         let rust_gomlc = env_path("RUST_GOMLC_BIN", root.join("target/debug/gomlc"));
         let bootstrap_gomlc = env_path("BOOTSTRAP_GOMLC_BIN", bootstrap.join("artifact/bin/gomlc"));
@@ -109,16 +114,16 @@ impl Stage {
 
     fn expected(self, path: &Path, source: &str) -> String {
         match self {
-            Self::Lex => gomlang_parser_rust_oracle::encode(source),
-            Self::Cst => gomlang_parser_rust_oracle::encode_parse(path, source),
-            Self::Ast => gomlang_parser_rust_oracle::encode_ast(path, source),
-            Self::Hir => gomlang_parser_rust_oracle::encode_hir(path, source),
-            Self::Tast => gomlang_parser_rust_oracle::encode_tast(path, source),
-            Self::Core => gomlang_parser_rust_oracle::encode_core(path, source),
-            Self::Mono => gomlang_parser_rust_oracle::encode_mono(path, source),
-            Self::Lift => gomlang_parser_rust_oracle::encode_lift(path, source),
-            Self::Anf => gomlang_parser_rust_oracle::encode_anf(path, source),
-            Self::Go => gomlang_parser_rust_oracle::encode_go(path, source),
+            Self::Lex => oracle::encode(source),
+            Self::Cst => oracle::encode_parse(path, source),
+            Self::Ast => oracle::encode_ast(path, source),
+            Self::Hir => oracle::encode_hir(path, source),
+            Self::Tast => oracle::encode_tast(path, source),
+            Self::Core => oracle::encode_core(path, source),
+            Self::Mono => oracle::encode_mono(path, source),
+            Self::Lift => oracle::encode_lift(path, source),
+            Self::Anf => oracle::encode_anf(path, source),
+            Self::Go => oracle::encode_go(path, source),
         }
     }
 
@@ -325,18 +330,19 @@ fn compare_corpus_stage(stage: Stage) {
 fn generated_sources_match() {
     let _guard = serial();
     let repository = prepare();
-    let lexer_diff = env!("CARGO_BIN_EXE_diff");
-    let parser_diff = env!("CARGO_BIN_EXE_diff_parser");
-    let mut lexer = Command::new(lexer_diff);
-    lexer.arg(&repository.bootstrap_gomlc).arg("4096");
-    checked_output(&mut lexer, "generated lexer comparison");
+    let temporary = TempDir::new("generated");
+    generated::compare_lexer(
+        &repository.bootstrap_gomlc,
+        &temporary.path().join("lexer.gom"),
+        4096,
+    );
     for stage in ["cst", "ast", "hir", "tast"] {
-        let mut parser = Command::new(parser_diff);
-        parser
-            .arg(&repository.bootstrap_gomlc)
-            .arg(stage)
-            .arg("2048");
-        checked_output(&mut parser, &format!("generated {stage} comparison"));
+        generated::compare_parser(
+            &repository.bootstrap_gomlc,
+            &temporary.path().join(format!("{stage}.gom")),
+            stage,
+            2048,
+        );
     }
 }
 
@@ -562,7 +568,7 @@ fn compare_modules(repository: &Repository, temporary: &TempDir) -> usize {
 }
 
 fn compare_stdio(repository: &Repository, temporary: &TempDir) {
-    let fixture = repository.bootstrap.join("tools/fixtures/std_host_stdio");
+    let fixture = repository.tests().join("bootstrap/fixtures/std_host_stdio");
     let mut command = Command::new(&repository.goml);
     command
         .current_dir(temporary.path())
@@ -607,7 +613,7 @@ fn compare_crashers(repository: &Repository, temporary: &TempDir) -> usize {
     let mut matched = 0;
     for source in sources {
         let text = fs::read_to_string(&source).unwrap();
-        let expected = gomlang_parser_rust_oracle::encode_diagnostics(&source, &text);
+        let expected = oracle::encode_diagnostics(&source, &text);
         let actual = bootstrap_diagnostics(repository, &source);
         assert_bytes(
             &format!("crasher diagnostics mismatch for {}", source.display()),

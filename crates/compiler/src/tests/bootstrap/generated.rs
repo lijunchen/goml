@@ -1,10 +1,52 @@
-use std::{env, fs, path::PathBuf, process::Command};
+use std::{fs, path::Path, process::Command};
+
+use super::oracle;
 
 fn next_noise(state: &mut u64) -> u64 {
     *state ^= *state << 13;
     *state ^= *state >> 7;
     *state ^= *state << 17;
     *state
+}
+
+fn lexer_source(state: &mut u64, fragments: &[&str]) -> String {
+    let count = (next_noise(state) % 96) as usize;
+    let mut source = String::new();
+    for _ in 0..count {
+        let index = next_noise(state) as usize % fragments.len();
+        source.push_str(fragments[index]);
+    }
+    source
+}
+
+pub fn compare_lexer(parser: &Path, input_path: &Path, iterations: usize) {
+    let fragments = [
+        "fn", "let", "extern", "package", "::", "->", "=>", "&&", "||", "<<", ">>", "..", "..=",
+        "(", ")", "{", "}", "[", "]", "'", "\"", "\\", "//", "\n", "\r\n", "\t", "0", "9i32",
+        "1.5f64", "_name", "_", "é", "中", "🦀", "\u{301}", "\0",
+    ];
+    let mut state = 0x4d59_5df4_d0f3_3173u64;
+    for iteration in 0..iterations {
+        let source = lexer_source(&mut state, &fragments);
+        fs::write(input_path, &source).unwrap();
+        let expected = oracle::encode(&source);
+        let output = Command::new(parser)
+            .arg("lex")
+            .arg(input_path)
+            .output()
+            .unwrap();
+        if !output.status.success() {
+            panic!(
+                "GoML parser failed at iteration {iteration} for {source:?}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+        let actual = String::from_utf8(output.stdout).unwrap();
+        assert_eq!(
+            actual, expected,
+            "lexer mismatch at iteration {iteration} for {source:?}"
+        );
+    }
 }
 
 fn random_source(state: &mut u64) -> String {
@@ -160,45 +202,25 @@ fn typed_source(state: &mut u64) -> String {
     }
 }
 
-fn main() {
-    let parser = env::args_os()
-        .nth(1)
-        .map(PathBuf::from)
-        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir|tast> [iterations]");
-    let mode = env::args()
-        .nth(2)
-        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir|tast> [iterations]");
-    let iterations = env::args()
-        .nth(3)
-        .map(|value| value.parse::<usize>().expect("invalid iteration count"))
-        .unwrap_or(2048);
+pub fn compare_parser(parser: &Path, input_path: &Path, mode: &str, iterations: usize) {
     assert!(
         mode == "cst" || mode == "ast" || mode == "hir" || mode == "tast",
         "invalid mode"
     );
-    let directory =
-        env::temp_dir().join(format!("gomlang-parser-{mode}-diff-{}", std::process::id()));
-    fs::create_dir_all(&directory).unwrap();
-    let input_path = directory.join("input.gom");
     let mut state = 0x6a09_e667_f3bc_c909u64;
-    let mut matched = 0;
     for iteration in 0..iterations {
-        let source = if mode == "cst" {
-            random_source(&mut state)
-        } else if mode == "tast" {
-            typed_source(&mut state)
-        } else {
-            valid_source(&mut state)
+        let source = match mode {
+            "cst" => random_source(&mut state),
+            "tast" => typed_source(&mut state),
+            _ => valid_source(&mut state),
         };
-        fs::write(&input_path, &source).unwrap();
-        let expected = if mode == "cst" {
-            gomlang_parser_rust_oracle::encode_parse(&input_path, &source)
-        } else if mode == "hir" {
-            gomlang_parser_rust_oracle::encode_hir(&input_path, &source)
-        } else if mode == "tast" {
-            gomlang_parser_rust_oracle::encode_tast(&input_path, &source)
-        } else {
-            gomlang_parser_rust_oracle::encode_ast(&input_path, &source)
+        fs::write(input_path, &source).unwrap();
+        let expected = match mode {
+            "cst" => oracle::encode_parse(input_path, &source),
+            "ast" => oracle::encode_ast(input_path, &source),
+            "hir" => oracle::encode_hir(input_path, &source),
+            "tast" => oracle::encode_tast(input_path, &source),
+            _ => unreachable!(),
         };
         if mode == "tast" && expected.is_empty() {
             panic!("Rust TAST oracle rejected iteration {iteration} for {source:?}");
@@ -206,10 +228,10 @@ fn main() {
         if mode == "hir" && expected.is_empty() {
             continue;
         }
-        let output = Command::new(&parser)
+        let output = Command::new(parser)
             .arg("__canonical-stage")
-            .arg(&mode)
-            .arg(&input_path)
+            .arg(mode)
+            .arg(input_path)
             .output()
             .unwrap();
         if !output.status.success() {
@@ -223,8 +245,5 @@ fn main() {
             actual, expected,
             "{mode} mismatch at iteration {iteration} for {source:?}"
         );
-        matched += 1;
     }
-    fs::remove_dir_all(&directory).unwrap();
-    println!("matched {matched} of {iterations} generated {mode} inputs");
 }

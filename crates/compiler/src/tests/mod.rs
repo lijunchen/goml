@@ -17,6 +17,7 @@ use crate::{
 
 mod anf_stack_test;
 mod assignment_target_test;
+mod bootstrap;
 mod builtin_functions_test;
 mod closure_return_test;
 mod constructor_value_test;

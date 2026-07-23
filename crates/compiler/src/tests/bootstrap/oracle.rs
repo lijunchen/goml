@@ -1,9 +1,9 @@
 use std::fmt::Write;
 use std::path::Path;
 
-mod ast_encode;
+use crate as compiler;
 
-pub use ast_encode::encode_ast;
+pub use super::ast_encode::encode_ast;
 
 pub fn encode_diagnostics(path: &Path, source: &str) -> String {
     use compiler::pipeline::pipeline::CompilationError;
