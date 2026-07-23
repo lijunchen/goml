@@ -260,10 +260,27 @@ impl Encoder {
         self.string(&value.name.0);
         self.generics(&value.generics);
         self.list(value.variants.len());
-        for (name, types) in &value.variants {
+        for variant in &value.variants {
             self.open("Variant");
-            self.string(&name.0);
-            self.types(types);
+            self.string(&variant.name.0);
+            match &variant.fields {
+                ast::ast::EnumVariantFields::Unit => self.open("Unit"),
+                ast::ast::EnumVariantFields::Tuple(types) => {
+                    self.open("Tuple");
+                    self.types(types);
+                }
+                ast::ast::EnumVariantFields::Struct(fields) => {
+                    self.open("Struct");
+                    self.list(fields.len());
+                    for (name, ty) in fields {
+                        self.open("Field");
+                        self.string(&name.0);
+                        self.ty(ty);
+                        self.close();
+                    }
+                }
+            }
+            self.close();
             self.close();
         }
         self.close();

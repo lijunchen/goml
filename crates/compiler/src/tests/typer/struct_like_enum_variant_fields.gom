@@ -1,0 +1,23 @@
+enum Event {
+    Move {
+        x: int32,
+        y: int32,
+    },
+    Tuple(int32),
+    Unit,
+}
+
+fn inspect(value: Event) -> int32 {
+    let _ = Event::Move {
+        x: 1i32,
+        x: 2i32,
+        extra: 3i32,
+    };
+    let _ = Event::Tuple { value: 1i32 };
+    let _ = Event::Move(1i32, 2i32);
+    match value {
+        Event::Move { x } => x,
+        Event::Tuple(value) => value,
+        Event::Unit => 0,
+    }
+}
