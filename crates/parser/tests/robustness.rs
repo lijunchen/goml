@@ -120,7 +120,7 @@ fn fixed_seed_token_noise_parses_losslessly() {
 
 #[test]
 fn missing_path_segment_after_generic_qualifier_is_recoverable() {
-    let source = "name[]::&&";
+    let source = "name::[]::&&";
     let result = parse(Path::new("missing_path.gom"), source);
     assert!(result.has_errors());
     assert!(result.diagnostics().iter().any(|diagnostic| {

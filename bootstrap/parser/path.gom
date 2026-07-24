@@ -12,7 +12,10 @@ fn parse_path_always(parser: Parser) -> unit {
     } else {
         parser.advance();
         let parsing = Ref::new(true);
-        while parsing.get() && parser.at(lexer::TokenKind::ColonColon) {
+        while parsing.get()
+            && parser.at(lexer::TokenKind::ColonColon)
+            && token_is(parser.nth(1), lexer::TokenKind::LBracket) == false
+        {
             parser.expect(lexer::TokenKind::ColonColon);
             if parser.at(lexer::TokenKind::Ident) {
                 parser.advance()

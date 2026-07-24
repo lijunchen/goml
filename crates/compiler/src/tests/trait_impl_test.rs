@@ -1044,8 +1044,8 @@ impl Convert[int32] for Token {
 }
 
 fn main() -> unit {
-    let _ = Convert[int32, string]::convert(Token {});
-    let _ = Convert[Missing]::convert(Token {});
+    let _ = Convert::[int32, string]::convert(Token {});
+    let _ = Convert::[Missing]::convert(Token {});
 }
 "#;
 
@@ -1780,7 +1780,7 @@ trait Container[T: Mark] {
 fn require_mark[T: Mark](value: T) -> unit { () }
 
 fn consume[T, C: Container[T]](container: C) -> unit {
-    require_mark(Container[T]::value(container))
+    require_mark(Container::[T]::value(container))
 }
 "#;
 
@@ -2026,8 +2026,8 @@ impl Convert[string] for Value {
 }
 
 fn main() -> unit {
-    let text: string = Convert[int32]::convert(Value {});
-    let number: int32 = Convert[string]::convert(Value {});
+    let text: string = Convert::[int32]::convert(Value {});
+    let number: int32 = Convert::[string]::convert(Value {});
     let _ = (text, number);
 }
 "#;
@@ -2110,7 +2110,7 @@ trait Accept[T] {
 }
 
 fn copy[S: Source + Accept[S::Item]](source: S) -> S::Item {
-    let value: S::Item = Accept[S::Item]::accept(source);
+    let value: S::Item = Accept::[S::Item]::accept(source);
     let identity = |item: S::Item| item;
     identity(value)
 }
@@ -2195,7 +2195,7 @@ impl Source[int32] for Value {
 }
 
 fn read[T, S: Source[T]](source: S) -> T {
-    Source[T]::get(source)
+    Source::[T]::get(source)
 }
 "#;
     let rejected = r#"

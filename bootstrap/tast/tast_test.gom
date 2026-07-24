@@ -1596,7 +1596,7 @@ fn normalizes_and_escapes_char_literals() -> unit {
 
 #[test]
 fn resolves_generic_trait_associated_applications() -> unit {
-    let source = "trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[int32] for Value { type Output = string; fn convert(self: Value) -> string { \"int\" } } impl Convert[string] for Value { type Output = int32; fn convert(self: Value) -> int32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert[int32]::convert(Value {}); let number: int32 = Convert[string]::convert(Value {}); let generic: string = Convert[string]::convert(Wrapped { value: \"ok\" }); }";
+    let source = "trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[int32] for Value { type Output = string; fn convert(self: Value) -> string { \"int\" } } impl Convert[string] for Value { type Output = int32; fn convert(self: Value) -> int32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert::[int32]::convert(Value {}); let number: int32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
     let file = checked_file(source);
     match file.items.get(3) {
         Item::Function(value) => {
@@ -1619,7 +1619,7 @@ fn resolves_generic_trait_associated_applications() -> unit {
 
 #[test]
 fn resolves_trait_methods_from_call_context() -> unit {
-    let source = "trait Put[T] { fn put(Self, T) -> string; } struct Target {} impl Put[int32] for Target { fn put(self: Target, value: int32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Convertible {} impl Convert[int32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = int32; fn convert(self: Convertible) -> int32 { 7 } } trait Source[T] where Self::Item == T { type Item; fn get(Self) -> Self::Item; } struct Number { value: int32 } impl Source[int32] for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source[T]::get(source) } trait ItemSource { type Item; fn item(Self) -> Self::Item; } trait Select[T] { fn select(Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: int32 = (Convertible {}).convert(); let value: int32 = read(Number { value: 8 }); }";
+    let source = "trait Put[T] { fn put(Self, T) -> string; } struct Target {} impl Put[int32] for Target { fn put(self: Target, value: int32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Convertible {} impl Convert[int32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = int32; fn convert(self: Convertible) -> int32 { 7 } } trait Source[T] where Self::Item == T { type Item; fn get(Self) -> Self::Item; } struct Number { value: int32 } impl Source[int32] for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(Self) -> Self::Item; } trait Select[T] { fn select(Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: int32 = (Convertible {}).convert(); let value: int32 = read(Number { value: 8 }); }";
     let file = checked_file(source);
     match file.items.get(7) {
         Item::Function(value) => match value.body.tail {
@@ -1910,7 +1910,7 @@ fn resolves_projected_trait_impls() -> unit {
 
 #[test]
 fn accepts_projected_trait_predicates() -> unit {
-    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick[S::Item]::pick(source) } fn main() -> int32 { copy(Value { value: 42 }) }";
+    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick::[S::Item]::pick(source) } fn main() -> int32 { copy(Value { value: 42 }) }";
     let result = check(hir::lower(
         ast::lower(parser::parse(source)),
         "main.gom",
@@ -2054,7 +2054,7 @@ fn indents_array_control_flow_expressions() -> unit {
 
 #[test]
 fn resolves_supertraits_and_implied_predicates() -> unit {
-    let source = "trait Parent[T] { fn parent(Self) -> T; } trait Render { fn render(Self) -> string; } trait Label { fn label(Self) -> string; } trait Marker { fn marker(Self) -> string; } trait Child[T: Label]: Parent[T] + Render where T: Marker { fn child(Self) -> string; } fn describe[T, B: Child[T]](value: B) -> string { value.parent().label() + value.parent().marker() + value.render() + value.child() } fn inherited[T, B: Child[T]](value: B) -> T { Child[T]::parent(value) }";
+    let source = "trait Parent[T] { fn parent(Self) -> T; } trait Render { fn render(Self) -> string; } trait Label { fn label(Self) -> string; } trait Marker { fn marker(Self) -> string; } trait Child[T: Label]: Parent[T] + Render where T: Marker { fn child(Self) -> string; } fn describe[T, B: Child[T]](value: B) -> string { value.parent().label() + value.parent().marker() + value.render() + value.child() } fn inherited[T, B: Child[T]](value: B) -> T { Child::[T]::parent(value) }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 2);
     match file.items.get(1) {

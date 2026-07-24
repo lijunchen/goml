@@ -727,32 +727,48 @@ ParenExpr: CstElement = {
 };
 
 ExprName: CstElement = {
-    <owner:Path> <generic:GenericOwnerSuffix?> => {
+    <first:Tok<"ident">> <tail:ExprNameTail> => {
+        let (path_tail, generic) = tail;
+        let mut path_children = vec![first];
+        path_children.extend(path_tail);
+        let path = node(MySyntaxKind::PATH, path_children);
         let mut children = Vec::new();
-        if let Some((params, separator, tail)) = generic {
-            children.push(node(MySyntaxKind::TYPE_TAPP, vec![owner, params]));
-            children.push(separator);
-            children.push(tail);
+        if let Some((generic_separator, params, member)) = generic {
+            children.push(node(
+                MySyntaxKind::TYPE_TAPP,
+                vec![path, generic_separator, params],
+            ));
+            if let Some((member_separator, tail)) = member {
+                children.push(member_separator);
+                children.push(tail);
+            }
         } else {
-            children.push(owner);
+            children.push(path);
         }
         node(MySyntaxKind::EXPR_IDENT, children)
     }
 };
 
-GenericOwnerSuffix: (CstElement, CstElement, CstElement) = {
-    <params:GenericOwnerTypeParamList> <separator:Tok<"::">> <tail:Path> =>
-        (params, separator, tail)
-};
-
-GenericOwnerTypeParamList: CstElement = {
-    <lbracket:Tok<"generic [">> <types:Comma<TypeExpr>>
-    <rbracket:Tok<"]">> => {
-        let mut children = vec![lbracket];
-        children.extend(types);
-        children.push(rbracket);
-        node(MySyntaxKind::TYPE_PARAM_LIST, children)
-    }
+ExprNameTail: (
+    Vec<CstElement>,
+    Option<(
+        CstElement,
+        CstElement,
+        Option<(CstElement, CstElement)>,
+    )>,
+) = {
+    => (Vec::new(), None),
+    <separator:Tok<"::">> <params:TypeParamList>
+    <member:(<Tok<"::">> <Path>)?> => (
+        Vec::new(),
+        Some((separator, params, member)),
+    ),
+    <separator:Tok<"::">> <segment:Tok<"ident">> <tail:ExprNameTail> => {
+        let (rest, generic) = tail;
+        let mut path = vec![separator, segment];
+        path.extend(rest);
+        (path, generic)
+    },
 };
 
 StructLiteralFields: Vec<CstElement> = {
@@ -1212,7 +1228,6 @@ extern {
         "{" => ParserToken::LBrace,
         "}" => ParserToken::RBrace,
         "[" => ParserToken::LBracket,
-        "generic [" => ParserToken::GenericLBracket,
         "]" => ParserToken::RBracket,
         "=" => ParserToken::Eq,
         ";" => ParserToken::Semi,

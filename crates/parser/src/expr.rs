@@ -174,6 +174,16 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             if path_has_type_args(p) {
                 let owner = p.open();
                 parse_path_always(p);
+                p.expect(T![::]);
+                type_param_list(p);
+                p.close(owner, MySyntaxKind::TYPE_TAPP);
+                if p.eat(T![::]) {
+                    parse_path_always(p);
+                }
+            } else if path_has_legacy_type_args(p) {
+                p.error("generic expression arguments must use `::[...]`");
+                let owner = p.open();
+                parse_path_always(p);
                 type_param_list(p);
                 p.close(owner, MySyntaxKind::TYPE_TAPP);
                 p.expect(T![::]);
@@ -369,6 +379,14 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
 }
 
 fn path_has_type_args(p: &mut Parser) -> bool {
+    let mut index = 1;
+    while p.nth(index) == T![::] && p.nth(index + 1) == T![ident] {
+        index += 2;
+    }
+    p.nth(index) == T![::] && p.nth(index + 1) == T!['[']
+}
+
+fn path_has_legacy_type_args(p: &mut Parser) -> bool {
     let mut index = 1;
     while p.nth(index) == T![::] && p.nth(index + 1) == T![ident] {
         index += 2;

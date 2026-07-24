@@ -195,14 +195,22 @@ impl Expr {
                         .map(|segment| segment.ident().0.clone())
                         .collect::<Vec<_>>()
                         .join("::");
-                    RcDoc::text(owner)
-                        .append(RcDoc::text("["))
-                        .append(RcDoc::intersperse(
-                            type_args.iter().map(TypeExpr::to_doc),
-                            RcDoc::text(", "),
-                        ))
-                        .append(RcDoc::text("]::"))
-                        .append(RcDoc::text(member))
+                    let args = RcDoc::intersperse(
+                        type_args.iter().map(TypeExpr::to_doc),
+                        RcDoc::text(", "),
+                    );
+                    if owner.is_empty() {
+                        RcDoc::text(member)
+                            .append(RcDoc::text("::["))
+                            .append(args)
+                            .append(RcDoc::text("]"))
+                    } else {
+                        RcDoc::text(owner)
+                            .append(RcDoc::text("::["))
+                            .append(args)
+                            .append(RcDoc::text("]::"))
+                            .append(RcDoc::text(member))
+                    }
                 }
             }
 

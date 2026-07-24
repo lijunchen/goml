@@ -89,17 +89,28 @@ fn pretty_write_path_expr(
         pretty_write_path(builder, path)
     } else {
         let last = path.segments.len() - 1;
-        for index in range(0, last) {
-            if index > 0 {
-                builder.write_string("::")
-            } else {
-                ()
+        if last == 0 {
+            builder.write_string(path.segments.get(0).ident);
+            builder.write_string("::")
+        } else {
+            for index in range(0, last) {
+                if index > 0 {
+                    builder.write_string("::")
+                } else {
+                    ()
+                };
+                builder.write_string(path.segments.get(index).ident)
             };
-            builder.write_string(path.segments.get(index).ident)
+            builder.write_string("::")
         };
         builder.write_char('[');
         pretty_write_types(builder, type_args, ", ");
-        builder.write_string("]::");
+        builder.write_char(']');
+        if last > 0 {
+            builder.write_string("::")
+        } else {
+            ()
+        };
         builder.write_string(path.segments.get(last).ident)
     }
 }

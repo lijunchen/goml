@@ -2890,9 +2890,10 @@ fn lower_constructor_path_from_ident_expr(
 ) -> Option<(ast::Path, Vec<ast::TypeExpr>)> {
     if let Some(type_app) = expr.type_app() {
         let owner = type_app.path().and_then(|path| lower_path(ctx, &path))?;
-        let member = expr.path().and_then(|path| lower_path(ctx, &path))?;
         let mut segments = owner.segments().to_vec();
-        segments.extend(member.segments().iter().cloned());
+        if let Some(member) = expr.path().and_then(|path| lower_path(ctx, &path)) {
+            segments.extend(member.segments().iter().cloned());
+        }
         let args = type_app
             .type_param_list()
             .map(|list| list.types().filter_map(|ty| lower_ty(ctx, ty)).collect())

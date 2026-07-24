@@ -12,7 +12,6 @@ macro_rules! parser_tokens {
         #[derive(Clone, Copy, Debug, PartialEq, Eq)]
         pub enum ParserToken {
             $($variant,)+
-            GenericLBracket,
             ReturnVoid,
         }
 
@@ -257,9 +256,6 @@ pub fn tokens<'tokens>(
         .filter(|(_, token)| !token.kind.is_trivia())
         .map(|(index, token)| {
             let kind = match token.kind {
-                TokenKind::LBracket if generic_lbracket(tokens, index) => {
-                    ParserToken::GenericLBracket
-                }
                 TokenKind::ReturnKeyword if void_return(tokens, index) => ParserToken::ReturnVoid,
                 _ => token.kind.into(),
             };
@@ -312,27 +308,6 @@ fn void_return(tokens: &[Token<'_>], start: usize) -> bool {
                     | TokenKind::RBrace
             )
         })
-}
-
-fn generic_lbracket(tokens: &[Token<'_>], start: usize) -> bool {
-    let mut depth = 0;
-    for (index, token) in tokens.iter().enumerate().skip(start) {
-        match token.kind {
-            TokenKind::LBracket => depth += 1,
-            TokenKind::RBracket => {
-                depth -= 1;
-                if depth == 0 {
-                    return tokens
-                        .iter()
-                        .skip(index + 1)
-                        .find(|token| !token.kind.is_trivia())
-                        .is_some_and(|token| token.kind == TokenKind::ColonColon);
-                }
-            }
-            _ => {}
-        }
-    }
-    false
 }
 
 pub fn finish(root: CstNode, tokens: &[Token<'_>]) -> ParseResult {

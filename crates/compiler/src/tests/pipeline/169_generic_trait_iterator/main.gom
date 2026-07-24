@@ -61,13 +61,13 @@ impl Iterator for Counter {
 }
 
 fn main() -> unit {
-    println(Convert[int32]::convert(Token {}));
-    println(Convert[string]::convert(Token {}));
+    println(Convert::[int32]::convert(Token {}));
+    println(Convert::[string]::convert(Token {}));
     let converted: int32 = convert_to(Token {});
     println(converted);
-    println(Marker[int32]::marker(Any {}));
-    println(Marker[string]::marker(Any {}));
-    println(Marker[Vec[int32]]::marker(Any {}));
+    println(Marker::[int32]::marker(Any {}));
+    println(Marker::[string]::marker(Any {}));
+    println(Marker::[Vec[int32]]::marker(Any {}));
 
     let mapped = iterator_map(Counter::new(0, 8), |value: int32| value * 2);
     let filtered = iterator_filter(mapped, |value: int32| value > 4);

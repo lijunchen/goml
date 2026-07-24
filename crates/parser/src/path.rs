@@ -18,7 +18,7 @@ pub fn parse_path_always(p: &mut Parser) {
 
     p.advance();
 
-    while p.at(T![::]) {
+    while p.at(T![::]) && p.nth(1) != T!['['] {
         p.expect(T![::]);
         if is_path_segment(p.peek()) {
             p.advance();

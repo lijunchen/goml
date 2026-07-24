@@ -106,6 +106,18 @@ fn ident_expression(parser: Parser) -> MarkerClosed {
     if path_has_type_args(parser) {
         let owner = parser.open();
         parse_path_always(parser);
+        parser.expect(lexer::TokenKind::ColonColon);
+        type_param_list(parser);
+        let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
+        if parser.eat(lexer::TokenKind::ColonColon) {
+            parse_path_always(parser)
+        } else {
+            ()
+        }
+    } else if path_has_legacy_type_args(parser) {
+        parser.error("generic expression arguments must use `::[...]`");
+        let owner = parser.open();
+        parse_path_always(parser);
         type_param_list(parser);
         let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
         parser.expect(lexer::TokenKind::ColonColon);
@@ -347,6 +359,17 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
 }
 
 fn path_has_type_args(parser: Parser) -> bool {
+    let index = Ref::new(1);
+    while token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::Ident)
+    {
+        index.set(index.get() + 2)
+    };
+    token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::LBracket)
+}
+
+fn path_has_legacy_type_args(parser: Parser) -> bool {
     let index = Ref::new(1);
     while token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
         && token_is(parser.nth(index.get() + 1), lexer::TokenKind::Ident)

@@ -397,9 +397,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits may declare type parameters, for example `trait Convert[T] { fn convert(Self) -> T; }`.
 * Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[int32]` and `Convert[string]`.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert[int32]::convert(value)`.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert::[int32]::convert(value)`.
   * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use alias::Trait` after the defining package is imported (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
-* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert[int32]::convert(x)`).
+* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert::[int32]::convert(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
@@ -446,8 +446,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Builtin API:
   * `FnIterator::from_fn(next_fn: () -> Option[T]) -> FnIterator[T]`
   * `Iterator::next(iterator) -> Option[Iterator::Item]` or `iterator.next()`
-  * `Vec[T]::iter() -> FnIterator[T]`
-  * `Slice[T]::iter() -> FnIterator[T]`
+  * `Vec::[T]::iter() -> FnIterator[T]`
+  * `Slice::[T]::iter() -> FnIterator[T]`
   * `range(start: int32, end: int32) -> FnIterator[int32]`
   * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
   * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`

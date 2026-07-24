@@ -260,10 +260,7 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[(Path, Vec[Type
             Option::Some(owner_path_node) => match lower_path(ctx, owner_path_node) {
                 Option::Some(owner_path) => {
                     let paths = children_of_kind(node, cst::NodeKind::PATH);
-                    if paths.len() == 0 {
-                        push_error(ctx, node_span(node), "Missing identifier in expression");
-                        Option::None
-                    } else {
+                    if paths.len() > 0 {
                         match lower_path(ctx, paths.get(0)) {
                             Option::Some(member_path) => {
                                 let segments = owner_path.segments;
@@ -278,6 +275,12 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[(Path, Vec[Type
                             },
                             Option::None => Option::None,
                         }
+                    } else {
+                        let args = match first_child(owner_node, cst::NodeKind::TYPE_PARAM_LIST) {
+                            Option::Some(list) => lower_type_list(ctx, list),
+                            Option::None => Vec::new(),
+                        };
+                        Option::Some((owner_path, args))
                     }
                 },
                 Option::None => Option::None,
