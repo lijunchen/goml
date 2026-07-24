@@ -2,6 +2,7 @@ package ast;
 
 use gomlc::cst;
 use gomlc::lexer;
+use std::text;
 
 fn literal_value(node: LocatedNode, kind: lexer::TokenKind) -> Option[string] {
     match first_token(node, kind) {
@@ -11,12 +12,24 @@ fn literal_value(node: LocatedNode, kind: lexer::TokenKind) -> Option[string] {
 }
 
 fn strip_suffix(value: string, suffix: string) -> string {
-    if value.byte_len() >= suffix.byte_len()
-        && value.byte_slice(value.byte_len() - suffix.byte_len(), value.byte_len()) == suffix
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) != 95u8 {
+            builder.write_string(value.byte_slice(index, index + 1))
+        } else {
+            ()
+        }
+    };
+    let normalized = builder.finish();
+    if normalized.byte_len() >= suffix.byte_len()
+        && normalized.byte_slice(
+            normalized.byte_len() - suffix.byte_len(),
+            normalized.byte_len(),
+        ) == suffix
     {
-        value.byte_slice(0, value.byte_len() - suffix.byte_len())
+        normalized.byte_slice(0, normalized.byte_len() - suffix.byte_len())
     } else {
-        value
+        normalized
     }
 }
 

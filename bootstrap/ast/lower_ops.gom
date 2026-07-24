@@ -403,7 +403,9 @@ fn lower_dot_expr(
 ) -> Option[Expr] {
     if cst::node_kind_equal(node_kind(rhs), cst::NodeKind::EXPR_INT) {
         match first_token(rhs, lexer::TokenKind::Int) {
-            Option::Some(token) => match parse_decimal_int32(token.token.text) {
+            Option::Some(token) => match parse_decimal_int32(
+                strip_suffix(token.token.text, ""),
+            ) {
                 Option::Some(index) => Option::Some(Expr::Proj(lhs, index, node_span(node))),
                 Option::None => {
                     push_error(ctx, token_span(token), "Invalid tuple index: " + token.token.text);

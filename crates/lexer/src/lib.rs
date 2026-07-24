@@ -133,6 +133,21 @@ fn lex_multiline_str(lex: &mut logos::Lexer<TokenKind>) -> Option<()> {
     Some(())
 }
 
+fn validate_number(lex: &mut logos::Lexer<TokenKind>) -> Option<()> {
+    let bytes = lex.slice().as_bytes();
+    for (index, byte) in bytes.iter().enumerate() {
+        if *byte == b'_'
+            && (index == 0
+                || index + 1 >= bytes.len()
+                || !bytes[index - 1].is_ascii_digit()
+                || !bytes[index + 1].is_ascii_digit())
+        {
+            return None;
+        }
+    }
+    Some(())
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Logos)]
 pub enum TokenKind {
     #[token("(")]
@@ -397,41 +412,59 @@ pub enum TokenKind {
     Ident,
 
     // Suffixed float literals (higher priority than generic Float)
-    #[regex(r"[0-9]+\.[0-9]+f32", priority = 3)]
+    #[regex(r"[0-9][0-9_]*\.[0-9][0-9_]*f32", validate_number, priority = 3)]
+    #[regex(
+        r"[0-9][0-9_]*\.[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f32",
+        validate_number,
+        priority = 3
+    )]
+    #[regex(r"[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f32", validate_number, priority = 3)]
     Float32Lit,
 
-    #[regex(r"[0-9]+\.[0-9]+f64", priority = 3)]
+    #[regex(r"[0-9][0-9_]*\.[0-9][0-9_]*f64", validate_number, priority = 3)]
+    #[regex(
+        r"[0-9][0-9_]*\.[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f64",
+        validate_number,
+        priority = 3
+    )]
+    #[regex(r"[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f64", validate_number, priority = 3)]
     Float64Lit,
 
-    #[regex(r"[0-9]+\.[0-9]+", priority = 2)]
+    #[regex(r"[0-9][0-9_]*\.[0-9][0-9_]*", validate_number, priority = 2)]
+    #[regex(
+        r"[0-9][0-9_]*\.[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*",
+        validate_number,
+        priority = 2
+    )]
+    #[regex(r"[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*", validate_number, priority = 2)]
     Float,
 
     // Suffixed integer literals (higher priority than generic Int)
-    #[regex(r"[0-9]+i8", priority = 3)]
+    #[regex(r"[0-9][0-9_]*i8", validate_number, priority = 3)]
     Int8Lit,
 
-    #[regex(r"[0-9]+i16", priority = 3)]
+    #[regex(r"[0-9][0-9_]*i16", validate_number, priority = 3)]
     Int16Lit,
 
-    #[regex(r"[0-9]+i32", priority = 3)]
+    #[regex(r"[0-9][0-9_]*i32", validate_number, priority = 3)]
     Int32Lit,
 
-    #[regex(r"[0-9]+i64", priority = 3)]
+    #[regex(r"[0-9][0-9_]*i64", validate_number, priority = 3)]
     Int64Lit,
 
-    #[regex(r"[0-9]+u8", priority = 3)]
+    #[regex(r"[0-9][0-9_]*u8", validate_number, priority = 3)]
     UInt8Lit,
 
-    #[regex(r"[0-9]+u16", priority = 3)]
+    #[regex(r"[0-9][0-9_]*u16", validate_number, priority = 3)]
     UInt16Lit,
 
-    #[regex(r"[0-9]+u32", priority = 3)]
+    #[regex(r"[0-9][0-9_]*u32", validate_number, priority = 3)]
     UInt32Lit,
 
-    #[regex(r"[0-9]+u64", priority = 3)]
+    #[regex(r"[0-9][0-9_]*u64", validate_number, priority = 3)]
     UInt64Lit,
 
-    #[regex("[0-9]+")]
+    #[regex(r"[0-9][0-9_]*", validate_number)]
     Int,
 
     #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#)]

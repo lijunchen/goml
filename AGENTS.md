@@ -345,6 +345,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
 * Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+  * Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
   * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
   * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
 * String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).

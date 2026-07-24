@@ -280,7 +280,9 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
             cst::NodeKind::TYPE_ARRAY => {
                 let types = type_children(node);
                 match first_token(node, lexer::TokenKind::Int) {
-                    Option::Some(length_token) => match normalized_array_length(length_token.token.text) {
+                    Option::Some(length_token) => match normalized_array_length(
+                        strip_suffix(length_token.token.text, ""),
+                    ) {
                         Option::Some(length) => if types.len() > 0 {
                             match lower_ty(ctx, types.get(0)) {
                                 Option::Some(element) => Option::Some(TypeExpr::Array(length, element)),
