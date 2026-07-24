@@ -602,8 +602,8 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
 }
 
 fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<ast::EnumVariant> {
-    let name = match node.uident() {
-        Some(name) => name.to_string(),
+    let name_token = match node.uident() {
+        Some(name) => name,
         None => {
             ctx.push_error(
                 Some(node.syntax().text_range()),
@@ -612,6 +612,17 @@ fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<ast::EnumVari
             return None;
         }
     };
+    let name = name_token.to_string();
+    if !name
+        .chars()
+        .next()
+        .is_some_and(|character| character.is_ascii_uppercase())
+    {
+        ctx.push_error(
+            Some(name_token.text_range()),
+            format!("Enum variant {} must start with an uppercase letter", name),
+        );
+    }
     let fields = match (node.type_list(), node.field_list()) {
         (Some(types), None) => ast::EnumVariantFields::Tuple(
             types.types().filter_map(|ty| lower_ty(ctx, ty)).collect(),

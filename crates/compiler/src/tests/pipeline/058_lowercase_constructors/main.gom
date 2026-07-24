@@ -1,6 +1,6 @@
 enum option[T] {
-    some(T),
-    none,
+    Some(T),
+    None,
 }
 
 struct point {
@@ -9,7 +9,7 @@ struct point {
 }
 
 fn make_some(value: int32) -> option[int32] {
-    some(value)
+    Some(value)
 }
 
 fn build_point(x: int32, y: int32) -> point {
@@ -23,13 +23,13 @@ fn magnitude(p: point) -> int32 {
 
 fn main() -> int32 {
     match make_some(5) {
-        some(result) => {
+        Some(result) => {
             let pt = build_point(result, 7);
-            match some(pt.x) {
-                some(value) => value + magnitude(pt),
-                none => 0,
+            match Some(pt.x) {
+                Some(value) => value + magnitude(pt),
+                None => 0,
             }
         }
-        none => 0,
+        None => 0,
     }
 }

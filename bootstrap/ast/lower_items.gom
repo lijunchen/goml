@@ -87,6 +87,20 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                 Option::Some(list) => for variant in children_of_kind(list, cst::NodeKind::VARIANT) {
                     match first_token(variant, lexer::TokenKind::Ident) {
                         Option::Some(variant_name) => {
+                            if variant_name.token.text.byte_len() == 0
+                                || variant_name.token.text.byte_get(0) < 65u8
+                                || variant_name.token.text.byte_get(0) > 90u8
+                            {
+                                push_error(
+                                    ctx,
+                                    token_span(variant_name),
+                                    "Enum variant "
+                                        + variant_name.token.text
+                                        + " must start with an uppercase letter",
+                                )
+                            } else {
+                                ()
+                            };
                             let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
                                 Option::Some(type_list) => {
                                     EnumVariantFields::Tuple(lower_type_list(ctx, type_list))
