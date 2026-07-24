@@ -2807,7 +2807,7 @@ fn resolve_static_member(
 ) -> Option[ResolvedCallable] {
     let explicit = explicit_types(ctx, type_args);
     let bare_owner = explicit.len() == 0;
-    match package_function_scheme(ctx, owner, member) {
+    match explicit_function_scheme(ctx, owner, member) {
         Option::Some(scheme) => {
             let value = instantiate_scheme_candidate(ctx, scheme, explicit);
             Option::Some(ResolvedCallable {

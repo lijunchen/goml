@@ -1839,7 +1839,7 @@ fn check_call_expr(
                 Option::Some(info) => {
                     check_resolved_constructor_expr(ctx, info, args, expected)
                 },
-                Option::None => match package_function_scheme(ctx, owner, member) {
+                Option::None => match explicit_function_scheme(ctx, owner, member) {
                     Option::Some(scheme) => {
                         let candidate = instantiate_scheme_candidate(
                             ctx,
@@ -3130,12 +3130,23 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             hir::ExprKind::Go(value) => {
                 let span = value.span;
                 let value = check_expr(ctx, value, Option::None);
-                expect_type_at(
-                    ctx,
-                    expr_type(value),
-                    Type::Func(Vec::new(), Type::Unit),
-                    Option::Some(span),
-                );
+                let actual = resolve_type(expr_type(value));
+                let valid = match actual {
+                    Type::Func(params, ret_ty) => {
+                        params.len() == 0 && types_equal(ret_ty, Type::Unit)
+                    },
+                    _ => false,
+                };
+                if valid {
+                    ()
+                } else {
+                    push_diagnostic_at(
+                        ctx,
+                        "`go` expects a value of type () -> unit, found "
+                            + diagnostic_type_text(actual),
+                        Option::Some(span),
+                    )
+                };
                 Expr::Go(value, Type::Unit)
             },
             hir::ExprKind::Call(function, args) => {
