@@ -3005,7 +3005,20 @@ fn f() -> unit { () }
         assert_eq!(file.uses[1].alias, None);
     }
 
+    #[test]
+    fn lower_rejects_lowercase_enum_variants() {
+        let result = lower_result("enum Choice { selected }");
+        assert!(result.has_errors());
+        assert!(result.diagnostics().iter().any(|diagnostic| {
+            diagnostic.message() == "Enum variant selected must start with an uppercase letter"
+        }));
+    }
+
     fn lower_src(src: &str) -> ast::File {
+        lower_result(src).into_result().unwrap()
+    }
+
+    fn lower_result(src: &str) -> LowerResult {
         let parse = parser::parse(Path::new("test.gom"), src);
         assert!(
             !parse.has_errors(),
@@ -3014,6 +3027,6 @@ fn f() -> unit { () }
         );
         let root = MySyntaxNode::new_root(parse.green_node);
         let file = cst::File::cast(root).unwrap();
-        lower(file).into_result().unwrap()
+        lower(file)
     }
 }
