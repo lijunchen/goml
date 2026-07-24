@@ -1,0 +1,28 @@
+fn main() -> unit {
+    if true {
+        {
+            (@runtime(core.string_println) : (string) -> unit)("if")
+        }
+    } else {
+        {
+            (@runtime(core.string_println) : (string) -> unit)("else")
+        }
+    };
+    match 1 {
+        1 => (@runtime(core.string_println) : (string) -> unit)("match"),
+        _ : int32 => (),
+    };
+    let index/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while (Ref[int32]::get : (Ref[int32]) -> int32)((index/0 : Ref[int32])) < 2 {
+        {
+            (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((Ref[int32]::get : (Ref[int32]) -> int32)((index/0 : Ref[int32]))));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((index/0 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((index/0 : Ref[int32])) + 1)
+        }
+    };
+    let values/1: Vec[string] = (Vec[string]::new : () -> Vec[string])();
+    (Vec[string]::push : (Vec[string], string) -> unit)((values/1 : Vec[string]), "for");
+    for value/2: string in (values/1 : Vec[string]) {
+        (@runtime(core.string_println) : (string) -> unit)((value/2 : string))
+    };
+    (@runtime(core.string_println) : (string) -> unit)("done")
+}
