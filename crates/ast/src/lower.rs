@@ -509,8 +509,10 @@ fn lower_trait_method(
             return None;
         }
     };
-    let params = if let Some(list) = node.type_list() {
-        list.types().flat_map(|ty| lower_ty(ctx, ty)).collect()
+    let params = if let Some(list) = node.param_list() {
+        list.params()
+            .flat_map(|param| lower_param(ctx, param))
+            .collect()
     } else {
         ctx.push_error(
             Some(node.syntax().text_range()),
@@ -518,6 +520,23 @@ fn lower_trait_method(
         );
         Vec::new()
     };
+    if let Some((name, ty)) = params.first()
+        && is_self_type(ty)
+        && name.0 != "self"
+    {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Trait method receiver must be written as `self: Self`",
+        );
+    }
+    for (index, (name, ty)) in params.iter().enumerate() {
+        if name.0 == "self" && (index != 0 || !is_self_type(ty)) {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Trait method receiver must be the first parameter with type Self",
+            );
+        }
+    }
     let ret_ty = match node.return_type() {
         None => ast::TypeExpr::TUnit,
         Some(it) => match lower_ty(ctx, it) {
@@ -536,6 +555,14 @@ fn lower_trait_method(
         params,
         ret_ty,
     })
+}
+
+fn is_self_type(ty: &ast::TypeExpr) -> bool {
+    matches!(
+        ty,
+        ast::TypeExpr::TCon { path }
+            if path.len() == 1 && path.last_ident().is_some_and(|name| name.0 == "Self")
+    )
 }
 
 fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
@@ -2958,9 +2985,9 @@ mod tests {
 pub fn f() -> unit { () }
 pub struct Thing { value: int32 }
 pub enum Choice { A }
-pub trait Named { fn name(Self) -> string; }
+pub trait Named { fn name(self: Self) -> string; }
 #[runtime("core.unit_to_string")]
-pub extern fn runtime() -> unit
+pub extern fn runtime() -> unit;
 "#,
         );
 

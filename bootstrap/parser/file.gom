@@ -312,6 +312,7 @@ fn extern_decl_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         } else {
             ()
         };
+        parser.expect(lexer::TokenKind::Semi);
         let _ = parser.close(marker, cst::NodeKind::EXTERN);
         ()
     }
@@ -348,6 +349,8 @@ fn func_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     if parser.at(lexer::TokenKind::LBrace) {
         block(parser)
     } else {
+        parser.error("functions must have a body");
+        parser.eat(lexer::TokenKind::Semi);
         ()
     };
     let _ = parser.close(marker, cst::NodeKind::FN);
@@ -434,7 +437,7 @@ fn trait_method_list(parser: Parser) -> unit {
     while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
         if parser.at(lexer::TokenKind::FnKeyword) {
             trait_method(parser);
-            parser.eat(lexer::TokenKind::Semi);
+            parser.expect(lexer::TokenKind::Semi);
             ()
         } else if parser.at(lexer::TokenKind::TypeKeyword) {
             trait_associated_type(parser)
@@ -452,9 +455,9 @@ fn trait_method(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::FnKeyword);
     parser.expect(lexer::TokenKind::Ident);
     if parser.at(lexer::TokenKind::LParen) {
-        type_list(parser)
+        param_list(parser)
     } else {
-        ()
+        parser.advance_with_error("expected parameter list")
     };
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)

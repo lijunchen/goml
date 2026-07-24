@@ -211,12 +211,38 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
 fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSignature] {
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => {
-            let params = match first_child(node, cst::NodeKind::TYPE_LIST) {
-                Option::Some(list) => lower_type_list(ctx, list),
+            let params = match first_child(node, cst::NodeKind::PARAM_LIST) {
+                Option::Some(_) => lower_params(ctx, node),
                 Option::None => {
                     push_error(ctx, node_span(node), "TraitMethod " + name_token.token.text + " has no params");
                     Vec::new()
                 },
+            };
+            if params.len() > 0 {
+                let first = params.get(0);
+                if ast_type_is_self(first.1) && first.0 != "self" {
+                    push_error(
+                        ctx,
+                        node_span(node),
+                        "Trait method receiver must be written as `self: Self`",
+                    )
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            };
+            for index in range(0, params.len()) {
+                let param = params.get(index);
+                if param.0 == "self" && (index != 0 || !ast_type_is_self(param.1)) {
+                    push_error(
+                        ctx,
+                        node_span(node),
+                        "Trait method receiver must be the first parameter with type Self",
+                    )
+                } else {
+                    ()
+                }
             };
             let returns = type_children(node);
             let ret_ty = if returns.len() == 0 {
@@ -240,6 +266,15 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
             push_error(ctx, node_span(node), "Trait method is missing a name");
             Option::None
         },
+    }
+}
+
+fn ast_type_is_self(value: TypeExpr) -> bool {
+    match value {
+        TypeExpr::Con(path) => {
+            path.segments.len() == 1 && path.segments.get(0).ident == "Self"
+        },
+        _ => false,
     }
 }
 

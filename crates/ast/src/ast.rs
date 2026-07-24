@@ -280,7 +280,7 @@ pub enum Predicate {
 #[derive(Debug, Clone)]
 pub struct TraitMethodSignature {
     pub name: AstIdent,
-    pub params: Vec<TypeExpr>,
+    pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: TypeExpr,
 }
 

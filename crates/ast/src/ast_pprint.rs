@@ -890,8 +890,14 @@ impl TraitMethodSignature {
             .append(RcDoc::text(&self.name.0))
             .append(RcDoc::text("("));
 
-        let params_doc =
-            RcDoc::intersperse(self.params.iter().map(|ty| ty.to_doc()), RcDoc::text(", "));
+        let params_doc = RcDoc::intersperse(
+            self.params.iter().map(|(name, ty)| {
+                RcDoc::text(name.0.clone())
+                    .append(RcDoc::text(": "))
+                    .append(ty.to_doc())
+            }),
+            RcDoc::text(", "),
+        );
 
         let ret_ty_doc = RcDoc::text(" -> ").append(self.ret_ty.to_doc());
 

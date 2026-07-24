@@ -2204,7 +2204,7 @@ impl NameResolution {
                 params: sig
                     .params
                     .iter()
-                    .map(|ty| {
+                    .map(|(_, ty)| {
                         self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases)
                     })
                     .collect(),

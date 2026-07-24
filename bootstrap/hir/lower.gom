@@ -1221,7 +1221,7 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
     for method in value.method_sigs {
         let params: Vec[TypeExpr] = Vec::new();
         for param in method.params {
-            params.push(lower_type(ctx, param, type_params))
+            params.push(lower_type(ctx, param.1, type_params))
         };
         method_sigs.push(TraitMethodSignature {
             name: method.name,

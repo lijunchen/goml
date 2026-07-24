@@ -249,6 +249,7 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
     if p.at(T![where]) {
         where_clause(p);
     }
+    p.expect(T![;]);
     p.close(m, MySyntaxKind::EXTERN);
 }
 
@@ -275,6 +276,9 @@ fn func_with_marker(p: &mut Parser, m: MarkerOpened) {
     }
     if p.at(T!['{']) {
         block(p);
+    } else {
+        p.error("functions must have a body");
+        p.eat(T![;]);
     }
     p.close(m, MySyntaxKind::FN);
 }
@@ -349,7 +353,7 @@ fn trait_method_list(p: &mut Parser) {
     while !p.at(T!['}']) && !p.eof() {
         if p.at(T![fn]) {
             trait_method(p);
-            p.eat(T![;]);
+            p.expect(T![;]);
         } else if p.at(T![type]) {
             trait_associated_type(p);
         } else {
@@ -366,7 +370,9 @@ fn trait_method(p: &mut Parser) {
     p.expect(T![fn]);
     p.expect(T![ident]);
     if p.at(T!['(']) {
-        type_list(p);
+        param_list(p);
+    } else {
+        p.advance_with_error("expected parameter list");
     }
     if p.eat(T![->]) {
         type_expr(p);

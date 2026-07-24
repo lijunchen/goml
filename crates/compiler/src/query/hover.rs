@@ -299,8 +299,13 @@ fn extern_function_type(function: &nodes::Extern) -> Option<String> {
 
 fn trait_method_type(method: &nodes::TraitMethod) -> Option<String> {
     let params = method
-        .type_list()
-        .map(|types| types.types().map(syntax_text).collect::<Vec<_>>())
+        .param_list()
+        .map(|params| {
+            params
+                .params()
+                .filter_map(|param| param.ty().map(syntax_text))
+                .collect::<Vec<_>>()
+        })
         .unwrap_or_default();
     let ret = method
         .return_type()

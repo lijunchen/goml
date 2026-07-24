@@ -1,94 +1,94 @@
 package host;
 
 #[runtime("std.env.args")]
-pub extern fn args() -> Vec[string]
+pub extern fn args() -> Vec[string];
 
 #[runtime("std.env.current_dir")]
-pub extern fn current_dir() -> (bool, string, string)
+pub extern fn current_dir() -> (bool, string, string);
 
 #[runtime("std.env.current_exe")]
-pub extern fn current_exe() -> (bool, string, string)
+pub extern fn current_exe() -> (bool, string, string);
 
 #[runtime("std.env.var")]
-pub extern fn env_var(name: string) -> (bool, string)
+pub extern fn env_var(name: string) -> (bool, string);
 
 #[runtime("std.fs.read_file")]
-pub extern fn read_file(path: string) -> (bool, string, string)
+pub extern fn read_file(path: string) -> (bool, string, string);
 
 #[runtime("std.fs.write_file")]
-pub extern fn write_file(path: string, content: string) -> (bool, string)
+pub extern fn write_file(path: string, content: string) -> (bool, string);
 
 #[runtime("std.fs.read_bytes")]
-pub extern fn read_bytes(path: string) -> (bool, Vec[uint8], string)
+pub extern fn read_bytes(path: string) -> (bool, Vec[uint8], string);
 
 #[runtime("std.fs.write_bytes")]
-pub extern fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string)
+pub extern fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string);
 
 #[runtime("std.fs.create_dir_all")]
-pub extern fn create_dir_all(path: string) -> (bool, string)
+pub extern fn create_dir_all(path: string) -> (bool, string);
 
 #[runtime("std.fs.file_exists")]
-pub extern fn file_exists(path: string) -> bool
+pub extern fn file_exists(path: string) -> bool;
 
 #[runtime("std.fs.is_file")]
-pub extern fn is_file(path: string) -> bool
+pub extern fn is_file(path: string) -> bool;
 
 #[runtime("std.fs.is_dir")]
-pub extern fn is_dir(path: string) -> bool
+pub extern fn is_dir(path: string) -> bool;
 
 #[runtime("std.fs.canonicalize")]
-pub extern fn canonicalize(path: string) -> (bool, string, string)
+pub extern fn canonicalize(path: string) -> (bool, string, string);
 
 #[runtime("std.fs.read_dir")]
-pub extern fn read_dir(path: string) -> (bool, Vec[string], string)
+pub extern fn read_dir(path: string) -> (bool, Vec[string], string);
 
 #[runtime("std.io.print")]
-pub extern fn print(value: string) -> unit
+pub extern fn print(value: string) -> unit;
 
 #[runtime("std.io.println")]
-pub extern fn println(value: string) -> unit
+pub extern fn println(value: string) -> unit;
 
 #[runtime("std.io.eprint")]
-pub extern fn eprint(value: string) -> unit
+pub extern fn eprint(value: string) -> unit;
 
 #[runtime("std.io.read_stdin")]
-pub extern fn read_stdin() -> (bool, Vec[uint8], string)
+pub extern fn read_stdin() -> (bool, Vec[uint8], string);
 
 #[runtime("std.io.write_stdout")]
-pub extern fn write_stdout(data: Vec[uint8]) -> (bool, string)
+pub extern fn write_stdout(data: Vec[uint8]) -> (bool, string);
 
 #[runtime("std.io.write_stderr")]
-pub extern fn write_stderr(data: Vec[uint8]) -> (bool, string)
+pub extern fn write_stderr(data: Vec[uint8]) -> (bool, string);
 
 #[runtime("std.path.join")]
-pub extern fn path_join(base: string, child: string) -> string
+pub extern fn path_join(base: string, child: string) -> string;
 
 #[runtime("std.path.clean")]
-pub extern fn path_clean(path: string) -> string
+pub extern fn path_clean(path: string) -> string;
 
 #[runtime("std.path.is_absolute")]
-pub extern fn path_is_absolute(path: string) -> bool
+pub extern fn path_is_absolute(path: string) -> bool;
 
 #[runtime("std.path.parent")]
-pub extern fn path_parent(path: string) -> (bool, string)
+pub extern fn path_parent(path: string) -> (bool, string);
 
 #[runtime("std.path.file_name")]
-pub extern fn path_file_name(path: string) -> (bool, string)
+pub extern fn path_file_name(path: string) -> (bool, string);
 
 #[runtime("std.path.extension")]
-pub extern fn path_extension(path: string) -> (bool, string)
+pub extern fn path_extension(path: string) -> (bool, string);
 
 #[runtime("std.path.file_stem")]
-pub extern fn path_file_stem(path: string) -> (bool, string)
+pub extern fn path_file_stem(path: string) -> (bool, string);
 
 #[runtime("std.path.with_extension")]
-pub extern fn path_with_extension(path: string, extension: string) -> string
+pub extern fn path_with_extension(path: string, extension: string) -> string;
 
 #[runtime("std.path.absolute")]
-pub extern fn path_absolute(path: string) -> (bool, string, string)
+pub extern fn path_absolute(path: string) -> (bool, string, string);
 
 #[runtime("std.process.exit")]
-pub extern fn exit(code: int32) -> unit
+pub extern fn exit(code: int32) -> unit;
 
 #[runtime("std.process.output")]
 pub extern fn process_output(
@@ -97,7 +97,7 @@ pub extern fn process_output(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int32, Vec[uint8], Vec[uint8], string)
+) -> (bool, int32, Vec[uint8], Vec[uint8], string);
 
 #[runtime("std.process.status")]
 pub extern fn process_status(
@@ -106,7 +106,7 @@ pub extern fn process_status(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int32, string)
+) -> (bool, int32, string);
 
 #[runtime("std.testing.fail")]
-pub extern fn test_fail(message: string) -> unit
+pub extern fn test_fail(message: string) -> unit;

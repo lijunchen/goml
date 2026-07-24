@@ -1,94 +1,94 @@
 #[runtime("core.unit_to_string")]
-extern fn unit_to_string(value: unit) -> string
+extern fn unit_to_string(value: unit) -> string;
 
 #[runtime("core.bool_to_string")]
-extern fn bool_to_string(value: bool) -> string
+extern fn bool_to_string(value: bool) -> string;
 
 #[runtime("core.string_len")]
-extern fn string_len(value: string) -> int32
+extern fn string_len(value: string) -> int32;
 #[runtime("core.string_get")]
-extern fn string_get(value: string, index: int32) -> char
+extern fn string_get(value: string, index: int32) -> char;
 #[runtime("core.string_byte_get")]
-extern fn string_byte_get(value: string, index: int32) -> uint8
+extern fn string_byte_get(value: string, index: int32) -> uint8;
 #[runtime("core.string_byte_slice")]
-extern fn string_byte_slice(value: string, start: int32, end: int32) -> string
+extern fn string_byte_slice(value: string, start: int32, end: int32) -> string;
 #[runtime("core.string_is_char_boundary")]
-extern fn string_is_char_boundary(value: string, index: int32) -> bool
+extern fn string_is_char_boundary(value: string, index: int32) -> bool;
 #[runtime("core.string_decode_utf8_at")]
-extern fn string_decode_utf8_at(value: string, index: int32) -> (bool, char, int32)
+extern fn string_decode_utf8_at(value: string, index: int32) -> (bool, char, int32);
 #[runtime("core.string_to_bytes")]
-extern fn string_to_bytes(value: string) -> Vec[uint8]
+extern fn string_to_bytes(value: string) -> Vec[uint8];
 #[runtime("core.string_from_utf8")]
-extern fn string_from_utf8(value: Vec[uint8]) -> (bool, string)
+extern fn string_from_utf8(value: Vec[uint8]) -> (bool, string);
 #[runtime("core.string_concat")]
-extern fn string_concat(values: Vec[string]) -> string
+extern fn string_concat(values: Vec[string]) -> string;
 #[runtime("core.string_print")]
-extern fn string_print(value: string) -> unit
+extern fn string_print(value: string) -> unit;
 #[runtime("core.string_println")]
-extern fn string_println(value: string) -> unit
+extern fn string_println(value: string) -> unit;
 #[runtime("core.char_to_string")]
-extern fn char_to_string(value: char) -> string
+extern fn char_to_string(value: char) -> string;
 #[runtime("core.char_from_uint32")]
-extern fn char_from_uint32_raw(value: uint32) -> (bool, char)
+extern fn char_from_uint32_raw(value: uint32) -> (bool, char);
 
 #[runtime("core.int8_to_string")]
-extern fn int8_to_string(value: int8) -> string
+extern fn int8_to_string(value: int8) -> string;
 
 #[runtime("core.int16_to_string")]
-extern fn int16_to_string(value: int16) -> string
+extern fn int16_to_string(value: int16) -> string;
 
 #[runtime("core.int32_to_string")]
-extern fn int32_to_string(value: int32) -> string
+extern fn int32_to_string(value: int32) -> string;
 
 #[runtime("core.int64_to_string")]
-extern fn int64_to_string(value: int64) -> string
+extern fn int64_to_string(value: int64) -> string;
 
 #[runtime("core.uint8_to_string")]
-extern fn uint8_to_string(value: uint8) -> string
+extern fn uint8_to_string(value: uint8) -> string;
 
 #[runtime("core.uint16_to_string")]
-extern fn uint16_to_string(value: uint16) -> string
+extern fn uint16_to_string(value: uint16) -> string;
 
 #[runtime("core.uint32_to_string")]
-extern fn uint32_to_string(value: uint32) -> string
+extern fn uint32_to_string(value: uint32) -> string;
 
 #[runtime("core.uint64_to_string")]
-extern fn uint64_to_string(value: uint64) -> string
+extern fn uint64_to_string(value: uint64) -> string;
 
 #[runtime("core.float32_to_string")]
-extern fn float32_to_string(value: float32) -> string
+extern fn float32_to_string(value: float32) -> string;
 
 #[runtime("core.float64_to_string")]
-extern fn float64_to_string(value: float64) -> string
+extern fn float64_to_string(value: float64) -> string;
 
 #[runtime("core.string_parse_float32")]
-extern fn string_parse_float32(value: string) -> (bool, float64)
+extern fn string_parse_float32(value: string) -> (bool, float64);
 
 #[runtime("core.string_parse_float64")]
-extern fn string_parse_float64(value: string) -> (bool, float64)
+extern fn string_parse_float64(value: string) -> (bool, float64);
 
 #[runtime("core.int8_hash")]
-extern fn int8_hash(value: int8) -> uint64
+extern fn int8_hash(value: int8) -> uint64;
 #[runtime("core.int16_hash")]
-extern fn int16_hash(value: int16) -> uint64
+extern fn int16_hash(value: int16) -> uint64;
 #[runtime("core.int32_hash")]
-extern fn int32_hash(value: int32) -> uint64
+extern fn int32_hash(value: int32) -> uint64;
 #[runtime("core.int64_hash")]
-extern fn int64_hash(value: int64) -> uint64
+extern fn int64_hash(value: int64) -> uint64;
 #[runtime("core.uint8_hash")]
-extern fn uint8_hash(value: uint8) -> uint64
+extern fn uint8_hash(value: uint8) -> uint64;
 #[runtime("core.uint16_hash")]
-extern fn uint16_hash(value: uint16) -> uint64
+extern fn uint16_hash(value: uint16) -> uint64;
 #[runtime("core.uint32_hash")]
-extern fn uint32_hash(value: uint32) -> uint64
+extern fn uint32_hash(value: uint32) -> uint64;
 #[runtime("core.float32_hash")]
-extern fn float32_hash(value: float32) -> uint64
+extern fn float32_hash(value: float32) -> uint64;
 #[runtime("core.float64_hash")]
-extern fn float64_hash(value: float64) -> uint64
+extern fn float64_hash(value: float64) -> uint64;
 #[runtime("core.string_hash")]
-extern fn string_hash(value: string) -> uint64
+extern fn string_hash(value: string) -> uint64;
 #[runtime("core.char_hash")]
-extern fn char_hash(value: char) -> uint64
+extern fn char_hash(value: char) -> uint64;
 
 #[lang("option")]
 enum Option[T] {
@@ -106,7 +106,7 @@ enum Result[T, E] {
 trait Iterator {
     type Item;
 
-    fn next(Self) -> Option[Self::Item];
+    fn next(self: Self) -> Option[Self::Item];
 }
 
 #[lang("into_iterator")]
@@ -114,7 +114,7 @@ trait IntoIterator {
     type Item;
     type IntoIter: Iterator;
 
-    fn into_iter(Self) -> Self::IntoIter;
+    fn into_iter(self: Self) -> Self::IntoIter;
 }
 
 struct FnIterator[T] {
@@ -137,68 +137,68 @@ struct TakeIterator[I] {
 }
 
 #[intrinsic("vec.new")]
-extern fn vec_new[T]() -> Vec[T]
+extern fn vec_new[T]() -> Vec[T];
 #[intrinsic("vec.with_capacity")]
-extern fn vec_with_capacity[T](capacity: int32) -> Vec[T]
+extern fn vec_with_capacity[T](capacity: int32) -> Vec[T];
 #[intrinsic("vec.push")]
-extern fn vec_push[T](vec: Vec[T], elem: T) -> unit
+extern fn vec_push[T](vec: Vec[T], elem: T) -> unit;
 #[intrinsic("vec.get")]
-extern fn vec_get[T](vec: Vec[T], index: int32) -> T
+extern fn vec_get[T](vec: Vec[T], index: int32) -> T;
 #[intrinsic("vec.set")]
-extern fn vec_set[T](vec: Vec[T], index: int32, elem: T) -> unit
+extern fn vec_set[T](vec: Vec[T], index: int32, elem: T) -> unit;
 #[intrinsic("vec.len")]
-extern fn vec_len[T](vec: Vec[T]) -> int32
+extern fn vec_len[T](vec: Vec[T]) -> int32;
 #[intrinsic("vec.capacity")]
-extern fn vec_capacity[T](vec: Vec[T]) -> int32
+extern fn vec_capacity[T](vec: Vec[T]) -> int32;
 #[intrinsic("vec.reserve")]
-extern fn vec_reserve[T](vec: Vec[T], additional: int32) -> unit
+extern fn vec_reserve[T](vec: Vec[T], additional: int32) -> unit;
 #[intrinsic("vec.truncate")]
-extern fn vec_truncate[T](vec: Vec[T], len: int32) -> unit
+extern fn vec_truncate[T](vec: Vec[T], len: int32) -> unit;
 #[intrinsic("slice.new")]
-extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T]
+extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T];
 #[intrinsic("slice.get")]
-extern fn slice_get[T](s: Slice[T], index: int32) -> T
+extern fn slice_get[T](s: Slice[T], index: int32) -> T;
 #[intrinsic("slice.len")]
-extern fn slice_len[T](s: Slice[T]) -> int32
+extern fn slice_len[T](s: Slice[T]) -> int32;
 #[intrinsic("slice.sub")]
-extern fn slice_sub[T](s: Slice[T], start: int32, end: int32) -> Slice[T]
+extern fn slice_sub[T](s: Slice[T], start: int32, end: int32) -> Slice[T];
 
 #[lang("eq")]
 trait Eq {
-    fn eq(Self, Self) -> bool;
+    fn eq(self: Self, arg1: Self) -> bool;
 }
 
 #[lang("hash")]
 trait Hash {
-    fn hash(Self) -> uint64;
+    fn hash(self: Self) -> uint64;
 }
 
 #[intrinsic("hashmap.new")]
-extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V]
+extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V];
 #[intrinsic("hashmap.get")]
-extern fn hashmap_get[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> Option[V]
+extern fn hashmap_get[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> Option[V];
 #[intrinsic("hashmap.set")]
-extern fn hashmap_set[K: Hash + Eq, V](m: HashMap[K, V], key: K, value: V) -> unit
+extern fn hashmap_set[K: Hash + Eq, V](m: HashMap[K, V], key: K, value: V) -> unit;
 #[intrinsic("hashmap.remove")]
-extern fn hashmap_remove[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> unit
+extern fn hashmap_remove[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> unit;
 #[intrinsic("hashmap.len")]
-extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int32
+extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int32;
 #[intrinsic("hashmap.contains")]
-extern fn hashmap_contains[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> bool
+extern fn hashmap_contains[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> bool;
 #[intrinsic("hashmap.entries")]
-extern fn hashmap_entries[K: Hash + Eq, V](m: HashMap[K, V]) -> Vec[(K, V)]
+extern fn hashmap_entries[K: Hash + Eq, V](m: HashMap[K, V]) -> Vec[(K, V)];
 
 #[lang("to_string")]
 trait ToString {
-    fn to_string(Self) -> string;
+    fn to_string(self: Self) -> string;
 }
 #[intrinsic("ref.new")]
-extern fn ref[T](value: T) -> Ref[T]
+extern fn ref[T](value: T) -> Ref[T];
 #[intrinsic("ref.get")]
-extern fn ref_get[T](reference: Ref[T]) -> T
+extern fn ref_get[T](reference: Ref[T]) -> T;
 #[intrinsic("ref.set")]
-extern fn ref_set[T](reference: Ref[T], value: T) -> unit
+extern fn ref_set[T](reference: Ref[T], value: T) -> unit;
 #[intrinsic("ref.ptr_eq")]
-extern fn ptr_eq[T](a: Ref[T], b: Ref[T]) -> bool
+extern fn ptr_eq[T](a: Ref[T], b: Ref[T]) -> bool;
 #[intrinsic("ref.ptr_hash")]
-extern fn ptr_hash[T](reference: Ref[T]) -> uint64
+extern fn ptr_hash[T](reference: Ref[T]) -> uint64;

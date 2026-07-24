@@ -323,17 +323,10 @@ fn param_names_from_extern(extern_item: &Extern) -> Vec<Option<String>> {
 
 fn param_names_from_trait_method(method: &TraitMethod) -> Vec<Option<String>> {
     method
-        .type_list()
+        .param_list()
         .into_iter()
-        .flat_map(|types| types.types())
-        .enumerate()
-        .map(|(idx, ty)| {
-            if idx == 0 && ty.to_string() == "Self" {
-                Some("self".to_string())
-            } else {
-                Some(format!("arg{}", idx + 1))
-            }
-        })
+        .flat_map(|params| params.params())
+        .map(|param| param.lident().map(|name| name.to_string()))
         .collect()
 }
 

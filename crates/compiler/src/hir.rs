@@ -1357,7 +1357,7 @@ impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
     fn from(m: &ast::TraitMethodSignature) -> Self {
         TraitMethodSignature {
             name: HirIdent::name(&m.name.0),
-            params: m.params.iter().map(|p| p.into()).collect(),
+            params: m.params.iter().map(|(_, ty)| ty.into()).collect(),
             ret_ty: (&m.ret_ty).into(),
         }
     }

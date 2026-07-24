@@ -391,7 +391,17 @@ fn pretty_write_trait_method(
     builder.write_string("fn ");
     builder.write_string(value.name);
     builder.write_char('(');
-    pretty_write_types(builder, value.params, ", ");
+    for index in range(0, value.params.len()) {
+        if index > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        let param = value.params.get(index);
+        builder.write_string(param.0);
+        builder.write_string(": ");
+        pretty_write_type(builder, param.1)
+    };
     builder.write_string(") -> ");
     pretty_write_type(builder, value.ret_ty);
     builder.write_char(';')

@@ -130,7 +130,7 @@ AttributeToken: CstElement = {
 ExternDecl: CstElement = {
     <extern_:Tok<"extern">> <fn_:Tok<"fn">> <name:Tok<"ident">>
     <generics:GenericListWithBounds?> <params:ParamList>
-    <return_type:ReturnType?> <where_clause:WhereClause?> => {
+    <return_type:ReturnType?> <where_clause:WhereClause?> <semi:Tok<";">> => {
         let mut children = vec![extern_, fn_, name];
         children.extend(generics);
         children.push(params);
@@ -139,6 +139,7 @@ ExternDecl: CstElement = {
             children.push(type_);
         }
         children.extend(where_clause);
+        children.push(semi);
         node(MySyntaxKind::EXTERN, children)
     }
 };
@@ -146,7 +147,7 @@ ExternDecl: CstElement = {
 Function: CstElement = {
     <fn_:Tok<"fn">> <name:Tok<"ident">>
     <generics:GenericListWithBounds?> <params:ParamList>
-    <return_type:ReturnType?> <where_clause:WhereClause?> <body:Block?> => {
+    <return_type:ReturnType?> <where_clause:WhereClause?> <body:Block> => {
         let mut children = vec![fn_, name];
         children.extend(generics);
         children.push(params);
@@ -155,7 +156,7 @@ Function: CstElement = {
             children.push(type_);
         }
         children.extend(where_clause);
-        children.extend(body);
+        children.push(body);
         node(MySyntaxKind::FN, children)
     }
 };
@@ -259,18 +260,14 @@ TraitBody: (CstElement, CstElement) = {
 };
 
 TraitMember: Vec<CstElement> = {
-    <method:TraitMethod> <semi:Tok<";">?> => {
-        let mut children = vec![method];
-        children.extend(semi);
-        children
-    },
+    <method:TraitMethod> <semi:Tok<";">> => vec![method, semi],
     <type_:TraitAssociatedType> => vec![type_],
 };
 
 TraitMethod: CstElement = {
-    <fn_:Tok<"fn">> <name:Tok<"ident">> <types:TypeList>
+    <fn_:Tok<"fn">> <name:Tok<"ident">> <params:ParamList>
     <return_type:ReturnType?> => {
-        let mut children = vec![fn_, name, types];
+        let mut children = vec![fn_, name, params];
         if let Some((arrow, type_)) = return_type {
             children.push(arrow);
             children.push(type_);

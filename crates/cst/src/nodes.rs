@@ -324,7 +324,7 @@ impl TraitMethod {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
-    pub fn type_list(&self) -> Option<TypeList> {
+    pub fn param_list(&self) -> Option<ParamList> {
         support::child(&self.syntax)
     }
 

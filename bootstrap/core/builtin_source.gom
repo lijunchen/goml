@@ -6,14 +6,14 @@ pub fn builtin_source() -> string {
         \\trait Iterator {
         \\    type Item;
         \\
-        \\    fn next(Self) -> Option[Self::Item];
+        \\    fn next(self: Self) -> Option[Self::Item];
         \\}
         \\
         \\trait IntoIterator {
         \\    type Item;
         \\    type IntoIter: Iterator;
         \\
-        \\    fn into_iter(Self) -> Self::IntoIter;
+        \\    fn into_iter(self: Self) -> Self::IntoIter;
         \\}
         \\
         \\struct FnIterator[T] {
