@@ -2573,16 +2573,46 @@ impl Typer {
         expr: hir::ExprId,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
-        let closure_ty = tast::Ty::TFunc {
-            params: vec![],
-            ret_ty: Box::new(tast::Ty::TUnit),
-        };
-        self.equate(
-            diagnostics,
-            &expr_tast.get_ty(),
-            &closure_ty,
-            self.expr_range(expr),
-        );
+        let expr_ty = self.subst_ty_silent(&expr_tast.get_ty());
+        match &expr_ty {
+            tast::Ty::TVar(_) => {
+                let closure_ty = tast::Ty::TFunc {
+                    params: vec![],
+                    ret_ty: Box::new(tast::Ty::TUnit),
+                };
+                self.equate(diagnostics, &expr_ty, &closure_ty, self.expr_range(expr));
+            }
+            tast::Ty::TFunc { params, ret_ty } if params.is_empty() => {
+                let ret_ty = self.subst_ty_silent(ret_ty);
+                if matches!(ret_ty, tast::Ty::TVar(_)) {
+                    self.equate(
+                        diagnostics,
+                        &ret_ty,
+                        &tast::Ty::TUnit,
+                        self.expr_range(expr),
+                    );
+                } else if ret_ty != tast::Ty::TUnit {
+                    super::util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "`go` expects a value of type () -> unit, found {}",
+                            super::util::format_ty_for_diag(&expr_ty)
+                        ),
+                        self.expr_range(expr),
+                    );
+                }
+            }
+            _ => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "`go` expects a value of type () -> unit, found {}",
+                        super::util::format_ty_for_diag(&expr_ty)
+                    ),
+                    self.expr_range(expr),
+                );
+            }
+        }
 
         tast::Expr::EGo {
             expr: Box::new(expr_tast),
