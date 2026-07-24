@@ -340,10 +340,12 @@ impl Typer {
             genv,
             local_env,
             diagnostics,
-            name,
-            func_scheme,
-            type_args,
-            astptr,
+            ExplicitFunctionRequest {
+                name,
+                scheme: func_scheme,
+                type_args,
+                astptr,
+            },
         ) else {
             let _ = self.infer_call_arguments(genv, local_env, diagnostics, args);
             return self.error_expr(astptr);

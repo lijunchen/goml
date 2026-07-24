@@ -73,6 +73,13 @@ struct TypeMemberRequest<'a> {
     astptr: Option<MySyntaxNodePtr>,
 }
 
+struct ExplicitFunctionRequest<'a> {
+    name: &'a str,
+    scheme: &'a crate::env::FnScheme,
+    type_args: &'a [hir::TypeExpr],
+    astptr: Option<MySyntaxNodePtr>,
+}
+
 struct ForRequest {
     expr_id: hir::ExprId,
     pat: hir::PatId,
@@ -1054,10 +1061,12 @@ impl Typer {
                 genv,
                 local_env,
                 diagnostics,
-                &name,
-                &func_scheme,
-                type_args,
-                astptr,
+                ExplicitFunctionRequest {
+                    name: &name,
+                    scheme: &func_scheme,
+                    type_args,
+                    astptr,
+                },
             ) else {
                 return self.error_expr(astptr);
             };
@@ -1114,37 +1123,40 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        name: &str,
-        scheme: &crate::env::FnScheme,
-        type_args: &[hir::TypeExpr],
-        astptr: Option<MySyntaxNodePtr>,
+        request: ExplicitFunctionRequest<'_>,
     ) -> Option<InstantiatedScheme> {
         let args = super::member_lookup::resolve_explicit_type_args(
             genv,
             local_env,
             diagnostics,
-            type_args,
+            request.type_args,
         )
         .ok()?;
-        if args.len() != scheme.type_params.len() {
+        if args.len() != request.scheme.type_params.len() {
             super::util::push_error_with_range(
                 diagnostics,
                 format!(
                     "Function {} expects {} type arguments, but got {}",
-                    name,
-                    scheme.type_params.len(),
+                    request.name,
+                    request.scheme.type_params.len(),
                     args.len()
                 ),
-                astptr.map(|pointer| pointer.text_range()),
+                request.astptr.map(|pointer| pointer.text_range()),
             );
             return None;
         }
-        let substitution = scheme.type_params.iter().cloned().zip(args).collect();
+        let substitution = request
+            .scheme
+            .type_params
+            .iter()
+            .cloned()
+            .zip(args)
+            .collect();
         Some(self.instantiate_scheme_with_substitution(
-            scheme,
+            request.scheme,
             substitution,
             ObligationCause::new(
-                astptr.map(|pointer| pointer.text_range()),
+                request.astptr.map(|pointer| pointer.text_range()),
                 ObligationCauseKind::FunctionBound,
             ),
         ))
