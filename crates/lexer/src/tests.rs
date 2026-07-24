@@ -329,6 +329,55 @@ fn lexes_char_literal() {
 }
 
 #[test]
+fn lexes_separated_and_exponent_numbers() {
+    check(
+        "1_000 12_345i32 4_294_967_296u64 1.25e2 2_5.0_0e-1f32 1e6f64",
+        expect![[r#"
+            [
+                {kind: Int, text: "1_000"},
+                {kind: Whitespace, text: " "},
+                {kind: Int32Lit, text: "12_345i32"},
+                {kind: Whitespace, text: " "},
+                {kind: UInt64Lit, text: "4_294_967_296u64"},
+                {kind: Whitespace, text: " "},
+                {kind: Float, text: "1.25e2"},
+                {kind: Whitespace, text: " "},
+                {kind: Float32Lit, text: "2_5.0_0e-1f32"},
+                {kind: Whitespace, text: " "},
+                {kind: Float64Lit, text: "1e6f64"},
+            ]
+        "#]],
+    );
+}
+
+#[test]
+fn keeps_tuple_projection_token_boundaries() {
+    check(
+        "export.1.to_string() signature.0.get(index)",
+        expect![[r#"
+            [
+                {kind: Ident, text: "export"},
+                {kind: Dot, text: "."},
+                {kind: Int, text: "1"},
+                {kind: Dot, text: "."},
+                {kind: Ident, text: "to_string"},
+                {kind: LParen, text: "("},
+                {kind: RParen, text: ")"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "signature"},
+                {kind: Dot, text: "."},
+                {kind: Int, text: "0"},
+                {kind: Dot, text: "."},
+                {kind: Ident, text: "get"},
+                {kind: LParen, text: "("},
+                {kind: Ident, text: "index"},
+                {kind: RParen, text: ")"},
+            ]
+        "#]],
+    );
+}
+
+#[test]
 fn lexes_underscore_prefixed_identifiers() {
     check(
         "let _x = _y + _;",
