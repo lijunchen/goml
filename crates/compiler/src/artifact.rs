@@ -9,7 +9,7 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 12;
+pub const FORMAT_VERSION: u32 = 13;
 pub const COMPILER_ABI: u32 = 2;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -48,6 +48,34 @@ impl PackageExports {
             .type_env
             .structs
             .retain(|name, _| public_names.contains(&name.0));
+        let public_struct_fields = exports.type_env.public_struct_fields.clone();
+        for (name, definition) in exports.type_env.structs.iter_mut() {
+            let visible = public_struct_fields.get(name).cloned().unwrap_or_default();
+            let original_len = definition.fields.len();
+            definition
+                .fields
+                .retain(|(field, _)| visible.contains(&field.0));
+            definition.has_hidden_fields |= definition.fields.len() != original_len;
+            for (field, ty) in &definition.fields {
+                let mut private_names = HashSet::new();
+                collect_private_local_names(package, &public_names, ty, &mut private_names);
+                if !private_names.is_empty() {
+                    let mut private_names = private_names.into_iter().collect::<Vec<_>>();
+                    private_names.sort();
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Public field {}.{} exposes private type {}",
+                            name.0,
+                            field.0,
+                            private_names.join(", ")
+                        ),
+                    ));
+                }
+            }
+        }
+        exports.type_env.public_struct_fields.clear();
         exports
             .trait_env
             .trait_defs
@@ -104,6 +132,54 @@ impl PackageExports {
             );
             false
         });
+        let public_inherent_methods = exports.trait_env.public_inherent_methods.clone();
+        exports.trait_env.inherent_impls.retain(|key, definition| {
+            let key_is_public = match key {
+                crate::env::InherentImplKey::Exact(ty) => {
+                    ty_has_public_local_names(package, &public_names, ty)
+                }
+                crate::env::InherentImplKey::Constr(name) => {
+                    local_name_is_public(package, &public_names, name)
+                }
+            };
+            if !key_is_public {
+                return false;
+            }
+            let visible = public_inherent_methods
+                .get(key)
+                .cloned()
+                .unwrap_or_default();
+            definition.methods.retain(|name, _| visible.contains(name));
+            definition.methods.retain(|name, scheme| {
+                let mut private_names = HashSet::new();
+                collect_private_local_names(package, &public_names, &scheme.ty, &mut private_names);
+                for predicate in &scheme.constraints {
+                    collect_predicate_private_local_names(
+                        package,
+                        &public_names,
+                        predicate,
+                        &mut private_names,
+                    );
+                }
+                if private_names.is_empty() {
+                    return true;
+                }
+                let mut private_names = private_names.into_iter().collect::<Vec<_>>();
+                private_names.sort();
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Public inherent method {} exposes private type {}",
+                        name,
+                        private_names.join(", ")
+                    ),
+                ));
+                false
+            });
+            !definition.methods.is_empty()
+        });
+        exports.trait_env.public_inherent_methods.clear();
         exports
             .value_env
             .funcs

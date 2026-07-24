@@ -179,6 +179,7 @@ fn build_fn(
     }
 
     tast::Fn {
+        visibility: func.visibility,
         name: func.name.clone(),
         params,
         ret_ty,

@@ -115,6 +115,14 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                             field_list,
                                             cst::NodeKind::STRUCT_FIELD,
                                         ) {
+                                            match lower_visibility(field) {
+                                                Visibility::Public => push_error(
+                                                    ctx,
+                                                    node_span(field),
+                                                    "Enum variant fields inherit the enum visibility and must not use `pub`",
+                                                ),
+                                                Visibility::Private => (),
+                                            };
                                             let field_name = first_token(
                                                 field,
                                                 lexer::TokenKind::Ident,
@@ -178,6 +186,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
         Option::Some(name_token) => {
             let (generics, _) = lower_generics(ctx, node);
             let fields: Vec[(string, TypeExpr)] = Vec::new();
+            let public_fields: Vec[string] = Vec::new();
             match first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
                 Option::Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
                     let field_name = first_token(field, lexer::TokenKind::Ident);
@@ -185,7 +194,13 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                     match field_name {
                         Option::Some(name) => if types.len() > 0 {
                             match lower_ty(ctx, types.get(0)) {
-                                Option::Some(ty) => fields.push((name.token.text, ty)),
+                                Option::Some(ty) => {
+                                    fields.push((name.token.text, ty));
+                                    match lower_visibility(field) {
+                                        Visibility::Public => public_fields.push(name.token.text),
+                                        Visibility::Private => (),
+                                    }
+                                },
                                 Option::None => (),
                             }
                         } else {
@@ -202,6 +217,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                 name: name_token.token.text,
                 generics,
                 fields,
+                public_fields,
             })
         },
         Option::None => Option::None,
@@ -481,7 +497,22 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                 let methods: Vec[Function] = Vec::new();
                 for method in children_of_kind(node, cst::NodeKind::FN) {
                     match lower_function(ctx, method) {
-                        Option::Some(value) => methods.push(value),
+                        Option::Some(value) => {
+                            match trait_ref {
+                                Option::Some(_) => match value.visibility {
+                                    Visibility::Public => push_error(
+                                        ctx,
+                                        node_span(method),
+                                        "Trait implementation method "
+                                            + value.name
+                                            + " must not use `pub`",
+                                    ),
+                                    Visibility::Private => (),
+                                },
+                                Option::None => (),
+                            };
+                            methods.push(value)
+                        },
                         Option::None => (),
                     }
                 };

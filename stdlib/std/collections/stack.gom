@@ -1,41 +1,41 @@
 package collections;
 
 pub struct Stack[T] {
-    values: Vec[T],
+    pub values: Vec[T],
 }
 
 impl[T] Stack[T] {
-    fn new() -> Stack[T] {
+    pub fn new() -> Stack[T] {
         Stack { values: Vec::new() }
     }
 
-    fn with_capacity(capacity: int32) -> Stack[T] {
+    pub fn with_capacity(capacity: int32) -> Stack[T] {
         Stack {
             values: Vec::with_capacity(capacity),
         }
     }
 
-    fn len(self: Stack[T]) -> int32 {
+    pub fn len(self: Stack[T]) -> int32 {
         self.values.len()
     }
 
-    fn is_empty(self: Stack[T]) -> bool {
+    pub fn is_empty(self: Stack[T]) -> bool {
         self.values.is_empty()
     }
 
-    fn push(self: Stack[T], value: T) -> unit {
+    pub fn push(self: Stack[T], value: T) -> unit {
         self.values.push(value)
     }
 
-    fn pop(self: Stack[T]) -> Option[T] {
+    pub fn pop(self: Stack[T]) -> Option[T] {
         self.values.pop()
     }
 
-    fn peek(self: Stack[T]) -> Option[T] {
+    pub fn peek(self: Stack[T]) -> Option[T] {
         self.values.last()
     }
 
-    fn clear(self: Stack[T]) -> unit {
+    pub fn clear(self: Stack[T]) -> unit {
         self.values.clear()
     }
 }

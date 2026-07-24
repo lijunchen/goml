@@ -1003,6 +1003,8 @@ fn transform_closure(
                 name: struct_name,
                 generics: Vec::new(),
                 fields: struct_fields,
+                public_fields: Vec::new(),
+                has_hidden_fields: false,
             });
             let fn_body = prepend_captures(
                 closure_body_block(body),

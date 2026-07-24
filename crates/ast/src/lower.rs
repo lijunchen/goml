@@ -324,7 +324,7 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
         })
         .unwrap_or_default();
 
-    let fields = node
+    let lowered_fields: Vec<_> = node
         .field_list()
         .map(|list| {
             list.fields()
@@ -332,6 +332,14 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
                 .collect()
         })
         .unwrap_or_default();
+    let fields = lowered_fields
+        .iter()
+        .map(|(_, name, ty)| (name.clone(), ty.clone()))
+        .collect();
+    let public_fields = lowered_fields
+        .into_iter()
+        .filter_map(|(visibility, name, _)| (visibility == ast::Visibility::Public).then_some(name))
+        .collect();
 
     Some(ast::StructDef {
         attrs,
@@ -339,16 +347,18 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
         name: ast::AstIdent::new(&name),
         generics,
         fields,
+        public_fields,
     })
 }
 
 fn lower_struct_field(
     ctx: &mut LowerCtx,
     node: cst::StructField,
-) -> Option<(ast::AstIdent, ast::TypeExpr)> {
+) -> Option<(ast::Visibility, ast::AstIdent, ast::TypeExpr)> {
+    let visibility = lower_visibility(&node);
     let name = node.lident()?.to_string();
     let ty = node.ty().and_then(|ty| lower_ty(ctx, ty))?;
-    Some((ast::AstIdent(name), ty))
+    Some((visibility, ast::AstIdent(name), ty))
 }
 
 fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
@@ -608,6 +618,19 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         .functions()
         .flat_map(|function| lower_fn(ctx, function))
         .collect();
+    if trait_ref.is_some() {
+        for method in &methods {
+            if method.visibility == ast::Visibility::Public {
+                ctx.push_error(
+                    Some(node.syntax().text_range()),
+                    format!(
+                        "Trait implementation method {} must not use `pub`",
+                        method.name.0
+                    ),
+                );
+            }
+        }
+    }
     let associated_types = node
         .associated_types()
         .filter_map(|associated| {
@@ -657,7 +680,17 @@ fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<ast::EnumVari
         (None, Some(fields)) => ast::EnumVariantFields::Struct(
             fields
                 .fields()
-                .filter_map(|field| lower_struct_field(ctx, field))
+                .filter_map(|field| {
+                    let range = field.syntax().text_range();
+                    let (visibility, name, ty) = lower_struct_field(ctx, field)?;
+                    if visibility == ast::Visibility::Public {
+                        ctx.push_error(
+                            Some(range),
+                            "Enum variant fields inherit the enum visibility and must not use `pub`",
+                        );
+                    }
+                    Some((name, ty))
+                })
                 .collect(),
         ),
         _ => ast::EnumVariantFields::Unit,

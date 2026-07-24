@@ -398,10 +398,26 @@ fn artifact_decode_struct_def(
         },
         Result::Err(error) => return Result::Err(error),
     };
+    let public_fields = Vec::new();
+    for field in fields {
+        public_fields.push(field.0)
+    };
+    let has_hidden_fields = match artifact_json_required_field(object, "has_hidden_fields") {
+        Result::Ok(value) => match artifact_json_bool_value(
+            value,
+            "struct hidden fields flag",
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
     Result::Ok(tast::StructDef {
         name,
         generics,
         fields,
+        public_fields,
+        has_hidden_fields,
     })
 }
 
@@ -865,7 +881,7 @@ fn artifact_decode_interface_value(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "format_version", 12) {
+    match artifact_decode_version_field(object, "format_version", 13) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };

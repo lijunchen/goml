@@ -527,6 +527,7 @@ impl NameResolution {
                             hir::DefKind::Fn,
                             hir::Def::Fn(hir::Fn {
                                 attrs: Vec::new(),
+                                visibility: func.visibility,
                                 name: full_name.clone(),
                                 generics: Vec::new(),
                                 generic_bounds: Vec::new(),
@@ -820,6 +821,7 @@ impl NameResolution {
             hir::DefKind::Fn,
             hir::Def::Fn(hir::Fn {
                 attrs: Vec::new(),
+                visibility: func.visibility,
                 name: func.name.0.clone(),
                 generics: Vec::new(),
                 generic_bounds: Vec::new(),
@@ -895,6 +897,7 @@ impl NameResolution {
             .collect();
         hir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
+            visibility: func.visibility,
             name: resolved_name,
             generics: generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             generic_bounds: new_generic_bounds,
@@ -2184,6 +2187,11 @@ impl NameResolution {
             name: HirIdent::name(&name),
             generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             fields,
+            public_fields: def
+                .public_fields
+                .iter()
+                .map(|name| HirIdent::name(&name.0))
+                .collect(),
         }
     }
 

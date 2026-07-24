@@ -385,6 +385,21 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
             if parser.at(lexer::TokenKind::FnKeyword) {
                 func(parser)
+            } else if parser.at(lexer::TokenKind::PubKeyword) {
+                let marker = parser.open();
+                parser.expect(lexer::TokenKind::PubKeyword);
+                if parser.at(lexer::TokenKind::FnKeyword) {
+                    func_with_marker(parser, marker)
+                } else {
+                    parser.error("expected a function after `pub`");
+                    if parser.eof() == false {
+                        parser.advance()
+                    } else {
+                        ()
+                    };
+                    let _ = parser.close(marker, cst::NodeKind::ErrorTree);
+                    ()
+                }
             } else if parser.at(lexer::TokenKind::TypeKeyword) {
                 impl_associated_type(parser)
             } else {
@@ -558,7 +573,9 @@ fn struct_field_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
     while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
-        if parser.at(lexer::TokenKind::Ident) {
+        if parser.at(lexer::TokenKind::Ident)
+            || parser.at(lexer::TokenKind::PubKeyword)
+        {
             struct_field(parser);
             parser.eat(lexer::TokenKind::Comma);
             ()
@@ -573,6 +590,7 @@ fn struct_field_list(parser: Parser) -> unit {
 
 fn struct_field(parser: Parser) -> unit {
     let marker = parser.open();
+    parser.eat(lexer::TokenKind::PubKeyword);
     parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::Colon);
     type_expr(parser);

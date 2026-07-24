@@ -46,8 +46,8 @@ pub enum Type {
 }
 
 pub struct TraitRef {
-    name: string,
-    args: Vec[Type],
+    pub name: string,
+    pub args: Vec[Type],
 }
 
 pub enum Primitive {
@@ -70,10 +70,10 @@ pub enum Primitive {
 }
 
 pub struct Constructor {
-    name: string,
-    fields: Vec[string],
-    is_struct: bool,
-    tag: Option[int32],
+    pub name: string,
+    pub fields: Vec[string],
+    pub is_struct: bool,
+    pub tag: Option[int32],
 }
 
 pub enum Callable {
@@ -86,8 +86,8 @@ pub enum Callable {
 }
 
 pub struct ClosureParam {
-    name: string,
-    ty: Type,
+    pub name: string,
+    pub ty: Type,
 }
 
 pub enum Expr {
@@ -118,8 +118,8 @@ pub enum Expr {
 }
 
 pub struct Block {
-    stmts: Vec[Stmt],
-    tail: Option[Expr],
+    pub stmts: Vec[Stmt],
+    pub tail: Option[Expr],
 }
 
 pub enum Stmt {
@@ -129,14 +129,14 @@ pub enum Stmt {
 }
 
 pub struct Arm {
-    pat: Pat,
-    guard: Option[Expr],
-    body: Expr,
+    pub pat: Pat,
+    pub guard: Option[Expr],
+    pub body: Expr,
 }
 
 pub struct ArrayPatRest {
-    binding: Option[string],
-    ty: Type,
+    pub binding: Option[string],
+    pub ty: Type,
 }
 
 pub enum Pat {
@@ -152,21 +152,22 @@ pub enum Pat {
 }
 
 pub struct Function {
-    name: string,
-    generics: Vec[string],
-    predicates: Vec[TypePredicate],
-    params: Vec[(string, Type)],
-    ret_ty: Type,
-    body: Block,
+    pub visibility: ast::Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub predicates: Vec[TypePredicate],
+    pub params: Vec[(string, Type)],
+    pub ret_ty: Type,
+    pub body: Block,
 }
 
 pub struct ImplBlock {
-    generics: Vec[string],
-    predicates: Vec[TypePredicate],
-    trait_ref: Option[TraitRef],
-    for_type: Type,
-    associated_types: Vec[(string, Type)],
-    methods: Vec[Function],
+    pub generics: Vec[string],
+    pub predicates: Vec[TypePredicate],
+    pub trait_ref: Option[TraitRef],
+    pub for_type: Type,
+    pub associated_types: Vec[(string, Type)],
+    pub methods: Vec[Function],
 }
 
 pub enum Item {
@@ -175,8 +176,8 @@ pub enum Item {
 }
 
 pub struct EnumVariantDef {
-    name: string,
-    fields: EnumVariantFields,
+    pub name: string,
+    pub fields: EnumVariantFields,
 }
 
 pub enum EnumVariantFields {
@@ -186,27 +187,29 @@ pub enum EnumVariantFields {
 }
 
 pub struct EnumDef {
-    name: string,
-    generics: Vec[string],
-    variants: Vec[EnumVariantDef],
+    pub name: string,
+    pub generics: Vec[string],
+    pub variants: Vec[EnumVariantDef],
 }
 
 pub struct StructDef {
-    name: string,
-    generics: Vec[string],
-    fields: Vec[(string, Type)],
+    pub name: string,
+    pub generics: Vec[string],
+    pub fields: Vec[(string, Type)],
+    pub public_fields: Vec[string],
+    pub has_hidden_fields: bool,
 }
 
 pub struct File {
-    items: Vec[Item],
-    enums: Vec[EnumDef],
-    structs: Vec[StructDef],
+    pub items: Vec[Item],
+    pub enums: Vec[EnumDef],
+    pub structs: Vec[StructDef],
 }
 
 pub struct DiagnosticLabel {
-    message: string,
-    source_path: string,
-    span: ast::Span,
+    pub message: string,
+    pub source_path: string,
+    pub span: ast::Span,
 }
 
 pub enum DiagnosticSeverity {
@@ -215,18 +218,18 @@ pub enum DiagnosticSeverity {
 }
 
 pub struct Diagnostic {
-    severity: DiagnosticSeverity,
-    stage: string,
-    message: string,
-    source_path: string,
-    span: Option[ast::Span],
-    primary_label: Option[string],
-    secondary_labels: Vec[DiagnosticLabel],
+    pub severity: DiagnosticSeverity,
+    pub stage: string,
+    pub message: string,
+    pub source_path: string,
+    pub span: Option[ast::Span],
+    pub primary_label: Option[string],
+    pub secondary_labels: Vec[DiagnosticLabel],
 }
 
 pub struct CheckResult {
-    tast: Option[File],
-    diagnostics: Vec[Diagnostic],
+    pub tast: Option[File],
+    pub diagnostics: Vec[Diagnostic],
 }
 
 pub fn diagnostic_message(value: Diagnostic) -> string {

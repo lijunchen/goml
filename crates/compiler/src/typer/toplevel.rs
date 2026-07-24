@@ -951,14 +951,24 @@ fn define_struct(
         })
         .collect();
 
+    let name = tast::TastIdent(struct_def.name.to_ident_name());
+    env.current_mut().type_env.public_struct_fields.insert(
+        name.clone(),
+        struct_def
+            .public_fields
+            .iter()
+            .map(hir::HirIdent::to_ident_name)
+            .collect(),
+    );
     env.current_mut().insert_struct(env::StructDef {
-        name: tast::TastIdent(struct_def.name.to_ident_name()),
+        name,
         generics: struct_def
             .generics
             .iter()
             .map(|i| tast::TastIdent(i.to_ident_name()))
             .collect(),
         fields,
+        has_hidden_fields: false,
     });
 }
 
@@ -2201,6 +2211,14 @@ fn define_inherent_impl(
                 body: CallableBody::Goml,
             },
         );
+        if m.visibility == ::ast::ast::Visibility::Public {
+            env.current_mut()
+                .trait_env
+                .public_inherent_methods
+                .entry(key.clone())
+                .or_default()
+                .push(m.name.clone());
+        }
     }
 
     // Insert or extend the impl def

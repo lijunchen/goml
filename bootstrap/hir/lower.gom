@@ -1099,6 +1099,7 @@ fn lower_function(
     Function {
         def_id,
         attrs: value.attrs,
+        visibility: value.visibility,
         name,
         generics: value.generics,
         generic_bounds: lower_bounds(ctx, value.generic_bounds, type_params, true),
@@ -1193,6 +1194,7 @@ fn lower_struct(ctx: LowerCtx, value: ast::StructDef, def_id: DefId) -> StructDe
         name: full_name(ctx.package_name, value.name),
         generics: value.generics,
         fields,
+        public_fields: value.public_fields,
     }
 }
 

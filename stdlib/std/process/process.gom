@@ -4,15 +4,15 @@ use std::bytes;
 use std::internal::host;
 
 pub struct ExitStatus {
-    code_value: int32,
+    pub code_value: int32,
 }
 
 impl ExitStatus {
-    fn success(self: ExitStatus) -> bool {
+    pub fn success(self: ExitStatus) -> bool {
         self.code_value == 0
     }
 
-    fn code(self: ExitStatus) -> Option[int32] {
+    pub fn code(self: ExitStatus) -> Option[int32] {
         if self.code_value < 0 {
             Option::None
         } else {
@@ -22,35 +22,35 @@ impl ExitStatus {
 }
 
 pub struct Output {
-    status_value: ExitStatus,
-    stdout_value: bytes::Bytes,
-    stderr_value: bytes::Bytes,
+    pub status_value: ExitStatus,
+    pub stdout_value: bytes::Bytes,
+    pub stderr_value: bytes::Bytes,
 }
 
 impl Output {
-    fn status(self: Output) -> ExitStatus {
+    pub fn status(self: Output) -> ExitStatus {
         self.status_value
     }
 
-    fn stdout(self: Output) -> bytes::Bytes {
+    pub fn stdout(self: Output) -> bytes::Bytes {
         self.stdout_value
     }
 
-    fn stderr(self: Output) -> bytes::Bytes {
+    pub fn stderr(self: Output) -> bytes::Bytes {
         self.stderr_value
     }
 }
 
 pub struct Command {
-    program: string,
-    arguments: Vec[string],
-    has_directory: bool,
-    directory: string,
-    environment: Vec[(string, string)],
+    pub program: string,
+    pub arguments: Vec[string],
+    pub has_directory: bool,
+    pub directory: string,
+    pub environment: Vec[(string, string)],
 }
 
 impl Command {
-    fn new(program: string) -> Command {
+    pub fn new(program: string) -> Command {
         Command {
             program,
             arguments: Vec::new(),
@@ -60,19 +60,19 @@ impl Command {
         }
     }
 
-    fn arg(self: Command, argument: string) -> Command {
+    pub fn arg(self: Command, argument: string) -> Command {
         self.arguments.push(argument);
         self
     }
 
-    fn args(self: Command, arguments: Vec[string]) -> Command {
+    pub fn args(self: Command, arguments: Vec[string]) -> Command {
         for argument in arguments {
             self.arguments.push(argument)
         };
         self
     }
 
-    fn current_dir(self: Command, directory: string) -> Command {
+    pub fn current_dir(self: Command, directory: string) -> Command {
         Command {
             program: self.program,
             arguments: self.arguments,
@@ -82,12 +82,12 @@ impl Command {
         }
     }
 
-    fn env(self: Command, key: string, value: string) -> Command {
+    pub fn env(self: Command, key: string, value: string) -> Command {
         self.environment.push((key, value));
         self
     }
 
-    fn output(self: Command) -> Result[Output, string] {
+    pub fn output(self: Command) -> Result[Output, string] {
         let (ok, code, stdout, stderr, err) = host::process_output(
             self.program,
             self.arguments,
@@ -106,7 +106,7 @@ impl Command {
         }
     }
 
-    fn status(self: Command) -> Result[ExitStatus, string] {
+    pub fn status(self: Command) -> Result[ExitStatus, string] {
         let (ok, code, err) = host::process_status(
             self.program,
             self.arguments,

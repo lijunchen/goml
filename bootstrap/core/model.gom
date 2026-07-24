@@ -4,44 +4,44 @@ use gomlc::ast;
 use gomlc::tast;
 
 pub struct File {
-    functions: Vec[Function],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    type_instances: Vec[TypeInstance],
+    pub functions: Vec[Function],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
+    pub type_instances: Vec[TypeInstance],
 }
 
 pub struct TypeInstance {
-    base_name: string,
-    args: Vec[tast::Type],
-    name: string,
+    pub base_name: string,
+    pub args: Vec[tast::Type],
+    pub name: string,
 }
 
 pub struct Function {
-    name: string,
-    root: bool,
-    generics: Vec[string],
-    predicates: Vec[tast::TypePredicate],
-    trait_impl: Option[TraitImpl],
-    params: Vec[(string, tast::Type)],
-    ret_ty: tast::Type,
-    body: Block,
+    pub name: string,
+    pub root: bool,
+    pub generics: Vec[string],
+    pub predicates: Vec[tast::TypePredicate],
+    pub trait_impl: Option[TraitImpl],
+    pub params: Vec[(string, tast::Type)],
+    pub ret_ty: tast::Type,
+    pub body: Block,
 }
 
 pub struct TraitImpl {
-    trait_ref: tast::TraitRef,
-    for_ty: tast::Type,
-    associated_types: Vec[(string, tast::Type)],
+    pub trait_ref: tast::TraitRef,
+    pub for_ty: tast::Type,
+    pub associated_types: Vec[(string, tast::Type)],
 }
 
 pub struct LetStmt {
-    name: string,
-    value: Expr,
-    ty: tast::Type,
+    pub name: string,
+    pub value: Expr,
+    pub ty: tast::Type,
 }
 
 pub struct Block {
-    stmts: Vec[LetStmt],
-    tail: Option[Expr],
+    pub stmts: Vec[LetStmt],
+    pub tail: Option[Expr],
 }
 
 pub enum Expr {
@@ -73,8 +73,8 @@ pub enum Expr {
 }
 
 pub struct Arm {
-    lhs: Expr,
-    body: Expr,
+    pub lhs: Expr,
+    pub body: Expr,
 }
 
 pub fn expr_type(value: Expr) -> tast::Type {

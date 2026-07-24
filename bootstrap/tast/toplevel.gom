@@ -166,6 +166,7 @@ fn check_function(
     resolve_required_predicates(ctx);
     resolve_coercion_constraints(ctx);
     Function {
+        visibility: value.visibility,
         name: value.name,
         generics: type_params,
         predicates,
@@ -1143,6 +1144,8 @@ fn check_file_with_package(
             name: value.name,
             generics: value.generics,
             fields: value.fields,
+            public_fields: value.public_fields,
+            has_hidden_fields: false,
         })
     };
     CheckResult {

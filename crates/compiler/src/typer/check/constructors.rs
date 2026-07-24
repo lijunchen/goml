@@ -175,6 +175,20 @@ impl Typer {
                     );
                     return self.error_expr(None);
                 };
+                if def.has_hidden_fields {
+                    util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Struct {} has private fields and cannot be constructed here",
+                            struct_constructor.type_name.0
+                        ),
+                        self.expr_range(expr_id),
+                    );
+                    for arg in args {
+                        self.infer_expr(genv, local_env, diagnostics, *arg);
+                    }
+                    return self.error_expr(None);
+                }
                 def.fields.len()
             }
         };
@@ -380,6 +394,20 @@ impl Typer {
                     );
                     return self.error_expr(None);
                 };
+                if struct_def.has_hidden_fields {
+                    util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Struct {} has private fields and cannot be constructed here",
+                            type_name.0
+                        ),
+                        self.expr_range(expr_id),
+                    );
+                    for (_, expr) in fields {
+                        self.infer_expr(genv, local_env, diagnostics, *expr);
+                    }
+                    return self.error_expr(None);
+                }
                 struct_def.fields.clone()
             }
             common::Constructor::Enum(enum_constructor) => {

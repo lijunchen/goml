@@ -1127,6 +1127,7 @@ pub enum Def {
 #[derive(Debug, Clone)]
 pub struct Fn {
     pub attrs: Vec<Attribute>,
+    pub visibility: ast::Visibility,
     pub name: String,
     pub generics: Vec<HirIdent>,
     pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
@@ -1238,6 +1239,7 @@ pub struct StructDef {
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
     pub fields: Vec<(HirIdent, TypeExpr)>,
+    pub public_fields: Vec<HirIdent>,
 }
 
 impl From<&ast::StructDef> for StructDef {
@@ -1250,6 +1252,11 @@ impl From<&ast::StructDef> for StructDef {
                 .fields
                 .iter()
                 .map(|(i, t)| (HirIdent::name(&i.0), t.into()))
+                .collect(),
+            public_fields: s
+                .public_fields
+                .iter()
+                .map(|name| HirIdent::name(&name.0))
                 .collect(),
         }
     }

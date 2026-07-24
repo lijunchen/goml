@@ -130,7 +130,7 @@ fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
 }
 
 impl Parser {
-    fn report_stuck(self: Parser) -> unit {
+    pub fn report_stuck(self: Parser) -> unit {
         if self.stuck_reported.get() == false {
             let (start, end) = current_range(self);
             self.diagnostics.push(cst::diagnostic(
@@ -144,7 +144,7 @@ impl Parser {
         }
     }
 
-    fn peek(self: Parser) -> lexer::TokenKind {
+    pub fn peek(self: Parser) -> lexer::TokenKind {
         if self.depth_limit_hit.get() {
             lexer::TokenKind::Eof
         } else if self.fuel.get() == 0 {
@@ -156,7 +156,7 @@ impl Parser {
         }
     }
 
-    fn nth(self: Parser, offset: int32) -> lexer::TokenKind {
+    pub fn nth(self: Parser, offset: int32) -> lexer::TokenKind {
         if self.depth_limit_hit.get() {
             lexer::TokenKind::Eof
         } else if self.fuel.get() == 0 {
@@ -168,15 +168,15 @@ impl Parser {
         }
     }
 
-    fn eof(self: Parser) -> bool {
+    pub fn eof(self: Parser) -> bool {
         self.depth_limit_hit.get() || input_eof(self)
     }
 
-    fn at(self: Parser, kind: lexer::TokenKind) -> bool {
+    pub fn at(self: Parser, kind: lexer::TokenKind) -> bool {
         lexer::token_kind_equal(self.peek(), kind)
     }
 
-    fn eat(self: Parser, kind: lexer::TokenKind) -> bool {
+    pub fn eat(self: Parser, kind: lexer::TokenKind) -> bool {
         if self.at(kind) {
             self.advance();
             true
@@ -185,7 +185,7 @@ impl Parser {
         }
     }
 
-    fn expect(self: Parser, kind: lexer::TokenKind) -> unit {
+    pub fn expect(self: Parser, kind: lexer::TokenKind) -> unit {
         if self.depth_limit_hit.get() {
             ()
         } else if self.eat(kind) {
@@ -205,18 +205,18 @@ impl Parser {
         }
     }
 
-    fn advance(self: Parser) -> unit {
+    pub fn advance(self: Parser) -> unit {
         self.fuel.set(256);
         input_skip(self);
         self.stuck_reported.set(false);
         self.events.push(Event::Advance)
     }
 
-    fn error(self: Parser, message: string) -> unit {
+    pub fn error(self: Parser, message: string) -> unit {
         self.events.push(Event::Error(message))
     }
 
-    fn advance_with_error(self: Parser, message: string) -> unit {
+    pub fn advance_with_error(self: Parser, message: string) -> unit {
         if self.depth_limit_hit.get() {
             ()
         } else {
@@ -228,43 +228,43 @@ impl Parser {
         }
     }
 
-    fn open(self: Parser) -> MarkerOpened {
+    pub fn open(self: Parser) -> MarkerOpened {
         let index = self.events.len();
         self.events.push(event_tombstone());
         MarkerOpened { index }
     }
 
-    fn close(self: Parser, marker: MarkerOpened, kind: cst::NodeKind) -> MarkerClosed {
+    pub fn close(self: Parser, marker: MarkerOpened, kind: cst::NodeKind) -> MarkerClosed {
         self.events.set(marker.index, Event::Open(kind, Option::None));
         self.events.push(Event::Close);
         MarkerClosed { index: marker.index }
     }
 
-    fn enter_expr(self: Parser) -> bool {
+    pub fn enter_expr(self: Parser) -> bool {
         self.enter_depth(self.expr_depth, "expression is too deeply nested")
     }
 
-    fn leave_expr(self: Parser) -> unit {
+    pub fn leave_expr(self: Parser) -> unit {
         self.expr_depth.set(self.expr_depth.get() - 1)
     }
 
-    fn enter_pattern(self: Parser) -> bool {
+    pub fn enter_pattern(self: Parser) -> bool {
         self.enter_depth(self.pattern_depth, "pattern is too deeply nested")
     }
 
-    fn leave_pattern(self: Parser) -> unit {
+    pub fn leave_pattern(self: Parser) -> unit {
         self.pattern_depth.set(self.pattern_depth.get() - 1)
     }
 
-    fn enter_type(self: Parser) -> bool {
+    pub fn enter_type(self: Parser) -> bool {
         self.enter_depth(self.type_depth, "type is too deeply nested")
     }
 
-    fn leave_type(self: Parser) -> unit {
+    pub fn leave_type(self: Parser) -> unit {
         self.type_depth.set(self.type_depth.get() - 1)
     }
 
-    fn enter_depth(self: Parser, depth: Ref[int32], message: string) -> bool {
+    pub fn enter_depth(self: Parser, depth: Ref[int32], message: string) -> bool {
         if depth.get() >= 512 {
             if self.depth_limit_hit.get() == false {
                 self.error(message);
@@ -279,7 +279,7 @@ impl Parser {
         }
     }
 
-    fn set_struct_literals_allowed(self: Parser, allowed: bool) -> bool {
+    pub fn set_struct_literals_allowed(self: Parser, allowed: bool) -> bool {
         let previous = self.struct_literals_allowed.get();
         self.struct_literals_allowed.set(allowed);
         previous
@@ -287,7 +287,7 @@ impl Parser {
 }
 
 impl MarkerClosed {
-    fn precede(self: MarkerClosed, parser: Parser) -> MarkerOpened {
+    pub fn precede(self: MarkerClosed, parser: Parser) -> MarkerOpened {
         let marker = parser.open();
         match parser.events.get(self.index) {
             Event::Open(kind, _) => parser.events.set(
@@ -301,7 +301,7 @@ impl MarkerClosed {
 }
 
 impl MarkerOpened {
-    fn completed(self: MarkerOpened, parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
+    pub fn completed(self: MarkerOpened, parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
         parser.close(self, kind)
     }
 }

@@ -766,7 +766,13 @@ impl StructDef {
             .append(generics_to_doc(&self.generics));
 
         let fields_doc = RcDoc::concat(self.fields.iter().map(|(name, ty)| {
+            let visibility = if self.public_fields.contains(name) {
+                RcDoc::text("pub ")
+            } else {
+                RcDoc::nil()
+            };
             RcDoc::hardline()
+                .append(visibility)
                 .append(RcDoc::text(&name.0))
                 .append(RcDoc::text(":"))
                 .append(RcDoc::space())

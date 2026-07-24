@@ -69,6 +69,8 @@ pub struct StructDef {
     pub name: TastIdent,
     pub generics: Vec<TastIdent>,
     pub fields: Vec<(TastIdent, tast::Ty)>,
+    #[serde(default)]
+    pub has_hidden_fields: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -147,6 +149,8 @@ impl Default for ImplDef {
 pub struct TypeEnv {
     pub enums: IndexMap<TastIdent, EnumDef>,
     pub structs: IndexMap<TastIdent, StructDef>,
+    #[serde(skip)]
+    pub public_struct_fields: IndexMap<TastIdent, Vec<String>>,
 }
 
 impl TypeEnv {
@@ -196,6 +200,7 @@ impl TypeEnv {
                 name,
                 generics,
                 fields: Vec::new(),
+                has_hidden_fields: false,
             })
     }
 
@@ -349,6 +354,8 @@ pub struct TraitEnv {
     pub trait_impls: IndexMap<TraitImplKey, ImplDef>,
     #[serde(with = "indexmap::map::serde_seq")]
     pub inherent_impls: IndexMap<InherentImplKey, ImplDef>,
+    #[serde(skip)]
+    pub public_inherent_methods: IndexMap<InherentImplKey, Vec<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -363,6 +370,7 @@ impl TraitEnv {
             trait_defs: IndexMap::new(),
             trait_impls: IndexMap::new(),
             inherent_impls: IndexMap::new(),
+            public_inherent_methods: IndexMap::new(),
         }
     }
 
@@ -656,6 +664,7 @@ impl GlobalTypeEnv {
                 trait_defs: IndexMap::new(),
                 trait_impls: IndexMap::new(),
                 inherent_impls: IndexMap::new(),
+                public_inherent_methods: IndexMap::new(),
             },
             value_env: ValueEnv::new(),
             lang_items: LangItemTable::default(),

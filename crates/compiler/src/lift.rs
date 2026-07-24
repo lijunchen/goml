@@ -1168,6 +1168,7 @@ fn transform_closure(
         name: struct_name.clone(),
         generics: Vec::new(),
         fields: struct_fields,
+        has_hidden_fields: false,
     };
     state.liftenv.insert_struct(struct_def);
 

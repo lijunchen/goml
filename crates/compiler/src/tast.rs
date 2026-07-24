@@ -52,6 +52,7 @@ pub struct ImplBlock {
 
 #[derive(Debug, Clone)]
 pub struct Fn {
+    pub visibility: ::ast::ast::Visibility,
     pub name: String,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,

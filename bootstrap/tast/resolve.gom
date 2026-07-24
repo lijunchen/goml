@@ -14,6 +14,7 @@ struct ResolvedStruct {
     constructor: Constructor,
     fields: Vec[(string, Type)],
     ty: Type,
+    has_hidden_fields: bool,
 }
 
 enum NamedFieldConstructorResolution {
@@ -322,6 +323,7 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
         },
         fields,
         ty: nominal_type(value.name, args),
+        has_hidden_fields: value.has_hidden_fields,
     }
 }
 
@@ -355,6 +357,7 @@ fn instantiate_named_variant(
         },
         fields,
         ty,
+        has_hidden_fields: false,
     }
 }
 

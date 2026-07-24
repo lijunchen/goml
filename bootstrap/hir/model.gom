@@ -3,19 +3,19 @@ package hir;
 use gomlc::ast;
 
 pub struct LocalId {
-    pkg: int32,
-    index: int32,
-    hint: string,
+    pub pkg: int32,
+    pub index: int32,
+    pub hint: string,
 }
 
 pub struct DefId {
-    pkg: int32,
-    index: int32,
+    pub pkg: int32,
+    pub index: int32,
 }
 
 pub struct ImportAlias {
-    alias: string,
-    package_name: string,
+    pub alias: string,
+    pub package_name: string,
 }
 
 pub enum NameRef {
@@ -54,8 +54,8 @@ pub enum TypeExpr {
 }
 
 pub struct TraitRef {
-    name: string,
-    args: Vec[TypeExpr],
+    pub name: string,
+    pub args: Vec[TypeExpr],
 }
 
 pub enum Predicate {
@@ -64,57 +64,58 @@ pub enum Predicate {
 }
 
 pub struct AssociatedType {
-    name: string,
-    bounds: Vec[TraitRef],
+    pub name: string,
+    pub bounds: Vec[TraitRef],
 }
 
 pub struct TraitMethodSignature {
-    name: string,
-    params: Vec[TypeExpr],
-    ret_ty: TypeExpr,
+    pub name: string,
+    pub params: Vec[TypeExpr],
+    pub ret_ty: TypeExpr,
 }
 
 pub struct ClosureParam {
-    name: LocalId,
-    ty: Option[TypeExpr],
+    pub name: LocalId,
+    pub ty: Option[TypeExpr],
 }
 
 pub struct Function {
-    def_id: DefId,
-    attrs: Vec[ast::Attribute],
-    name: string,
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    params: Vec[(LocalId, TypeExpr)],
-    param_type_spans: Vec[ast::Span],
-    ret_ty: Option[TypeExpr],
-    ret_ty_span: Option[ast::Span],
-    body: Block,
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub visibility: ast::Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(LocalId, TypeExpr)],
+    pub param_type_spans: Vec[ast::Span],
+    pub ret_ty: Option[TypeExpr],
+    pub ret_ty_span: Option[ast::Span],
+    pub body: Block,
 }
 
 pub struct ExternFunction {
-    def_id: DefId,
-    attrs: Vec[ast::Attribute],
-    name: string,
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    params: Vec[(string, TypeExpr)],
-    ret_ty: Option[TypeExpr],
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(string, TypeExpr)],
+    pub ret_ty: Option[TypeExpr],
 }
 
 pub struct EnumDef {
-    def_id: DefId,
-    attrs: Vec[ast::Attribute],
-    name: string,
-    generics: Vec[string],
-    variants: Vec[EnumVariant],
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub variants: Vec[EnumVariant],
 }
 
 pub struct EnumVariant {
-    name: string,
-    fields: EnumVariantFields,
+    pub name: string,
+    pub fields: EnumVariantFields,
 }
 
 pub enum EnumVariantFields {
@@ -124,36 +125,37 @@ pub enum EnumVariantFields {
 }
 
 pub struct StructDef {
-    def_id: DefId,
-    attrs: Vec[ast::Attribute],
-    name: string,
-    generics: Vec[string],
-    fields: Vec[(string, TypeExpr)],
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub fields: Vec[(string, TypeExpr)],
+    pub public_fields: Vec[string],
 }
 
 pub struct TraitDef {
-    def_id: DefId,
-    attrs: Vec[ast::Attribute],
-    name: string,
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    supertraits: Vec[TraitRef],
-    associated_types: Vec[AssociatedType],
-    method_sigs: Vec[TraitMethodSignature],
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub supertraits: Vec[TraitRef],
+    pub associated_types: Vec[AssociatedType],
+    pub method_sigs: Vec[TraitMethodSignature],
 }
 
 pub struct ImplBlock {
-    def_id: DefId,
-    attrs: Vec[ast::Attribute],
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    associated_types: Vec[(string, TypeExpr)],
-    trait_ref: Option[TraitRef],
-    for_type: TypeExpr,
-    for_type_span: ast::Span,
-    methods: Vec[Function],
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub associated_types: Vec[(string, TypeExpr)],
+    pub trait_ref: Option[TraitRef],
+    pub for_type: TypeExpr,
+    pub for_type_span: ast::Span,
+    pub methods: Vec[Function],
 }
 
 pub enum Item {
@@ -166,19 +168,19 @@ pub enum Item {
 }
 
 pub struct File {
-    package_name: string,
-    path: string,
-    source_path: string,
-    imports: Vec[string],
-    import_aliases: Vec[ImportAlias],
-    use_traits: Vec[string],
-    items: Vec[Item],
-    invalid_self_type_spans: Vec[ast::Span],
+    pub package_name: string,
+    pub path: string,
+    pub source_path: string,
+    pub imports: Vec[string],
+    pub import_aliases: Vec[ImportAlias],
+    pub use_traits: Vec[string],
+    pub items: Vec[Item],
+    pub invalid_self_type_spans: Vec[ast::Span],
 }
 
 pub struct Block {
-    stmts: Vec[Stmt],
-    tail: Option[Expr],
+    pub stmts: Vec[Stmt],
+    pub tail: Option[Expr],
 }
 
 pub enum Stmt {
@@ -188,8 +190,8 @@ pub enum Stmt {
 }
 
 pub struct Expr {
-    kind: ExprKind,
-    span: ast::Span,
+    pub kind: ExprKind,
+    pub span: ast::Span,
 }
 
 pub enum ExprKind {
@@ -236,18 +238,18 @@ pub enum ExprKind {
 }
 
 pub struct Arm {
-    pat: Pat,
-    guard: Option[Expr],
-    body: Expr,
+    pub pat: Pat,
+    pub guard: Option[Expr],
+    pub body: Expr,
 }
 
 pub struct ArrayPatRest {
-    binding: Option[LocalId],
+    pub binding: Option[LocalId],
 }
 
 pub struct Pat {
-    kind: PatKind,
-    span: ast::Span,
+    pub kind: PatKind,
+    pub span: ast::Span,
 }
 
 pub enum PatKind {
@@ -279,12 +281,12 @@ pub enum PatKind {
 }
 
 pub struct Diagnostic {
-    message: string,
-    span: Option[ast::Span],
+    pub message: string,
+    pub span: Option[ast::Span],
 }
 
 pub struct LowerResult {
-    hir: Option[File],
-    source_path: string,
-    diagnostics: Vec[Diagnostic],
+    pub hir: Option[File],
+    pub source_path: string,
+    pub diagnostics: Vec[Diagnostic],
 }

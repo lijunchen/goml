@@ -299,6 +299,10 @@ impl Encoder {
             self.ty(ty);
             self.close();
         }
+        self.list(value.public_fields.len());
+        for field in &value.public_fields {
+            self.string(&field.0);
+        }
         self.close();
     }
 

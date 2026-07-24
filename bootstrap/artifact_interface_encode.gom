@@ -165,6 +165,8 @@ fn artifact_json_struct_def(
     artifact_json_string_array(writer, value.generics);
     artifact_json_name(writer, "fields");
     artifact_json_type_pairs(writer, context, value.fields);
+    artifact_json_name(writer, "has_hidden_fields");
+    artifact_json_bool(writer, value.has_hidden_fields);
     artifact_json_end_object(writer)
 }
 
@@ -428,7 +430,7 @@ fn artifact_json_interface_hash_view(
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "format_version");
-    artifact_json_number(writer, "12");
+    artifact_json_number(writer, "13");
     artifact_json_name(writer, "compiler_abi");
     artifact_json_number(writer, "2");
     artifact_json_name(writer, "package");
@@ -481,7 +483,7 @@ fn artifact_json_interface_unit(
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "format_version");
-    artifact_json_number(writer, "12");
+    artifact_json_number(writer, "13");
     artifact_json_name(writer, "compiler_abi");
     artifact_json_number(writer, "2");
     artifact_json_name(writer, "package");

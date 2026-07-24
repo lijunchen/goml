@@ -224,8 +224,14 @@ StructFieldList: (CstElement, CstElement) = {
 };
 
 StructField: CstElement = {
-    <name:Tok<"ident">> <colon:Tok<":">> <type_:TypeExpr> =>
-        node(MySyntaxKind::STRUCT_FIELD, vec![name, colon, type_])
+    <public:Tok<"pub">?> <name:Tok<"ident">> <colon:Tok<":">> <type_:TypeExpr> => {
+        let mut children = Vec::new();
+        children.extend(public);
+        children.push(name);
+        children.push(colon);
+        children.push(type_);
+        node(MySyntaxKind::STRUCT_FIELD, children)
+    }
 };
 
 TraitDef: CstElement = {
@@ -313,8 +319,28 @@ ImplFor: (CstElement, CstElement) = {
 };
 
 ImplMember: CstElement = {
-    Function,
+    ImplFunction,
     ImplAssociatedType,
+};
+
+ImplFunction: CstElement = {
+    <public:Tok<"pub">?> <fn_:Tok<"fn">> <name:Tok<"ident">>
+    <generics:GenericListWithBounds?> <params:ParamList>
+    <return_type:ReturnType?> <where_clause:WhereClause?> <body:Block> => {
+        let mut children = Vec::new();
+        children.extend(public);
+        children.push(fn_);
+        children.push(name);
+        children.extend(generics);
+        children.push(params);
+        if let Some((arrow, type_)) = return_type {
+            children.push(arrow);
+            children.push(type_);
+        }
+        children.extend(where_clause);
+        children.push(body);
+        node(MySyntaxKind::FN, children)
+    }
 };
 
 ImplAssociatedType: CstElement = {

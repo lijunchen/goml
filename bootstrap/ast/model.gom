@@ -3,17 +3,17 @@ package ast;
 use gomlc::cst;
 
 pub struct Span {
-    start: int32,
-    end: int32,
+    pub start: int32,
+    pub end: int32,
 }
 
 pub struct PathSegment {
-    ident: string,
-    span: Span,
+    pub ident: string,
+    pub span: Span,
 }
 
 pub struct Path {
-    segments: Vec[PathSegment],
+    pub segments: Vec[PathSegment],
 }
 
 pub enum TypeExpr {
@@ -40,27 +40,27 @@ pub enum TypeExpr {
 }
 
 pub struct ClosureParam {
-    name: string,
-    ty: Option[TypeExpr],
-    span: Span,
+    pub name: string,
+    pub ty: Option[TypeExpr],
+    pub span: Span,
 }
 
 pub struct Attribute {
-    span: Span,
-    text: string,
+    pub span: Span,
+    pub text: string,
 }
 
 pub struct File {
-    package_name: string,
-    package_explicit: bool,
-    uses: Vec[UseDecl],
-    items: Vec[Item],
-    invalid_self_type_spans: Vec[Span],
+    pub package_name: string,
+    pub package_explicit: bool,
+    pub uses: Vec[UseDecl],
+    pub items: Vec[Item],
+    pub invalid_self_type_spans: Vec[Span],
 }
 
 pub struct UseDecl {
-    path: Path,
-    alias: Option[string],
+    pub path: Path,
+    pub alias: Option[string],
 }
 
 pub enum Visibility {
@@ -78,41 +78,41 @@ pub enum Item {
 }
 
 pub struct Function {
-    attrs: Vec[Attribute],
-    visibility: Visibility,
-    name: string,
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    params: Vec[(string, TypeExpr)],
-    param_type_spans: Vec[Span],
-    ret_ty: Option[TypeExpr],
-    ret_ty_span: Option[Span],
-    body: Block,
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(string, TypeExpr)],
+    pub param_type_spans: Vec[Span],
+    pub ret_ty: Option[TypeExpr],
+    pub ret_ty_span: Option[Span],
+    pub body: Block,
 }
 
 pub struct ExternFunction {
-    attrs: Vec[Attribute],
-    visibility: Visibility,
-    name: string,
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    params: Vec[(string, TypeExpr)],
-    ret_ty: Option[TypeExpr],
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(string, TypeExpr)],
+    pub ret_ty: Option[TypeExpr],
 }
 
 pub struct EnumDef {
-    attrs: Vec[Attribute],
-    visibility: Visibility,
-    name: string,
-    generics: Vec[string],
-    variants: Vec[EnumVariant],
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub variants: Vec[EnumVariant],
 }
 
 pub struct EnumVariant {
-    name: string,
-    fields: EnumVariantFields,
+    pub name: string,
+    pub fields: EnumVariantFields,
 }
 
 pub enum EnumVariantFields {
@@ -122,33 +122,34 @@ pub enum EnumVariantFields {
 }
 
 pub struct StructDef {
-    attrs: Vec[Attribute],
-    visibility: Visibility,
-    name: string,
-    generics: Vec[string],
-    fields: Vec[(string, TypeExpr)],
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub fields: Vec[(string, TypeExpr)],
+    pub public_fields: Vec[string],
 }
 
 pub struct TraitDef {
-    attrs: Vec[Attribute],
-    visibility: Visibility,
-    name: string,
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    supertraits: Vec[TraitRef],
-    associated_types: Vec[AssociatedType],
-    method_sigs: Vec[TraitMethodSignature],
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub supertraits: Vec[TraitRef],
+    pub associated_types: Vec[AssociatedType],
+    pub method_sigs: Vec[TraitMethodSignature],
 }
 
 pub struct AssociatedType {
-    name: string,
-    bounds: Vec[TraitRef],
+    pub name: string,
+    pub bounds: Vec[TraitRef],
 }
 
 pub struct TraitRef {
-    path: Path,
-    args: Vec[TypeExpr],
+    pub path: Path,
+    pub args: Vec[TypeExpr],
 }
 
 pub enum Predicate {
@@ -157,27 +158,27 @@ pub enum Predicate {
 }
 
 pub struct TraitMethodSignature {
-    name: string,
-    params: Vec[(string, TypeExpr)],
-    ret_ty: TypeExpr,
+    pub name: string,
+    pub params: Vec[(string, TypeExpr)],
+    pub ret_ty: TypeExpr,
 }
 
 pub struct ImplBlock {
-    attrs: Vec[Attribute],
-    generics: Vec[string],
-    generic_bounds: Vec[(string, Vec[TraitRef])],
-    predicates: Vec[Predicate],
-    associated_types: Vec[(string, TypeExpr)],
-    trait_ref: Option[TraitRef],
-    for_type: TypeExpr,
-    for_type_span: Span,
-    methods: Vec[Function],
+    pub attrs: Vec[Attribute],
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub associated_types: Vec[(string, TypeExpr)],
+    pub trait_ref: Option[TraitRef],
+    pub for_type: TypeExpr,
+    pub for_type_span: Span,
+    pub methods: Vec[Function],
 }
 
 pub struct Block {
-    stmts: Vec[Stmt],
-    tail: Option[Expr],
-    span: Span,
+    pub stmts: Vec[Stmt],
+    pub tail: Option[Expr],
+    pub span: Span,
 }
 
 pub enum Stmt {
@@ -256,14 +257,14 @@ pub enum Expr {
 }
 
 pub struct Arm {
-    pat: Pat,
-    guard: Option[Expr],
-    body: Expr,
+    pub pat: Pat,
+    pub guard: Option[Expr],
+    pub body: Expr,
 }
 
 pub struct ArrayPatRest {
-    binding: Option[string],
-    span: Span,
+    pub binding: Option[string],
+    pub span: Span,
 }
 
 pub enum Pat {
@@ -295,8 +296,8 @@ pub enum Pat {
 }
 
 pub struct LowerResult {
-    ast: Option[File],
-    diagnostics: Vec[cst::Diagnostic],
+    pub ast: Option[File],
+    pub diagnostics: Vec[cst::Diagnostic],
 }
 
 pub fn span(start: int32, end: int32) -> Span {

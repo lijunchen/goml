@@ -5,24 +5,24 @@ use gomlc::core;
 use gomlc::tast;
 
 pub struct File {
-    functions: Vec[Function],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    type_instances: Vec[core::TypeInstance],
+    pub functions: Vec[Function],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
+    pub type_instances: Vec[core::TypeInstance],
 }
 
 pub struct Function {
-    name: string,
-    root: bool,
-    trait_impl: Option[core::TraitImpl],
-    params: Vec[(string, tast::Type)],
-    ret_ty: tast::Type,
-    body: Block,
+    pub name: string,
+    pub root: bool,
+    pub trait_impl: Option[core::TraitImpl],
+    pub params: Vec[(string, tast::Type)],
+    pub ret_ty: tast::Type,
+    pub body: Block,
 }
 
 pub struct Block {
-    binds: Vec[Bind],
-    term: Term,
+    pub binds: Vec[Bind],
+    pub term: Term,
 }
 
 pub enum Imm {
@@ -33,16 +33,16 @@ pub enum Imm {
 }
 
 pub struct LetBind {
-    name: string,
-    value: Value,
-    ty: tast::Type,
+    pub name: string,
+    pub value: Value,
+    pub ty: tast::Type,
 }
 
 pub struct JoinBind {
-    name: string,
-    params: Vec[(string, tast::Type)],
-    ret_ty: tast::Type,
-    body: Block,
+    pub name: string,
+    pub params: Vec[(string, tast::Type)],
+    pub ret_ty: tast::Type,
+    pub body: Block,
 }
 
 pub enum Bind {
@@ -69,8 +69,8 @@ pub enum Value {
 }
 
 pub struct Arm {
-    lhs: Imm,
-    body: Block,
+    pub lhs: Imm,
+    pub body: Block,
 }
 
 pub enum Term {

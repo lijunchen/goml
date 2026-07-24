@@ -80,17 +80,17 @@ pub enum Expr {
 }
 
 pub struct Block {
-    stmts: Vec[Stmt],
+    pub stmts: Vec[Stmt],
 }
 
 pub struct SwitchCase {
-    value: Expr,
-    body: Block,
+    pub value: Expr,
+    pub body: Block,
 }
 
 pub struct TypeSwitchCase {
-    ty: Type,
-    body: Block,
+    pub ty: Type,
+    pub body: Block,
 }
 
 pub enum Stmt {
@@ -117,49 +117,49 @@ pub enum Stmt {
 }
 
 pub struct StructDef {
-    name: string,
-    fields: Vec[(string, Type)],
+    pub name: string,
+    pub fields: Vec[(string, Type)],
 }
 
 pub struct InterfaceMethod {
-    name: string,
-    params: Vec[Type],
-    ret_ty: Option[Type],
+    pub name: string,
+    pub params: Vec[Type],
+    pub ret_ty: Option[Type],
 }
 
 pub struct InterfaceDef {
-    name: string,
-    methods: Vec[InterfaceMethod],
+    pub name: string,
+    pub methods: Vec[InterfaceMethod],
 }
 
 pub struct TypeDef {
-    name: string,
-    ty: Type,
+    pub name: string,
+    pub ty: Type,
 }
 
 pub struct ConstSpec {
-    name: string,
-    ty: Type,
-    value: Expr,
+    pub name: string,
+    pub ty: Type,
+    pub value: Expr,
 }
 
 pub struct ConstGroup {
-    specs: Vec[ConstSpec],
+    pub specs: Vec[ConstSpec],
 }
 
 pub struct Function {
-    name: string,
-    params: Vec[(string, Type)],
-    ret_ty: Option[Type],
-    body: Block,
+    pub name: string,
+    pub params: Vec[(string, Type)],
+    pub ret_ty: Option[Type],
+    pub body: Block,
 }
 
 pub struct Method {
-    receiver: (string, Type),
-    name: string,
-    params: Vec[(string, Type)],
-    ret_ty: Option[Type],
-    body: Block,
+    pub receiver: (string, Type),
+    pub name: string,
+    pub params: Vec[(string, Type)],
+    pub ret_ty: Option[Type],
+    pub body: Block,
 }
 
 pub enum Item {
@@ -173,34 +173,34 @@ pub enum Item {
 }
 
 pub struct File {
-    items: Vec[Item],
+    pub items: Vec[Item],
 }
 
 pub struct DynCoercion {
-    trait_name: string,
-    for_ty: tast::Type,
+    pub trait_name: string,
+    pub for_ty: tast::Type,
 }
 
 pub struct DynHelperNames {
-    factories: Vec[(string, string, string)],
-    wrappers: Vec[(string, string, string, string)],
+    pub factories: Vec[(string, string, string)],
+    pub wrappers: Vec[(string, string, string, string)],
 }
 
 pub struct VariantInfo {
-    owner_name: string,
-    tag: int32,
-    variant_name: string,
-    field_types: Vec[tast::Type],
-    tag_only: bool,
+    pub owner_name: string,
+    pub tag: int32,
+    pub variant_name: string,
+    pub field_types: Vec[tast::Type],
+    pub tag_only: bool,
 }
 
 pub struct VariantInfos {
-    by_owner: HashMap[string, Vec[VariantInfo]],
+    pub by_owner: HashMap[string, Vec[VariantInfo]],
 }
 
 pub struct ClosureInfo {
-    struct_name: string,
-    apply_name: string,
-    params: Vec[tast::Type],
-    ret_ty: tast::Type,
+    pub struct_name: string,
+    pub apply_name: string,
+    pub params: Vec[tast::Type],
+    pub ret_ty: tast::Type,
 }

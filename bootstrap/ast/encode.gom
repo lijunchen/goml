@@ -299,6 +299,10 @@ fn encode_struct(builder: text::StringBuilder, value: StructDef) -> unit {
         encode_type(builder, ty);
         encode_close(builder)
     };
+    encode_list(builder, value.public_fields.len());
+    for field in value.public_fields {
+        encode_string_value(builder, field)
+    };
     encode_close(builder)
 }
 

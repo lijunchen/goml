@@ -2176,6 +2176,7 @@ impl<'a> TypeMono<'a> {
                 name: new_name.clone(),
                 generics: vec![],
                 fields: new_fields,
+                has_hidden_fields: generic_def.has_hidden_fields,
             };
             self.monoenv.insert_struct(new_def);
         } else {

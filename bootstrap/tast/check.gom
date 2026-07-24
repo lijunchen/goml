@@ -1148,6 +1148,24 @@ fn check_struct_expr(
 ) -> Expr {
     match resolve_named_field_constructor(ctx, name) {
         NamedFieldConstructorResolution::Found(info) => {
+            if info.has_hidden_fields {
+                for field in fields {
+                    let _ = check_expr(ctx, field.1, Option::None);
+                };
+                push_diagnostic(
+                    ctx,
+                    "Struct "
+                        + info.constructor.name
+                        + " has private fields and cannot be constructed here",
+                );
+                return Expr::Constr(
+                    info.constructor,
+                    Vec::new(),
+                    fresh_unresolved_inference(ctx),
+                )
+            } else {
+                ()
+            };
             match propagated_expected(expected) {
                 Option::Some(ty) => expect_type(ctx, info.ty, ty),
                 Option::None => (),
@@ -1275,6 +1293,24 @@ fn check_positional_struct_expr(
     args: Vec[hir::Expr],
     expected: Option[Type],
 ) -> Expr {
+    if info.has_hidden_fields {
+        for arg in args {
+            let _ = check_expr(ctx, arg, Option::None);
+        };
+        push_diagnostic(
+            ctx,
+            "Struct "
+                + info.constructor.name
+                + " has private fields and cannot be constructed here",
+        );
+        return Expr::Constr(
+            info.constructor,
+            Vec::new(),
+            fresh_unresolved_inference(ctx),
+        )
+    } else {
+        ()
+    };
     match propagated_expected(expected) {
         Option::Some(ty) => expect_type(ctx, info.ty, ty),
         Option::None => (),
@@ -3457,6 +3493,16 @@ fn check_struct_pattern(
     match resolve_named_field_constructor(ctx, name) {
         NamedFieldConstructorResolution::Found(info) => {
             expect_type(ctx, info.ty, expected);
+            if info.has_hidden_fields && !has_rest {
+                push_diagnostic(
+                    ctx,
+                    "Struct pattern "
+                        + name
+                        + " must use `..` because it has private fields",
+                )
+            } else {
+                ()
+            };
             for index in range(0, fields.len()) {
                 let duplicate = Ref::new(false);
                 for previous in range(0, index) {

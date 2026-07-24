@@ -306,6 +306,18 @@ fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
         while !p.at(T!['}']) && !p.eof() {
             if p.at(T![fn]) {
                 func(p);
+            } else if p.at(T![pub]) {
+                let m = p.open();
+                p.expect(T![pub]);
+                if p.at(T![fn]) {
+                    func_with_marker(p, m);
+                } else {
+                    p.error("expected a function after `pub`");
+                    if !p.eof() {
+                        p.advance();
+                    }
+                    p.close(m, MySyntaxKind::ErrorTree);
+                }
             } else if p.at(T![type]) {
                 impl_associated_type(p);
             } else {
@@ -460,7 +472,7 @@ fn struct_field_list(p: &mut Parser) {
     p.expect(T!['{']);
     let m = p.open();
     while !p.at(T!['}']) && !p.eof() {
-        if p.at(T![ident]) {
+        if p.at(T![ident]) || p.at(T![pub]) {
             struct_field(p);
             p.eat(T![,]);
         } else {
@@ -472,8 +484,9 @@ fn struct_field_list(p: &mut Parser) {
 }
 
 fn struct_field(p: &mut Parser) {
-    assert!(p.at(T![ident]));
+    assert!(p.at(T![ident]) || p.at(T![pub]));
     let m = p.open();
+    p.eat(T![pub]);
     p.expect(T![ident]);
     p.expect(T![:]);
     type_expr(p);

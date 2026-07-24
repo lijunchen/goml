@@ -515,6 +515,16 @@ impl Typer {
                             );
                             return self.check_pat_wild(ty, self.pat_astptr(pat));
                         };
+                        if struct_def.has_hidden_fields && !has_rest {
+                            util::push_error_with_range(
+                                diagnostics,
+                                format!(
+                                    "Struct pattern {} must use `..` because it has private fields",
+                                    name_display
+                                ),
+                                self.pat_range(pat),
+                            );
+                        }
                         struct_def.fields.clone()
                     }
                     common::Constructor::Enum(enum_constructor) => {

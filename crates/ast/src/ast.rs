@@ -244,6 +244,7 @@ pub struct StructDef {
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub fields: Vec<(AstIdent, TypeExpr)>,
+    pub public_fields: Vec<AstIdent>,
 }
 
 #[derive(Debug, Clone)]

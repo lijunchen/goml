@@ -195,7 +195,7 @@ pub fn message() -> string {
 ### Current Visibility Semantics
 - Cross-package access is filtered by top-level item visibility. A package can use another package's `pub fn`, `pub struct`, `pub enum`, and `pub trait`; private top-level items are not exported.
 - Private helpers remain usable in every file of their defining package, including from public wrapper functions.
-- Struct fields and `impl` methods do not yet have fine-grained visibility enforcement. Do not rely on that as a long-term API guarantee.
+- Struct fields and inherent `impl` methods are private by default and require `pub` for cross-package access. Trait implementation methods inherit the trait method visibility and must not use `pub`.
 - Interface files and external dependency artifacts export only public top-level API. Each package has its own interface and Core artifact.
 
 ## Package Management

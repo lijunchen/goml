@@ -3,43 +3,43 @@ package text;
 use std::bytes;
 
 pub struct StringBuilder {
-    parts: Vec[string],
-    byte_len: Ref[int32],
+    pub parts: Vec[string],
+    pub byte_len: Ref[int32],
 }
 
 impl StringBuilder {
-    fn new() -> StringBuilder {
+    pub fn new() -> StringBuilder {
         StringBuilder {
             parts: Vec::new(),
             byte_len: Ref::new(0),
         }
     }
 
-    fn with_capacity(part_capacity: int32) -> StringBuilder {
+    pub fn with_capacity(part_capacity: int32) -> StringBuilder {
         StringBuilder {
             parts: Vec::with_capacity(part_capacity),
             byte_len: Ref::new(0),
         }
     }
 
-    fn len(self: StringBuilder) -> int32 {
+    pub fn len(self: StringBuilder) -> int32 {
         self.byte_len.get()
     }
 
-    fn is_empty(self: StringBuilder) -> bool {
+    pub fn is_empty(self: StringBuilder) -> bool {
         self.byte_len.get() == 0
     }
 
-    fn write_string(self: StringBuilder, value: string) -> unit {
+    pub fn write_string(self: StringBuilder, value: string) -> unit {
         self.parts.push(value);
         self.byte_len.set(self.byte_len.get() + value.byte_len())
     }
 
-    fn write_char(self: StringBuilder, value: char) -> unit {
+    pub fn write_char(self: StringBuilder, value: char) -> unit {
         self.write_string(value.to_string())
     }
 
-    fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
+    pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
         match value.to_string() {
             Result::Ok(text) => {
                 self.write_string(text);
@@ -49,17 +49,17 @@ impl StringBuilder {
         }
     }
 
-    fn write_line(self: StringBuilder, value: string) -> unit {
+    pub fn write_line(self: StringBuilder, value: string) -> unit {
         self.write_string(value);
         self.write_string("\n")
     }
 
-    fn clear(self: StringBuilder) -> unit {
+    pub fn clear(self: StringBuilder) -> unit {
         self.parts.clear();
         self.byte_len.set(0)
     }
 
-    fn finish(self: StringBuilder) -> string {
+    pub fn finish(self: StringBuilder) -> string {
         string_concat(self.parts)
     }
 }
