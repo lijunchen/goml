@@ -540,7 +540,7 @@ package data;
 use alice::traits;
 
 pub struct Box {
-    value: int32,
+    pub value: int32,
 }
 
 impl traits::Show for Box {
@@ -586,7 +586,7 @@ pub fn write(value: string) -> unit {
         r#"package model;
 
 pub struct Box {
-    value: int32,
+    pub value: int32,
 }
 
 pub fn make() -> Box {
@@ -740,7 +740,7 @@ fn project_build_loads_transitive_public_type_interfaces() -> anyhow::Result<()>
         r#"package model;
 
 pub struct Box {
-    value: int32,
+    pub value: int32,
 }
 
 pub fn make() -> Box {
