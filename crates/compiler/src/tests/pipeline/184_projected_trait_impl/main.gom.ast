@@ -1,11 +1,11 @@
 package main;
 trait Source {
   type Item;
-  fn get(Self) -> Self::Item;
+  fn get(self: Self) -> Self::Item;
 }
 
 trait Pick[T] {
-  fn pick(Self) -> T;
+  fn pick(self: Self) -> T;
 }
 
 impl[S: Source] Pick[S::Item] for S {

@@ -1,4 +1,4 @@
-FILE@0..787
+FILE@0..793
   STRUCT@0..37
     StructKeyword@0..6 "struct"
     Whitespace@6..7 " "
@@ -53,436 +53,440 @@ FILE@0..787
       Whitespace@78..79 "\n"
       RBrace@79..80 "}"
       Whitespace@80..82 "\n\n"
-  TRAIT@82..130
+  TRAIT@82..136
     TraitKeyword@82..87 "trait"
     Whitespace@87..88 " "
     Ident@88..95 "Display"
     Whitespace@95..96 " "
     LBrace@96..97 "{"
     Whitespace@97..102 "\n    "
-    TRAIT_METHOD_SIG_LIST@102..130
-      TRAIT_METHOD_SIG@102..125
+    TRAIT_METHOD_SIG_LIST@102..136
+      TRAIT_METHOD_SIG@102..131
         FnKeyword@102..104 "fn"
         Whitespace@104..105 " "
         Ident@105..109 "show"
-        TYPE_LIST@109..116
+        PARAM_LIST@109..122
           LParen@109..110 "("
-          TYPE_TAPP@110..114
-            PATH@110..114
-              Ident@110..114 "Self"
-          RParen@114..115 ")"
-          Whitespace@115..116 " "
-        Arrow@116..118 "->"
-        Whitespace@118..119 " "
-        TYPE_STRING@119..125
-          StringKeyword@119..125 "string"
-      Semi@125..126 ";"
-      Whitespace@126..127 "\n"
-      RBrace@127..128 "}"
-      Whitespace@128..130 "\n\n"
-  IMPL@130..205
-    ImplKeyword@130..134 "impl"
-    Whitespace@134..135 " "
-    TYPE_TAPP@135..143
-      PATH@135..143
-        Ident@135..142 "Display"
-        Whitespace@142..143 " "
-    ForKeyword@143..146 "for"
-    Whitespace@146..147 " "
-    TYPE_TAPP@147..153
-      PATH@147..153
-        Ident@147..152 "Point"
-        Whitespace@152..153 " "
-    LBrace@153..154 "{"
-    Whitespace@154..159 "\n    "
-    FN@159..202
-      FnKeyword@159..161 "fn"
-      Whitespace@161..162 " "
-      Ident@162..166 "show"
-      PARAM_LIST@166..180
-        LParen@166..167 "("
-        PARAM@167..178
-          Ident@167..171 "self"
-          Colon@171..172 ":"
-          Whitespace@172..173 " "
-          TYPE_TAPP@173..178
-            PATH@173..178
-              Ident@173..178 "Point"
-        RParen@178..179 ")"
-        Whitespace@179..180 " "
-      Arrow@180..182 "->"
-      Whitespace@182..183 " "
-      TYPE_STRING@183..190
-        StringKeyword@183..189 "string"
-        Whitespace@189..190 " "
-      BLOCK@190..202
-        LBrace@190..191 "{"
-        Whitespace@191..192 " "
-        EXPR_STR@192..200
-          Str@192..199 "\"Point\""
-          Whitespace@199..200 " "
-        RBrace@200..201 "}"
-        Whitespace@201..202 "\n"
-    RBrace@202..203 "}"
-    Whitespace@203..205 "\n\n"
-  IMPL@205..417
-    ImplKeyword@205..209 "impl"
-    Whitespace@209..210 " "
-    TYPE_TAPP@210..218
-      PATH@210..218
-        Ident@210..217 "Display"
-        Whitespace@217..218 " "
-    ForKeyword@218..221 "for"
-    Whitespace@221..222 " "
-    TYPE_TAPP@222..235
-      PATH@222..227
-        Ident@222..227 "Maybe"
-      TYPE_PARAM_LIST@227..235
-        LBracket@227..228 "["
-        TYPE_INT32@228..233
-          Int32Keyword@228..233 "int32"
-        RBracket@233..234 "]"
-        Whitespace@234..235 " "
-    LBrace@235..236 "{"
-    Whitespace@236..241 "\n    "
-    FN@241..414
-      FnKeyword@241..243 "fn"
-      Whitespace@243..244 " "
-      Ident@244..248 "show"
-      PARAM_LIST@248..269
-        LParen@248..249 "("
-        PARAM@249..267
-          Ident@249..253 "self"
-          Colon@253..254 ":"
-          Whitespace@254..255 " "
-          TYPE_TAPP@255..267
-            PATH@255..260
-              Ident@255..260 "Maybe"
-            TYPE_PARAM_LIST@260..267
-              LBracket@260..261 "["
-              TYPE_INT32@261..266
-                Int32Keyword@261..266 "int32"
-              RBracket@266..267 "]"
-        RParen@267..268 ")"
-        Whitespace@268..269 " "
-      Arrow@269..271 "->"
-      Whitespace@271..272 " "
-      TYPE_STRING@272..279
-        StringKeyword@272..278 "string"
-        Whitespace@278..279 " "
-      BLOCK@279..414
-        LBrace@279..280 "{"
-        Whitespace@280..289 "\n        "
-        EXPR_MATCH@289..412
-          MatchKeyword@289..294 "match"
-          Whitespace@294..295 " "
-          EXPR_IDENT@295..300
-            PATH@295..300
-              Ident@295..299 "self"
-              Whitespace@299..300 " "
-          MATCH_ARM_LIST@300..412
-            LBrace@300..301 "{"
-            Whitespace@301..314 "\n            "
-            MATCH_ARM@314..362
-              PATTERN_CONSTR@314..326
-                PATH@314..318
-                  Ident@314..318 "Just"
-                LParen@318..319 "("
-                PATTERN_VARIABLE@319..324
-                  Ident@319..324 "value"
-                RParen@324..325 ")"
-                Whitespace@325..326 " "
-              FatArrow@326..328 "=>"
-              Whitespace@328..329 " "
-              EXPR_BINARY@329..362
-                EXPR_BINARY@329..357
-                  EXPR_STR@329..337
-                    Str@329..336 "\"Just(\""
-                    Whitespace@336..337 " "
-                  Plus@337..338 "+"
-                  Whitespace@338..339 " "
-                  EXPR_CALL@339..357
-                    EXPR_BINARY@339..354
-                      EXPR_IDENT@339..344
-                        PATH@339..344
-                          Ident@339..344 "value"
-                      Dot@344..345 "."
-                      EXPR_IDENT@345..354
-                        PATH@345..354
-                          Ident@345..354 "to_string"
-                    ARG_LIST@354..357
-                      LParen@354..355 "("
-                      RParen@355..356 ")"
-                      Whitespace@356..357 " "
-                Plus@357..358 "+"
-                Whitespace@358..359 " "
-                EXPR_STR@359..362
-                  Str@359..362 "\")\""
-            Comma@362..363 ","
-            Whitespace@363..376 "\n            "
-            MATCH_ARM@376..396
-              PATTERN_VARIABLE@376..384
-                Ident@376..383 "Nothing"
-                Whitespace@383..384 " "
-              FatArrow@384..386 "=>"
-              Whitespace@386..387 " "
-              EXPR_STR@387..396
-                Str@387..396 "\"Nothing\""
-            Comma@396..397 ","
-            Whitespace@397..406 "\n        "
-            RBrace@406..407 "}"
-            Whitespace@407..412 "\n    "
-        RBrace@412..413 "}"
-        Whitespace@413..414 "\n"
-    RBrace@414..415 "}"
-    Whitespace@415..417 "\n\n"
-  FN@417..506
-    FnKeyword@417..419 "fn"
-    Whitespace@419..420 " "
-    Ident@420..430 "make_maybe"
-    PARAM_LIST@430..443
-      LParen@430..431 "("
-      PARAM@431..441
-        Ident@431..435 "flag"
-        Colon@435..436 ":"
-        Whitespace@436..437 " "
-        TYPE_BOOL@437..441
-          BoolKeyword@437..441 "bool"
-      RParen@441..442 ")"
-      Whitespace@442..443 " "
-    Arrow@443..445 "->"
-    Whitespace@445..446 " "
-    TYPE_TAPP@446..459
-      PATH@446..451
-        Ident@446..451 "Maybe"
-      TYPE_PARAM_LIST@451..459
-        LBracket@451..452 "["
-        TYPE_INT32@452..457
-          Int32Keyword@452..457 "int32"
-        RBracket@457..458 "]"
-        Whitespace@458..459 " "
-    BLOCK@459..506
-      LBrace@459..460 "{"
-      Whitespace@460..465 "\n    "
-      EXPR_IF@465..503
-        IfKeyword@465..467 "if"
-        Whitespace@467..468 " "
-        EXPR_IF_COND@468..473
-          EXPR_IDENT@468..473
-            PATH@468..473
-              Ident@468..472 "flag"
-              Whitespace@472..473 " "
-        EXPR_IF_THEN@473..486
-          BLOCK@473..486
-            LBrace@473..474 "{"
-            Whitespace@474..475 " "
-            EXPR_CALL@475..484
-              EXPR_IDENT@475..479
-                PATH@475..479
-                  Ident@475..479 "Just"
-              ARG_LIST@479..484
-                LParen@479..480 "("
-                ARG@480..482
-                  EXPR_INT@480..482
-                    Int@480..482 "42"
-                RParen@482..483 ")"
-                Whitespace@483..484 " "
-            RBrace@484..485 "}"
-            Whitespace@485..486 " "
-        ElseKeyword@486..490 "else"
-        Whitespace@490..491 " "
-        EXPR_IF_ELSE@491..503
-          BLOCK@491..503
-            LBrace@491..492 "{"
-            Whitespace@492..493 " "
-            EXPR_IDENT@493..501
-              PATH@493..501
-                Ident@493..500 "Nothing"
-                Whitespace@500..501 " "
-            RBrace@501..502 "}"
-            Whitespace@502..503 "\n"
-      RBrace@503..504 "}"
-      Whitespace@504..506 "\n\n"
-  FN@506..787
-    FnKeyword@506..508 "fn"
-    Whitespace@508..509 " "
-    Ident@509..513 "main"
-    PARAM_LIST@513..516
-      LParen@513..514 "("
-      RParen@514..515 ")"
-      Whitespace@515..516 " "
-    BLOCK@516..787
-      LBrace@516..517 "{"
-      Whitespace@517..522 "\n    "
-      STMT_LET@522..560
-        LetKeyword@522..525 "let"
-        Whitespace@525..526 " "
-        PATTERN_VARIABLE@526..532
-          Ident@526..531 "point"
-          Whitespace@531..532 " "
-        Eq@532..533 "="
-        Whitespace@533..534 " "
-        EXPR_STRUCT_LITERAL@534..554
-          PATH@534..540
-            Ident@534..539 "Point"
-            Whitespace@539..540 " "
-          STRUCT_LITERAL_FIELD_LIST@540..554
-            LBrace@540..541 "{"
-            Whitespace@541..542 " "
-            STRUCT_LITERAL_FIELD@542..546
-              Ident@542..543 "x"
-              Colon@543..544 ":"
-              Whitespace@544..545 " "
-              EXPR_INT@545..546
-                Int@545..546 "1"
-            Comma@546..547 ","
+          PARAM@110..120
+            Ident@110..114 "self"
+            Colon@114..115 ":"
+            Whitespace@115..116 " "
+            TYPE_TAPP@116..120
+              PATH@116..120
+                Ident@116..120 "Self"
+          RParen@120..121 ")"
+          Whitespace@121..122 " "
+        Arrow@122..124 "->"
+        Whitespace@124..125 " "
+        TYPE_STRING@125..131
+          StringKeyword@125..131 "string"
+      Semi@131..132 ";"
+      Whitespace@132..133 "\n"
+      RBrace@133..134 "}"
+      Whitespace@134..136 "\n\n"
+  IMPL@136..211
+    ImplKeyword@136..140 "impl"
+    Whitespace@140..141 " "
+    TYPE_TAPP@141..149
+      PATH@141..149
+        Ident@141..148 "Display"
+        Whitespace@148..149 " "
+    ForKeyword@149..152 "for"
+    Whitespace@152..153 " "
+    TYPE_TAPP@153..159
+      PATH@153..159
+        Ident@153..158 "Point"
+        Whitespace@158..159 " "
+    LBrace@159..160 "{"
+    Whitespace@160..165 "\n    "
+    FN@165..208
+      FnKeyword@165..167 "fn"
+      Whitespace@167..168 " "
+      Ident@168..172 "show"
+      PARAM_LIST@172..186
+        LParen@172..173 "("
+        PARAM@173..184
+          Ident@173..177 "self"
+          Colon@177..178 ":"
+          Whitespace@178..179 " "
+          TYPE_TAPP@179..184
+            PATH@179..184
+              Ident@179..184 "Point"
+        RParen@184..185 ")"
+        Whitespace@185..186 " "
+      Arrow@186..188 "->"
+      Whitespace@188..189 " "
+      TYPE_STRING@189..196
+        StringKeyword@189..195 "string"
+        Whitespace@195..196 " "
+      BLOCK@196..208
+        LBrace@196..197 "{"
+        Whitespace@197..198 " "
+        EXPR_STR@198..206
+          Str@198..205 "\"Point\""
+          Whitespace@205..206 " "
+        RBrace@206..207 "}"
+        Whitespace@207..208 "\n"
+    RBrace@208..209 "}"
+    Whitespace@209..211 "\n\n"
+  IMPL@211..423
+    ImplKeyword@211..215 "impl"
+    Whitespace@215..216 " "
+    TYPE_TAPP@216..224
+      PATH@216..224
+        Ident@216..223 "Display"
+        Whitespace@223..224 " "
+    ForKeyword@224..227 "for"
+    Whitespace@227..228 " "
+    TYPE_TAPP@228..241
+      PATH@228..233
+        Ident@228..233 "Maybe"
+      TYPE_PARAM_LIST@233..241
+        LBracket@233..234 "["
+        TYPE_INT32@234..239
+          Int32Keyword@234..239 "int32"
+        RBracket@239..240 "]"
+        Whitespace@240..241 " "
+    LBrace@241..242 "{"
+    Whitespace@242..247 "\n    "
+    FN@247..420
+      FnKeyword@247..249 "fn"
+      Whitespace@249..250 " "
+      Ident@250..254 "show"
+      PARAM_LIST@254..275
+        LParen@254..255 "("
+        PARAM@255..273
+          Ident@255..259 "self"
+          Colon@259..260 ":"
+          Whitespace@260..261 " "
+          TYPE_TAPP@261..273
+            PATH@261..266
+              Ident@261..266 "Maybe"
+            TYPE_PARAM_LIST@266..273
+              LBracket@266..267 "["
+              TYPE_INT32@267..272
+                Int32Keyword@267..272 "int32"
+              RBracket@272..273 "]"
+        RParen@273..274 ")"
+        Whitespace@274..275 " "
+      Arrow@275..277 "->"
+      Whitespace@277..278 " "
+      TYPE_STRING@278..285
+        StringKeyword@278..284 "string"
+        Whitespace@284..285 " "
+      BLOCK@285..420
+        LBrace@285..286 "{"
+        Whitespace@286..295 "\n        "
+        EXPR_MATCH@295..418
+          MatchKeyword@295..300 "match"
+          Whitespace@300..301 " "
+          EXPR_IDENT@301..306
+            PATH@301..306
+              Ident@301..305 "self"
+              Whitespace@305..306 " "
+          MATCH_ARM_LIST@306..418
+            LBrace@306..307 "{"
+            Whitespace@307..320 "\n            "
+            MATCH_ARM@320..368
+              PATTERN_CONSTR@320..332
+                PATH@320..324
+                  Ident@320..324 "Just"
+                LParen@324..325 "("
+                PATTERN_VARIABLE@325..330
+                  Ident@325..330 "value"
+                RParen@330..331 ")"
+                Whitespace@331..332 " "
+              FatArrow@332..334 "=>"
+              Whitespace@334..335 " "
+              EXPR_BINARY@335..368
+                EXPR_BINARY@335..363
+                  EXPR_STR@335..343
+                    Str@335..342 "\"Just(\""
+                    Whitespace@342..343 " "
+                  Plus@343..344 "+"
+                  Whitespace@344..345 " "
+                  EXPR_CALL@345..363
+                    EXPR_BINARY@345..360
+                      EXPR_IDENT@345..350
+                        PATH@345..350
+                          Ident@345..350 "value"
+                      Dot@350..351 "."
+                      EXPR_IDENT@351..360
+                        PATH@351..360
+                          Ident@351..360 "to_string"
+                    ARG_LIST@360..363
+                      LParen@360..361 "("
+                      RParen@361..362 ")"
+                      Whitespace@362..363 " "
+                Plus@363..364 "+"
+                Whitespace@364..365 " "
+                EXPR_STR@365..368
+                  Str@365..368 "\")\""
+            Comma@368..369 ","
+            Whitespace@369..382 "\n            "
+            MATCH_ARM@382..402
+              PATTERN_VARIABLE@382..390
+                Ident@382..389 "Nothing"
+                Whitespace@389..390 " "
+              FatArrow@390..392 "=>"
+              Whitespace@392..393 " "
+              EXPR_STR@393..402
+                Str@393..402 "\"Nothing\""
+            Comma@402..403 ","
+            Whitespace@403..412 "\n        "
+            RBrace@412..413 "}"
+            Whitespace@413..418 "\n    "
+        RBrace@418..419 "}"
+        Whitespace@419..420 "\n"
+    RBrace@420..421 "}"
+    Whitespace@421..423 "\n\n"
+  FN@423..512
+    FnKeyword@423..425 "fn"
+    Whitespace@425..426 " "
+    Ident@426..436 "make_maybe"
+    PARAM_LIST@436..449
+      LParen@436..437 "("
+      PARAM@437..447
+        Ident@437..441 "flag"
+        Colon@441..442 ":"
+        Whitespace@442..443 " "
+        TYPE_BOOL@443..447
+          BoolKeyword@443..447 "bool"
+      RParen@447..448 ")"
+      Whitespace@448..449 " "
+    Arrow@449..451 "->"
+    Whitespace@451..452 " "
+    TYPE_TAPP@452..465
+      PATH@452..457
+        Ident@452..457 "Maybe"
+      TYPE_PARAM_LIST@457..465
+        LBracket@457..458 "["
+        TYPE_INT32@458..463
+          Int32Keyword@458..463 "int32"
+        RBracket@463..464 "]"
+        Whitespace@464..465 " "
+    BLOCK@465..512
+      LBrace@465..466 "{"
+      Whitespace@466..471 "\n    "
+      EXPR_IF@471..509
+        IfKeyword@471..473 "if"
+        Whitespace@473..474 " "
+        EXPR_IF_COND@474..479
+          EXPR_IDENT@474..479
+            PATH@474..479
+              Ident@474..478 "flag"
+              Whitespace@478..479 " "
+        EXPR_IF_THEN@479..492
+          BLOCK@479..492
+            LBrace@479..480 "{"
+            Whitespace@480..481 " "
+            EXPR_CALL@481..490
+              EXPR_IDENT@481..485
+                PATH@481..485
+                  Ident@481..485 "Just"
+              ARG_LIST@485..490
+                LParen@485..486 "("
+                ARG@486..488
+                  EXPR_INT@486..488
+                    Int@486..488 "42"
+                RParen@488..489 ")"
+                Whitespace@489..490 " "
+            RBrace@490..491 "}"
+            Whitespace@491..492 " "
+        ElseKeyword@492..496 "else"
+        Whitespace@496..497 " "
+        EXPR_IF_ELSE@497..509
+          BLOCK@497..509
+            LBrace@497..498 "{"
+            Whitespace@498..499 " "
+            EXPR_IDENT@499..507
+              PATH@499..507
+                Ident@499..506 "Nothing"
+                Whitespace@506..507 " "
+            RBrace@507..508 "}"
+            Whitespace@508..509 "\n"
+      RBrace@509..510 "}"
+      Whitespace@510..512 "\n\n"
+  FN@512..793
+    FnKeyword@512..514 "fn"
+    Whitespace@514..515 " "
+    Ident@515..519 "main"
+    PARAM_LIST@519..522
+      LParen@519..520 "("
+      RParen@520..521 ")"
+      Whitespace@521..522 " "
+    BLOCK@522..793
+      LBrace@522..523 "{"
+      Whitespace@523..528 "\n    "
+      STMT_LET@528..566
+        LetKeyword@528..531 "let"
+        Whitespace@531..532 " "
+        PATTERN_VARIABLE@532..538
+          Ident@532..537 "point"
+          Whitespace@537..538 " "
+        Eq@538..539 "="
+        Whitespace@539..540 " "
+        EXPR_STRUCT_LITERAL@540..560
+          PATH@540..546
+            Ident@540..545 "Point"
+            Whitespace@545..546 " "
+          STRUCT_LITERAL_FIELD_LIST@546..560
+            LBrace@546..547 "{"
             Whitespace@547..548 " "
-            STRUCT_LITERAL_FIELD@548..553
-              Ident@548..549 "y"
+            STRUCT_LITERAL_FIELD@548..552
+              Ident@548..549 "x"
               Colon@549..550 ":"
               Whitespace@550..551 " "
-              EXPR_INT@551..553
-                Int@551..552 "2"
-                Whitespace@552..553 " "
-            RBrace@553..554 "}"
-        Semi@554..555 ";"
-        Whitespace@555..560 "\n    "
-      STMT_LET@560..600
-        LetKeyword@560..563 "let"
-        Whitespace@563..564 " "
-        PATTERN_VARIABLE@564..576
-          Ident@564..575 "some_number"
-          Whitespace@575..576 " "
-        Eq@576..577 "="
-        Whitespace@577..578 " "
-        EXPR_CALL@578..594
-          EXPR_IDENT@578..588
-            PATH@578..588
-              Ident@578..588 "make_maybe"
-          ARG_LIST@588..594
-            LParen@588..589 "("
-            ARG@589..593
-              EXPR_BOOL@589..593
-                TrueKeyword@589..593 "true"
-            RParen@593..594 ")"
-        Semi@594..595 ";"
-        Whitespace@595..600 "\n    "
-      STMT_LET@600..641
-        LetKeyword@600..603 "let"
-        Whitespace@603..604 " "
-        PATTERN_VARIABLE@604..616
-          Ident@604..615 "none_number"
-          Whitespace@615..616 " "
-        Eq@616..617 "="
-        Whitespace@617..618 " "
-        EXPR_CALL@618..635
-          EXPR_IDENT@618..628
-            PATH@618..628
-              Ident@618..628 "make_maybe"
-          ARG_LIST@628..635
-            LParen@628..629 "("
-            ARG@629..634
-              EXPR_BOOL@629..634
-                FalseKeyword@629..634 "false"
-            RParen@634..635 ")"
-        Semi@635..636 ";"
-        Whitespace@636..641 "\n    "
-      STMT_LET@641..684
-        LetKeyword@641..644 "let"
-        Whitespace@644..645 " "
-        PATTERN_WILDCARD@645..647
-          WildcardKeyword@645..646 "_"
-          Whitespace@646..647 " "
-        Eq@647..648 "="
-        Whitespace@648..649 " "
-        EXPR_CALL@649..678
-          EXPR_IDENT@649..656
-            PATH@649..656
-              Ident@649..656 "println"
-          ARG_LIST@656..678
-            LParen@656..657 "("
-            ARG@657..677
-              EXPR_CALL@657..677
-                EXPR_IDENT@657..670
-                  PATH@657..670
-                    Ident@657..664 "Display"
-                    ColonColon@664..666 "::"
-                    Ident@666..670 "show"
-                ARG_LIST@670..677
-                  LParen@670..671 "("
-                  ARG@671..676
-                    EXPR_IDENT@671..676
-                      PATH@671..676
-                        Ident@671..676 "point"
-                  RParen@676..677 ")"
-            RParen@677..678 ")"
-        Semi@678..679 ";"
-        Whitespace@679..684 "\n    "
-      STMT_LET@684..733
-        LetKeyword@684..687 "let"
-        Whitespace@687..688 " "
-        PATTERN_WILDCARD@688..690
-          WildcardKeyword@688..689 "_"
-          Whitespace@689..690 " "
-        Eq@690..691 "="
-        Whitespace@691..692 " "
-        EXPR_CALL@692..727
-          EXPR_IDENT@692..699
-            PATH@692..699
-              Ident@692..699 "println"
-          ARG_LIST@699..727
-            LParen@699..700 "("
-            ARG@700..726
-              EXPR_CALL@700..726
-                EXPR_IDENT@700..713
-                  PATH@700..713
-                    Ident@700..707 "Display"
-                    ColonColon@707..709 "::"
-                    Ident@709..713 "show"
-                ARG_LIST@713..726
-                  LParen@713..714 "("
-                  ARG@714..725
-                    EXPR_IDENT@714..725
-                      PATH@714..725
-                        Ident@714..725 "some_number"
-                  RParen@725..726 ")"
-            RParen@726..727 ")"
-        Semi@727..728 ";"
-        Whitespace@728..733 "\n    "
-      STMT_LET@733..782
-        LetKeyword@733..736 "let"
-        Whitespace@736..737 " "
-        PATTERN_WILDCARD@737..739
-          WildcardKeyword@737..738 "_"
-          Whitespace@738..739 " "
-        Eq@739..740 "="
-        Whitespace@740..741 " "
-        EXPR_CALL@741..776
-          EXPR_IDENT@741..748
-            PATH@741..748
-              Ident@741..748 "println"
-          ARG_LIST@748..776
-            LParen@748..749 "("
-            ARG@749..775
-              EXPR_CALL@749..775
-                EXPR_IDENT@749..762
-                  PATH@749..762
-                    Ident@749..756 "Display"
-                    ColonColon@756..758 "::"
-                    Ident@758..762 "show"
-                ARG_LIST@762..775
-                  LParen@762..763 "("
-                  ARG@763..774
-                    EXPR_IDENT@763..774
-                      PATH@763..774
-                        Ident@763..774 "none_number"
-                  RParen@774..775 ")"
-            RParen@775..776 ")"
-        Semi@776..777 ";"
-        Whitespace@777..782 "\n    "
-      EXPR_UNIT@782..785
-        LParen@782..783 "("
-        RParen@783..784 ")"
-        Whitespace@784..785 "\n"
-      RBrace@785..786 "}"
-      Whitespace@786..787 "\n"
+              EXPR_INT@551..552
+                Int@551..552 "1"
+            Comma@552..553 ","
+            Whitespace@553..554 " "
+            STRUCT_LITERAL_FIELD@554..559
+              Ident@554..555 "y"
+              Colon@555..556 ":"
+              Whitespace@556..557 " "
+              EXPR_INT@557..559
+                Int@557..558 "2"
+                Whitespace@558..559 " "
+            RBrace@559..560 "}"
+        Semi@560..561 ";"
+        Whitespace@561..566 "\n    "
+      STMT_LET@566..606
+        LetKeyword@566..569 "let"
+        Whitespace@569..570 " "
+        PATTERN_VARIABLE@570..582
+          Ident@570..581 "some_number"
+          Whitespace@581..582 " "
+        Eq@582..583 "="
+        Whitespace@583..584 " "
+        EXPR_CALL@584..600
+          EXPR_IDENT@584..594
+            PATH@584..594
+              Ident@584..594 "make_maybe"
+          ARG_LIST@594..600
+            LParen@594..595 "("
+            ARG@595..599
+              EXPR_BOOL@595..599
+                TrueKeyword@595..599 "true"
+            RParen@599..600 ")"
+        Semi@600..601 ";"
+        Whitespace@601..606 "\n    "
+      STMT_LET@606..647
+        LetKeyword@606..609 "let"
+        Whitespace@609..610 " "
+        PATTERN_VARIABLE@610..622
+          Ident@610..621 "none_number"
+          Whitespace@621..622 " "
+        Eq@622..623 "="
+        Whitespace@623..624 " "
+        EXPR_CALL@624..641
+          EXPR_IDENT@624..634
+            PATH@624..634
+              Ident@624..634 "make_maybe"
+          ARG_LIST@634..641
+            LParen@634..635 "("
+            ARG@635..640
+              EXPR_BOOL@635..640
+                FalseKeyword@635..640 "false"
+            RParen@640..641 ")"
+        Semi@641..642 ";"
+        Whitespace@642..647 "\n    "
+      STMT_LET@647..690
+        LetKeyword@647..650 "let"
+        Whitespace@650..651 " "
+        PATTERN_WILDCARD@651..653
+          WildcardKeyword@651..652 "_"
+          Whitespace@652..653 " "
+        Eq@653..654 "="
+        Whitespace@654..655 " "
+        EXPR_CALL@655..684
+          EXPR_IDENT@655..662
+            PATH@655..662
+              Ident@655..662 "println"
+          ARG_LIST@662..684
+            LParen@662..663 "("
+            ARG@663..683
+              EXPR_CALL@663..683
+                EXPR_IDENT@663..676
+                  PATH@663..676
+                    Ident@663..670 "Display"
+                    ColonColon@670..672 "::"
+                    Ident@672..676 "show"
+                ARG_LIST@676..683
+                  LParen@676..677 "("
+                  ARG@677..682
+                    EXPR_IDENT@677..682
+                      PATH@677..682
+                        Ident@677..682 "point"
+                  RParen@682..683 ")"
+            RParen@683..684 ")"
+        Semi@684..685 ";"
+        Whitespace@685..690 "\n    "
+      STMT_LET@690..739
+        LetKeyword@690..693 "let"
+        Whitespace@693..694 " "
+        PATTERN_WILDCARD@694..696
+          WildcardKeyword@694..695 "_"
+          Whitespace@695..696 " "
+        Eq@696..697 "="
+        Whitespace@697..698 " "
+        EXPR_CALL@698..733
+          EXPR_IDENT@698..705
+            PATH@698..705
+              Ident@698..705 "println"
+          ARG_LIST@705..733
+            LParen@705..706 "("
+            ARG@706..732
+              EXPR_CALL@706..732
+                EXPR_IDENT@706..719
+                  PATH@706..719
+                    Ident@706..713 "Display"
+                    ColonColon@713..715 "::"
+                    Ident@715..719 "show"
+                ARG_LIST@719..732
+                  LParen@719..720 "("
+                  ARG@720..731
+                    EXPR_IDENT@720..731
+                      PATH@720..731
+                        Ident@720..731 "some_number"
+                  RParen@731..732 ")"
+            RParen@732..733 ")"
+        Semi@733..734 ";"
+        Whitespace@734..739 "\n    "
+      STMT_LET@739..788
+        LetKeyword@739..742 "let"
+        Whitespace@742..743 " "
+        PATTERN_WILDCARD@743..745
+          WildcardKeyword@743..744 "_"
+          Whitespace@744..745 " "
+        Eq@745..746 "="
+        Whitespace@746..747 " "
+        EXPR_CALL@747..782
+          EXPR_IDENT@747..754
+            PATH@747..754
+              Ident@747..754 "println"
+          ARG_LIST@754..782
+            LParen@754..755 "("
+            ARG@755..781
+              EXPR_CALL@755..781
+                EXPR_IDENT@755..768
+                  PATH@755..768
+                    Ident@755..762 "Display"
+                    ColonColon@762..764 "::"
+                    Ident@764..768 "show"
+                ARG_LIST@768..781
+                  LParen@768..769 "("
+                  ARG@769..780
+                    EXPR_IDENT@769..780
+                      PATH@769..780
+                        Ident@769..780 "none_number"
+                  RParen@780..781 ")"
+            RParen@781..782 ")"
+        Semi@782..783 ";"
+        Whitespace@783..788 "\n    "
+      EXPR_UNIT@788..791
+        LParen@788..789 "("
+        RParen@789..790 ")"
+        Whitespace@790..791 "\n"
+      RBrace@791..792 "}"
+      Whitespace@792..793 "\n"

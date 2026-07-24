@@ -1,6 +1,6 @@
 package main;
 trait Put[T] {
-  fn put(Self, T) -> string;
+  fn put(self: Self, arg1: T) -> string;
 }
 
 struct Target {
@@ -20,7 +20,7 @@ impl Put[string] for Target {
 
 trait Convert[T] {
   type Output;
-  fn convert(Self) -> Self::Output;
+  fn convert(self: Self) -> Self::Output;
 }
 
 struct Convertible {
@@ -42,7 +42,7 @@ impl Convert[string] for Convertible {
 
 trait Source[T] {
   type Item;
-  fn get(Self) -> Self::Item;
+  fn get(self: Self) -> Self::Item;
 }
 
 struct Number {
@@ -62,11 +62,11 @@ fn read(source: S) -> T {
 
 trait ItemSource {
   type Item;
-  fn item(Self) -> Self::Item;
+  fn item(self: Self) -> Self::Item;
 }
 
 trait Select[T] {
-  fn select(Self) -> T;
+  fn select(self: Self) -> T;
 }
 
 impl[S: ItemSource, T] Select[T] for S {
