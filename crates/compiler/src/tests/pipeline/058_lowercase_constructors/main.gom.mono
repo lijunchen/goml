@@ -1,5 +1,5 @@
 fn make_some(value/0: int32) -> option__int32 {
-  option__int32::some(value/0)
+  option__int32::Some(value/0)
 }
 
 fn build_point(x/1: int32, y/2: int32) -> point {
@@ -27,26 +27,26 @@ fn main() -> int32 {
   {
     let mtmp64 = make_some(5) in
     match mtmp64 {
-      option__int32::some(x65) => {
+      option__int32::Some(x65) => {
         {
-          let x65 = option__int32::some._0(mtmp64) in
+          let x65 = option__int32::Some._0(mtmp64) in
           {
             let result/6 = x65 in
             {
               let pt/7 = build_point(result/6, 7) in
               {
-                let mtmp66 = option__int32::some(point.x(pt/7)) in
+                let mtmp66 = option__int32::Some(point.x(pt/7)) in
                 match mtmp66 {
-                  option__int32::some(x67) => {
+                  option__int32::Some(x67) => {
                     {
-                      let x67 = option__int32::some._0(mtmp66) in
+                      let x67 = option__int32::Some._0(mtmp66) in
                       {
                         let value/8 = x67 in
                         (value/8 + magnitude(pt/7))
                       }
                     }
                   },
-                  option__int32::none => {
+                  option__int32::None => {
                     0
                   },
                 }
@@ -55,7 +55,7 @@ fn main() -> int32 {
           }
         }
       },
-      option__int32::none => {
+      option__int32::None => {
         0
       },
     }

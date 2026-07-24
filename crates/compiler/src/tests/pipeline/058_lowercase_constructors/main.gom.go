@@ -9,19 +9,19 @@ type option__int32 interface {
     isoption__int32()
 }
 
-type some struct {
+type Some struct {
     _0 int32
 }
 
-func (_ some) isoption__int32() {}
+func (_ Some) isoption__int32() {}
 
-type none struct {}
+type None struct {}
 
-func (_ none) isoption__int32() {}
+func (_ None) isoption__int32() {}
 
 func make_some(value__0 int32) option__int32 {
     var retv69 option__int32
-    var t70 option__int32 = some{
+    var t70 option__int32 = Some{
         _0: value__0,
     }
     retv69 = t70
@@ -55,29 +55,29 @@ func main0() int32 {
     var mtmp64 option__int32 = make_some(5)
     var jp80 int32
     switch mtmp64.(type) {
-    case some:
-        var x65 int32 = mtmp64.(some)._0
+    case Some:
+        var x65 int32 = mtmp64.(Some)._0
         var result__6 int32 = x65
         var pt__7 point = build_point(result__6, 7)
         var t81 int32 = pt__7.x
-        var mtmp66 option__int32 = some{
+        var mtmp66 option__int32 = Some{
             _0: t81,
         }
         var jp83 int32
         switch mtmp66.(type) {
-        case some:
-            var x67 int32 = mtmp66.(some)._0
+        case Some:
+            var x67 int32 = mtmp66.(Some)._0
             var value__8 int32 = x67
             var t84 int32 = magnitude(pt__7)
             var t85 int32 = value__8 + t84
             jp83 = t85
-        case none:
+        case None:
             jp83 = 0
         default:
             panic("non-exhaustive match")
         }
         jp80 = jp83
-    case none:
+    case None:
         jp80 = 0
     default:
         panic("non-exhaustive match")

@@ -807,7 +807,7 @@ fn range(start/208: int32, end/209: int32) -> FnIterator[int32] {
 }
 
 fn make_some(value/0: int32) -> option[int32] {
-  option::some(value/0)
+  option::Some(value/0)
 }
 
 fn build_point(x/1: int32, y/2: int32) -> point {
@@ -835,26 +835,26 @@ fn main() -> int32 {
   {
     let mtmp64 = make_some(5) in
     match mtmp64 {
-      option::some(x65) => {
+      option::Some(x65) => {
         {
-          let x65 = option::some._0(mtmp64) in
+          let x65 = option::Some._0(mtmp64) in
           {
             let result/6 = x65 in
             {
               let pt/7 = build_point(result/6, 7) in
               {
-                let mtmp66 = option::some(point.x(pt/7)) in
+                let mtmp66 = option::Some(point.x(pt/7)) in
                 match mtmp66 {
-                  option::some(x67) => {
+                  option::Some(x67) => {
                     {
-                      let x67 = option::some._0(mtmp66) in
+                      let x67 = option::Some._0(mtmp66) in
                       {
                         let value/8 = x67 in
                         (value/8 + magnitude(pt/7))
                       }
                     }
                   },
-                  option::none => {
+                  option::None => {
                     0
                   },
                 }
@@ -863,7 +863,7 @@ fn main() -> int32 {
           }
         }
       },
-      option::none => {
+      option::None => {
         0
       },
     }

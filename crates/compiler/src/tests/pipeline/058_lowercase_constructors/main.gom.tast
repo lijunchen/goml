@@ -1,5 +1,5 @@
 fn make_some(value/0: int32) -> option[int32] {
-    option::some((value/0 : int32))
+    option::Some((value/0 : int32))
 }
 
 fn build_point(x/1: int32, y/2: int32) -> point {
@@ -13,13 +13,13 @@ fn magnitude(p/3: point) -> int32 {
 
 fn main() -> int32 {
     match (make_some : (int32) -> option[int32])(5) {
-        option::some(result/6: int32) => {
+        option::Some(result/6: int32) => {
               let pt/7: point = (build_point : (int32, int32) -> point)((result/6 : int32), 7);
-              match option::some((pt/7 : point).x) {
-                  option::some(value/8: int32) => (value/8 : int32) + (magnitude : (point) -> int32)((pt/7 : point)),
-                  option::none => 0,
+              match option::Some((pt/7 : point).x) {
+                  option::Some(value/8: int32) => (value/8 : int32) + (magnitude : (point) -> int32)((pt/7 : point)),
+                  option::None => 0,
               }
           },
-        option::none => 0,
+        option::None => 0,
     }
 }
