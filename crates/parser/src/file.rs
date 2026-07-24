@@ -877,9 +877,7 @@ pub fn block(p: &mut Parser) {
             if let Some(expr_marker) = expr(p) {
                 if p.at(T![=]) {
                     stmt::finish_assign_stmt(p, expr_marker);
-                } else if p.eat(T![;]) {
-                    stmt::wrap_expr_stmt(p, expr_marker);
-                } else if semicolon_optional && !p.at(T!['}']) {
+                } else if p.eat(T![;]) || (semicolon_optional && !p.at(T!['}'])) {
                     stmt::wrap_expr_stmt(p, expr_marker);
                 } else {
                     trailing_expr_seen = true;

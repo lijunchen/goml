@@ -140,6 +140,10 @@ pub enum CstElement {
     Token(usize),
 }
 
+pub type ExpressionNameMember = Option<(CstElement, CstElement)>;
+pub type ExpressionNameGeneric = Option<(CstElement, CstElement, ExpressionNameMember)>;
+pub type ExpressionNameTail = (Vec<CstElement>, ExpressionNameGeneric);
+
 #[derive(Clone)]
 pub struct CstNode {
     kind: MySyntaxKind,

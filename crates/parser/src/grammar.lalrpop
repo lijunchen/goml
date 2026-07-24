@@ -1,7 +1,7 @@
 #[LALR]
 grammar;
 
-use crate::lalr::{CstElement, CstNode, ParserToken, Postfix, apply_postfix, comma_list, flatten, node, path_segment_count, prepend, retag_append, root, token};
+use crate::lalr::{CstElement, CstNode, ExpressionNameTail, ParserToken, Postfix, apply_postfix, comma_list, flatten, node, path_segment_count, prepend, retag_append, root, token};
 use crate::syntax::MySyntaxKind;
 
 pub File: CstNode = {
@@ -772,14 +772,7 @@ ExprName: CstElement = {
     }
 };
 
-ExprNameTail: (
-    Vec<CstElement>,
-    Option<(
-        CstElement,
-        CstElement,
-        Option<(CstElement, CstElement)>,
-    )>,
-) = {
+ExprNameTail: ExpressionNameTail = {
     => (Vec::new(), None),
     <separator:Tok<"::">> <params:TypeParamList>
     <member:(<Tok<"::">> <Path>)?> => (
