@@ -4118,6 +4118,142 @@ fn compile_for_expr(
     }
 }
 
+fn compile_trait_eq_call(trait_name: &TastIdent, lhs: core::Expr, rhs: core::Expr) -> core::Expr {
+    let self_ty = lhs.get_ty();
+    core::Expr::ECall {
+        func: Box::new(core::Expr::EVar {
+            name: trait_impl_fn_name(trait_name, &self_ty, "eq"),
+            ty: Ty::TFunc {
+                params: vec![self_ty.clone(), self_ty],
+                ret_ty: Box::new(Ty::TBool),
+            },
+        }),
+        args: vec![lhs, rhs],
+        ty: Ty::TBool,
+    }
+}
+
+fn compile_eq_conjunction(mut items: Vec<core::Expr>) -> core::Expr {
+    let Some(last) = items.pop() else {
+        return ebool(true);
+    };
+    items
+        .into_iter()
+        .rev()
+        .fold(last, |tail, item| core::Expr::EIf {
+            cond: Box::new(item),
+            then_branch: Box::new(tail),
+            else_branch: Box::new(ebool(false)),
+            ty: Ty::TBool,
+        })
+}
+
+fn compile_structural_eq(
+    trait_name: &TastIdent,
+    lhs: core::Expr,
+    rhs: core::Expr,
+    ty: &Ty,
+) -> core::Expr {
+    match ty {
+        Ty::TTuple { typs } => {
+            let items = typs
+                .iter()
+                .enumerate()
+                .map(|(index, item_ty)| {
+                    let left = core::Expr::EProj {
+                        tuple: Box::new(lhs.clone()),
+                        index,
+                        ty: item_ty.clone(),
+                    };
+                    let right = core::Expr::EProj {
+                        tuple: Box::new(rhs.clone()),
+                        index,
+                        ty: item_ty.clone(),
+                    };
+                    compile_structural_eq(trait_name, left, right, item_ty)
+                })
+                .collect();
+            compile_eq_conjunction(items)
+        }
+        Ty::TArray { len, elem } => {
+            let items = (0..*len)
+                .map(|index| {
+                    let index = core::Expr::EPrim {
+                        value: Prim::Int32 {
+                            value: index as i32,
+                        },
+                        ty: Ty::TInt32,
+                    };
+                    let left = intrinsic_call(
+                        IntrinsicId::ArrayGet,
+                        vec![ty.clone(), Ty::TInt32],
+                        elem.as_ref().clone(),
+                        vec![lhs.clone(), index.clone()],
+                    );
+                    let right = intrinsic_call(
+                        IntrinsicId::ArrayGet,
+                        vec![ty.clone(), Ty::TInt32],
+                        elem.as_ref().clone(),
+                        vec![rhs.clone(), index],
+                    );
+                    compile_structural_eq(trait_name, left, right, elem)
+                })
+                .collect();
+            compile_eq_conjunction(items)
+        }
+        _ => compile_trait_eq_call(trait_name, lhs, rhs),
+    }
+}
+
+fn compile_eq_expr(
+    trait_name: &TastIdent,
+    lhs: core::Expr,
+    rhs: core::Expr,
+    op: common_defs::BinaryOp,
+    gensym: &Gensym,
+) -> core::Expr {
+    let operand_ty = lhs.get_ty();
+    let eq = if matches!(operand_ty, Ty::TTuple { .. } | Ty::TArray { .. }) {
+        let lhs_name = gensym.gensym("_eq_lhs");
+        let rhs_name = gensym.gensym("_eq_rhs");
+        let body = compile_structural_eq(
+            trait_name,
+            core_var(&lhs_name, &operand_ty),
+            core_var(&rhs_name, &operand_ty),
+            &operand_ty,
+        );
+        core::Expr::EBlock {
+            block: Box::new(core::Block {
+                stmts: vec![
+                    core::LetStmt {
+                        name: lhs_name,
+                        value: lhs,
+                        ty: operand_ty.clone(),
+                    },
+                    core::LetStmt {
+                        name: rhs_name,
+                        value: rhs,
+                        ty: operand_ty,
+                    },
+                ],
+                tail: Some(Box::new(body)),
+            }),
+            ty: Ty::TBool,
+        }
+    } else {
+        compile_trait_eq_call(trait_name, lhs, rhs)
+    };
+    if op == common_defs::BinaryOp::NotEq {
+        core::Expr::EUnary {
+            op: common_defs::UnaryOp::Not,
+            expr: Box::new(eq),
+            ty: Ty::TBool,
+        }
+    } else {
+        eq
+    }
+}
+
 fn compile_expr(
     e: &Expr,
     genv: &GlobalTypeEnv,
@@ -4378,21 +4514,7 @@ fn compile_expr(
                 },
                 tast::BinaryResolution::Overloaded { trait_name } => {
                     let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
-                    let method = op.method_name();
-                    let self_ty = lhs_expr.get_ty();
-                    let func_name = trait_impl_fn_name(trait_name, &self_ty, method);
-                    let param_tys = vec![lhs_expr.get_ty(), rhs_expr.get_ty()];
-                    core::Expr::ECall {
-                        func: Box::new(core::Expr::EVar {
-                            name: func_name,
-                            ty: Ty::TFunc {
-                                params: param_tys,
-                                ret_ty: Box::new(ty.clone()),
-                            },
-                        }),
-                        args: vec![lhs_expr, rhs_expr],
-                        ty: ty.clone(),
-                    }
+                    compile_eq_expr(trait_name, lhs_expr, rhs_expr, *op, gensym)
                 }
             }
         }

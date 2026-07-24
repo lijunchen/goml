@@ -595,6 +595,9 @@ impl Typer {
                 self.infer_return_expr(genv, local_env, diagnostics, e, expr)
             }
             hir::Expr::ETry { expr } => self.infer_try_expr(genv, local_env, diagnostics, e, expr),
+            hir::Expr::ERange { start, end } => {
+                self.infer_range_expr(genv, local_env, diagnostics, e, start, end)
+            }
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => self.infer_call_expr(
                 genv,
@@ -2839,9 +2842,7 @@ impl Typer {
             common_defs::BinaryOp::Less
             | common_defs::BinaryOp::Greater
             | common_defs::BinaryOp::LessEq
-            | common_defs::BinaryOp::GreaterEq
-            | common_defs::BinaryOp::Eq
-            | common_defs::BinaryOp::NotEq => {
+            | common_defs::BinaryOp::GreaterEq => {
                 self.equate(diagnostics, &lhs_ty, &rhs_ty, self.expr_range(lhs));
                 self.push_obligation(
                     Predicate::Operation(OperationGoal::Comparison {
@@ -2852,14 +2853,73 @@ impl Typer {
                     ObligationCause::new(self.expr_range(lhs), ObligationCauseKind::Operation),
                 );
             }
+            common_defs::BinaryOp::Eq | common_defs::BinaryOp::NotEq => {
+                self.equate(diagnostics, &lhs_ty, &rhs_ty, self.expr_range(lhs));
+                let Some(trait_name) = genv.lang_item(LangItemId::Eq).cloned() else {
+                    super::util::push_ice(diagnostics, "Eq lang item is missing");
+                    return self.error_expr(self.hir_table.expr_ptr(lhs));
+                };
+                self.push_obligation(
+                    Predicate::Trait(TraitGoal {
+                        trait_ref: tast::TraitRef::without_args(trait_name),
+                        for_ty: lhs_ty.clone(),
+                    }),
+                    ObligationCause::new(self.expr_range(lhs), ObligationCauseKind::Operation),
+                );
+            }
         }
 
+        let resolution = if matches!(op, common_defs::BinaryOp::Eq | common_defs::BinaryOp::NotEq) {
+            tast::BinaryResolution::Overloaded {
+                trait_name: genv
+                    .lang_item(LangItemId::Eq)
+                    .cloned()
+                    .unwrap_or_else(|| tast::TastIdent::new(LangItemId::Eq.source_name())),
+            }
+        } else {
+            tast::BinaryResolution::Builtin
+        };
         tast::Expr::EBinary {
             op,
             lhs: Box::new(lhs_tast),
             rhs: Box::new(rhs_tast),
             ty: ret_ty.clone(),
-            resolution: tast::BinaryResolution::Builtin,
+            resolution,
+        }
+    }
+
+    fn infer_range_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
+        start: hir::ExprId,
+        end: hir::ExprId,
+    ) -> tast::Expr {
+        let start = self.check_expr(genv, local_env, diagnostics, start, &tast::Ty::TInt32);
+        let end = self.check_expr(genv, local_env, diagnostics, end, &tast::Ty::TInt32);
+        let name = genv
+            .lang_item(LangItemId::Range)
+            .cloned()
+            .unwrap_or_else(|| tast::TastIdent::new(LangItemId::Range.source_name()));
+        let Some(scheme) = genv.builtins().get_function_scheme(&name.0) else {
+            super::util::push_ice(diagnostics, "Range lang item is missing");
+            return self.error_expr(self.hir_table.expr_ptr(expr_id));
+        };
+        let tast::Ty::TFunc { ret_ty, .. } = &scheme.ty else {
+            super::util::push_ice(diagnostics, "Range lang item must have a function type");
+            return self.error_expr(self.hir_table.expr_ptr(expr_id));
+        };
+        let ret_ty = (**ret_ty).clone();
+        tast::Expr::ECall {
+            func: Box::new(tast::Expr::EVar {
+                name: name.0,
+                ty: scheme.ty,
+                astptr: None,
+            }),
+            args: vec![start, end],
+            ty: ret_ty,
         }
     }
 

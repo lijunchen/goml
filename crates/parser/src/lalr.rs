@@ -12,6 +12,8 @@ macro_rules! parser_tokens {
         #[derive(Clone, Copy, Debug, PartialEq, Eq)]
         pub enum ParserToken {
             $($variant,)+
+            LowerIdent,
+            UpperIdent,
             ImplicitSemi,
         }
 
@@ -239,18 +241,6 @@ pub fn comma_list(
     children
 }
 
-pub fn path_segment_count(element: &CstElement) -> usize {
-    match element {
-        CstElement::Node(node) => node
-            .children
-            .iter()
-            .filter(|child| matches!(child, CstElement::Token(_)))
-            .count()
-            .div_ceil(2),
-        CstElement::Token(_) => 0,
-    }
-}
-
 pub fn tokens<'tokens>(
     tokens: &'tokens [Token<'_>],
 ) -> impl Iterator<Item = Result<(usize, ParserToken, usize), Infallible>> + 'tokens {
@@ -263,7 +253,21 @@ pub fn tokens<'tokens>(
     for (index, token) in significant.iter().enumerate() {
         let start = u32::from(token.range.start()) as usize;
         let end = u32::from(token.range.end()) as usize;
-        parser_tokens.push(Ok((start, token.kind.into(), end)));
+        let kind = if token.kind == TokenKind::Ident {
+            if token
+                .text
+                .chars()
+                .next()
+                .is_some_and(|first| first.is_ascii_uppercase())
+            {
+                ParserToken::UpperIdent
+            } else {
+                ParserToken::LowerIdent
+            }
+        } else {
+            token.kind.into()
+        };
+        parser_tokens.push(Ok((start, kind, end)));
         if token.kind == TokenKind::LBrace {
             control_braces.push(starts_control_body(&significant, index));
         } else if token.kind == TokenKind::RBrace

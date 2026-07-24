@@ -229,7 +229,6 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
 
             let cond_marker = p.open();
             let struct_literals = p.with_struct_literals_allowed(false);
-            let is_let_condition = p.at(T![let]);
             if p.eat(T![let]) {
                 let _ = super::pattern::pattern(p);
                 p.expect(T![=]);
@@ -245,10 +244,11 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             let then_marker = p.open();
             if p.at(T!['{']) {
                 block(p);
-            } else if p.at_any(EXPR_FIRST) {
-                expect_expr_with_message(p, "expected a then-branch expression for `if`");
             } else {
-                p.advance_with_error("expected a then-branch expression for `if`");
+                p.error("`if` then branches require a block");
+                if p.at_any(EXPR_FIRST) {
+                    expect_expr_with_message(p, "expected a then-branch block for `if`");
+                }
             }
             p.close(then_marker, MySyntaxKind::EXPR_IF_THEN);
 
@@ -257,14 +257,15 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                 let else_marker = p.open();
                 if p.at(T!['{']) {
                     block(p);
-                } else if p.at_any(EXPR_FIRST) {
-                    expect_expr_with_message(p, "expected an else-branch expression for `if`");
+                } else if p.at(T![if]) {
+                    expect_expr_with_message(p, "expected an `if` expression after `else`");
                 } else {
-                    p.advance_with_error("expected an else-branch expression for `if`");
+                    p.error("`else` branches require a block or another `if`");
+                    if p.at_any(EXPR_FIRST) {
+                        expect_expr_with_message(p, "expected an else-branch block for `if`");
+                    }
                 }
                 p.close(else_marker, MySyntaxKind::EXPR_IF_ELSE);
-            } else if !is_let_condition {
-                p.advance_with_error("expected `else` in `if` expression");
             }
 
             p.close(m, MySyntaxKind::EXPR_IF)
@@ -277,6 +278,8 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             drop(struct_literals);
             if p.at(T!['{']) {
                 match_arm_list(p);
+            } else {
+                p.error("`match` requires a brace-delimited arm list");
             }
             p.close(m, MySyntaxKind::EXPR_MATCH)
         }
@@ -301,10 +304,11 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             let body_marker = p.open();
             if p.at(T!['{']) {
                 block(p);
-            } else if p.at_any(EXPR_FIRST) {
-                expect_expr_with_message(p, "expected a body expression for `while`");
             } else {
-                p.advance_with_error("expected a body expression for `while`");
+                p.error("`while` bodies require a block");
+                if p.at_any(EXPR_FIRST) {
+                    expect_expr_with_message(p, "expected a body block for `while`");
+                }
             }
             p.close(body_marker, MySyntaxKind::EXPR_WHILE_BODY);
 
@@ -444,7 +448,7 @@ fn closure_param_list(p: &mut Parser) {
 fn closure_param(p: &mut Parser) {
     let m = p.open();
     if p.at(T![ident]) {
-        p.expect(T![ident]);
+        p.expect_lower_ident("closure parameter name");
     } else if p.at(T![_]) {
         p.expect(T![_]);
     } else {
@@ -479,7 +483,9 @@ pub fn match_arm_list(p: &mut Parser) {
     p.expect(T!['{']);
     while !p.eof() && !p.at(T!['}']) {
         match_arm(p);
-        p.eat(T![,]);
+        if !p.eat(T![,]) && !p.at(T!['}']) {
+            p.error("expected `,` between match arms");
+        }
     }
     p.expect(T!['}']);
     p.close(m, MySyntaxKind::MATCH_ARM_LIST);
@@ -511,7 +517,9 @@ fn struct_literal_field_list(p: &mut Parser) {
     while !p.eof() && !p.at(T!['}']) {
         if p.at(T![ident]) {
             struct_literal_field(p);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T!['}']) {
+                p.error("expected `,` between struct literal fields");
+            }
         } else {
             p.advance_with_error("expected a struct field");
         }
@@ -523,7 +531,7 @@ fn struct_literal_field_list(p: &mut Parser) {
 fn struct_literal_field(p: &mut Parser) {
     assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![ident]);
+    p.expect_lower_ident("struct literal field name");
     if p.eat(T![:]) {
         if p.at_any(EXPR_FIRST) {
             expect_expr_with_message(p, "expected an expression");
@@ -570,8 +578,7 @@ fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
-        T![==] | T![!=] => Some((5, 6)),
-        T![<] | T![>] | T![<=] | T![>=] => Some((6, 7)),
+        T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=] => Some((5, 6)),
         T![|] => Some((7, 8)),
         T![^] => Some((8, 9)),
         T![&] => Some((9, 10)),
@@ -597,6 +604,8 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
     } else {
         atom(p)?
     };
+    let mut parsed_range = false;
+    let mut parsed_comparison = false;
 
     loop {
         if p.eof() {
@@ -604,6 +613,23 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
         }
 
         let op = p.peek();
+
+        if op == T![..] {
+            if min_bp > 0 {
+                break;
+            }
+            if parsed_range {
+                p.advance_with_error("range expressions cannot be chained");
+                expect_expr_bp_with_message(p, 1, "expected a range endpoint after `..`");
+                continue;
+            }
+            let m = lhs.precede(p);
+            p.advance();
+            expect_expr_bp_with_message(p, 1, "expected a range endpoint after `..`");
+            lhs = m.completed(p, MySyntaxKind::EXPR_RANGE);
+            parsed_range = true;
+            continue;
+        }
 
         if op == T![as] {
             let l_bp = 17;
@@ -651,10 +677,21 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
             if l_bp < min_bp {
                 break;
             }
+            let comparison = matches!(op, T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=]);
+            if comparison && parsed_comparison {
+                p.advance_with_error("comparison operators cannot be chained");
+                expect_expr_bp_with_message(
+                    p,
+                    r_bp,
+                    "expected a right-hand side for comparison operator",
+                );
+                continue;
+            }
             let m = lhs.precede(p);
             p.advance();
             expect_expr_bp_with_message(p, r_bp, "expected a right-hand side for binary operator");
             lhs = m.completed(p, MySyntaxKind::EXPR_BINARY);
+            parsed_comparison |= comparison;
             continue;
         }
         break;

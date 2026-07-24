@@ -1532,6 +1532,10 @@ pub enum Expr {
     ETry {
         expr: ExprId,
     },
+    ERange {
+        start: ExprId,
+        end: ExprId,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: ExprId,

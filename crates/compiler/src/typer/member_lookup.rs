@@ -127,6 +127,37 @@ fn lookup_bound_trait_methods(
     result
 }
 
+pub(crate) fn lookup_dyn_trait_methods(
+    genv: &PackageTypeEnv,
+    trait_name: &tast::TastIdent,
+    method: &tast::TastIdent,
+) -> Vec<(tast::TraitRef, FnScheme)> {
+    let Some((resolved, trait_env)) = resolve_trait_name(genv, &trait_name.0) else {
+        return Vec::new();
+    };
+    let trait_ref = tast::TraitRef {
+        name: tast::TastIdent::new(&resolved),
+        args: Vec::new(),
+    };
+    if let Some(scheme) = trait_env.lookup_trait_method_scheme(&trait_ref, method) {
+        return vec![(trait_ref, scheme)];
+    }
+    let mut result = super::util::trait_ref_closure(genv, &trait_ref)
+        .into_iter()
+        .skip(1)
+        .filter_map(|parent| {
+            let (_, parent_env) = resolve_trait_name(genv, &parent.name.0)?;
+            let scheme = parent_env.lookup_trait_method_scheme(&parent, method)?;
+            Some((parent, scheme))
+        })
+        .collect::<Vec<_>>();
+    result.sort_by(|(left, _), (right, _)| {
+        format_trait_ref_for_diag(left).cmp(&format_trait_ref_for_diag(right))
+    });
+    result.dedup_by(|(left, _), (right, _)| left == right);
+    result
+}
+
 fn lookup_in_scope_trait_methods(
     typer: &mut Typer,
     genv: &PackageTypeEnv,

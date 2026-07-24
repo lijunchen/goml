@@ -3,7 +3,9 @@ use std::collections::{HashMap, HashSet};
 use ena::unify::UnifyKey;
 
 use crate::{
-    env, tast,
+    env,
+    intrinsics::LangItemId,
+    tast,
     typer::{
         Typer,
         obligations::{ParamEnv, TraitGoal},
@@ -27,6 +29,7 @@ pub(crate) enum SelectionSource {
     },
     ParamEnv,
     Dyn,
+    BuiltinEq,
 }
 
 #[derive(Debug, Clone)]
@@ -146,6 +149,85 @@ impl<'a> TraitSolver<'a> {
         }))
     }
 
+    fn builtin_eq_members(&self, goal: &TraitGoal) -> Option<Vec<tast::Ty>> {
+        if !goal.trait_ref.args.is_empty()
+            || self.env.lang_item(LangItemId::Eq) != Some(&goal.trait_ref.name)
+        {
+            return None;
+        }
+        match &goal.for_ty {
+            tast::Ty::TTuple { typs } => Some(typs.clone()),
+            tast::Ty::TArray { elem, .. } => Some(vec![elem.as_ref().clone()]),
+            _ => None,
+        }
+    }
+
+    fn select_builtin_eq(
+        &mut self,
+        typer: &mut Typer,
+        goal: &TraitGoal,
+        depth: usize,
+    ) -> Option<SelectionResult> {
+        let members = self.builtin_eq_members(goal)?;
+        let mut changed_variables = HashSet::new();
+        let mut ambiguous = Vec::new();
+        for member in members {
+            let nested = TraitGoal {
+                trait_ref: goal.trait_ref.clone(),
+                for_ty: member,
+            };
+            match self.select_at_depth(typer, nested, depth + 1) {
+                SelectionResult::Unique(selection) => {
+                    changed_variables.extend(selection.changed_variables);
+                }
+                SelectionResult::NoSolution => return Some(SelectionResult::NoSolution),
+                SelectionResult::Ambiguous(ids) => ambiguous.extend(ids),
+                SelectionResult::Overflow => return Some(SelectionResult::Overflow),
+            }
+        }
+        if ambiguous.is_empty() {
+            Some(SelectionResult::Unique(Selection {
+                source: SelectionSource::BuiltinEq,
+                changed_variables,
+            }))
+        } else {
+            ambiguous.sort();
+            ambiguous.dedup();
+            Some(SelectionResult::Ambiguous(ambiguous))
+        }
+    }
+
+    fn select_ground_builtin_eq(
+        &mut self,
+        goal: &TraitGoal,
+        depth: usize,
+    ) -> Option<SelectionResult> {
+        let members = self.builtin_eq_members(goal)?;
+        let mut ambiguous = Vec::new();
+        for member in members {
+            let nested = TraitGoal {
+                trait_ref: goal.trait_ref.clone(),
+                for_ty: member,
+            };
+            match self.select_ground_at_depth(nested, depth + 1) {
+                SelectionResult::Unique(_) => {}
+                SelectionResult::NoSolution => return Some(SelectionResult::NoSolution),
+                SelectionResult::Ambiguous(ids) => ambiguous.extend(ids),
+                SelectionResult::Overflow => return Some(SelectionResult::Overflow),
+            }
+        }
+        if ambiguous.is_empty() {
+            Some(SelectionResult::Unique(Selection {
+                source: SelectionSource::BuiltinEq,
+                changed_variables: HashSet::new(),
+            }))
+        } else {
+            ambiguous.sort();
+            ambiguous.dedup();
+            Some(SelectionResult::Ambiguous(ambiguous))
+        }
+    }
+
     fn select_at_depth(
         &mut self,
         typer: &mut Typer,
@@ -171,6 +253,9 @@ impl<'a> TraitSolver<'a> {
                 source: SelectionSource::Dyn,
                 changed_variables: HashSet::new(),
             });
+        }
+        if let Some(result) = self.select_builtin_eq(typer, &goal, depth) {
+            return result;
         }
 
         let canonical_goal = canonicalize_goal(&goal);
@@ -457,6 +542,10 @@ impl<'a> TraitSolver<'a> {
                             failure = Some(NormalizationFailure::Failure);
                             None
                         }
+                        SelectionSource::BuiltinEq => {
+                            failure = Some(NormalizationFailure::Failure);
+                            None
+                        }
                     },
                     SelectionResult::NoSolution => {
                         failure = Some(NormalizationFailure::Failure);
@@ -509,6 +598,9 @@ impl<'a> TraitSolver<'a> {
                 source: SelectionSource::Dyn,
                 changed_variables: HashSet::new(),
             });
+        }
+        if let Some(result) = self.select_ground_builtin_eq(&goal, depth) {
+            return result;
         }
         if let Some(result) = self.ground_cache.get(&goal) {
             return result.clone();
@@ -709,6 +801,10 @@ impl<'a> TraitSolver<'a> {
                             (normalized != projection).then_some(normalized)
                         }
                         SelectionSource::Dyn => {
+                            failure = Some(NormalizationFailure::Failure);
+                            None
+                        }
+                        SelectionSource::BuiltinEq => {
                             failure = Some(NormalizationFailure::Failure);
                             None
                         }

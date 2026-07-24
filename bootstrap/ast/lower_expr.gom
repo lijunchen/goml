@@ -481,6 +481,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             cst::NodeKind::EXPR_CAST => lower_cast_expr(ctx, node, trailing_args),
             cst::NodeKind::EXPR_INDEX => lower_index_expr(ctx, node, trailing_args),
             cst::NodeKind::EXPR_TRY => lower_try_expr(ctx, node, trailing_args),
+            cst::NodeKind::EXPR_RANGE => lower_range_expr(ctx, node, trailing_args),
             cst::NodeKind::EXPR_CLOSURE => lower_closure(ctx, node, trailing_args),
             cst::NodeKind::EXPR_MATCH => lower_match_expr(ctx, node, trailing_args),
             cst::NodeKind::EXPR_IF => lower_if_expr(ctx, node, trailing_args),
@@ -587,7 +588,7 @@ fn lower_ident_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
     match lower_ident_parts(ctx, node) {
         Option::Some((path, type_args)) => match path_last(path) {
             Option::Some(last) => {
-                let base = if type_args.len() == 0 && contains_string(ctx.constructors, last) {
+                let base = if type_args.len() == 0 && ident_starts_upper(last) {
                     Expr::Constr(path, Vec::new(), node_span(node))
                 } else {
                     Expr::Path(path, type_args, node_span(node))

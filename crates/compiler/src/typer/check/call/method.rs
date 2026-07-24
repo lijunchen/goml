@@ -1,3 +1,4 @@
+use super::static_member::DynTraitMethodCall;
 use super::*;
 use crate::typer::util;
 
@@ -200,12 +201,121 @@ impl Typer {
             args,
             hint_ret_ty,
         };
+        if matches!(call.receiver_ty, tast::Ty::TDyn { .. }) {
+            return self.infer_dyn_method_call(genv, local_env, diagnostics, call);
+        }
         match method_scheme {
             Some(method_scheme) => {
                 self.infer_inherent_method_call(genv, local_env, diagnostics, call, method_scheme)
             }
             None => self.infer_trait_or_field_call(genv, local_env, diagnostics, call),
         }
+    }
+
+    fn infer_dyn_method_call(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        call: ReceiverCall<'_>,
+    ) -> tast::Expr {
+        let ReceiverCall {
+            call_expr_id,
+            func_expr_id,
+            receiver_expr_id,
+            receiver,
+            receiver_ty,
+            method_name,
+            args,
+            hint_ret_ty,
+        } = call;
+        let tast::Ty::TDyn { trait_name } = &receiver_ty else {
+            return self.error_expr(self.hir_table.expr_ptr(func_expr_id));
+        };
+        let trait_name = tast::TastIdent::new(trait_name);
+        let mut candidates =
+            crate::typer::member_lookup::lookup_dyn_trait_methods(genv, &trait_name, &method_name);
+        if candidates.len() > 1 {
+            let matching = candidates
+                .iter()
+                .filter(|(_, scheme)| {
+                    self.trait_method_candidate_matches(
+                        genv,
+                        local_env,
+                        &receiver_ty,
+                        args,
+                        hint_ret_ty,
+                        scheme,
+                    )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            if !matching.is_empty() {
+                candidates = matching;
+            }
+        }
+        let [(method_trait_ref, scheme)] = candidates.as_slice() else {
+            let lookup_receiver =
+                crate::typer::member_lookup::MethodLookupReceiver::Concrete(receiver_ty);
+            if candidates.is_empty() {
+                report_method_not_found(
+                    diagnostics,
+                    &method_name,
+                    &lookup_receiver,
+                    self.expr_range(call_expr_id),
+                );
+            } else {
+                report_ambiguous_method(
+                    diagnostics,
+                    &method_name,
+                    &lookup_receiver,
+                    &candidates,
+                    self.expr_range(call_expr_id),
+                );
+            }
+            return self.error_expr(self.hir_table.expr_ptr(func_expr_id));
+        };
+        let instantiated = self.instantiate_scheme_with_self(
+            scheme,
+            &tast::Ty::TDyn {
+                trait_name: trait_name.0.clone(),
+            },
+            ObligationCause::new(
+                self.expr_range(call_expr_id),
+                ObligationCauseKind::MethodCall,
+            ),
+        );
+        self.register_scheme_obligations(&instantiated);
+        let tast::Ty::TFunc { params, ret_ty } = &instantiated.ty else {
+            util::push_ice(
+                diagnostics,
+                format!(
+                    "Expected trait method {}::{} to have a function type",
+                    method_trait_ref.name.0, method_name.0
+                ),
+            );
+            return self.error_expr(self.hir_table.expr_ptr(func_expr_id));
+        };
+        let mut all_args = Vec::with_capacity(args.len() + 1);
+        all_args.push(receiver_expr_id);
+        all_args.extend_from_slice(args);
+        self.infer_dyn_trait_method_call(
+            genv,
+            local_env,
+            diagnostics,
+            DynTraitMethodCall {
+                call_expr_id,
+                func_expr_id,
+                astptr: self.hir_table.expr_ptr(func_expr_id),
+                args: &all_args,
+                receiver,
+                dispatch_trait_name: &trait_name,
+                definition_trait_name: &method_trait_ref.name,
+                method_name: &method_name,
+                params,
+                ret_ty,
+            },
+        )
     }
 
     fn infer_inherent_method_call(

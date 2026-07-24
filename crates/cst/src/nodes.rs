@@ -904,6 +904,7 @@ pub enum Expr {
     IdentExpr(IdentExpr),
     TupleExpr(TupleExpr),
     ParenExpr(ParenExpr),
+    RangeExpr(RangeExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
     CastExpr(CastExpr),
@@ -941,6 +942,7 @@ impl CstNode for Expr {
                 | EXPR_IDENT
                 | EXPR_TUPLE
                 | EXPR_PAREN
+                | EXPR_RANGE
                 | EXPR_BINARY
                 | EXPR_PREFIX
                 | EXPR_CAST
@@ -986,6 +988,7 @@ impl CstNode for Expr {
             EXPR_IDENT => Expr::IdentExpr(IdentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
+            EXPR_RANGE => Expr::RangeExpr(RangeExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             EXPR_CAST => Expr::CastExpr(CastExpr { syntax }),
@@ -1030,6 +1033,7 @@ impl CstNode for Expr {
             Self::IdentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
             Self::ParenExpr(it) => &it.syntax,
+            Self::RangeExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
             Self::CastExpr(it) => &it.syntax,
@@ -1758,6 +1762,22 @@ impl ParenExpr {
 
 impl_cst_node_simple!(ParenExpr, MySyntaxKind::EXPR_PAREN);
 impl_display_via_syntax!(ParenExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RangeExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl RangeExpr {
+    pub fn exprs(&self) -> CstChildren<Expr> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(RangeExpr, MySyntaxKind::EXPR_RANGE);
+impl_display_via_syntax!(RangeExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -1009,7 +1009,23 @@ fn builtin_trait_bound_satisfied(
         let trait_name = short_name(reference.name);
         let bound_ty = prune(normalize_type(ctx, bound_ty));
         match bound_ty {
-            Type::Dyn(name) => names_match(name, trait_name),
+            Type::Dyn(name) => {
+                let found = Ref::new(false);
+                for application in trait_ref_closure(
+                    ctx,
+                    TraitRef {
+                        name,
+                        args: Vec::new(),
+                    },
+                ) {
+                    if names_match(application.name, trait_name) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                found.get()
+            },
             _ => if trait_name == "ToString" {
                 if builtin_value_trait_type(bound_ty) {
                     true
@@ -1028,9 +1044,48 @@ fn builtin_trait_bound_satisfied(
                     }
                 }
             } else if trait_name == "Eq" || trait_name == "Hash" {
-                builtin_value_trait_type(bound_ty) || match bound_ty {
-                    Type::RefType(_) => true,
-                    _ => false,
+                if trait_name == "Eq" {
+                    if builtin_value_trait_type(bound_ty) {
+                        true
+                    } else {
+                        match bound_ty {
+                            Type::RefType(_) => true,
+                            Type::Tuple(values) => {
+                                let satisfied = Ref::new(true);
+                                for value in values {
+                                    if !trait_bound_satisfied_at(
+                                        ctx,
+                                        value,
+                                        TraitRef {
+                                            name: "Eq",
+                                            args: Vec::new(),
+                                        },
+                                        depth + 1,
+                                    ) {
+                                        satisfied.set(false)
+                                    } else {
+                                        ()
+                                    }
+                                };
+                                satisfied.get()
+                            },
+                            Type::Array(_, element) => trait_bound_satisfied_at(
+                                ctx,
+                                element,
+                                TraitRef {
+                                    name: "Eq",
+                                    args: Vec::new(),
+                                },
+                                depth + 1,
+                            ),
+                            _ => false,
+                        }
+                    }
+                } else {
+                    builtin_value_trait_type(bound_ty) || match bound_ty {
+                        Type::RefType(_) => true,
+                        _ => false,
+                    }
                 }
             } else if trait_name == "Iterator" {
                 builtin_iterator_bound_satisfied(ctx, bound_ty, depth)
@@ -1180,9 +1235,9 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
 
 fn builtin_ref_impl_origin(name: string) -> Option[string] {
     if names_match(name, "Eq") {
-        Option::Some("builtin#42 at source range 13045..13048")
+        Option::Some("builtin#42 at source range 13385..13388")
     } else if names_match(name, "Hash") {
-        Option::Some("builtin#43 at source range 13158..13161")
+        Option::Some("builtin#43 at source range 13498..13501")
     } else {
         Option::None
     }
@@ -1642,7 +1697,77 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
             ))
         } else {
             Option::None
+    }
+}
+
+fn dyn_method_callable(
+    owner: string,
+    name: string,
+    value: ResolvedCallable,
+) -> ResolvedCallable {
+    let dispatch = match value.callable {
+        Callable::TraitMethod(reference, _) => reference.name,
+        _ => owner,
+    };
+    ResolvedCallable {
+        callable: Callable::DynTraitMethod(owner, dispatch, name),
+        ty: value.ty,
+    }
+}
+
+fn resolve_dyn_method(
+    ctx: Checker,
+    owner: string,
+    receiver: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    let applications = trait_ref_closure(
+        ctx,
+        TraitRef {
+            name: owner,
+            args: Vec::new(),
+        },
+    );
+    if applications.len() == 0 {
+        Option::None
+    } else {
+        match resolve_trait_reference_method(
+            ctx,
+            applications.get(0),
+            name,
+            Option::Some(receiver),
+        ) {
+            Option::Some(value) => Option::Some(dyn_method_callable(owner, name, value)),
+            Option::None => {
+                let result: Ref[Option[ResolvedCallable]] = Ref::new(Option::None);
+                let matches = Ref::new(0);
+                for index in range(1, applications.len()) {
+                    match resolve_trait_reference_method(
+                        ctx,
+                        applications.get(index),
+                        name,
+                        Option::Some(receiver),
+                    ) {
+                        Option::Some(value) => {
+                            matches.set(matches.get() + 1);
+                            result.set(Option::Some(dyn_method_callable(owner, name, value)))
+                        },
+                        Option::None => (),
+                    }
+                };
+                if matches.get() == 1 {
+                    result.get()
+                } else {
+                    if matches.get() > 1 {
+                        push_diagnostic(ctx, "ambiguous method: " + name)
+                    } else {
+                        ()
+                    };
+                    Option::None
+                }
+            },
         }
+    }
 }
 
 fn resolve_method(
@@ -1653,19 +1778,22 @@ fn resolve_method(
     expected: Option[Type],
 ) -> Option[ResolvedCallable] {
     let receiver = normalize_type(ctx, receiver);
-    match resolve_predicate_method(ctx, receiver, name) {
-        Option::Some(value) => Option::Some(value),
-        Option::None => match resolve_builtin_container_method(ctx, receiver, name) {
+    match receiver {
+        Type::Dyn(owner) => resolve_dyn_method(ctx, owner, receiver, name),
+        _ => match resolve_predicate_method(ctx, receiver, name) {
             Option::Some(value) => Option::Some(value),
-            Option::None => match resolve_user_method_for_call(
-                ctx,
-                receiver,
-                name,
-                args,
-                expected,
-            ) {
+            Option::None => match resolve_builtin_container_method(ctx, receiver, name) {
                 Option::Some(value) => Option::Some(value),
-                Option::None => resolve_builtin_method(ctx, receiver, name),
+                Option::None => match resolve_user_method_for_call(
+                    ctx,
+                    receiver,
+                    name,
+                    args,
+                    expected,
+                ) {
+                    Option::Some(value) => Option::Some(value),
+                    Option::None => resolve_builtin_method(ctx, receiver, name),
+                },
             },
         },
     }

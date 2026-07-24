@@ -64,7 +64,7 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
         },
         cst::NodeKind::FN => {
             record_disallowed_self_types(ctx, node);
-            match lower_function(ctx, node) {
+            match lower_function(ctx, node, Option::None) {
             Option::Some(value) => Option::Some(Item::Function(value)),
             Option::None => Option::None,
             }
@@ -228,7 +228,11 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => {
             let params = match first_child(node, cst::NodeKind::PARAM_LIST) {
-                Option::Some(_) => lower_params(ctx, node),
+                Option::Some(_) => lower_params(
+                    ctx,
+                    node,
+                    Option::Some(TypeExpr::Con(path_from_single_ident("Self"))),
+                ),
                 Option::None => {
                     push_error(ctx, node_span(node), "TraitMethod " + name_token.token.text + " has no params");
                     Vec::new()
@@ -350,13 +354,32 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
     }
 }
 
-fn lower_param(ctx: LowerCtx, node: LocatedNode) -> Option[(string, TypeExpr)] {
+fn lower_param(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    index: int32,
+    shorthand_self_ty: Option[TypeExpr],
+) -> Option[(string, TypeExpr)] {
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => {
             let types = type_children(node);
             if types.len() == 0 {
-                push_error(ctx, node_span(node), "Param " + name_token.token.text + " has no type");
-                Option::None
+                match shorthand_self_ty {
+                    Option::Some(ty) => if index == 0 && name_token.token.text == "self" {
+                        Option::Some((name_token.token.text, ty))
+                    } else {
+                        push_error(
+                            ctx,
+                            node_span(node),
+                            "only the first trait or impl parameter may use the `self` shorthand",
+                        );
+                        Option::None
+                    },
+                    Option::None => {
+                        push_error(ctx, node_span(node), "Param " + name_token.token.text + " has no type");
+                        Option::None
+                    },
+                }
             } else {
                 match lower_ty(ctx, types.get(0)) {
                     Option::Some(ty) => Option::Some((name_token.token.text, ty)),
@@ -378,13 +401,21 @@ fn lower_param(ctx: LowerCtx, node: LocatedNode) -> Option[(string, TypeExpr)] {
     }
 }
 
-fn lower_params(ctx: LowerCtx, node: LocatedNode) -> Vec[(string, TypeExpr)] {
+fn lower_params(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    shorthand_self_ty: Option[TypeExpr],
+) -> Vec[(string, TypeExpr)] {
     let result: Vec[(string, TypeExpr)] = Vec::new();
     match first_child(node, cst::NodeKind::PARAM_LIST) {
-        Option::Some(list) => for param in children_of_kind(list, cst::NodeKind::PARAM) {
-            match lower_param(ctx, param) {
-                Option::Some(value) => result.push(value),
-                Option::None => (),
+        Option::Some(list) => {
+            let index = Ref::new(0);
+            for param in children_of_kind(list, cst::NodeKind::PARAM) {
+                match lower_param(ctx, param, index.get(), shorthand_self_ty) {
+                    Option::Some(value) => result.push(value),
+                    Option::None => (),
+                };
+                index.set(index.get() + 1)
             }
         },
         Option::None => (),
@@ -408,7 +439,11 @@ fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
     result
 }
 
-fn lower_function(ctx: LowerCtx, node: LocatedNode) -> Option[Function] {
+fn lower_function(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    shorthand_self_ty: Option[TypeExpr],
+) -> Option[Function] {
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => match first_child(node, cst::NodeKind::PARAM_LIST) {
             Option::Some(_) => match first_child(node, cst::NodeKind::BLOCK) {
@@ -428,7 +463,7 @@ fn lower_function(ctx: LowerCtx, node: LocatedNode) -> Option[Function] {
                             generics,
                             generic_bounds,
                             predicates: lower_where_clause(ctx, node),
-                            params: lower_params(ctx, node),
+                            params: lower_params(ctx, node, shorthand_self_ty),
                             param_type_spans: lower_param_type_spans(node),
                             ret_ty,
                             ret_ty_span: if returns.len() > 0 {
@@ -496,7 +531,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                 };
                 let methods: Vec[Function] = Vec::new();
                 for method in children_of_kind(node, cst::NodeKind::FN) {
-                    match lower_function(ctx, method) {
+                    match lower_function(ctx, method, Option::Some(for_type)) {
                         Option::Some(value) => {
                             match trait_ref {
                                 Option::Some(_) => match value.visibility {
@@ -576,7 +611,7 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
                     generics,
                     generic_bounds,
                     predicates: lower_where_clause(ctx, node),
-                    params: lower_params(ctx, node),
+                    params: lower_params(ctx, node, Option::None),
                     ret_ty,
                 }))
             },

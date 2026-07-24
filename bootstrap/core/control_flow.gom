@@ -71,7 +71,7 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
         tast::Expr::Index(base, index, _) => {
             tast_expr_exits(base) || tast_expr_exits(index)
         },
-        tast::Expr::Binary(op, left, right, _) => {
+        tast::Expr::Binary(op, left, right, _, _) => {
             tast_expr_exits(left) || match op {
                 ast::BinaryOp::And | ast::BinaryOp::Or => false,
                 _ => tast_expr_exits(right),

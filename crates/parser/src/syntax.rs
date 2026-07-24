@@ -151,6 +151,7 @@ pub enum MySyntaxKind {
     EXPR_IDENT,
     PATH,
     EXPR_PAREN,
+    EXPR_RANGE,
     EXPR_BINARY,
     EXPR_PREFIX,
     EXPR_CAST,

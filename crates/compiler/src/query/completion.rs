@@ -1156,11 +1156,38 @@ fn trait_methods_for_receiver(
 ) -> Vec<(String, String)> {
     let mut methods = BTreeMap::new();
     let package_env = crate::env::PackageTypeEnv::new(
-        "completion".to_string(),
+        crate::package_names::ROOT_PACKAGE.to_string(),
         GlobalTypeEnv::default(),
         genv.clone(),
         Default::default(),
     );
+    if let tast::Ty::TDyn { trait_name } = receiver_ty {
+        if !genv.trait_env.trait_defs.contains_key(trait_name) {
+            return Vec::new();
+        }
+        let mut names = genv
+            .trait_env
+            .trait_defs
+            .values()
+            .flat_map(|definition| definition.methods.keys().cloned())
+            .collect::<Vec<_>>();
+        names.sort();
+        names.dedup();
+        for method_name in names {
+            let method = tast::TastIdent::new(&method_name);
+            let candidates = crate::typer::lookup_dyn_trait_methods(
+                &package_env,
+                &tast::TastIdent::new(trait_name),
+                &method,
+            );
+            let [(_, scheme)] = candidates.as_slice() else {
+                continue;
+            };
+            let method_ty = crate::typer::type_ops::instantiate_self_ty(&scheme.ty, receiver_ty);
+            methods.insert(method_name, method_ty.to_pretty(80));
+        }
+        return methods.into_iter().collect();
+    }
     let param_env = crate::typer::ParamEnv::default();
     let mut trait_solver = crate::typer::traits::solver::TraitSolver::new(&package_env, &param_env);
     for (key, impl_def) in &genv.trait_env.trait_impls {

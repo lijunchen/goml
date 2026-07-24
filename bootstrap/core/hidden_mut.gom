@@ -120,7 +120,7 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
             collect_mutable_expr(function, result);
             collect_mutable_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _) => {
+        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
             collect_mutable_expr(base, result);
             collect_mutable_expr(index, result)
         },
@@ -235,7 +235,7 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
             collect_bound_expr(function, result);
             collect_bound_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _) => {
+        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
             collect_bound_expr(base, result);
             collect_bound_expr(index, result)
         },
@@ -314,7 +314,7 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
             collect_reference_expr(function, result);
             collect_reference_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _) => {
+        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
             collect_reference_expr(base, result);
             collect_reference_expr(index, result)
         },
@@ -415,7 +415,7 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
             collect_capture_expr(function, result);
             collect_capture_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _) => {
+        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
             collect_capture_expr(base, result);
             collect_capture_expr(index, result)
         },

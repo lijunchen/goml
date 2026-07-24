@@ -224,79 +224,79 @@ pub fn builtin_source() -> string {
         \\
         \\impl Eq for bool {
         \\    fn eq(self: bool, other: bool) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for string {
         \\    fn eq(self: string, other: string) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for char {
         \\    fn eq(self: char, other: char) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for int8 {
         \\    fn eq(self: int8, other: int8) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for int16 {
         \\    fn eq(self: int16, other: int16) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for int32 {
         \\    fn eq(self: int32, other: int32) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for int64 {
         \\    fn eq(self: int64, other: int64) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for uint8 {
         \\    fn eq(self: uint8, other: uint8) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for uint16 {
         \\    fn eq(self: uint16, other: uint16) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for uint32 {
         \\    fn eq(self: uint32, other: uint32) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for uint64 {
         \\    fn eq(self: uint64, other: uint64) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for float32 {
         \\    fn eq(self: float32, other: float32) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
         \\impl Eq for float64 {
         \\    fn eq(self: float64, other: float64) -> bool {
-        \\        self == other
+        \\        __goml_primitive_eq(self, other)
         \\    }
         \\}
         \\
@@ -419,7 +419,7 @@ pub fn builtin_source() -> string {
         \\
         \\impl [A, B, I: Iterator] Iterator for MapIterator[A, B, I]
         \\where
-        \\    I::Item == A,
+        \\    I::Item = A,
         \\{
         \\    type Item = B;
         \\
@@ -433,7 +433,7 @@ pub fn builtin_source() -> string {
         \\
         \\impl [T, I: Iterator] Iterator for FilterIterator[T, I]
         \\where
-        \\    I::Item == T,
+        \\    I::Item = T,
         \\{
         \\    type Item = T;
         \\
@@ -480,7 +480,7 @@ pub fn builtin_source() -> string {
         \\    map_fn: (A) -> B,
         \\) -> MapIterator[A, B, I]
         \\where
-        \\    I::Item == A,
+        \\    I::Item = A,
         \\{
         \\    MapIterator { iterator, map_fn }
         \\}
@@ -490,7 +490,7 @@ pub fn builtin_source() -> string {
         \\    predicate: (T) -> bool,
         \\) -> FilterIterator[T, I]
         \\where
-        \\    I::Item == T,
+        \\    I::Item = T,
         \\{
         \\    FilterIterator { iterator, predicate }
         \\}
@@ -509,7 +509,7 @@ pub fn builtin_source() -> string {
         \\    combine: (A, T) -> A,
         \\) -> A
         \\where
-        \\    I::Item == T,
+        \\    I::Item = T,
         \\{
         \\    let accumulator = Ref::new(initial);
         \\    let running = Ref::new(true);
@@ -524,7 +524,7 @@ pub fn builtin_source() -> string {
         \\
         \\fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T]
         \\where
-        \\    I::Item == T,
+        \\    I::Item = T,
         \\{
         \\    let values: Vec[T] = Vec::new();
         \\    let running = Ref::new(true);
@@ -790,7 +790,7 @@ pub fn builtin_source() -> string {
         \\    }
         \\}
         \\
-        \\fn range(start: int32, end: int32) -> FnIterator[int32] {
+        \\fn __goml_builtin_range(start: int32, end: int32) -> FnIterator[int32] {
         \\    let current = Ref::new(start);
         \\    FnIterator::from_fn(|| {
         \\        let value = current.get();
@@ -801,6 +801,10 @@ pub fn builtin_source() -> string {
         \\            Option::None
         \\        }
         \\    })
+        \\}
+        \\
+        \\fn range(start: int32, end: int32) -> FnIterator[int32] {
+        \\    __goml_builtin_range(start, end)
         \\}
     ;
     source

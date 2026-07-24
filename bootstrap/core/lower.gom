@@ -151,6 +151,155 @@ fn bool_expr(value: bool) -> Expr {
     Expr::Prim(tast::Primitive::Bool(value), tast::Type::Bool)
 }
 
+fn trait_eq_call(left: Expr, right: Expr) -> Expr {
+    let ty = expr_type(left);
+    let params: Vec[tast::Type] = Vec::new();
+    params.push(ty);
+    params.push(ty);
+    let args: Vec[Expr] = Vec::new();
+    args.push(left);
+    args.push(right);
+    Expr::Call(
+        Expr::Var(
+            trait_impl_method_name(
+                tast::TraitRef {
+                    name: "Eq",
+                    args: Vec::new(),
+                },
+                ty,
+                "eq",
+            ),
+            tast::Type::Func(params, tast::Type::Bool),
+        ),
+        args,
+        tast::Type::Bool,
+    )
+}
+
+fn eq_conjunction(values: Vec[Expr]) -> Expr {
+    if values.len() == 0 {
+        bool_expr(true)
+    } else {
+        let result = Ref::new(values.get(values.len() - 1));
+        let index = Ref::new(values.len() - 2);
+        while index.get() >= 0 {
+            result.set(Expr::If(
+                values.get(index.get()),
+                result.get(),
+                bool_expr(false),
+                tast::Type::Bool,
+            ));
+            index.set(index.get() - 1)
+        };
+        result.get()
+    }
+}
+
+fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
+    match tast::resolve_type(ty) {
+        tast::Type::Tuple(types) => {
+            let values: Vec[Expr] = Vec::new();
+            for index in range(0, types.len()) {
+                let item_ty = types.get(index);
+                values.push(structural_eq(
+                    Expr::Proj(left, index, item_ty),
+                    Expr::Proj(right, index, item_ty),
+                    item_ty,
+                ))
+            };
+            eq_conjunction(values)
+        },
+        tast::Type::Array(length, element) => {
+            let values: Vec[Expr] = Vec::new();
+            for index in range(0, length) {
+                let index_expr = Expr::Prim(
+                    tast::Primitive::Int32(index.to_string()),
+                    tast::Type::Int32,
+                );
+                let parameter_types: Vec[tast::Type] = Vec::new();
+                parameter_types.push(ty);
+                parameter_types.push(tast::Type::Int32);
+                let function_ty = tast::Type::Func(parameter_types, element);
+                let left_args: Vec[Expr] = Vec::new();
+                left_args.push(left);
+                left_args.push(index_expr);
+                let right_args: Vec[Expr] = Vec::new();
+                right_args.push(right);
+                right_args.push(index_expr);
+                values.push(structural_eq(
+                    Expr::Call(
+                        Expr::Callable(
+                            tast::Callable::Intrinsic("array.get"),
+                            function_ty,
+                        ),
+                        left_args,
+                        element,
+                    ),
+                    Expr::Call(
+                        Expr::Callable(
+                            tast::Callable::Intrinsic("array.get"),
+                            function_ty,
+                        ),
+                        right_args,
+                        element,
+                    ),
+                    element,
+                ))
+            };
+            eq_conjunction(values)
+        },
+        _ => trait_eq_call(left, right),
+    }
+}
+
+fn lower_eq_expr(
+    ctx: Lowerer,
+    op: ast::BinaryOp,
+    left: tast::Expr,
+    right: tast::Expr,
+) -> Expr {
+    let operand_ty = tast::expr_type(left);
+    let left_value = lower_expr(ctx, left);
+    let right_value = lower_expr(ctx, right);
+    let eq = match tast::resolve_type(operand_ty) {
+        tast::Type::Tuple(_) | tast::Type::Array(_, _) => {
+            let left_name = gensym(ctx, "_eq_lhs");
+            let right_name = gensym(ctx, "_eq_rhs");
+            let stmts: Vec[LetStmt] = Vec::new();
+            stmts.push(LetStmt {
+                name: left_name,
+                value: left_value,
+                ty: operand_ty,
+            });
+            stmts.push(LetStmt {
+                name: right_name,
+                value: right_value,
+                ty: operand_ty,
+            });
+            Expr::Block(
+                Block {
+                    stmts,
+                    tail: Option::Some(structural_eq(
+                        Expr::Var(left_name, operand_ty),
+                        Expr::Var(right_name, operand_ty),
+                        operand_ty,
+                    )),
+                },
+                tast::Type::Bool,
+            )
+        },
+        _ => trait_eq_call(left_value, right_value),
+    };
+    if match op {
+        ast::BinaryOp::NotEq => true,
+        _ => false,
+    } {
+        Expr::Unary(ast::UnaryOp::Not, eq, tast::Type::Bool)
+    } else {
+        eq
+    }
+}
+
 fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
     match value {
         tast::Primitive::Int(value) => Option::Some(tast::Primitive::Int("-" + value)),
@@ -175,11 +324,20 @@ fn lower_call(
                 ty,
             )
         },
-        tast::Expr::Callable(tast::Callable::DynTraitMethod(owner, name), _) => if args.len() > 0 {
-            Expr::DynCall(owner, name, args.get(0), arguments_after_first(args), ty)
+        tast::Expr::Callable(tast::Callable::DynTraitMethod(owner, dispatch, name), _) => if args.len() > 0 {
+            Expr::DynCall(
+                owner,
+                dispatch + "#" + name,
+                args.get(0),
+                arguments_after_first(args),
+                ty,
+            )
         } else {
             Expr::Call(
-                Expr::Callable(tast::Callable::DynTraitMethod(owner, name), tast::Type::Error),
+                Expr::Callable(
+                    tast::Callable::DynTraitMethod(owner, dispatch, name),
+                    tast::Type::Error,
+                ),
                 args,
                 ty,
             )
@@ -947,19 +1105,22 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         } else {
             lower_index(ctx, base, index, ty)
         },
-        tast::Expr::Binary(ast::BinaryOp::And, left, right, ty) => Expr::If(
+        tast::Expr::Binary(ast::BinaryOp::And, left, right, ty, _) => Expr::If(
             lower_expr(ctx, left),
             lower_expr(ctx, right),
             bool_expr(false),
             ty,
         ),
-        tast::Expr::Binary(ast::BinaryOp::Or, left, right, ty) => Expr::If(
+        tast::Expr::Binary(ast::BinaryOp::Or, left, right, ty, _) => Expr::If(
             lower_expr(ctx, left),
             bool_expr(true),
             lower_expr(ctx, right),
             ty,
         ),
-        tast::Expr::Binary(op, left, right, ty) => {
+        tast::Expr::Binary(op, left, right, _, tast::BinaryResolution::EqTrait) => {
+            lower_eq_expr(ctx, op, left, right)
+        },
+        tast::Expr::Binary(op, left, right, ty, _) => {
             Expr::Binary(op, lower_expr(ctx, left), lower_expr(ctx, right), ty)
         },
         tast::Expr::ToDyn(name, for_ty, value, ty) => {

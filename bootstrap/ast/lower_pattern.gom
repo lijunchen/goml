@@ -41,6 +41,15 @@ fn strip_delimiters(value: string) -> Option[string] {
     }
 }
 
+fn path_from_single_ident(value: string) -> Path {
+    let segments: Vec[PathSegment] = Vec::new();
+    segments.push(PathSegment {
+        ident: value,
+        span: span(0, 0),
+    });
+    Path { segments }
+}
+
 fn signed_pattern_value(node: LocatedNode, kind: lexer::TokenKind, suffix: string) -> Option[string] {
     match literal_value(node, kind) {
         Option::Some(value) => {
@@ -55,15 +64,6 @@ fn signed_pattern_value(node: LocatedNode, kind: lexer::TokenKind, suffix: strin
     }
 }
 
-fn path_from_single_ident(value: string) -> Path {
-    let segments: Vec[PathSegment] = Vec::new();
-    segments.push(PathSegment {
-        ident: value,
-        span: span(0, 0),
-    });
-    Path { segments }
-}
-
 fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
     if ctx.pattern_depth.get() >= 128 {
         push_error(ctx, node_span(node), "pattern is too deeply nested");
@@ -73,15 +73,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
         let value_span = node_span(node);
         let result = match node_kind(node) {
             cst::NodeKind::PATTERN_VARIABLE => match first_token(node, lexer::TokenKind::Ident) {
-                Option::Some(token) => if contains_string(ctx.constructors, token.token.text) {
-                    Option::Some(Pat::Constr(
-                        path_from_single_ident(token.token.text),
-                        Vec::new(),
-                        value_span,
-                    ))
-                } else {
-                    Option::Some(Pat::Var(token.token.text, value_span))
-                },
+                Option::Some(token) => Option::Some(Pat::Var(token.token.text, value_span)),
                 Option::None => {
                     push_error(ctx, value_span, "Variable pattern is missing a name");
                     Option::None

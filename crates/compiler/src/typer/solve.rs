@@ -476,7 +476,7 @@ impl Typer {
                     ObligationCauseKind::ImplBound,
                 )
             }
-            SelectionSource::ParamEnv | SelectionSource::Dyn => (
+            SelectionSource::ParamEnv | SelectionSource::Dyn | SelectionSource::BuiltinEq => (
                 trait_scheme.clone(),
                 HashMap::new(),
                 true,
@@ -872,6 +872,17 @@ impl Typer {
                                             &mut reported,
                                             format!(
                                                 "Associated type {} cannot be projected from a trait object",
+                                                name.0
+                                            ),
+                                            &cause,
+                                        );
+                                    }
+                                    SelectionSource::BuiltinEq => {
+                                        self.push_obligation_error(
+                                            diagnostics,
+                                            &mut reported,
+                                            format!(
+                                                "Associated type {} cannot be projected from built-in Eq evidence",
                                                 name.0
                                             ),
                                             &cause,

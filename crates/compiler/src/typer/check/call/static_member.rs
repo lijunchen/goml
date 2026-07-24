@@ -24,16 +24,17 @@ struct StaticTraitMethodCall<'a> {
     method_scheme: crate::env::FnScheme,
 }
 
-struct DynTraitMethodCall<'a> {
-    call_expr_id: hir::ExprId,
-    func_expr_id: hir::ExprId,
-    astptr: Option<MySyntaxNodePtr>,
-    args: &'a [hir::ExprId],
-    receiver: tast::Expr,
-    trait_name: &'a tast::TastIdent,
-    method_name: &'a tast::TastIdent,
-    params: &'a [tast::Ty],
-    ret_ty: &'a tast::Ty,
+pub(super) struct DynTraitMethodCall<'a> {
+    pub(super) call_expr_id: hir::ExprId,
+    pub(super) func_expr_id: hir::ExprId,
+    pub(super) astptr: Option<MySyntaxNodePtr>,
+    pub(super) args: &'a [hir::ExprId],
+    pub(super) receiver: tast::Expr,
+    pub(super) dispatch_trait_name: &'a tast::TastIdent,
+    pub(super) definition_trait_name: &'a tast::TastIdent,
+    pub(super) method_name: &'a tast::TastIdent,
+    pub(super) params: &'a [tast::Ty],
+    pub(super) ret_ty: &'a tast::Ty,
 }
 
 struct StaticInherentMethodCall<'a> {
@@ -187,7 +188,8 @@ impl Typer {
                     astptr,
                     args,
                     receiver,
-                    trait_name: &trait_ref.name,
+                    dispatch_trait_name: &trait_ref.name,
+                    definition_trait_name: &trait_ref.name,
                     method_name: &member_ident,
                     params,
                     ret_ty,
@@ -268,7 +270,7 @@ impl Typer {
         }
     }
 
-    fn infer_dyn_trait_method_call(
+    pub(super) fn infer_dyn_trait_method_call(
         &mut self,
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
@@ -281,7 +283,8 @@ impl Typer {
             astptr,
             args,
             receiver,
-            trait_name,
+            dispatch_trait_name,
+            definition_trait_name,
             method_name,
             params,
             ret_ty,
@@ -291,7 +294,7 @@ impl Typer {
                 diagnostics,
                 format!(
                     "Trait method {}::{} expects {} arguments but got {}",
-                    trait_name.0,
+                    definition_trait_name.0,
                     method_name.0,
                     params.len(),
                     args.len()
@@ -310,7 +313,7 @@ impl Typer {
         let mut dyn_params = params.to_vec();
         if let Some(first) = dyn_params.get_mut(0) {
             *first = tast::Ty::TDyn {
-                trait_name: trait_name.0.clone(),
+                trait_name: dispatch_trait_name.0.clone(),
             };
         } else {
             util::push_ice(diagnostics, "dyn method params missing receiver");
@@ -325,7 +328,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             func_expr_id,
             NameRefElab::DynTraitMethod {
-                trait_name: trait_name.clone(),
+                trait_name: definition_trait_name.clone(),
                 method_name: method_name.clone(),
                 ty: dyn_method_ty.clone(),
                 astptr,
@@ -335,7 +338,7 @@ impl Typer {
             call_expr_id,
             CallElab {
                 callee: CalleeElab::DynTraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_name: dispatch_trait_name.clone(),
                     method_name: method_name.clone(),
                     ty: dyn_method_ty.clone(),
                     astptr: None,
@@ -345,7 +348,7 @@ impl Typer {
         );
         tast::Expr::ECall {
             func: Box::new(tast::Expr::EDynTraitMethod {
-                trait_name: trait_name.clone(),
+                trait_name: dispatch_trait_name.clone(),
                 method_name: method_name.clone(),
                 ty: dyn_method_ty,
                 astptr: None,

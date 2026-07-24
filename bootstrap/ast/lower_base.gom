@@ -5,7 +5,6 @@ use gomlc::lexer;
 
 struct LowerCtx {
     diagnostics: Vec[cst::Diagnostic],
-    constructors: Vec[string],
     invalid_self_type_spans: Vec[Span],
     expr_depth: Ref[int32],
     pattern_depth: Ref[int32],
@@ -28,39 +27,10 @@ fn contains_string(values: Vec[string], expected: string) -> bool {
     result.get()
 }
 
-fn collect_constructor_names(root: LocatedNode) -> Vec[string] {
-    let names: Vec[string] = Vec::new();
-    for item in item_children(root) {
-        if cst::node_kind_equal(node_kind(item), cst::NodeKind::ENUM) {
-            match first_child(item, cst::NodeKind::VARIANT_LIST) {
-                Option::Some(list) => for variant in children_of_kind(list, cst::NodeKind::VARIANT) {
-                    match first_token(variant, lexer::TokenKind::Ident) {
-                        Option::Some(token) => names.push(token.token.text),
-                        Option::None => (),
-                    }
-                },
-                Option::None => (),
-            }
-        } else if cst::node_kind_equal(node_kind(item), cst::NodeKind::STRUCT) {
-            match first_token(item, lexer::TokenKind::Ident) {
-                Option::Some(token) => names.push(token.token.text),
-                Option::None => (),
-            }
-        } else {
-            ()
-        }
-    };
-    names
-}
-
-fn append_constructor_names(target: Vec[string], values: Vec[string]) -> unit {
-    for value in values {
-        if contains_string(target, value) {
-            ()
-        } else {
-            target.push(value)
-        }
-    }
+fn ident_starts_upper(value: string) -> bool {
+    value.byte_len() > 0
+        && value.byte_get(0) >= 65u8
+        && value.byte_get(0) <= 90u8
 }
 
 fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
@@ -255,6 +225,18 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
             cst::NodeKind::TYPE_TAPP => match first_child(node, cst::NodeKind::PATH) {
                 Option::Some(path_node) => match lower_path(ctx, path_node) {
                     Option::Some(path) => {
+                        match path_last(path) {
+                            Option::Some(name) => if ident_starts_upper(name) == false {
+                                push_error(
+                                    ctx,
+                                    node_span(node),
+                                    "type, trait, and generic names must start with an uppercase letter",
+                                )
+                            } else {
+                                ()
+                            },
+                            Option::None => (),
+                        };
                         let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
                             Option::Some(list) => lower_type_list(ctx, list),
                             Option::None => Vec::new(),
@@ -446,10 +428,7 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
     }
 }
 
-fn lower_with_constructors(
-    result: cst::ParseResult,
-    package_constructors: Vec[string],
-) -> LowerResult {
+fn lower_result(result: cst::ParseResult) -> LowerResult {
     let diagnostics = result.diagnostics;
     if diagnostics.len() > 0 {
         LowerResult {
@@ -458,11 +437,8 @@ fn lower_with_constructors(
         }
     } else {
         let root = root_node(result);
-        let constructors = collect_constructor_names(root);
-        append_constructor_names(constructors, package_constructors);
         let ctx = LowerCtx {
             diagnostics,
-            constructors,
             invalid_self_type_spans: Vec::new(),
             expr_depth: Ref::new(0),
             pattern_depth: Ref::new(0),
@@ -510,24 +486,13 @@ fn lower_with_constructors(
 }
 
 pub fn lower(result: cst::ParseResult) -> LowerResult {
-    lower_with_constructors(result, Vec::new())
+    lower_result(result)
 }
 
 pub fn lower_package(results: Vec[cst::ParseResult]) -> Vec[LowerResult] {
-    let constructors: Vec[string] = Vec::new();
-    for result in results {
-        if result.diagnostics.len() == 0 {
-            append_constructor_names(
-                constructors,
-                collect_constructor_names(root_node(result)),
-            )
-        } else {
-            ()
-        }
-    };
     let lowered: Vec[LowerResult] = Vec::new();
     for result in results {
-        lowered.push(lower_with_constructors(result, constructors))
+        lowered.push(lower_result(result))
     };
     lowered
 }

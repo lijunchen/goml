@@ -399,7 +399,7 @@ fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
             id.set(Option::Some(artifact_callable_id("intrinsic", value)))
         },
         tast::Callable::TraitMethod(_, _)
-        | tast::Callable::DynTraitMethod(_, _)
+        | tast::Callable::DynTraitMethod(_, _, _)
         | tast::Callable::InherentMethod(_, _) => fail(
             "error[compile]: unresolved callable in compiler artifact",
         ),

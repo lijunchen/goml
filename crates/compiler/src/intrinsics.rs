@@ -3,6 +3,7 @@
 )]
 #[serde(rename_all = "snake_case")]
 pub enum IntrinsicId {
+    PrimitiveEq,
     ArrayGet,
     ArraySet,
     RefNew,
@@ -34,7 +35,8 @@ pub enum IntrinsicId {
 }
 
 impl IntrinsicId {
-    pub const ALL: [Self; 28] = [
+    pub const ALL: [Self; 29] = [
+        Self::PrimitiveEq,
         Self::ArrayGet,
         Self::ArraySet,
         Self::RefNew,
@@ -67,6 +69,7 @@ impl IntrinsicId {
 
     pub const fn key(self) -> &'static str {
         match self {
+            Self::PrimitiveEq => "eq.primitive",
             Self::ArrayGet => "array.get",
             Self::ArraySet => "array.set",
             Self::RefNew => "ref.new",
@@ -100,6 +103,7 @@ impl IntrinsicId {
 
     pub const fn source_name(self) -> &'static str {
         match self {
+            Self::PrimitiveEq => "__goml_primitive_eq",
             Self::ArrayGet => "array_get",
             Self::ArraySet => "array_set",
             Self::RefNew => "ref",
@@ -528,6 +532,7 @@ pub enum CallEffect {
 impl IntrinsicId {
     pub fn effect(self) -> CallEffect {
         match self {
+            Self::PrimitiveEq => CallEffect::Pure,
             Self::ArrayGet
             | Self::ArraySet
             | Self::RefGet
@@ -604,6 +609,7 @@ pub enum LangItemId {
     HashMap,
     Iterator,
     IntoIterator,
+    Range,
     Eq,
     Hash,
     ToString,
@@ -650,13 +656,14 @@ impl LangItemTable {
 }
 
 impl LangItemId {
-    pub const ALL: [Self; 11] = [
+    pub const ALL: [Self; 12] = [
         Self::Vec,
         Self::Slice,
         Self::Ref,
         Self::HashMap,
         Self::Iterator,
         Self::IntoIterator,
+        Self::Range,
         Self::Eq,
         Self::Hash,
         Self::ToString,
@@ -672,6 +679,7 @@ impl LangItemId {
             Self::HashMap => "hashmap",
             Self::Iterator => "iterator",
             Self::IntoIterator => "into_iterator",
+            Self::Range => "range",
             Self::Eq => "eq",
             Self::Hash => "hash",
             Self::ToString => "to_string",
@@ -692,6 +700,7 @@ impl LangItemId {
             Self::HashMap => "HashMap",
             Self::Iterator => "Iterator",
             Self::IntoIterator => "IntoIterator",
+            Self::Range => "__goml_builtin_range",
             Self::Eq => "Eq",
             Self::Hash => "Hash",
             Self::ToString => "ToString",
@@ -833,6 +842,9 @@ impl IntrinsicId {
         };
         let map_constraints = [("K", LangItemId::Hash), ("K", LangItemId::Eq)];
         match self {
+            Self::PrimitiveEq => {
+                generic_signature(&["T"], &[], vec![t.clone(), t], crate::tast::Ty::TBool)
+            }
             Self::ArrayGet => {
                 generic_signature(&["T"], &[], vec![array, crate::tast::Ty::TInt32], t)
             }

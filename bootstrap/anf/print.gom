@@ -14,6 +14,18 @@ fn newline(builder: text::StringBuilder, indent: int32) -> unit {
     write_spaces(builder, indent)
 }
 
+fn dyn_method_name(value: string) -> string {
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 35u8 {
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    value.byte_slice(start.get(), value.byte_len())
+}
+
 fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
     match value {
         tast::Callable::Function(name) => builder.write_string(name),
@@ -32,9 +44,11 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
             builder.write_string("::");
             builder.write_string(name)
         },
-        tast::Callable::DynTraitMethod(owner, name) => {
+        tast::Callable::DynTraitMethod(owner, dispatch, name) => {
             builder.write_string("dyn ");
             builder.write_string(owner);
+            builder.write_string(" via ");
+            builder.write_string(dispatch);
             builder.write_string("::");
             builder.write_string(name)
         },
@@ -183,7 +197,7 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             builder.write_string("dyn_call[");
             builder.write_string(trait_name);
             builder.write_string("::");
-            builder.write_string(method_name);
+            builder.write_string(dyn_method_name(method_name));
             builder.write_string("](");
             write_imm(builder, receiver);
             if args.len() > 0 {

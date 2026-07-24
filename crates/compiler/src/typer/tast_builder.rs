@@ -634,6 +634,24 @@ fn build_expr(
             tast::Expr::ECast { expr, ty }
         }
         hir::Expr::ETry { expr } => build_try_expr(hir_table, results, expr_id, expr),
+        hir::Expr::ERange { start, end } => {
+            let start = build_expr(hir_table, results, start);
+            let end = build_expr(hir_table, results, end);
+            let ret_ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            let func_ty = tast::Ty::TFunc {
+                params: vec![tast::Ty::TInt32, tast::Ty::TInt32],
+                ret_ty: Box::new(ret_ty.clone()),
+            };
+            tast::Expr::ECall {
+                func: Box::new(tast::Expr::EVar {
+                    name: LangItemId::Range.source_name().to_string(),
+                    ty: func_ty,
+                    astptr: None,
+                }),
+                args: vec![start, end],
+                ty: ret_ty,
+            }
+        }
         hir::Expr::EBinary { op, lhs, rhs } => {
             let lhs = Box::new(build_expr(hir_table, results, lhs));
             let rhs = Box::new(build_expr(hir_table, results, rhs));

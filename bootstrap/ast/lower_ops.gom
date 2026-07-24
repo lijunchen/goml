@@ -224,7 +224,7 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
             match lower_ident_parts(ctx, callee) {
                 Option::Some((path, type_args)) => match path_last(path) {
                     Option::Some(last) => {
-                        let call = if type_args.len() == 0 && contains_string(ctx.constructors, last) {
+                        let call = if type_args.len() == 0 && ident_starts_upper(last) {
                             Expr::Constr(path, args, node_span(node))
                         } else {
                             Expr::Call(
@@ -354,6 +354,30 @@ fn lower_try_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
                 trailing_args,
                 node_span(node),
             ),
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn lower_range_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    let values = expr_children(node);
+    if values.len() < 1 {
+        push_error(ctx, node_span(node), "Range expression missing start");
+        Option::None
+    } else if values.len() < 2 {
+        push_error(ctx, node_span(node), "Range expression missing end");
+        Option::None
+    } else {
+        match lower_expr(ctx, values.get(0)) {
+            Option::Some(start) => match lower_expr(ctx, values.get(1)) {
+                Option::Some(end) => apply_trailing_args(
+                    ctx,
+                    Expr::Range(start, end, node_span(node)),
+                    trailing_args,
+                    node_span(node),
+                ),
+                Option::None => Option::None,
+            },
             Option::None => Option::None,
         }
     }

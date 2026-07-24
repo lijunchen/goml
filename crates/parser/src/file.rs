@@ -28,9 +28,9 @@ pub fn file(p: &mut Parser) {
             p.advance_with_error("package declaration must appear at the top of the file");
         } else if p.at(T![use]) {
             p.advance_with_error("use declaration must appear before top-level items");
-        } else if p.at(T![import]) {
+        } else if p.at_contextual("import") && p.nth(1) == T![ident] {
             removed_import_decl(p);
-        } else if p.at(T![mod]) {
+        } else if p.at_contextual("mod") && p.nth(1) == T![ident] {
             p.advance_with_error("module declarations have been removed; use a package instead")
         } else if p.at(T![extern]) {
             extern_decl(p)
@@ -59,11 +59,7 @@ fn package_decl(p: &mut Parser) {
     assert!(p.at(T![package]));
     let m = p.open();
     p.expect(T![package]);
-    if p.at(T![ident]) {
-        p.advance();
-    } else {
-        p.error("expected a package name");
-    }
+    p.expect_lower_ident("package name");
     p.expect(T![;]);
     p.close(m, MySyntaxKind::PACKAGE);
 }
@@ -78,18 +74,14 @@ fn use_decl(p: &mut Parser) {
         p.advance_with_error("expected a path after `use`");
     }
     if p.eat(T![as]) {
-        if p.at(T![ident]) {
-            p.advance();
-        } else {
-            p.error("expected an alias after `as`");
-        }
+        p.expect_lower_ident("use alias");
     }
     p.expect(T![;]);
     p.close(m, MySyntaxKind::USE);
 }
 
 fn removed_import_decl(p: &mut Parser) {
-    assert!(p.at(T![import]));
+    assert!(p.at_contextual("import"));
     let m = p.open();
     p.error("`import` has been removed; use `use` instead");
     while !p.eof() && !p.at(T![;]) {
@@ -106,7 +98,7 @@ fn item_with_attrs(p: &mut Parser, attrs: MarkerClosed) {
     } else if p.at(T![extern]) {
         let m = attrs.precede(p);
         extern_decl_with_marker(p, m);
-    } else if p.at(T![mod]) {
+    } else if p.at_contextual("mod") {
         let m = attrs.precede(p);
         p.error("module declarations have been removed; use a package instead");
         p.advance();
@@ -150,7 +142,7 @@ fn public_item_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![pub]);
     if p.at(T![extern]) {
         extern_decl_with_marker(p, m);
-    } else if p.at(T![mod]) {
+    } else if p.at_contextual("mod") {
         p.error("public module declarations have been removed; packages are directory-based");
         p.advance();
         if p.at(T![ident]) {
@@ -230,11 +222,7 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
         p.close(m, MySyntaxKind::ErrorTree);
         return;
     }
-    if p.at(T![ident]) {
-        p.advance();
-    } else {
-        p.advance_with_error("expected a function name");
-    }
+    p.expect_lower_ident("function name");
     if p.at(T!['[']) {
         generic_list(p, true);
     }
@@ -261,12 +249,14 @@ fn func(p: &mut Parser) {
 
 fn func_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![fn]);
-    p.expect(T![ident]);
+    p.expect_lower_ident("function name");
     if p.at(T!['[']) {
         generic_list(p, true);
     }
     if p.at(T!['(']) {
         param_list(p);
+    } else {
+        p.error("functions require an explicit parameter list");
     }
     if p.eat(T![->]) {
         type_expr(p);
@@ -325,6 +315,8 @@ fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
             }
         }
         p.expect(T!['}']);
+    } else {
+        p.error("impl declarations require a brace-delimited body");
     }
     p.close(m, MySyntaxKind::IMPL);
 }
@@ -337,7 +329,7 @@ fn trait_def(p: &mut Parser) {
 
 fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![trait]);
-    p.expect(T![ident]);
+    p.expect_upper_ident("trait name");
     if p.at(T!['[']) {
         generic_list(p, true);
     }
@@ -349,6 +341,8 @@ fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     }
     if p.at(T!['{']) {
         trait_method_list(p);
+    } else {
+        p.error("trait declarations require a brace-delimited body");
     }
     p.close(m, MySyntaxKind::TRAIT);
 }
@@ -380,7 +374,7 @@ fn trait_method(p: &mut Parser) {
     assert!(p.at(T![fn]));
     let m = p.open();
     p.expect(T![fn]);
-    p.expect(T![ident]);
+    p.expect_lower_ident("method name");
     if p.at(T!['(']) {
         param_list(p);
     } else {
@@ -396,7 +390,7 @@ fn trait_associated_type(p: &mut Parser) {
     assert!(p.at(T![type]));
     let m = p.open();
     p.expect(T![type]);
-    p.expect(T![ident]);
+    p.expect_upper_ident("associated type name");
     if p.eat(T![:]) {
         trait_set(p);
     }
@@ -408,7 +402,7 @@ fn impl_associated_type(p: &mut Parser) {
     assert!(p.at(T![type]));
     let m = p.open();
     p.expect(T![type]);
-    p.expect(T![ident]);
+    p.expect_upper_ident("associated type name");
     p.expect(T![=]);
     type_expr(p);
     p.expect(T![;]);
@@ -423,12 +417,14 @@ fn enum_def(p: &mut Parser) {
 
 fn enum_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![enum]);
-    p.expect(T![ident]);
+    p.expect_upper_ident("enum name");
     if p.at(T!['[']) {
         generic_list(p, false);
     }
     if p.at(T!['{']) {
         variant_list(p);
+    } else {
+        p.error("enum declarations require a brace-delimited body");
     }
     p.close(m, MySyntaxKind::ENUM);
 }
@@ -441,12 +437,14 @@ fn struct_def(p: &mut Parser) {
 
 fn struct_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![struct]);
-    p.expect(T![ident]);
+    p.expect_upper_ident("struct name");
     if p.at(T!['[']) {
         generic_list(p, false);
     }
     if p.at(T!['{']) {
         struct_field_list(p);
+    } else {
+        p.error("struct declarations require a brace-delimited body");
     }
     p.close(m, MySyntaxKind::STRUCT);
 }
@@ -458,7 +456,9 @@ fn variant_list(p: &mut Parser) {
     while !p.at(T!['}']) && !p.eof() {
         if p.at(T![ident]) {
             variant(p);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T!['}']) {
+                p.error("expected `,` between enum variants");
+            }
         } else {
             p.advance_with_error("expected a variant");
         }
@@ -474,7 +474,9 @@ fn struct_field_list(p: &mut Parser) {
     while !p.at(T!['}']) && !p.eof() {
         if p.at(T![ident]) || p.at(T![pub]) {
             struct_field(p);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T!['}']) {
+                p.error("expected `,` between struct fields");
+            }
         } else {
             p.advance_with_error("expected a field");
         }
@@ -487,7 +489,7 @@ fn struct_field(p: &mut Parser) {
     assert!(p.at(T![ident]) || p.at(T![pub]));
     let m = p.open();
     p.eat(T![pub]);
-    p.expect(T![ident]);
+    p.expect_lower_ident("field name");
     p.expect(T![:]);
     type_expr(p);
     p.close(m, MySyntaxKind::STRUCT_FIELD);
@@ -496,7 +498,7 @@ fn struct_field(p: &mut Parser) {
 fn variant(p: &mut Parser) {
     assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![ident]);
+    p.expect_upper_ident("enum variant name");
     if p.at(T!['(']) {
         type_list(p);
     } else if p.at(T!['{']) {
@@ -533,7 +535,9 @@ fn type_list(p: &mut Parser) {
     while !p.at(T![')']) && !p.eof() {
         if p.at_any(TYPE_FIRST) {
             type_expr(p);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T![')']) {
+                p.error("expected `,` between types");
+            }
         } else {
             p.advance_with_error("expected a type");
         }
@@ -545,7 +549,7 @@ fn type_list(p: &mut Parser) {
 fn generic(p: &mut Parser, allow_bounds: bool) {
     assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![ident]);
+    p.expect_upper_ident("generic parameter name");
     if p.at(T!['[']) {
         generic_list(p, false);
     }
@@ -609,14 +613,21 @@ fn where_predicate(p: &mut Parser) {
     }
     if p.eat(T![:]) {
         trait_set(p);
+    } else if p.eat(T![=]) {
+        if p.at_any(TYPE_FIRST) {
+            type_expr(p);
+        } else {
+            p.advance_with_error("expected a type after '='");
+        }
     } else if p.eat(T![==]) {
+        p.error("`==` in where predicates has been replaced by `=`");
         if p.at_any(TYPE_FIRST) {
             type_expr(p);
         } else {
             p.advance_with_error("expected a type after '=='");
         }
     } else {
-        p.error("expected ':' or '==' in where predicate");
+        p.error("expected ':' or '=' in where predicate");
     }
     p.close(m, MySyntaxKind::WHERE_PREDICATE);
 }
@@ -628,7 +639,9 @@ fn generic_list(p: &mut Parser, allow_bounds: bool) {
     while !p.at(T![']']) && !p.eof() {
         if p.at(T![ident]) {
             generic(p, allow_bounds);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T![']']) {
+                p.error("expected `,` between generic parameters");
+            }
         } else {
             p.advance_with_error("expected a generic");
         }
@@ -674,9 +687,14 @@ fn param_list(p: &mut Parser) {
 fn param(p: &mut Parser) {
     assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![ident]);
-    p.expect(T![:]);
-    type_expr(p);
+    let self_shorthand = p.at_contextual("self") && p.nth(1) != T![:];
+    p.expect_lower_ident("parameter name");
+    if p.at(T![:]) {
+        p.expect(T![:]);
+        type_expr(p);
+    } else if !self_shorthand {
+        p.error("only the first trait or impl parameter may use the `self` shorthand");
+    }
     if !p.at(T![')']) {
         p.expect(T![,]);
     }
@@ -784,7 +802,11 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(m, MySyntaxKind::TYPE_CHAR)
         }
         T!['('] => {
+            let empty = p.nth(1) == T![')'];
             type_list(p);
+            if empty && !p.at(T![->]) {
+                p.error("`()` is a value and pattern; use `unit` as the unit type");
+            }
             p.close(m, MySyntaxKind::TYPE_TUPLE)
         }
         T!['['] => {
@@ -844,7 +866,9 @@ pub(crate) fn type_param_list(p: &mut Parser) {
     while !p.at(T![']']) && !p.eof() {
         if p.at_any(TYPE_FIRST) {
             type_expr(p);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T![']']) {
+                p.error("expected `,` between type arguments");
+            }
         } else {
             p.advance_with_error("expected a type");
         }

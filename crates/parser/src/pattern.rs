@@ -55,7 +55,7 @@ fn or_pattern(p: &mut Parser) -> Option<MarkerClosed> {
 }
 
 fn alias_pattern(p: &mut Parser) -> Option<MarkerClosed> {
-    if p.at(T![ident]) && p.nth(1) == T![@] {
+    if p.at_lower_ident() && p.nth(1) == T![@] {
         let marker = p.open();
         p.expect(T![ident]);
         p.expect(T![@]);
@@ -259,7 +259,8 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
         T!['['] => array_pattern(p),
         T![ident] => {
             let m = p.open();
-            let is_simple_var = p.at(T![ident]) && !matches!(p.nth(1), T![::] | T!['('] | T!['{']);
+            let is_simple_var =
+                p.at_lower_ident() && !matches!(p.nth(1), T![::] | T!['('] | T!['{']);
 
             if is_simple_var {
                 p.expect(T![ident]);
@@ -288,7 +289,7 @@ fn array_pattern(p: &mut Parser) -> MarkerClosed {
     p.expect(T!['[']);
     let mut has_rest = false;
     while !p.eof() && !p.at(T![']']) {
-        let is_bound_rest = p.at(T![ident]) && p.nth(1) == T![@] && p.nth(2) == T![..];
+        let is_bound_rest = p.at_lower_ident() && p.nth(1) == T![@] && p.nth(2) == T![..];
         if p.at(T![..]) || is_bound_rest {
             if has_rest {
                 p.error("array pattern can contain at most one `..`");
@@ -317,7 +318,7 @@ fn array_pattern(p: &mut Parser) -> MarkerClosed {
 
 fn rest_pattern(p: &mut Parser) -> MarkerClosed {
     let marker = p.open();
-    if p.at(T![ident]) {
+    if p.at_lower_ident() {
         p.expect(T![ident]);
         p.expect(T![@]);
     }
@@ -343,7 +344,9 @@ fn struct_pattern_field_list(p: &mut Parser) {
             }
         } else if p.at(T![ident]) {
             struct_pattern_field(p);
-            p.eat(T![,]);
+            if !p.eat(T![,]) && !p.at(T!['}']) {
+                p.error("expected `,` between struct pattern fields");
+            }
         } else {
             p.advance_with_error("expected a struct pattern field");
         }
@@ -355,7 +358,7 @@ fn struct_pattern_field_list(p: &mut Parser) {
 fn struct_pattern_field(p: &mut Parser) {
     assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![ident]);
+    p.expect_lower_ident("struct pattern field name");
     if p.at(T![:]) {
         p.expect(T![:]);
         if p.at_any(PATTERN_FIRST) {

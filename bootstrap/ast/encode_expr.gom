@@ -217,6 +217,12 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_span(builder, value_span);
             encode_expr(builder, expr)
         },
+        Expr::Range(start, end, value_span) => {
+            encode_open(builder, "Expr.Range");
+            encode_span(builder, value_span);
+            encode_expr(builder, start);
+            encode_expr(builder, end)
+        },
         Expr::Binary(op, lhs, rhs, value_span) => {
             encode_open(builder, "Expr.Binary");
             encode_span(builder, value_span);

@@ -270,7 +270,9 @@ fn callable_name(env: LowerEnv, value: tast::Callable) -> string {
         tast::Callable::TraitMethod(reference, name) => {
             go_ident(reference.name + "#" + name)
         },
-        tast::Callable::DynTraitMethod(owner, name) => go_ident("dyn#" + owner + "#" + name),
+        tast::Callable::DynTraitMethod(owner, dispatch, name) => {
+            go_ident("dyn#" + owner + "#" + dispatch + "#" + name)
+        },
         tast::Callable::InherentMethod(owner, name) => {
             go_ident("inherent#" + encode_type(owner) + "#" + name)
         },
@@ -704,7 +706,9 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
             let compiled = compile_imms_expected(env, args, expected);
             match func {
                 anf::Imm::Callable(tast::Callable::Intrinsic(key), _) => {
-                    if key == "slice.new" {
+                    if key == "eq.primitive" {
+                        Expr::Binary(BinaryOp::Eq, compiled.get(0), compiled.get(1))
+                    } else if key == "slice.new" {
                         Expr::Slice(
                             Expr::Field(compiled.get(0), "items"),
                             compiled.get(1),
@@ -1043,10 +1047,11 @@ fn compile_value(
             Expr::StructLiteral(lower_type(ty), fields)
         },
         anf::Value::DynCall(trait_name, method, receiver, args, _) => {
+            let method_name = dyn_method_parts(method, trait_name).1;
             let receiver = compile_imm(env, receiver);
             let values: Vec[Expr] = Vec::new();
             values.push(Expr::Field(receiver, "data"));
-            let expected = match find_dyn_method(env.functions, trait_name, method) {
+            let expected = match find_dyn_method(env.functions, trait_name, method_name) {
                 Option::Some(info) => info.params,
                 Option::None => Vec::new(),
             };
@@ -1054,7 +1059,7 @@ fn compile_value(
                 values.push(arg)
             };
             Expr::Call(
-                Expr::Field(Expr::Field(receiver, "vtable"), go_ident(method)),
+                Expr::Field(Expr::Field(receiver, "vtable"), go_ident(method_name)),
                 values,
             )
         },

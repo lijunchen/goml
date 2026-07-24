@@ -819,7 +819,8 @@ fn normalize_selected_associated_types(
                             let projection = typer.norm(&projection);
                             (projection != *ty).then_some(projection)
                         }
-                        super::traits::solver::SelectionSource::Dyn => None,
+                        super::traits::solver::SelectionSource::Dyn
+                        | super::traits::solver::SelectionSource::BuiltinEq => None,
                     }
                 }
                 super::traits::solver::SelectionResult::NoSolution
@@ -2233,6 +2234,7 @@ fn define_inherent_impl(
 
 fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func: &hir::Fn) {
     let name = func.name.clone();
+    register_lang_item(env, diagnostics, &func.attrs, &name);
     if name == "main" {
         if !func.params.is_empty() {
             diagnostics.push(Diagnostic::new(

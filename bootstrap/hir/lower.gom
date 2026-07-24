@@ -1030,6 +1030,10 @@ fn lower_expr_value(
             lower_type(ctx, ty, type_params),
         ),
         ast::Expr::Try(expr, _) => ExprKind::Try(0, lower_expr(ctx, expr, env, type_params)),
+        ast::Expr::Range(start, end, _) => ExprKind::Range(
+            lower_expr(ctx, start, env, type_params),
+            lower_expr(ctx, end, env, type_params),
+        ),
         ast::Expr::Binary(op, lhs, rhs, _) => ExprKind::Binary(
             op,
             lower_expr(ctx, lhs, env, type_params),

@@ -64,9 +64,9 @@ fn or_pattern(parser: Parser) -> Option[MarkerClosed] {
 }
 
 fn alias_pattern(parser: Parser) -> Option[MarkerClosed] {
-    if parser.at(lexer::TokenKind::Ident) && token_is(parser.nth(1), lexer::TokenKind::At) {
+    if parser.at_lower_ident() && token_is(parser.nth(1), lexer::TokenKind::At) {
         let marker = parser.open();
-        parser.expect(lexer::TokenKind::Ident);
+        parser.expect_lower_ident("pattern binding");
         parser.expect(lexer::TokenKind::At);
         if parser.enter_pattern() {
             if marker_is_none(alias_pattern(parser)) {
@@ -224,8 +224,8 @@ fn ident_pattern(parser: Parser) -> MarkerClosed {
     let simple = token_is(next, lexer::TokenKind::ColonColon) == false
         && token_is(next, lexer::TokenKind::LParen) == false
         && token_is(next, lexer::TokenKind::LBrace) == false;
-    if simple {
-        parser.expect(lexer::TokenKind::Ident);
+    if simple && parser.at_lower_ident() {
+        parser.expect_lower_ident("pattern binding");
         parser.close(marker, cst::NodeKind::PATTERN_VARIABLE)
     } else {
         parse_path_always(parser);
@@ -282,8 +282,8 @@ fn array_pattern(parser: Parser) -> MarkerClosed {
 
 fn rest_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
-    if parser.at(lexer::TokenKind::Ident) {
-        parser.expect(lexer::TokenKind::Ident);
+    if parser.at_lower_ident() {
+        parser.expect_lower_ident("rest pattern binding");
         parser.expect(lexer::TokenKind::At)
     } else {
         ()
@@ -313,7 +313,13 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
             }
         } else if parser.at(lexer::TokenKind::Ident) {
             struct_pattern_field(parser);
-            parser.eat(lexer::TokenKind::Comma);
+            if parser.eat(lexer::TokenKind::Comma) {
+                ()
+            } else if parser.at(lexer::TokenKind::RBrace) {
+                ()
+            } else {
+                parser.error("expected `,` between struct pattern fields")
+            }
         } else {
             parser.advance_with_error("expected a struct pattern field")
         }
@@ -325,7 +331,7 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
 
 fn struct_pattern_field(parser: Parser) -> unit {
     let marker = parser.open();
-    parser.expect(lexer::TokenKind::Ident);
+    parser.expect_lower_ident("struct pattern field name");
     if parser.at(lexer::TokenKind::Colon) {
         parser.expect(lexer::TokenKind::Colon);
         if is_pattern_first(parser.peek()) {

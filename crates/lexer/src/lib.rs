@@ -276,7 +276,6 @@ pub enum TokenKind {
     #[token("use")]
     UseKeyword,
 
-    #[token("import")]
     ImportKeyword,
 
     #[token("as")]
@@ -285,13 +284,10 @@ pub enum TokenKind {
     #[token("pub")]
     PubKeyword,
 
-    #[token("mod")]
     ModKeyword,
 
-    #[token("crate")]
     CrateKeyword,
 
-    #[token("super")]
     SuperKeyword,
 
     #[token("fn")]
@@ -405,7 +401,6 @@ pub enum TokenKind {
     #[token("char")]
     CharKeyword,
 
-    #[token("array")]
     ArrayKeyword,
 
     #[regex("[A-Za-z][A-Za-z_0-9]*|_[A-Za-z_0-9]+")]

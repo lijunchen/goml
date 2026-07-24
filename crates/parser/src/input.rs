@@ -43,6 +43,22 @@ impl<'t> Input<'t> {
         T![eof]
     }
 
+    pub fn nth_text(&self, n: usize) -> Option<&str> {
+        let mut idx = self.cursor;
+        let mut remaining = n;
+        while idx < self.tokens.len() {
+            let token = &self.tokens[idx];
+            if !token.kind.is_trivia() {
+                if remaining == 0 {
+                    return Some(token.text);
+                }
+                remaining -= 1;
+            }
+            idx += 1;
+        }
+        None
+    }
+
     fn eat_trivia(&mut self) {
         while self.at_trivia() {
             self.cursor += 1;

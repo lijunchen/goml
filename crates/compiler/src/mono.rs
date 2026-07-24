@@ -676,7 +676,8 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
                         normalize(trait_solver, &binding, active)
                     }),
                     crate::typer::traits::solver::SelectionSource::ParamEnv
-                    | crate::typer::traits::solver::SelectionSource::Dyn => None,
+                    | crate::typer::traits::solver::SelectionSource::Dyn
+                    | crate::typer::traits::solver::SelectionSource::BuiltinEq => None,
                 },
                 crate::typer::traits::solver::SelectionResult::NoSolution
                 | crate::typer::traits::solver::SelectionResult::Ambiguous(_)

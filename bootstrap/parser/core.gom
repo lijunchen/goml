@@ -101,6 +101,35 @@ fn input_nth(parser: Parser, offset: int32) -> lexer::TokenKind {
     result.get()
 }
 
+fn input_nth_text(parser: Parser, offset: int32) -> string {
+    let index = Ref::new(parser.cursor.get());
+    let remaining = Ref::new(offset);
+    let result = Ref::new("");
+    let found = Ref::new(false);
+    while found.get() == false && index.get() < parser.tokens.len() {
+        let token = parser.tokens.get(index.get());
+        if lexer::token_is_trivia(token.kind) {
+            ()
+        } else if remaining.get() == 0 {
+            result.set(token.text);
+            found.set(true)
+        } else {
+            remaining.set(remaining.get() - 1)
+        };
+        index.set(index.get() + 1)
+    };
+    result.get()
+}
+
+fn input_current_text(parser: Parser) -> string {
+    input_eat_trivia(parser);
+    if parser.cursor.get() < parser.tokens.len() {
+        parser.tokens.get(parser.cursor.get()).text
+    } else {
+        ""
+    }
+}
+
 fn current_range(parser: Parser) -> (int32, int32) {
     if parser.cursor.get() < parser.tokens.len() {
         let token = parser.tokens.get(parser.cursor.get());
@@ -168,12 +197,75 @@ impl Parser {
         }
     }
 
+    pub fn nth_text(self: Parser, offset: int32) -> string {
+        if self.depth_limit_hit.get() || self.fuel.get() == 0 {
+            ""
+        } else {
+            self.fuel.set(self.fuel.get() - 1);
+            input_nth_text(self, offset)
+        }
+    }
+
     pub fn eof(self: Parser) -> bool {
         self.depth_limit_hit.get() || input_eof(self)
     }
 
     pub fn at(self: Parser, kind: lexer::TokenKind) -> bool {
         lexer::token_kind_equal(self.peek(), kind)
+    }
+
+    pub fn at_contextual(self: Parser, expected: string) -> bool {
+        self.at(lexer::TokenKind::Ident) && input_current_text(self) == expected
+    }
+
+    pub fn at_lower_ident(self: Parser) -> bool {
+        if self.at(lexer::TokenKind::Ident) {
+            let text_value = input_current_text(self);
+            if text_value.byte_len() == 0 {
+                false
+            } else {
+                let first = text_value.byte_get(0);
+                (first >= 97u8 && first <= 122u8) || first == 95u8
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn at_upper_ident(self: Parser) -> bool {
+        if self.at(lexer::TokenKind::Ident) {
+            let text_value = input_current_text(self);
+            if text_value.byte_len() == 0 {
+                false
+            } else {
+                let first = text_value.byte_get(0);
+                first >= 65u8 && first <= 90u8
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn expect_lower_ident(self: Parser, role: string) -> unit {
+        if self.at_lower_ident() {
+            self.advance()
+        } else if self.at(lexer::TokenKind::Ident) {
+            self.error(role + " must start with a lowercase letter or `_`");
+            self.advance()
+        } else {
+            self.error("expected " + role)
+        }
+    }
+
+    pub fn expect_upper_ident(self: Parser, role: string) -> unit {
+        if self.at_upper_ident() {
+            self.advance()
+        } else if self.at(lexer::TokenKind::Ident) {
+            self.error(role + " must start with an uppercase letter");
+            self.advance()
+        } else {
+            self.error("expected " + role)
+        }
     }
 
     pub fn eat(self: Parser, kind: lexer::TokenKind) -> bool {

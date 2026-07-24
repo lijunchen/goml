@@ -481,6 +481,11 @@ pub enum Expr {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },
+    ERange {
+        start: Box<Expr>,
+        end: Box<Expr>,
+        astptr: MySyntaxNodePtr,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<Expr>,

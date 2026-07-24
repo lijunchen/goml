@@ -464,6 +464,10 @@ impl Expr {
                 .append(RcDoc::text(" as "))
                 .append(ty.to_doc()),
             hir::Expr::ETry { expr } => ctx.expr_to_doc(*expr).append(RcDoc::text("?")),
+            hir::Expr::ERange { start, end } => ctx
+                .expr_to_doc(*start)
+                .append(RcDoc::text(".."))
+                .append(ctx.expr_to_doc(*end)),
             hir::Expr::EBinary { op, lhs, rhs } => ctx
                 .expr_to_doc(*lhs)
                 .append(RcDoc::space())

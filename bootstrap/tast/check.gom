@@ -1043,8 +1043,8 @@ fn check_static_member(
     }
 }
 
-fn missing_constructor_expr(ctx: Checker) -> Expr {
-    push_diagnostic(ctx, "constructor not found");
+fn missing_constructor_expr(ctx: Checker, name: string) -> Expr {
+    push_diagnostic(ctx, "Constructor " + name + " not found in environment");
     Expr::Constr(
         Constructor {
             name: "<error>",
@@ -1133,9 +1133,9 @@ fn check_constructor_expr(
                 Option::Some(info) => {
                     check_positional_struct_expr(ctx, info, args, expected)
                 },
-                Option::None => missing_constructor_expr(ctx),
+                Option::None => missing_constructor_expr(ctx, name),
             },
-            hir::ConstructorRef::Resolved(_, _) => missing_constructor_expr(ctx),
+            hir::ConstructorRef::Resolved(_, _) => missing_constructor_expr(ctx, "<error>"),
         },
     }
 }
@@ -1646,9 +1646,14 @@ fn apply_typed_call(
             Expr::Callable(Callable::TraitMethod(reference, name), ty) => {
                 if reference.args.len() == 0 {
                     match prune(expr_type(values.get(0))) {
-                        Type::Dyn(owner) => if names_match(owner, reference.name) {
+                        Type::Dyn(owner) => if trait_bound_satisfied_at(
+                            ctx,
+                            Type::Dyn(owner),
+                            reference,
+                            0,
+                        ) {
                             Expr::Callable(
-                                Callable::DynTraitMethod(reference.name, name),
+                                Callable::DynTraitMethod(owner, reference.name, name),
                                 ty,
                             )
                         } else {
@@ -2113,7 +2118,7 @@ fn check_binary_expr(
     if is_logic_op(op) {
         let left = check_expr(ctx, left_source, Option::Some(Type::Bool));
         let right = check_expr(ctx, right_source, Option::Some(Type::Bool));
-        Expr::Binary(op, left, right, Type::Bool)
+        Expr::Binary(op, left, right, Type::Bool, BinaryResolution::Builtin)
     } else {
         let contextual = match propagated_expected(expected) {
             Option::Some(ty) => if is_shift_op(op) && is_integer_type(ty) {
@@ -2182,10 +2187,30 @@ fn check_binary_expr(
             && !is_integer_type(expr_type(left))
         {
             push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
-        } else if is_equality_op(op)
-            && !equality_comparable_type(ctx, expr_type(left))
-        {
-            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+        } else if is_equality_op(op) && !trait_bound_satisfied_at(
+            ctx,
+            expr_type(left),
+            TraitRef {
+                name: "Eq",
+                args: Vec::new(),
+            },
+            0,
+        ) {
+            push_diagnostic_at(
+                ctx,
+                predicate_requirement_message(
+                    ctx,
+                    TypePredicate::Trait(
+                        expr_type(left),
+                        TraitRef {
+                            name: "Eq",
+                            args: Vec::new(),
+                        },
+                    ),
+                    "type predicate not satisfied",
+                ),
+                Option::Some(left_source.span),
+            )
         } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
             push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
         } else if is_arithmetic_op(op)
@@ -2210,6 +2235,11 @@ fn check_binary_expr(
                 Type::Bool
             } else {
                 expr_type(left)
+            },
+            if is_equality_op(op) {
+                BinaryResolution::EqTrait
+            } else {
+                BinaryResolution::Builtin
             },
         )
     }
@@ -2676,6 +2706,34 @@ fn check_try_expr(ctx: Checker, index: int32, source: hir::Expr) -> Expr {
     }
 }
 
+fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr) -> Expr {
+    let start = check_expr(ctx, start, Option::Some(Type::Int32));
+    let end = check_expr(ctx, end, Option::Some(Type::Int32));
+    let args: Vec[Expr] = Vec::new();
+    args.push(start);
+    args.push(end);
+    match builtin_function_scheme("__goml_builtin_range") {
+        Option::Some(scheme) => {
+            let (callable, function_ty) = instantiate_scheme(ctx, scheme, Vec::new());
+            match function_ty {
+                Type::Func(_, ret_ty) => Expr::Call(
+                    Expr::Callable(callable, function_ty),
+                    args,
+                    ret_ty,
+                ),
+                _ => {
+                    push_diagnostic(ctx, "Internal error: range must have a function type");
+                    Expr::Var("<range>", Type::Error)
+                },
+            }
+        },
+        Option::None => {
+            push_diagnostic(ctx, "Internal error: range builtin is missing");
+            Expr::Var("<range>", Type::Error)
+        },
+    }
+}
+
 fn with_expr_type(value: Expr, ty: Type) -> Expr {
     match value {
         Expr::Var(name, _) => Expr::Var(name, ty),
@@ -2704,7 +2762,9 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
         Expr::Proj(value, index, _) => Expr::Proj(value, index, ty),
         Expr::Field(value, name, _) => Expr::Field(value, name, ty),
         Expr::Index(base, index, _) => Expr::Index(base, index, ty),
-        Expr::Binary(op, left, right, _) => Expr::Binary(op, left, right, ty),
+        Expr::Binary(op, left, right, _, resolution) => {
+            Expr::Binary(op, left, right, ty, resolution)
+        },
         Expr::ToDyn(name, source_ty, value, _) => {
             Expr::ToDyn(name, source_ty, value, ty)
         },
@@ -3226,6 +3286,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 Expr::Cast(source, target)
             },
             hir::ExprKind::Try(index, value) => check_try_expr(ctx, index, value),
+            hir::ExprKind::Range(start, end) => check_range_expr(ctx, start, end),
             hir::ExprKind::Binary(op, left, right) => {
                 check_binary_expr(ctx, op, left, right, Option::None)
             },
@@ -3295,6 +3356,9 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         hir::ExprKind::Unary(op, source) => {
             let result = check_unary_expr(ctx, op, source, expected);
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+        hir::ExprKind::Range(start, end) => {
+            coerce_expr(ctx, check_range_expr(ctx, start, end), expected)
         },
         hir::ExprKind::Binary(op, left, right) => {
             let result = check_binary_expr(ctx, op, left, right, expected);

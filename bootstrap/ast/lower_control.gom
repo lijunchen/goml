@@ -134,13 +134,7 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                             else_node,
                                             "If expression else-branch missing body",
                                         ),
-                                        Option::None => match let_pat {
-                                            Option::Some(_) => Option::Some(Expr::Unit(node_span(node))),
-                                            Option::None => {
-                                                push_error(ctx, node_span(node), "If expression missing else branch");
-                                                Option::None
-                                            },
-                                        },
+                                        Option::None => Option::Some(Expr::Unit(node_span(node))),
                                     };
                                     match else_branch {
                                         Option::Some(else_value) => match let_pat {

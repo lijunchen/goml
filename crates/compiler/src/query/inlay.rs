@@ -169,7 +169,11 @@ fn collect_hints_from_expr(
                 collect_hints_from_expr(hir_table, results, *arg, hints);
             }
         }
-        hir::Expr::EBinary { lhs, rhs, .. } => {
+        hir::Expr::ERange {
+            start: lhs,
+            end: rhs,
+        }
+        | hir::Expr::EBinary { lhs, rhs, .. } => {
             collect_hints_from_expr(hir_table, results, *lhs, hints);
             collect_hints_from_expr(hir_table, results, *rhs, hints);
         }

@@ -10,6 +10,7 @@ mod literals;
 mod localenv;
 mod match_analysis;
 mod member_lookup;
+pub(crate) use member_lookup::lookup_dyn_trait_methods;
 pub mod name_resolution;
 mod obligations;
 mod operators;

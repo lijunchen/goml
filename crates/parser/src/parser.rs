@@ -250,6 +250,50 @@ impl Parser<'_> {
         kinds.contains(&k)
     }
 
+    pub fn at_contextual(&mut self, text: &str) -> bool {
+        self.at(T![ident]) && self.input.nth_text(0) == Some(text)
+    }
+
+    pub fn at_lower_ident(&mut self) -> bool {
+        self.at(T![ident])
+            && self
+                .input
+                .nth_text(0)
+                .and_then(|text| text.chars().next())
+                .is_some_and(|first| first.is_ascii_lowercase() || first == '_')
+    }
+
+    pub fn at_upper_ident(&mut self) -> bool {
+        self.at(T![ident])
+            && self
+                .input
+                .nth_text(0)
+                .and_then(|text| text.chars().next())
+                .is_some_and(|first| first.is_ascii_uppercase())
+    }
+
+    pub fn expect_lower_ident(&mut self, role: &str) {
+        if self.at_lower_ident() {
+            self.advance();
+        } else if self.at(T![ident]) {
+            self.error(&format!("{role} must start with a lowercase letter or `_`"));
+            self.advance();
+        } else {
+            self.error(&format!("expected {role}"));
+        }
+    }
+
+    pub fn expect_upper_ident(&mut self, role: &str) {
+        if self.at_upper_ident() {
+            self.advance();
+        } else if self.at(T![ident]) {
+            self.error(&format!("{role} must start with an uppercase letter"));
+            self.advance();
+        } else {
+            self.error(&format!("expected {role}"));
+        }
+    }
+
     pub fn eat(&mut self, kind: TokenKind) -> bool {
         if self.at(kind) {
             self.advance();

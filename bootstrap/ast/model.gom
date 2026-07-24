@@ -249,6 +249,7 @@ pub enum Expr {
     Unary(UnaryOp, Expr, Span),
     Cast(Expr, TypeExpr, Span),
     Try(Expr, Span),
+    Range(Expr, Expr, Span),
     Binary(BinaryOp, Expr, Expr, Span),
     Proj(Expr, int32, Span),
     Field(Expr, string, Span),
@@ -327,6 +328,7 @@ pub fn expr_span(value: Expr) -> Span {
         | Expr::Return(_, span)
         | Expr::Go(_, span)
         | Expr::Try(_, span)
+        | Expr::Range(_, _, span)
         | Expr::Block(_, span) => span,
         Expr::Path(_, _, span)
         | Expr::Constr(_, _, span)

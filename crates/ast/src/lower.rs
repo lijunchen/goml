@@ -5,7 +5,6 @@ use ::cst::{cst, support};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
 use std::cell::Cell;
-use std::collections::HashSet;
 use std::rc::Rc;
 use text_size::TextRange;
 
@@ -89,19 +88,16 @@ impl LowerResult {
 struct LowerCtx {
     stage: Stage,
     diagnostics: Diagnostics,
-    constructor_names: HashSet<String>,
     expr_depth: Rc<Cell<usize>>,
     pattern_depth: Rc<Cell<usize>>,
     type_depth: Rc<Cell<usize>>,
 }
 
 impl LowerCtx {
-    fn new(file: &cst::File) -> Self {
-        let constructor_names = collect_constructor_names(file);
+    fn new() -> Self {
         Self {
             stage: Stage::other("lower"),
             diagnostics: Diagnostics::new(),
-            constructor_names,
             expr_depth: Rc::new(Cell::new(0)),
             pattern_depth: Rc::new(Cell::new(0)),
             type_depth: Rc::new(Cell::new(0)),
@@ -121,9 +117,6 @@ impl LowerCtx {
     fn into_diagnostics(self) -> Diagnostics {
         self.diagnostics
     }
-    fn is_constructor(&self, ident: &ast::AstIdent) -> bool {
-        self.constructor_names.contains(&ident.0)
-    }
 }
 
 struct LowerDepthGuard(Rc<Cell<usize>>);
@@ -134,34 +127,16 @@ impl Drop for LowerDepthGuard {
     }
 }
 
-fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
-    let mut constructor_names = HashSet::new();
-
-    for item in file.items() {
-        match item {
-            cst::Item::Enum(enum_node) => {
-                if let Some(list) = enum_node.variant_list() {
-                    for variant in list.variants() {
-                        if let Some(token) = variant.uident() {
-                            constructor_names.insert(token.to_string());
-                        }
-                    }
-                }
-            }
-            cst::Item::Struct(struct_node) => {
-                if let Some(token) = struct_node.uident() {
-                    constructor_names.insert(token.to_string());
-                }
-            }
-            _ => {}
-        }
-    }
-
-    constructor_names
+fn is_constructor_ident(ident: &ast::AstIdent) -> bool {
+    ident
+        .0
+        .chars()
+        .next()
+        .is_some_and(|first| first.is_ascii_uppercase())
 }
 
 pub fn lower(node: cst::File) -> LowerResult {
-    let mut ctx = LowerCtx::new(&node);
+    let mut ctx = LowerCtx::new();
     let package_explicit = node.package_decl().is_some();
     let package = node
         .package_decl()
@@ -262,7 +237,7 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
         cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(ctx, it)?)),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
         cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(ctx, it)?)),
-        cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it)?)),
+        cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it, None)?)),
         cst::Item::Extern(it) => lower_extern(ctx, it),
     }
 }
@@ -521,7 +496,13 @@ fn lower_trait_method(
     };
     let params = if let Some(list) = node.param_list() {
         list.params()
-            .flat_map(|param| lower_param(ctx, param))
+            .enumerate()
+            .filter_map(|(index, param)| {
+                let self_ty = (index == 0).then(|| ast::TypeExpr::TCon {
+                    path: ast::Path::from_ident(ast::AstIdent::new("Self")),
+                });
+                lower_param_with_self(ctx, param, self_ty.as_ref())
+            })
             .collect()
     } else {
         ctx.push_error(
@@ -616,7 +597,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
     };
     let methods: Vec<ast::Fn> = node
         .functions()
-        .flat_map(|function| lower_fn(ctx, function))
+        .flat_map(|function| lower_fn(ctx, function, Some(&for_type)))
         .collect();
     if trait_ref.is_some() {
         for method in &methods {
@@ -743,6 +724,17 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
         }
         cst::Type::TAppTy(it) => {
             let path = it.path().and_then(|path| lower_path(ctx, &path))?;
+            if path
+                .last_ident()
+                .and_then(|name| name.0.chars().next())
+                .is_some_and(|first| !first.is_ascii_uppercase())
+            {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "type, trait, and generic names must start with an uppercase letter",
+                );
+                return None;
+            }
             let args: Vec<ast::TypeExpr> = it
                 .type_param_list()
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
@@ -847,7 +839,11 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
     }
 }
 
-fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
+fn lower_fn(
+    ctx: &mut LowerCtx,
+    node: cst::Fn,
+    shorthand_self_ty: Option<&ast::TypeExpr>,
+) -> Option<ast::Fn> {
     let attrs = lower_attributes(node.attributes());
     let visibility = lower_visibility(&node);
     let name = match node.lident() {
@@ -887,7 +883,14 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     let params = match node.param_list() {
         Some(list) => list
             .params()
-            .flat_map(|param| lower_param(ctx, param))
+            .enumerate()
+            .filter_map(|(index, param)| {
+                lower_param_with_self(
+                    ctx,
+                    param,
+                    (index == 0).then_some(shorthand_self_ty).flatten(),
+                )
+            })
             .collect(),
         None => {
             ctx.push_error(
@@ -1109,6 +1112,14 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Stmt> {
 }
 
 fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::AstIdent, ast::TypeExpr)> {
+    lower_param_with_self(ctx, node, None)
+}
+
+fn lower_param_with_self(
+    ctx: &mut LowerCtx,
+    node: cst::Param,
+    shorthand_self_ty: Option<&ast::TypeExpr>,
+) -> Option<(ast::AstIdent, ast::TypeExpr)> {
     let name = match node.lident() {
         Some(name) => name.to_string(),
         None => {
@@ -1121,6 +1132,9 @@ fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::AstIdent, a
     };
     let ty = match node.ty().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
+        None if name == "self" && shorthand_self_ty.is_some() => {
+            shorthand_self_ty.cloned().unwrap()
+        }
         None => {
             ctx.push_error(
                 Some(node.syntax().text_range()),
@@ -1525,7 +1539,7 @@ fn lower_expr_with_args(
                         };
                         let callee_astptr = MySyntaxNodePtr::new(ident_expr.syntax());
 
-                        if type_args.is_empty() && ctx.is_constructor(&variant_ident) {
+                        if type_args.is_empty() && is_constructor_ident(&variant_ident) {
                             let constr = ast::Expr::EConstr {
                                 constructor,
                                 args,
@@ -1777,17 +1791,7 @@ fn lower_expr_with_args(
                         None
                     }
                 }
-                None => {
-                    if let_pat.is_some() {
-                        Some(ast::Expr::EUnit { astptr })
-                    } else {
-                        ctx.push_error(
-                            Some(it.syntax().text_range()),
-                            "If expression missing else branch",
-                        );
-                        None
-                    }
-                }
+                None => Some(ast::Expr::EUnit { astptr }),
             }?;
 
             if let Some(pat) = let_pat {
@@ -2021,7 +2025,7 @@ fn lower_expr_with_args(
                 );
                 return None;
             };
-            if type_args.is_empty() && ctx.is_constructor(&variant_ident) {
+            if type_args.is_empty() && is_constructor_ident(&variant_ident) {
                 let expr = ast::Expr::EConstr {
                     constructor,
                     args: vec![],
@@ -2156,6 +2160,30 @@ fn lower_expr_with_args(
             };
             let expr = ast::Expr::ETry {
                 expr: Box::new(expr),
+                astptr,
+            };
+            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+        }
+        cst::Expr::RangeExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let mut exprs = it.exprs();
+            let Some(start) = exprs.next().and_then(|expr| lower_expr(ctx, expr)) else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Range expression missing start",
+                );
+                return None;
+            };
+            let Some(end) = exprs.next().and_then(|expr| lower_expr(ctx, expr)) else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Range expression missing end",
+                );
+                return None;
+            };
+            let expr = ast::Expr::ERange {
+                start: Box::new(start),
+                end: Box::new(end),
                 astptr,
             };
             apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
@@ -2383,6 +2411,18 @@ fn lower_expr_with_args(
                             );
                             return None;
                         };
+                        if token
+                            .to_string()
+                            .chars()
+                            .next()
+                            .is_some_and(|first| !first.is_ascii_lowercase() && first != '_')
+                        {
+                            ctx.push_error(
+                                Some(token.text_range()),
+                                "field and method names must start with a lowercase letter or `_`",
+                            );
+                            return None;
+                        }
                         let field = ast::AstIdent(token.to_string());
                         let field_expr = ast::Expr::EField {
                             expr: Box::new(lhs),
@@ -2638,19 +2678,10 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     return None;
                 }
             };
-            let ident = ast::AstIdent(name);
-            if ctx.is_constructor(&ident) {
-                Some(ast::Pat::PConstr {
-                    constructor: ast::Path::from_ident(ident),
-                    args: Vec::new(),
-                    astptr,
-                })
-            } else {
-                Some(ast::Pat::PVar {
-                    name: ident,
-                    astptr,
-                })
-            }
+            Some(ast::Pat::PVar {
+                name: ast::AstIdent(name),
+                astptr,
+            })
         }
         cst::Pattern::UnitPat(_) => Some(ast::Pat::PUnit {
             astptr: node_astptr,
@@ -3067,11 +3098,12 @@ fn f() -> unit { () }
     }
 
     #[test]
-    fn lower_rejects_lowercase_enum_variants() {
-        let result = lower_result("enum Choice { selected }");
+    fn parser_rejects_lowercase_enum_variants() {
+        let source = "enum Choice { selected }";
+        let result = parser::parse(Path::new("test.gom"), source);
         assert!(result.has_errors());
         assert!(result.diagnostics().iter().any(|diagnostic| {
-            diagnostic.message() == "Enum variant selected must start with an uppercase letter"
+            diagnostic.message() == "enum variant name must start with an uppercase letter"
         }));
     }
 

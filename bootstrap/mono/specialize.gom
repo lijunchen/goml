@@ -1453,8 +1453,8 @@ fn specialize_callable(
                 name,
             )
         },
-        tast::Callable::DynTraitMethod(owner, name) => {
-            tast::Callable::DynTraitMethod(owner, name)
+        tast::Callable::DynTraitMethod(owner, dispatch, name) => {
+            tast::Callable::DynTraitMethod(owner, dispatch, name)
         },
         tast::Callable::InherentMethod(owner, name) => {
             tast::Callable::InherentMethod(

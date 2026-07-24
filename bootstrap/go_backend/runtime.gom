@@ -7,6 +7,7 @@ use std::text;
 
 struct DynMethod {
     name: string,
+    dispatch_trait: string,
     params: Vec[tast::Type],
     ret_ty: tast::Type,
 }
@@ -1955,6 +1956,90 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
     found.get()
 }
 
+fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
+    let separator = Ref::new(-1);
+    for index in range(0, value.byte_len()) {
+        if separator.get() < 0 && value.byte_get(index) == 35u8 {
+            separator.set(index)
+        } else {
+            ()
+        }
+    };
+    if separator.get() < 0 {
+        (fallback, value)
+    } else {
+        (
+            value.byte_slice(0, separator.get()),
+            value.byte_slice(separator.get() + 1, value.byte_len()),
+        )
+    }
+}
+
+fn collect_dyn_call_method(
+    result: Vec[DynMethod],
+    trait_name: string,
+    value: anf::Value,
+) -> unit {
+    match value {
+        anf::Value::DynCall(owner, encoded, _, args, ret_ty) => if owner == trait_name {
+            let parts = dyn_method_parts(encoded, owner);
+            if contains_method(result, parts.1) == false {
+                let params: Vec[tast::Type] = Vec::new();
+                for arg in args {
+                    params.push(anf::imm_type(arg))
+                };
+                result.push(DynMethod {
+                    name: parts.1,
+                    dispatch_trait: parts.0,
+                    params,
+                    ret_ty,
+                })
+            } else {
+                ()
+            }
+        } else {
+            ()
+        },
+        _ => (),
+    }
+}
+
+fn collect_dyn_call_methods(
+    result: Vec[DynMethod],
+    trait_name: string,
+    block: anf::Block,
+) -> unit {
+    for bind in block.binds {
+        match bind {
+            anf::Bind::Let(value) => {
+                collect_dyn_call_method(result, trait_name, value.value)
+            },
+            anf::Bind::Join(value) => {
+                collect_dyn_call_methods(result, trait_name, value.body)
+            },
+            anf::Bind::JoinRec(values) => for value in values {
+                collect_dyn_call_methods(result, trait_name, value.body)
+            },
+        }
+    };
+    match block.term {
+        anf::Term::If(_, then_, else_, _) => {
+            collect_dyn_call_methods(result, trait_name, then_);
+            collect_dyn_call_methods(result, trait_name, else_)
+        },
+        anf::Term::Match(_, arms, default, _) => {
+            for arm in arms {
+                collect_dyn_call_methods(result, trait_name, arm.body)
+            };
+            match default {
+                Option::Some(body) => collect_dyn_call_methods(result, trait_name, body),
+                Option::None => (),
+            }
+        },
+        _ => (),
+    }
+}
+
 fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMethod] {
     let result: Vec[DynMethod] = Vec::new();
     for function in functions {
@@ -1969,6 +2054,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                     };
                     result.push(DynMethod {
                         name: method_name,
+                        dispatch_trait: trait_name,
                         params,
                         ret_ty: function.ret_ty,
                     })
@@ -1979,9 +2065,13 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
             _ => (),
         }
     };
+    for function in functions {
+        collect_dyn_call_methods(result, trait_name, function.body)
+    };
     if trait_name == "Hash" && contains_method(result, "hash") == false {
         result.push(DynMethod {
             name: "hash",
+            dispatch_trait: trait_name,
             params: Vec::new(),
             ret_ty: tast::Type::Uint64,
         })
@@ -1990,6 +2080,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
     {
         result.push(DynMethod {
             name: "to_string",
+            dispatch_trait: trait_name,
             params: Vec::new(),
             ret_ty: tast::Type::String,
         })
@@ -2231,7 +2322,7 @@ fn dyn_coercion_items(
         let wrapper_call = Expr::Call(
             Expr::Var(find_dyn_impl_name(
                 functions,
-                coercion.trait_name,
+                method.dispatch_trait,
                 coercion.for_ty,
                 method.name,
             )),

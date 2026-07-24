@@ -473,6 +473,14 @@ impl Expr {
                 .append(RcDoc::text(" as "))
                 .append(ty.to_doc()),
             Self::ETry { expr, astptr: _ } => expr.to_doc().append(RcDoc::text("?")),
+            Self::ERange {
+                start,
+                end,
+                astptr: _,
+            } => start
+                .to_doc()
+                .append(RcDoc::text(".."))
+                .append(end.to_doc()),
             Self::EBinary {
                 op,
                 lhs,

@@ -609,6 +609,11 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
             write_expr(builder, expr, indent);
             builder.write_char('?')
         },
+        ExprKind::Range(start, end) => {
+            write_expr(builder, start, indent);
+            builder.write_string("..");
+            write_expr(builder, end, indent)
+        },
         ExprKind::Binary(op, lhs, rhs) => {
             write_expr(builder, lhs, indent);
             builder.write_char(' ');

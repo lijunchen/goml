@@ -81,8 +81,13 @@ pub enum Callable {
     Runtime(string),
     Intrinsic(string),
     TraitMethod(TraitRef, string),
-    DynTraitMethod(string, string),
+    DynTraitMethod(string, string, string),
     InherentMethod(Type, string),
+}
+
+pub enum BinaryResolution {
+    Builtin,
+    EqTrait,
 }
 
 pub struct ClosureParam {
@@ -113,7 +118,7 @@ pub enum Expr {
     Proj(Expr, int32, Type),
     Field(Expr, string, Type),
     Index(Expr, Expr, Type),
-    Binary(ast::BinaryOp, Expr, Expr, Type),
+    Binary(ast::BinaryOp, Expr, Expr, Type, BinaryResolution),
     ToDyn(string, Type, Expr, Type),
 }
 
@@ -260,7 +265,7 @@ pub fn expr_type(value: Expr) -> Type {
         Expr::Proj(_, _, ty) => ty,
         Expr::Field(_, _, ty) => ty,
         Expr::Index(_, _, ty) => ty,
-        Expr::Binary(_, _, _, ty) => ty,
+        Expr::Binary(_, _, _, ty, _) => ty,
         Expr::ToDyn(_, _, _, ty) => ty,
     }
 }

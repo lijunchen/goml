@@ -15,7 +15,7 @@ use crate::{
     tast::{self, TastIdent},
 };
 
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -364,6 +364,9 @@ fn compile_intrinsic_callable(id: IntrinsicId, ty: &tast::Ty) -> goast::Expr {
     };
     let helper_ty = tast_ty_to_go_type(ty);
     let helper_name = match id {
+        IntrinsicId::PrimitiveEq => {
+            panic!("primitive equality intrinsic cannot be used as a value")
+        }
         IntrinsicId::ArrayGet | IntrinsicId::ArraySet => {
             runtime::array_helper_fn_name(id.source_name(), &params[0])
         }
@@ -1241,10 +1244,10 @@ fn collect_dyn_helper_go_names(
         *ctor_counts.entry(ctor_raw.clone()).or_insert(0usize) += 1;
         ctor_items.push(((trait_name.clone(), ty_key.clone()), ctor_raw));
 
-        for (method_name, _, _) in trait_method_sigs(goenv, trait_name) {
-            let wrap_raw = dyn_wrap_go_name_raw(trait_name, for_ty, &method_name);
+        for method in trait_method_sigs(goenv, trait_name) {
+            let wrap_raw = dyn_wrap_go_name_raw(trait_name, for_ty, &method.name);
             *wrap_counts.entry(wrap_raw.clone()).or_insert(0usize) += 1;
-            wrap_items.push(((trait_name.clone(), ty_key.clone(), method_name), wrap_raw));
+            wrap_items.push(((trait_name.clone(), ty_key.clone(), method.name), wrap_raw));
         }
     }
 
@@ -1495,38 +1498,61 @@ fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequire
     }
     let mut i = 0;
     while let Some(trait_name) = req.traits.get_index(i).cloned() {
-        for (_, params, ret_ty) in trait_method_sigs(goenv, &trait_name) {
-            for param_ty in params {
+        for method in trait_method_sigs(goenv, &trait_name) {
+            for param_ty in method.params {
                 collect_ty(&mut req, &param_ty);
             }
-            collect_ty(&mut req, &ret_ty);
+            collect_ty(&mut req, &method.ret_ty);
         }
         i += 1;
     }
     req
 }
 
-fn trait_method_sigs(
+#[derive(Clone)]
+struct DynMethodSig {
+    owner: String,
+    name: String,
+    params: Vec<tast::Ty>,
+    ret_ty: tast::Ty,
+}
+
+fn collect_trait_method_sigs(
     goenv: &GlobalGoEnv,
     trait_name: &str,
-) -> Vec<(String, Vec<tast::Ty>, tast::Ty)> {
+    methods: &mut IndexMap<String, DynMethodSig>,
+    visiting: &mut HashSet<String>,
+) {
+    if !visiting.insert(trait_name.to_string()) {
+        return;
+    }
     let trait_def = goenv
         .genv
         .trait_env
         .trait_defs
         .get(trait_name)
         .unwrap_or_else(|| panic!("missing trait def {}", trait_name));
-    trait_def
-        .methods
-        .iter()
-        .map(|(name, scheme)| {
-            let tast::Ty::TFunc { params, ret_ty } = &scheme.ty else {
-                panic!("trait {}::{} is not a function", trait_name, name);
-            };
-            let rest = params.iter().skip(1).cloned().collect::<Vec<_>>();
-            (name.clone(), rest, (**ret_ty).clone())
-        })
-        .collect()
+    for (name, scheme) in &trait_def.methods {
+        let tast::Ty::TFunc { params, ret_ty } = &scheme.ty else {
+            panic!("trait {}::{} is not a function", trait_name, name);
+        };
+        methods.entry(name.clone()).or_insert_with(|| DynMethodSig {
+            owner: trait_name.to_string(),
+            name: name.clone(),
+            params: params.iter().skip(1).cloned().collect(),
+            ret_ty: (**ret_ty).clone(),
+        });
+    }
+    for parent in &trait_def.supertraits {
+        collect_trait_method_sigs(goenv, &parent.name.0, methods, visiting);
+    }
+    visiting.remove(trait_name);
+}
+
+fn trait_method_sigs(goenv: &GlobalGoEnv, trait_name: &str) -> Vec<DynMethodSig> {
+    let mut methods = IndexMap::new();
+    collect_trait_method_sigs(goenv, trait_name, &mut methods, &mut HashSet::new());
+    methods.into_values().collect()
 }
 
 fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::Item> {
@@ -1537,13 +1563,13 @@ fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<g
     for trait_name in traits {
         let vtable_struct_name = dyn_vtable_struct_go_name(&trait_name);
         let mut vtable_fields = Vec::new();
-        for (method_name, params, ret_ty) in trait_method_sigs(goenv, &trait_name) {
-            let mut go_params = Vec::with_capacity(params.len() + 1);
+        for method in trait_method_sigs(goenv, &trait_name) {
+            let mut go_params = Vec::with_capacity(method.params.len() + 1);
             go_params.push(any_go_type());
-            go_params.extend(params.iter().map(tast_ty_to_go_type));
-            let go_ret = tast_ty_to_go_type(&ret_ty);
+            go_params.extend(method.params.iter().map(tast_ty_to_go_type));
+            let go_ret = tast_ty_to_go_type(&method.ret_ty);
             vtable_fields.push(goast::Field {
-                name: go_ident(&method_name),
+                name: go_ident(&method.name),
                 ty: goty::GoType::TFunc {
                     params: go_params,
                     ret_ty: Box::new(go_ret),
@@ -1615,14 +1641,12 @@ fn gen_dyn_helper_fns(
     for (trait_name, for_ty) in vtables {
         let methods = trait_method_sigs(goenv, &trait_name);
 
-        for (method_name, params, ret_ty) in &methods {
+        for method in &methods {
             items.push(goast::Item::Fn(gen_dyn_wrap_fn(
                 goenv,
                 &trait_name,
                 &for_ty,
-                method_name,
-                params,
-                ret_ty,
+                method,
                 impl_name_map,
             )));
         }
@@ -1641,11 +1665,13 @@ fn gen_dyn_wrap_fn(
     goenv: &GlobalGoEnv,
     trait_name: &str,
     for_ty: &tast::Ty,
-    method_name: &str,
-    params: &[tast::Ty],
-    ret_ty: &tast::Ty,
+    method: &DynMethodSig,
     impl_name_map: &std::collections::HashMap<(String, String, String), String>,
 ) -> goast::Fn {
+    let impl_trait_name = &method.owner;
+    let method_name = &method.name;
+    let params = &method.params;
+    let ret_ty = &method.ret_ty;
     let fn_name = dyn_wrap_go_name(goenv, trait_name, for_ty, method_name);
 
     let mut go_params = Vec::with_capacity(params.len() + 1);
@@ -1654,11 +1680,11 @@ fn gen_dyn_wrap_fn(
         go_params.push((format!("p{}", i), tast_ty_to_go_type(pty)));
     }
 
-    let trait_ident = TastIdent(trait_name.to_string());
+    let trait_ident = TastIdent(impl_trait_name.to_string());
     let for_ty_compact = ty_compact(for_ty);
     let impl_go_name = impl_name_map
         .get(&(
-            trait_name.to_string(),
+            impl_trait_name.to_string(),
             for_ty_compact,
             method_name.to_string(),
         ))
@@ -1786,7 +1812,7 @@ fn gen_dyn_vtable_ctor_fn(
     goenv: &GlobalGoEnv,
     trait_name: &str,
     for_ty: &tast::Ty,
-    methods: &[(String, Vec<tast::Ty>, tast::Ty)],
+    methods: &[DynMethodSig],
 ) -> goast::Fn {
     let vtable_struct_name = dyn_vtable_struct_go_name(trait_name);
     let vtable_ptr_ty = goty::GoType::TPointer {
@@ -1796,18 +1822,18 @@ fn gen_dyn_vtable_ctor_fn(
     };
 
     let mut fields = Vec::new();
-    for (method_name, params, ret_ty) in methods {
-        let mut go_params = Vec::with_capacity(params.len() + 1);
+    for method in methods {
+        let mut go_params = Vec::with_capacity(method.params.len() + 1);
         go_params.push(any_go_type());
-        go_params.extend(params.iter().map(tast_ty_to_go_type));
+        go_params.extend(method.params.iter().map(tast_ty_to_go_type));
         let field_ty = goty::GoType::TFunc {
             params: go_params,
-            ret_ty: Box::new(tast_ty_to_go_type(ret_ty)),
+            ret_ty: Box::new(tast_ty_to_go_type(&method.ret_ty)),
         };
         fields.push((
-            go_ident(method_name),
+            go_ident(&method.name),
             goast::Expr::Var {
-                name: dyn_wrap_go_name(goenv, trait_name, for_ty, method_name),
+                name: dyn_wrap_go_name(goenv, trait_name, for_ty, &method.name),
                 ty: field_ty,
             },
         ));
@@ -1926,6 +1952,15 @@ fn compile_intrinsic_call(
     func_ty: goty::GoType,
 ) -> goast::Expr {
     match id {
+        IntrinsicId::PrimitiveEq => {
+            let mut args = compiled_args.into_iter();
+            goast::Expr::BinaryOp {
+                op: goast::GoBinaryOp::Eq,
+                lhs: Box::new(args.next().unwrap()),
+                rhs: Box::new(args.next().unwrap()),
+                ty: goty::GoType::TBool,
+            }
+        }
         IntrinsicId::Missing => {
             let helper_name = runtime::missing_helper_fn_name(ty);
             goast::Expr::Call {
@@ -2651,8 +2686,8 @@ fn compile_value_expr(
 
             let (method_params, method_ret) = trait_method_sigs(goenv, &trait_name.0)
                 .into_iter()
-                .find(|(name, _, _)| name == &method_name.0)
-                .map(|(_name, params, ret)| (params, ret))
+                .find(|method| method.name == method_name.0)
+                .map(|method| (method.params, method.ret_ty))
                 .unwrap_or_else(|| {
                     panic!("missing trait method {}::{}", trait_name.0, method_name.0)
                 });

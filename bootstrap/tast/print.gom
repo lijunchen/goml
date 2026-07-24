@@ -367,7 +367,7 @@ fn write_callable(builder: text::StringBuilder, value: Callable) -> unit {
             builder.write_string("::");
             builder.write_string(name)
         },
-        Callable::DynTraitMethod(owner, name) => {
+        Callable::DynTraitMethod(owner, _, name) => {
             builder.write_string("dyn ");
             builder.write_string(owner);
             builder.write_string("::");
@@ -628,7 +628,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
             write_expr(builder, index, indent);
             builder.write_char(']')
         },
-        Expr::Binary(op, left, right, _) => {
+        Expr::Binary(op, left, right, _, _) => {
             write_expr(builder, left, indent);
             builder.write_char(' ');
             builder.write_string(binary_symbol(op));
