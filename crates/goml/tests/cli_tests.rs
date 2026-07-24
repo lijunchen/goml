@@ -519,7 +519,7 @@ path = "alice::traits"
 package traits;
 
 pub trait Show {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 "#,
     )?;

@@ -1034,7 +1034,7 @@ mod tests {
         .unwrap();
         fs::write(
             dir.path().join("lib/lib.gom"),
-            "package lib;\npub trait Show { fn show(Self) -> string; }\n",
+            "package lib;\npub trait Show { fn show(self: Self) -> string; }\n",
         )
         .unwrap();
 

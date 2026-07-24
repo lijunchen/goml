@@ -1,16 +1,16 @@
 trait Render {
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 
 trait Parent[T] {
-    fn parent(Self) -> T;
+    fn parent(self: Self) -> T;
 }
 
 trait Child[T: ToString]: Parent[T] + Render
 where
     T: Eq,
 {
-    fn child(Self) -> string;
+    fn child(self: Self) -> string;
 }
 
 struct Box[T] {

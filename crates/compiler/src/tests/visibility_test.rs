@@ -286,7 +286,7 @@ fn main() -> unit {
 package api;
 
 pub trait Label {
-    fn label(Self) -> string;
+    fn label(self: Self) -> string;
 }
 
 pub struct Item {
@@ -331,7 +331,7 @@ fn main() -> unit {
 package api;
 
 trait Hidden {
-    fn hidden(Self) -> string;
+    fn hidden(self: Self) -> string;
 }
 
 pub struct Item {
@@ -375,7 +375,7 @@ package api;
 
 pub trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 pub struct Public {}

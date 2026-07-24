@@ -42,7 +42,7 @@ fn diagnostic_lines(src: &str) -> Vec<String> {
 fn composite_type_parameter_trait_goal_requires_proof() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 struct Box[T] {
@@ -71,7 +71,7 @@ fn use_box[T](value: Box[T]) -> unit {
 fn overlapping_generic_and_concrete_impls_are_rejected_at_definition() {
     let src = r#"
 trait Label {
-    fn label(Self) -> string;
+    fn label(self: Self) -> string;
 }
 
 struct Box[T] {
@@ -100,7 +100,7 @@ impl Label for Box[int32] {
 fn invalid_impl_does_not_satisfy_trait_goal() {
     let src = r#"
 trait Render {
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 
 struct Item {}
@@ -135,11 +135,11 @@ fn use_item(value: Item) -> unit {
 fn method_resolution_waits_for_receiver_inference() {
     let src = r#"
 trait Alpha {
-    fn text(Self) -> string;
+    fn text(self: Self) -> string;
 }
 
 trait Beta {
-    fn text(Self) -> string;
+    fn text(self: Self) -> string;
 }
 
 struct A {}
@@ -167,7 +167,7 @@ fn main() -> unit {
 fn trait_goal_infers_nested_type_from_unique_impl() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 impl Mark for Vec[int32] {
@@ -192,7 +192,7 @@ fn main() -> unit {
 fn canonical_trait_cache_replays_unique_inference() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 impl Mark for Vec[int32] {
@@ -219,7 +219,7 @@ fn main() -> unit {
 fn ambiguous_trait_goal_does_not_commit_inference() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 impl Mark for int32 {
@@ -253,11 +253,11 @@ fn main() -> unit {
 fn ambiguous_trait_goal_is_retried_after_unique_inference() {
     let src = r#"
 trait First {
-    fn first(Self) -> unit;
+    fn first(self: Self) -> unit;
 }
 
 trait Second {
-    fn second(Self) -> unit;
+    fn second(self: Self) -> unit;
 }
 
 impl First for int32 {
@@ -297,11 +297,11 @@ fn main() -> unit {
 fn nested_impl_bound_can_drive_inference() {
     let src = r#"
 trait Inner {
-    fn inner(Self) -> unit;
+    fn inner(self: Self) -> unit;
 }
 
 trait Outer {
-    fn outer(Self) -> unit;
+    fn outer(self: Self) -> unit;
 }
 
 impl Inner for int32 {
@@ -330,7 +330,7 @@ fn main() -> unit {
 fn deterministic_coercion_precedes_trait_inference() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 impl Mark for int32 {
@@ -359,7 +359,7 @@ fn preserve[T: Mark](value: T) -> unit {
 fn unused_generic_bound_still_creates_an_obligation() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 fn require_unused[T: Mark]() -> unit {
@@ -384,7 +384,7 @@ fn main() -> unit {
 fn unconstrained_impl_type_parameter_is_rejected() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 impl[T] Mark for int32 {
@@ -404,7 +404,7 @@ impl[T] Mark for int32 {
 fn nested_impl_bound_must_be_satisfied() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 struct Wrap[T] {
@@ -437,7 +437,7 @@ fn use_wrap(value: Wrap[int32]) -> unit {
 fn coherence_is_rechecked_after_all_impls_are_collected() {
     let src = r#"
 trait Show {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 impl Hash for Ref[dyn Show] {
@@ -532,7 +532,7 @@ fn recursive_blanket_trait_impl_bound_does_not_crash() {
 fn impl_with_mismatched_return_type_reports_diagnostic() {
     let src = r#"
 trait Display {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 impl Display for int32 {
@@ -554,7 +554,7 @@ impl Display for int32 {
 fn impl_with_mismatched_param_type_reports_diagnostic() {
     let src = r#"
 trait Display {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 impl Display for int32 {
@@ -576,7 +576,7 @@ impl Display for int32 {
 fn impl_with_parameter_arity_mismatch_reports_diagnostic() {
     let src = r#"
 trait Add {
-    fn add(Self, Self) -> Self;
+    fn add(self: Self, other: Self) -> Self;
 }
 
 impl Add for int32 {
@@ -598,8 +598,8 @@ impl Add for int32 {
 fn impl_missing_trait_method_reports_diagnostic() {
     let src = r#"
 trait Display {
-    fn show(Self) -> string;
-    fn debug(Self) -> string;
+    fn show(self: Self) -> string;
+    fn debug(self: Self) -> string;
 }
 
 impl Display for int32 {
@@ -621,7 +621,7 @@ impl Display for int32 {
 fn impl_with_extra_method_reports_diagnostic() {
     let src = r#"
 trait Display {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 impl Display for int32 {
@@ -664,8 +664,8 @@ fn impl_for_struct_reports_missing_method_diagnostic() {
 struct Point { x: int32, y: int32 }
 
 trait Display {
-    fn show(Self) -> string;
-    fn debug(Self) -> string;
+    fn show(self: Self) -> string;
+    fn debug(self: Self) -> string;
 }
 
 impl Display for Point {
@@ -692,8 +692,8 @@ enum Maybe[T] {
 }
 
 trait Display {
-    fn show(Self) -> string;
-    fn debug(Self) -> string;
+    fn show(self: Self) -> string;
+    fn debug(self: Self) -> string;
 }
 
 impl Display for Maybe[int32] {
@@ -817,7 +817,7 @@ impl Point {
 fn generic_trait_applications_are_distinct() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Token {}
@@ -849,7 +849,7 @@ fn main() -> unit {
 fn expected_return_type_disambiguates_generic_trait_method() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Token {}
@@ -878,7 +878,7 @@ fn trait_impl_methods_cannot_add_type_parameters() {
     let cases = [
         r#"
 trait Value {
-    fn value(Self) -> int32;
+    fn value(self: Self) -> int32;
 }
 
 struct X {}
@@ -889,7 +889,7 @@ impl Value for X {
 "#,
         r#"
 trait Identity {
-    fn identity(Self) -> int32;
+    fn identity(self: Self) -> int32;
 }
 
 struct X {}
@@ -900,7 +900,7 @@ impl Identity for X {
 "#,
         r#"
 trait Value {
-    fn value(Self) -> int32;
+    fn value(self: Self) -> int32;
 }
 
 struct X {}
@@ -930,7 +930,7 @@ impl Value for X {
 fn overlapping_generic_trait_applications_are_rejected() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Box[T] { value: T }
@@ -957,7 +957,7 @@ impl Convert[int32] for Box[int32] {
 fn generic_trait_arity_is_checked() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Token {}
@@ -988,11 +988,11 @@ impl Convert[int32, string] for Token {
 fn generic_trait_parameters_and_signatures_are_validated() {
     let src = r#"
 trait Duplicate[T, T] {
-    fn value(Self) -> T;
+    fn value(self: Self) -> T;
 }
 
 trait Broken[T] {
-    fn value(Self) -> Missing;
+    fn value(self: Self) -> Missing;
 }
 "#;
 
@@ -1015,7 +1015,7 @@ trait Broken[T] {
 fn generic_trait_arguments_are_validated() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 fn convert_missing[T: Convert[Missing]](value: T) -> unit { () }
@@ -1034,7 +1034,7 @@ fn convert_missing[T: Convert[Missing]](value: T) -> unit { () }
 fn explicit_generic_trait_arguments_are_validated() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Token {}
@@ -1068,7 +1068,7 @@ fn main() -> unit {
 fn generic_traits_are_rejected_as_dyn_types() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 fn consume(value: dyn Convert) -> unit { () }
@@ -1230,7 +1230,7 @@ impl IntoIterator for Values {
 fn where_predicate_accepts_constructed_trait_receiver() {
     let src = r#"
 trait Render {
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 
 fn render_all[T](values: Vec[T]) -> string where Vec[T]: Render {
@@ -1263,7 +1263,7 @@ fn main() -> unit {
 fn where_constructed_bound_is_checked_at_call_site() {
     let src = r#"
 trait Render {
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 
 fn require_render[T](values: Vec[T]) -> unit where Vec[T]: Render {
@@ -1311,11 +1311,11 @@ fn main() -> unit {
 fn impl_where_predicate_controls_trait_selection() {
     let accepted = r#"
 trait Ready {
-    fn ready(Self) -> unit;
+    fn ready(self: Self) -> unit;
 }
 
 trait Selected {
-    fn selected(Self) -> unit;
+    fn selected(self: Self) -> unit;
 }
 
 struct Wrap[T] { value: T }
@@ -1336,11 +1336,11 @@ fn main() -> unit {
 "#;
     let rejected = r#"
 trait Ready {
-    fn ready(Self) -> unit;
+    fn ready(self: Self) -> unit;
 }
 
 trait Selected {
-    fn selected(Self) -> unit;
+    fn selected(self: Self) -> unit;
 }
 
 struct Wrap[T] { value: T }
@@ -1375,7 +1375,7 @@ fn main() -> unit {
 fn impl_equality_predicate_restricts_application() {
     let src = r#"
 trait Selected {
-    fn selected(Self) -> unit;
+    fn selected(self: Self) -> unit;
 }
 
 struct Wrap[T] { value: T }
@@ -1422,7 +1422,7 @@ fn main() -> unit {
 fn equality_predicate_transfers_trait_bound() {
     let src = r#"
 trait Render {
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 
 fn render_equal[T: Render, U](value: U) -> string where T == U {
@@ -1440,13 +1440,13 @@ fn associated_type_impl_requires_complete_known_unique_bindings() {
 trait Source {
     type Item;
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 "#;
     let missing = r#"
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value {}
@@ -1458,7 +1458,7 @@ impl Source for Value {
     let unknown = r#"
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value {}
@@ -1472,7 +1472,7 @@ impl Source for Value {
     let duplicate = r#"
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value {}
@@ -1519,7 +1519,7 @@ fn associated_type_binding_must_match_trait_method_signature() {
     let src = r#"
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value {}
@@ -1543,12 +1543,12 @@ impl Source for Value {
 fn associated_type_bound_is_checked_at_impl_definition() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Source {
     type Item: Mark;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value {}
@@ -1612,7 +1612,7 @@ fn associated_type_cycles_are_rejected() {
 trait Pair {
     type First;
     type Second;
-    fn touch(Self) -> unit;
+    fn touch(self: Self) -> unit;
 }
 
 struct Value {}
@@ -1637,11 +1637,11 @@ impl Pair for Value {
 fn supertrait_impl_is_required_at_definition() {
     let src = r#"
 trait Parent {
-    fn parent(Self) -> string;
+    fn parent(self: Self) -> string;
 }
 
 trait Child: Parent {
-    fn child(Self) -> string;
+    fn child(self: Self) -> string;
 }
 
 struct Value {}
@@ -1664,11 +1664,11 @@ impl Child for Value {
 fn trait_parameter_bounds_are_required_at_impl_definition() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Container[T: Mark] {
-    fn value(Self) -> T;
+    fn value(self: Self) -> T;
 }
 
 struct Item {}
@@ -1692,15 +1692,15 @@ impl Container[Item] for Box {
 fn inherited_method_name_conflicts_remain_ambiguous() {
     let src = r#"
 trait Left {
-    fn name(Self) -> string;
+    fn name(self: Self) -> string;
 }
 
 trait Right {
-    fn name(Self) -> string;
+    fn name(self: Self) -> string;
 }
 
 trait Both: Left + Right {
-    fn both(Self) -> unit;
+    fn both(self: Self) -> unit;
 }
 
 fn name[T: Both](value: T) -> string {
@@ -1721,11 +1721,11 @@ fn name[T: Both](value: T) -> string {
 fn supertrait_cycles_are_rejected() {
     let src = r#"
 trait First: Second {
-    fn first(Self) -> unit;
+    fn first(self: Self) -> unit;
 }
 
 trait Second: First {
-    fn second(Self) -> unit;
+    fn second(self: Self) -> unit;
 }
 "#;
 
@@ -1742,19 +1742,19 @@ trait Second: First {
 fn forward_and_diamond_supertraits_are_supported() {
     let src = r#"
 trait Child: Left + Right {
-    fn child(Self) -> unit;
+    fn child(self: Self) -> unit;
 }
 
 trait Left: Base {
-    fn left(Self) -> unit;
+    fn left(self: Self) -> unit;
 }
 
 trait Right: Base {
-    fn right(Self) -> unit;
+    fn right(self: Self) -> unit;
 }
 
 trait Base {
-    fn base(Self) -> string;
+    fn base(self: Self) -> string;
 }
 
 fn inherited[T: Child](value: T) -> string {
@@ -1770,11 +1770,11 @@ fn inherited[T: Child](value: T) -> string {
 fn trait_coverage_generic_parameter_bound_is_implied() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Container[T: Mark] {
-    fn value(Self) -> T;
+    fn value(self: Self) -> T;
 }
 
 fn require_mark[T: Mark](value: T) -> unit { () }
@@ -1792,11 +1792,11 @@ fn consume[T, C: Container[T]](container: C) -> unit {
 fn trait_coverage_declaration_where_predicate_is_implied() {
     let src = r#"
 trait Ready {
-    fn ready(Self) -> unit;
+    fn ready(self: Self) -> unit;
 }
 
 trait Service[T] where T: Ready {
-    fn serve(Self, T) -> unit;
+    fn serve(self: Self, arg1: T) -> unit;
 }
 
 fn require_ready[T: Ready](value: T) -> unit { () }
@@ -1814,12 +1814,12 @@ fn consume[T, S: Service[T]](value: T) -> unit {
 fn trait_coverage_associated_type_bound_is_implied() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Source {
     type Item: Mark;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 fn require_mark[T: Mark](value: T) -> unit { () }
@@ -1837,12 +1837,12 @@ fn consume[S: Source](source: S) -> unit {
 fn trait_coverage_supertrait_associated_type_is_projectable() {
     let src = r#"
 trait Child: Parent {
-    fn child(Self) -> unit;
+    fn child(self: Self) -> unit;
 }
 
 trait Parent {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 fn get_from_child[C: Child](value: C) -> C::Item {
@@ -1858,12 +1858,12 @@ fn get_from_child[C: Child](value: C) -> C::Item {
 fn trait_coverage_projection_equality_transfers_bound() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 fn require_mark[T: Mark](value: T) -> unit { () }
@@ -1886,11 +1886,11 @@ where
 fn trait_coverage_constrained_blanket_is_disjoint_without_bound() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Label {
-    fn label(Self) -> string;
+    fn label(self: Self) -> string;
 }
 
 struct Box[T] {
@@ -1914,11 +1914,11 @@ impl Label for Box[string] {
 fn trait_coverage_constrained_blanket_overlaps_when_bound_holds() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Label {
-    fn label(Self) -> string;
+    fn label(self: Self) -> string;
 }
 
 struct Box[T] {
@@ -1951,11 +1951,11 @@ impl Label for Box[string] {
 fn trait_coverage_constrained_blanket_method_is_unavailable_without_bound() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Extra {
-    fn extra(Self) -> int32;
+    fn extra(self: Self) -> int32;
 }
 
 impl[T: Mark] Extra for T {
@@ -1980,11 +1980,11 @@ fn main() -> unit {
 fn trait_coverage_constrained_blanket_method_is_available_with_bound() {
     let src = r#"
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 trait Extra {
-    fn extra(Self) -> int32;
+    fn extra(self: Self) -> int32;
 }
 
 impl Mark for int32 {
@@ -2010,7 +2010,7 @@ fn trait_coverage_generic_applications_have_distinct_associated_types() {
     let src = r#"
 trait Convert[T] {
     type Output;
-    fn convert(Self) -> Self::Output;
+    fn convert(self: Self) -> Self::Output;
 }
 
 struct Value {}
@@ -2041,11 +2041,11 @@ fn projected_trait_application_impl_is_selectable() {
     let src = r#"
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 trait Pick[T] {
-    fn pick(Self) -> T;
+    fn pick(self: Self) -> T;
 }
 
 impl[S: Source] Pick[S::Item] for S {
@@ -2074,11 +2074,11 @@ fn symbolic_projection_equality_selects_single_impl() {
     let src = r#"
 trait Source {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 trait Pick[T] {
-    fn pick(Self) -> T;
+    fn pick(self: Self) -> T;
 }
 
 impl[S: Source, T] Pick[T] for S where S::Item == T {
@@ -2106,7 +2106,7 @@ trait Source {
 }
 
 trait Accept[T] {
-    fn accept(Self) -> T;
+    fn accept(self: Self) -> T;
 }
 
 fn copy[S: Source + Accept[S::Item]](source: S) -> S::Item {
@@ -2124,7 +2124,7 @@ fn copy[S: Source + Accept[S::Item]](source: S) -> S::Item {
 fn method_arguments_disambiguate_generic_trait_applications() {
     let src = r#"
 trait Put[T] {
-    fn put(Self, T) -> string;
+    fn put(self: Self, arg1: T) -> string;
 }
 
 struct Value {}
@@ -2153,7 +2153,7 @@ fn associated_outputs_disambiguate_generic_trait_methods() {
     let src = r#"
 trait Convert[T] {
     type Output;
-    fn convert(Self) -> Self::Output;
+    fn convert(self: Self) -> Self::Output;
 }
 
 struct Value {}
@@ -2184,7 +2184,7 @@ fn trait_self_predicates_are_resolved_and_enforced() {
     let accepted = r#"
 trait Source[T] where Self::Item == T {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value { value: int32 }
@@ -2201,7 +2201,7 @@ fn read[T, S: Source[T]](source: S) -> T {
     let rejected = r#"
 trait Source[T] where Self::Item == T {
     type Item;
-    fn get(Self) -> Self::Item;
+    fn get(self: Self) -> Self::Item;
 }
 
 struct Value {}
@@ -2231,7 +2231,7 @@ trait Source {
 }
 
 trait Mark {
-    fn mark(Self) -> unit;
+    fn mark(self: Self) -> unit;
 }
 
 impl[S: Source] Mark for S::Item {

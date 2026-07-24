@@ -1,12 +1,12 @@
 trait Ready {
-    fn state(Self) -> string;
+    fn state(self: Self) -> string;
 }
 
 trait Service[T]
 where
     T: Ready,
 {
-    fn get(Self) -> T;
+    fn get(self: Self) -> T;
 }
 
 struct Worker {

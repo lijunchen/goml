@@ -5,10 +5,10 @@ struct Flag { value: bool }
 struct Counter { cell: Ref[int32] }
 
 trait Display {
-    fn show(Self) -> string;
-    fn show_with(Self, string, string) -> string;
-    fn tick(Self) -> unit;
-    fn bump(Self, int32) -> int32;
+    fn show(self: Self) -> string;
+    fn show_with(self: Self, arg1: string, arg2: string) -> string;
+    fn tick(self: Self) -> unit;
+    fn bump(self: Self, arg1: int32) -> int32;
 }
 
 impl Display for Point {

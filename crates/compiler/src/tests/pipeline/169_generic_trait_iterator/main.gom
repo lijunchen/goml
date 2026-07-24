@@ -1,5 +1,5 @@
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Token {}
@@ -21,7 +21,7 @@ fn convert_to[T, V: Convert[T]](value: V) -> T {
 }
 
 trait Marker[T] {
-    fn marker(Self) -> string;
+    fn marker(self: Self) -> string;
 }
 
 struct Any {}

@@ -3042,6 +3042,30 @@ fn f() -> unit { () }
         }));
     }
 
+    #[test]
+    fn lower_requires_explicit_trait_receivers() {
+        let result = lower_result("trait Named { fn name(value: Self) -> string; }");
+        assert!(result.has_errors());
+        assert!(result.diagnostics().iter().any(|diagnostic| {
+            diagnostic.message() == "Trait method receiver must be written as `self: Self`"
+        }));
+    }
+
+    #[test]
+    fn lower_rejects_invalid_self_parameters() {
+        for source in [
+            "trait Named { fn name(self: int32) -> string; }",
+            "trait Named { fn name(value: int32, self: Self) -> string; }",
+        ] {
+            let result = lower_result(source);
+            assert!(result.has_errors());
+            assert!(result.diagnostics().iter().any(|diagnostic| {
+                diagnostic.message()
+                    == "Trait method receiver must be the first parameter with type Self"
+            }));
+        }
+    }
+
     fn lower_src(src: &str) -> ast::File {
         lower_result(src).into_result().unwrap()
     }

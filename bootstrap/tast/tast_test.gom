@@ -115,7 +115,7 @@ fn checked_package_file_with_dependencies(
 fn checks_cross_file_package_definitions() -> unit {
     let parsed = Vec::new();
     parsed.push(parser::parse(
-        "package main; trait Label { fn label(Self) -> string; } enum Status { Idle, Busy(int32) } impl Label for Status { fn label(self: Status) -> string { match self { Idle => \"idle\", Busy(value) => value.to_string() } } }",
+        "package main; trait Label { fn label(self: Self) -> string; } enum Status { Idle, Busy(int32) } impl Label for Status { fn label(self: Status) -> string { match self { Idle => \"idle\", Busy(value) => value.to_string() } } }",
     ));
     parsed.push(parser::parse(
         "package main; fn main() -> unit { println(Idle.label()); println(Busy(4).label()) }",
@@ -178,7 +178,7 @@ fn diagnoses_duplicate_functions_across_package_files() -> unit {
 #[test]
 fn diagnoses_duplicate_declaration_names() -> unit {
     let diagnostics = checked_diagnostics(
-        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } trait T[T, T] { type Item; type Item; fn f(Self) -> unit; fn f(Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {}",
+        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {}",
     );
     let expected = Vec::new();
     expected.push("variant A is defined multiple times in enum E");
@@ -230,7 +230,7 @@ fn resolves_generic_functions_from_package_interfaces() -> unit {
 
 #[test]
 fn enforces_source_extern_capabilities() -> unit {
-    let source = "#[runtime(\"std.io.println\")] extern fn output(value: string) -> unit fn main() -> unit { output(\"ok\") }";
+    let source = "#[runtime(\"std.io.println\")] extern fn output(value: string) -> unit; fn main() -> unit { output(\"ok\") }";
     let rejected = checked_diagnostics(source);
     testing::assert_eq(rejected.len(), 2);
     testing::assert_eq(
@@ -265,7 +265,7 @@ fn enforces_source_extern_capabilities() -> unit {
 #[test]
 fn recovers_rejected_externs_with_builtin_signatures() -> unit {
     let diagnostics = checked_diagnostics(
-        "#[intrinsic(\"ref.get\")] extern fn ref_get[T](reference: Ref[T]) -> T fn main() -> unit { println(ref_get(1)) }",
+        "#[intrinsic(\"ref.get\")] extern fn ref_get[T](reference: Ref[T]) -> T; fn main() -> unit { println(ref_get(1)) }",
     );
     testing::assert_eq(diagnostics.len(), 3);
     testing::assert(has_diagnostic(
@@ -286,7 +286,7 @@ fn recovers_rejected_externs_with_builtin_signatures() -> unit {
 fn resolves_runtime_externs_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
-        "package host; #[runtime(\"std.io.println\")] pub extern fn output(value: string) -> unit",
+        "package host; #[runtime(\"std.io.println\")] pub extern fn output(value: string) -> unit;",
         "std::internal::host",
     ));
     let file = checked_file_with_dependencies(
@@ -463,7 +463,7 @@ fn rejects_float_remainder_operands() -> unit {
 fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     let dyn_result = check(hir::lower(
         ast::lower(parser::parse(
-            "trait Display { fn display(Self) -> string; } fn convert(value: int32) -> dyn Display { value }",
+            "trait Display { fn display(self: Self) -> string; } fn convert(value: int32) -> dyn Display { value }",
         )),
         "main.gom",
     ));
@@ -684,7 +684,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
     testing::assert_eq(nested.diagnostics.len(), 0);
     let overlap = check(hir::lower(
         ast::lower(parser::parse(
-            "trait Pick { fn pick(Self) -> int32; } impl Pick for int32 { fn pick(self: int32) -> int32 { 1 } } impl[T] Pick for T { fn pick(self: T) -> int32 { 2 } }",
+            "trait Pick { fn pick(self: Self) -> int32; } impl Pick for int32 { fn pick(self: int32) -> int32 { 1 } } impl[T] Pick for T { fn pick(self: T) -> int32 { 2 } }",
         )),
         "main.gom",
     ));
@@ -764,42 +764,42 @@ fn checks_indexed_assignment_roots() -> unit {
 #[test]
 fn validates_trait_impl_contracts() -> unit {
     let duplicate = checked_diagnostics(
-        "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn show(self: int32) -> string { \"b\" } }",
+        "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn show(self: int32) -> string { \"b\" } }",
     );
     testing::assert(has_diagnostic(
         duplicate,
         "Method show implemented multiple times in impl of trait Display",
     ));
     let extra = checked_diagnostics(
-        "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn extra(self: int32) -> string { \"b\" } }",
+        "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn extra(self: int32) -> string { \"b\" } }",
     );
     testing::assert(has_diagnostic(
         extra,
         "Method extra is not declared in trait Display",
     ));
     let missing = checked_diagnostics(
-        "trait Display { fn show(Self) -> string; fn debug(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } }",
+        "trait Display { fn show(self: Self) -> string; fn debug(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } }",
     );
     testing::assert(has_diagnostic(
         missing,
         "Trait Display implementation for int32 is missing method debug",
     ));
     let arity = checked_diagnostics(
-        "trait Format { fn format(Self, string) -> string; } impl Format for int32 { fn format(self: int32) -> string { \"a\" } }",
+        "trait Format { fn format(self: Self, arg1: string) -> string; } impl Format for int32 { fn format(self: int32) -> string { \"a\" } }",
     );
     testing::assert(has_diagnostic(
         arity,
         "Trait Format::format expects 2 parameters but impl has 1",
     ));
     let parameter = checked_diagnostics(
-        "trait Format { fn format(Self, string) -> string; } impl Format for int32 { fn format(self: int32, value: int32) -> string { value.to_string() } }",
+        "trait Format { fn format(self: Self, arg1: string) -> string; } impl Format for int32 { fn format(self: int32, value: int32) -> string { value.to_string() } }",
     );
     testing::assert(has_diagnostic(
         parameter,
         "Trait Format::format parameter 1 expected type string but found int32",
     ));
     let result = checked_diagnostics(
-        "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> bool { true } }",
+        "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> bool { true } }",
     );
     testing::assert(has_diagnostic(
         result,
@@ -893,7 +893,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
 fn filters_external_trait_methods_by_hir_scope() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
-        "package traits; pub trait Render { fn render(Self) -> string; } pub trait Fancy { fn render(Self) -> string; }",
+        "package traits; pub trait Render { fn render(self: Self) -> string; } pub trait Fancy { fn render(self: Self) -> string; }",
         "vendor::traits",
     ));
     dependencies.push(dependency_hir(
@@ -924,7 +924,7 @@ fn filters_external_trait_methods_by_hir_scope() -> unit {
 fn imports_external_supertrait_methods_with_child_scope() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
-        "package api; pub trait Parent[T] { fn parent(Self) -> T; } pub trait Child[T]: Parent[T] { fn child(Self) -> string; } pub struct Box[T] { value: T } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } }",
+        "package api; pub trait Parent[T] { fn parent(self: Self) -> T; } pub trait Child[T]: Parent[T] { fn child(self: Self) -> string; } pub struct Box[T] { value: T } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } }",
         "vendor::api",
     ));
     let file = checked_package_file_with_dependencies(
@@ -1128,7 +1128,7 @@ fn checks_closures_with_call_context() -> unit {
 
 #[test]
 fn infers_trait_goals_from_function_calls() -> unit {
-    let source = "trait Measure { fn measure(Self) -> int32; } impl Measure for Vec[int32] { fn measure(self: Vec[int32]) -> int32 { self.len() } } fn read_measure[T: Measure](value: T) -> int32 { Measure::measure(value) } fn main() -> int32 { let values = vec_new(); read_measure(values) }";
+    let source = "trait Measure { fn measure(self: Self) -> int32; } impl Measure for Vec[int32] { fn measure(self: Vec[int32]) -> int32 { self.len() } } fn read_measure[T: Measure](value: T) -> int32 { Measure::measure(value) } fn main() -> int32 { let values = vec_new(); read_measure(values) }";
     let file = checked_file(source);
     match file.items.get(2) {
         Item::Function(value) => {
@@ -1243,7 +1243,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
 
 #[test]
 fn resolves_associated_types_and_bound_methods() -> unit {
-    let source = "trait Provider { type Item; fn get(Self) -> Self::Item; } struct Number { value: int32 } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> int32 { read(Number { value: 42 }) }";
+    let source = "trait Provider { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> int32 { read(Number { value: 42 }) }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 3);
     match file.items.get(1) {
@@ -1283,7 +1283,7 @@ fn resolves_associated_types_and_bound_methods() -> unit {
 
 #[test]
 fn preserves_projection_equality_owners() -> unit {
-    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } struct LeftSource {} struct RightSource {} impl Source for LeftSource { type Item = int32; fn get(self: LeftSource) -> int32 { 1 } } impl Source for RightSource { type Item = int32; fn get(self: RightSource) -> int32 { 2 } } fn combine[A: Source, B: Source](left: A, right: B) -> unit where A::Item == B::Item { () } fn main() -> unit { combine(LeftSource {}, RightSource {}) }";
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } struct LeftSource {} struct RightSource {} impl Source for LeftSource { type Item = int32; fn get(self: LeftSource) -> int32 { 1 } } impl Source for RightSource { type Item = int32; fn get(self: RightSource) -> int32 { 2 } } fn combine[A: Source, B: Source](left: A, right: B) -> unit where A::Item == B::Item { () } fn main() -> unit { combine(LeftSource {}, RightSource {}) }";
     let file = checked_file(source);
     match file.items.get(3) {
         Item::Function(value) => match value.body.tail {
@@ -1309,7 +1309,7 @@ fn preserves_projection_equality_owners() -> unit {
 
 #[test]
 fn applies_where_type_equalities_in_function_bodies() -> unit {
-    let source = "package api; trait Render { fn render(Self) -> string; } fn same[T, U](value: T) -> U where T == U { value } fn structural[T, U](values: Vec[T]) -> Vec[U] where Vec[T] == Vec[U] { values } fn render_equal[T: Render, U](value: U) -> string where T == U { value.render() }";
+    let source = "package api; trait Render { fn render(self: Self) -> string; } fn same[T, U](value: T) -> U where T == U { value } fn structural[T, U](values: Vec[T]) -> Vec[U] where Vec[T] == Vec[U] { values } fn render_equal[T: Render, U](value: U) -> string where T == U { value.render() }";
     let result = check_for_link(hir::lower_package(
         ast::lower(parser::parse(source)),
         "api.gom",
@@ -1324,7 +1324,7 @@ fn applies_where_type_equalities_in_function_bodies() -> unit {
 
 #[test]
 fn rejects_unsatisfied_impl_equality_predicates() -> unit {
-    let source = "trait Selected { fn selected(Self) -> unit; } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T == int32 { fn selected(self: Wrap[T]) -> unit { () } } fn require[T: Selected](value: T) -> unit { () } fn main() -> unit { require(Wrap { value: \"no\" }) }";
+    let source = "trait Selected { fn selected(self: Self) -> unit; } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T == int32 { fn selected(self: Wrap[T]) -> unit { () } } fn require[T: Selected](value: T) -> unit { () } fn main() -> unit { require(Wrap { value: \"no\" }) }";
     let result = check(hir::lower(
         ast::lower(parser::parse(source)),
         "main.gom",
@@ -1341,7 +1341,7 @@ fn checks_extended_builtin_method_catalog() -> unit {
 
 #[test]
 fn prefers_builtin_inherent_methods() -> unit {
-    let source = "trait Container { fn is_empty(Self) -> bool; } impl Container for Vec[int32] { fn is_empty(self: Vec[int32]) -> bool { false } } fn main() -> bool { let values: Vec[int32] = Vec::new(); values.is_empty() }";
+    let source = "trait Container { fn is_empty(self: Self) -> bool; } impl Container for Vec[int32] { fn is_empty(self: Vec[int32]) -> bool { false } } fn main() -> bool { let values: Vec[int32] = Vec::new(); values.is_empty() }";
     let file = checked_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
@@ -1596,7 +1596,7 @@ fn normalizes_and_escapes_char_literals() -> unit {
 
 #[test]
 fn resolves_generic_trait_associated_applications() -> unit {
-    let source = "trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[int32] for Value { type Output = string; fn convert(self: Value) -> string { \"int\" } } impl Convert[string] for Value { type Output = int32; fn convert(self: Value) -> int32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert::[int32]::convert(Value {}); let number: int32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
+    let source = "trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[int32] for Value { type Output = string; fn convert(self: Value) -> string { \"int\" } } impl Convert[string] for Value { type Output = int32; fn convert(self: Value) -> int32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert::[int32]::convert(Value {}); let number: int32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
     let file = checked_file(source);
     match file.items.get(3) {
         Item::Function(value) => {
@@ -1619,7 +1619,7 @@ fn resolves_generic_trait_associated_applications() -> unit {
 
 #[test]
 fn resolves_trait_methods_from_call_context() -> unit {
-    let source = "trait Put[T] { fn put(Self, T) -> string; } struct Target {} impl Put[int32] for Target { fn put(self: Target, value: int32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Convertible {} impl Convert[int32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = int32; fn convert(self: Convertible) -> int32 { 7 } } trait Source[T] where Self::Item == T { type Item; fn get(Self) -> Self::Item; } struct Number { value: int32 } impl Source[int32] for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(Self) -> Self::Item; } trait Select[T] { fn select(Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: int32 = (Convertible {}).convert(); let value: int32 = read(Number { value: 8 }); }";
+    let source = "trait Put[T] { fn put(self: Self, arg1: T) -> string; } struct Target {} impl Put[int32] for Target { fn put(self: Target, value: int32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Convertible {} impl Convert[int32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = int32; fn convert(self: Convertible) -> int32 { 7 } } trait Source[T] where Self::Item == T { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } impl Source[int32] for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: int32 = (Convertible {}).convert(); let value: int32 = read(Number { value: 8 }); }";
     let file = checked_file(source);
     match file.items.get(7) {
         Item::Function(value) => match value.body.tail {
@@ -1763,7 +1763,7 @@ fn resolves_builtin_for_iterator_types() -> unit {
 
 #[test]
 fn preserves_associated_into_iterator_item_projection() -> unit {
-    let file = checked_file("trait Batch { type Items: IntoIterator; fn items(Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }");
+    let file = checked_file("trait Batch { type Items: IntoIterator; fn items(self: Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::For(
@@ -1883,7 +1883,7 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
 
 #[test]
 fn resolves_projected_trait_impls() -> unit {
-    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> int32 { (Value { value: 41 }).pick() }";
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> int32 { (Value { value: 41 }).pick() }";
     let file = checked_file(source);
     match file.items.get(2) {
         Item::Function(value) => match value.body.tail {
@@ -1910,7 +1910,7 @@ fn resolves_projected_trait_impls() -> unit {
 
 #[test]
 fn accepts_projected_trait_predicates() -> unit {
-    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick::[S::Item]::pick(source) } fn main() -> int32 { copy(Value { value: 42 }) }";
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick::[S::Item]::pick(source) } fn main() -> int32 { copy(Value { value: 42 }) }";
     let result = check(hir::lower(
         ast::lower(parser::parse(source)),
         "main.gom",
@@ -1920,7 +1920,7 @@ fn accepts_projected_trait_predicates() -> unit {
 
 #[test]
 fn resolves_constrained_blanket_methods() -> unit {
-    let source = "trait Mark { fn mark(Self) -> string; } trait Label { fn label(Self) -> string; } struct Box[T] { value: T } impl Mark for int32 { fn mark(self: int32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
+    let source = "trait Mark { fn mark(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } struct Box[T] { value: T } impl Mark for int32 { fn mark(self: int32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
     let file = checked_file(source);
     for index in range(3, 5) {
         match file.items.get(index) {
@@ -2054,7 +2054,7 @@ fn indents_array_control_flow_expressions() -> unit {
 
 #[test]
 fn resolves_supertraits_and_implied_predicates() -> unit {
-    let source = "trait Parent[T] { fn parent(Self) -> T; } trait Render { fn render(Self) -> string; } trait Label { fn label(Self) -> string; } trait Marker { fn marker(Self) -> string; } trait Child[T: Label]: Parent[T] + Render where T: Marker { fn child(Self) -> string; } fn describe[T, B: Child[T]](value: B) -> string { value.parent().label() + value.parent().marker() + value.render() + value.child() } fn inherited[T, B: Child[T]](value: B) -> T { Child::[T]::parent(value) }";
+    let source = "trait Parent[T] { fn parent(self: Self) -> T; } trait Render { fn render(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } trait Marker { fn marker(self: Self) -> string; } trait Child[T: Label]: Parent[T] + Render where T: Marker { fn child(self: Self) -> string; } fn describe[T, B: Child[T]](value: B) -> string { value.parent().label() + value.parent().marker() + value.render() + value.child() } fn inherited[T, B: Child[T]](value: B) -> T { Child::[T]::parent(value) }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 2);
     match file.items.get(1) {
@@ -2082,7 +2082,7 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
 #[test]
 fn rejects_unsafe_dyn_body_annotations() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Cloneish { fn clone(Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 }; }",
+        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 }; }",
     );
     testing::assert(has_diagnostic(
         diagnostics,
@@ -2093,7 +2093,7 @@ fn rejects_unsafe_dyn_body_annotations() -> unit {
 #[test]
 fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Label { fn label(Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let value: dyn Label = 1i32; let _ = match value { 1i32 => 2i32, _ => 3i32 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let value: dyn Label = 1i32; let _ = match value { 1i32 => 2i32, _ => 3i32 }; }",
     );
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert_eq(

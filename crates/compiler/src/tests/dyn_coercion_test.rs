@@ -50,7 +50,7 @@ fn assert_ref_identity_impl_overlap(name: &str) {
 fn mixed_dyn_vec_push_with_distinct_impls_compiles() {
     let src = r#"
 trait Show {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 struct Wrap {
@@ -88,7 +88,7 @@ fn main() -> unit {
 fn implicit_dyn_coercion_from_generic_call_result_compiles() {
     let src = r#"
 trait Show {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 struct Wrap[T] {
@@ -123,7 +123,7 @@ fn main() -> unit {
 fn implicit_dyn_coercion_from_generic_enum_call_result_compiles() {
     let src = r#"
 trait Show {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 enum Boxed[T] {
@@ -163,7 +163,7 @@ fn main() -> unit {
 fn implicit_dyn_coercion_from_generic_enum_constructor_compiles() {
     let src = r#"
 trait Show {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 enum Boxed[T] {
@@ -321,7 +321,7 @@ fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
 fn dyn_trait_types_are_emitted_for_enum_fields_in_early_return_subexpressions() {
     let src = r#"
 trait Display {
-    fn show(Self) -> string;
+    fn show(self: Self) -> string;
 }
 
 impl Display for int32 {

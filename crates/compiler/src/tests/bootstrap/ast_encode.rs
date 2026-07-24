@@ -322,7 +322,11 @@ impl Encoder {
         for method in &value.method_sigs {
             self.open("TraitMethod");
             self.string(&method.name.0);
-            self.types(&method.params);
+            self.list(method.params.len());
+            for (name, ty) in &method.params {
+                self.string(&name.0);
+                self.ty(ty);
+            }
             self.ty(&method.ret_ty);
             self.close();
         }

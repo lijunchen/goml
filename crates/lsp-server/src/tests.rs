@@ -3112,7 +3112,7 @@ fn main() {
 
 
 trait Greet {
-    fn greet(Self) -> string;
+    fn greet(self: Self) -> string;
 }
 
 struct Person {

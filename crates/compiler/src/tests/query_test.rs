@@ -957,7 +957,7 @@ fn hover_declarations_and_type_positions() {
 
 trait Render {
     type Output;
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 
 struct Point[T] {
@@ -1004,7 +1004,7 @@ fn main() -> unit {
     check_at(src, "package main", 8, expect!["package main"]);
     check_at(src, "trait Render", 6, expect!["trait Render"]);
     check_at(src, "type Output;", 5, expect!["type Output"]);
-    check_at(src, "fn render(Self)", 3, expect!["(Self) -> string"]);
+    check_at(src, "fn render(self: Self)", 3, expect!["(Self) -> string"]);
     check_at(src, "struct Point", 7, expect!["struct Point[T]"]);
     check_at(src, "Point[T]", 6, expect!["T"]);
     check_at(src, "    x: T", 4, expect!["T"]);
@@ -1016,7 +1016,7 @@ fn main() -> unit {
     check_at(src, "type Output =", 5, expect!["string"]);
     check_at(
         src,
-        "    fn render(self",
+        "    fn render(self: Point[int32]",
         7,
         expect!["(Point[int32]) -> string"],
     );
@@ -1321,7 +1321,7 @@ fn main() {
 fn generic_trait_dot_method_completion() {
     let src = r#"
 trait Convert[T] {
-    fn convert(Self) -> T;
+    fn convert(self: Self) -> T;
 }
 
 struct Token {}

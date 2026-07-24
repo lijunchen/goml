@@ -651,7 +651,7 @@ fn rejects_project_imports_in_single_file_mode() -> unit {
 
 #[test]
 fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
-    let source = "package api; pub trait Source { type Item; fn get(Self) -> Self::Item; } pub struct Public {} struct Hidden {} impl Source for Public { type Item = Hidden; fn get(self: Public) -> Hidden { Hidden {} } }";
+    let source = "package api; pub trait Source { type Item; fn get(self: Self) -> Self::Item; } pub struct Public {} struct Hidden {} impl Source for Public { type Item = Hidden; fn get(self: Public) -> Hidden { Hidden {} } }";
     let ast_values = Vec::new();
     ast_values.push(ast::lower(parser::parse(source)));
     let public_names = public_item_names(ast_values, "visibility_impl_audit::api");
@@ -691,7 +691,7 @@ fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
 
 #[test]
 fn filters_private_types_traits_and_trait_impls() -> unit {
-    let source = "package api; enum HiddenEnum { A } struct HiddenStruct {} trait HiddenTrait { fn hidden(Self) -> int32; } pub struct Item {} impl HiddenTrait for Item { fn hidden(self: Item) -> int32 { 1 } } pub fn item() -> Item { Item {} }";
+    let source = "package api; enum HiddenEnum { A } struct HiddenStruct {} trait HiddenTrait { fn hidden(self: Self) -> int32; } pub struct Item {} impl HiddenTrait for Item { fn hidden(self: Item) -> int32 { 1 } } pub fn item() -> Item { Item {} }";
     let ast_values = Vec::new();
     ast_values.push(ast::lower(parser::parse(source)));
     let public_names = public_item_names(ast_values, "visibility_audit::api");
@@ -1028,7 +1028,7 @@ fn extracts_rust_interface_unit_from_checked_package() -> unit {
 
 #[test]
 fn extracts_rust_trait_interface_from_checked_package() -> unit {
-    let source = "package api; pub trait Parent[T] { fn parent(Self) -> T; } pub trait Child[T: ToString]: Parent[T] { fn child(Self) -> string; } pub struct Box[T] { value: T, } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } pub fn boxed[T](value: T) -> Box[T] { Box { value } }";
+    let source = "package api; pub trait Parent[T] { fn parent(self: Self) -> T; } pub trait Child[T: ToString]: Parent[T] { fn child(self: Self) -> string; } pub struct Box[T] { value: T, } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } pub fn boxed[T](value: T) -> Box[T] { Box { value } }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
     ast_values.push(lowered_ast);

@@ -564,7 +564,7 @@ fn parser_handles_tricky_inputs_without_panicking() {
         ),
         (
             "unbalanced_generics_and_trait_bounds",
-            "trait T { fn f(Self) -> Self; } fn id[T: A + B +](x: T) -> T { x }",
+            "trait T { fn f(self: Self) -> Self; } fn id[T: A + B +](x: T) -> T { x }",
         ),
     ];
 

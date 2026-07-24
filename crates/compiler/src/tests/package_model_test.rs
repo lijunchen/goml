@@ -142,7 +142,7 @@ fn main() -> unit {
             r#"package trait_source;
 
 pub trait Render {
-    fn render(Self) -> string;
+    fn render(self: Self) -> string;
 }
 "#,
         ),

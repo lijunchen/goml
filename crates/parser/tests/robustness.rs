@@ -23,7 +23,7 @@ use alice::compiler::syntax as syntax;
 #[derive(Eq)]
 struct Token[T] { kind: T, text: string }
 enum Result[T, E] { Ok(T), Err(E) }
-trait Parse[T] { type Error; fn parse(Self, Slice[T]) -> Result[T, Self::Error]; }
+trait Parse[T] { type Error; fn parse(self: Self, arg1: Slice[T]) -> Result[T, Self::Error]; }
 impl Parse[char] for Token[char] {
     type Error = string;
     fn parse(self: Token[char], input: Slice[char]) -> Result[char, string] {
@@ -141,6 +141,29 @@ fn legacy_expression_generics_report_turbofish_migration() {
     }));
     let root = MySyntaxNode::new_root(result.green_node);
     assert_eq!(root.text().to_string(), source);
+}
+
+#[test]
+fn trait_methods_require_named_parameters() {
+    let source = "trait Named { fn name(Self) -> string; }";
+    let result = parse(Path::new("unnamed_trait_parameter.gom"), source);
+    assert!(result.has_errors());
+    let root = MySyntaxNode::new_root(result.green_node);
+    assert_eq!(root.text().to_string(), source);
+}
+
+#[test]
+fn declarations_require_their_terminator_or_body() {
+    for source in [
+        "trait Named { fn name(self: Self) -> string }",
+        "extern fn runtime() -> unit",
+        "fn bodyless() -> unit;",
+    ] {
+        let result = parse(Path::new("incomplete_declaration.gom"), source);
+        assert!(result.has_errors(), "expected parse errors for {source}");
+        let root = MySyntaxNode::new_root(result.green_node);
+        assert_eq!(root.text().to_string(), source);
+    }
 }
 
 fn assert_depth_error(source: &str, expected: &str) {
