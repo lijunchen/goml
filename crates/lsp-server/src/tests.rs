@@ -77,7 +77,7 @@ pub fn make_client() -> client::Client {
 package client;
 
 pub struct Client {
-    name: string,
+    pub name: string,
 }
 
 pub fn tag() -> string {
@@ -841,6 +841,7 @@ fn main( {
 "#,
             expect![[r#"
                 [3:9] error: expect ")", actual "{"
+                [4:4] error: functions must have a body
                 [4:4] error: expected a function
                 [4:10] error: expected a function
                 [4:14] error: expected a function
@@ -2312,7 +2313,7 @@ path = "demo"
             "main.gom",
             "x: 20",
             "x",
-            expect!["lib/lib.gom:15:4"],
+            expect!["lib/lib.gom:15:8"],
         );
     }
 
@@ -2510,7 +2511,7 @@ path = "demo"
             "main.gom",
             "a: 9",
             "a",
-            expect!["math/math.gom:3:4"],
+            expect!["math/math.gom:3:8"],
         );
     }
 
