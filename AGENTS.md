@@ -471,7 +471,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * `trait Eq { fn eq(Self, Self) -> bool; }`
 * `trait Hash { fn hash(Self) -> uint64; }`
-* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`self.get()`), not pointer identity.
+* `Ref[T]` implements `Eq`/`Hash` by reference identity. Mutating the pointed-to value does not change equality or hashing.
 
 ### Testing / snapshots gotchas
 
