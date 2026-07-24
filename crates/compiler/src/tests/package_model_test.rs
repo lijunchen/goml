@@ -343,7 +343,7 @@ fn main() -> unit {
             r#"package model;
 
 pub struct Box {
-    value: int32,
+    pub value: int32,
 }
 
 pub fn make() -> Box {

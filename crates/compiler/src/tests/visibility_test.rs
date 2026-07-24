@@ -170,7 +170,7 @@ fn main() -> unit {
 package api;
 
 pub struct Point {
-    x: int32,
+    pub x: int32,
 }
 "#,
         ),
@@ -391,5 +391,349 @@ pub fn make() -> Public { Public {} }
             ),
         ],
         "Public trait implementation visibility_test::api::Source exposes private type visibility_test::api::Hidden",
+    );
+}
+
+#[test]
+fn private_struct_field_is_hidden() {
+    assert_err(&[
+        (
+            "main.gom",
+            r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let value = api::make();
+    let _ = value.hidden;
+}
+"#,
+        ),
+        (
+            "api/api.gom",
+            r#"
+package api;
+
+pub struct Value {
+    pub visible: int32,
+    hidden: int32,
+}
+
+pub fn make() -> Value {
+    Value { visible: 1, hidden: 2 }
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
+fn struct_with_private_fields_cannot_be_constructed_cross_package() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::Value { visible: 1 };
+}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+pub struct Value {
+    pub visible: int32,
+    hidden: int32,
+}
+"#,
+            ),
+        ],
+        "has private fields and cannot be constructed here",
+    );
+}
+
+#[test]
+fn struct_pattern_with_private_fields_requires_rest() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    match api::make() {
+        api::Value { visible } => { let _ = visible; },
+    }
+}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+pub struct Value {
+    pub visible: int32,
+    hidden: int32,
+}
+
+pub fn make() -> Value {
+    Value { visible: 1, hidden: 2 }
+}
+"#,
+            ),
+        ],
+        "must use `..` because it has private fields",
+    );
+}
+
+#[test]
+fn struct_pattern_with_private_fields_accepts_rest() {
+    assert_ok(&[
+        (
+            "main.gom",
+            r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    match api::make() {
+        api::Value { visible, .. } => { let _ = visible; },
+    }
+}
+"#,
+        ),
+        (
+            "api/api.gom",
+            r#"
+package api;
+
+pub struct Value {
+    pub visible: int32,
+    hidden: int32,
+}
+
+pub fn make() -> Value {
+    Value { visible: 1, hidden: 2 }
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
+fn public_inherent_method_is_visible() {
+    assert_ok(&[
+        (
+            "main.gom",
+            r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::make().open();
+}
+"#,
+        ),
+        (
+            "api/api.gom",
+            r#"
+package api;
+
+pub struct Value {}
+
+impl Value {
+    pub fn open(self: Value) -> int32 { 1 }
+    fn closed(self: Value) -> int32 { 2 }
+}
+
+pub fn make() -> Value { Value {} }
+"#,
+        ),
+    ]);
+}
+
+#[test]
+fn private_inherent_method_is_hidden() {
+    assert_err(&[
+        (
+            "main.gom",
+            r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::make().closed();
+}
+"#,
+        ),
+        (
+            "api/api.gom",
+            r#"
+package api;
+
+pub struct Value {}
+
+impl Value {
+    pub fn open(self: Value) -> int32 { 1 }
+    fn closed(self: Value) -> int32 { 2 }
+}
+
+pub fn make() -> Value { Value {} }
+"#,
+        ),
+    ]);
+}
+
+#[test]
+fn public_field_cannot_expose_private_type() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::make();
+}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+struct Hidden {}
+
+pub struct Value {
+    pub hidden: Hidden,
+}
+
+pub fn make() -> Value {
+    Value { hidden: Hidden {} }
+}
+"#,
+            ),
+        ],
+        "Public field visibility_test::api::Value.hidden exposes private type visibility_test::api::Hidden",
+    );
+}
+
+#[test]
+fn public_inherent_method_cannot_expose_private_type() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::make();
+}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+struct Hidden {}
+pub struct Value {}
+
+impl Value {
+    pub fn reveal(self: Value) -> Hidden { Hidden {} }
+}
+
+pub fn make() -> Value { Value {} }
+"#,
+            ),
+        ],
+        "Public inherent method reveal exposes private type visibility_test::api::Hidden",
+    );
+}
+
+#[test]
+fn enum_variant_fields_cannot_use_pub() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::Value::Item { field: 1 };
+}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+pub enum Value {
+    Item { pub field: int32 },
+}
+"#,
+            ),
+        ],
+        "Enum variant fields inherit the enum visibility and must not use `pub`",
+    );
+}
+
+#[test]
+fn trait_implementation_methods_cannot_use_pub() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+pub trait Read {
+    fn read(self: Self) -> int32;
+}
+
+pub struct Value {}
+
+impl Read for Value {
+    pub fn read(self: Value) -> int32 { 1 }
+}
+"#,
+            ),
+        ],
+        "Trait implementation method read must not use `pub`",
     );
 }

@@ -163,7 +163,7 @@ pub fn make_client() -> client::Client {
 package client;
 
 pub struct Client {
-    name: string,
+    pub name: string,
 }
 
 pub fn tag() -> string {
@@ -1528,8 +1528,8 @@ pub enum Color {
 }
 
 pub struct Point {
-    x: int32,
-    y: int32,
+    pub x: int32,
+    pub y: int32,
 }
 
 pub fn color_to_int(c: Color) -> int32 {
@@ -1612,7 +1612,7 @@ fn multi_package_inherent_method_completion() {
 package Lib;
 
 pub struct Item {
-    value: int32,
+    pub value: int32,
 }
 
 pub fn make(value: int32) -> Item {
@@ -1620,11 +1620,11 @@ pub fn make(value: int32) -> Item {
 }
 
 impl Item {
-    fn text(self: Item) -> string {
+    pub fn text(self: Item) -> string {
         self.value.to_string()
     }
 
-    fn touch(self: Item) -> unit {
+    pub fn touch(self: Item) -> unit {
         ()
     }
 }
