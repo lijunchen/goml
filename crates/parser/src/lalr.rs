@@ -12,6 +12,7 @@ macro_rules! parser_tokens {
         #[derive(Clone, Copy, Debug, PartialEq, Eq)]
         pub enum ParserToken {
             $($variant,)+
+            ImplicitSemi,
         }
 
         impl From<TokenKind> for ParserToken {
@@ -249,17 +250,91 @@ pub fn path_segment_count(element: &CstElement) -> usize {
 pub fn tokens<'tokens>(
     tokens: &'tokens [Token<'_>],
 ) -> impl Iterator<Item = Result<(usize, ParserToken, usize), Infallible>> + 'tokens {
-    tokens
+    let significant = tokens
         .iter()
         .filter(|token| !token.kind.is_trivia())
-        .map(|token| {
-            let kind = token.kind.into();
-            Ok((
-                u32::from(token.range.start()) as usize,
-                kind,
-                u32::from(token.range.end()) as usize,
-            ))
-        })
+        .collect::<Vec<_>>();
+    let mut parser_tokens = Vec::with_capacity(significant.len());
+    let mut control_braces = Vec::new();
+    for (index, token) in significant.iter().enumerate() {
+        let start = u32::from(token.range.start()) as usize;
+        let end = u32::from(token.range.end()) as usize;
+        parser_tokens.push(Ok((start, token.kind.into(), end)));
+        if token.kind == TokenKind::LBrace {
+            control_braces.push(starts_control_body(&significant, index));
+        } else if token.kind == TokenKind::RBrace
+            && control_braces.pop().unwrap_or(false)
+            && significant
+                .get(index + 1)
+                .is_some_and(|next| starts_implicit_statement(next.kind))
+        {
+            parser_tokens.push(Ok((end, ParserToken::ImplicitSemi, end)));
+        }
+    }
+    parser_tokens.into_iter()
+}
+
+fn starts_control_body(tokens: &[&Token<'_>], open: usize) -> bool {
+    let mut parens = 0usize;
+    let mut brackets = 0usize;
+    for token in tokens[..open].iter().rev() {
+        match token.kind {
+            TokenKind::RParen => parens += 1,
+            TokenKind::LParen if parens > 0 => parens -= 1,
+            TokenKind::RBracket => brackets += 1,
+            TokenKind::LBracket if brackets > 0 => brackets -= 1,
+            _ if parens > 0 || brackets > 0 => {}
+            TokenKind::IfKeyword
+            | TokenKind::MatchKeyword
+            | TokenKind::WhileKeyword
+            | TokenKind::ForKeyword
+            | TokenKind::ElseKeyword => return true,
+            TokenKind::FatArrow
+            | TokenKind::Semi
+            | TokenKind::LBrace
+            | TokenKind::RBrace
+            | TokenKind::FnKeyword
+            | TokenKind::StructKeyword
+            | TokenKind::EnumKeyword
+            | TokenKind::TraitKeyword
+            | TokenKind::ImplKeyword => return false,
+            _ => {}
+        }
+    }
+    false
+}
+
+fn starts_implicit_statement(kind: TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::IfKeyword
+            | TokenKind::MatchKeyword
+            | TokenKind::WhileKeyword
+            | TokenKind::ForKeyword
+            | TokenKind::LetKeyword
+            | TokenKind::ReturnKeyword
+            | TokenKind::GoKeyword
+            | TokenKind::BreakKeyword
+            | TokenKind::ContinueKeyword
+            | TokenKind::Ident
+            | TokenKind::Float32Lit
+            | TokenKind::Float64Lit
+            | TokenKind::Float
+            | TokenKind::Int8Lit
+            | TokenKind::Int16Lit
+            | TokenKind::Int32Lit
+            | TokenKind::Int64Lit
+            | TokenKind::UInt8Lit
+            | TokenKind::UInt16Lit
+            | TokenKind::UInt32Lit
+            | TokenKind::UInt64Lit
+            | TokenKind::Int
+            | TokenKind::Str
+            | TokenKind::MultilineStr
+            | TokenKind::CharLit
+            | TokenKind::TrueKeyword
+            | TokenKind::FalseKeyword
+    )
 }
 
 pub fn handles(tokens: &[Token<'_>]) -> bool {

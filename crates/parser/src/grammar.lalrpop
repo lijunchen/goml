@@ -1031,8 +1031,16 @@ AssignStatement: CstElement = {
 };
 
 ExprStatement: CstElement = {
-    <expr:Expr> <semi:Tok<";">> =>
-        node(MySyntaxKind::STMT_EXPR, vec![expr, semi])
+    <expr:Expr> <terminator:StatementTerminator> => {
+        let mut children = vec![expr];
+        children.extend(terminator);
+        node(MySyntaxKind::STMT_EXPR, children)
+    }
+};
+
+StatementTerminator: Option<CstElement> = {
+    <semi:Tok<";">> => Some(semi),
+    <"implicit ;"> => None,
 };
 
 Pattern: CstElement = {
@@ -1232,6 +1240,7 @@ extern {
         "]" => ParserToken::RBracket,
         "=" => ParserToken::Eq,
         ";" => ParserToken::Semi,
+        "implicit ;" => ParserToken::ImplicitSemi,
         "," => ParserToken::Comma,
         "::" => ParserToken::ColonColon,
         ":" => ParserToken::Colon,

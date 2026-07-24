@@ -945,12 +945,24 @@ fn block(parser: Parser) -> unit {
             let _ = let_stmt(parser);
             ()
         } else if is_expr_first(parser.peek()) {
+            let semicolon_optional = match parser.peek() {
+                lexer::TokenKind::IfKeyword
+                | lexer::TokenKind::MatchKeyword
+                | lexer::TokenKind::WhileKeyword
+                | lexer::TokenKind::ForKeyword => true,
+                _ => false,
+            };
             match expr(parser) {
                 Option::Some(expr_marker) => {
                     if parser.at(lexer::TokenKind::Eq) {
                         let _ = finish_assign_stmt(parser, expr_marker);
                         ()
                     } else if parser.eat(lexer::TokenKind::Semi) {
+                        let _ = wrap_expr_stmt(parser, expr_marker);
+                        ()
+                    } else if semicolon_optional
+                        && parser.at(lexer::TokenKind::RBrace) == false
+                    {
                         let _ = wrap_expr_stmt(parser, expr_marker);
                         ()
                     } else {
