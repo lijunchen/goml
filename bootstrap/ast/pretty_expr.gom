@@ -107,11 +107,11 @@ fn pretty_write_path_expr(
         pretty_write_types(builder, type_args, ", ");
         builder.write_char(']');
         if last > 0 {
-            builder.write_string("::")
+            builder.write_string("::");
+            builder.write_string(path.segments.get(last).ident)
         } else {
             ()
-        };
-        builder.write_string(path.segments.get(last).ident)
+        }
     }
 }
 
