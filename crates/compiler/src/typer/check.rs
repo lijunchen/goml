@@ -1406,6 +1406,11 @@ impl Typer {
             &body_ty,
             self.expr_range(body),
         );
+        if body_tast.get_ty() == tast::Ty::TNever
+            && matches!(self.norm(&body_ty), tast::Ty::TVar(_))
+        {
+            self.equate(diagnostics, &body_ty, &tast::Ty::TUnit, None);
+        }
         let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
         let closure_ty = tast::Ty::TFunc {
@@ -1480,7 +1485,6 @@ impl Typer {
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
                 self.loop_control_context = saved_loop_control_context;
                 let _ = self.return_ty_stack.pop();
-                let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
                 tast::Expr::EClosure {
@@ -1488,7 +1492,7 @@ impl Typer {
                     body: Box::new(body_tast),
                     ty: tast::Ty::TFunc {
                         params: param_tys,
-                        ret_ty: Box::new(body_ty),
+                        ret_ty: expected_ret.clone(),
                     },
                     captures,
                 }

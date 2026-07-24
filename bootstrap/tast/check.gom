@@ -1402,6 +1402,10 @@ fn check_closure_expr(
         param_types.push(ty)
     };
     let typed_body = check_expr(closure_ctx, body, Option::Some(ret_ty));
+    match (prune(ret_ty), prune(expr_type(typed_body))) {
+        (Type::Var(_), Type::Never) => expect_type(ctx, ret_ty, Type::Unit),
+        _ => (),
+    };
     Expr::Closure(
         typed_params,
         typed_body,
