@@ -1,0 +1,57 @@
+fn choose(flag/0: bool) -> int32 {
+    let value/1: int32 = if (flag/0 : bool) {
+        {
+            return 10
+        }
+    } else {
+        {
+            20
+        }
+    };
+    (value/1 : int32) + 1
+}
+
+fn continue_branch() -> unit {
+    let count/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) < 2 {
+        {
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((count/2 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) + 1);
+            let value/3: int32 = if (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) == 1 {
+                {
+                    continue
+                }
+            } else {
+                {
+                    7
+                }
+            };
+            (println : (int32) -> unit)((value/3 : int32))
+        }
+    }
+}
+
+fn break_branch(stop/4: bool) -> unit {
+    while true {
+        {
+            let value/5: int32 = if (stop/4 : bool) {
+                {
+                    break
+                }
+            } else {
+                {
+                    9
+                }
+            };
+            (println : (int32) -> unit)((value/5 : int32));
+            break
+        }
+    }
+}
+
+fn main() -> unit {
+    (println : (int32) -> unit)((choose : (bool) -> int32)(false));
+    (println : (int32) -> unit)((choose : (bool) -> int32)(true));
+    (continue_branch : () -> unit)();
+    (break_branch : (bool) -> unit)(false);
+    (break_branch : (bool) -> unit)(true)
+}
