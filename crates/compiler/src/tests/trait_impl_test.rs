@@ -1084,6 +1084,26 @@ fn consume(value: dyn Convert) -> unit { () }
 }
 
 #[test]
+fn traits_with_associated_types_are_rejected_as_dyn_types() {
+    let src = r#"
+trait Source {
+    type Item;
+    fn next(self: Self) -> Option[Self::Item];
+}
+
+fn consume(value: dyn Source) -> unit { () }
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics.iter().any(|line| line.contains(
+            "Trait Source cannot be used as dyn because it declares associated types"
+        )),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
 fn iterator_associated_item_prevents_conflicting_impls() {
     let src = r#"
 struct Values {}
