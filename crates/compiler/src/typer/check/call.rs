@@ -242,19 +242,38 @@ impl Typer {
                 path,
                 type_args,
                 astptr,
-            } => self.infer_static_member_call_expr(
-                genv,
-                local_env,
-                diagnostics,
-                StaticMemberCall {
-                    call_expr_id,
-                    func_expr_id: func,
-                    path: &path,
-                    type_args: &type_args,
-                    astptr,
-                    args,
-                },
-            ),
+            } => {
+                let name = path.display();
+                if let Some(func_scheme) = genv.get_function_scheme(&name) {
+                    self.infer_explicit_function_call(
+                        genv,
+                        local_env,
+                        diagnostics,
+                        call_expr_id,
+                        func,
+                        args,
+                        hint_ret_ty,
+                        &name,
+                        &func_scheme,
+                        &type_args,
+                        astptr,
+                    )
+                } else {
+                    self.infer_static_member_call_expr(
+                        genv,
+                        local_env,
+                        diagnostics,
+                        StaticMemberCall {
+                            call_expr_id,
+                            func_expr_id: func,
+                            path: &path,
+                            type_args: &type_args,
+                            astptr,
+                            args,
+                        },
+                    )
+                }
+            }
             hir::Expr::EField {
                 expr: receiver_expr,
                 field,
@@ -299,6 +318,116 @@ impl Typer {
                     ty: ret_ty,
                 }
             }
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn infer_explicit_function_call(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        call_expr_id: hir::ExprId,
+        func_expr_id: hir::ExprId,
+        args: &[hir::ExprId],
+        hint_ret_ty: Option<&tast::Ty>,
+        name: &str,
+        func_scheme: &crate::env::FnScheme,
+        type_args: &[hir::TypeExpr],
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Expr {
+        let Some(instantiated) = self.instantiate_explicit_function_scheme(
+            genv,
+            local_env,
+            diagnostics,
+            name,
+            func_scheme,
+            type_args,
+            astptr,
+        ) else {
+            let _ = self.infer_call_arguments(genv, local_env, diagnostics, args);
+            return self.error_expr(astptr);
+        };
+        self.register_scheme_obligations(&instantiated);
+        let inst_ty = instantiated.ty;
+        let call_range = self.expr_range(call_expr_id);
+        let needs_early_call_site_unify = fn_ret_depends_on_params(&inst_ty);
+        if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) = (hint_ret_ty, &inst_ty) {
+            self.unify(diagnostics, fn_ret, hint, call_range);
+        }
+        let arguments = if let tast::Ty::TFunc { params, .. } = &inst_ty {
+            self.check_scheme_call_arguments(genv, local_env, diagnostics, args, params)
+        } else {
+            self.infer_call_arguments(genv, local_env, diagnostics, args)
+        };
+        let ret_ty = self.fresh_ty_var();
+        let call_site_func_ty = tast::Ty::TFunc {
+            params: arguments.types,
+            ret_ty: Box::new(ret_ty.clone()),
+        };
+        if needs_early_call_site_unify {
+            self.try_unify_silent(&inst_ty, &call_site_func_ty);
+        }
+        self.equate(diagnostics, &inst_ty, &call_site_func_ty, call_range);
+        self.results.record_expr_ty(func_expr_id, inst_ty.clone());
+        let callee = match func_scheme.body {
+            crate::intrinsics::CallableBody::Goml => {
+                self.results.record_name_ref_elab(
+                    func_expr_id,
+                    NameRefElab::Var {
+                        name: name.to_string(),
+                        ty: inst_ty.clone(),
+                        astptr,
+                    },
+                );
+                CalleeElab::Var {
+                    name: name.to_string(),
+                    ty: inst_ty.clone(),
+                    astptr: None,
+                }
+            }
+            body => {
+                self.results.record_name_ref_elab(
+                    func_expr_id,
+                    NameRefElab::Callable {
+                        name: name.to_string(),
+                        body,
+                        ty: inst_ty.clone(),
+                        astptr,
+                    },
+                );
+                CalleeElab::Callable {
+                    name: name.to_string(),
+                    body,
+                    ty: inst_ty.clone(),
+                    astptr: None,
+                }
+            }
+        };
+        self.results.record_call_elab(
+            call_expr_id,
+            CallElab {
+                callee,
+                args: args.to_vec(),
+            },
+        );
+        let func = match func_scheme.body {
+            crate::intrinsics::CallableBody::Goml => tast::Expr::EVar {
+                name: name.to_string(),
+                ty: inst_ty,
+                astptr: None,
+            },
+            body => tast::Expr::ECallable {
+                name: name.to_string(),
+                body,
+                ty: inst_ty,
+                astptr: None,
+            },
+        };
+        tast::Expr::ECall {
+            func: Box::new(func),
+            args: arguments.exprs,
+            ty: ret_ty,
         }
     }
 

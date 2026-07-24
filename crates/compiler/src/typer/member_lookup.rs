@@ -31,6 +31,32 @@ pub(crate) fn resolve_explicit_trait_args(
     if type_args.is_empty() {
         return Ok(None);
     }
+    let args = resolve_explicit_type_args(genv, local_env, diagnostics, type_args)?;
+    if let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name)
+        && let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved)
+        && definition.params.len() != args.len()
+    {
+        push_error_with_range(
+            diagnostics,
+            format!(
+                "Trait {} expects {} type arguments, but got {}",
+                trait_name,
+                definition.params.len(),
+                args.len()
+            ),
+            range,
+        );
+        return Err(());
+    }
+    Ok(Some(args))
+}
+
+pub(crate) fn resolve_explicit_type_args(
+    genv: &PackageTypeEnv,
+    local_env: &LocalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    type_args: &[hir::TypeExpr],
+) -> Result<Vec<tast::Ty>, ()> {
     let tparams = local_env.current_tparams_env();
     let tparam_names = tparams
         .iter()
@@ -55,23 +81,7 @@ pub(crate) fn resolve_explicit_trait_args(
     if diagnostics.len() != diagnostic_count {
         return Err(());
     }
-    if let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name)
-        && let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved)
-        && definition.params.len() != args.len()
-    {
-        push_error_with_range(
-            diagnostics,
-            format!(
-                "Trait {} expects {} type arguments, but got {}",
-                trait_name,
-                definition.params.len(),
-                args.len()
-            ),
-            range,
-        );
-        return Err(());
-    }
-    Ok(Some(args))
+    Ok(args)
 }
 
 pub(crate) fn resolve_field_ty_eager(

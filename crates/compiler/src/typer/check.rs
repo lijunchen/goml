@@ -24,6 +24,7 @@ use crate::typer::member_lookup::{
     lookup_trait_method_candidates, lookup_trait_method_from_type_name, report_ambiguous_method,
     report_method_not_found, resolve_explicit_trait_args, resolve_field_ty_eager,
 };
+use crate::typer::obligations::InstantiatedScheme;
 use crate::typer::operators::{
     integer_literal_target, is_float_ty, is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
 };
@@ -1047,6 +1048,34 @@ impl Typer {
         type_args: &[hir::TypeExpr],
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
+        let name = path.display();
+        if let Some(func_scheme) = genv.get_function_scheme(&name) {
+            let Some(instantiated) = self.instantiate_explicit_function_scheme(
+                genv,
+                local_env,
+                diagnostics,
+                &name,
+                &func_scheme,
+                type_args,
+                astptr,
+            ) else {
+                return self.error_expr(astptr);
+            };
+            self.register_scheme_obligations(&instantiated);
+            return match func_scheme.body {
+                crate::intrinsics::CallableBody::Goml => tast::Expr::EVar {
+                    name,
+                    ty: instantiated.ty,
+                    astptr,
+                },
+                body => tast::Expr::ECallable {
+                    name,
+                    body,
+                    ty: instantiated.ty,
+                    astptr,
+                },
+            };
+        }
         if path.len() < 2 {
             super::util::push_ice(
                 diagnostics,
@@ -1078,6 +1107,47 @@ impl Typer {
                 astptr,
             },
         )
+    }
+
+    fn instantiate_explicit_function_scheme(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        name: &str,
+        scheme: &crate::env::FnScheme,
+        type_args: &[hir::TypeExpr],
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> Option<InstantiatedScheme> {
+        let args = super::member_lookup::resolve_explicit_type_args(
+            genv,
+            local_env,
+            diagnostics,
+            type_args,
+        )
+        .ok()?;
+        if args.len() != scheme.type_params.len() {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Function {} expects {} type arguments, but got {}",
+                    name,
+                    scheme.type_params.len(),
+                    args.len()
+                ),
+                astptr.map(|pointer| pointer.text_range()),
+            );
+            return None;
+        }
+        let substitution = scheme.type_params.iter().cloned().zip(args).collect();
+        Some(self.instantiate_scheme_with_substitution(
+            scheme,
+            substitution,
+            ObligationCause::new(
+                astptr.map(|pointer| pointer.text_range()),
+                ObligationCauseKind::FunctionBound,
+            ),
+        ))
     }
 
     fn infer_type_member_expr(
