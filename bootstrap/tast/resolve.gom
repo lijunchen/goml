@@ -2393,61 +2393,71 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
 }
 
 fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
-    for method in info.methods {
-        if method.params.len() == 0 {
-            push_diagnostic_at(ctx,
-                "Trait "
-                    + info.name
-                    + "::"
-                    + method.name
-                    + " is not dyn-safe: missing receiver parameter",
-                Option::None,
-            )
-        } else {
-            if !types_equal(method.params.get(0), Type::Param("Self")) {
+    if info.associated_types.len() > 0 {
+        push_diagnostic_at(
+            ctx,
+            "Trait "
+                + info.name
+                + " cannot be used as dyn because it declares associated types",
+            Option::None,
+        )
+    } else {
+        for method in info.methods {
+            if method.params.len() == 0 {
                 push_diagnostic_at(ctx,
                     "Trait "
                         + info.name
                         + "::"
                         + method.name
-                        + " is not dyn-safe: receiver must be Self",
+                        + " is not dyn-safe: missing receiver parameter",
                     Option::None,
                 )
             } else {
-                ()
-            };
-            let invalid_parameter = Ref::new(false);
-            for index in range(1, method.params.len()) {
-                if type_contains_parameter(method.params.get(index), "Self") {
-                    invalid_parameter.set(true)
+                if !types_equal(method.params.get(0), Type::Param("Self")) {
+                    push_diagnostic_at(ctx,
+                        "Trait "
+                            + info.name
+                            + "::"
+                            + method.name
+                            + " is not dyn-safe: receiver must be Self",
+                        Option::None,
+                    )
+                } else {
+                    ()
+                };
+                let invalid_parameter = Ref::new(false);
+                for index in range(1, method.params.len()) {
+                    if type_contains_parameter(method.params.get(index), "Self") {
+                        invalid_parameter.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if invalid_parameter.get() {
+                    push_diagnostic_at(ctx,
+                        "Trait "
+                            + info.name
+                            + "::"
+                            + method.name
+                            + " is not dyn-safe: Self is not allowed in non-receiver parameters",
+                        Option::None,
+                    )
                 } else {
                     ()
                 }
             };
-            if invalid_parameter.get() {
+            if type_contains_parameter(method.ret_ty, "Self") {
                 push_diagnostic_at(ctx,
                     "Trait "
                         + info.name
                         + "::"
                         + method.name
-                        + " is not dyn-safe: Self is not allowed in non-receiver parameters",
+                        + " is not dyn-safe: Self is not allowed in return type",
                     Option::None,
                 )
             } else {
                 ()
             }
-        };
-        if type_contains_parameter(method.ret_ty, "Self") {
-            push_diagnostic_at(ctx,
-                "Trait "
-                    + info.name
-                    + "::"
-                    + method.name
-                    + " is not dyn-safe: Self is not allowed in return type",
-                Option::None,
-            )
-        } else {
-            ()
         }
     }
 }

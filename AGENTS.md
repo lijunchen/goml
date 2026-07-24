@@ -391,6 +391,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * `for pattern in source { ... }` accepts any value implementing `IntoIterator`, evaluates the source expression and `into_iter` conversion once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; `Vec[T]`, `Slice[T]`, and iterator values can be used directly.
 * Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
 * `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
+* `expr?` propagates `None` or `Err` from `Option[T]` and `Result[T, E]`. Other enum shapes do not opt into `?`; there is no user-defined `Try` trait yet.
 
 ### Traits and `impl`
 
@@ -404,7 +405,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
   * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
-  * Limitations (current): generic traits are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
+  * Limitations (current): generic traits and traits with associated types are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
 
 ### Notes on `char`
 

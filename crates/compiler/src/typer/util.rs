@@ -313,6 +313,17 @@ fn validate_dyn_trait(genv: &PackageTypeEnv, diagnostics: &mut Diagnostics, trai
         return;
     }
 
+    if !trait_def.associated_types.is_empty() {
+        push_error(
+            diagnostics,
+            format!(
+                "Trait {} cannot be used as dyn because it declares associated types",
+                trait_name
+            ),
+        );
+        return;
+    }
+
     validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
 }
 
@@ -327,7 +338,17 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
                 && let Some(trait_def) = trait_env.trait_env.trait_defs.get(&resolved)
                 && trait_def.params.is_empty()
             {
-                validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
+                if trait_def.associated_types.is_empty() {
+                    validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
+                } else {
+                    push_error(
+                        diagnostics,
+                        format!(
+                            "Trait {} cannot be used as dyn because it declares associated types",
+                            trait_name
+                        ),
+                    );
+                }
             }
         }
         tast::Ty::TTuple { typs } => {
