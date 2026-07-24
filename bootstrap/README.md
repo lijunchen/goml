@@ -101,9 +101,9 @@ The Rust differential tests live in `crates/compiler/src/tests/bootstrap`. They 
 Run only the bootstrap differential tests:
 
 ```sh
-cargo test -p compiler tests::bootstrap:: -- --test-threads=1
+cargo test -p compiler --features bootstrap-tests tests::bootstrap:: -- --test-threads=1
 ```
 
-They are also included in the normal workspace `cargo test`.
+The tests are disabled by default and are not included in the normal workspace `cargo test`.
 
 `GOML_REPO`, `GOML_BIN`, `RUST_GOMLC_BIN`, and `BOOTSTRAP_GOMLC_BIN` can override the repository and compiler paths. Set `BOOTSTRAP_GOMLC_SKIP_BUILD=1` to use an existing bootstrap binary.

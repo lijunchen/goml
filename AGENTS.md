@@ -273,7 +273,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
-- Rust tests: `cargo test`
+- Rust tests: `cargo test` (bootstrap differential tests are disabled by default).
+- Bootstrap differential tests: `cargo test -p compiler --features bootstrap-tests tests::bootstrap:: -- --test-threads=1`.
 - CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check [package-directory]` and `cargo run -p goml -- build [package-directory]` for project workflows; use `--dry-run` to print planned per-package compiler commands; use `cargo run -p gomlc -- run-single <file.gom>` for standalone execution; use `cargo run -p gomlc -- check|build ...` for per-package artifacts and `gomlc link --entry <canonical-package> ...` for explicit linking; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `gomlc run-single` to print IR stages before execution.
 - `goml check` and `goml build` locate `gomlc` through `--compiler`, `GOMLC`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`; the driver protocol is verified before compilation.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
@@ -293,6 +294,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - We use expect-test, there are two basic commands:
   - `cargo test` run test to match golden snapshots
   - `env UPDATE_EXPECT=1 cargo test` to update snapshots
+- Bootstrap differential tests require the non-default `bootstrap-tests` feature and are only run explicitly.
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures when relevant.
 
 ### Single-File Pipeline Tests
