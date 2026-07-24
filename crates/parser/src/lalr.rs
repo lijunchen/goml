@@ -12,7 +12,6 @@ macro_rules! parser_tokens {
         #[derive(Clone, Copy, Debug, PartialEq, Eq)]
         pub enum ParserToken {
             $($variant,)+
-            ReturnVoid,
         }
 
         impl From<TokenKind> for ParserToken {
@@ -252,13 +251,9 @@ pub fn tokens<'tokens>(
 ) -> impl Iterator<Item = Result<(usize, ParserToken, usize), Infallible>> + 'tokens {
     tokens
         .iter()
-        .enumerate()
-        .filter(|(_, token)| !token.kind.is_trivia())
-        .map(|(index, token)| {
-            let kind = match token.kind {
-                TokenKind::ReturnKeyword if void_return(tokens, index) => ParserToken::ReturnVoid,
-                _ => token.kind.into(),
-            };
+        .filter(|token| !token.kind.is_trivia())
+        .map(|token| {
+            let kind = token.kind.into();
             Ok((
                 u32::from(token.range.start()) as usize,
                 kind,
@@ -291,23 +286,6 @@ pub fn handles(tokens: &[Token<'_>]) -> bool {
         }
     }
     true
-}
-
-fn void_return(tokens: &[Token<'_>], start: usize) -> bool {
-    tokens
-        .iter()
-        .skip(start + 1)
-        .find(|token| !token.kind.is_trivia())
-        .is_none_or(|token| {
-            matches!(
-                token.kind,
-                TokenKind::Semi
-                    | TokenKind::Comma
-                    | TokenKind::RParen
-                    | TokenKind::RBracket
-                    | TokenKind::RBrace
-            )
-        })
 }
 
 pub fn finish(root: CstNode, tokens: &[Token<'_>]) -> ParseResult {

@@ -920,10 +920,11 @@ ContinueExpr: CstElement = {
 };
 
 ReturnExpr: CstElement = {
-    <return_:Tok<"return">> <value:Expr> =>
-        node(MySyntaxKind::EXPR_RETURN, vec![return_, value]),
-    <return_:Tok<"return void">> =>
-        node(MySyntaxKind::EXPR_RETURN, vec![return_]),
+    <return_:Tok<"return">> <value:Expr?> => {
+        let mut children = vec![return_];
+        children.extend(value);
+        node(MySyntaxKind::EXPR_RETURN, children)
+    },
 };
 
 GoExpr: CstElement = {
@@ -1286,7 +1287,6 @@ extern {
         "mut" => ParserToken::MutKeyword,
         "in" => ParserToken::InKeyword,
         "return" => ParserToken::ReturnKeyword,
-        "return void" => ParserToken::ReturnVoid,
         "go" => ParserToken::GoKeyword,
         "while" => ParserToken::WhileKeyword,
         "break" => ParserToken::BreakKeyword,
