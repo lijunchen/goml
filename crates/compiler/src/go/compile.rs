@@ -722,6 +722,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
     match ty {
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16

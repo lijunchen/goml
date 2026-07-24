@@ -18,6 +18,7 @@ fn match_ty_with_mode(
         },
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16

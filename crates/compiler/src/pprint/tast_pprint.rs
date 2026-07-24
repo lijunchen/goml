@@ -214,6 +214,7 @@ impl Ty {
         match self {
             Self::TVar(x) => RcDoc::text(format!("{:?}", x)),
             Self::TUnit => RcDoc::text("unit"),
+            Self::TNever => RcDoc::text("never"),
             Self::TBool => RcDoc::text("bool"),
             Self::TInt8 => RcDoc::text("int8"),
             Self::TInt16 => RcDoc::text("int16"),

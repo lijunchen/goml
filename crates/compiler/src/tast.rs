@@ -76,6 +76,7 @@ impl ClosureParam {
 pub enum Ty {
     TVar(TypeVar),
     TUnit,
+    TNever,
     TBool,
     TInt8,
     TInt16,
@@ -141,6 +142,7 @@ impl std::fmt::Debug for Ty {
         match self {
             Self::TVar(var) => write!(f, "TVar({})", var.0),
             Self::TUnit => write!(f, "TUnit"),
+            Self::TNever => write!(f, "TNever"),
             Self::TBool => write!(f, "TBool"),
             Self::TInt8 => write!(f, "TInt8"),
             Self::TInt16 => write!(f, "TInt16"),

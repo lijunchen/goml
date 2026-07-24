@@ -355,7 +355,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TVar { .. } => {
             panic!("unresolved type variable ")
         }
-        tast::Ty::TUnit => goty::GoType::TUnit,
+        tast::Ty::TUnit | tast::Ty::TNever => goty::GoType::TUnit,
         tast::Ty::TBool => goty::GoType::TBool,
         tast::Ty::TInt32 => goty::GoType::TInt32,
         tast::Ty::TInt8 => goty::GoType::TInt8,
@@ -445,6 +445,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
 pub fn go_type_name_for(ty: &tast::Ty) -> String {
     match ty {
         tast::Ty::TUnit => "unit".to_string(),
+        tast::Ty::TNever => "never".to_string(),
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),

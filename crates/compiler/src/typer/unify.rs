@@ -139,6 +139,7 @@ fn occurs(
             }
         }
         tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16
@@ -240,6 +241,7 @@ impl Typer {
                 }
             }
             tast::Ty::TUnit => tast::Ty::TUnit,
+            tast::Ty::TNever => tast::Ty::TNever,
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
@@ -363,6 +365,7 @@ impl Typer {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
+            (tast::Ty::TNever, _) | (_, tast::Ty::TNever) => {}
             (tast::Ty::TVar(a), tast::Ty::TVar(b)) => {
                 if self.uni.unify_var_var(*a, *b).is_err() {
                     diagnostics.push(
@@ -857,6 +860,7 @@ impl Typer {
         match ty {
             tast::Ty::TVar(_) => ty.clone(),
             tast::Ty::TUnit => ty.clone(),
+            tast::Ty::TNever => ty.clone(),
             tast::Ty::TBool => ty.clone(),
             tast::Ty::TInt8 => ty.clone(),
             tast::Ty::TInt16 => ty.clone(),
@@ -981,6 +985,7 @@ impl Typer {
                 }
             }
             tast::Ty::TUnit => tast::Ty::TUnit,
+            tast::Ty::TNever => tast::Ty::TNever,
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
@@ -1067,6 +1072,7 @@ impl Typer {
                 .map(|value| self.subst_ty_silent(value))
                 .unwrap_or(tast::Ty::TVar(*v)),
             tast::Ty::TUnit => tast::Ty::TUnit,
+            tast::Ty::TNever => tast::Ty::TNever,
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,

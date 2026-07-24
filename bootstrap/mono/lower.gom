@@ -48,6 +48,7 @@ fn type_is_concrete(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
         tast::Type::Var(_) => false,
         tast::Type::Unit
+        | tast::Type::Never
         | tast::Type::Bool
         | tast::Type::Int8
         | tast::Type::Int16
@@ -490,6 +491,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
     match tast::resolve_type(value) {
         tast::Type::Var(variable) => tast::Type::Var(variable),
         tast::Type::Unit => tast::Type::Unit,
+        tast::Type::Never => tast::Type::Never,
         tast::Type::Bool => tast::Type::Bool,
         tast::Type::Int8 => tast::Type::Int8,
         tast::Type::Int16 => tast::Type::Int16,

@@ -813,6 +813,7 @@ fn canonicalize_ty(
             tast::Ty::TVar(variable)
         }
         tast::Ty::TUnit => tast::Ty::TUnit,
+        tast::Ty::TNever => tast::Ty::TNever,
         tast::Ty::TBool => tast::Ty::TBool,
         tast::Ty::TInt8 => tast::Ty::TInt8,
         tast::Ty::TInt16 => tast::Ty::TInt16,

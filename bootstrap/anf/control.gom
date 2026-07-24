@@ -44,7 +44,7 @@ fn reify_k_for_expr(
     } else {
         core::expr_type(value)
     };
-    if type_is_unit(value_ty) && expr_always_exits(value) {
+    if type_is_unit_or_never(value_ty) && expr_always_exits(value) {
         let name = fresh(state, "k");
         let ret_ty = block_type(k(unit_imm()));
         (JoinBind {

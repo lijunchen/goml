@@ -30,6 +30,7 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
     match ty {
         tast::Ty::TVar(_) => "unknown".to_string(),
         tast::Ty::TUnit => "unit".to_string(),
+        tast::Ty::TNever => "never".to_string(),
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
@@ -136,6 +137,7 @@ pub(crate) fn validate_ty(
     match ty {
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16
@@ -365,6 +367,7 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         }
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16
@@ -475,6 +478,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         | tast::Ty::TDyn { .. }
         | tast::Ty::TVar(_)
         | tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16

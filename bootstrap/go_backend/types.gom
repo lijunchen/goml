@@ -35,6 +35,7 @@ fn join_type_parts(values: Vec[tast::Type]) -> string {
 pub fn encode_type(value: tast::Type) -> string {
     match tast::resolve_type(value) {
         tast::Type::Unit => "unit",
+        tast::Type::Never => "never",
         tast::Type::Bool => "bool",
         tast::Type::Int8 => "int8",
         tast::Type::Int16 => "int16",
@@ -117,6 +118,7 @@ fn type_name_part(value: tast::Type) -> string {
 pub fn type_name(value: tast::Type) -> string {
     match tast::resolve_type(value) {
         tast::Type::Unit => "unit",
+        tast::Type::Never => "never",
         tast::Type::Bool => "bool",
         tast::Type::Int8 => "int8",
         tast::Type::Int16 => "int16",
@@ -183,7 +185,7 @@ pub fn type_name(value: tast::Type) -> string {
 
 pub fn lower_type(value: tast::Type) -> Type {
     match tast::resolve_type(value) {
-        tast::Type::Unit => Type::Unit,
+        tast::Type::Unit | tast::Type::Never => Type::Unit,
         tast::Type::Bool => Type::Bool,
         tast::Type::Int8 => Type::Int8,
         tast::Type::Int16 => Type::Int16,

@@ -137,6 +137,7 @@ fn unify_type(
     match (tast::resolve_type(template), tast::resolve_type(actual)) {
         (tast::Type::Param(name), value) => bind_type(bindings, name, value),
         (tast::Type::Unit, tast::Type::Unit)
+        | (tast::Type::Never, tast::Type::Never)
         | (tast::Type::Bool, tast::Type::Bool)
         | (tast::Type::Int8, tast::Type::Int8)
         | (tast::Type::Int16, tast::Type::Int16)
@@ -260,6 +261,7 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
     match tast::resolve_type(value) {
         tast::Type::Var(variable) => tast::Type::Var(variable),
         tast::Type::Unit => tast::Type::Unit,
+        tast::Type::Never => tast::Type::Never,
         tast::Type::Bool => tast::Type::Bool,
         tast::Type::Int8 => tast::Type::Int8,
         tast::Type::Int16 => tast::Type::Int16,
@@ -1101,6 +1103,7 @@ fn normalize_type(
     match tast::resolve_type(value) {
         tast::Type::Var(variable) => tast::Type::Var(variable),
         tast::Type::Unit => tast::Type::Unit,
+        tast::Type::Never => tast::Type::Never,
         tast::Type::Bool => tast::Type::Bool,
         tast::Type::Int8 => tast::Type::Int8,
         tast::Type::Int16 => tast::Type::Int16,
@@ -1187,6 +1190,7 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
         },
         tast::Type::Var(_)
         | tast::Type::Unit
+        | tast::Type::Never
         | tast::Type::Bool
         | tast::Type::Int8
         | tast::Type::Int16

@@ -451,7 +451,8 @@ fn reify_k_for_expr<'a>(
     expr: &LiftExpr,
     k: Box<dyn FnOnce(ImmExpr) -> Block + 'a>,
 ) -> (JoinBind, Ty) {
-    if expr.get_ty() == Ty::TUnit && lift_expr_always_exits_control_flow(expr) {
+    if matches!(expr.get_ty(), Ty::TUnit | Ty::TNever) && lift_expr_always_exits_control_flow(expr)
+    {
         let id = join(gensym.gensym("k"));
         let ret_ty = k(unit_imm()).get_ty();
         return (
@@ -2276,6 +2277,7 @@ pub mod anf_verify {
                 verify_ty_is_value(errors, ret_ty);
             }
             anf::Ty::TUnit
+            | anf::Ty::TNever
             | anf::Ty::TBool
             | anf::Ty::TInt8
             | anf::Ty::TInt16

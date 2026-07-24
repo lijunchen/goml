@@ -2256,7 +2256,7 @@ impl Typer {
             }
         }
         tast::Expr::EBreak {
-            ty: tast::Ty::TUnit,
+            ty: tast::Ty::TNever,
         }
     }
 
@@ -2279,7 +2279,7 @@ impl Typer {
             }
         }
         tast::Expr::EContinue {
-            ty: tast::Ty::TUnit,
+            ty: tast::Ty::TNever,
         }
     }
 
@@ -2301,7 +2301,7 @@ impl Typer {
                 .map(|expr_id| Box::new(self.infer_expr(genv, local_env, diagnostics, expr_id)));
             return tast::Expr::EReturn {
                 expr,
-                ty: tast::Ty::TUnit,
+                ty: tast::Ty::TNever,
             };
         };
 
@@ -2325,7 +2325,7 @@ impl Typer {
 
         tast::Expr::EReturn {
             expr,
-            ty: tast::Ty::TUnit,
+            ty: tast::Ty::TNever,
         }
     }
 

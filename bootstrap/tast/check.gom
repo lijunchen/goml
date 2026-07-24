@@ -3107,11 +3107,11 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             hir::ExprKind::For(pat, iterator, body) => check_for_expr(ctx, pat, iterator, body),
             hir::ExprKind::Break => {
                 check_loop_control(ctx, true);
-                Expr::Break(Type::Unit)
+                Expr::Break(Type::Never)
             },
             hir::ExprKind::Continue => {
                 check_loop_control(ctx, false);
-                Expr::Continue(Type::Unit)
+                Expr::Continue(Type::Never)
             },
             hir::ExprKind::Return(value) => {
                 let typed = match value {
@@ -3125,7 +3125,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                         Option::None
                     },
                 };
-                Expr::Return(typed, Type::Unit)
+                Expr::Return(typed, Type::Never)
             },
             hir::ExprKind::Go(value) => {
                 let span = value.span;

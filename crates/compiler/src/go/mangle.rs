@@ -7,6 +7,7 @@ const HASH_BYTES: usize = 16;
 pub fn encode_ty(ty: &tast::Ty) -> String {
     match ty {
         tast::Ty::TUnit => "unit".to_string(),
+        tast::Ty::TNever => "never".to_string(),
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),

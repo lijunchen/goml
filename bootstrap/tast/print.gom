@@ -125,6 +125,7 @@ fn write_types(builder: text::StringBuilder, values: Vec[Type]) -> unit {
 pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
     match resolve_type(value) {
         Type::Unit => builder.write_string("unit"),
+        Type::Never => builder.write_string("never"),
         Type::Bool => builder.write_string("bool"),
         Type::Int8 => builder.write_string("int8"),
         Type::Int16 => builder.write_string("int16"),

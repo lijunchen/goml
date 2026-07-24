@@ -195,6 +195,7 @@ fn unify(left: Type, right: Type) -> bool {
     let right = prune(right);
     match (left, right) {
         (Type::Error, _) | (_, Type::Error) => true,
+        (Type::Never, _) | (_, Type::Never) => true,
         (Type::Var(first), Type::Var(second)) => if ptr_eq(first, second) {
             true
         } else {
@@ -297,6 +298,7 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
     let right = prune(right);
     match (left, right) {
         (Type::Error, _) | (_, Type::Error) => Option::None,
+        (Type::Never, _) | (_, Type::Never) => Option::None,
         (Type::Var(first), Type::Var(second)) => if ptr_eq(first, second) {
             Option::None
         } else {
@@ -474,6 +476,7 @@ fn types_equal(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
         (Type::Var(first), Type::Var(second)) => ptr_eq(first, second),
         (Type::Unit, Type::Unit)
+        | (Type::Never, Type::Never)
         | (Type::Bool, Type::Bool)
         | (Type::Int8, Type::Int8)
         | (Type::Int16, Type::Int16)

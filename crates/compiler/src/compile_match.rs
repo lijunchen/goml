@@ -492,6 +492,7 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
     match ty {
         Ty::TVar(_)
         | Ty::TUnit
+        | Ty::TNever
         | Ty::TBool
         | Ty::TInt8
         | Ty::TInt16
@@ -2595,6 +2596,7 @@ fn compile_rows(
             );
             emissing(ty)
         }
+        Ty::TNever => emissing(ty),
         Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TInt32 => compile_int_case(

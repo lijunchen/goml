@@ -357,6 +357,7 @@ fn has_tparam(ty: &Ty) -> bool {
         }
         Ty::TVar(..) => false,
         Ty::TUnit
+        | Ty::TNever
         | Ty::TBool
         | Ty::TInt8
         | Ty::TInt16
@@ -417,6 +418,7 @@ fn format_ty_for_mono_diag(ty: &Ty) -> String {
     match ty {
         Ty::TVar(_) => "unknown".to_string(),
         Ty::TUnit => "unit".to_string(),
+        Ty::TNever => "never".to_string(),
         Ty::TBool => "bool".to_string(),
         Ty::TInt8 => "int8".to_string(),
         Ty::TInt16 => "int16".to_string(),
@@ -519,6 +521,7 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         Ty::TParam { name } => s.get(name).cloned().unwrap_or_else(|| ty.clone()),
         Ty::TVar(..) => ty.clone(),
         Ty::TUnit
+        | Ty::TNever
         | Ty::TBool
         | Ty::TInt8
         | Ty::TInt16
@@ -599,6 +602,7 @@ fn contains_associated_projection(ty: &Ty) -> bool {
         }
         Ty::TVar(_)
         | Ty::TUnit
+        | Ty::TNever
         | Ty::TBool
         | Ty::TInt8
         | Ty::TInt16

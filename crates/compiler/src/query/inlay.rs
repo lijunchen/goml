@@ -338,6 +338,7 @@ fn contains_type_var(ty: &tast::Ty) -> bool {
         tast::Ty::TRef { elem } => contains_type_var(elem),
         tast::Ty::THashMap { key, value } => contains_type_var(key) || contains_type_var(value),
         tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16

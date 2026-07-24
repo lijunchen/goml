@@ -75,6 +75,7 @@ fn artifact_json_type(
 ) -> unit {
     match tast::resolve_type(input) {
         tast::Type::Unit => artifact_json_string(writer, "TUnit"),
+        tast::Type::Never => artifact_json_string(writer, "TNever"),
         tast::Type::Bool => artifact_json_string(writer, "TBool"),
         tast::Type::Int8 => artifact_json_string(writer, "TInt8"),
         tast::Type::Int16 => artifact_json_string(writer, "TInt16"),

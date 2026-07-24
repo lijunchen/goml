@@ -16,6 +16,7 @@ pub(crate) fn rewrite_ty(
     match ty {
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16
@@ -216,6 +217,7 @@ fn visit_ty<B>(
         }
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
+        | tast::Ty::TNever
         | tast::Ty::TBool
         | tast::Ty::TInt8
         | tast::Ty::TInt16
@@ -318,6 +320,7 @@ pub(crate) fn injective_type_params(ty: &tast::Ty) -> HashSet<String> {
             tast::Ty::TProjection { .. }
             | tast::Ty::TVar(_)
             | tast::Ty::TUnit
+            | tast::Ty::TNever
             | tast::Ty::TBool
             | tast::Ty::TInt8
             | tast::Ty::TInt16

@@ -246,6 +246,7 @@ fn collect_private_local_names(
         crate::tast::Ty::TVar(_)
         | crate::tast::Ty::TParam { .. }
         | crate::tast::Ty::TUnit
+        | crate::tast::Ty::TNever
         | crate::tast::Ty::TBool
         | crate::tast::Ty::TInt8
         | crate::tast::Ty::TInt16
