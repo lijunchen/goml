@@ -131,6 +131,18 @@ fn missing_path_segment_after_generic_qualifier_is_recoverable() {
     assert_eq!(root.text().to_string(), source);
 }
 
+#[test]
+fn legacy_expression_generics_report_turbofish_migration() {
+    let source = "Convert[int32]::convert(value)";
+    let result = parse(Path::new("legacy_generics.gom"), source);
+    assert!(result.has_errors());
+    assert!(result.diagnostics().iter().any(|diagnostic| {
+        diagnostic.message() == "generic expression arguments must use `::[...]`"
+    }));
+    let root = MySyntaxNode::new_root(result.green_node);
+    assert_eq!(root.text().to_string(), source);
+}
+
 fn assert_depth_error(source: &str, expected: &str) {
     let result = parse(Path::new("deep.gom"), source);
     let matches = result
