@@ -152,6 +152,113 @@ mod tests {
         }
     }
 
+    #[test]
+    fn contextual_identifiers_parse_as_ordinary_names() {
+        let source = r#"
+struct Value {
+    import: int32,
+}
+
+fn import(crate: int32, super: int32, array: int32, mod: int32) -> int32 {
+    crate + super + array + mod
+}
+
+fn id[T](value: T) -> T {
+    value
+}
+
+fn main() -> unit {
+    let mod = import(1, 2, 3, 4);
+    let _ = if mod == 10 { mod } else if false { array } else { crate };
+    let _ = id::[int32](mod);
+    let _ = 0..mod;
+}
+"#;
+        let result = parse(Path::new("test.gom"), source);
+        assert!(
+            !result.has_errors(),
+            "unexpected parse errors: {:?}",
+            result.format_errors(source)
+        );
+    }
+
+    #[test]
+    fn revised_syntax_reports_targeted_errors() {
+        for (source, message) in [
+            ("import old::path;", "`import` has been removed"),
+            ("mod old;", "module declarations have been removed"),
+            (
+                "fn Main() -> unit { () }",
+                "function name must start with a lowercase",
+            ),
+            (
+                "struct value {}",
+                "struct name must start with an uppercase",
+            ),
+            (
+                "enum Choice { first }",
+                "enum variant name must start with an uppercase",
+            ),
+            (
+                "struct Value { Field: int32 }",
+                "field name must start with a lowercase",
+            ),
+            (
+                "fn f(value: Value) -> unit { match value { Value { Field: _ } => (), } }",
+                "struct pattern field name must start with a lowercase",
+            ),
+            (
+                "fn f[T U]() -> unit { () }",
+                "expected `,` between generic parameters",
+            ),
+            ("fn f() -> () { () }", "use `unit` as the unit type"),
+            (
+                "fn f() -> unit { let _ = 1 < 2 < 3; }",
+                "comparison operators cannot be chained",
+            ),
+            (
+                "fn f() -> unit { let _ = 0..1..2; }",
+                "range expressions cannot be chained",
+            ),
+            (
+                "fn f() -> unit { while true (); }",
+                "`while` bodies require a block",
+            ),
+            (
+                "struct Value",
+                "struct declarations require a brace-delimited body",
+            ),
+            (
+                "fn f -> unit { () }",
+                "functions require an explicit parameter list",
+            ),
+            (
+                "fn f[T, U](value: T) -> U where T == U { value }",
+                "`==` in where predicates has been replaced by `=`",
+            ),
+            (
+                "fn id[T](value: T) -> T { value } fn f() -> unit { let _ = id[int32]::call(1); }",
+                "generic expression arguments must use `::[...]`",
+            ),
+        ] {
+            let result = parse(Path::new("test.gom"), source);
+            let errors = result.format_errors(source);
+            assert!(
+                errors.iter().any(|error| error.contains(message)),
+                "{message}: {errors:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn lalrpop_rejects_standalone_unit_type() {
+        let invalid = lexer::lex("fn f() -> () { () }");
+        assert!(parse_lalrpop_tokens(&invalid).is_err());
+
+        let valid = lexer::lex("fn f(callback: () -> unit) -> unit { callback() }");
+        assert!(parse_lalrpop_tokens(&valid).is_ok());
+    }
+
     fn goml_files(root: &Path) -> Vec<PathBuf> {
         let mut files = Vec::new();
         let Ok(entries) = fs::read_dir(root) else {

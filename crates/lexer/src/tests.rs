@@ -293,18 +293,22 @@ fn lexes_char_keyword() {
 #[test]
 fn lexes_module_keywords() {
     check(
-        "pub mod crate super self",
+        "pub mod crate super self import array",
         expect![[r#"
             [
                 {kind: PubKeyword, text: "pub"},
                 {kind: Whitespace, text: " "},
-                {kind: ModKeyword, text: "mod"},
+                {kind: Ident, text: "mod"},
                 {kind: Whitespace, text: " "},
-                {kind: CrateKeyword, text: "crate"},
+                {kind: Ident, text: "crate"},
                 {kind: Whitespace, text: " "},
-                {kind: SuperKeyword, text: "super"},
+                {kind: Ident, text: "super"},
                 {kind: Whitespace, text: " "},
                 {kind: Ident, text: "self"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "import"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "array"},
             ]
         "#]],
     );

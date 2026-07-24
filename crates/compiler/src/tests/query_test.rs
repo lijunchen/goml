@@ -1516,11 +1516,11 @@ fn main() {
 fn multi_package_query() {
     let dir = tempdir().unwrap();
     write_module_manifest(dir.path(), "query_test");
-    let lib_dir = dir.path().join("Lib");
+    let lib_dir = dir.path().join("lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
     let lib_src = r#"
-package Lib;
+package lib;
 
 pub enum Color {
     Red,
@@ -1545,25 +1545,25 @@ pub fn color_to_int(c: Color) -> int32 {
     let hover_src = r#"
 package main;
 
-use query_test::Lib;
+use query_test::lib;
 
 fn main() {
-    let f = Lib::color_to_int;
-    let i = f(Lib::Color::Red);
+    let f = lib::color_to_int;
+    let i = f(lib::Color::Red);
     let _ = i;
-    let p = Lib::Point { x: 1, y: 2 };
+    let p = lib::Point { x: 1, y: 2 };
 }
 "#;
     let completion_src = r#"
 package main;
 
-use query_test::Lib;
+use query_test::lib;
 
 fn main() {
-    let f = Lib::color_to_int;
-    let i = f(Lib::Color::Red);
+    let f = lib::color_to_int;
+    let i = f(lib::Color::Red);
     let _ = i;
-    let p = Lib::Point { x: 1, y: 2 };
+    let p = lib::Point { x: 1, y: 2 };
     p.
 }
 "#;
@@ -1571,7 +1571,7 @@ fn main() {
     std::fs::write(&main_path, hover_src).unwrap();
 
     check_with_path(&main_path, hover_src, 6, 17, expect![[r#"
-        "(query_test::Lib::Color) -> int32"
+        "(query_test::lib::Color) -> int32"
     "#]]);
 
     check_completions_with_path(
@@ -1605,11 +1605,11 @@ fn main() {
 fn multi_package_inherent_method_completion() {
     let dir = tempdir().unwrap();
     write_module_manifest(dir.path(), "query_test");
-    let lib_dir = dir.path().join("Lib");
+    let lib_dir = dir.path().join("lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
     let lib_src = r#"
-package Lib;
+package lib;
 
 pub struct Item {
     pub value: int32,
@@ -1635,10 +1635,10 @@ impl Item {
     let src = r#"
 package main;
 
-use query_test::Lib;
+use query_test::lib;
 
 fn main() {
-    let item = Lib::make(1);
+    let item = lib::make(1);
     item.
 }
 "#;
@@ -1663,14 +1663,14 @@ fn main() {
                     name: "text",
                     kind: Method,
                     detail: Some(
-                        "(query_test::Lib::Item) -> string",
+                        "(query_test::lib::Item) -> string",
                     ),
                 },
                 DotCompletionItem {
                     name: "touch",
                     kind: Method,
                     detail: Some(
-                        "(query_test::Lib::Item) -> unit",
+                        "(query_test::lib::Item) -> unit",
                     ),
                 },
             ]
@@ -1683,11 +1683,11 @@ fn main() {
 fn multi_package_colon_colon_completions() {
     let dir = tempdir().unwrap();
     write_module_manifest(dir.path(), "query_test");
-    let lib_dir = dir.path().join("Lib");
+    let lib_dir = dir.path().join("lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
     let lib_src = r#"
-package Lib;
+package lib;
 
 pub enum Color {
     Red,
@@ -1712,19 +1712,19 @@ pub fn color_to_int(c: Color) -> int32 {
     let src = r#"
 package main;
 
-use query_test::Lib;
+use query_test::lib;
 
 fn main() {
-    let _ = Lib::;
+    let _ = lib::;
 }
 "#;
     let src_with_prefix = r#"
 package main;
 
-use query_test::Lib;
+use query_test::lib;
 
 fn main() {
-    let _ = Lib::co;
+    let _ = lib::co;
 }
 "#;
 

@@ -805,55 +805,55 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
         fn trait_impl#Eq#bool#eq(self/51: bool, other/52: bool) -> bool {
-          (self/51 == other/52)
+          @intrinsic(eq.primitive)(self/51, other/52)
         }
 
         fn trait_impl#Eq#string#eq(self/53: string, other/54: string) -> bool {
-          (self/53 == other/54)
+          @intrinsic(eq.primitive)(self/53, other/54)
         }
 
         fn trait_impl#Eq#char#eq(self/55: char, other/56: char) -> bool {
-          (self/55 == other/56)
+          @intrinsic(eq.primitive)(self/55, other/56)
         }
 
         fn trait_impl#Eq#int8#eq(self/57: int8, other/58: int8) -> bool {
-          (self/57 == other/58)
+          @intrinsic(eq.primitive)(self/57, other/58)
         }
 
         fn trait_impl#Eq#int16#eq(self/59: int16, other/60: int16) -> bool {
-          (self/59 == other/60)
+          @intrinsic(eq.primitive)(self/59, other/60)
         }
 
         fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-          (self/61 == other/62)
+          @intrinsic(eq.primitive)(self/61, other/62)
         }
 
         fn trait_impl#Eq#int64#eq(self/63: int64, other/64: int64) -> bool {
-          (self/63 == other/64)
+          @intrinsic(eq.primitive)(self/63, other/64)
         }
 
         fn trait_impl#Eq#uint8#eq(self/65: uint8, other/66: uint8) -> bool {
-          (self/65 == other/66)
+          @intrinsic(eq.primitive)(self/65, other/66)
         }
 
         fn trait_impl#Eq#uint16#eq(self/67: uint16, other/68: uint16) -> bool {
-          (self/67 == other/68)
+          @intrinsic(eq.primitive)(self/67, other/68)
         }
 
         fn trait_impl#Eq#uint32#eq(self/69: uint32, other/70: uint32) -> bool {
-          (self/69 == other/70)
+          @intrinsic(eq.primitive)(self/69, other/70)
         }
 
         fn trait_impl#Eq#uint64#eq(self/71: uint64, other/72: uint64) -> bool {
-          (self/71 == other/72)
+          @intrinsic(eq.primitive)(self/71, other/72)
         }
 
         fn trait_impl#Eq#float32#eq(self/73: float32, other/74: float32) -> bool {
-          (self/73 == other/74)
+          @intrinsic(eq.primitive)(self/73, other/74)
         }
 
         fn trait_impl#Eq#float64#eq(self/75: float64, other/76: float64) -> bool {
-          (self/75 == other/76)
+          @intrinsic(eq.primitive)(self/75, other/76)
         }
 
         fn trait_impl#Hash#unit#hash(self/77: unit) -> uint64 {
@@ -1129,7 +1129,7 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
         fn inherent#Vec#Vec[T]#is_empty(self/136: Vec[T]) -> bool {
-          (inherent#Vec#Vec[T]#len(self/136) == 0)
+          trait_impl#Eq#int32#eq(inherent#Vec#Vec[T]#len(self/136), 0)
         }
 
         fn inherent#Vec#Vec[T]#reserve(self/137: Vec[T], additional/138: int32) -> unit {
@@ -1146,7 +1146,7 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 
         fn inherent#Vec#Vec[T]#last(self/142: Vec[T]) -> Option[T] {
           let len/143 = inherent#Vec#Vec[T]#len(self/142) in
-          if (len/143 == 0) {
+          if trait_impl#Eq#int32#eq(len/143, 0) {
               {
                 Option::None
               }
@@ -1159,7 +1159,7 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 
         fn inherent#Vec#Vec[T]#pop(self/144: Vec[T]) -> Option[T] {
           let len/145 = inherent#Vec#Vec[T]#len(self/144) in
-          if (len/145 == 0) {
+          if trait_impl#Eq#int32#eq(len/145, 0) {
               {
                 Option::None
               }
@@ -1196,7 +1196,7 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 
         fn inherent#Vec#Vec[T]#insert(self/155: Vec[T], index/156: int32, value/157: T) -> unit {
           let len/158 = inherent#Vec#Vec[T]#len(self/155) in
-          if (index/156 == len/158) {
+          if trait_impl#Eq#int32#eq(index/156, len/158) {
               {
                 inherent#Vec#Vec[T]#push(self/155, value/157)
               }
@@ -1358,7 +1358,7 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           @intrinsic(ref.set)(self/206, value/207)
         }
 
-        fn range(start/208: int32, end/209: int32) -> FnIterator[int32] {
+        fn __goml_builtin_range(start/208: int32, end/209: int32) -> FnIterator[int32] {
           let current/210 = inherent#Ref#Ref[int32]#new(start/208) in
           inherent#FnIterator#FnIterator#from_fn(|| => {
             let value/211 = inherent#Ref#Ref[int32]#get(current/210) in
@@ -1373,6 +1373,10 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
                 }
             }
           })
+        }
+
+        fn range(start/212: int32, end/213: int32) -> FnIterator[int32] {
+          __goml_builtin_range(start/212, end/213)
         }
 
         fn main() -> unit {

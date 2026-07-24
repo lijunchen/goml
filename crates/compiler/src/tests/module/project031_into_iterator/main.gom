@@ -4,7 +4,7 @@ use test::project031::iterables;
 
 fn total[S: IntoIterator](source: S) -> int32
 where
-    S::Item == int32,
+    S::Item = int32,
 {
     let result = Ref::new(0);
     for value in source {

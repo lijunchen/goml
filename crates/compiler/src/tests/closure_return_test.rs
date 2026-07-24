@@ -41,6 +41,9 @@ fn closure_with_vec_capture_equality_reports_typer_error() {
     };
     let diagnostics = diagnostics.join("\n");
 
-    assert!(diagnostics.contains("Operator =="), "{diagnostics}");
+    assert!(
+        diagnostics.contains("No instance found for trait Eq"),
+        "{diagnostics}"
+    );
     assert!(diagnostics.contains("() -> int32"), "{diagnostics}");
 }

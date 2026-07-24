@@ -647,6 +647,12 @@ impl Encoder {
                 self.ptr(astptr);
                 self.expr(expr);
             }
+            Expr::ERange { start, end, astptr } => {
+                self.open("Expr.Range");
+                self.ptr(astptr);
+                self.expr(start);
+                self.expr(end);
+            }
             Expr::EBinary {
                 op,
                 lhs,

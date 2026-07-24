@@ -1,6 +1,6 @@
 trait A {
     fn foo(self: Self) -> int32;
-    fn B__foo(self: Self) -> int32;
+    fn b__foo(self: Self) -> int32;
 }
 
 struct C {}
@@ -12,7 +12,7 @@ impl A for C {
         1i32
     }
 
-    fn B__foo(self: C) -> int32 {
+    fn b__foo(self: C) -> int32 {
         2i32
     }
 }
@@ -22,7 +22,7 @@ impl A for C__B {
         10i32
     }
 
-    fn B__foo(self: C__B) -> int32 {
+    fn b__foo(self: C__B) -> int32 {
         20i32
     }
 }
@@ -30,6 +30,6 @@ impl A for C__B {
 fn main() -> unit {
     let left: dyn A = C {};
     let right: dyn A = C__B {};
-    println(A::B__foo(left));
+    println(A::b__foo(left));
     println(A::foo(right));
 }

@@ -2,7 +2,7 @@ trait Display {
     fn display(self: Self) -> string;
 }
 
-struct dyn__Display {
+struct DynDisplay {
     value: int32,
 }
 
@@ -17,7 +17,7 @@ impl Display for Box {
 }
 
 fn main() -> unit {
-    let c = dyn__Display { value: 1i32 };
+    let c = DynDisplay { value: 1i32 };
     let d: dyn Display = Box { text: "ok" };
     println(Display::display(d) + c.value.to_string());
 }

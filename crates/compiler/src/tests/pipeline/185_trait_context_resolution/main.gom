@@ -42,7 +42,7 @@ impl Convert[string] for Convertible {
 
 trait Source[T]
 where
-    Self::Item == T,
+    Self::Item = T,
 {
     type Item;
 
@@ -77,7 +77,7 @@ trait Select[T] {
 
 impl[S: ItemSource, T] Select[T] for S
 where
-    S::Item == T,
+    S::Item = T,
 {
     fn select(self: S) -> T {
         ItemSource::item(self)

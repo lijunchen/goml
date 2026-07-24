@@ -704,13 +704,13 @@ path = "iface_deep"
     fs::write(
         dir.path().join("Lib/Lib.gom"),
         format!(
-            "package Lib;\n\npub struct Wrap {{ value: {} }}\n\npub fn ping() -> int32 {{ 1 }}\n",
+            "package lib;\n\npub struct Wrap {{ value: {} }}\n\npub fn ping() -> int32 {{ 1 }}\n",
             deep_ref_type(200)
         ),
     )?;
     fs::write(
         dir.path().join("main.gom"),
-        "package main;\n\nuse iface_deep::Lib;\n\nfn main() -> unit { println(Lib::ping().to_string()) }\n",
+        "package main;\n\nuse iface_deep::Lib;\n\nfn main() -> unit { println(lib::ping().to_string()) }\n",
     )?;
 
     let output = run_goml(&["build"], dir.path())?;
@@ -1968,16 +1968,7 @@ pub fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        error[typer]: Type mismatch: expected int32, found string
-        primary: A/A.gom:7:5-8:1
-        7 |     B::value()
-          |     ^^^^^^^^^^
-
-        error[typer]: Type mismatch: expected int32, found string
-        primary: A/A.gom:7:5-8:1
-        7 |     B::value()
-          |     ^^^^^^^^^^
-        subcommand failed: gomlc build --package demo::A --input A/A.gom --interface-path artifact/build/pkg/demo/B/package.interface --output artifact/build/pkg/demo/A/package
+        project build failed: 2:9: package name must start with a lowercase letter or `_`
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("artifact/main.go").exists());
@@ -2005,7 +1996,7 @@ package main;
 use demo::src::Lib;
 
 fn main() -> unit {
-    println(Lib::msg())
+    println(lib::msg())
 }
 "#,
     )?;
@@ -2014,7 +2005,7 @@ fn main() -> unit {
     fs::write(
         root.join("src/Lib/Lib.gom"),
         r#"
-package Lib;
+package lib;
 
 pub fn msg() -> string {
     "ok"

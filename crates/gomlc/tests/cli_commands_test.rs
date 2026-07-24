@@ -168,7 +168,7 @@ fn cli_check_build_link_with_dep() -> anyhow::Result<()> {
     write_file(
         &lib_gom,
         r#"
-package Lib;
+package lib;
 
 pub fn msg() -> string {
     "hi"
@@ -185,7 +185,7 @@ package main;
 use Lib;
 
 fn main() -> unit {
-    println(Lib::msg())
+    println(lib::msg())
 }
 "#,
     )?;
@@ -259,7 +259,7 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
     write_file(
         &lib_gom_v1,
         r#"
-package Lib;
+package lib;
 
 pub fn msg() -> string {
     "v1"
@@ -271,7 +271,7 @@ pub fn msg() -> string {
     write_file(
         &lib_gom_v2,
         r#"
-package Lib;
+package lib;
 
 pub fn msg() -> string {
     "v2"
@@ -292,7 +292,7 @@ package main;
 use Lib;
 
 fn main() -> unit {
-    println(Lib::msg())
+    println(lib::msg())
 }
 "#,
     )?;

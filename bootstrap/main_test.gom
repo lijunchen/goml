@@ -940,12 +940,13 @@ fn writes_rust_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "68689dc725f95ef421332afe75f05d624016fad7458b6d286e06878c83cd410f",
+        "8d754ab1d493aaa4a609fff841da2efc297a9675cc12609d54e9136e02925831",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":12,\"compiler_abi\":2,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}},\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d\"},\"interface_hash\":\"68689dc725f95ef421332afe75f05d624016fad7458b6d286e06878c83cd410f\"}",
+        "{\"format_version\":13,\"compiler_abi\":2,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
+        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d\"},\"interface_hash\":\"8d754ab1d493aaa4a609fff841da2efc297a9675cc12609d54e9136e02925831\"}",
     );
     match decode_artifact_interface_unit(encoded) {
         Result::Ok(value) => testing::assert_eq(
@@ -1022,7 +1023,7 @@ fn extracts_rust_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "68689dc725f95ef421332afe75f05d624016fad7458b6d286e06878c83cd410f",
+        "8d754ab1d493aaa4a609fff841da2efc297a9675cc12609d54e9136e02925831",
     )
 }
 
@@ -1087,7 +1088,7 @@ fn extracts_rust_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "3ce656228d3c4480159ce8477e34af1479a38dbc20a2f9b700b44eedf78900bb",
+        "697c0770568bd2a0f7dbf55321a0d7cdf1038a7aad6b05e0fb5227eeb8697249",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     match decode_artifact_interface_unit(encoded) {
@@ -1231,7 +1232,7 @@ fn writes_rust_core_unit_from_checked_package() -> unit {
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         go_backend::sha256_hex(encoded),
-        "f50d2ef46761cb5b0e0b6cce824d89e9b4c07d7e2be537c6f1a946fbf90af2d7",
+        "e01458a525222246627ccd56d34db4dbf352c488808b283cf5ab428fc7fac8f9",
     );
     match decode_artifact_core_unit(encoded) {
         Result::Ok(value) => testing::assert_eq(
@@ -1550,43 +1551,43 @@ fn matches_rust_standard_interface_hashes() -> unit {
     let standard = package_world().standard;
     testing::assert_eq(
         standard.root.interface_unit.interface_hash,
-        "d3b21d77f1b8fbf678c821acfc2a017163df08a235f1a5d779cb06726061cca1",
+        "4d8cdd3e926b12c7317a3cb3146b0ea9693b440adce57ac2978564814936f5bc",
     );
     testing::assert_eq(
         standard.bytes.interface_unit.interface_hash,
-        "956be6ba4116a9dc2ea1788762f3f0c40eb1fe4de46d79cda1f38d4fe3ee3e39",
+        "113e337e690b1857f074a70146f3f93e4b15f9c34244a99ae23a5fbe019bd4ce",
     );
     testing::assert_eq(
         standard.collections.interface_unit.interface_hash,
-        "d9d0ad2fd716a06b96d1db7b9169a5e3b03884fc389753ae7f2fb7ffbddcafc3",
+        "31fdcc6deb19a0de5851f175da618b55b4d840be1eec0135015fa010c30342ea",
     );
     testing::assert_eq(
         standard.env.interface_unit.interface_hash,
-        "7721031ec8ac3bf859eba32fd44d4ef67b4a912d493ba59cd19060112b670174",
+        "f18f6db405f01e58b6be0253107c56f487408a5074c6d1297f2742c74f3c8e5f",
     );
     testing::assert_eq(
         standard.fs.interface_unit.interface_hash,
-        "9eb899c9d9067c41b202e2a38c54452f1b1db355feadaac61c3ee461f470b960",
+        "4c719479b959301121ff051e6d2b0dabadad8b26576cff59f40bb97025c65971",
     );
     testing::assert_eq(
         standard.io.interface_unit.interface_hash,
-        "3e968a4aed75435dbfd6e5f86d3e59112fb18e5caf8e041f0c037e9c2e48ffee",
+        "80e4a090d5fe40ea7c542ab89e47e8ec347019528315d3572cc2ac78d96abbb5",
     );
     testing::assert_eq(
         standard.path.interface_unit.interface_hash,
-        "28962fefb21f7dd0a25a8b6008c145f627acd50fb85586818a3e0a0cae9ffe53",
+        "ce76615d58140b90fd417d948fbf9955131188b9ab7952e724d618049ac88110",
     );
     testing::assert_eq(
         standard.process.interface_unit.interface_hash,
-        "84f1d56e9c92a158a3392876df37e9cad6e00f6b17f2b6a5e7566f1033cf72c9",
+        "9d6b137296fc1b820971b2d10a2fbbf8c62e3b6d9fbf24de60bb2f29c149a819",
     );
     testing::assert_eq(
         standard.testing.interface_unit.interface_hash,
-        "7b40edadbe3453dd56fc065b7009fd2972236375f3d7d5cb6918d67d35f15e3a",
+        "d9e2001e2e55675cffda0c68281c3a6600ba565bef828682c01483de7631f82c",
     );
     testing::assert_eq(
         standard.text.interface_unit.interface_hash,
-        "4b08936fd63246bda288265b0497d447b6e2ecc89e5f9bf0c60bfc32245de0f6",
+        "c801d902afd11cf434022d773de2cee7e5380124ce11f24ac4618f17d81325f9",
     )
 }
 #[test]

@@ -1103,6 +1103,81 @@ fn consume(value: dyn Source) -> unit { () }
 }
 
 #[test]
+fn dyn_trait_parent_method_ambiguity_is_reported() {
+    let src = r#"
+trait Left {
+    fn label(self: Self) -> string;
+}
+
+trait Right {
+    fn label(self: Self) -> string;
+}
+
+trait Both: Left + Right {
+    fn own(self: Self) -> string;
+}
+
+fn render(value: dyn Both) -> string {
+    value.label()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Ambiguous method") && line.contains("label")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn dyn_trait_unavailable_method_is_reported() {
+    let src = r#"
+trait Display {
+    fn show(self: Self) -> string;
+}
+
+trait Debug {
+    fn debug(self: Self) -> string;
+}
+
+fn render(value: dyn Display) -> string {
+    value.debug()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Method debug not found for type dyn Display")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn equality_operator_requires_eq_evidence() {
+    let src = r#"
+struct Plain {
+    value: int32,
+}
+
+fn compare(first: Plain, second: Plain) -> bool {
+    first == second
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Eq<Plain>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
 fn iterator_associated_item_prevents_conflicting_impls() {
     let src = r#"
 struct Values {}
@@ -1184,7 +1259,7 @@ fn generic_into_iterator_bound_implies_iterator_for_into_iter() {
     let src = r#"
 fn sum[S: IntoIterator](source: S) -> int32
 where
-    S::Item == int32,
+    S::Item = int32,
 {
     let total = Ref::new(0);
     for value in source {
@@ -1264,7 +1339,7 @@ fn render_all[T](values: Vec[T]) -> string where Vec[T]: Render {
 #[test]
 fn where_type_equality_is_available_in_generic_body() {
     let src = r#"
-fn convert[T, U](value: T) -> U where T == U {
+fn convert[T, U](value: T) -> U where T = U {
     value
 }
 
@@ -1307,7 +1382,7 @@ fn main() -> unit {
 #[test]
 fn where_type_equality_is_checked_at_call_site() {
     let src = r#"
-fn convert[T, U](value: T) -> U where T == U {
+fn convert[T, U](value: T) -> U where T = U {
     value
 }
 
@@ -1399,7 +1474,7 @@ trait Selected {
 
 struct Wrap[T] { value: T }
 
-impl[T] Selected for Wrap[T] where T == int32 {
+impl[T] Selected for Wrap[T] where T = int32 {
     fn selected(self: Wrap[T]) -> unit { () }
 }
 
@@ -1422,7 +1497,7 @@ fn main() -> unit {
 #[test]
 fn structural_where_equality_relates_nested_type_parameters() {
     let src = r#"
-fn convert[T, U](values: Vec[T]) -> Vec[U] where Vec[T] == Vec[U] {
+fn convert[T, U](values: Vec[T]) -> Vec[U] where Vec[T] = Vec[U] {
     values
 }
 
@@ -1444,7 +1519,7 @@ trait Render {
     fn render(self: Self) -> string;
 }
 
-fn render_equal[T: Render, U](value: U) -> string where T == U {
+fn render_equal[T: Render, U](value: U) -> string where T = U {
     value.render()
 }
 "#;
@@ -1889,7 +1964,7 @@ fn require_mark[T: Mark](value: T) -> unit { () }
 
 fn consume[A: Source, B: Source](left: A, right: B) -> unit
 where
-    A::Item == B::Item,
+    A::Item = B::Item,
     B::Item: Mark,
 {
     let _ = right;
@@ -2100,7 +2175,7 @@ trait Pick[T] {
     fn pick(self: Self) -> T;
 }
 
-impl[S: Source, T] Pick[T] for S where S::Item == T {
+impl[S: Source, T] Pick[T] for S where S::Item = T {
     fn pick(self: S) -> T { Source::get(self) }
 }
 
@@ -2201,7 +2276,7 @@ fn main() -> unit {
 #[test]
 fn trait_self_predicates_are_resolved_and_enforced() {
     let accepted = r#"
-trait Source[T] where Self::Item == T {
+trait Source[T] where Self::Item = T {
     type Item;
     fn get(self: Self) -> Self::Item;
 }
@@ -2218,7 +2293,7 @@ fn read[T, S: Source[T]](source: S) -> T {
 }
 "#;
     let rejected = r#"
-trait Source[T] where Self::Item == T {
+trait Source[T] where Self::Item = T {
     type Item;
     fn get(self: Self) -> Self::Item;
 }

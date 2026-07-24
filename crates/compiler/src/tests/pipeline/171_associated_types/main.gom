@@ -35,7 +35,7 @@ fn read[P: Provider](provider: P) -> P::Item {
 fn read_as[P, T](provider: P) -> T
 where
     P: Provider,
-    P::Item == T,
+    P::Item = T,
 {
     provider.get()
 }

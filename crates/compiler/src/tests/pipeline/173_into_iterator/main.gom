@@ -27,7 +27,7 @@ fn make_numbers(builds: Ref[int32], conversions: Ref[int32]) -> Numbers {
 
 fn sum[S: IntoIterator](source: S) -> int32
 where
-    S::Item == int32,
+    S::Item = int32,
 {
     let total = Ref::new(0);
     for value in source {

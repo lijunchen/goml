@@ -1316,6 +1316,23 @@ fn main() {
     }
 
     #[test]
+    fn dot_completion_on_dyn_trait() {
+        check_completion(
+            r#"trait Display {
+    fn show(self: Self) -> string;
+}
+
+fn render(value: dyn Display) -> unit {
+    value.
+}
+"#,
+            5,
+            10,
+            expect!["show"],
+        );
+    }
+
+    #[test]
     fn colon_colon_completion_on_enum() {
         check_completion(
             r#"
@@ -2296,6 +2313,33 @@ path = "demo"
     }
 
     #[test]
+    fn goto_definition_dyn_trait_method() {
+        check_goto_token(
+            r#"trait Display {
+    fn show(self: Self) -> string;
+}
+
+struct Person {
+    name: string,
+}
+
+impl Display for Person {
+    fn show(self: Person) -> string {
+        self.name
+    }
+}
+
+fn render(value: dyn Display) -> string {
+    value.show()
+}
+"#,
+            "value.show()",
+            "show",
+            expect!["goml_test.gom:1:7"],
+        );
+    }
+
+    #[test]
     fn goto_definition_enum_variant_across_package() {
         check_module_goto_token(
             "project001",
@@ -2727,7 +2771,7 @@ fn main() {
         );
         write_file(
             &root.join("Pkg/Pkg.gom"),
-            r#"package Pkg;
+            r#"package pkg;
 
 fn value() -> int32 { 0 }
 "#,
@@ -2906,14 +2950,14 @@ fn main() {
         );
         write_file(
             &root.join("A/A.gom"),
-            r#"package A;
+            r#"package a;
 
 pub struct Foo {}
 "#,
         );
         write_file(
             &root.join("B/B.gom"),
-            r#"package B;
+            r#"package b;
 
 pub struct Foo {}
 "#,
@@ -3136,6 +3180,36 @@ fn main() {
             expect![[r#"
                 ```goml
                 (Person) -> string
+                ```"#]],
+        );
+    }
+
+    #[test]
+    fn dyn_trait_method_hover() {
+        check_hover(
+            r#"trait Display {
+    fn show(self: Self) -> string;
+}
+
+struct Person {
+    name: string,
+}
+
+impl Display for Person {
+    fn show(self: Person) -> string {
+        self.name
+    }
+}
+
+fn render(value: dyn Display) -> string {
+    value.show()
+}
+"#,
+            15,
+            11,
+            expect![[r#"
+                ```goml
+                (dyn Display) -> string
                 ```"#]],
         );
     }

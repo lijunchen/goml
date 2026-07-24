@@ -222,7 +222,7 @@ fn normalizes_supertrait_associated_projections() -> unit {
 
 #[test]
 fn transfers_projection_equalities_between_generic_parameters() -> unit {
-    let source = "trait Mark { fn marked(self: Self) -> string; } trait Source { type Item; fn get(self: Self) -> Self::Item; } struct Left { value: int32 } struct Right { value: int32 } impl Mark for int32 { fn marked(self: int32) -> string { self.to_string() } } impl Source for Left { type Item = int32; fn get(self: Left) -> int32 { self.value } } impl Source for Right { type Item = int32; fn get(self: Right) -> int32 { self.value } } fn combine[A: Source, B: Source](left: A, right: B) -> string where A::Item == B::Item, B::Item: Mark { Source::get(left).marked() + Source::get(right).marked() } fn main() -> unit { println(combine(Left { value: 1 }, Right { value: 2 })) }";
+    let source = "trait Mark { fn marked(self: Self) -> string; } trait Source { type Item; fn get(self: Self) -> Self::Item; } struct Left { value: int32 } struct Right { value: int32 } impl Mark for int32 { fn marked(self: int32) -> string { self.to_string() } } impl Source for Left { type Item = int32; fn get(self: Left) -> int32 { self.value } } impl Source for Right { type Item = int32; fn get(self: Right) -> int32 { self.value } } fn combine[A: Source, B: Source](left: A, right: B) -> string where A::Item = B::Item, B::Item: Mark { Source::get(left).marked() + Source::get(right).marked() } fn main() -> unit { println(combine(Left { value: 1 }, Right { value: 2 })) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "combine__A_Left__B_Right"));
     testing::assert(string_contains(output, "trait_impl#Mark#int32#marked"));
@@ -254,7 +254,7 @@ fn filters_unsatisfied_blanket_impls() -> unit {
 
 #[test]
 fn resolves_trait_arguments_from_generic_impls() -> unit {
-    let source = "trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } struct Selected { value: int32 } impl ItemSource for Selected { type Item = int32; fn item(self: Selected) -> int32 { self.value } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn select_item[S: ItemSource](source: S) -> S::Item { invoke(source) } fn main() -> unit { println(select_item(Selected { value: 9 })) }";
+    let source = "trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item = T { fn select(self: S) -> T { ItemSource::item(self) } } struct Selected { value: int32 } impl ItemSource for Selected { type Item = int32; fn item(self: Selected) -> int32 { self.value } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn select_item[S: ItemSource](source: S) -> S::Item { invoke(source) } fn main() -> unit { println(select_item(Selected { value: 9 })) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(
         output,
@@ -277,7 +277,7 @@ fn satisfies_builtin_into_iterator_predicates() -> unit {
 
 #[test]
 fn filters_unsatisfied_blanket_into_iterator_impls() -> unit {
-    let source = "struct Numbers { values: Vec[int32] } impl IntoIterator for Numbers { type Item = int32; type IntoIter = FnIterator[int32]; fn into_iter(self: Numbers) -> FnIterator[int32] { self.values.iter() } } fn consume[S: IntoIterator](source: S) -> unit where S::Item == int32 { for _ in source {} } fn main() -> unit { let values: Vec[int32] = Vec::new(); consume(Numbers { values }) }";
+    let source = "struct Numbers { values: Vec[int32] } impl IntoIterator for Numbers { type Item = int32; type IntoIter = FnIterator[int32]; fn into_iter(self: Numbers) -> FnIterator[int32] { self.values.iter() } } fn consume[S: IntoIterator](source: S) -> unit where S::Item = int32 { for _ in source {} } fn main() -> unit { let values: Vec[int32] = Vec::new(); consume(Numbers { values }) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "consume__S_Numbers"));
     testing::assert(string_contains(
@@ -356,7 +356,7 @@ fn specializes_generic_inherent_methods() -> unit {
 
 #[test]
 fn specializes_associated_type_functions_and_impls() -> unit {
-    let source = "trait Provider { type Item: ToString; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } struct Box[T] { value: T } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } impl[T: ToString] Provider for Box[T] { type Item = T; fn get(self: Box[T]) -> T { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn read_as[P, T](provider: P) -> T where P: Provider, P::Item == T { provider.get() } fn main() -> unit { string_println(read(Number { value: 42 }).to_string()); let value: int32 = read_as(Number { value: 7 }); string_println(value.to_string()); string_println(read(Box { value: \"generic\" })); string_println(Provider::get(Number { value: 11 }).to_string()) }";
+    let source = "trait Provider { type Item: ToString; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } struct Box[T] { value: T } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } impl[T: ToString] Provider for Box[T] { type Item = T; fn get(self: Box[T]) -> T { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn read_as[P, T](provider: P) -> T where P: Provider, P::Item = T { provider.get() } fn main() -> unit { string_println(read(Number { value: 42 }).to_string()); let value: int32 = read_as(Number { value: 7 }); string_println(value.to_string()); string_println(read(Box { value: \"generic\" })); string_println(Provider::get(Number { value: 11 }).to_string()) }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {\n  Number.value(self/0)\n}\n\nfn main() -> unit {\n  let _wild0 = @runtime(core.string_println)(inherent#int32#int32#to_string(read__P_Number(Number { value: 42 }))) in\n  let value/4 = read_as__P_Number__T_int32(Number { value: 7 }) in\n  let _wild1 = @runtime(core.string_println)(inherent#int32#int32#to_string(value/4)) in\n  let _wild2 = @runtime(core.string_println)(read__P_Box[string](Box__string { value: \"generic\" })) in\n  @runtime(core.string_println)(inherent#int32#int32#to_string(trait_impl#Provider#Number#get(Number { value: 11 })))\n}\n\nfn read__P_Number(provider/2: Number) -> int32 {\n  trait_impl#Provider#Number#get(provider/2)\n}\n\nfn read_as__P_Number__T_int32(provider/3: Number) -> int32 {\n  trait_impl#Provider#Number#get(provider/3)\n}\n\nfn read__P_Box[string](provider/2: Box__string) -> string {\n  trait_impl#Provider#Box__string#get(provider/2)\n}\n\nfn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {\n  Box__string.value(self/1)\n}",
