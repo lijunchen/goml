@@ -1096,9 +1096,8 @@ fn consume(value: dyn Source) -> unit { () }
 
     let diagnostics = diagnostic_lines(src);
     assert!(
-        diagnostics.iter().any(|line| line.contains(
-            "Trait Source cannot be used as dyn because it declares associated types"
-        )),
+        diagnostics.iter().any(|line| line
+            .contains("Trait Source cannot be used as dyn because it declares associated types")),
         "{diagnostics:?}"
     );
 }
