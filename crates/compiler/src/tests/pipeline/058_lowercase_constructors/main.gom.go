@@ -1,36 +1,36 @@
 package main
 
-type point struct {
+type Point struct {
     x int32
     y int32
 }
 
-type option__int32 interface {
-    isoption__int32()
+type Maybe__int32 interface {
+    isMaybe__int32()
 }
 
 type Some struct {
     _0 int32
 }
 
-func (_ Some) isoption__int32() {}
+func (_ Some) isMaybe__int32() {}
 
 type None struct {}
 
-func (_ None) isoption__int32() {}
+func (_ None) isMaybe__int32() {}
 
-func make_some(value__0 int32) option__int32 {
-    var retv69 option__int32
-    var t70 option__int32 = Some{
+func make_some(value__0 int32) Maybe__int32 {
+    var retv69 Maybe__int32
+    var t70 Maybe__int32 = Some{
         _0: value__0,
     }
     retv69 = t70
     return retv69
 }
 
-func build_point(x__1 int32, y__2 int32) point {
-    var retv72 point
-    var t73 point = point{
+func build_point(x__1 int32, y__2 int32) Point {
+    var retv72 Point
+    var t73 Point = Point{
         x: x__1,
         y: y__2,
     }
@@ -38,9 +38,9 @@ func build_point(x__1 int32, y__2 int32) point {
     return retv72
 }
 
-func magnitude(p__3 point) int32 {
+func magnitude(p__3 Point) int32 {
     var retv75 int32
-    var mtmp61 point = p__3
+    var mtmp61 Point = p__3
     var x62 int32 = mtmp61.x
     var x63 int32 = mtmp61.y
     var y__5 int32 = x63
@@ -52,15 +52,15 @@ func magnitude(p__3 point) int32 {
 
 func main0() int32 {
     var retv78 int32
-    var mtmp64 option__int32 = make_some(5)
+    var mtmp64 Maybe__int32 = make_some(5)
     var jp80 int32
     switch mtmp64.(type) {
     case Some:
         var x65 int32 = mtmp64.(Some)._0
         var result__6 int32 = x65
-        var pt__7 point = build_point(result__6, 7)
+        var pt__7 Point = build_point(result__6, 7)
         var t81 int32 = pt__7.x
-        var mtmp66 option__int32 = Some{
+        var mtmp66 Maybe__int32 = Some{
             _0: t81,
         }
         var jp83 int32

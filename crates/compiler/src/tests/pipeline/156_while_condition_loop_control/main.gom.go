@@ -38,7 +38,7 @@ func main0() struct{} {
     Loop_loop90:
     for {
         var t101 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__0)
-        var t102 bool = t101 == 0
+        var t102 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t101, 0)
         var jp92 bool
         if t102 {
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__0, 1)
@@ -60,7 +60,7 @@ func main0() struct{} {
             var t95 int32 = t93 + t94
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(total__1, t95)
             var t99 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__0)
-            var t100 bool = t99 == 1
+            var t100 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t99, 1)
             if t100 {
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__0, 2)
                 continue
@@ -100,7 +100,7 @@ func main0() struct{} {
             var t86 int32 = t84 + t85
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(total2__3, t86)
             var t88 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(j__2)
-            var t89 bool = t88 == 2
+            var t89 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t88, 2)
             if t89 {
                 break Loop_loop81
             } else {
@@ -129,22 +129,29 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__205 *ref_int32_
     return retv111
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv114 bool
+    var t115 bool = self__61 == other__62
+    retv114 = t115
+    return retv114
+}
+
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__206 *ref_int32_x, value__207 int32) struct{} {
     ref_set__Ref_5int32(self__206, value__207)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t116 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t116)
+    var t119 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t119)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv119 string
-    var t120 string = _goml_runtime_core_int32_to_string(self__41)
-    retv119 = t120
-    return retv119
+    var retv122 string
+    var t123 string = _goml_runtime_core_int32_to_string(self__41)
+    retv122 = t123
+    return retv122
 }
 
 func main() {

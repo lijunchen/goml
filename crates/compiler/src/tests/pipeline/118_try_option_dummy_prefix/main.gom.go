@@ -25,7 +25,7 @@ func (_ Some) isOption__string() {}
 
 func cut_prefix(case_id__0 int32) Option__string {
     var retv67 Option__string
-    var t70 bool = case_id__0 == 0
+    var t70 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(case_id__0, 0)
     var jp69 Option__string
     if t70 {
         var t71 Option__string = Some{
@@ -91,16 +91,23 @@ func main0() struct{} {
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv89 bool
+    var t90 bool = self__61 == other__62
+    retv89 = t90
+    return retv89
+}
+
 func println__T_string(value__1 string) struct{} {
-    var t89 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t89)
+    var t92 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t92)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv92 string
-    retv92 = self__37
-    return retv92
+    var retv95 string
+    retv95 = self__37
+    return retv95
 }
 
 func main() {

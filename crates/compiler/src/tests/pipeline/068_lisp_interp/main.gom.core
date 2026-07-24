@@ -236,55 +236,55 @@ fn trait_impl#Eq#unit#eq(self/49: unit, other/50: unit) -> bool {
 }
 
 fn trait_impl#Eq#bool#eq(self/51: bool, other/52: bool) -> bool {
-  (self/51 == other/52)
+  @intrinsic(eq.primitive)(self/51, other/52)
 }
 
 fn trait_impl#Eq#string#eq(self/53: string, other/54: string) -> bool {
-  (self/53 == other/54)
+  @intrinsic(eq.primitive)(self/53, other/54)
 }
 
 fn trait_impl#Eq#char#eq(self/55: char, other/56: char) -> bool {
-  (self/55 == other/56)
+  @intrinsic(eq.primitive)(self/55, other/56)
 }
 
 fn trait_impl#Eq#int8#eq(self/57: int8, other/58: int8) -> bool {
-  (self/57 == other/58)
+  @intrinsic(eq.primitive)(self/57, other/58)
 }
 
 fn trait_impl#Eq#int16#eq(self/59: int16, other/60: int16) -> bool {
-  (self/59 == other/60)
+  @intrinsic(eq.primitive)(self/59, other/60)
 }
 
 fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn trait_impl#Eq#int64#eq(self/63: int64, other/64: int64) -> bool {
-  (self/63 == other/64)
+  @intrinsic(eq.primitive)(self/63, other/64)
 }
 
 fn trait_impl#Eq#uint8#eq(self/65: uint8, other/66: uint8) -> bool {
-  (self/65 == other/66)
+  @intrinsic(eq.primitive)(self/65, other/66)
 }
 
 fn trait_impl#Eq#uint16#eq(self/67: uint16, other/68: uint16) -> bool {
-  (self/67 == other/68)
+  @intrinsic(eq.primitive)(self/67, other/68)
 }
 
 fn trait_impl#Eq#uint32#eq(self/69: uint32, other/70: uint32) -> bool {
-  (self/69 == other/70)
+  @intrinsic(eq.primitive)(self/69, other/70)
 }
 
 fn trait_impl#Eq#uint64#eq(self/71: uint64, other/72: uint64) -> bool {
-  (self/71 == other/72)
+  @intrinsic(eq.primitive)(self/71, other/72)
 }
 
 fn trait_impl#Eq#float32#eq(self/73: float32, other/74: float32) -> bool {
-  (self/73 == other/74)
+  @intrinsic(eq.primitive)(self/73, other/74)
 }
 
 fn trait_impl#Eq#float64#eq(self/75: float64, other/76: float64) -> bool {
-  (self/75 == other/76)
+  @intrinsic(eq.primitive)(self/75, other/76)
 }
 
 fn trait_impl#Hash#unit#hash(self/77: unit) -> uint64 {
@@ -560,7 +560,7 @@ fn inherent#Vec#Vec[T]#capacity(self/135: Vec[T]) -> int32 {
 }
 
 fn inherent#Vec#Vec[T]#is_empty(self/136: Vec[T]) -> bool {
-  (inherent#Vec#Vec[T]#len(self/136) == 0)
+  trait_impl#Eq#int32#eq(inherent#Vec#Vec[T]#len(self/136), 0)
 }
 
 fn inherent#Vec#Vec[T]#reserve(self/137: Vec[T], additional/138: int32) -> unit {
@@ -577,7 +577,7 @@ fn inherent#Vec#Vec[T]#clear(self/141: Vec[T]) -> unit {
 
 fn inherent#Vec#Vec[T]#last(self/142: Vec[T]) -> Option[T] {
   let len/143 = inherent#Vec#Vec[T]#len(self/142) in
-  if (len/143 == 0) {
+  if trait_impl#Eq#int32#eq(len/143, 0) {
       {
         Option::None
       }
@@ -590,7 +590,7 @@ fn inherent#Vec#Vec[T]#last(self/142: Vec[T]) -> Option[T] {
 
 fn inherent#Vec#Vec[T]#pop(self/144: Vec[T]) -> Option[T] {
   let len/145 = inherent#Vec#Vec[T]#len(self/144) in
-  if (len/145 == 0) {
+  if trait_impl#Eq#int32#eq(len/145, 0) {
       {
         Option::None
       }
@@ -627,7 +627,7 @@ fn inherent#Vec#Vec[T]#swap_remove(self/151: Vec[T], index/152: int32) -> T {
 
 fn inherent#Vec#Vec[T]#insert(self/155: Vec[T], index/156: int32, value/157: T) -> unit {
   let len/158 = inherent#Vec#Vec[T]#len(self/155) in
-  if (index/156 == len/158) {
+  if trait_impl#Eq#int32#eq(index/156, len/158) {
       {
         inherent#Vec#Vec[T]#push(self/155, value/157)
       }
@@ -789,7 +789,7 @@ fn inherent#Ref#Ref[T]#set(self/206: Ref[T], value/207: T) -> unit {
   @intrinsic(ref.set)(self/206, value/207)
 }
 
-fn range(start/208: int32, end/209: int32) -> FnIterator[int32] {
+fn __goml_builtin_range(start/208: int32, end/209: int32) -> FnIterator[int32] {
   let current/210 = inherent#Ref#Ref[int32]#new(start/208) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
     let value/211 = inherent#Ref#Ref[int32]#get(current/210) in
@@ -804,6 +804,10 @@ fn range(start/208: int32, end/209: int32) -> FnIterator[int32] {
         }
     }
   })
+}
+
+fn range(start/212: int32, end/213: int32) -> FnIterator[int32] {
+  __goml_builtin_range(start/212, end/213)
 }
 
 fn is_digit(ch/0: char) -> bool {
@@ -852,7 +856,7 @@ fn digit_value(ch/1: char) -> int32 {
 
 fn is_int_text(text/2: string) -> bool {
   let len/3 = inherent#string#string#len(text/2) in
-  if (len/3 == 0) {
+  if trait_impl#Eq#int32#eq(len/3, 0) {
       {
         false
       }
@@ -870,7 +874,7 @@ fn is_int_text(text/2: string) -> bool {
             {
               let ch/8 = inherent#string#string#get(text/2, inherent#Ref#Ref[int32]#get(i/4)) in
               if if (!inherent#Ref#Ref[bool]#get(started/7)) {
-                  (ch/8 == '-')
+                  trait_impl#Eq#char#eq(ch/8, '-')
               } else {
                   false
               } {
@@ -920,7 +924,7 @@ fn parse_int32(text/9: string) -> int32 {
       {
         let ch/15 = inherent#string#string#get(text/9, inherent#Ref#Ref[int32]#get(i/11)) in
         if if (!inherent#Ref#Ref[bool]#get(started/13)) {
-            (ch/15 == '-')
+            trait_impl#Eq#char#eq(ch/15, '-')
         } else {
             false
         } {
@@ -961,14 +965,14 @@ fn parse_int32(text/9: string) -> int32 {
 }
 
 fn is_delim(ch/17: char) -> bool {
-  if if (ch/17 == '(') {
+  if if trait_impl#Eq#char#eq(ch/17, '(') {
       true
   } else {
-      (ch/17 == ')')
+      trait_impl#Eq#char#eq(ch/17, ')')
   } {
       true
   } else {
-      (ch/17 == ' ')
+      trait_impl#Eq#char#eq(ch/17, ' ')
   }
 }
 
@@ -1029,7 +1033,7 @@ fn lex(source/27: string) -> Vec[Token] {
   let mtmp78 = while (inherent#Ref#Ref[int32]#get(i/31) < len/28) {
       {
         let ch/32 = inherent#string#string#get(source/27, inherent#Ref#Ref[int32]#get(i/31)) in
-        if (ch/32 == '(') {
+        if trait_impl#Eq#char#eq(ch/32, '(') {
             {
               let mtmp72 = inherent#Ref#Ref[Vec[Token]]#set(toks/30, inherent#Vec#Vec[Token]#pushed(inherent#Ref#Ref[Vec[Token]]#get(toks/30), Token::LParen)) in
               {
@@ -1037,7 +1041,7 @@ fn lex(source/27: string) -> Vec[Token] {
               }
             }
         } else {
-            if (ch/32 == ')') {
+            if trait_impl#Eq#char#eq(ch/32, ')') {
                 {
                   let mtmp73 = inherent#Ref#Ref[Vec[Token]]#set(toks/30, inherent#Vec#Vec[Token]#pushed(inherent#Ref#Ref[Vec[Token]]#get(toks/30), Token::RParen)) in
                   {
@@ -1045,7 +1049,7 @@ fn lex(source/27: string) -> Vec[Token] {
                   }
                 }
             } else {
-                if (ch/32 == ' ') {
+                if trait_impl#Eq#char#eq(ch/32, ' ') {
                     {
                       inherent#Ref#Ref[int32]#set(i/31, (inherent#Ref#Ref[int32]#get(i/31) + 1))
                     }
@@ -1090,7 +1094,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
   } {
       {
         let binding/40 = @intrinsic(vec.get)(env/35, inherent#Ref#Ref[int32]#get(i/37)) in
-        if (Binding.name(binding/40) == name/36) {
+        if trait_impl#Eq#string#eq(Binding.name(binding/40), name/36) {
             {
               let mtmp79 = inherent#Ref#Ref[Value]#set(result/38, Binding.value(binding/40)) in
               {
@@ -1299,7 +1303,7 @@ fn truthy(value/69: Value) -> bool {
         let x110 = Value::Int._0(value/69) in
         {
           let n/71 = x110 in
-          (n/71 != 0)
+          (!trait_impl#Eq#int32#eq(n/71, 0))
         }
       }
     },
@@ -1366,7 +1370,7 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  if (inherent#Vec#Vec[SExpr]#len(items/79) == 0) {
+  if trait_impl#Eq#int32#eq(inherent#Vec#Vec[SExpr]#len(items/79), 0) {
       {
         Value::Nil
       }
@@ -1400,7 +1404,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
     },
     "define" => {
       {
-        if (inherent#Vec#Vec[SExpr]#len(items/87) == 3) {
+        if trait_impl#Eq#int32#eq(inherent#Vec#Vec[SExpr]#len(items/87), 3) {
             {
               {
                 let mtmp121 = @intrinsic(vec.get)(items/87, 1) in
@@ -1435,7 +1439,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
     },
     "if" => {
       {
-        if (inherent#Vec#Vec[SExpr]#len(items/87) == 4) {
+        if trait_impl#Eq#int32#eq(inherent#Vec#Vec[SExpr]#len(items/87), 4) {
             {
               let cond/94 = eval(@intrinsic(vec.get)(items/87, 1), local/88, global/89) in
               if truthy(cond/94) {
@@ -1457,7 +1461,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
     },
     "lambda" => {
       {
-        if (inherent#Vec#Vec[SExpr]#len(items/87) == 3) {
+        if trait_impl#Eq#int32#eq(inherent#Vec#Vec[SExpr]#len(items/87), 3) {
             {
               {
                 let mtmp127 = @intrinsic(vec.get)(items/87, 1) in
@@ -1580,7 +1584,7 @@ fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], g
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
   match name/120 {
     "=" => {
-      if (inherent#Vec#Vec[Value]#len(args/121) == 2) {
+      if trait_impl#Eq#int32#eq(inherent#Vec#Vec[Value]#len(args/121), 2) {
           {
             {
               let mtmp143 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
@@ -1599,7 +1603,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                               let a/122 = x149 in
                               {
                                 let b/123 = x146 in
-                                Value::Bool((a/122 == b/123))
+                                Value::Bool(trait_impl#Eq#int32#eq(a/122, b/123))
                               }
                             }
                           }
@@ -1619,7 +1623,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                               let a/124 = x153 in
                               {
                                 let b/125 = x147 in
-                                Value::Bool((a/124 == b/125))
+                                Value::Bool(trait_impl#Eq#bool#eq(a/124, b/125))
                               }
                             }
                           }
@@ -1763,7 +1767,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       }
     },
     "/" => {
-      if (inherent#Vec#Vec[Value]#len(args/121) == 2) {
+      if trait_impl#Eq#int32#eq(inherent#Vec#Vec[Value]#len(args/121), 2) {
           {
             {
               let mtmp181 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in

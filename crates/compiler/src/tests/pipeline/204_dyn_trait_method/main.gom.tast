@@ -1,0 +1,22 @@
+impl Named for Point{
+  fn name(self/0: Point) -> string {
+      "point"
+  }
+}
+
+impl Display for Point{
+  fn show(self/1: Point, prefix/2: string) -> string {
+      (prefix/2 : string) + (int32::to_string : (int32) -> string)((self/1 : Point).value)
+  }
+}
+
+fn render(value/3: dyn Display) -> unit {
+    (println : (string) -> unit)((dyn Display::show : (dyn Display, string) -> string)((value/3 : dyn Display), "value="));
+    (println : (string) -> unit)((dyn Display::name : (dyn Display) -> string)((value/3 : dyn Display)));
+    (println : (string) -> unit)((dyn Display::show : (dyn Display, string) -> string)((value/3 : dyn Display), "again="));
+}
+
+fn main() -> unit {
+    let value/4: dyn Display = to_dyn[Display]{Point}(Point { value: 7 });
+    (render : (dyn Display) -> unit)((value/4 : dyn Display));
+}

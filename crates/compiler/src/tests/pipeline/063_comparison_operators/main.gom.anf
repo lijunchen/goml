@@ -29,77 +29,81 @@ fn test_int_comparisons() -> unit {
   let t97 = trait_impl#ToString#bool#to_string(greater_eq2/8) in
   let t98 = ("10 >= 10: " + t97) in
   let mtmp66 = println__T_string(t98) in
-  let eq1/9 = (a/0 == c/2) in
+  let eq1/9 = trait_impl#Eq#int32#eq(a/0, c/2) in
   let t99 = trait_impl#ToString#bool#to_string(eq1/9) in
   let t100 = ("10 == 10: " + t99) in
   let mtmp67 = println__T_string(t100) in
-  let eq2/10 = (a/0 == b/1) in
+  let eq2/10 = trait_impl#Eq#int32#eq(a/0, b/1) in
   let t101 = trait_impl#ToString#bool#to_string(eq2/10) in
   let t102 = ("10 == 20: " + t101) in
   let mtmp68 = println__T_string(t102) in
-  let neq1/11 = (a/0 != b/1) in
-  let t103 = trait_impl#ToString#bool#to_string(neq1/11) in
-  let t104 = ("10 != 20: " + t103) in
-  let mtmp69 = println__T_string(t104) in
-  let neq2/12 = (a/0 != c/2) in
-  let t105 = trait_impl#ToString#bool#to_string(neq2/12) in
-  let t106 = ("10 != 10: " + t105) in
-  let mtmp70 = println__T_string(t106) in
+  let t103 = trait_impl#Eq#int32#eq(a/0, b/1) in
+  let neq1/11 = (!t103) in
+  let t104 = trait_impl#ToString#bool#to_string(neq1/11) in
+  let t105 = ("10 != 20: " + t104) in
+  let mtmp69 = println__T_string(t105) in
+  let t106 = trait_impl#Eq#int32#eq(a/0, c/2) in
+  let neq2/12 = (!t106) in
+  let t107 = trait_impl#ToString#bool#to_string(neq2/12) in
+  let t108 = ("10 != 10: " + t107) in
+  let mtmp70 = println__T_string(t108) in
   jump ret86()
 }
 
 fn test_float_comparisons() -> unit {
-  join ret107() -> unit {
+  join ret109() -> unit {
     ()
   } in
   let x/13 = 3.14 in
   let y/14 = 2.71 in
   let z/15 = 3.14 in
   let less/16 = (y/14 < x/13) in
-  let t108 = trait_impl#ToString#bool#to_string(less/16) in
-  let t109 = ("2.71 < 3.14: " + t108) in
-  let mtmp71 = println__T_string(t109) in
+  let t110 = trait_impl#ToString#bool#to_string(less/16) in
+  let t111 = ("2.71 < 3.14: " + t110) in
+  let mtmp71 = println__T_string(t111) in
   let greater/17 = (x/13 > y/14) in
-  let t110 = trait_impl#ToString#bool#to_string(greater/17) in
-  let t111 = ("3.14 > 2.71: " + t110) in
-  let mtmp72 = println__T_string(t111) in
+  let t112 = trait_impl#ToString#bool#to_string(greater/17) in
+  let t113 = ("3.14 > 2.71: " + t112) in
+  let mtmp72 = println__T_string(t113) in
   let less_eq1/18 = (y/14 <= x/13) in
-  let t112 = trait_impl#ToString#bool#to_string(less_eq1/18) in
-  let t113 = ("2.71 <= 3.14: " + t112) in
-  let mtmp73 = println__T_string(t113) in
+  let t114 = trait_impl#ToString#bool#to_string(less_eq1/18) in
+  let t115 = ("2.71 <= 3.14: " + t114) in
+  let mtmp73 = println__T_string(t115) in
   let less_eq2/19 = (x/13 <= z/15) in
-  let t114 = trait_impl#ToString#bool#to_string(less_eq2/19) in
-  let t115 = ("3.14 <= 3.14: " + t114) in
-  let mtmp74 = println__T_string(t115) in
+  let t116 = trait_impl#ToString#bool#to_string(less_eq2/19) in
+  let t117 = ("3.14 <= 3.14: " + t116) in
+  let mtmp74 = println__T_string(t117) in
   let greater_eq1/20 = (x/13 >= y/14) in
-  let t116 = trait_impl#ToString#bool#to_string(greater_eq1/20) in
-  let t117 = ("3.14 >= 2.71: " + t116) in
-  let mtmp75 = println__T_string(t117) in
+  let t118 = trait_impl#ToString#bool#to_string(greater_eq1/20) in
+  let t119 = ("3.14 >= 2.71: " + t118) in
+  let mtmp75 = println__T_string(t119) in
   let greater_eq2/21 = (z/15 >= x/13) in
-  let t118 = trait_impl#ToString#bool#to_string(greater_eq2/21) in
-  let t119 = ("3.14 >= 3.14: " + t118) in
-  let mtmp76 = println__T_string(t119) in
-  let eq1/22 = (x/13 == z/15) in
-  let t120 = trait_impl#ToString#bool#to_string(eq1/22) in
-  let t121 = ("3.14 == 3.14: " + t120) in
-  let mtmp77 = println__T_string(t121) in
-  let eq2/23 = (x/13 == y/14) in
-  let t122 = trait_impl#ToString#bool#to_string(eq2/23) in
-  let t123 = ("3.14 == 2.71: " + t122) in
-  let mtmp78 = println__T_string(t123) in
-  let neq1/24 = (x/13 != y/14) in
-  let t124 = trait_impl#ToString#bool#to_string(neq1/24) in
-  let t125 = ("3.14 != 2.71: " + t124) in
-  let mtmp79 = println__T_string(t125) in
-  let neq2/25 = (x/13 != z/15) in
-  let t126 = trait_impl#ToString#bool#to_string(neq2/25) in
-  let t127 = ("3.14 != 3.14: " + t126) in
-  let mtmp80 = println__T_string(t127) in
-  jump ret107()
+  let t120 = trait_impl#ToString#bool#to_string(greater_eq2/21) in
+  let t121 = ("3.14 >= 3.14: " + t120) in
+  let mtmp76 = println__T_string(t121) in
+  let eq1/22 = trait_impl#Eq#float64#eq(x/13, z/15) in
+  let t122 = trait_impl#ToString#bool#to_string(eq1/22) in
+  let t123 = ("3.14 == 3.14: " + t122) in
+  let mtmp77 = println__T_string(t123) in
+  let eq2/23 = trait_impl#Eq#float64#eq(x/13, y/14) in
+  let t124 = trait_impl#ToString#bool#to_string(eq2/23) in
+  let t125 = ("3.14 == 2.71: " + t124) in
+  let mtmp78 = println__T_string(t125) in
+  let t126 = trait_impl#Eq#float64#eq(x/13, y/14) in
+  let neq1/24 = (!t126) in
+  let t127 = trait_impl#ToString#bool#to_string(neq1/24) in
+  let t128 = ("3.14 != 2.71: " + t127) in
+  let mtmp79 = println__T_string(t128) in
+  let t129 = trait_impl#Eq#float64#eq(x/13, z/15) in
+  let neq2/25 = (!t129) in
+  let t130 = trait_impl#ToString#bool#to_string(neq2/25) in
+  let t131 = ("3.14 != 3.14: " + t130) in
+  let mtmp80 = println__T_string(t131) in
+  jump ret109()
 }
 
 fn main() -> unit {
-  join ret128() -> unit {
+  join ret132() -> unit {
     ()
   } in
   let mtmp81 = println__T_string("=== Integer Comparisons ===") in
@@ -107,29 +111,45 @@ fn main() -> unit {
   let mtmp83 = println__T_string("") in
   let mtmp84 = println__T_string("=== Float Comparisons ===") in
   let mtmp85 = test_float_comparisons() in
-  jump ret128()
+  jump ret132()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret129() -> unit {
+  join ret133() -> unit {
     ()
   } in
-  let t130 = trait_impl#ToString#string#to_string(value/1) in
-  let t131 = @runtime(core.string_println)(t130) in
-  jump ret129()
+  let t134 = trait_impl#ToString#string#to_string(value/1) in
+  let t135 = @runtime(core.string_println)(t134) in
+  jump ret133()
 }
 
 fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  join ret132(retv133: string) -> string {
-    retv133
+  join ret136(retv137: string) -> string {
+    retv137
   } in
-  let t134 = @runtime(core.bool_to_string)(self/36) in
-  jump ret132(t134)
+  let t138 = @runtime(core.bool_to_string)(self/36) in
+  jump ret136(t138)
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret139(retv140: bool) -> bool {
+    retv140
+  } in
+  let t141 = @intrinsic(eq.primitive)(self/61, other/62) in
+  jump ret139(t141)
+}
+
+fn trait_impl#Eq#float64#eq(self/75: float64, other/76: float64) -> bool {
+  join ret142(retv143: bool) -> bool {
+    retv143
+  } in
+  let t144 = @intrinsic(eq.primitive)(self/75, other/76) in
+  jump ret142(t144)
 }
 
 fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret135(retv136: string) -> string {
-    retv136
+  join ret145(retv146: string) -> string {
+    retv146
   } in
-  jump ret135(self/37)
+  jump ret145(self/37)
 }

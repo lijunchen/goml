@@ -85,7 +85,7 @@ fn signed_ops() -> unit {
 fn precedence() -> unit {
   let _wild105 = show_u8((1 | (2 ^ (3 & 1)))) in
   let _wild106 = show_u8((1 << (2 + 1))) in
-  let _wild107 = println__T_string(trait_impl#ToString#bool#to_string(((1 | 2) == 3))) in
+  let _wild107 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint8#eq((1 | 2), 3))) in
   let _wild108 = println__T_string(trait_impl#ToString#bool#to_string(((8 >> 1) < 5))) in
   show_u8(((~1) & 15))
 }
@@ -164,6 +164,10 @@ fn println__T_int64(value/1: int64) -> unit {
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#Eq#uint8#eq(self/65: uint8, other/66: uint8) -> bool {
+  @intrinsic(eq.primitive)(self/65, other/66)
 }
 
 fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {

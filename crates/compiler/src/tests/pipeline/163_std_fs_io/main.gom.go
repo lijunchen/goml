@@ -478,9 +478,9 @@ func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv278 string
-    retv278 = self__37
-    return retv278
+    var retv281 string
+    retv281 = self__37
+    return retv281
 }
 
 func main() {

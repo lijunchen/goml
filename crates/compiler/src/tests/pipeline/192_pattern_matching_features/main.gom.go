@@ -254,7 +254,7 @@ func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) stri
             var t143 int32 = vec_len__Vec_5int32(match69)
             var tail__11 []int32 = match69.items[1:t143]
             var t146 int32 = _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(tail__11)
-            var t147 bool = first__10 == t146
+            var t147 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(first__10, t146)
             var jp145 string
             if t147 {
                 jp145 = "balanced"
@@ -296,7 +296,7 @@ func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) stri
         var t132 int32 = t131 - 1
         var t133 int32 = t132 + 0
         var last__14 int32 = match70[t133]
-        var t136 bool = first__13 == last__14
+        var t136 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(first__13, last__14)
         var jp135 string
         if t136 {
             jp135 = "same ends"
@@ -433,37 +433,44 @@ func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__183 []int32
     return retv203
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv206 bool
+    var t207 bool = self__61 == other__62
+    retv206 = t207
+    return retv206
+}
+
 func println__T_int32(value__1 int32) struct{} {
-    var t206 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t206)
+    var t209 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t209)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__134 *_goml_vec_int32) int32 {
-    var retv209 int32
-    var t210 int32 = vec_len__Vec_5int32(self__134)
-    retv209 = t210
-    return retv209
+    var retv212 int32
+    var t213 int32 = vec_len__Vec_5int32(self__134)
+    retv212 = t213
+    return retv212
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t212)
+    var t215 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t215)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Maybe(value__204 Maybe) *ref_Maybe_x {
-    var retv215 *ref_Maybe_x
-    var t216 *ref_Maybe_x = ref__Ref_5Maybe(value__204)
-    retv215 = t216
-    return retv215
+    var retv218 *ref_Maybe_x
+    var t219 *ref_Maybe_x = ref__Ref_5Maybe(value__204)
+    retv218 = t219
+    return retv218
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Maybe(self__205 *ref_Maybe_x) Maybe {
-    var retv218 Maybe
-    var t219 Maybe = ref_get__Ref_5Maybe(self__205)
-    retv218 = t219
-    return retv218
+    var retv221 Maybe
+    var t222 Maybe = ref_get__Ref_5Maybe(self__205)
+    retv221 = t222
+    return retv221
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Maybe(self__206 *ref_Maybe_x, value__207 Maybe) struct{} {
@@ -472,16 +479,16 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Maybe(self__206 *ref_Maybe_
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv223 string
-    var t224 string = _goml_runtime_core_int32_to_string(self__41)
-    retv223 = t224
-    return retv223
+    var retv226 string
+    var t227 string = _goml_runtime_core_int32_to_string(self__41)
+    retv226 = t227
+    return retv226
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv226 string
-    retv226 = self__37
-    return retv226
+    var retv229 string
+    retv229 = self__37
+    return retv229
 }
 
 func main() {

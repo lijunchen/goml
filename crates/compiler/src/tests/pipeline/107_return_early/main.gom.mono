@@ -8,7 +8,7 @@ fn early(x/0: int32) -> int32 {
         ()
       }
   } in
-  let _wild62 = if (x/0 == 0) {
+  let _wild62 = if trait_impl#Eq#int32#eq(x/0, 0) {
       {
         return 1
       }
@@ -85,6 +85,10 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn println__T_string(value/1: string) -> unit {

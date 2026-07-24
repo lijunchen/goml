@@ -146,7 +146,7 @@ fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
   join ret119(retv120: bool) -> bool {
     retv120
   } in
-  let t121 = (self/61 == other/62) in
+  let t121 = @intrinsic(eq.primitive)(self/61, other/62) in
   jump ret119(t121)
 }
 

@@ -1,5 +1,5 @@
 fn cut_prefix(case_id/0: int32) -> Option__string {
-  if (case_id/0 == 0) {
+  if trait_impl#Eq#int32#eq(case_id/0, 0) {
       {
         Option__string::Some("ml")
       }
@@ -51,6 +51,10 @@ fn show(opt/3: Option__string) -> string {
 fn main() -> unit {
   let _wild64 = println__T_string(show(trim_go(0))) in
   let _wild65 = println__T_string(show(trim_go(1))) in
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn println__T_string(value/1: string) -> unit {

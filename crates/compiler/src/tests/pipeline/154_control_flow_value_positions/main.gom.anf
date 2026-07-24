@@ -55,7 +55,7 @@ fn main() -> unit {
         let t87 = (t86 + 1) in
         let _wild61 = inherent#Ref#Ref[T]#set__T_int32(i/0, t87) in
         let t92 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-        let t93 = (t92 == 3) in
+        let t93 = trait_impl#Eq#int32#eq(t92, 3) in
         join k88(jp89: int32) -> unit {
           let cur/2 = jp89 in
           let t90 = inherent#Ref#Ref[T]#get__T_int32(sum/1) in
@@ -101,28 +101,28 @@ fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> u
   jump ret101()
 }
 
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret103(retv104: bool) -> bool {
+    retv104
+  } in
+  let t105 = @intrinsic(eq.primitive)(self/61, other/62) in
+  jump ret103(t105)
+}
+
 fn println__T_int32(value/1: int32) -> unit {
-  join ret103() -> unit {
+  join ret106() -> unit {
     ()
   } in
-  let t104 = trait_impl#ToString#int32#to_string(value/1) in
-  let t105 = @runtime(core.string_println)(t104) in
-  jump ret103()
+  let t107 = trait_impl#ToString#int32#to_string(value/1) in
+  let t108 = @runtime(core.string_println)(t107) in
+  jump ret106()
 }
 
 fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  join ret106(retv107: string) -> string {
-    retv107
-  } in
-  let t108 = @runtime(core.int32_to_string)(self/41) in
-  jump ret106(t108)
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  join ret109(retv110: bool) -> bool {
+  join ret109(retv110: string) -> string {
     retv110
   } in
-  let t111 = (self/61 == other/62) in
+  let t111 = @runtime(core.int32_to_string)(self/41) in
   jump ret109(t111)
 }
 

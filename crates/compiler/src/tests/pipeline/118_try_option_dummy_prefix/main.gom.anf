@@ -2,7 +2,7 @@ fn cut_prefix(case_id/0: int32) -> Option__string {
   join ret66(retv67: Option__string) -> Option__string {
     retv67
   } in
-  let t70 = (case_id/0 == 0) in
+  let t70 = trait_impl#Eq#int32#eq(case_id/0, 0) in
   join k68(jp69: Option__string) -> Option__string {
     jump ret66(jp69)
   } in
@@ -70,18 +70,26 @@ fn main() -> unit {
   jump ret83()
 }
 
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret88(retv89: bool) -> bool {
+    retv89
+  } in
+  let t90 = @intrinsic(eq.primitive)(self/61, other/62) in
+  jump ret88(t90)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret88() -> unit {
+  join ret91() -> unit {
     ()
   } in
-  let t89 = trait_impl#ToString#string#to_string(value/1) in
-  let t90 = @runtime(core.string_println)(t89) in
-  jump ret88()
+  let t92 = trait_impl#ToString#string#to_string(value/1) in
+  let t93 = @runtime(core.string_println)(t92) in
+  jump ret91()
 }
 
 fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret91(retv92: string) -> string {
-    retv92
+  join ret94(retv95: string) -> string {
+    retv95
   } in
-  jump ret91(self/37)
+  jump ret94(self/37)
 }

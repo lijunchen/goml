@@ -452,9 +452,9 @@ func _goml_m_std_p_io_p_eprintln____T__string(value__3 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv279 string
-    retv279 = self__37
-    return retv279
+    var retv282 string
+    retv282 = self__37
+    return retv282
 }
 
 func main() {

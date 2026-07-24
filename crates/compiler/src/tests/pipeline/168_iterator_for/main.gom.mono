@@ -36,7 +36,7 @@ fn first_even(values/4: FnIterator__int32) -> int32 {
                 {
                   let value/5 = x65 in
                   {
-                    let _wild66 = if (((value/5 / 2) * 2) == value/5) {
+                    let _wild66 = if trait_impl#Eq#int32#eq(((value/5 / 2) * 2), value/5) {
                         {
                           return value/5
                         }
@@ -77,7 +77,7 @@ fn main() -> unit {
                 {
                   let value/8 = x73 in
                   {
-                    let _wild74 = if (value/8 == 20) {
+                    let _wild74 = if trait_impl#Eq#int32#eq(value/8, 20) {
                         {
                           continue
                         }
@@ -199,7 +199,7 @@ fn main() -> unit {
                 {
                   let value/17 = x102 in
                   {
-                    let _wild104 = if (value/17 == 2) {
+                    let _wild104 = if trait_impl#Eq#int32#eq(value/17, 2) {
                         {
                           break
                         }
@@ -258,21 +258,8 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(next_fn/96: () -> Option__
   FnIterator__int32 { next_fn: next_fn/96 }
 }
 
-fn range(start/208: int32, end/209: int32) -> FnIterator__int32 {
-  let current/210 = inherent#Ref#Ref[T]#new__T_int32(start/208) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int32(|| {
-    let value/211 = inherent#Ref#Ref[T]#get__T_int32(current/210) in
-    if (value/211 < end/209) {
-        {
-          let _wild60 = inherent#Ref#Ref[T]#set__T_int32(current/210, (value/211 + 1)) in
-          Option__int32::Some(value/211)
-        }
-    } else {
-        {
-          Option__int32::None
-        }
-    }
-  })
+fn range(start/212: int32, end/213: int32) -> FnIterator__int32 {
+  __goml_builtin_range(start/212, end/213)
 }
 
 fn trait_impl#IntoIterator#FnIterator__int32#into_iter(self/104: FnIterator__int32) -> FnIterator__int32 {
@@ -281,6 +268,10 @@ fn trait_impl#IntoIterator#FnIterator__int32#into_iter(self/104: FnIterator__int
 
 fn trait_impl#Iterator#FnIterator__int32#next(self/97: FnIterator__int32) -> Option__int32 {
   FnIterator__int32.next_fn(self/97)()
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
@@ -329,6 +320,23 @@ fn inherent#Vec#Vec[T]#slice__T_int32(self/172: Vec[int32], start/173: int32, en
 
 fn trait_impl#IntoIterator#Slice[int32]#into_iter(self/192: Slice[int32]) -> FnIterator__int32 {
   inherent#Slice#Slice[T]#iter__T_int32(self/192)
+}
+
+fn __goml_builtin_range(start/208: int32, end/209: int32) -> FnIterator__int32 {
+  let current/210 = inherent#Ref#Ref[T]#new__T_int32(start/208) in
+  inherent#FnIterator#FnIterator[T]#from_fn__T_int32(|| {
+    let value/211 = inherent#Ref#Ref[T]#get__T_int32(current/210) in
+    if (value/211 < end/209) {
+        {
+          let _wild60 = inherent#Ref#Ref[T]#set__T_int32(current/210, (value/211 + 1)) in
+          Option__int32::Some(value/211)
+        }
+    } else {
+        {
+          Option__int32::None
+        }
+    }
+  })
 }
 
 fn inherent#Vec#Vec[T]#iter__T_int32(self/175: Vec[int32]) -> FnIterator__int32 {
@@ -422,10 +430,6 @@ fn inherent#Slice#Slice[T]#len__T_int32(self/183: Slice[int32]) -> int32 {
 
 fn inherent#Slice#Slice[T]#get__T_int32(self/181: Slice[int32], index/182: int32) -> int32 {
   @intrinsic(slice.get)(self/181, index/182)
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
 }
 
 fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {

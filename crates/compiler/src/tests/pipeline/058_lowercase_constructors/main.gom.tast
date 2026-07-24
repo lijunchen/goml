@@ -1,25 +1,25 @@
-fn make_some(value/0: int32) -> option[int32] {
-    option::Some((value/0 : int32))
+fn make_some(value/0: int32) -> Maybe[int32] {
+    Maybe::Some((value/0 : int32))
 }
 
-fn build_point(x/1: int32, y/2: int32) -> point {
-    point { x: (x/1 : int32), y: (y/2 : int32) }
+fn build_point(x/1: int32, y/2: int32) -> Point {
+    Point { x: (x/1 : int32), y: (y/2 : int32) }
 }
 
-fn magnitude(p/3: point) -> int32 {
-    let point { x: x/4: int32, y: y/5: int32 } = (p/3 : point);
+fn magnitude(p/3: Point) -> int32 {
+    let Point { x: x/4: int32, y: y/5: int32 } = (p/3 : Point);
     (x/4 : int32) + (y/5 : int32)
 }
 
 fn main() -> int32 {
-    match (make_some : (int32) -> option[int32])(5) {
-        option::Some(result/6: int32) => {
-              let pt/7: point = (build_point : (int32, int32) -> point)((result/6 : int32), 7);
-              match option::Some((pt/7 : point).x) {
-                  option::Some(value/8: int32) => (value/8 : int32) + (magnitude : (point) -> int32)((pt/7 : point)),
-                  option::None => 0,
+    match (make_some : (int32) -> Maybe[int32])(5) {
+        Maybe::Some(result/6: int32) => {
+              let pt/7: Point = (build_point : (int32, int32) -> Point)((result/6 : int32), 7);
+              match Maybe::Some((pt/7 : Point).x) {
+                  Maybe::Some(value/8: int32) => (value/8 : int32) + (magnitude : (Point) -> int32)((pt/7 : Point)),
+                  Maybe::None => 0,
               }
           },
-        option::None => 0,
+        Maybe::None => 0,
     }
 }

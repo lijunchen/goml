@@ -1,5 +1,5 @@
 fn step(i/0: int32) -> Option__int32 {
-  if (i/0 == 2) {
+  if trait_impl#Eq#int32#eq(i/0, 2) {
       {
         Option__int32::None
       }
@@ -17,7 +17,7 @@ fn accumulate(limit/1: int32) -> Option__int32 {
       {
         let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
         let _wild61 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
-        let _wild62 = if (cur/4 == 1) {
+        let _wild62 = if trait_impl#Eq#int32#eq(cur/4, 1) {
             {
               continue
             }
@@ -71,6 +71,10 @@ fn main() -> unit {
   let _wild69 = println__T_string(show(accumulate(4))) in
 }
 
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
+}
+
 fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
   @intrinsic(ref.new)(value/204)
 }
@@ -93,10 +97,6 @@ fn println__T_string(value/1: string) -> unit {
 
 fn trait_impl#ToString#string#to_string(self/37: string) -> string {
   self/37
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
 }
 
 fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {

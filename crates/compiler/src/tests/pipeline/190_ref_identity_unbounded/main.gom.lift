@@ -18,7 +18,7 @@ fn main() -> unit {
   let distinct/5 = inherent#Ref#Ref[T]#new__T_Node(Node { value: 1 }) in
   let _wild63 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, alias/4)) in
   let _wild64 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5)) in
-  let _wild65 = println__T_bool((trait_impl#Hash#Ref[Node]#hash(first/3) == trait_impl#Hash#Ref[Node]#hash(alias/4))) in
+  let _wild65 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[Node]#hash(first/3), trait_impl#Hash#Ref[Node]#hash(alias/4))) in
   let map/6 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() in
   let _wild66 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, first/3, "first") in
   let _wild67 = print_lookup(map/6, alias/4) in
@@ -53,6 +53,10 @@ fn trait_impl#Eq#Ref[Node]#eq(self/91: Ref[Node], other/92: Ref[Node]) -> bool {
 
 fn trait_impl#Hash#Ref[Node]#hash(self/93: Ref[Node]) -> uint64 {
   @intrinsic(ref.ptr_hash)(self/93)
+}
+
+fn trait_impl#Eq#uint64#eq(self/71: uint64, other/72: uint64) -> bool {
+  @intrinsic(eq.primitive)(self/71, other/72)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() -> HashMap[Ref[Node], string] {

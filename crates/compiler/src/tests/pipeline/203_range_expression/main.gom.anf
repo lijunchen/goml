@@ -1,0 +1,157 @@
+fn range(start/0: int32, end/1: int32) -> int32 {
+  join ret68(retv69: int32) -> int32 {
+    retv69
+  } in
+  let t70 = (start/0 + end/1) in
+  jump ret68(t70)
+}
+
+fn main() -> unit {
+  join ret71() -> unit {
+    ()
+  } in
+  let t72 = __goml_builtin_range(1, 4) in
+  let for_iter61 = trait_impl#IntoIterator#FnIterator__int32#into_iter(t72) in
+  join exit73() -> unit {
+    let _wild65 = () in
+    let t74 = range(10, 20) in
+    let _wild66 = println__T_int32(t74) in
+    jump ret71()
+  } in
+  joinrec {
+    join loop75() -> unit {
+      if true {
+        let for_next62 = trait_impl#Iterator#FnIterator__int32#next(for_iter61) in
+        join k76() -> unit {
+          jump loop75()
+        } in
+        match for_next62 {
+          Tag_0 => {
+            jump exit73()
+          },
+          Tag_1 => {
+            let x63 = Option__int32::Some._0(for_next62) in
+            let value/2 = x63 in
+            let _wild64 = println__T_int32(value/2) in
+            jump k76()
+          },
+        }
+      } else {
+        jump exit73()
+      }
+    } in
+  } in
+  jump loop75()
+}
+
+fn __goml_builtin_range(start/208: int32, end/209: int32) -> FnIterator__int32 {
+  join ret77(retv78: FnIterator__int32) -> FnIterator__int32 {
+    retv78
+  } in
+  let current/210 = inherent#Ref#Ref[T]#new__T_int32(start/208) in
+  let t79 = closure_env_goml_builtin_range_0 { current_0: current/210, end_1: end/209 } in
+  let t80 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(t79) in
+  jump ret77(t80)
+}
+
+fn trait_impl#IntoIterator#FnIterator__int32#into_iter(self/104: FnIterator__int32) -> FnIterator__int32 {
+  join ret81(retv82: FnIterator__int32) -> FnIterator__int32 {
+    retv82
+  } in
+  jump ret81(self/104)
+}
+
+fn trait_impl#Iterator#FnIterator__int32#next(self/97: FnIterator__int32) -> Option__int32 {
+  join ret83(retv84: Option__int32) -> Option__int32 {
+    retv84
+  } in
+  let t85 = FnIterator__int32.next_fn(self/97) in
+  let t86 = t85() in
+  jump ret83(t86)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret87() -> unit {
+    ()
+  } in
+  let t88 = trait_impl#ToString#int32#to_string(value/1) in
+  let t89 = @runtime(core.string_println)(t88) in
+  jump ret87()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
+  join ret90(retv91: Ref[int32]) -> Ref[int32] {
+    retv91
+  } in
+  let t92 = @intrinsic(ref.new)(value/204) in
+  jump ret90(t92)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
+  join ret93(retv94: int32) -> int32 {
+    retv94
+  } in
+  let t95 = @intrinsic(ref.get)(self/205) in
+  jump ret93(t95)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
+  join ret96() -> unit {
+    ()
+  } in
+  let t97 = @intrinsic(ref.set)(self/206, value/207) in
+  jump ret96()
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(next_fn/96: () -> Option__int32) -> FnIterator__int32 {
+  join ret98(retv99: FnIterator__int32) -> FnIterator__int32 {
+    retv99
+  } in
+  let t100 = FnIterator__int32 { next_fn: next_fn/96 } in
+  jump ret98(t100)
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  join ret101(retv102: string) -> string {
+    retv102
+  } in
+  let t103 = @runtime(core.int32_to_string)(self/41) in
+  jump ret101(t103)
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret104(retv105: bool) -> bool {
+    retv105
+  } in
+  let t106 = @intrinsic(eq.primitive)(self/61, other/62) in
+  jump ret104(t106)
+}
+
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  join ret107(retv108: uint64) -> uint64 {
+    retv108
+  } in
+  let t109 = @runtime(core.int32_hash)(self/83) in
+  jump ret107(t109)
+}
+
+fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(env67: closure_env_goml_builtin_range_0) -> Option__int32 {
+  join ret110(retv111: Option__int32) -> Option__int32 {
+    retv111
+  } in
+  let current/210 = closure_env_goml_builtin_range_0.current_0(env67) in
+  let end/209 = closure_env_goml_builtin_range_0.end_1(env67) in
+  let value/211 = inherent#Ref#Ref[T]#get__T_int32(current/210) in
+  let t114 = (value/211 < end/209) in
+  join k112(jp113: Option__int32) -> Option__int32 {
+    jump ret110(jp113)
+  } in
+  if t114 {
+    let t115 = (value/211 + 1) in
+    let _wild60 = inherent#Ref#Ref[T]#set__T_int32(current/210, t115) in
+    let t116 = Option__int32::Some(value/211) in
+    jump k112(t116)
+  } else {
+    jump k112(Tag_0)
+  }
+}

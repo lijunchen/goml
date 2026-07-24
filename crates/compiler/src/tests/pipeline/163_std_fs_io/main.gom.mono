@@ -421,7 +421,7 @@ fn inherent#Vec#Vec[T]#capacity__T_uint8(self/135: Vec[uint8]) -> int32 {
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/136: Vec[uint8]) -> bool {
-  (inherent#Vec#Vec[T]#len__T_uint8(self/136) == 0)
+  trait_impl#Eq#int32#eq(inherent#Vec#Vec[T]#len__T_uint8(self/136), 0)
 }
 
 fn inherent#Vec#Vec[T]#get__T_uint8(self/129: Vec[uint8], index/130: int32) -> uint8 {
@@ -438,7 +438,7 @@ fn inherent#Vec#Vec[T]#push__T_uint8(self/123: Vec[uint8], elem/124: uint8) -> u
 
 fn inherent#Vec#Vec[T]#pop__T_uint8(self/144: Vec[uint8]) -> Option__uint8 {
   let len/145 = inherent#Vec#Vec[T]#len__T_uint8(self/144) in
-  if (len/145 == 0) {
+  if trait_impl#Eq#int32#eq(len/145, 0) {
       {
         Option__uint8::None
       }
@@ -477,6 +477,10 @@ fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
 
 fn std::io::println__T_string(value/1: string) -> unit {
   @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn trait_impl#ToString#string#to_string(self/37: string) -> string {

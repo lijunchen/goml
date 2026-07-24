@@ -1,27 +1,27 @@
 package main;
-enum option[T] {
+enum Maybe[T] {
     Some(T),
     None
 }
 
-struct point {
+struct Point {
     x: int32,
     y: int32,
 }
 
-fn make_some(value: int32) -> option[int32] {
+fn make_some(value: int32) -> Maybe[int32] {
     Some(value)
 }
 
-fn build_point(x: int32, y: int32) -> point {
-    point {
+fn build_point(x: int32, y: int32) -> Point {
+    Point {
         x: x,
         y: y
     }
 }
 
-fn magnitude(p: point) -> int32 {
-    let point { x: x, y: y } = p;
+fn magnitude(p: Point) -> int32 {
+    let Point { x: x, y: y } = p;
     x + y
 }
 

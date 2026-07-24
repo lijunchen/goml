@@ -43,7 +43,7 @@ func main0() struct{} {
             var t72 int32 = t71 + 1
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__0, t72)
             var t75 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__0)
-            var t76 bool = t75 == 5
+            var t76 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t75, 5)
             if t76 {
                 continue
             } else {
@@ -78,29 +78,36 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__206 *ref_int32_
     return struct{}{}
 }
 
-func println__T_int32(value__1 int32) struct{} {
-    var t86 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t86)
-    return struct{}{}
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv86 bool
+    var t87 bool = self__61 == other__62
+    retv86 = t87
+    return retv86
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t89 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+func println__T_int32(value__1 int32) struct{} {
+    var t89 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
     _goml_runtime_core_string_println(t89)
     return struct{}{}
 }
 
+func println__T_string(value__1 string) struct{} {
+    var t92 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t92)
+    return struct{}{}
+}
+
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv92 string
-    var t93 string = _goml_runtime_core_int32_to_string(self__41)
-    retv92 = t93
-    return retv92
+    var retv95 string
+    var t96 string = _goml_runtime_core_int32_to_string(self__41)
+    retv95 = t96
+    return retv95
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv95 string
-    retv95 = self__37
-    return retv95
+    var retv98 string
+    retv98 = self__37
+    return retv98
 }
 
 func main() {

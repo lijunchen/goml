@@ -13,7 +13,7 @@ fn trait_impl#Hash#FloatKey#hash(self/2: FloatKey) -> uint64 {
 }
 
 fn trait_impl#Eq#CollisionKey#eq(self/5: CollisionKey, other/6: CollisionKey) -> bool {
-  (CollisionKey.value(self/5) == CollisionKey.value(other/6))
+  trait_impl#Eq#int32#eq(CollisionKey.value(self/5), CollisionKey.value(other/6))
 }
 
 fn trait_impl#Hash#CollisionKey#hash(self/7: CollisionKey) -> uint64 {
@@ -57,7 +57,7 @@ fn print_opt_int(value/10: Option__int32) -> unit {
 fn float_zero_contracts() -> unit {
   let zero32/12 = 0 in
   let negative_zero32/13 = (-zero32/12) in
-  let _wild63 = println__T_string(trait_impl#ToString#bool#to_string((trait_impl#Hash#float32#hash(zero32/12) == trait_impl#Hash#float32#hash(negative_zero32/13)))) in
+  let _wild63 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint64#eq(trait_impl#Hash#float32#hash(zero32/12), trait_impl#Hash#float32#hash(negative_zero32/13)))) in
   let values32/14 = inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() in
   let _wild64 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
   let _wild65 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13)) in
@@ -68,7 +68,7 @@ fn float_zero_contracts() -> unit {
   let _wild70 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14)) in
   let zero64/15 = 0 in
   let negative_zero64/16 = (-zero64/15) in
-  let _wild71 = println__T_string(trait_impl#ToString#bool#to_string((trait_impl#Hash#float64#hash(zero64/15) == trait_impl#Hash#float64#hash(negative_zero64/16)))) in
+  let _wild71 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint64#eq(trait_impl#Hash#float64#hash(zero64/15), trait_impl#Hash#float64#hash(negative_zero64/16)))) in
   let values64/17 = inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() in
   let _wild72 = inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(values64/17, zero64/15, "f64") in
   let _wild73 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(values64/17, negative_zero64/16)) in
@@ -115,7 +115,7 @@ fn reference_contracts() -> unit {
   let _wild97 = inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(values/22, key/23, "identity") in
   let _wild98 = println__T_bool(trait_impl#Eq#Ref[CollisionKey]#eq(key/23, alias/24)) in
   let _wild99 = println__T_bool(trait_impl#Eq#Ref[CollisionKey]#eq(key/23, equal_value/25)) in
-  let _wild100 = println__T_bool((trait_impl#Hash#Ref[CollisionKey]#hash(key/23) == trait_impl#Hash#Ref[CollisionKey]#hash(alias/24))) in
+  let _wild100 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[CollisionKey]#hash(key/23), trait_impl#Hash#Ref[CollisionKey]#hash(alias/24))) in
   let _wild101 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, alias/24)) in
   let _wild102 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, equal_value/25)) in
   let _wild103 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/23, CollisionKey { value: 99 }) in
@@ -129,11 +129,15 @@ fn main() -> unit {
 }
 
 fn trait_impl#Eq#float64#eq(self/75: float64, other/76: float64) -> bool {
-  (self/75 == other/76)
+  @intrinsic(eq.primitive)(self/75, other/76)
 }
 
 fn trait_impl#Hash#float64#hash(self/90: float64) -> uint64 {
   @runtime(core.float64_hash)(self/90)
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -146,6 +150,10 @@ fn println__T_int32(value/1: int32) -> unit {
 
 fn trait_impl#Hash#float32#hash(self/89: float32) -> uint64 {
   @runtime(core.float32_hash)(self/89)
+}
+
+fn trait_impl#Eq#uint64#eq(self/71: uint64, other/72: uint64) -> bool {
+  @intrinsic(eq.primitive)(self/71, other/72)
 }
 
 fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
@@ -269,11 +277,7 @@ fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
 }
 
 fn trait_impl#Eq#float32#eq(self/73: float32, other/74: float32) -> bool {
-  (self/73 == other/74)
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
+  @intrinsic(eq.primitive)(self/73, other/74)
 }
 
 fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {

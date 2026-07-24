@@ -191,7 +191,7 @@ fn precedence() -> unit {
   let t211 = (1 << t210) in
   let _wild106 = show_u8(t211) in
   let t212 = (1 | 2) in
-  let t213 = (t212 == 3) in
+  let t213 = trait_impl#Eq#uint8#eq(t212, 3) in
   let t214 = trait_impl#ToString#bool#to_string(t213) in
   let _wild107 = println__T_string(t214) in
   let t215 = (8 >> 1) in
@@ -367,109 +367,117 @@ fn println__T_string(value/1: string) -> unit {
   jump ret280()
 }
 
-fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  join ret283(retv284: string) -> string {
+fn trait_impl#Eq#uint8#eq(self/65: uint8, other/66: uint8) -> bool {
+  join ret283(retv284: bool) -> bool {
     retv284
   } in
-  let t285 = @runtime(core.bool_to_string)(self/36) in
+  let t285 = @intrinsic(eq.primitive)(self/65, other/66) in
   jump ret283(t285)
 }
 
-fn char_from_uint32(value/2: uint32) -> Option__char {
-  join ret286(retv287: Option__char) -> Option__char {
+fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
+  join ret286(retv287: string) -> string {
     retv287
+  } in
+  let t288 = @runtime(core.bool_to_string)(self/36) in
+  jump ret286(t288)
+}
+
+fn char_from_uint32(value/2: uint32) -> Option__char {
+  join ret289(retv290: Option__char) -> Option__char {
+    retv290
   } in
   let mtmp0 = @runtime(core.char_from_uint32)(value/2) in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
   let value/4 = x2 in
   let valid/3 = x1 in
-  join k288(jp289: Option__char) -> Option__char {
-    jump ret286(jp289)
+  join k291(jp292: Option__char) -> Option__char {
+    jump ret289(jp292)
   } in
   if valid/3 {
-    let t290 = Option__char::Some(value/4) in
-    jump k288(t290)
+    let t293 = Option__char::Some(value/4) in
+    jump k291(t293)
   } else {
-    jump k288(Tag_0)
+    jump k291(Tag_0)
   }
 }
 
 fn inherent#char#char#to_string(self/6: char) -> string {
-  join ret291(retv292: string) -> string {
-    retv292
-  } in
-  let t293 = @runtime(core.char_to_string)(self/6) in
-  jump ret291(t293)
-}
-
-fn trait_impl#ToString#uint8#to_string(self/43: uint8) -> string {
   join ret294(retv295: string) -> string {
     retv295
   } in
-  let t296 = @runtime(core.uint8_to_string)(self/43) in
+  let t296 = @runtime(core.char_to_string)(self/6) in
   jump ret294(t296)
 }
 
-fn trait_impl#ToString#uint16#to_string(self/44: uint16) -> string {
+fn trait_impl#ToString#uint8#to_string(self/43: uint8) -> string {
   join ret297(retv298: string) -> string {
     retv298
   } in
-  let t299 = @runtime(core.uint16_to_string)(self/44) in
+  let t299 = @runtime(core.uint8_to_string)(self/43) in
   jump ret297(t299)
 }
 
-fn trait_impl#ToString#uint32#to_string(self/45: uint32) -> string {
+fn trait_impl#ToString#uint16#to_string(self/44: uint16) -> string {
   join ret300(retv301: string) -> string {
     retv301
   } in
-  let t302 = @runtime(core.uint32_to_string)(self/45) in
+  let t302 = @runtime(core.uint16_to_string)(self/44) in
   jump ret300(t302)
 }
 
-fn trait_impl#ToString#uint64#to_string(self/46: uint64) -> string {
+fn trait_impl#ToString#uint32#to_string(self/45: uint32) -> string {
   join ret303(retv304: string) -> string {
     retv304
   } in
-  let t305 = @runtime(core.uint64_to_string)(self/46) in
+  let t305 = @runtime(core.uint32_to_string)(self/45) in
   jump ret303(t305)
 }
 
-fn trait_impl#ToString#int8#to_string(self/39: int8) -> string {
+fn trait_impl#ToString#uint64#to_string(self/46: uint64) -> string {
   join ret306(retv307: string) -> string {
     retv307
   } in
-  let t308 = @runtime(core.int8_to_string)(self/39) in
+  let t308 = @runtime(core.uint64_to_string)(self/46) in
   jump ret306(t308)
 }
 
-fn trait_impl#ToString#int16#to_string(self/40: int16) -> string {
+fn trait_impl#ToString#int8#to_string(self/39: int8) -> string {
   join ret309(retv310: string) -> string {
     retv310
   } in
-  let t311 = @runtime(core.int16_to_string)(self/40) in
+  let t311 = @runtime(core.int8_to_string)(self/39) in
   jump ret309(t311)
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+fn trait_impl#ToString#int16#to_string(self/40: int16) -> string {
   join ret312(retv313: string) -> string {
     retv313
   } in
-  let t314 = @runtime(core.int32_to_string)(self/41) in
+  let t314 = @runtime(core.int16_to_string)(self/40) in
   jump ret312(t314)
 }
 
-fn trait_impl#ToString#int64#to_string(self/42: int64) -> string {
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
   join ret315(retv316: string) -> string {
     retv316
   } in
-  let t317 = @runtime(core.int64_to_string)(self/42) in
+  let t317 = @runtime(core.int32_to_string)(self/41) in
   jump ret315(t317)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+fn trait_impl#ToString#int64#to_string(self/42: int64) -> string {
   join ret318(retv319: string) -> string {
     retv319
   } in
-  jump ret318(self/37)
+  let t320 = @runtime(core.int64_to_string)(self/42) in
+  jump ret318(t320)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret321(retv322: string) -> string {
+    retv322
+  } in
+  jump ret321(self/37)
 }

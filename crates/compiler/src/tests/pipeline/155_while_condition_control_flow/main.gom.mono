@@ -18,13 +18,13 @@ fn main() -> unit {
   let total/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let _wild66 = while if (inherent#Ref#Ref[T]#get__T_int32(j/1) < 4) {
       {
-        if (inherent#Ref#Ref[T]#get__T_int32(j/1) == 1) {
+        if trait_impl#Eq#int32#eq(inherent#Ref#Ref[T]#get__T_int32(j/1), 1) {
             {
               true
             }
         } else {
             {
-              (inherent#Ref#Ref[T]#get__T_int32(j/1) != 3)
+              (!trait_impl#Eq#int32#eq(inherent#Ref#Ref[T]#get__T_int32(j/1), 3))
             }
         }
       }
@@ -48,7 +48,7 @@ fn main() -> unit {
         true
       },
       1 => {
-        if (inherent#Ref#Ref[T]#get__T_int32(sum/4) == 0) {
+        if trait_impl#Eq#int32#eq(inherent#Ref#Ref[T]#get__T_int32(sum/4), 0) {
             {
               true
             }
@@ -88,12 +88,12 @@ fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> u
   @intrinsic(ref.set)(self/206, value/207)
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  @runtime(core.int32_to_string)(self/41)
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  @runtime(core.int32_to_string)(self/41)
 }
 
 fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {

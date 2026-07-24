@@ -108,7 +108,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
         let t132 = (t131 - 1) in
         let t133 = (t132 + 0) in
         let last/14 = @intrinsic(slice.get)(match70, t133) in
-        let t136 = (first/13 == last/14) in
+        let t136 = trait_impl#Eq#int32#eq(first/13, last/14) in
         join k134(jp135: string) -> string {
           jump k123(jp135)
         } in
@@ -134,7 +134,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
         let t143 = @intrinsic(vec.len)(match69) in
         let tail/11 = @intrinsic(slice.new)(match69, 1, t143) in
         let t146 = inherent#Slice#Slice[T]#len__T_int32(tail/11) in
-        let t147 = (first/10 == t146) in
+        let t147 = trait_impl#Eq#int32#eq(first/10, t146) in
         join k144(jp145: string) -> string {
           jump k139(jp145)
         } in
@@ -364,67 +364,75 @@ fn inherent#Slice#Slice[T]#len__T_int32(self/183: Slice[int32]) -> int32 {
   jump ret202(t204)
 }
 
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret205(retv206: bool) -> bool {
+    retv206
+  } in
+  let t207 = @intrinsic(eq.primitive)(self/61, other/62) in
+  jump ret205(t207)
+}
+
 fn println__T_int32(value/1: int32) -> unit {
-  join ret205() -> unit {
+  join ret208() -> unit {
     ()
   } in
-  let t206 = trait_impl#ToString#int32#to_string(value/1) in
-  let t207 = @runtime(core.string_println)(t206) in
-  jump ret205()
+  let t209 = trait_impl#ToString#int32#to_string(value/1) in
+  let t210 = @runtime(core.string_println)(t209) in
+  jump ret208()
 }
 
 fn inherent#Vec#Vec[T]#len__T_int32(self/134: Vec[int32]) -> int32 {
-  join ret208(retv209: int32) -> int32 {
-    retv209
+  join ret211(retv212: int32) -> int32 {
+    retv212
   } in
-  let t210 = @intrinsic(vec.len)(self/134) in
-  jump ret208(t210)
+  let t213 = @intrinsic(vec.len)(self/134) in
+  jump ret211(t213)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret211() -> unit {
+  join ret214() -> unit {
     ()
   } in
-  let t212 = trait_impl#ToString#string#to_string(value/1) in
-  let t213 = @runtime(core.string_println)(t212) in
-  jump ret211()
+  let t215 = trait_impl#ToString#string#to_string(value/1) in
+  let t216 = @runtime(core.string_println)(t215) in
+  jump ret214()
 }
 
 fn inherent#Ref#Ref[T]#new__T_Maybe(value/204: Maybe) -> Ref[Maybe] {
-  join ret214(retv215: Ref[Maybe]) -> Ref[Maybe] {
-    retv215
-  } in
-  let t216 = @intrinsic(ref.new)(value/204) in
-  jump ret214(t216)
-}
-
-fn inherent#Ref#Ref[T]#get__T_Maybe(self/205: Ref[Maybe]) -> Maybe {
-  join ret217(retv218: Maybe) -> Maybe {
+  join ret217(retv218: Ref[Maybe]) -> Ref[Maybe] {
     retv218
   } in
-  let t219 = @intrinsic(ref.get)(self/205) in
+  let t219 = @intrinsic(ref.new)(value/204) in
   jump ret217(t219)
 }
 
+fn inherent#Ref#Ref[T]#get__T_Maybe(self/205: Ref[Maybe]) -> Maybe {
+  join ret220(retv221: Maybe) -> Maybe {
+    retv221
+  } in
+  let t222 = @intrinsic(ref.get)(self/205) in
+  jump ret220(t222)
+}
+
 fn inherent#Ref#Ref[T]#set__T_Maybe(self/206: Ref[Maybe], value/207: Maybe) -> unit {
-  join ret220() -> unit {
+  join ret223() -> unit {
     ()
   } in
-  let t221 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret220()
+  let t224 = @intrinsic(ref.set)(self/206, value/207) in
+  jump ret223()
 }
 
 fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  join ret222(retv223: string) -> string {
-    retv223
-  } in
-  let t224 = @runtime(core.int32_to_string)(self/41) in
-  jump ret222(t224)
-}
-
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
   join ret225(retv226: string) -> string {
     retv226
   } in
-  jump ret225(self/37)
+  let t227 = @runtime(core.int32_to_string)(self/41) in
+  jump ret225(t227)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret228(retv229: string) -> string {
+    retv229
+  } in
+  jump ret228(self/37)
 }

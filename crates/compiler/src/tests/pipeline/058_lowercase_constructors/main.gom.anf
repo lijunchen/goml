@@ -1,26 +1,26 @@
-fn make_some(value/0: int32) -> option__int32 {
-  join ret68(retv69: option__int32) -> option__int32 {
+fn make_some(value/0: int32) -> Maybe__int32 {
+  join ret68(retv69: Maybe__int32) -> Maybe__int32 {
     retv69
   } in
-  let t70 = option__int32::Some(value/0) in
+  let t70 = Maybe__int32::Some(value/0) in
   jump ret68(t70)
 }
 
-fn build_point(x/1: int32, y/2: int32) -> point {
-  join ret71(retv72: point) -> point {
+fn build_point(x/1: int32, y/2: int32) -> Point {
+  join ret71(retv72: Point) -> Point {
     retv72
   } in
-  let t73 = point { x: x/1, y: y/2 } in
+  let t73 = Point { x: x/1, y: y/2 } in
   jump ret71(t73)
 }
 
-fn magnitude(p/3: point) -> int32 {
+fn magnitude(p/3: Point) -> int32 {
   join ret74(retv75: int32) -> int32 {
     retv75
   } in
   let mtmp61 = p/3 in
-  let x62 = point.x(mtmp61) in
-  let x63 = point.y(mtmp61) in
+  let x62 = Point.x(mtmp61) in
+  let x63 = Point.y(mtmp61) in
   let y/5 = x63 in
   let x/4 = x62 in
   let t76 = (x/4 + y/5) in
@@ -37,17 +37,17 @@ fn main() -> int32 {
   } in
   match mtmp64 {
     Tag_0 => {
-      let x65 = option__int32::Some._0(mtmp64) in
+      let x65 = Maybe__int32::Some._0(mtmp64) in
       let result/6 = x65 in
       let pt/7 = build_point(result/6, 7) in
-      let t81 = point.x(pt/7) in
-      let mtmp66 = option__int32::Some(t81) in
+      let t81 = Point.x(pt/7) in
+      let mtmp66 = Maybe__int32::Some(t81) in
       join k82(jp83: int32) -> int32 {
         jump k79(jp83)
       } in
       match mtmp66 {
         Tag_0 => {
-          let x67 = option__int32::Some._0(mtmp66) in
+          let x67 = Maybe__int32::Some._0(mtmp66) in
           let value/8 = x67 in
           let t84 = magnitude(pt/7) in
           let t85 = (value/8 + t84) in

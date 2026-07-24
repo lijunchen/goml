@@ -170,9 +170,9 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__36 bool) string {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv225 string
-    retv225 = self__37
-    return retv225
+    var retv228 string
+    retv228 = self__37
+    return retv228
 }
 
 func main() {

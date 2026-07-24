@@ -58,7 +58,7 @@ func continue_branch() struct{} {
             var t78 int32 = t77 + 1
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(count__2, t78)
             var t82 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(count__2)
-            var t83 bool = t82 == 1
+            var t83 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t82, 1)
             var jp80 int32
             if t83 {
                 continue
@@ -121,17 +121,24 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__206 *ref_int32_
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv102 bool
+    var t103 bool = self__61 == other__62
+    retv102 = t103
+    return retv102
+}
+
 func println__T_int32(value__1 int32) struct{} {
-    var t102 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t102)
+    var t105 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t105)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv105 string
-    var t106 string = _goml_runtime_core_int32_to_string(self__41)
-    retv105 = t106
-    return retv105
+    var retv108 string
+    var t109 string = _goml_runtime_core_int32_to_string(self__41)
+    retv108 = t109
+    return retv108
 }
 
 func main() {

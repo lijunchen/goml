@@ -1,7 +1,7 @@
 fn main() -> unit {
   let i/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let total/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild66 = while if (inherent#Ref#Ref[T]#get__T_int32(i/0) == 0) {
+  let _wild66 = while if trait_impl#Eq#int32#eq(inherent#Ref#Ref[T]#get__T_int32(i/0), 0) {
       {
         let _wild61 = inherent#Ref#Ref[T]#set__T_int32(i/0, 1) in
         true
@@ -19,7 +19,7 @@ fn main() -> unit {
   } {
       {
         let _wild62 = inherent#Ref#Ref[T]#set__T_int32(total/1, (inherent#Ref#Ref[T]#get__T_int32(total/1) + inherent#Ref#Ref[T]#get__T_int32(i/0))) in
-        let _wild64 = if (inherent#Ref#Ref[T]#get__T_int32(i/0) == 1) {
+        let _wild64 = if trait_impl#Eq#int32#eq(inherent#Ref#Ref[T]#get__T_int32(i/0), 1) {
             {
               let _wild63 = inherent#Ref#Ref[T]#set__T_int32(i/0, 2) in
               continue
@@ -58,7 +58,7 @@ fn main() -> unit {
   } {
       {
         let _wild71 = inherent#Ref#Ref[T]#set__T_int32(total2/3, (inherent#Ref#Ref[T]#get__T_int32(total2/3) + inherent#Ref#Ref[T]#get__T_int32(j/2))) in
-        let _wild73 = if (inherent#Ref#Ref[T]#get__T_int32(j/2) == 2) {
+        let _wild73 = if trait_impl#Eq#int32#eq(inherent#Ref#Ref[T]#get__T_int32(j/2), 2) {
             {
               let _wild72 = break in
             }
@@ -80,6 +80,10 @@ fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
   @intrinsic(ref.get)(self/205)
 }
 
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
+}
+
 fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
   @intrinsic(ref.set)(self/206, value/207)
 }
@@ -90,10 +94,6 @@ fn println__T_int32(value/1: int32) -> unit {
 
 fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
   @runtime(core.int32_to_string)(self/41)
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
 }
 
 fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {

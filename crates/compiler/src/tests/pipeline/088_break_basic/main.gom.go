@@ -40,7 +40,7 @@ func main0() struct{} {
         var t70 bool = t69 < 10
         if t70 {
             var t75 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__0)
-            var t76 bool = t75 == 5
+            var t76 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t75, 5)
             if t76 {
                 break Loop_loop68
             } else {
@@ -73,9 +73,16 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__205 *ref_int32_
     return retv81
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv84 bool
+    var t85 bool = self__61 == other__62
+    retv84 = t85
+    return retv84
+}
+
 func println__T_int32(value__1 int32) struct{} {
-    var t84 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t84)
+    var t87 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t87)
     return struct{}{}
 }
 
@@ -85,22 +92,22 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__206 *ref_int32_
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t89 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t89)
+    var t92 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t92)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv92 string
-    var t93 string = _goml_runtime_core_int32_to_string(self__41)
-    retv92 = t93
-    return retv92
+    var retv95 string
+    var t96 string = _goml_runtime_core_int32_to_string(self__41)
+    retv95 = t96
+    return retv95
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv95 string
-    retv95 = self__37
-    return retv95
+    var retv98 string
+    retv98 = self__37
+    return retv98
 }
 
 func main() {

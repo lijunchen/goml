@@ -142,7 +142,7 @@ fn main() -> unit {
                 let invalid_valid/14 = x102 in
                 {
                   let _wild104 = println__T_bool(invalid_valid/14) in
-                  let _wild105 = println__T_bool((invalid_text/15 == "")) in
+                  let _wild105 = println__T_bool(trait_impl#Eq#string#eq(invalid_text/15, "")) in
                   let parts/16 = inherent#Vec#Vec[T]#with_capacity__T_string(3) in
                   let _wild106 = inherent#Vec#Vec[T]#push__T_string(parts/16, "hello") in
                   let _wild107 = inherent#Vec#Vec[T]#push__T_string(parts/16, "，") in
@@ -237,8 +237,8 @@ fn main() -> unit {
                                         {
                                           let key/25 = x146 in
                                           {
-                                            if if (key/25 == "a") {
-                                                (item_value/26 == 1)
+                                            if if trait_impl#Eq#string#eq(key/25, "a") {
+                                                trait_impl#Eq#int32#eq(item_value/26, 1)
                                             } else {
                                                 false
                                             } {
@@ -246,8 +246,8 @@ fn main() -> unit {
                                                   inherent#Ref#Ref[T]#set__T_bool(seen_a/22, true)
                                                 }
                                             } else {
-                                                if if (key/25 == "b") {
-                                                    (item_value/26 == 2)
+                                                if if trait_impl#Eq#string#eq(key/25, "b") {
+                                                    trait_impl#Eq#int32#eq(item_value/26, 2)
                                                 } else {
                                                     false
                                                 } {
@@ -476,6 +476,10 @@ fn inherent#Vec#Vec[T]#push__T_uint8(self/123: Vec[uint8], elem/124: uint8) -> u
   @intrinsic(vec.push)(self/123, elem/124)
 }
 
+fn trait_impl#Eq#string#eq(self/53: string, other/54: string) -> bool {
+  @intrinsic(eq.primitive)(self/53, other/54)
+}
+
 fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/122: int32) -> Vec[string] {
   @intrinsic(vec.with_capacity)(capacity/122)
 }
@@ -510,7 +514,7 @@ fn inherent#Vec#Vec[T]#push__T_int32(self/123: Vec[int32], elem/124: int32) -> u
 
 fn inherent#Vec#Vec[T]#insert__T_int32(self/155: Vec[int32], index/156: int32, value/157: int32) -> unit {
   let len/158 = inherent#Vec#Vec[T]#len__T_int32(self/155) in
-  if (index/156 == len/158) {
+  if trait_impl#Eq#int32#eq(index/156, len/158) {
       {
         inherent#Vec#Vec[T]#push__T_int32(self/155, value/157)
       }
@@ -580,7 +584,7 @@ fn inherent#Vec#Vec[T]#get__T_int32(self/129: Vec[int32], index/130: int32) -> i
 
 fn inherent#Vec#Vec[T]#last__T_int32(self/142: Vec[int32]) -> Option__int32 {
   let len/143 = inherent#Vec#Vec[T]#len__T_int32(self/142) in
-  if (len/143 == 0) {
+  if trait_impl#Eq#int32#eq(len/143, 0) {
       {
         Option__int32::None
       }
@@ -593,7 +597,7 @@ fn inherent#Vec#Vec[T]#last__T_int32(self/142: Vec[int32]) -> Option__int32 {
 
 fn inherent#Vec#Vec[T]#pop__T_int32(self/144: Vec[int32]) -> Option__int32 {
   let len/145 = inherent#Vec#Vec[T]#len__T_int32(self/144) in
-  if (len/145 == 0) {
+  if trait_impl#Eq#int32#eq(len/145, 0) {
       {
         Option__int32::None
       }
@@ -611,7 +615,7 @@ fn inherent#Vec#Vec[T]#truncate__T_int32(self/139: Vec[int32], len/140: int32) -
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_int32(self/136: Vec[int32]) -> bool {
-  (inherent#Vec#Vec[T]#len__T_int32(self/136) == 0)
+  trait_impl#Eq#int32#eq(inherent#Vec#Vec[T]#len__T_int32(self/136), 0)
 }
 
 fn inherent#Vec#Vec[T]#clear__T_int32(self/141: Vec[int32]) -> unit {
@@ -648,6 +652,10 @@ fn trait_impl#IntoIterator#Vec[(string,int32)]#into_iter(self/180: Vec[(string, 
 
 fn trait_impl#Iterator#FnIterator__(string,int32)#next(self/97: FnIterator__(string,int32)) -> Option__(string,int32) {
   FnIterator__(string,int32).next_fn(self/97)()
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
 }
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/206: Ref[bool], value/207: bool) -> unit {
@@ -735,16 +743,12 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_(string,int32)(next_fn/96: () ->
   FnIterator__(string,int32) { next_fn: next_fn/96 }
 }
 
-fn trait_impl#Eq#string#eq(self/53: string, other/54: string) -> bool {
-  (self/53 == other/54)
-}
-
 fn trait_impl#Hash#string#hash(self/79: string) -> uint64 {
   @runtime(core.string_hash)(self/79)
 }
 
 fn trait_impl#Eq#bool#eq(self/51: bool, other/52: bool) -> bool {
-  (self/51 == other/52)
+  @intrinsic(eq.primitive)(self/51, other/52)
 }
 
 fn trait_impl#Hash#bool#hash(self/78: bool) -> uint64 {
@@ -757,10 +761,6 @@ fn trait_impl#Hash#bool#hash(self/78: bool) -> uint64 {
         0
       }
   }
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  (self/61 == other/62)
 }
 
 fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {

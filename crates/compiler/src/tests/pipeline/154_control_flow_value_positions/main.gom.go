@@ -44,7 +44,7 @@ func main0() struct{} {
             var t87 int32 = t86 + 1
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__0, t87)
             var t92 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__0)
-            var t93 bool = t92 == 3
+            var t93 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t92, 3)
             var jp89 int32
             if t93 {
                 continue
@@ -113,17 +113,24 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__206 *ref_int32_
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv104 bool
+    var t105 bool = self__61 == other__62
+    retv104 = t105
+    return retv104
+}
+
 func println__T_int32(value__1 int32) struct{} {
-    var t104 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t104)
+    var t107 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t107)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv107 string
-    var t108 string = _goml_runtime_core_int32_to_string(self__41)
-    retv107 = t108
-    return retv107
+    var retv110 string
+    var t111 string = _goml_runtime_core_int32_to_string(self__41)
+    retv110 = t111
+    return retv110
 }
 
 func main() {

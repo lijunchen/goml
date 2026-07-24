@@ -27,7 +27,7 @@ func early(x__0 int32) int32 {
         retv80 = 0
         return retv80
     } else {
-        var t84 bool = x__0 == 0
+        var t84 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(x__0, 0)
         if t84 {
             retv80 = 1
             return retv80
@@ -78,47 +78,54 @@ func main0() struct{} {
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__61 int32, other__62 int32) bool {
+    var retv99 bool
+    var t100 bool = self__61 == other__62
+    retv99 = t100
+    return retv99
+}
+
 func println__T_string(value__1 string) struct{} {
-    var t99 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t99)
+    var t102 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t102)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t102 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_core_string_print(t102)
+    var t105 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t105)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t105 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t105)
+    var t108 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t108)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv108 string
-    retv108 = self__37
-    return retv108
+    var retv111 string
+    retv111 = self__37
+    return retv111
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv110 string
-    var t111 string = _goml_runtime_core_int32_to_string(self__41)
-    retv110 = t111
-    return retv110
+    var retv113 string
+    var t114 string = _goml_runtime_core_int32_to_string(self__41)
+    retv113 = t114
+    return retv113
 }
 
 func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env78 closure_env_f_0, y__2 int32) int32 {
-    var retv113 int32
-    var t116 bool = y__2 > 5
-    if t116 {
-        retv113 = y__2
-        return retv113
+    var retv116 int32
+    var t119 bool = y__2 > 5
+    if t119 {
+        retv116 = y__2
+        return retv116
     } else {
-        var t115 int32 = y__2 + 10
-        retv113 = t115
-        return retv113
+        var t118 int32 = y__2 + 10
+        retv116 = t118
+        return retv116
     }
 }
 

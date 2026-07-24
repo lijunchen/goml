@@ -26,7 +26,7 @@ fn main() -> unit {
             let t86 = (t84 + t85) in
             let _wild71 = inherent#Ref#Ref[T]#set__T_int32(total2/3, t86) in
             let t88 = inherent#Ref#Ref[T]#get__T_int32(j/2) in
-            let t89 = (t88 == 2) in
+            let t89 = trait_impl#Eq#int32#eq(t88, 2) in
             join k87() -> unit {
               let _wild73 = () in
               jump loop81()
@@ -63,7 +63,7 @@ fn main() -> unit {
   joinrec {
     join loop90() -> unit {
       let t101 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-      let t102 = (t101 == 0) in
+      let t102 = trait_impl#Eq#int32#eq(t101, 0) in
       join k91(jp92: bool) -> unit {
         if jp92 {
           let t93 = inherent#Ref#Ref[T]#get__T_int32(total/1) in
@@ -71,7 +71,7 @@ fn main() -> unit {
           let t95 = (t93 + t94) in
           let _wild62 = inherent#Ref#Ref[T]#set__T_int32(total/1, t95) in
           let t99 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-          let t100 = (t99 == 1) in
+          let t100 = trait_impl#Eq#int32#eq(t99, 1) in
           join k96() -> unit {
             let _wild64 = () in
             let t97 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
@@ -125,36 +125,36 @@ fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
   jump ret110(t112)
 }
 
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret113(retv114: bool) -> bool {
+    retv114
+  } in
+  let t115 = @intrinsic(eq.primitive)(self/61, other/62) in
+  jump ret113(t115)
+}
+
 fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
-  join ret113() -> unit {
+  join ret116() -> unit {
     ()
   } in
-  let t114 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret113()
+  let t117 = @intrinsic(ref.set)(self/206, value/207) in
+  jump ret116()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret115() -> unit {
+  join ret118() -> unit {
     ()
   } in
-  let t116 = trait_impl#ToString#int32#to_string(value/1) in
-  let t117 = @runtime(core.string_println)(t116) in
-  jump ret115()
+  let t119 = trait_impl#ToString#int32#to_string(value/1) in
+  let t120 = @runtime(core.string_println)(t119) in
+  jump ret118()
 }
 
 fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  join ret118(retv119: string) -> string {
-    retv119
-  } in
-  let t120 = @runtime(core.int32_to_string)(self/41) in
-  jump ret118(t120)
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  join ret121(retv122: bool) -> bool {
+  join ret121(retv122: string) -> string {
     retv122
   } in
-  let t123 = (self/61 == other/62) in
+  let t123 = @runtime(core.int32_to_string)(self/41) in
   jump ret121(t123)
 }
 
