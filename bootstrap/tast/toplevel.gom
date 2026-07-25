@@ -1,5 +1,6 @@
 package tast;
 
+use gomlc::ast;
 use gomlc::hir;
 
 fn function_context(
@@ -91,12 +92,121 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
     }
 }
 
+fn deferred_method_name(value: Callable) -> Option[string] {
+    match value {
+        Callable::Function(name) => {
+            let prefix = "__goml_deferred_method:";
+            if name.byte_len() > prefix.byte_len()
+                && name.byte_slice(0, prefix.byte_len()) == prefix
+            {
+                Option::Some(name.byte_slice(
+                    prefix.byte_len(),
+                    name.byte_len(),
+                ))
+            } else {
+                Option::None
+            }
+        },
+        _ => Option::None,
+    }
+}
+
+fn resolve_deferred_exprs(ctx: Checker, values: Vec[Expr]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::new();
+    for value in values {
+        result.push(resolve_deferred_expr(ctx, value))
+    };
+    result
+}
+
+fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    for stmt in value.stmts {
+        stmts.push(match stmt {
+            Stmt::Let { is_mut, pat, value } => Stmt::Let {
+                is_mut,
+                pat,
+                value: resolve_deferred_expr(ctx, value),
+            },
+            Stmt::Assign { target, value } => Stmt::Assign {
+                target: resolve_deferred_expr(ctx, target),
+                value: resolve_deferred_expr(ctx, value),
+            },
+            Stmt::Expr { expr } => Stmt::Expr {
+                expr: resolve_deferred_expr(ctx, expr),
+            },
+        })
+    };
+    Block {
+        stmts,
+        tail: match value.tail {
+            Option::Some(expr) => Option::Some(resolve_deferred_expr(ctx, expr)),
+            Option::None => Option::None,
+        },
+    }
+}
+
+fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
+    match value {
+        Expr::Closure { params, body, ty } => Expr::Closure {
+            params,
+            body: resolve_deferred_expr(ctx, body),
+            ty,
+        },
+        Expr::Block { block, ty } => Expr::Block {
+            block: resolve_deferred_block(ctx, block),
+            ty,
+        },
+        Expr::Call { func, args, ty } => {
+            let args = resolve_deferred_exprs(ctx, args);
+            let func = match func {
+                Expr::Callable { callable, ty: callable_ty } => {
+                    match deferred_method_name(callable) {
+                        Option::Some(name) => if args.len() > 0 {
+                            let arg_types: Vec[Type] = Vec::new();
+                            for index in range(1, args.len()) {
+                                arg_types.push(expr_type(args.get(index)))
+                            };
+                            match resolve_method(
+                                ctx,
+                                expr_type(args.get(0)),
+                                name,
+                                arg_types,
+                                Option::Some(ty),
+                            ) {
+                                Option::Some(value) => Expr::Callable {
+                                    callable: value.callable,
+                                    ty: value.ty,
+                                },
+                                Option::None => Expr::Callable {
+                                    callable,
+                                    ty: callable_ty,
+                                },
+                            }
+                        } else {
+                            Expr::Callable { callable, ty: callable_ty }
+                        },
+                        Option::None => Expr::Callable {
+                            callable,
+                            ty: callable_ty,
+                        },
+                    }
+                },
+                other => resolve_deferred_expr(ctx, other),
+            };
+            Expr::Call { func, args, ty }
+        },
+        other => other,
+    }
+}
+
 fn check_function(
     base: Checker,
     value: hir::Function,
     inherited_generics: Vec[string],
     inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
+    ignore_generic_bounds: bool,
 ) -> Function {
     match self_ty {
         Option::None => if value.name == "main" {
@@ -128,8 +238,9 @@ fn check_function(
         Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
         Option::None => Type::Unit,
     };
-    let predicates = resolve_signature_predicates(
-        base,
+    let predicates = resolve_signature_predicates(base, if ignore_generic_bounds {
+        inherited_predicates
+    } else {
         append_predicates(
             inherited_predicates,
             predicates_from_hir(
@@ -138,9 +249,8 @@ fn check_function(
                 type_params,
                 self_ty,
             ),
-        ),
-        true,
-    );
+        )
+    }, true);
     let previous_span = base.current_span.get();
     base.current_span.set(value.ret_ty_span);
     let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
@@ -165,11 +275,12 @@ fn check_function(
         insert_local(ctx, param.0, ty);
         params.push((local_name(param.0), ty))
     };
-    let body = check_block(ctx, value.body, Option::Some(ret_ty));
+    let checked_body = check_block(ctx, value.body, Option::Some(ret_ty));
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
     resolve_numeric_literal_constraints(ctx);
     resolve_required_predicates(ctx);
+    let body = resolve_deferred_block(ctx, checked_body.0);
     Function {
         visibility: value.visibility,
         name: value.name,
@@ -177,11 +288,155 @@ fn check_function(
         predicates,
         params,
         ret_ty,
-        body: body.0,
+        body,
+    }
+}
+
+fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
+    match prune(value) {
+        Type::Param { name } => if contains_name(result, name) {
+            ()
+        } else {
+            result.push(name)
+        },
+        Type::Tuple { items } => for item in items {
+            collect_injective_type_params(item, result)
+        },
+        Type::Projection { for_ty: _, name: _, trait_ref: _ } => (),
+        Type::App { ty, args } => {
+            collect_injective_type_params(ty, result);
+            for arg in args {
+                collect_injective_type_params(arg, result)
+            }
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => collect_injective_type_params(elem, result),
+        Type::HashMap { key, value } => {
+            collect_injective_type_params(key, result);
+            collect_injective_type_params(value, result)
+        },
+        Type::Func { params, ret_ty } => {
+            for param in params {
+                collect_injective_type_params(param, result)
+            };
+            collect_injective_type_params(ret_ty, result)
+        },
+        _ => (),
+    }
+}
+
+fn type_contains_projection(value: Type) -> bool {
+    match prune(value) {
+        Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
+        Type::Tuple { items } => {
+            let found = Ref::new(false);
+            for item in items {
+                if type_contains_projection(item) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::App { ty, args } => {
+            let found = Ref::new(type_contains_projection(ty));
+            for arg in args {
+                if type_contains_projection(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => type_contains_projection(elem),
+        Type::HashMap { key, value } => {
+            type_contains_projection(key) || type_contains_projection(value)
+        },
+        Type::Func { params, ret_ty } => {
+            let found = Ref::new(type_contains_projection(ret_ty));
+            for param in params {
+                if type_contains_projection(param) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn validate_impl_type_params(
+    ctx: Checker,
+    generics: Vec[string],
+    reference: Option[TraitRef],
+    for_type: Type,
+    span: ast::Span,
+) -> unit {
+    let constrained: Vec[string] = Vec::new();
+    collect_injective_type_params(for_type, constrained);
+    match reference {
+        Option::Some(reference) => for arg in reference.args {
+            collect_injective_type_params(arg, constrained)
+        },
+        Option::None => (),
+    };
+    for generic in generics {
+        if contains_name(constrained, generic) {
+            ()
+        } else {
+            push_diagnostic_at(
+                ctx,
+                "Implementation type parameter "
+                    + generic
+                    + " is not constrained by type "
+                    + type_text(for_type),
+                if type_contains_projection(for_type) {
+                    Option::Some(span)
+                } else {
+                    Option::None
+                },
+            )
+        }
+    }
+}
+
+fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> unit {
+    for value in ctx.impls {
+        if value.span.start == span.start && value.span.end == span.end {
+            if contains_name(ctx.invalid_impl_origins, value.origin) {
+                ()
+            } else {
+                ctx.invalid_impl_origins.push(value.origin)
+            }
+        } else {
+            ()
+        }
+    }
+}
+
+fn trait_reference_has_wrong_arity(
+    ctx: Checker,
+    reference: TraitRef,
+) -> bool {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => info.generics.len() != reference.args.len(),
+        Option::None => false,
     }
 }
 
 fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
+    let invalid = Ref::new(false);
     let previous_span = base.current_span.get();
     base.current_span.set(Option::Some(value.for_type_span));
     let raw_for_type = type_from_hir(value.for_type, value.generics, Option::None);
@@ -190,7 +445,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         base,
         raw_for_type,
         Vec::new(),
-        true,
+        !type_contains_projection(raw_for_type),
     );
     base.current_span.set(previous_span);
     if wrong_arity {
@@ -236,6 +491,48 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         },
         Option::None => Option::None,
     };
+    let validation_start = base.diagnostics.len();
+    validate_impl_type_params(
+        base,
+        value.generics,
+        trait_ref,
+        for_type,
+        value.for_type_span,
+    );
+    if base.diagnostics.len() > validation_start {
+        invalid.set(true)
+    } else {
+        ()
+    };
+    match trait_ref {
+        Option::Some(reference) => if trait_reference_has_wrong_arity(
+            base,
+            reference,
+        ) {
+            mark_impl_invalid_at(base, value.for_type_span);
+            return ImplBlock {
+                generics: value.generics,
+                predicates,
+                trait_ref,
+                for_type,
+                associated_types: Vec::new(),
+                methods: Vec::new(),
+            }
+        } else {
+            ()
+        },
+        Option::None => (),
+    };
+    let associated_predicates = match trait_ref {
+        Option::Some(reference) => append_predicates(
+            predicates,
+            Vec::new().pushed(TypePredicate::Trait {
+                for_ty: for_type,
+                trait_ref: reference,
+            }),
+        ),
+        Option::None => predicates,
+    };
     let associated_types: Vec[(string, Type)] = Vec::new();
     for associated in value.associated_types {
         associated_types.push((
@@ -247,30 +544,85 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                     value.generics,
                     Option::Some(for_type),
                 ),
-                predicates,
+                associated_predicates,
                 true,
             ),
         ))
     };
+    match trait_ref {
+        Option::Some(reference) => {
+            let validation_span = base.current_span.get();
+            base.current_span.set(Option::Some(value.for_type_span));
+            let validation_start = base.diagnostics.len();
+            validate_trait_impl_definition_requirements(
+                base,
+                reference,
+                for_type,
+                associated_types,
+                predicates,
+            );
+            if base.diagnostics.len() > validation_start {
+                invalid.set(true)
+            } else {
+                ()
+            };
+            base.current_span.set(validation_span)
+        },
+        Option::None => (),
+    };
     let methods: Vec[Function] = Vec::new();
+    let generic_method_names: Vec[string] = Vec::new();
     for method in value.methods {
+        match trait_ref {
+            Option::Some(reference) => if method.generics.len() > 0 {
+                invalid.set(true);
+                generic_method_names.push(method.name);
+                push_diagnostic_at(
+                    base,
+                    "Trait method implementation "
+                        + short_name(reference.name)
+                        + "::"
+                        + method.name
+                        + " cannot declare type parameters",
+                    Option::None,
+                )
+            } else {
+                ()
+            },
+            Option::None => (),
+        };
         methods.push(check_function(
             base,
             method,
             value.generics,
             predicates,
             Option::Some(for_type),
+            method.generics.len() > 0,
         ))
     };
     match trait_ref {
-        Option::Some(reference) => validate_trait_impl(
-            base,
-            reference,
-            for_type,
-            associated_types,
-            methods,
-        ),
+        Option::Some(reference) => {
+            let validation_start = base.diagnostics.len();
+            validate_trait_impl(
+                base,
+                reference,
+                for_type,
+                associated_types,
+                methods,
+                generic_method_names,
+            );
+            if base.diagnostics.len() > validation_start {
+                invalid.set(true)
+            } else {
+                ()
+            }
+        },
         Option::None => validate_inherent_impl(base, for_type, methods),
+    };
+    if invalid.get() {
+        mark_impl_invalid_at(base, value.for_type_span)
+    } else {
+        ()
     };
     ImplBlock {
         generics: value.generics,
@@ -412,12 +764,403 @@ fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bo
     result.get()
 }
 
+fn impl_associated_type(
+    values: Vec[(string, Type)],
+    name: string,
+) -> Option[Type] {
+    let result = Ref::new(Option::None);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn associated_type_reaches(
+    values: Vec[(string, Type)],
+    value: Type,
+    target: string,
+    active: Vec[string],
+) -> bool {
+    match prune(value) {
+        Type::Projection { for_ty, name, trait_ref } => {
+            let found = Ref::new(name == target);
+            if !(found.get()) && !contains_name(active, name) {
+                match impl_associated_type(values, name) {
+                    Option::Some(next) => {
+                        active.push(name);
+                        found.set(associated_type_reaches(
+                            values,
+                            next,
+                            target,
+                            active,
+                        ));
+                        active.truncate(active.len() - 1)
+                    },
+                    Option::None => (),
+                }
+            } else {
+                ()
+            };
+            if found.get() {
+                true
+            } else {
+                let nested = Ref::new(associated_type_reaches(
+                    values,
+                    for_ty,
+                    target,
+                    active,
+                ));
+                match trait_ref {
+                    Option::Some(reference) => for arg in reference.args {
+                        if associated_type_reaches(
+                            values,
+                            arg,
+                            target,
+                            active,
+                        ) {
+                            nested.set(true)
+                        } else {
+                            ()
+                        }
+                    },
+                    Option::None => (),
+                };
+                nested.get()
+            }
+        },
+        Type::Tuple { items } => {
+            let found = Ref::new(false);
+            for item in items {
+                if associated_type_reaches(values, item, target, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::App { ty, args } => {
+            let found = Ref::new(associated_type_reaches(
+                values,
+                ty,
+                target,
+                active,
+            ));
+            for arg in args {
+                if associated_type_reaches(values, arg, target, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => {
+            associated_type_reaches(values, elem, target, active)
+        },
+        Type::HashMap { key, value } => {
+            associated_type_reaches(values, key, target, active)
+                || associated_type_reaches(values, value, target, active)
+        },
+        Type::Func { params, ret_ty } => {
+            let found = Ref::new(associated_type_reaches(
+                values,
+                ret_ty,
+                target,
+                active,
+            ));
+            for param in params {
+                if associated_type_reaches(values, param, target, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn validate_associated_type_cycles(
+    ctx: Checker,
+    reference: TraitRef,
+    associated_types: Vec[(string, Type)],
+) -> unit {
+    for associated in associated_types {
+        if associated_type_reaches(
+            associated_types,
+            associated.1,
+            associated.0,
+            Vec::new(),
+        ) {
+            push_diagnostic_at(
+                ctx,
+                "Associated type "
+                    + associated.0
+                    + " has a cyclic definition in impl of trait "
+                    + short_name(reference.name),
+                Option::None,
+            )
+        } else {
+            ()
+        }
+    }
+}
+
+fn predicate_text(value: TypePredicate) -> string {
+    match value {
+        TypePredicate::Trait { for_ty, trait_ref } => {
+            type_text(for_ty) + ": " + trait_ref_text(trait_ref)
+        },
+        TypePredicate::Equality { lhs, rhs } => {
+            type_text(lhs) + " == " + type_text(rhs)
+        },
+    }
+}
+
+fn resolve_impl_alias_types(
+    ctx: Checker,
+    values: Vec[Type],
+) -> Vec[Type] {
+    let result: Vec[Type] = Vec::new();
+    for value in values {
+        result.push(resolve_impl_alias_type(ctx, value))
+    };
+    result
+}
+
+fn resolve_impl_alias_trait_ref(
+    ctx: Checker,
+    value: TraitRef,
+) -> TraitRef {
+    TraitRef {
+        name: value.name,
+        args: resolve_impl_alias_types(ctx, value.args),
+    }
+}
+
+fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
+    match prune(value) {
+        projection @ Type::Projection { for_ty, name, trait_ref } => {
+            match projection_equality(ctx, for_ty, name, trait_ref) {
+                Option::Some(resolved) => resolved,
+                Option::None => Type::Projection {
+                    for_ty: resolve_impl_alias_type(ctx, for_ty),
+                    name,
+                    trait_ref: match trait_ref {
+                        Option::Some(value) => Option::Some(
+                            resolve_impl_alias_trait_ref(ctx, value),
+                        ),
+                        Option::None => Option::None,
+                    },
+                },
+            }
+        },
+        Type::Tuple { items } => Type::Tuple {
+            items: resolve_impl_alias_types(ctx, items),
+        },
+        Type::App { ty, args } => Type::App {
+            ty: resolve_impl_alias_type(ctx, ty),
+            args: resolve_impl_alias_types(ctx, args),
+        },
+        Type::Array { len, elem } => Type::Array {
+            len,
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::Slice { elem } => Type::Slice {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::VecType { elem } => Type::VecType {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::RefType { elem } => Type::RefType {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::HashMap { key, value } => Type::HashMap {
+            key: resolve_impl_alias_type(ctx, key),
+            value: resolve_impl_alias_type(ctx, value),
+        },
+        Type::Channel { elem } => Type::Channel {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::Func { params, ret_ty } => Type::Func {
+            params: resolve_impl_alias_types(ctx, params),
+            ret_ty: resolve_impl_alias_type(ctx, ret_ty),
+        },
+        other => other,
+    }
+}
+
+fn resolve_impl_alias_predicate(
+    ctx: Checker,
+    value: TypePredicate,
+) -> TypePredicate {
+    match value {
+        TypePredicate::Trait { for_ty, trait_ref } => TypePredicate::Trait {
+            for_ty: resolve_impl_alias_type(ctx, for_ty),
+            trait_ref: resolve_impl_alias_trait_ref(ctx, trait_ref),
+        },
+        TypePredicate::Equality { lhs, rhs } => TypePredicate::Equality {
+            lhs: resolve_impl_alias_type(ctx, lhs),
+            rhs: resolve_impl_alias_type(ctx, rhs),
+        },
+    }
+}
+
+fn validate_associated_type_bounds(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    associated_types: Vec[(string, Type)],
+    substitutions: Vec[TypeSubst],
+) -> unit {
+    for definition in info.associated_types {
+        match impl_associated_type(associated_types, definition.name) {
+            Option::Some(actual) => for bound in definition.bounds {
+                let bound = substitute_trait_ref(bound, substitutions);
+                let actual = normalize_type(ctx, actual);
+                if trait_bound_satisfied_at(ctx, actual, bound, 0) {
+                    ()
+                } else {
+                    push_diagnostic(
+                        ctx,
+                        "Associated type "
+                            + definition.name
+                            + " = "
+                            + type_text(actual)
+                            + " does not satisfy bound "
+                            + trait_ref_text(bound)
+                            + " in impl of "
+                            + short_name(reference.name),
+                    )
+                }
+            },
+            Option::None => (),
+        }
+    }
+}
+
+fn validate_trait_impl_requirements(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    for_type: Type,
+    substitutions: Vec[TypeSubst],
+) -> unit {
+    for supertrait in info.supertraits {
+        let supertrait = substitute_trait_ref(supertrait, substitutions);
+        if trait_bound_satisfied_at(ctx, for_type, supertrait, 0) {
+            ()
+        } else {
+            push_diagnostic(
+                ctx,
+                "Trait "
+                    + short_name(reference.name)
+                    + " implementation for "
+                    + type_text(for_type)
+                    + " requires supertrait "
+                    + trait_ref_text(supertrait),
+            )
+        }
+    };
+    for predicate in substitute_predicates(info.predicates, substitutions) {
+        let predicate = resolve_impl_alias_predicate(ctx, predicate);
+        if predicates_satisfied_at(ctx, Vec::new().pushed(predicate), 0) {
+            ()
+        } else {
+            push_diagnostic(
+                ctx,
+                "Trait "
+                    + short_name(reference.name)
+                    + " implementation for "
+                    + type_text(for_type)
+                    + " does not satisfy declared requirement "
+                    + predicate_text(predicate),
+            )
+        }
+    }
+}
+
+fn validate_trait_impl_definition_requirements(
+    ctx: Checker,
+    reference: TraitRef,
+    for_type: Type,
+    associated_types: Vec[(string, Type)],
+    predicates: Vec[TypePredicate],
+) -> unit {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => {
+            let validation_ctx = function_context(
+                ctx,
+                Type::Unit,
+                Option::Some(for_type),
+                Vec::new(),
+                predicates,
+            );
+            validate_associated_type_cycles(
+                validation_ctx,
+                reference,
+                associated_types,
+            );
+            let substitutions = trait_substitutions(
+                validation_ctx,
+                info,
+                reference,
+                Option::Some(for_type),
+            );
+            for associated in associated_types {
+                validation_ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::Some(reference),
+                    },
+                    ty: associated.1,
+                });
+                validation_ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::None,
+                    },
+                    ty: associated.1,
+                })
+            };
+            validate_trait_impl_requirements(
+                validation_ctx,
+                info,
+                reference,
+                for_type,
+                substitutions,
+            );
+            validate_associated_type_bounds(
+                validation_ctx,
+                info,
+                reference,
+                associated_types,
+                substitutions,
+            )
+        },
+        Option::None => (),
+    }
+}
+
 fn validate_trait_impl(
     ctx: Checker,
     reference: TraitRef,
     for_type: Type,
     associated_types: Vec[(string, Type)],
     methods: Vec[Function],
+    generic_method_names: Vec[string],
 ) -> unit {
     match find_trait(ctx, reference.name) {
         Option::Some(info) => {
@@ -465,13 +1208,17 @@ fn validate_trait_impl(
                         )
                     } else {
                         seen.push(method.name);
-                        validate_method_signature(
-                            ctx,
-                            reference.name,
-                            expected,
-                            method,
-                            substitutions,
-                        )
+                        if contains_name(generic_method_names, method.name) {
+                            ()
+                        } else {
+                            validate_method_signature(
+                                ctx,
+                                reference.name,
+                                expected,
+                                method,
+                                substitutions,
+                            )
+                        }
                     },
                     Option::None => push_diagnostic(ctx,
                         "Method "
@@ -609,6 +1356,90 @@ fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
     }
 }
 
+fn supertrait_path(
+    ctx: Checker,
+    current: string,
+    target: string,
+    active: Vec[string],
+    path: Vec[string],
+) -> bool {
+    if names_match(current, target) {
+        true
+    } else if contains_name(active, current) {
+        false
+    } else {
+        active.push(current);
+        let found = Ref::new(false);
+        match find_trait(ctx, current) {
+            Option::Some(info) => for reference in info.supertraits {
+                if !(found.get()) {
+                    let length = path.len();
+                    path.push(short_name(reference.name));
+                    if supertrait_path(
+                        ctx,
+                        reference.name,
+                        target,
+                        active,
+                        path,
+                    ) {
+                        found.set(true)
+                    } else {
+                        path.truncate(length)
+                    }
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        };
+        active.truncate(active.len() - 1);
+        found.get()
+    }
+}
+
+fn cycle_text(values: Vec[string]) -> string {
+    let result = Ref::new("");
+    for value in values {
+        if result.get() == "" {
+            result.set(value)
+        } else {
+            result.set(result.get() + " -> " + value)
+        }
+    };
+    result.get()
+}
+
+fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
+    let reported = Ref::new(false);
+    for index in range(0, trait_count) {
+        let info = ctx.traits.get(index);
+        for reference in info.supertraits {
+            if !(reported.get()) {
+                let path = Vec::new().pushed(short_name(reference.name));
+                if supertrait_path(
+                    ctx,
+                    reference.name,
+                    info.name,
+                    Vec::new(),
+                    path,
+                ) {
+                    path.push(short_name(reference.name));
+                    push_diagnostic_at(
+                        ctx,
+                        "Supertrait cycle detected: " + cycle_text(path),
+                        Option::None,
+                    );
+                    reported.set(true)
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            }
+        }
+    }
+}
+
 fn validate_local_definitions(
     ctx: Checker,
     enum_count: int,
@@ -628,6 +1459,7 @@ fn validate_local_definitions(
         }
     };
     validate_struct_sizes(ctx, struct_count);
+    validate_supertrait_cycles(ctx, trait_count);
     for index in range(0, trait_count) {
         let info = ctx.traits.get(index);
         for predicate in info.predicates {
@@ -1118,6 +1950,7 @@ fn check_file_with_package(
                 Vec::new(),
                 Vec::new(),
                 Option::None,
+                false,
             ))),
             _ => (),
         }

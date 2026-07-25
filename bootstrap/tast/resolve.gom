@@ -982,6 +982,15 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
 }
 
 fn resolve_required_predicates(ctx: Checker) -> unit {
+    for _ in range(0, ctx.required_predicates.len() + 1) {
+        for requirement in ctx.required_predicates {
+            let _ = predicates_satisfied_at(
+                ctx,
+                Vec::new().pushed(requirement.predicate),
+                0,
+            );
+        };
+    };
     let messages: Vec[string] = Vec::new();
     let spans: Vec[Option[ast::Span]] = Vec::new();
     for requirement in ctx.required_predicates {
@@ -1238,6 +1247,16 @@ fn trait_bound_satisfied_at(
     } else if builtin_trait_bound_satisfied(ctx, bound_ty, reference, depth) {
         true
     } else {
+        let ambiguous = if contains_unbound_any_variable(bound_ty) {
+            compatible_impl_count(ctx, bound_ty, reference) > 1
+        } else {
+            false
+        };
+        if ambiguous {
+            return false
+        } else {
+            ()
+        };
         let found = Ref::new(false);
         for impl_info in ctx.impls {
             if !(found.get())
@@ -1276,6 +1295,43 @@ fn trait_bound_satisfied_at(
         };
         found.get()
     }
+}
+
+fn compatible_impl_count(
+    ctx: Checker,
+    bound_ty: Type,
+    reference: TraitRef,
+) -> int {
+    let count = Ref::new(0);
+    for impl_info in ctx.impls {
+        if !contains_name(ctx.invalid_impl_origins, impl_info.origin)
+            && names_match(impl_info.trait_ref.name, reference.name)
+        {
+            let substitutions = instantiate_substitutions(
+                ctx.counter,
+                impl_info.generics,
+                Vec::new(),
+            );
+            let owner = substitute_type(impl_info.for_type, substitutions);
+            let application = substitute_trait_ref(
+                impl_info.trait_ref,
+                substitutions,
+            );
+            if call_types_compatible(owner, bound_ty)
+                && call_type_lists_compatible(
+                    application.args,
+                    reference.args,
+                )
+            {
+                count.set(count.get() + 1);
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    count.get()
 }
 
 fn instantiated_impl_parts(
@@ -1341,11 +1397,19 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
                     push_diagnostic_at(
                         ctx,
                         "Trait "
-                            + trait_ref_text(right_impl.trait_ref)
+                            + short_name(right_impl.trait_ref.name)
                             + " implementation for "
                             + type_text(right_impl.for_type)
                             + " overlaps with implementation "
-                            + left_impl.origin,
+                            + if left_impl.generics.len() > 0 {
+                                left_impl.origin
+                                    + " at source range "
+                                    + left_impl.span.start.to_string()
+                                    + ".."
+                                    + left_impl.span.end.to_string()
+                            } else {
+                                left_impl.origin
+                            },
                         Option::Some(right_impl.span),
                     )
                 }
@@ -1409,6 +1473,62 @@ fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
     match value.trait_ref {
         Option::Some(reference) => contains_name(ctx.in_scope_traits, reference.name),
         Option::None => true,
+    }
+}
+
+fn deferred_method_candidate(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+    args: Vec[Type],
+    expected: Option[Type],
+) -> Option[ResolvedCallable] {
+    let matches = Ref::new(0);
+    let candidate_ty = Ref::new(Type::Error);
+    for value in ctx.methods {
+        if value.function.name == name
+            && method_trait_in_scope(ctx, value)
+            && match value.trait_ref {
+                Option::Some(_) => true,
+                Option::None => false,
+            }
+        {
+            let candidate = instantiate_method_candidate(ctx, value);
+            if method_matches_call(
+                ctx,
+                candidate.callable,
+                receiver,
+                args,
+                expected,
+            ) {
+                matches.set(matches.get() + 1);
+                if matches.get() == 1 {
+                    candidate_ty.set(candidate.callable.ty)
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    if matches.get() > 1 {
+        match prune(candidate_ty.get()) {
+            Type::Func { params, ret_ty } => {
+                params.set(0, receiver);
+                Option::Some(ResolvedCallable {
+                    callable: Callable::Function(
+                        "__goml_deferred_method:" + name,
+                    ),
+                    ty: Type::Func { params, ret_ty },
+                })
+            },
+            _ => Option::None,
+        }
+    } else {
+        Option::None
     }
 }
 
@@ -1900,6 +2020,7 @@ fn resolve_dyn_method(
             Option::None => {
                 let result: Ref[Option[ResolvedCallable]] = Ref::new(Option::None);
                 let matches = Ref::new(0);
+                let candidates = Vec::new();
                 for index in range(1, applications.len()) {
                     match resolve_trait_reference_method(
                         ctx,
@@ -1909,6 +2030,9 @@ fn resolve_dyn_method(
                     ) {
                         Option::Some(value) => {
                             matches.set(matches.get() + 1);
+                            candidates.push(short_name(
+                                applications.get(index).name,
+                            ));
                             result.set(Option::Some(dyn_method_callable(owner, name, value)))
                         },
                         Option::None => (),
@@ -1918,11 +2042,38 @@ fn resolve_dyn_method(
                     result.get()
                 } else {
                     if matches.get() > 1 {
-                        push_diagnostic(ctx, "ambiguous method: " + name)
+                        let candidate_text = Ref::new("");
+                        for candidate in candidates {
+                            if candidate_text.get() == "" {
+                                candidate_text.set(candidate)
+                            } else {
+                                candidate_text.set(
+                                    candidate_text.get() + ", " + candidate,
+                                )
+                            }
+                        };
+                        push_diagnostic(
+                            ctx,
+                            "Ambiguous method "
+                                + name
+                                + " for type "
+                                + type_text(receiver)
+                                + " (candidates: "
+                                + candidate_text.get()
+                                + "). Use UFCS like Trait::"
+                                + name
+                                + "(...) to disambiguate",
+                        );
+                        Option::Some(ResolvedCallable {
+                            callable: Callable::Function("<error>"),
+                            ty: Type::Func {
+                                params: Vec::new().pushed(receiver),
+                                ret_ty: Type::Error,
+                            },
+                        })
                     } else {
-                        ()
-                    };
-                    Option::None
+                        Option::None
+                    }
                 }
             },
         }
@@ -2380,16 +2531,31 @@ fn resolve_projection_type(
                         ))
                     } else {
                         if report {
+                            let projection = type_text(for_ty) + "::" + name;
                             if matches.len() == 0 {
-                                push_diagnostic(ctx,
-                                    "associated type "
-                                        + name
-                                        + " is not provided by a trait bound",
-                                )
+                                let message = "Associated type "
+                                    + projection
+                                    + " is not provided by a trait bound";
+                                push_diagnostic_at(ctx, message, Option::None);
+                                push_diagnostic(ctx, message)
                             } else {
-                                push_diagnostic(ctx,
-                                    "associated type " + name + " is ambiguous",
-                                )
+                                let candidates = Ref::new("");
+                                for candidate in matches {
+                                    let candidate = short_name(candidate.name);
+                                    if candidates.get() == "" {
+                                        candidates.set(candidate)
+                                    } else {
+                                        candidates.set(
+                                            candidates.get() + ", " + candidate,
+                                        )
+                                    }
+                                };
+                                let message = "Associated type "
+                                    + projection
+                                    + " is ambiguous between "
+                                    + candidates.get();
+                                push_diagnostic_at(ctx, message, Option::None);
+                                push_diagnostic(ctx, message)
                             }
                         } else {
                             ()
@@ -2621,8 +2787,14 @@ fn validate_nominal_application(
 fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
     match find_trait(ctx, reference.name) {
         Option::Some(info) => if info.generics.len() != reference.args.len() {
-            push_diagnostic(ctx,
-                "trait argument count mismatch for " + reference.name,
+            push_diagnostic(
+                ctx,
+                "Trait "
+                    + short_name(reference.name)
+                    + " expects "
+                    + info.generics.len().to_string()
+                    + " type arguments, but got "
+                    + reference.args.len().to_string(),
             )
         } else {
             ()
@@ -2785,7 +2957,13 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         },
         Type::Dyn { trait_name: name } => match find_trait(ctx, name) {
             Option::Some(info) => if info.generics.len() > 0 {
-                push_diagnostic(ctx, "generic trait cannot be used as dyn " + name)
+                push_diagnostic_at(
+                    ctx,
+                    "Generic trait "
+                        + short_name(name)
+                        + " cannot be used as dyn",
+                    Option::None,
+                )
             } else {
                 validate_dyn_trait(ctx, info)
             },
@@ -3048,6 +3226,31 @@ fn resolve_trait_static(
     } else {
         match find_trait(ctx, owner) {
             Option::Some(info) => {
+                let diagnostics_start = ctx.diagnostics.len();
+                for value in explicit {
+                    validate_signature_type(ctx, value)
+                };
+                if explicit.len() != info.generics.len() {
+                    push_diagnostic(
+                        ctx,
+                        "Trait "
+                            + short_name(info.name)
+                            + " expects "
+                            + info.generics.len().to_string()
+                            + " type arguments, but got "
+                            + explicit.len().to_string(),
+                    )
+                } else {
+                    ()
+                };
+                if ctx.diagnostics.len() > diagnostics_start {
+                    return Option::Some(ResolvedCallable {
+                        callable: Callable::Function("<error>"),
+                        ty: Type::Error,
+                    })
+                } else {
+                    ()
+                };
                 let substitutions = instantiate_substitutions(
                     ctx.counter,
                     info.generics,

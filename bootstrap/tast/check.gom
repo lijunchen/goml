@@ -1921,7 +1921,32 @@ fn check_method_call(
         let value = check_expr(ctx, source, Option::None);
         arg_types.push(expr_type(value))
     };
-    match resolve_method(ctx, expr_type(receiver), name, arg_types, expected) {
+    let receiver_ty = if is_numeric_type(expr_type(receiver)) {
+        resolve_type(expr_type(receiver))
+    } else {
+        expr_type(receiver)
+    };
+    let resolved = if contains_unbound_type_variable(receiver_ty) {
+        match deferred_method_candidate(
+            ctx,
+            receiver_ty,
+            name,
+            arg_types,
+            expected,
+        ) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => resolve_method(
+                ctx,
+                receiver_ty,
+                name,
+                arg_types,
+                expected,
+            ),
+        }
+    } else {
+        resolve_method(ctx, receiver_ty, name, arg_types, expected)
+    };
+    match resolved {
         Option::Some(value) => {
             let trait_method = match value.callable {
                 Callable::TraitMethod { trait_ref: _, method_name: _ } => true,
@@ -4184,6 +4209,10 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
     match value {
         hir::Stmt::Let { is_mut, pat, annotation, value: source } => {
             let invalid_annotation = Ref::new(false);
+            let closure_value = match source.kind {
+                hir::ExprKind::Closure { params: _, body: _ } => true,
+                _ => false,
+            };
             let previous_span = ctx.current_span.get();
             ctx.current_span.set(match annotation {
                 Option::Some(hir::TypeExpr::Dyn { trait_name: _ }) => Option::Some(source.span),
@@ -4222,7 +4251,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 },
                 Option::None => {
                     let ty = expr_type(expression);
-                    if contains_unresolved_inference(ctx, ty) {
+                    if contains_unresolved_inference(ctx, ty) && !closure_value {
                         push_diagnostic_at(
                             ctx,
                             "Could not infer type",
