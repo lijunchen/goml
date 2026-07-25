@@ -26,7 +26,7 @@ explicitly refers to fixture cases.
 | `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage |
 | `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 24 projects |
 | `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 100 fixtures |
-| `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 54 fixtures representing 50 Rust tests |
+| `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 80 fixtures representing 72 Rust tests |
 | `crates/compiler/src/tests/struct_type/` | `bootstrap/compiler_test/struct_type_test.gom` | migrated, 3 fixtures |
 | `crates/compiler/src/tests/bootstrap/` | no replacement | oracle; Rust/bootstrap differential infrastructure |
 
@@ -50,7 +50,7 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 
 | Rust module | Current count | GoML destination | Status |
 | --- | ---: | --- | --- |
-| `trait_impl_test.rs` | 28 | `bootstrap/compiler_test/trait_impl_test.gom` | partially migrated; details below |
+| `trait_impl_test.rs` | 6 | `bootstrap/compiler_test/trait_impl_test.gom` | partially migrated; 72 migrated, 4 diagnostic-fidelity cases retained, and 2 internal |
 | `visibility_test.rs` | 2 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 18 migrated and 2 blocked |
 | `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 3 migrated and 8 blocked |
 | `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
@@ -97,13 +97,18 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 ### Migrated
 
 - `associated_outputs_disambiguate_generic_trait_methods`
+- `associated_type_bound_is_checked_at_impl_definition`
 - `associated_type_binding_must_match_trait_method_signature`
+- `associated_type_cycles_are_rejected`
 - `associated_type_impl_requires_complete_known_unique_bindings`
+- `associated_type_projection_requires_one_defining_bound`
+- `ambiguous_trait_goal_is_retried_after_unique_inference`
 - `canonical_trait_cache_replays_unique_inference`
 - `coherence_is_rechecked_after_all_impls_are_collected`
 - `composite_type_parameter_trait_goal_requires_proof`
 - `deterministic_coercion_precedes_trait_inference`
 - `dyn_trait_unavailable_method_is_reported`
+- `dyn_trait_parent_method_ambiguity_is_reported`
 - `equality_operator_requires_eq_evidence`
 - `equality_predicate_transfers_trait_bound`
 - `expected_return_type_disambiguates_generic_trait_method`
@@ -111,7 +116,9 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 - `for_loop_uses_iterator_associated_item_type`
 - `forward_and_diamond_supertraits_are_supported`
 - `generic_into_iterator_bound_implies_iterator_for_into_iter`
+- `generic_trait_arity_is_checked`
 - `generic_trait_applications_are_distinct`
+- `generic_traits_are_rejected_as_dyn_types`
 - `impl_equality_predicate_restricts_application`
 - `impl_for_generic_type_reports_missing_method_diagnostic`
 - `impl_for_struct_reports_missing_method_diagnostic`
@@ -123,24 +130,39 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 - `impl_with_mismatched_return_type_reports_diagnostic`
 - `impl_with_parameter_arity_mismatch_reports_diagnostic`
 - `inherited_method_name_conflicts_remain_ambiguous`
+- `into_iterator_impl_rejects_inconsistent_item`
+- `into_iterator_impl_rejects_non_iterator_into_iter`
+- `invalid_impl_does_not_satisfy_trait_goal`
 - `iterator_associated_item_prevents_conflicting_impls`
 - `local_projection_type_positions_are_resolved`
 - `method_arguments_disambiguate_generic_trait_applications`
+- `method_resolution_waits_for_receiver_inference`
 - `nested_impl_bound_can_drive_inference`
 - `nested_impl_bound_must_be_satisfied`
+- `overlapping_generic_and_concrete_impls_are_rejected_at_definition`
+- `overlapping_generic_trait_applications_are_rejected`
 - `projected_trait_application_impl_is_selectable`
+- `projection_only_impl_parameter_is_rejected`
 - `structural_where_equality_relates_nested_type_parameters`
+- `supertrait_cycles_are_rejected`
+- `supertrait_impl_is_required_at_definition`
 - `symbolic_projection_equality_selects_single_impl`
 - `trait_coverage_associated_type_bound_is_implied`
 - `trait_coverage_constrained_blanket_is_disjoint_without_bound`
 - `trait_coverage_constrained_blanket_method_is_available_with_bound`
+- `trait_coverage_constrained_blanket_method_is_unavailable_without_bound`
+- `trait_coverage_constrained_blanket_overlaps_when_bound_holds`
 - `trait_coverage_declaration_where_predicate_is_implied`
 - `trait_coverage_generic_applications_have_distinct_associated_types`
 - `trait_coverage_generic_parameter_bound_is_implied`
 - `trait_coverage_projection_equality_transfers_bound`
 - `trait_coverage_supertrait_associated_type_is_projectable`
 - `trait_goal_infers_nested_type_from_unique_impl`
+- `trait_impl_methods_cannot_add_type_parameters`
+- `trait_parameter_bounds_are_required_at_impl_definition`
+- `trait_self_predicates_are_resolved_and_enforced`
 - `traits_with_associated_types_are_rejected_as_dyn_types`
+- `unconstrained_impl_type_parameter_is_rejected`
 - `unused_generic_bound_still_creates_an_obligation`
 - `where_constructed_bound_is_checked_at_call_site`
 - `where_predicate_accepts_constructed_trait_receiver`
@@ -155,37 +177,16 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 | `generic_constraints_reject_overlapping_trait_impls_at_definition` | `crashers/hashmap_ref_dyn_hash_overlapping_impl/main.gom` |
 | `recursive_blanket_trait_impl_bound_does_not_crash` | `crashers/recursive_blanket_trait_impl_bound/main.gom` |
 
-### Blocked by Rust/bootstrap differences
+### Retained for diagnostic fidelity
 
 - `ambiguous_trait_goal_does_not_commit_inference`
-- `ambiguous_trait_goal_is_retried_after_unique_inference`
-- `associated_type_bound_is_checked_at_impl_definition`
-- `associated_type_cycles_are_rejected`
-- `associated_type_projection_requires_one_defining_bound`
-- `dyn_trait_parent_method_ambiguity_is_reported`
 - `explicit_generic_trait_arguments_are_validated`
 - `generic_trait_arguments_are_validated`
-- `generic_trait_arity_is_checked`
 - `generic_trait_parameters_and_signatures_are_validated`
-- `generic_traits_are_rejected_as_dyn_types`
-- `into_iterator_impl_rejects_inconsistent_item`
-- `into_iterator_impl_rejects_non_iterator_into_iter`
-- `invalid_impl_does_not_satisfy_trait_goal`
-- `method_resolution_waits_for_receiver_inference`
-- `overlapping_generic_and_concrete_impls_are_rejected_at_definition`
-- `overlapping_generic_trait_applications_are_rejected`
-- `projection_only_impl_parameter_is_rejected`
-- `supertrait_cycles_are_rejected`
-- `supertrait_impl_is_required_at_definition`
-- `trait_coverage_constrained_blanket_method_is_unavailable_without_bound`
-- `trait_coverage_constrained_blanket_overlaps_when_bound_holds`
-- `trait_impl_methods_cannot_add_type_parameters`
-- `trait_parameter_bounds_are_required_at_impl_definition`
-- `trait_self_predicates_are_resolved_and_enforced`
-- `unconstrained_impl_type_parameter_is_rejected`
 
-These tests stay in `trait_impl_test.rs`. They must not be removed until the
-bootstrap diagnostic output exactly matches the Rust oracle.
+The bootstrap implementation now matches the Rust core behavior covered by
+these tests. They stay in `trait_impl_test.rs` because source locations or
+secondary inference diagnostics do not yet exactly match the Rust output.
 
 ### Rust-only internal assertions
 
