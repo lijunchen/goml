@@ -1,0 +1,17 @@
+trait Left {
+    fn name(self: Self) -> string;
+}
+
+trait Right {
+    fn name(self: Self) -> string;
+}
+
+trait Both: Left + Right {
+    fn both(self: Self) -> unit;
+}
+
+fn name[T: Both](value: T) -> string {
+    value.name()
+}
+
+fn main() -> unit { () }

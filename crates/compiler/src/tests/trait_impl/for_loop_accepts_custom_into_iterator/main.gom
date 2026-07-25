@@ -1,0 +1,20 @@
+struct Values {
+    values: Vec[int32],
+}
+
+impl IntoIterator for Values {
+    type Item = int32;
+    type IntoIter = FnIterator[int32];
+
+    fn into_iter(self: Values) -> FnIterator[int32] {
+        self.values.iter()
+    }
+}
+
+fn consume_int(value: int32) -> unit { () }
+
+fn main() -> unit {
+    for value in (Values { values: Vec::new() }) {
+        consume_int(value);
+    };
+}

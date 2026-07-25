@@ -1,0 +1,17 @@
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn use_box[T](value: Box[T]) -> unit {
+    require_mark(value)
+}
+
+fn main() -> unit { () }
