@@ -246,7 +246,7 @@ fn expand_or_pattern_rows(rows: Vec[PatternRow], source: string) -> Option[Vec[P
     }
 }
 
-fn pattern_source_count(rows: Vec[PatternRow], source: string) -> int32 {
+fn pattern_source_count(rows: Vec[PatternRow], source: string) -> int {
     let count = Ref::new(0);
     for row in rows {
         for column in row.columns {
@@ -927,7 +927,8 @@ fn lower_primitive_pattern_rows(
 
 fn primitive_pattern_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Int8
+        tast::Type::Int
+        | tast::Type::Int8
         | tast::Type::Int16
         | tast::Type::Int32
         | tast::Type::Int64

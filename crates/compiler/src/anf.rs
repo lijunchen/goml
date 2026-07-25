@@ -1969,7 +1969,10 @@ pub mod anf_verify {
             }
             (anf::Ty::TSlice { elem: ea }, anf::Ty::TSlice { elem: eb })
             | (anf::Ty::TVec { elem: ea }, anf::Ty::TVec { elem: eb })
-            | (anf::Ty::TRef { elem: ea }, anf::Ty::TRef { elem: eb }) => tys_compatible(ea, eb),
+            | (anf::Ty::TRef { elem: ea }, anf::Ty::TRef { elem: eb })
+            | (anf::Ty::TChannel { elem: ea }, anf::Ty::TChannel { elem: eb }) => {
+                tys_compatible(ea, eb)
+            }
             (
                 anf::Ty::THashMap { key: ka, value: va },
                 anf::Ty::THashMap { key: kb, value: vb },
@@ -2266,6 +2269,7 @@ pub mod anf_verify {
             anf::Ty::TSlice { elem } => verify_ty_is_value(errors, elem),
             anf::Ty::TVec { elem } => verify_ty_is_value(errors, elem),
             anf::Ty::TRef { elem } => verify_ty_is_value(errors, elem),
+            anf::Ty::TChannel { elem } => verify_ty_is_value(errors, elem),
             anf::Ty::THashMap { key, value } => {
                 verify_ty_is_value(errors, key);
                 verify_ty_is_value(errors, value);
@@ -2279,6 +2283,7 @@ pub mod anf_verify {
             anf::Ty::TUnit
             | anf::Ty::TNever
             | anf::Ty::TBool
+            | anf::Ty::TInt
             | anf::Ty::TInt8
             | anf::Ty::TInt16
             | anf::Ty::TInt32

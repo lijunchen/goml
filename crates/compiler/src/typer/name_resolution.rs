@@ -1207,79 +1207,9 @@ impl NameResolution {
                     value: value.clone(),
                 },
             ),
-            ast::Expr::EInt8 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EInt8 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EInt16 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EInt16 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EInt32 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EInt32 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EInt64 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EInt64 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EUInt8 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EUInt8 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EUInt16 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EUInt16 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EUInt32 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EUInt32 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EUInt64 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EUInt64 {
-                    value: value.clone(),
-                },
-            ),
             ast::Expr::EFloat { value, astptr } => {
                 self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EFloat { value: *value })
             }
-            ast::Expr::EFloat32 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EFloat32 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Expr::EFloat64 { value, astptr } => self.alloc_expr_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Expr::EFloat64 {
-                    value: value.clone(),
-                },
-            ),
             ast::Expr::EString { value, astptr } => self.alloc_expr_with_ptr(
                 hir_table,
                 *astptr,
@@ -1675,80 +1605,10 @@ impl NameResolution {
                     value: value.clone(),
                 },
             ),
-            ast::Pat::PInt8 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PInt8 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PInt16 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PInt16 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PInt32 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PInt32 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PInt64 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PInt64 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PUInt8 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PUInt8 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PUInt16 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PUInt16 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PUInt32 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PUInt32 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PUInt64 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PUInt64 {
-                    value: value.clone(),
-                },
-            ),
             ast::Pat::PFloat { value, astptr } => self.alloc_pat_with_ptr(
                 hir_table,
                 *astptr,
                 hir::Pat::PFloat {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PFloat32 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PFloat32 {
-                    value: value.clone(),
-                },
-            ),
-            ast::Pat::PFloat64 { value, astptr } => self.alloc_pat_with_ptr(
-                hir_table,
-                *astptr,
-                hir::Pat::PFloat64 {
                     value: value.clone(),
                 },
             ),
@@ -2020,6 +1880,7 @@ impl NameResolution {
         match ty {
             ast::TypeExpr::TUnit => hir::TypeExpr::TUnit,
             ast::TypeExpr::TBool => hir::TypeExpr::TBool,
+            ast::TypeExpr::TInt => hir::TypeExpr::TInt,
             ast::TypeExpr::TInt8 => hir::TypeExpr::TInt8,
             ast::TypeExpr::TInt16 => hir::TypeExpr::TInt16,
             ast::TypeExpr::TInt32 => hir::TypeExpr::TInt32,

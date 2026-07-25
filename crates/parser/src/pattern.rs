@@ -14,18 +14,8 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T!['['],
     T![_],
     T![-],
-    T![int],
-    T![int8_lit],
-    T![int16_lit],
-    T![int32_lit],
-    T![int64_lit],
-    T![uint8_lit],
-    T![uint16_lit],
-    T![uint32_lit],
-    T![uint64_lit],
+    T![int_lit],
     T![float],
-    T![float32_lit],
-    T![float64_lit],
     T![str],
     T![char_lit],
 ];
@@ -131,37 +121,13 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.advance();
             match p.peek() {
-                T![int] => {
+                T![int_lit] => {
                     p.advance();
                     p.close(m, MySyntaxKind::PATTERN_INT)
-                }
-                T![int8_lit] => {
-                    p.advance();
-                    p.close(m, MySyntaxKind::PATTERN_INT8)
-                }
-                T![int16_lit] => {
-                    p.advance();
-                    p.close(m, MySyntaxKind::PATTERN_INT16)
-                }
-                T![int32_lit] => {
-                    p.advance();
-                    p.close(m, MySyntaxKind::PATTERN_INT32)
-                }
-                T![int64_lit] => {
-                    p.advance();
-                    p.close(m, MySyntaxKind::PATTERN_INT64)
                 }
                 T![float] => {
                     p.advance();
                     p.close(m, MySyntaxKind::PATTERN_FLOAT)
-                }
-                T![float32_lit] => {
-                    p.advance();
-                    p.close(m, MySyntaxKind::PATTERN_FLOAT32)
-                }
-                T![float64_lit] => {
-                    p.advance();
-                    p.close(m, MySyntaxKind::PATTERN_FLOAT64)
                 }
                 _ => {
                     p.error("expected a numeric literal after '-' in pattern");
@@ -169,65 +135,15 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 }
             }
         }
-        T![int] => {
+        T![int_lit] => {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::PATTERN_INT)
-        }
-        T![int8_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_INT8)
-        }
-        T![int16_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_INT16)
-        }
-        T![int32_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_INT32)
-        }
-        T![int64_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_INT64)
-        }
-        T![uint8_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_UINT8)
-        }
-        T![uint16_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_UINT16)
-        }
-        T![uint32_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_UINT32)
-        }
-        T![uint64_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_UINT64)
         }
         T![float] => {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::PATTERN_FLOAT)
-        }
-        T![float32_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_FLOAT32)
-        }
-        T![float64_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_FLOAT64)
         }
         T![str] => {
             let m = p.open();

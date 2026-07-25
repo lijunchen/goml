@@ -3,8 +3,8 @@ package ast;
 use gomlc::cst;
 
 pub struct Span {
-    pub start: int32,
-    pub end: int32,
+    pub start: int,
+    pub end: int,
 }
 
 pub struct PathSegment {
@@ -19,6 +19,7 @@ pub struct Path {
 pub enum TypeExpr {
     Unit,
     Bool,
+    Int,
     Int8,
     Int16,
     Int32,
@@ -219,17 +220,7 @@ pub enum Expr {
     Unit(Span),
     Bool(bool, Span),
     Int(string, Span),
-    Int8(string, Span),
-    Int16(string, Span),
-    Int32(string, Span),
-    Int64(string, Span),
-    UInt8(string, Span),
-    UInt16(string, Span),
-    UInt32(string, Span),
-    UInt64(string, Span),
     Float(float64, Span),
-    Float32(string, Span),
-    Float64(string, Span),
     String(string, Span),
     Char(string, Span),
     Constr(Path, Vec[Expr], Span),
@@ -251,7 +242,7 @@ pub enum Expr {
     Try(Expr, Span),
     Range(Expr, Expr, Span),
     Binary(BinaryOp, Expr, Expr, Span),
-    Proj(Expr, int32, Span),
+    Proj(Expr, int, Span),
     Field(Expr, string, Span),
     Index(Expr, Expr, Span),
     Block(Block, Span),
@@ -273,17 +264,7 @@ pub enum Pat {
     Unit(Span),
     Bool(bool, Span),
     Int(string, Span),
-    Int8(string, Span),
-    Int16(string, Span),
-    Int32(string, Span),
-    Int64(string, Span),
-    UInt8(string, Span),
-    UInt16(string, Span),
-    UInt32(string, Span),
-    UInt64(string, Span),
     Float(string, Span),
-    Float32(string, Span),
-    Float64(string, Span),
     String(string, Span),
     Char(string, Span),
     Constr(Path, Vec[Pat], Span),
@@ -301,7 +282,7 @@ pub struct LowerResult {
     pub diagnostics: Vec[cst::Diagnostic],
 }
 
-pub fn span(start: int32, end: int32) -> Span {
+pub fn span(start: int, end: int) -> Span {
     Span { start, end }
 }
 
@@ -310,17 +291,7 @@ pub fn expr_span(value: Expr) -> Span {
         Expr::Unit(span) | Expr::Break(span) | Expr::Continue(span) => span,
         Expr::Bool(_, span)
         | Expr::Int(_, span)
-        | Expr::Int8(_, span)
-        | Expr::Int16(_, span)
-        | Expr::Int32(_, span)
-        | Expr::Int64(_, span)
-        | Expr::UInt8(_, span)
-        | Expr::UInt16(_, span)
-        | Expr::UInt32(_, span)
-        | Expr::UInt64(_, span)
         | Expr::Float(_, span)
-        | Expr::Float32(_, span)
-        | Expr::Float64(_, span)
         | Expr::String(_, span)
         | Expr::Char(_, span)
         | Expr::Tuple(_, span)
@@ -354,17 +325,7 @@ pub fn pat_span(value: Pat) -> Span {
         Pat::Var(_, span)
         | Pat::Bool(_, span)
         | Pat::Int(_, span)
-        | Pat::Int8(_, span)
-        | Pat::Int16(_, span)
-        | Pat::Int32(_, span)
-        | Pat::Int64(_, span)
-        | Pat::UInt8(_, span)
-        | Pat::UInt16(_, span)
-        | Pat::UInt32(_, span)
-        | Pat::UInt64(_, span)
         | Pat::Float(_, span)
-        | Pat::Float32(_, span)
-        | Pat::Float64(_, span)
         | Pat::String(_, span)
         | Pat::Char(_, span)
         | Pat::Tuple(_, span)

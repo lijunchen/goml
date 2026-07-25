@@ -101,18 +101,8 @@ AttributeToken: CstElement = {
     AnyIdent,
     Tok<"str">,
     Tok<"char_lit">,
-    Tok<"int">,
-    Tok<"int8_lit">,
-    Tok<"int16_lit">,
-    Tok<"int32_lit">,
-    Tok<"int64_lit">,
-    Tok<"uint8_lit">,
-    Tok<"uint16_lit">,
-    Tok<"uint32_lit">,
-    Tok<"uint64_lit">,
+    Tok<"int_lit">,
     Tok<"float">,
-    Tok<"float32_lit">,
-    Tok<"float64_lit">,
     Tok<",">,
     Tok<":">,
     Tok<"::">,
@@ -458,6 +448,7 @@ TypeExpr: CstElement = {
 TypeAtom: CstElement = {
     <token:Tok<"unit">> => node(MySyntaxKind::TYPE_UNIT, vec![token]),
     <token:Tok<"bool">> => node(MySyntaxKind::TYPE_BOOL, vec![token]),
+    <token:Tok<"int">> => node(MySyntaxKind::TYPE_INT, vec![token]),
     <token:Tok<"int8">> => node(MySyntaxKind::TYPE_INT8, vec![token]),
     <token:Tok<"int16">> => node(MySyntaxKind::TYPE_INT16, vec![token]),
     <token:Tok<"int32">> => node(MySyntaxKind::TYPE_INT32, vec![token]),
@@ -472,7 +463,7 @@ TypeAtom: CstElement = {
     <token:Tok<"char">> => node(MySyntaxKind::TYPE_CHAR, vec![token]),
     <list:NonEmptyTypeList> => node(MySyntaxKind::TYPE_TUPLE, vec![list]),
     <lbracket:Tok<"[">> <element:TypeExpr> <semi:Tok<";">>
-    <length:Tok<"int">> <rbracket:Tok<"]">> =>
+    <length:Tok<"int_lit">> <rbracket:Tok<"]">> =>
         node(MySyntaxKind::TYPE_ARRAY, vec![lbracket, element, semi, length, rbracket]),
     <path:Path> <params:TypeParamList?> => {
         let mut children = vec![path];
@@ -710,18 +701,8 @@ AtomNoStruct: CstElement = {
 };
 
 LiteralAtom: CstElement = {
-    <token:Tok<"int">> => node(MySyntaxKind::EXPR_INT, vec![token]),
-    <token:Tok<"int8_lit">> => node(MySyntaxKind::EXPR_INT8, vec![token]),
-    <token:Tok<"int16_lit">> => node(MySyntaxKind::EXPR_INT16, vec![token]),
-    <token:Tok<"int32_lit">> => node(MySyntaxKind::EXPR_INT32, vec![token]),
-    <token:Tok<"int64_lit">> => node(MySyntaxKind::EXPR_INT64, vec![token]),
-    <token:Tok<"uint8_lit">> => node(MySyntaxKind::EXPR_UINT8, vec![token]),
-    <token:Tok<"uint16_lit">> => node(MySyntaxKind::EXPR_UINT16, vec![token]),
-    <token:Tok<"uint32_lit">> => node(MySyntaxKind::EXPR_UINT32, vec![token]),
-    <token:Tok<"uint64_lit">> => node(MySyntaxKind::EXPR_UINT64, vec![token]),
+    <token:Tok<"int_lit">> => node(MySyntaxKind::EXPR_INT, vec![token]),
     <token:Tok<"float">> => node(MySyntaxKind::EXPR_FLOAT, vec![token]),
-    <token:Tok<"float32_lit">> => node(MySyntaxKind::EXPR_FLOAT32, vec![token]),
-    <token:Tok<"float64_lit">> => node(MySyntaxKind::EXPR_FLOAT64, vec![token]),
     <token:Tok<"str">> => node(MySyntaxKind::EXPR_STR, vec![token]),
     <token:Tok<"multiline_str">> =>
         node(MySyntaxKind::EXPR_MULTILINE_STR, vec![token]),
@@ -1092,57 +1073,17 @@ RangeOp: CstElement = {
 
 SimplePattern: CstElement = {
     <token:BoolToken> => node(MySyntaxKind::PATTERN_BOOL, vec![token]),
-    <minus:Tok<"-">?> <token:Tok<"int">> => {
+    <minus:Tok<"-">?> <token:Tok<"int_lit">> => {
         let mut children = Vec::new();
         children.extend(minus);
         children.push(token);
         node(MySyntaxKind::PATTERN_INT, children)
     },
-    <minus:Tok<"-">?> <token:Tok<"int8_lit">> => {
-        let mut children = Vec::new();
-        children.extend(minus);
-        children.push(token);
-        node(MySyntaxKind::PATTERN_INT8, children)
-    },
-    <minus:Tok<"-">?> <token:Tok<"int16_lit">> => {
-        let mut children = Vec::new();
-        children.extend(minus);
-        children.push(token);
-        node(MySyntaxKind::PATTERN_INT16, children)
-    },
-    <minus:Tok<"-">?> <token:Tok<"int32_lit">> => {
-        let mut children = Vec::new();
-        children.extend(minus);
-        children.push(token);
-        node(MySyntaxKind::PATTERN_INT32, children)
-    },
-    <minus:Tok<"-">?> <token:Tok<"int64_lit">> => {
-        let mut children = Vec::new();
-        children.extend(minus);
-        children.push(token);
-        node(MySyntaxKind::PATTERN_INT64, children)
-    },
-    <token:Tok<"uint8_lit">> => node(MySyntaxKind::PATTERN_UINT8, vec![token]),
-    <token:Tok<"uint16_lit">> => node(MySyntaxKind::PATTERN_UINT16, vec![token]),
-    <token:Tok<"uint32_lit">> => node(MySyntaxKind::PATTERN_UINT32, vec![token]),
-    <token:Tok<"uint64_lit">> => node(MySyntaxKind::PATTERN_UINT64, vec![token]),
     <minus:Tok<"-">?> <token:Tok<"float">> => {
         let mut children = Vec::new();
         children.extend(minus);
         children.push(token);
         node(MySyntaxKind::PATTERN_FLOAT, children)
-    },
-    <minus:Tok<"-">?> <token:Tok<"float32_lit">> => {
-        let mut children = Vec::new();
-        children.extend(minus);
-        children.push(token);
-        node(MySyntaxKind::PATTERN_FLOAT32, children)
-    },
-    <minus:Tok<"-">?> <token:Tok<"float64_lit">> => {
-        let mut children = Vec::new();
-        children.extend(minus);
-        children.push(token);
-        node(MySyntaxKind::PATTERN_FLOAT64, children)
     },
     <token:Tok<"str">> => node(MySyntaxKind::PATTERN_STRING, vec![token]),
     <token:Tok<"char_lit">> => node(MySyntaxKind::PATTERN_CHAR, vec![token]),
@@ -1338,6 +1279,7 @@ extern {
         "_" => ParserToken::WildcardKeyword,
         "unit" => ParserToken::UnitKeyword,
         "bool" => ParserToken::BoolKeyword,
+        "int" => ParserToken::IntKeyword,
         "int8" => ParserToken::Int8Keyword,
         "int16" => ParserToken::Int16Keyword,
         "int32" => ParserToken::Int32Keyword,
@@ -1354,18 +1296,8 @@ extern {
         "ident" => ParserToken::Ident,
         "lident" => ParserToken::LowerIdent,
         "uident" => ParserToken::UpperIdent,
-        "float32_lit" => ParserToken::Float32Lit,
-        "float64_lit" => ParserToken::Float64Lit,
         "float" => ParserToken::Float,
-        "int8_lit" => ParserToken::Int8Lit,
-        "int16_lit" => ParserToken::Int16Lit,
-        "int32_lit" => ParserToken::Int32Lit,
-        "int64_lit" => ParserToken::Int64Lit,
-        "uint8_lit" => ParserToken::UInt8Lit,
-        "uint16_lit" => ParserToken::UInt16Lit,
-        "uint32_lit" => ParserToken::UInt32Lit,
-        "uint64_lit" => ParserToken::UInt64Lit,
-        "int" => ParserToken::Int,
+        "int_lit" => ParserToken::IntLit,
         "str" => ParserToken::Str,
         "multiline_str" => ParserToken::MultilineStr,
         "char_lit" => ParserToken::CharLit,

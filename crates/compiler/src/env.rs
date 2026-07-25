@@ -430,6 +430,7 @@ impl TraitEnv {
             tast::Ty::TVec { .. } => Some("Vec".to_string()),
             tast::Ty::TRef { .. } => Some("Ref".to_string()),
             tast::Ty::THashMap { .. } => Some("HashMap".to_string()),
+            tast::Ty::TChannel { .. } => Some("Channel".to_string()),
             _ => None,
         };
         if let Some(constr) = constr {

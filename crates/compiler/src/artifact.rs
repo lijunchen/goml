@@ -9,8 +9,8 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 13;
-pub const COMPILER_ABI: u32 = 2;
+pub const FORMAT_VERSION: u32 = 15;
+pub const COMPILER_ABI: u32 = 3;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageExports {
@@ -306,7 +306,8 @@ fn collect_private_local_names(
         crate::tast::Ty::TArray { elem, .. }
         | crate::tast::Ty::TSlice { elem }
         | crate::tast::Ty::TVec { elem }
-        | crate::tast::Ty::TRef { elem } => {
+        | crate::tast::Ty::TRef { elem }
+        | crate::tast::Ty::TChannel { elem } => {
             collect_private_local_names(package, public_names, elem, private_names);
         }
         crate::tast::Ty::THashMap { key, value } => {
@@ -324,6 +325,7 @@ fn collect_private_local_names(
         | crate::tast::Ty::TUnit
         | crate::tast::Ty::TNever
         | crate::tast::Ty::TBool
+        | crate::tast::Ty::TInt
         | crate::tast::Ty::TInt8
         | crate::tast::Ty::TInt16
         | crate::tast::Ty::TInt32

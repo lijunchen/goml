@@ -47,6 +47,7 @@ fn artifact_json_primitive_value(
 
 fn artifact_integer_kind(value: tast::Type) -> string {
     match tast::resolve_type(value) {
+        tast::Type::Int => "Int",
         tast::Type::Int8 => "Int8",
         tast::Type::Int16 => "Int16",
         tast::Type::Int32 => "Int32",
@@ -184,7 +185,7 @@ fn artifact_json_primitive(
     }
 }
 
-fn artifact_constructor_separator(value: string) -> int32 {
+fn artifact_constructor_separator(value: string) -> int {
     let result = Ref::new(-1);
     if value.byte_len() > 1 {
         for index in range(0, value.byte_len() - 1) {
@@ -301,6 +302,14 @@ fn artifact_intrinsic_source_name(value: string) -> string {
         "hashmap_contains"
     } else if value == "hashmap.entries" {
         "hashmap_entries"
+    } else if value == "channel.new" {
+        "channel_new"
+    } else if value == "channel.send" {
+        "channel_send"
+    } else if value == "channel.recv" {
+        "channel_recv"
+    } else if value == "channel.close" {
+        "channel_close"
     } else if value == "compiler.missing" {
         "missing"
     } else {
@@ -312,7 +321,7 @@ fn artifact_intrinsic_source_name(value: string) -> string {
 fn artifact_replace_dots(value: string) -> string {
     let result = Ref::new("");
     for index in range(0, value.byte_len()) {
-        result.set(result.get() + if value.byte_get(index) == 46u8 {
+        result.set(result.get() + if value.byte_get(index) == 46 {
             "_"
         } else {
             value.byte_slice(index, index + 1)

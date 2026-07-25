@@ -4,7 +4,7 @@ use std::bytes;
 use std::internal::host;
 
 pub struct ExitStatus {
-    pub code_value: int32,
+    pub code_value: int,
 }
 
 impl ExitStatus {
@@ -12,7 +12,7 @@ impl ExitStatus {
         self.code_value == 0
     }
 
-    pub fn code(self: ExitStatus) -> Option[int32] {
+    pub fn code(self: ExitStatus) -> Option[int] {
         if self.code_value < 0 {
             Option::None
         } else {
@@ -122,6 +122,6 @@ impl Command {
     }
 }
 
-pub fn exit(code: int32) -> unit {
+pub fn exit(code: int) -> unit {
     host::exit(code)
 }

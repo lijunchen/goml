@@ -37,6 +37,7 @@ pub fn encode_type(value: tast::Type) -> string {
         tast::Type::Unit => "unit",
         tast::Type::Never => "never",
         tast::Type::Bool => "bool",
+        tast::Type::Int => "int",
         tast::Type::Int8 => "int8",
         tast::Type::Int16 => "int16",
         tast::Type::Int32 => "int32",
@@ -94,6 +95,10 @@ pub fn encode_type(value: tast::Type) -> string {
                 + value_name.byte_len().to_string()
                 + value_name
         },
+        tast::Type::Channel(elem) => {
+            let encoded = encode_type(elem);
+            "Channel_" + encoded.byte_len().to_string() + encoded
+        },
         tast::Type::Param(name) => "TParam_" + name,
         tast::Type::Func(params, ret_ty) => {
             let ret_name = encode_type(ret_ty);
@@ -120,6 +125,7 @@ pub fn type_name(value: tast::Type) -> string {
         tast::Type::Unit => "unit",
         tast::Type::Never => "never",
         tast::Type::Bool => "bool",
+        tast::Type::Int => "int",
         tast::Type::Int8 => "int8",
         tast::Type::Int16 => "int16",
         tast::Type::Int32 => "int32",
@@ -165,6 +171,7 @@ pub fn type_name(value: tast::Type) -> string {
         tast::Type::HashMap(key, value) => {
             go_generated_ident("HashMap_" + type_name_part(key) + "_" + type_name_part(value))
         },
+        tast::Type::Channel(elem) => go_generated_ident("Channel_" + type_name_part(elem)),
         tast::Type::Param(name) => go_ident(name),
         tast::Type::Func(params, ret_ty) => {
             let builder = text::StringBuilder::new();
@@ -187,6 +194,7 @@ pub fn lower_type(value: tast::Type) -> Type {
     match tast::resolve_type(value) {
         tast::Type::Unit | tast::Type::Never => Type::Unit,
         tast::Type::Bool => Type::Bool,
+        tast::Type::Int => Type::Int,
         tast::Type::Int8 => Type::Int8,
         tast::Type::Int16 => Type::Int16,
         tast::Type::Int32 => Type::Int32,
@@ -217,6 +225,7 @@ pub fn lower_type(value: tast::Type) -> Type {
                 "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
             )))
         },
+        tast::Type::Channel(elem) => Type::Chan(lower_type(elem)),
         tast::Type::Param(name) => Type::Named(go_ident(name)),
         tast::Type::Func(params, ret_ty) => {
             let lowered: Vec[Type] = Vec::new();

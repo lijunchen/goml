@@ -4,11 +4,46 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use compiler::pipeline::with_compiler_stack;
 
-use crate::cli::{LinkArgs, PackageCommandArgs, TestLinkArgs};
+use crate::cli::{LinkArgs, PackageCommandArgs, PackageInfoArgs, TestLinkArgs};
 
 use super::diagnostics::{compilation_error, source_map_from_paths};
 
 const PRETTY_WIDTH: usize = 120;
+
+pub(crate) fn package_info(mut args: PackageInfoArgs) -> Result<()> {
+    args.input.sort();
+    args.input.dedup();
+    let source_map = source_map_from_paths(&args.input);
+    let mut files = Vec::new();
+    for path in args.input {
+        let source = fs::read_to_string(&path)
+            .with_context(|| format!("failed to read {}", path.display()))?;
+        let ast = compiler::pipeline::pipeline::parse_ast_file(&path, &source)
+            .map_err(|error| compilation_error(error, source_map.clone()))?;
+        let uses = ast
+            .uses
+            .into_iter()
+            .map(|use_decl| {
+                serde_json::json!({
+                    "path": use_decl.path.display(),
+                    "alias": use_decl.alias.map(|alias| alias.0),
+                })
+            })
+            .collect::<Vec<_>>();
+        files.push(serde_json::json!({
+            "path": path.to_string_lossy(),
+            "package": ast.package.0,
+            "package_explicit": ast.package_explicit,
+            "uses": uses,
+        }));
+    }
+    let output = serde_json::json!({
+        "protocol_version": 1,
+        "files": files,
+    });
+    println!("{}", serde_json::to_string(&output)?);
+    Ok(())
+}
 
 pub(crate) fn check(args: PackageCommandArgs) -> Result<()> {
     write_check(args, false)

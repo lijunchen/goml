@@ -29,7 +29,7 @@ pub enum Imm {
     Var(string, tast::Type),
     Callable(tast::Callable, tast::Type),
     Prim(tast::Primitive, tast::Type),
-    Tag(int32, tast::Type),
+    Tag(int, tast::Type),
 }
 
 pub struct LetBind {
@@ -56,7 +56,7 @@ pub enum Value {
     Constr(tast::Constructor, Vec[Imm], tast::Type),
     Tuple(Vec[Imm], tast::Type),
     Array(Vec[Imm], tast::Type),
-    ConstrGet(Imm, tast::Constructor, int32, tast::Type),
+    ConstrGet(Imm, tast::Constructor, int, tast::Type),
     Unary(ast::UnaryOp, Imm, tast::Type),
     Cast(Imm, tast::Type),
     Binary(ast::BinaryOp, Imm, Imm, tast::Type),
@@ -65,7 +65,7 @@ pub enum Value {
     ToDyn(string, tast::Type, Imm, tast::Type),
     DynCall(string, string, Imm, Vec[Imm], tast::Type),
     Go(Imm, tast::Type),
-    Proj(Imm, int32, tast::Type),
+    Proj(Imm, int, tast::Type),
 }
 
 pub struct Arm {

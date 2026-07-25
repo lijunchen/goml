@@ -71,6 +71,7 @@ fn artifact_decode_numeric_primitive(
         Result::Err(error) => return Result::Err(error),
     };
     match kind {
+        "Int" => Result::Ok(tast::Primitive::Int(value)),
         "Int8" => Result::Ok(tast::Primitive::Int8(value)),
         "Int16" => Result::Ok(tast::Primitive::Int16(value)),
         "Int32" => Result::Ok(tast::Primitive::Int32(value)),

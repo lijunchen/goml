@@ -15,6 +15,12 @@ fn char_from_uint32(value: uint32) -> Option[char] {
     }
 }
 
+impl int {
+    fn to_string(self: int) -> string {
+        int_to_string(self)
+    }
+}
+
 impl int32 {
     fn to_string(self: int32) -> string {
         int32_to_string(self)
@@ -28,31 +34,31 @@ impl char {
 }
 
 impl string {
-    fn len(self: string) -> int32 {
+    fn len(self: string) -> int {
         string_len(self)
     }
 
-    fn byte_len(self: string) -> int32 {
+    fn byte_len(self: string) -> int {
         string_len(self)
     }
 
-    fn get(self: string, index: int32) -> char {
+    fn get(self: string, index: int) -> char {
         string_get(self, index)
     }
 
-    fn byte_get(self: string, index: int32) -> uint8 {
+    fn byte_get(self: string, index: int) -> uint8 {
         string_byte_get(self, index)
     }
 
-    fn byte_slice(self: string, start: int32, end: int32) -> string {
+    fn byte_slice(self: string, start: int, end: int) -> string {
         string_byte_slice(self, start, end)
     }
 
-    fn is_char_boundary(self: string, index: int32) -> bool {
+    fn is_char_boundary(self: string, index: int) -> bool {
         string_is_char_boundary(self, index)
     }
 
-    fn decode_at(self: string, index: int32) -> Option[(char, int32)] {
+    fn decode_at(self: string, index: int) -> Option[(char, int)] {
         let (valid, value, width) = string_decode_utf8_at(self, index);
         if valid {
             Option::Some((value, width))
@@ -79,7 +85,7 @@ impl string {
         })
     }
 
-    fn char_indices(self: string) -> FnIterator[(int32, char)] {
+    fn char_indices(self: string) -> FnIterator[(int, char)] {
         let index = Ref::new(0);
         FnIterator::from_fn(|| {
             let current = index.get();
@@ -116,6 +122,12 @@ impl ToString for string {
 impl ToString for char {
     fn to_string(self: char) -> string {
         char_to_string(self)
+    }
+}
+
+impl ToString for int {
+    fn to_string(self: int) -> string {
+        int_to_string(self)
     }
 }
 
@@ -203,6 +215,12 @@ impl Eq for char {
     }
 }
 
+impl Eq for int {
+    fn eq(self: int, other: int) -> bool {
+        __goml_primitive_eq(self, other)
+    }
+}
+
 impl Eq for int8 {
     fn eq(self: int8, other: int8) -> bool {
         __goml_primitive_eq(self, other)
@@ -265,13 +283,13 @@ impl Eq for float64 {
 
 impl Hash for unit {
     fn hash(self: unit) -> uint64 {
-        0u64
+        0
     }
 }
 
 impl Hash for bool {
     fn hash(self: bool) -> uint64 {
-        if self { 1u64 } else { 0u64 }
+        if self { 1 } else { 0 }
     }
 }
 
@@ -284,6 +302,12 @@ impl Hash for string {
 impl Hash for char {
     fn hash(self: char) -> uint64 {
         char_hash(self)
+    }
+}
+
+impl Hash for int {
+    fn hash(self: int) -> uint64 {
+        int_hash(self)
     }
 }
 
@@ -458,7 +482,7 @@ where
     FilterIterator { iterator, predicate }
 }
 
-fn iterator_take[I: Iterator](iterator: I, count: int32) -> TakeIterator[I] {
+fn iterator_take[I: Iterator](iterator: I, count: int) -> TakeIterator[I] {
     let remaining = if count > 0 { count } else { 0 };
     TakeIterator {
         iterator,
@@ -505,7 +529,7 @@ impl [T] Vec[T] {
         vec_new()
     }
 
-    fn with_capacity(capacity: int32) -> Self {
+    fn with_capacity(capacity: int) -> Self {
         vec_with_capacity(capacity)
     }
 
@@ -524,19 +548,19 @@ impl [T] Vec[T] {
         result
     }
 
-    fn get(self: Self, index: int32) -> T {
+    fn get(self: Self, index: int) -> T {
         vec_get(self, index)
     }
 
-    fn set(self: Self, index: int32, elem: T) -> unit {
+    fn set(self: Self, index: int, elem: T) -> unit {
         vec_set(self, index, elem)
     }
 
-    fn len(self: Self) -> int32 {
+    fn len(self: Self) -> int {
         vec_len(self)
     }
 
-    fn capacity(self: Self) -> int32 {
+    fn capacity(self: Self) -> int {
         vec_capacity(self)
     }
 
@@ -544,11 +568,11 @@ impl [T] Vec[T] {
         self.len() == 0
     }
 
-    fn reserve(self: Self, additional: int32) -> unit {
+    fn reserve(self: Self, additional: int) -> unit {
         vec_reserve(self, additional)
     }
 
-    fn truncate(self: Self, len: int32) -> unit {
+    fn truncate(self: Self, len: int) -> unit {
         vec_truncate(self, len)
     }
 
@@ -576,13 +600,13 @@ impl [T] Vec[T] {
         }
     }
 
-    fn swap(self: Self, left: int32, right: int32) -> unit {
+    fn swap(self: Self, left: int, right: int) -> unit {
         let value = self.get(left);
         self.set(left, self.get(right));
         self.set(right, value)
     }
 
-    fn swap_remove(self: Self, index: int32) -> T {
+    fn swap_remove(self: Self, index: int) -> T {
         let len = self.len();
         let value = self.get(index);
         if index + 1 < len {
@@ -594,7 +618,7 @@ impl [T] Vec[T] {
         value
     }
 
-    fn insert(self: Self, index: int32, value: T) -> unit {
+    fn insert(self: Self, index: int, value: T) -> unit {
         let len = self.len();
         if index == len {
             self.push(value)
@@ -610,7 +634,7 @@ impl [T] Vec[T] {
         }
     }
 
-    fn remove(self: Self, index: int32) -> T {
+    fn remove(self: Self, index: int) -> T {
         let len = self.len();
         let value = self.get(index);
         let current = Ref::new(index);
@@ -642,7 +666,7 @@ impl [T] Vec[T] {
         }
     }
 
-    fn slice(self: Self, start: int32, end: int32) -> Slice[T] {
+    fn slice(self: Self, start: int, end: int) -> Slice[T] {
         slice(self, start, end)
     }
 
@@ -672,15 +696,15 @@ impl [T] IntoIterator for Vec[T] {
 }
 
 impl [T] Slice[T] {
-    fn get(self: Self, index: int32) -> T {
+    fn get(self: Self, index: int) -> T {
         slice_get(self, index)
     }
 
-    fn len(self: Self) -> int32 {
+    fn len(self: Self) -> int {
         slice_len(self)
     }
 
-    fn sub(self: Self, start: int32, end: int32) -> Self {
+    fn sub(self: Self, start: int, end: int) -> Self {
         slice_sub(self, start, end)
     }
 
@@ -726,7 +750,7 @@ impl [K: Hash + Eq, V] HashMap[K, V] {
         hashmap_remove(self, key)
     }
 
-    fn len(self: Self) -> int32 {
+    fn len(self: Self) -> int {
         hashmap_len(self)
     }
 
@@ -753,8 +777,31 @@ impl [T] Ref[T] {
     }
 }
 
+impl [T] Channel[T] {
+    fn new(capacity: int) -> Self {
+        channel_new(capacity)
+    }
+
+    fn send(self: Self, value: T) -> unit {
+        channel_send(self, value)
+    }
+
+    fn recv(self: Self) -> Option[T] {
+        let (value, ok) = channel_recv(self);
+        if ok {
+            Option::Some(value)
+        } else {
+            Option::None
+        }
+    }
+
+    fn close(self: Self) -> unit {
+        channel_close(self)
+    }
+}
+
 #[lang("range")]
-fn __goml_builtin_range(start: int32, end: int32) -> FnIterator[int32] {
+fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
     let current = Ref::new(start);
     FnIterator::from_fn(|| {
         let value = current.get();
@@ -767,6 +814,6 @@ fn __goml_builtin_range(start: int32, end: int32) -> FnIterator[int32] {
     })
 }
 
-fn range(start: int32, end: int32) -> FnIterator[int32] {
+fn range(start: int, end: int) -> FnIterator[int] {
     __goml_builtin_range(start, end)
 }

@@ -122,6 +122,7 @@ pub enum Expr {
     },
     Make {
         ty: goty::GoType,
+        args: Vec<Expr>,
     },
     Void {
         ty: goty::GoType,
@@ -185,6 +186,15 @@ pub enum Expr {
         end: Box<Expr>,
         ty: goty::GoType,
     },
+    Send {
+        channel: Box<Expr>,
+        value: Box<Expr>,
+        ty: goty::GoType,
+    },
+    Receive {
+        channel: Box<Expr>,
+        ty: goty::GoType,
+    },
     Cast {
         expr: Box<Expr>,
         ty: goty::GoType,
@@ -217,7 +227,7 @@ impl Expr {
     pub fn get_ty(&self) -> &goty::GoType {
         match self {
             Expr::Nil { ty }
-            | Expr::Make { ty }
+            | Expr::Make { ty, .. }
             | Expr::Void { ty }
             | Expr::Unit { ty }
             | Expr::Var { ty, .. }
@@ -232,6 +242,8 @@ impl Expr {
             | Expr::FieldAccess { ty, .. }
             | Expr::Index { ty, .. }
             | Expr::Slice { ty, .. }
+            | Expr::Send { ty, .. }
+            | Expr::Receive { ty, .. }
             | Expr::Cast { ty, .. }
             | Expr::Convert { ty, .. }
             | Expr::StructLiteral { ty, .. }
@@ -357,6 +369,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         }
         tast::Ty::TUnit | tast::Ty::TNever => goty::GoType::TUnit,
         tast::Ty::TBool => goty::GoType::TBool,
+        tast::Ty::TInt => goty::GoType::TInt,
         tast::Ty::TInt32 => goty::GoType::TInt32,
         tast::Ty::TInt8 => goty::GoType::TInt8,
         tast::Ty::TInt16 => goty::GoType::TInt16,
@@ -428,6 +441,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                 elem: Box::new(goty::GoType::TName { name: struct_name }),
             }
         }
+        tast::Ty::TChannel { elem } => goty::GoType::TChan {
+            elem: Box::new(tast_ty_to_go_type(elem)),
+        },
         tast::Ty::TParam { name } => goty::GoType::TName {
             name: go_ident(name),
         },
@@ -447,6 +463,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TNever => "never".to_string(),
         tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt => "int".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
@@ -495,6 +512,9 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
             go_type_name_part(key),
             go_type_name_part(value)
         )),
+        tast::Ty::TChannel { elem } => {
+            go_generated_ident(&format!("Channel_{}", go_type_name_part(elem)))
+        }
         tast::Ty::TFunc { params, ret_ty } => {
             let mut s = format!("TFunc{}", params.len());
             for param in params {

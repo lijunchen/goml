@@ -325,7 +325,7 @@ fn artifact_decode_core_expr(
 fn artifact_decode_core_index_field(
     object: Vec[(string, ArtifactJsonValue)],
     name: string,
-) -> Result[int32, string] {
+) -> Result[int, string] {
     match artifact_json_required_field(object, name) {
         Result::Ok(value) => match artifact_json_number_value(value, name) {
             Result::Ok(value) => artifact_parse_nonnegative_int(value),

@@ -102,6 +102,7 @@ impl Path {
 pub enum TypeExpr {
     TUnit,
     TBool,
+    TInt,
     TInt8,
     TInt16,
     TInt32,
@@ -351,48 +352,8 @@ pub enum Expr {
         value: String,
         astptr: MySyntaxNodePtr,
     },
-    EInt8 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EInt16 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EInt32 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EInt64 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EUInt8 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EUInt16 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EUInt32 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EUInt64 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
     EFloat {
         value: f64,
-        astptr: MySyntaxNodePtr,
-    },
-    EFloat32 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    EFloat64 {
-        value: String,
         astptr: MySyntaxNodePtr,
     },
     EString {
@@ -543,47 +504,7 @@ pub enum Pat {
         value: String,
         astptr: MySyntaxNodePtr,
     },
-    PInt8 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PInt16 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PInt32 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PInt64 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PUInt8 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PUInt16 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PUInt32 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PUInt64 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
     PFloat {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PFloat32 {
-        value: String,
-        astptr: MySyntaxNodePtr,
-    },
-    PFloat64 {
         value: String,
         astptr: MySyntaxNodePtr,
     },

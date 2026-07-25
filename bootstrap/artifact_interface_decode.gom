@@ -31,6 +31,10 @@ fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
         "hashmap_len" => Option::Some("hashmap.len"),
         "hashmap_contains" => Option::Some("hashmap.contains"),
         "hashmap_entries" => Option::Some("hashmap.entries"),
+        "channel_new" => Option::Some("channel.new"),
+        "channel_send" => Option::Some("channel.send"),
+        "channel_recv" => Option::Some("channel.recv"),
+        "channel_close" => Option::Some("channel.close"),
         "missing" => Option::Some("compiler.missing"),
         _ => Option::None,
     }
@@ -86,6 +90,7 @@ fn artifact_runtime_key_from_id(value: string) -> Option[string] {
         | "string_println"
         | "char_to_string"
         | "char_from_uint32"
+        | "int_to_string"
         | "int8_to_string"
         | "int16_to_string"
         | "int32_to_string"
@@ -98,6 +103,7 @@ fn artifact_runtime_key_from_id(value: string) -> Option[string] {
         | "float64_to_string"
         | "string_parse_float32"
         | "string_parse_float64"
+        | "int_hash"
         | "int8_hash"
         | "int16_hash"
         | "int32_hash"
@@ -855,7 +861,7 @@ fn artifact_decode_string_map(
 fn artifact_decode_version_field(
     object: Vec[(string, ArtifactJsonValue)],
     name: string,
-    expected: int32,
+    expected: int,
 ) -> Result[unit, string] {
     let number = match artifact_json_required_field(object, name) {
         Result::Ok(value) => match artifact_json_number_value(value, name) {
@@ -881,11 +887,11 @@ fn artifact_decode_interface_value(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "format_version", 13) {
+    match artifact_decode_version_field(object, "format_version", 15) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "compiler_abi", 2) {
+    match artifact_decode_version_field(object, "compiler_abi", 3) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };

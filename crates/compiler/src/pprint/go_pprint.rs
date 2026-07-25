@@ -42,6 +42,7 @@ fn go_type_name(ty: &GoType) -> String {
         ),
         GoType::TUnit => "struct{}".to_string(),
         GoType::TBool => "bool".to_string(),
+        GoType::TInt => "int".to_string(),
         GoType::TInt8 => "int8".to_string(),
         GoType::TInt16 => "int16".to_string(),
         GoType::TInt32 => "int32".to_string(),
@@ -60,6 +61,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TArray { len, elem } => format!("[{}]{}", len, go_type_name(elem)),
         GoType::TSlice { elem } => format!("[]{}", go_type_name(elem)),
         GoType::TMap { key, value } => format!("map[{}]{}", go_type_name(key), go_type_name(value)),
+        GoType::TChan { elem } => format!("chan {}", go_type_name(elem)),
         GoType::TFunc { .. } => "func".to_string(),
     }
 }
@@ -93,6 +95,7 @@ fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
             .append(go_type_doc(key))
             .append(RcDoc::text("]"))
             .append(go_type_doc(value)),
+        GoType::TChan { elem } => RcDoc::text("chan ").append(go_type_doc(elem)),
         GoType::TPointer { elem } => RcDoc::text("*").append(go_type_doc(elem)),
         other => RcDoc::text(go_type_name(other)),
     }
@@ -802,8 +805,16 @@ impl Expr {
     pub fn to_doc(&self, goenv: &GlobalGoEnv) -> RcDoc<'_, ()> {
         match self {
             Expr::Nil { ty: _ } => RcDoc::text("nil"),
-            Expr::Make { ty } => RcDoc::text("make(")
+            Expr::Make { ty, args } => RcDoc::text("make(")
                 .append(go_type_doc(ty))
+                .append(if args.is_empty() {
+                    RcDoc::nil()
+                } else {
+                    RcDoc::text(", ").append(RcDoc::intersperse(
+                        args.iter().map(|arg| arg.to_doc(goenv)),
+                        RcDoc::text(", "),
+                    ))
+                })
                 .append(RcDoc::text(")")),
             Expr::Void { ty: _ } => RcDoc::text(""),
             Expr::Unit { ty: _ } => RcDoc::text("struct{}{}"),
@@ -864,6 +875,17 @@ impl Expr {
                 .append(RcDoc::text(":"))
                 .append(end.to_doc(goenv))
                 .append(RcDoc::text("]")),
+            Expr::Send {
+                channel,
+                value,
+                ty: _,
+            } => channel
+                .to_doc(goenv)
+                .append(RcDoc::space())
+                .append(RcDoc::text("<-"))
+                .append(RcDoc::space())
+                .append(value.to_doc(goenv)),
+            Expr::Receive { channel, ty: _ } => RcDoc::text("<-").append(channel.to_doc(goenv)),
             Expr::Cast { expr, ty } => expr
                 .to_doc(goenv)
                 .append(RcDoc::text(".("))

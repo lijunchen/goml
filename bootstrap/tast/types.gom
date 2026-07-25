@@ -22,7 +22,8 @@ fn merge_var_kind(left: VarKind, right: VarKind) -> Option[VarKind] {
 
 fn is_integer_type(value: Type) -> bool {
     match prune(value) {
-        Type::Int8
+        Type::Int
+        | Type::Int8
         | Type::Int16
         | Type::Int32
         | Type::Int64
@@ -65,12 +66,11 @@ fn is_unsigned_type(value: Type) -> bool {
 fn kind_accepts(kind: VarKind, value: Type) -> bool {
     match kind {
         VarKind::Any => true,
-        VarKind::Integer => is_integer_type(value),
-        VarKind::Float => is_float_type(value),
+        VarKind::Integer | VarKind::Float => is_numeric_type(value),
     }
 }
 
-fn fresh_type(counter: Ref[int32], kind: VarKind) -> Type {
+fn fresh_type(counter: Ref[int], kind: VarKind) -> Type {
     let index = counter.get();
     counter.set(index + 1);
     Type::Var(Ref::new(TypeVar::Unbound(index, kind)))
@@ -132,7 +132,8 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => occurs(variable, elem),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => occurs(variable, elem),
         Type::HashMap(key, item) => occurs(variable, key) || occurs(variable, item),
         Type::Func(params, ret_ty) => {
             let found = Ref::new(occurs(variable, ret_ty));
@@ -218,6 +219,7 @@ fn unify(left: Type, right: Type) -> bool {
         (value, Type::Var(variable)) => bind_variable(variable, value),
         (Type::Unit, Type::Unit)
         | (Type::Bool, Type::Bool)
+        | (Type::Int, Type::Int)
         | (Type::Int8, Type::Int8)
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
@@ -250,7 +252,8 @@ fn unify(left: Type, right: Type) -> bool {
         },
         (Type::Slice(first), Type::Slice(second))
         | (Type::VecType(first), Type::VecType(second))
-        | (Type::RefType(first), Type::RefType(second)) => unify(first, second),
+        | (Type::RefType(first), Type::RefType(second))
+        | (Type::Channel(first), Type::Channel(second)) => unify(first, second),
         (Type::HashMap(first_key, first_value), Type::HashMap(second_key, second_value)) => {
             unify(first_key, second_key) && unify(first_value, second_value)
         },
@@ -326,6 +329,14 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
                     Option::Some("Type inference failed: recursive type")
                 } else if kind_accepts(kind, value) {
                     Option::None
+                } else if match kind {
+                    VarKind::Integer | VarKind::Float => true,
+                    VarKind::Any => false,
+                } {
+                    Option::Some(
+                        "Numeric literal cannot be used as "
+                            + diagnostic_type_text(value),
+                    )
                 } else {
                     Option::Some(
                         "Type inference failed while unifying unknown type with "
@@ -336,6 +347,7 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
         },
         (Type::Unit, Type::Unit)
         | (Type::Bool, Type::Bool)
+        | (Type::Int, Type::Int)
         | (Type::Int8, Type::Int8)
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
@@ -411,7 +423,8 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
         },
         (Type::Slice(first), Type::Slice(second))
         | (Type::VecType(first), Type::VecType(second))
-        | (Type::RefType(first), Type::RefType(second)) => {
+        | (Type::RefType(first), Type::RefType(second))
+        | (Type::Channel(first), Type::Channel(second)) => {
             first_unification_error(first, second)
         },
         (Type::HashMap(first_key, first_value), Type::HashMap(second_key, second_value)) => {
@@ -478,6 +491,7 @@ fn types_equal(left: Type, right: Type) -> bool {
         (Type::Unit, Type::Unit)
         | (Type::Never, Type::Never)
         | (Type::Bool, Type::Bool)
+        | (Type::Int, Type::Int)
         | (Type::Int8, Type::Int8)
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
@@ -511,7 +525,8 @@ fn types_equal(left: Type, right: Type) -> bool {
         },
         (Type::Slice(first), Type::Slice(second))
         | (Type::VecType(first), Type::VecType(second))
-        | (Type::RefType(first), Type::RefType(second)) => types_equal(first, second),
+        | (Type::RefType(first), Type::RefType(second))
+        | (Type::Channel(first), Type::Channel(second)) => types_equal(first, second),
         (Type::HashMap(first_key, first_value), Type::HashMap(second_key, second_value)) => {
             types_equal(first_key, second_key) && types_equal(first_value, second_value)
         },
@@ -525,7 +540,7 @@ fn types_equal(left: Type, right: Type) -> bool {
 fn resolve_parameter_alias_at(
     value: Type,
     substitutions: Vec[TypeSubst],
-    depth: int32,
+    depth: int,
 ) -> Type {
     if depth > substitutions.len() {
         value
@@ -589,7 +604,8 @@ fn contains_parameter(
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => contains_parameter(elem, name, substitutions),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => contains_parameter(elem, name, substitutions),
         Type::HashMap(key, item) => {
             contains_parameter(key, name, substitutions)
                 || contains_parameter(item, name, substitutions)
@@ -697,7 +713,8 @@ fn unify_parameter_aliases(
         },
         (Type::Slice(left), Type::Slice(right))
         | (Type::VecType(left), Type::VecType(right))
-        | (Type::RefType(left), Type::RefType(right)) => {
+        | (Type::RefType(left), Type::RefType(right))
+        | (Type::Channel(left), Type::Channel(right)) => {
             unify_parameter_aliases(left, right, substitutions)
         },
         (Type::HashMap(left_key, left_item), Type::HashMap(right_key, right_item)) => {
@@ -728,7 +745,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
     substitutions
 }
 
-fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int32 {
+fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int {
     let result = Ref::new(-1);
     for index in range(0, values.len()) {
         if result.get() < 0 && types_equal(values.get(index).projection, projection) {
@@ -1077,6 +1094,7 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
         Type::Slice(elem) => Type::Slice(normalize_type(ctx, elem)),
         Type::VecType(elem) => Type::VecType(normalize_type(ctx, elem)),
         Type::RefType(elem) => Type::RefType(normalize_type(ctx, elem)),
+        Type::Channel(elem) => Type::Channel(normalize_type(ctx, elem)),
         Type::HashMap(key, item) => {
             Type::HashMap(normalize_type(ctx, key), normalize_type(ctx, item))
         },
@@ -1162,6 +1180,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
         Type::Slice(elem) => Type::Slice(substitute_type(elem, substitutions)),
         Type::VecType(elem) => Type::VecType(substitute_type(elem, substitutions)),
         Type::RefType(elem) => Type::RefType(substitute_type(elem, substitutions)),
+        Type::Channel(elem) => Type::Channel(substitute_type(elem, substitutions)),
         Type::HashMap(key, item) => Type::HashMap(
             substitute_type(key, substitutions),
             substitute_type(item, substitutions),
@@ -1193,7 +1212,7 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
 }
 
 fn instantiate_substitutions(
-    counter: Ref[int32],
+    counter: Ref[int],
     params: Vec[string],
     explicit: Vec[Type],
 ) -> Vec[TypeSubst] {
@@ -1216,8 +1235,8 @@ pub fn resolve_type(value: Type) -> Type {
         Type::Var(variable) => match variable.get() {
             TypeVar::Link(inner) => resolve_type(inner),
             TypeVar::Unbound(_, VarKind::Integer) => {
-                variable.set(TypeVar::Link(Type::Int32));
-                Type::Int32
+                variable.set(TypeVar::Link(Type::Int));
+                Type::Int
             },
             TypeVar::Unbound(_, VarKind::Float) => {
                 variable.set(TypeVar::Link(Type::Float64));
@@ -1260,6 +1279,7 @@ pub fn resolve_type(value: Type) -> Type {
         Type::VecType(elem) => Type::VecType(resolve_type(elem)),
         Type::RefType(elem) => Type::RefType(resolve_type(elem)),
         Type::HashMap(key, item) => Type::HashMap(resolve_type(key), resolve_type(item)),
+        Type::Channel(elem) => Type::Channel(resolve_type(elem)),
         Type::Func(params, ret_ty) => {
             let result: Vec[Type] = Vec::new();
             for param in params {
@@ -1279,8 +1299,10 @@ fn type_constructor_name(value: Type) -> Option[string] {
         Type::VecType(_) => Option::Some("Vec"),
         Type::RefType(_) => Option::Some("Ref"),
         Type::HashMap(_, _) => Option::Some("HashMap"),
+        Type::Channel(_) => Option::Some("Channel"),
         Type::Unit => Option::Some("unit"),
         Type::Bool => Option::Some("bool"),
+        Type::Int => Option::Some("int"),
         Type::Int8 => Option::Some("int8"),
         Type::Int16 => Option::Some("int16"),
         Type::Int32 => Option::Some("int32"),
@@ -1307,6 +1329,8 @@ fn nominal_type(name: string, args: Vec[Type]) -> Type {
         Type::RefType(args.get(0))
     } else if name == "HashMap" && args.len() == 2 {
         Type::HashMap(args.get(0), args.get(1))
+    } else if name == "Channel" && args.len() == 1 {
+        Type::Channel(args.get(0))
     } else if args.len() == 0 {
         Type::Con(name)
     } else {
@@ -1314,12 +1338,12 @@ fn nominal_type(name: string, args: Vec[Type]) -> Type {
     }
 }
 
-fn parse_array_length(value: string) -> int32 {
+fn parse_array_length(value: string) -> int {
     let result = Ref::new(0);
     for index in range(0, value.byte_len()) {
         let byte = value.byte_get(index);
-        if byte >= 48u8 && byte <= 57u8 {
-            result.set(result.get() * 10 + (byte - 48u8) as int32)
+        if byte >= 48 && byte <= 57 {
+            result.set(result.get() * 10 + (byte - 48) as int)
         } else {
             ()
         }

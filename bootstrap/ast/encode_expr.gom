@@ -82,21 +82,11 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_bool_value(builder, value)
         },
         Expr::Int(value, value_span) => encode_literal_expr(builder, "Int", value, value_span),
-        Expr::Int8(value, value_span) => encode_literal_expr(builder, "Int8", value, value_span),
-        Expr::Int16(value, value_span) => encode_literal_expr(builder, "Int16", value, value_span),
-        Expr::Int32(value, value_span) => encode_literal_expr(builder, "Int32", value, value_span),
-        Expr::Int64(value, value_span) => encode_literal_expr(builder, "Int64", value, value_span),
-        Expr::UInt8(value, value_span) => encode_literal_expr(builder, "UInt8", value, value_span),
-        Expr::UInt16(value, value_span) => encode_literal_expr(builder, "UInt16", value, value_span),
-        Expr::UInt32(value, value_span) => encode_literal_expr(builder, "UInt32", value, value_span),
-        Expr::UInt64(value, value_span) => encode_literal_expr(builder, "UInt64", value, value_span),
         Expr::Float(value, value_span) => {
             encode_open(builder, "Expr.Float");
             encode_span(builder, value_span);
             encode_string_value(builder, float64_hash(value).to_string())
         },
-        Expr::Float32(value, value_span) => encode_literal_expr(builder, "Float32", value, value_span),
-        Expr::Float64(value, value_span) => encode_literal_expr(builder, "Float64", value, value_span),
         Expr::String(value, value_span) => encode_literal_expr(builder, "String", value, value_span),
         Expr::Char(value, value_span) => encode_literal_expr(builder, "Char", value, value_span),
         Expr::Constr(path, args, value_span) => {
@@ -281,17 +271,7 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
             encode_bool_value(builder, value)
         },
         Pat::Int(value, value_span) => encode_literal_pat(builder, "Int", value, value_span),
-        Pat::Int8(value, value_span) => encode_literal_pat(builder, "Int8", value, value_span),
-        Pat::Int16(value, value_span) => encode_literal_pat(builder, "Int16", value, value_span),
-        Pat::Int32(value, value_span) => encode_literal_pat(builder, "Int32", value, value_span),
-        Pat::Int64(value, value_span) => encode_literal_pat(builder, "Int64", value, value_span),
-        Pat::UInt8(value, value_span) => encode_literal_pat(builder, "UInt8", value, value_span),
-        Pat::UInt16(value, value_span) => encode_literal_pat(builder, "UInt16", value, value_span),
-        Pat::UInt32(value, value_span) => encode_literal_pat(builder, "UInt32", value, value_span),
-        Pat::UInt64(value, value_span) => encode_literal_pat(builder, "UInt64", value, value_span),
         Pat::Float(value, value_span) => encode_literal_pat(builder, "Float", value, value_span),
-        Pat::Float32(value, value_span) => encode_literal_pat(builder, "Float32", value, value_span),
-        Pat::Float64(value, value_span) => encode_literal_pat(builder, "Float64", value, value_span),
         Pat::String(value, value_span) => encode_literal_pat(builder, "String", value, value_span),
         Pat::Char(value, value_span) => encode_literal_pat(builder, "Char", value, value_span),
         Pat::Constr(path, args, value_span) => {

@@ -551,6 +551,14 @@ fn intrinsic_source_name(key: string) -> string {
         "hashmap_contains"
     } else if key == "hashmap.entries" {
         "hashmap_entries"
+    } else if key == "channel.new" {
+        "channel_new"
+    } else if key == "channel.send" {
+        "channel_send"
+    } else if key == "channel.recv" {
+        "channel_recv"
+    } else if key == "channel.close" {
+        "channel_close"
     } else if key == "compiler.missing" {
         "missing"
     } else {
@@ -649,12 +657,63 @@ fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
             } else if key == "slice.len" {
                 let args: Vec[Expr] = Vec::new();
                 args.push(vars.get(0));
-                Expr::Convert(Type::Int32, Expr::Call(Expr::Var("len"), args))
+                Expr::Call(Expr::Var("len"), args)
             } else {
                 Expr::Slice(vars.get(0), vars.get(1), vars.get(2))
             };
             let stmts: Vec[Stmt] = Vec::new();
             stmts.push(Stmt::Return(Option::Some(value)));
+            Expr::FuncLit(params, lower_type(ret_ty), Block { stmts })
+        },
+        _ => Expr::Var(go_ident(key)),
+    }
+}
+
+fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
+    match tast::resolve_type(function_ty) {
+        tast::Type::Func(param_types, ret_ty) => {
+            let params: Vec[(string, Type)] = Vec::new();
+            let vars: Vec[Expr] = Vec::new();
+            for index in range(0, param_types.len()) {
+                let name = "p" + index.to_string();
+                params.push((name, lower_type(param_types.get(index))));
+                vars.push(Expr::Var(name))
+            };
+            let stmts: Vec[Stmt] = Vec::new();
+            if key == "channel.new" {
+                let args: Vec[Expr] = Vec::new();
+                args.push(vars.get(0));
+                stmts.push(Stmt::Return(Option::Some(Expr::Make(
+                    lower_type(ret_ty),
+                    args,
+                ))))
+            } else if key == "channel.send" {
+                stmts.push(Stmt::Expr(Expr::Send(vars.get(0), vars.get(1))));
+                stmts.push(Stmt::Return(Option::Some(Expr::Unit)))
+            } else if key == "channel.recv" {
+                let elem = match tast::resolve_type(param_types.get(0)) {
+                    tast::Type::Channel(elem) => elem,
+                    _ => tast::Type::Error,
+                };
+                stmts.push(Stmt::Var("value", lower_type(elem), Option::None));
+                stmts.push(Stmt::Var("ok", Type::Bool, Option::None));
+                stmts.push(Stmt::MultiAssign(
+                    Vec::new().pushed("value").pushed("ok"),
+                    Expr::Receive(vars.get(0)),
+                ));
+                let fields: Vec[(string, Expr)] = Vec::new();
+                fields.push(("_0", Expr::Var("value")));
+                fields.push(("_1", Expr::Var("ok")));
+                stmts.push(Stmt::Return(Option::Some(Expr::StructLiteral(
+                    lower_type(ret_ty),
+                    fields,
+                ))))
+            } else {
+                let args: Vec[Expr] = Vec::new();
+                args.push(vars.get(0));
+                stmts.push(Stmt::Expr(Expr::Call(Expr::Var("close"), args)));
+                stmts.push(Stmt::Return(Option::Some(Expr::Unit)))
+            };
             Expr::FuncLit(params, lower_type(ret_ty), Block { stmts })
         },
         _ => Expr::Var(go_ident(key)),
@@ -668,6 +727,12 @@ fn compile_intrinsic_callable(key: string, function_ty: tast::Type) -> Expr {
         || key == "slice.sub"
     {
         compile_slice_callable(key, function_ty)
+    } else if key == "channel.new"
+        || key == "channel.send"
+        || key == "channel.recv"
+        || key == "channel.close"
+    {
+        compile_channel_callable(key, function_ty)
     } else {
         match intrinsic_helper_call_name(key, function_ty, Vec::new()) {
             Option::Some(name) => Expr::Var(name),
@@ -719,10 +784,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
                     } else if key == "slice.len" {
                         let len_args: Vec[Expr] = Vec::new();
                         len_args.push(compiled.get(0));
-                        Expr::Convert(
-                            Type::Int32,
-                            Expr::Call(Expr::Var("len"), len_args),
-                        )
+                        Expr::Call(Expr::Var("len"), len_args)
                     } else if key == "slice.sub" {
                         Expr::Slice(compiled.get(0), compiled.get(1), compiled.get(2))
                     } else {
@@ -1022,6 +1084,7 @@ fn compile_value(
             let compiled = compile_imm_expected(env, expr, for_ty);
             let data = match tast::resolve_type(for_ty) {
                 tast::Type::Bool
+                | tast::Type::Int
                 | tast::Type::Int8
                 | tast::Type::Int16
                 | tast::Type::Int32
@@ -1573,7 +1636,7 @@ fn loop_label(value: string) -> string {
 fn fresh_loop_label_with_suffix(
     emitted: Vec[string],
     base: string,
-    suffix: int32,
+    suffix: int,
 ) -> string {
     let candidate = if suffix == 1 {
         base
@@ -2611,6 +2674,7 @@ fn collect_type(result: CollectedTypes, value: tast::Type) -> unit {
             add_collected_type(result, value);
             collect_type(result, elem);
         },
+        tast::Type::Channel(elem) => collect_type(result, elem),
         tast::Type::HashMap(key, value) => {
             add_collected_type(result, tast::Type::HashMap(key, value));
             collect_type(result, key);
@@ -2899,6 +2963,11 @@ fn collect_type_definition_fields(
         }
     };
     for instance in instances {
+        if instance.base_name == "TakeIterator" && instance.args.len() == 1 {
+            collect_type(result, tast::Type::RefType(tast::Type::Int))
+        } else {
+            ()
+        };
         match find_struct(structs, instance.base_name) {
             Option::Some(definition) => {
                 for field in definition.fields {

@@ -7,6 +7,7 @@ fn is_type_first(kind: lexer::TokenKind) -> bool {
     match kind {
         lexer::TokenKind::UnitKeyword
         | lexer::TokenKind::BoolKeyword
+        | lexer::TokenKind::IntKeyword
         | lexer::TokenKind::Int8Keyword
         | lexer::TokenKind::Int16Keyword
         | lexer::TokenKind::Int32Keyword
@@ -800,7 +801,7 @@ fn type_expr(parser: Parser) -> unit {
     }
 }
 
-fn type_expr_bp(parser: Parser, min_bp: int32) -> Option[MarkerClosed] {
+fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
     if parser.enter_type() == false {
         Option::None
     } else {
@@ -850,6 +851,10 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
         lexer::TokenKind::BoolKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_BOOL)
+        },
+        lexer::TokenKind::IntKeyword => {
+            parser.advance();
+            parser.close(marker, cst::NodeKind::TYPE_INT)
         },
         lexer::TokenKind::Int8Keyword => {
             parser.advance();
@@ -925,7 +930,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             } else {
                 parser.advance_with_error("expected ';' after array element type")
             };
-            if parser.at(lexer::TokenKind::Int) {
+            if parser.at(lexer::TokenKind::IntLit) {
                 parser.advance()
             } else {
                 parser.advance_with_error("expected array length")

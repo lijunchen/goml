@@ -20,6 +20,7 @@ pub(crate) struct InferenceSnapshot {
     table: Snapshot<InPlace<TypeVar>>,
     array_wildcard_counter: usize,
     array_wildcard_resolutions: HashMap<usize, usize>,
+    numeric_literals_len: usize,
 }
 
 fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
@@ -141,6 +142,7 @@ fn occurs(
         tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -207,6 +209,11 @@ fn occurs(
                 return false;
             }
         }
+        tast::Ty::TChannel { elem } => {
+            if !occurs(diagnostics, origin, var, elem) {
+                return false;
+            }
+        }
         tast::Ty::THashMap { key, value } => {
             if !occurs(diagnostics, origin, var, key) {
                 return false;
@@ -243,6 +250,7 @@ impl Typer {
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TNever => tast::Ty::TNever,
             tast::Ty::TBool => tast::Ty::TBool,
+            tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
@@ -299,6 +307,9 @@ impl Typer {
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.norm(elem)),
             },
+            tast::Ty::TChannel { elem } => tast::Ty::TChannel {
+                elem: Box::new(self.norm(elem)),
+            },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
                 key: Box::new(self.norm(key)),
                 value: Box::new(self.norm(value)),
@@ -327,11 +338,26 @@ impl Typer {
         }
     }
 
+    fn type_var_has_numeric_literal(&mut self, variable: TypeVar) -> bool {
+        let variables = self
+            .numeric_literals
+            .iter()
+            .map(|constraint| constraint.variable)
+            .collect::<Vec<_>>();
+        variables.into_iter().any(|candidate| {
+            matches!(
+                self.norm(&tast::Ty::TVar(candidate)),
+                tast::Ty::TVar(root) if root == variable
+            )
+        })
+    }
+
     pub(crate) fn snapshot_inference(&mut self) -> InferenceSnapshot {
         InferenceSnapshot {
             table: self.uni.snapshot(),
             array_wildcard_counter: self.array_wildcard_counter,
             array_wildcard_resolutions: self.array_wildcard_resolutions.clone(),
+            numeric_literals_len: self.numeric_literals.len(),
         }
     }
 
@@ -343,6 +369,8 @@ impl Typer {
         self.uni.rollback_to(snapshot.table);
         self.array_wildcard_counter = snapshot.array_wildcard_counter;
         self.array_wildcard_resolutions = snapshot.array_wildcard_resolutions;
+        self.numeric_literals
+            .truncate(snapshot.numeric_literals_len);
     }
 
     pub(crate) fn equate(
@@ -381,6 +409,20 @@ impl Typer {
                 }
             }
             (tast::Ty::TVar(a), t) | (t, tast::Ty::TVar(a)) => {
+                if self.type_var_has_numeric_literal(*a) && !super::operators::is_numeric_ty(t) {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Numeric literal cannot be used as {}",
+                                super::util::format_ty_for_diag(t)
+                            ),
+                        )
+                        .with_range(origin),
+                    );
+                    return false;
+                }
                 if !occurs(diagnostics, origin, *a, t) {
                     return false;
                 }
@@ -402,6 +444,7 @@ impl Typer {
 
             (tast::Ty::TUnit, tast::Ty::TUnit) => {}
             (tast::Ty::TBool, tast::Ty::TBool) => {}
+            (tast::Ty::TInt, tast::Ty::TInt) => {}
             (tast::Ty::TInt32, tast::Ty::TInt32) => {}
             (tast::Ty::TInt8, tast::Ty::TInt8) => {}
             (tast::Ty::TInt16, tast::Ty::TInt16) => {}
@@ -492,6 +535,11 @@ impl Typer {
                 }
             }
             (tast::Ty::TVec { elem: elem1 }, tast::Ty::TVec { elem: elem2 }) => {
+                if !self.unify(diagnostics, elem1, elem2, origin) {
+                    return false;
+                }
+            }
+            (tast::Ty::TChannel { elem: elem1 }, tast::Ty::TChannel { elem: elem2 }) => {
                 if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
                 }
@@ -862,6 +910,7 @@ impl Typer {
             tast::Ty::TUnit => ty.clone(),
             tast::Ty::TNever => ty.clone(),
             tast::Ty::TBool => ty.clone(),
+            tast::Ty::TInt => ty.clone(),
             tast::Ty::TInt8 => ty.clone(),
             tast::Ty::TInt16 => ty.clone(),
             tast::Ty::TInt32 => ty.clone(),
@@ -930,6 +979,9 @@ impl Typer {
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
+            tast::Ty::TChannel { elem } => tast::Ty::TChannel {
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
+            },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
                 key: Box::new(self._go_inst_ty(key, subst, wildcard_len)),
                 value: Box::new(self._go_inst_ty(value, subst, wildcard_len)),
@@ -987,6 +1039,7 @@ impl Typer {
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TNever => tast::Ty::TNever,
             tast::Ty::TBool => tast::Ty::TBool,
+            tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
@@ -1047,6 +1100,9 @@ impl Typer {
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
+            tast::Ty::TChannel { elem } => tast::Ty::TChannel {
+                elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
+            },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
                 key: Box::new(self.subst_ty(diagnostics, key, origin)),
                 value: Box::new(self.subst_ty(diagnostics, value, origin)),
@@ -1074,6 +1130,7 @@ impl Typer {
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TNever => tast::Ty::TNever,
             tast::Ty::TBool => tast::Ty::TBool,
+            tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
@@ -1125,6 +1182,9 @@ impl Typer {
                 elem: Box::new(self.subst_ty_silent(elem)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
+                elem: Box::new(self.subst_ty_silent(elem)),
+            },
+            tast::Ty::TChannel { elem } => tast::Ty::TChannel {
                 elem: Box::new(self.subst_ty_silent(elem)),
             },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {

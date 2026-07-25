@@ -710,7 +710,7 @@ fn build_struct_hash_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
             astptr: *attr_ptr,
         },
         Some(ast::TypeExpr::TUint64),
-        Expr::EUInt64 {
+        Expr::EInt {
             value: "14695981039346656037".to_string(),
             astptr: *attr_ptr,
         },
@@ -730,7 +730,7 @@ fn build_struct_hash_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
             lhs: Box::new(Expr::EBinary {
                 op: common_defs::BinaryOp::Mul,
                 lhs: Box::new(var_expr(&AstIdent::new("h"), attr_ptr)),
-                rhs: Box::new(Expr::EUInt64 {
+                rhs: Box::new(Expr::EInt {
                     value: "1099511628211".to_string(),
                     astptr: *attr_ptr,
                 }),
@@ -761,7 +761,7 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
         let bindings: Vec<AstIdent> = (0..variant.fields.types().len())
             .map(|i| AstIdent::new(&format!("__field{}_{}", idx, i)))
             .collect();
-        let tag = Expr::EUInt64 {
+        let tag = Expr::EInt {
             value: (idx as u64 + 1).to_string(),
             astptr: *attr_ptr,
         };
@@ -775,7 +775,7 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
             Some(ast::TypeExpr::TUint64),
             Expr::EBinary {
                 op: common_defs::BinaryOp::Add,
-                lhs: Box::new(Expr::EUInt64 {
+                lhs: Box::new(Expr::EInt {
                     value: "14695981039346656037".to_string(),
                     astptr: *attr_ptr,
                 }),
@@ -797,7 +797,7 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                 lhs: Box::new(Expr::EBinary {
                     op: common_defs::BinaryOp::Mul,
                     lhs: Box::new(var_expr(&AstIdent::new("h"), attr_ptr)),
-                    rhs: Box::new(Expr::EUInt64 {
+                    rhs: Box::new(Expr::EInt {
                         value: "1099511628211".to_string(),
                         astptr: *attr_ptr,
                     }),

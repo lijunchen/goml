@@ -6,6 +6,7 @@ use crate::{env, tast};
 pub(crate) enum TypeHead {
     Unit,
     Bool,
+    Int,
     Int8,
     Int16,
     Int32,
@@ -27,6 +28,7 @@ pub(crate) enum TypeHead {
     Vec,
     Ref,
     HashMap,
+    Channel,
     Function(usize),
     TypeVar,
 }
@@ -150,6 +152,7 @@ pub(crate) fn type_head(ty: &tast::Ty) -> Option<TypeHead> {
         tast::Ty::TVar(_) => Some(TypeHead::TypeVar),
         tast::Ty::TUnit => Some(TypeHead::Unit),
         tast::Ty::TBool => Some(TypeHead::Bool),
+        tast::Ty::TInt => Some(TypeHead::Int),
         tast::Ty::TInt8 => Some(TypeHead::Int8),
         tast::Ty::TInt16 => Some(TypeHead::Int16),
         tast::Ty::TInt32 => Some(TypeHead::Int32),
@@ -172,6 +175,7 @@ pub(crate) fn type_head(ty: &tast::Ty) -> Option<TypeHead> {
         tast::Ty::TVec { .. } => Some(TypeHead::Vec),
         tast::Ty::TRef { .. } => Some(TypeHead::Ref),
         tast::Ty::THashMap { .. } => Some(TypeHead::HashMap),
+        tast::Ty::TChannel { .. } => Some(TypeHead::Channel),
         tast::Ty::TFunc { params, .. } => Some(TypeHead::Function(params.len())),
         tast::Ty::TNever | tast::Ty::TParam { .. } | tast::Ty::TProjection { .. } => None,
     }

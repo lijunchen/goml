@@ -101,6 +101,7 @@ parser_tokens!(
     WildcardKeyword,
     UnitKeyword,
     BoolKeyword,
+    IntKeyword,
     Int8Keyword,
     Int16Keyword,
     Int32Keyword,
@@ -115,18 +116,8 @@ parser_tokens!(
     CharKeyword,
     ArrayKeyword,
     Ident,
-    Float32Lit,
-    Float64Lit,
     Float,
-    Int8Lit,
-    Int16Lit,
-    Int32Lit,
-    Int64Lit,
-    UInt8Lit,
-    UInt16Lit,
-    UInt32Lit,
-    UInt64Lit,
-    Int,
+    IntLit,
     Str,
     MultilineStr,
     CharLit,
@@ -325,18 +316,8 @@ fn starts_implicit_statement(kind: TokenKind) -> bool {
             | TokenKind::BreakKeyword
             | TokenKind::ContinueKeyword
             | TokenKind::Ident
-            | TokenKind::Float32Lit
-            | TokenKind::Float64Lit
             | TokenKind::Float
-            | TokenKind::Int8Lit
-            | TokenKind::Int16Lit
-            | TokenKind::Int32Lit
-            | TokenKind::Int64Lit
-            | TokenKind::UInt8Lit
-            | TokenKind::UInt16Lit
-            | TokenKind::UInt32Lit
-            | TokenKind::UInt64Lit
-            | TokenKind::Int
+            | TokenKind::IntLit
             | TokenKind::Str
             | TokenKind::MultilineStr
             | TokenKind::CharLit

@@ -31,11 +31,15 @@ pub enum IntrinsicId {
     HashMapLen,
     HashMapContains,
     HashMapEntries,
+    ChannelNew,
+    ChannelSend,
+    ChannelRecv,
+    ChannelClose,
     Missing,
 }
 
 impl IntrinsicId {
-    pub const ALL: [Self; 29] = [
+    pub const ALL: [Self; 33] = [
         Self::PrimitiveEq,
         Self::ArrayGet,
         Self::ArraySet,
@@ -64,6 +68,10 @@ impl IntrinsicId {
         Self::HashMapLen,
         Self::HashMapContains,
         Self::HashMapEntries,
+        Self::ChannelNew,
+        Self::ChannelSend,
+        Self::ChannelRecv,
+        Self::ChannelClose,
         Self::Missing,
     ];
 
@@ -97,6 +105,10 @@ impl IntrinsicId {
             Self::HashMapLen => "hashmap.len",
             Self::HashMapContains => "hashmap.contains",
             Self::HashMapEntries => "hashmap.entries",
+            Self::ChannelNew => "channel.new",
+            Self::ChannelSend => "channel.send",
+            Self::ChannelRecv => "channel.recv",
+            Self::ChannelClose => "channel.close",
             Self::Missing => "compiler.missing",
         }
     }
@@ -131,6 +143,10 @@ impl IntrinsicId {
             Self::HashMapLen => "hashmap_len",
             Self::HashMapContains => "hashmap_contains",
             Self::HashMapEntries => "hashmap_entries",
+            Self::ChannelNew => "channel_new",
+            Self::ChannelSend => "channel_send",
+            Self::ChannelRecv => "channel_recv",
+            Self::ChannelClose => "channel_close",
             Self::Missing => "missing",
         }
     }
@@ -160,6 +176,7 @@ pub enum RuntimeHookId {
     StringPrintln,
     CharToString,
     CharFromUint32,
+    IntToString,
     Int8ToString,
     Int16ToString,
     Int32ToString,
@@ -172,6 +189,7 @@ pub enum RuntimeHookId {
     Float64ToString,
     StringParseFloat32,
     StringParseFloat64,
+    IntHash,
     Int8Hash,
     Int16Hash,
     Int32Hash,
@@ -219,7 +237,7 @@ pub enum RuntimeHookId {
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 71] = [
+    pub const ALL: [Self; 73] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -235,6 +253,7 @@ impl RuntimeHookId {
         Self::StringPrintln,
         Self::CharToString,
         Self::CharFromUint32,
+        Self::IntToString,
         Self::Int8ToString,
         Self::Int16ToString,
         Self::Int32ToString,
@@ -247,6 +266,7 @@ impl RuntimeHookId {
         Self::Float64ToString,
         Self::StringParseFloat32,
         Self::StringParseFloat64,
+        Self::IntHash,
         Self::Int8Hash,
         Self::Int16Hash,
         Self::Int32Hash,
@@ -310,6 +330,7 @@ impl RuntimeHookId {
             Self::StringPrintln => "core.string_println",
             Self::CharToString => "core.char_to_string",
             Self::CharFromUint32 => "core.char_from_uint32",
+            Self::IntToString => "core.int_to_string",
             Self::Int8ToString => "core.int8_to_string",
             Self::Int16ToString => "core.int16_to_string",
             Self::Int32ToString => "core.int32_to_string",
@@ -322,6 +343,7 @@ impl RuntimeHookId {
             Self::Float64ToString => "core.float64_to_string",
             Self::StringParseFloat32 => "core.string_parse_float32",
             Self::StringParseFloat64 => "core.string_parse_float64",
+            Self::IntHash => "core.int_hash",
             Self::Int8Hash => "core.int8_hash",
             Self::Int16Hash => "core.int16_hash",
             Self::Int32Hash => "core.int32_hash",
@@ -391,6 +413,7 @@ impl RuntimeHookId {
                 | Self::StringPrintln
                 | Self::CharToString
                 | Self::CharFromUint32
+                | Self::IntToString
                 | Self::Int8ToString
                 | Self::Int16ToString
                 | Self::Int32ToString
@@ -403,6 +426,7 @@ impl RuntimeHookId {
                 | Self::Float64ToString
                 | Self::StringParseFloat32
                 | Self::StringParseFloat64
+                | Self::IntHash
                 | Self::Int8Hash
                 | Self::Int16Hash
                 | Self::Int32Hash
@@ -548,14 +572,18 @@ impl IntrinsicId {
             | Self::HashMapGet
             | Self::HashMapLen
             | Self::HashMapContains
-            | Self::HashMapEntries => CallEffect::Pure,
+            | Self::HashMapEntries
+            | Self::ChannelNew => CallEffect::Pure,
             Self::RefSet
             | Self::VecPush
             | Self::VecSet
             | Self::VecReserve
             | Self::VecTruncate
             | Self::HashMapSet
-            | Self::HashMapRemove => CallEffect::MutatesArgument(0),
+            | Self::HashMapRemove
+            | Self::ChannelSend
+            | Self::ChannelClose => CallEffect::MutatesArgument(0),
+            Self::ChannelRecv => CallEffect::Host,
             Self::RefNew | Self::VecNew | Self::VecWithCapacity | Self::HashMapNew => {
                 CallEffect::Pure
             }
@@ -607,6 +635,7 @@ pub enum LangItemId {
     Slice,
     Ref,
     HashMap,
+    Channel,
     Iterator,
     IntoIterator,
     Range,
@@ -630,6 +659,7 @@ impl LangItemTable {
             LangItemId::Slice,
             LangItemId::Ref,
             LangItemId::HashMap,
+            LangItemId::Channel,
         ] {
             table
                 .items
@@ -656,11 +686,12 @@ impl LangItemTable {
 }
 
 impl LangItemId {
-    pub const ALL: [Self; 12] = [
+    pub const ALL: [Self; 13] = [
         Self::Vec,
         Self::Slice,
         Self::Ref,
         Self::HashMap,
+        Self::Channel,
         Self::Iterator,
         Self::IntoIterator,
         Self::Range,
@@ -677,6 +708,7 @@ impl LangItemId {
             Self::Slice => "slice",
             Self::Ref => "ref",
             Self::HashMap => "hashmap",
+            Self::Channel => "channel",
             Self::Iterator => "iterator",
             Self::IntoIterator => "into_iterator",
             Self::Range => "range",
@@ -698,6 +730,7 @@ impl LangItemId {
             Self::Slice => "Slice",
             Self::Ref => "Ref",
             Self::HashMap => "HashMap",
+            Self::Channel => "Channel",
             Self::Iterator => "Iterator",
             Self::IntoIterator => "IntoIterator",
             Self::Range => "__goml_builtin_range",
@@ -818,6 +851,12 @@ fn hashmap_ty(key: crate::tast::Ty, value: crate::tast::Ty) -> crate::tast::Ty {
     }
 }
 
+fn channel_ty(elem: crate::tast::Ty) -> crate::tast::Ty {
+    crate::tast::Ty::TChannel {
+        elem: Box::new(elem),
+    }
+}
+
 fn tuple_ty(typs: Vec<crate::tast::Ty>) -> crate::tast::Ty {
     crate::tast::Ty::TTuple { typs }
 }
@@ -845,13 +884,11 @@ impl IntrinsicId {
             Self::PrimitiveEq => {
                 generic_signature(&["T"], &[], vec![t.clone(), t], crate::tast::Ty::TBool)
             }
-            Self::ArrayGet => {
-                generic_signature(&["T"], &[], vec![array, crate::tast::Ty::TInt32], t)
-            }
+            Self::ArrayGet => generic_signature(&["T"], &[], vec![array, crate::tast::Ty::TInt], t),
             Self::ArraySet => generic_signature(
                 &["T"],
                 &[],
-                vec![array.clone(), crate::tast::Ty::TInt32, t],
+                vec![array.clone(), crate::tast::Ty::TInt, t],
                 array,
             ),
             Self::RefNew => generic_signature(&["T"], &[], vec![t.clone()], ref_ty(t)),
@@ -873,7 +910,7 @@ impl IntrinsicId {
             }
             Self::VecNew => generic_signature(&["T"], &[], vec![], vec_ty(t)),
             Self::VecWithCapacity => {
-                generic_signature(&["T"], &[], vec![crate::tast::Ty::TInt32], vec_ty(t))
+                generic_signature(&["T"], &[], vec![crate::tast::Ty::TInt], vec_ty(t))
             }
             Self::VecPush => generic_signature(
                 &["T"],
@@ -884,25 +921,23 @@ impl IntrinsicId {
             Self::VecGet => generic_signature(
                 &["T"],
                 &[],
-                vec![vec_ty(t.clone()), crate::tast::Ty::TInt32],
+                vec![vec_ty(t.clone()), crate::tast::Ty::TInt],
                 t,
             ),
             Self::VecSet => generic_signature(
                 &["T"],
                 &[],
-                vec![vec_ty(t.clone()), crate::tast::Ty::TInt32, t],
+                vec![vec_ty(t.clone()), crate::tast::Ty::TInt, t],
                 crate::tast::Ty::TUnit,
             ),
-            Self::VecLen => {
-                generic_signature(&["T"], &[], vec![vec_ty(t)], crate::tast::Ty::TInt32)
-            }
+            Self::VecLen => generic_signature(&["T"], &[], vec![vec_ty(t)], crate::tast::Ty::TInt),
             Self::VecCapacity => {
-                generic_signature(&["T"], &[], vec![vec_ty(t)], crate::tast::Ty::TInt32)
+                generic_signature(&["T"], &[], vec![vec_ty(t)], crate::tast::Ty::TInt)
             }
             Self::VecReserve | Self::VecTruncate => generic_signature(
                 &["T"],
                 &[],
-                vec![vec_ty(t), crate::tast::Ty::TInt32],
+                vec![vec_ty(t), crate::tast::Ty::TInt],
                 crate::tast::Ty::TUnit,
             ),
             Self::SliceNew => generic_signature(
@@ -910,27 +945,27 @@ impl IntrinsicId {
                 &[],
                 vec![
                     vec_ty(t.clone()),
-                    crate::tast::Ty::TInt32,
-                    crate::tast::Ty::TInt32,
+                    crate::tast::Ty::TInt,
+                    crate::tast::Ty::TInt,
                 ],
                 slice_ty(t),
             ),
             Self::SliceGet => generic_signature(
                 &["T"],
                 &[],
-                vec![slice_ty(t.clone()), crate::tast::Ty::TInt32],
+                vec![slice_ty(t.clone()), crate::tast::Ty::TInt],
                 t,
             ),
             Self::SliceLen => {
-                generic_signature(&["T"], &[], vec![slice_ty(t)], crate::tast::Ty::TInt32)
+                generic_signature(&["T"], &[], vec![slice_ty(t)], crate::tast::Ty::TInt)
             }
             Self::SliceSub => generic_signature(
                 &["T"],
                 &[],
                 vec![
                     slice_ty(t.clone()),
-                    crate::tast::Ty::TInt32,
-                    crate::tast::Ty::TInt32,
+                    crate::tast::Ty::TInt,
+                    crate::tast::Ty::TInt,
                 ],
                 slice_ty(t),
             ),
@@ -959,7 +994,7 @@ impl IntrinsicId {
                 &["K", "V"],
                 &map_constraints,
                 vec![hashmap_ty(k, v)],
-                crate::tast::Ty::TInt32,
+                crate::tast::Ty::TInt,
             ),
             Self::HashMapContains => generic_signature(
                 &["K", "V"],
@@ -973,6 +1008,24 @@ impl IntrinsicId {
                 vec![hashmap_ty(k.clone(), v.clone())],
                 vec_ty(tuple_ty(vec![k, v])),
             ),
+            Self::ChannelNew => {
+                generic_signature(&["T"], &[], vec![crate::tast::Ty::TInt], channel_ty(t))
+            }
+            Self::ChannelSend => generic_signature(
+                &["T"],
+                &[],
+                vec![channel_ty(t.clone()), t],
+                crate::tast::Ty::TUnit,
+            ),
+            Self::ChannelRecv => generic_signature(
+                &["T"],
+                &[],
+                vec![channel_ty(t.clone())],
+                tuple_ty(vec![t, crate::tast::Ty::TBool]),
+            ),
+            Self::ChannelClose => {
+                generic_signature(&["T"], &[], vec![channel_ty(t)], crate::tast::Ty::TUnit)
+            }
             Self::Missing => generic_signature(&["T"], &[], vec![crate::tast::Ty::TString], t),
         }
     }
@@ -984,16 +1037,14 @@ impl RuntimeHookId {
         match self {
             Self::UnitToString => signature(vec![Ty::TUnit], Ty::TString),
             Self::BoolToString => signature(vec![Ty::TBool], Ty::TString),
-            Self::StringLen => signature(vec![Ty::TString], Ty::TInt32),
-            Self::StringGet => signature(vec![Ty::TString, Ty::TInt32], Ty::TChar),
-            Self::StringByteGet => signature(vec![Ty::TString, Ty::TInt32], Ty::TUint8),
-            Self::StringByteSlice => {
-                signature(vec![Ty::TString, Ty::TInt32, Ty::TInt32], Ty::TString)
-            }
-            Self::StringIsCharBoundary => signature(vec![Ty::TString, Ty::TInt32], Ty::TBool),
+            Self::StringLen => signature(vec![Ty::TString], Ty::TInt),
+            Self::StringGet => signature(vec![Ty::TString, Ty::TInt], Ty::TChar),
+            Self::StringByteGet => signature(vec![Ty::TString, Ty::TInt], Ty::TUint8),
+            Self::StringByteSlice => signature(vec![Ty::TString, Ty::TInt, Ty::TInt], Ty::TString),
+            Self::StringIsCharBoundary => signature(vec![Ty::TString, Ty::TInt], Ty::TBool),
             Self::StringDecodeUtf8At => signature(
-                vec![Ty::TString, Ty::TInt32],
-                tuple_ty(vec![Ty::TBool, Ty::TChar, Ty::TInt32]),
+                vec![Ty::TString, Ty::TInt],
+                tuple_ty(vec![Ty::TBool, Ty::TChar, Ty::TInt]),
             ),
             Self::StringToBytes => signature(vec![Ty::TString], vec_ty(Ty::TUint8)),
             Self::StringFromUtf8 => signature(
@@ -1006,6 +1057,7 @@ impl RuntimeHookId {
             Self::CharFromUint32 => {
                 signature(vec![Ty::TUint32], tuple_ty(vec![Ty::TBool, Ty::TChar]))
             }
+            Self::IntToString => signature(vec![Ty::TInt], Ty::TString),
             Self::Int8ToString => signature(vec![Ty::TInt8], Ty::TString),
             Self::Int16ToString => signature(vec![Ty::TInt16], Ty::TString),
             Self::Int32ToString => signature(vec![Ty::TInt32], Ty::TString),
@@ -1022,6 +1074,7 @@ impl RuntimeHookId {
             Self::StringParseFloat64 => {
                 signature(vec![Ty::TString], tuple_ty(vec![Ty::TBool, Ty::TFloat64]))
             }
+            Self::IntHash => signature(vec![Ty::TInt], Ty::TUint64),
             Self::Int8Hash => signature(vec![Ty::TInt8], Ty::TUint64),
             Self::Int16Hash => signature(vec![Ty::TInt16], Ty::TUint64),
             Self::Int32Hash => signature(vec![Ty::TInt32], Ty::TUint64),
@@ -1088,7 +1141,7 @@ impl RuntimeHookId {
             | Self::StdPathFileStem => {
                 signature(vec![Ty::TString], tuple_ty(vec![Ty::TBool, Ty::TString]))
             }
-            Self::StdProcessExit => signature(vec![Ty::TInt32], Ty::TUnit),
+            Self::StdProcessExit => signature(vec![Ty::TInt], Ty::TUnit),
             Self::StdProcessOutput => {
                 let env_ty = vec_ty(tuple_ty(vec![Ty::TString, Ty::TString]));
                 signature(
@@ -1101,7 +1154,7 @@ impl RuntimeHookId {
                     ],
                     tuple_ty(vec![
                         Ty::TBool,
-                        Ty::TInt32,
+                        Ty::TInt,
                         vec_ty(Ty::TUint8),
                         vec_ty(Ty::TUint8),
                         Ty::TString,
@@ -1118,7 +1171,7 @@ impl RuntimeHookId {
                         Ty::TString,
                         env_ty,
                     ],
-                    tuple_ty(vec![Ty::TBool, Ty::TInt32, Ty::TString]),
+                    tuple_ty(vec![Ty::TBool, Ty::TInt, Ty::TString]),
                 )
             }
             Self::StdTestingFail => signature(vec![Ty::TString], Ty::TUnit),

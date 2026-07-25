@@ -28,7 +28,7 @@ fn add_reachable(values: NameSet, value: string) -> unit {
 fn collect_type_names(result: NameSet, value: Type) -> unit {
     match value {
         Type::Named(name) => add_reachable(result, name),
-        Type::Pointer(inner) | Type::Array(_, inner) | Type::Slice(inner) => {
+        Type::Pointer(inner) | Type::Array(_, inner) | Type::Slice(inner) | Type::Chan(inner) => {
             collect_type_names(result, inner)
         },
         Type::Map(key, value) => {
@@ -50,6 +50,7 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
         | Type::Any
         | Type::Unit
         | Type::Bool
+        | Type::Int
         | Type::Int8
         | Type::Int16
         | Type::Int32
@@ -99,6 +100,11 @@ fn collect_expr_names(result: NameSet, value: Expr) -> unit {
                 collect_expr_names(result, arg)
             }
         },
+        Expr::Send(channel, value) => {
+            collect_expr_names(result, channel);
+            collect_expr_names(result, value)
+        },
+        Expr::Receive(channel) => collect_expr_names(result, channel),
         Expr::StructLiteral(ty, fields) => {
             collect_type_names(result, ty);
             for field in fields {
@@ -213,7 +219,7 @@ fn name_uses_import(name: string, alias: string) -> bool {
         false
     } else {
         name.byte_slice(0, alias.byte_len()) == alias
-            && name.byte_get(alias.byte_len()) == 46u8
+            && name.byte_get(alias.byte_len()) == 46
     }
 }
 

@@ -3,7 +3,7 @@ package ast;
 use gomlc::cst;
 use gomlc::lexer;
 
-fn self_type_occurrences(value: LocatedNode) -> int32 {
+fn self_type_occurrences(value: LocatedNode) -> int {
     let result = Ref::new(0);
     for token in direct_tokens(value) {
         if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
@@ -88,8 +88,8 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                     match first_token(variant, lexer::TokenKind::Ident) {
                         Option::Some(variant_name) => {
                             if variant_name.token.text.byte_len() == 0
-                                || variant_name.token.text.byte_get(0) < 65u8
-                                || variant_name.token.text.byte_get(0) > 90u8
+                                || variant_name.token.text.byte_get(0) < 65
+                                || variant_name.token.text.byte_get(0) > 90
                             {
                                 push_error(
                                     ctx,
@@ -357,7 +357,7 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
 fn lower_param(
     ctx: LowerCtx,
     node: LocatedNode,
-    index: int32,
+    index: int,
     shorthand_self_ty: Option[TypeExpr],
 ) -> Option[(string, TypeExpr)] {
     match first_token(node, lexer::TokenKind::Ident) {

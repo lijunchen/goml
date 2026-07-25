@@ -12,18 +12,8 @@ fn is_pattern_first(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::LBracket
         | lexer::TokenKind::WildcardKeyword
         | lexer::TokenKind::Minus
-        | lexer::TokenKind::Int
-        | lexer::TokenKind::Int8Lit
-        | lexer::TokenKind::Int16Lit
-        | lexer::TokenKind::Int32Lit
-        | lexer::TokenKind::Int64Lit
-        | lexer::TokenKind::UInt8Lit
-        | lexer::TokenKind::UInt16Lit
-        | lexer::TokenKind::UInt32Lit
-        | lexer::TokenKind::UInt64Lit
+        | lexer::TokenKind::IntLit
         | lexer::TokenKind::Float
-        | lexer::TokenKind::Float32Lit
-        | lexer::TokenKind::Float64Lit
         | lexer::TokenKind::Str
         | lexer::TokenKind::CharLit => true,
         _ => false,
@@ -145,14 +135,8 @@ fn negative_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.advance();
     let kind = match parser.peek() {
-        lexer::TokenKind::Int => Option::Some(cst::NodeKind::PATTERN_INT),
-        lexer::TokenKind::Int8Lit => Option::Some(cst::NodeKind::PATTERN_INT8),
-        lexer::TokenKind::Int16Lit => Option::Some(cst::NodeKind::PATTERN_INT16),
-        lexer::TokenKind::Int32Lit => Option::Some(cst::NodeKind::PATTERN_INT32),
-        lexer::TokenKind::Int64Lit => Option::Some(cst::NodeKind::PATTERN_INT64),
+        lexer::TokenKind::IntLit => Option::Some(cst::NodeKind::PATTERN_INT),
         lexer::TokenKind::Float => Option::Some(cst::NodeKind::PATTERN_FLOAT),
-        lexer::TokenKind::Float32Lit => Option::Some(cst::NodeKind::PATTERN_FLOAT32),
-        lexer::TokenKind::Float64Lit => Option::Some(cst::NodeKind::PATTERN_FLOAT64),
         _ => Option::None,
     };
     match kind {
@@ -178,18 +162,8 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
             lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
                 numeric_pattern(parser, cst::NodeKind::PATTERN_BOOL),
             lexer::TokenKind::Minus => negative_pattern(parser),
-            lexer::TokenKind::Int => numeric_pattern(parser, cst::NodeKind::PATTERN_INT),
-            lexer::TokenKind::Int8Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT8),
-            lexer::TokenKind::Int16Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT16),
-            lexer::TokenKind::Int32Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT32),
-            lexer::TokenKind::Int64Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT64),
-            lexer::TokenKind::UInt8Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_UINT8),
-            lexer::TokenKind::UInt16Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_UINT16),
-            lexer::TokenKind::UInt32Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_UINT32),
-            lexer::TokenKind::UInt64Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_UINT64),
+            lexer::TokenKind::IntLit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT),
             lexer::TokenKind::Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
-            lexer::TokenKind::Float32Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT32),
-            lexer::TokenKind::Float64Lit => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT64),
             lexer::TokenKind::Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
             lexer::TokenKind::CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
             lexer::TokenKind::WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),

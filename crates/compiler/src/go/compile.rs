@@ -234,6 +234,13 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
         };
     }
 
+    if let Some(v) = value.as_int() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
     if let Some(v) = value.as_int8() {
         return goast::Expr::Int {
             value: v.to_string(),
@@ -395,6 +402,12 @@ fn compile_intrinsic_callable(id: IntrinsicId, ty: &tast::Ty) -> goast::Expr {
             runtime::hashmap_helper_fn_name(id.source_name(), &params[0])
         }
         IntrinsicId::Missing => runtime::missing_helper_fn_name(ret_ty),
+        IntrinsicId::ChannelNew
+        | IntrinsicId::ChannelSend
+        | IntrinsicId::ChannelRecv
+        | IntrinsicId::ChannelClose => {
+            return compile_channel_callable(id, params, ret_ty, helper_ty);
+        }
         IntrinsicId::SliceNew
         | IntrinsicId::SliceGet
         | IntrinsicId::SliceLen
@@ -403,6 +416,110 @@ fn compile_intrinsic_callable(id: IntrinsicId, ty: &tast::Ty) -> goast::Expr {
     goast::Expr::Var {
         name: helper_name,
         ty: helper_ty,
+    }
+}
+
+fn compile_channel_callable(
+    id: IntrinsicId,
+    params: &[tast::Ty],
+    ret_ty: &tast::Ty,
+    func_ty: goty::GoType,
+) -> goast::Expr {
+    let go_params = params
+        .iter()
+        .enumerate()
+        .map(|(index, ty)| (format!("p{index}"), tast_ty_to_go_type(ty)))
+        .collect::<Vec<_>>();
+    let var = |index: usize| goast::Expr::Var {
+        name: format!("p{index}"),
+        ty: tast_ty_to_go_type(&params[index]),
+    };
+    let unit = || goast::Expr::Unit {
+        ty: goty::GoType::TUnit,
+    };
+    let body = match id {
+        IntrinsicId::ChannelNew => vec![goast::Stmt::Return {
+            expr: Some(goast::Expr::Make {
+                ty: tast_ty_to_go_type(ret_ty),
+                args: vec![var(0)],
+            }),
+        }],
+        IntrinsicId::ChannelSend => vec![
+            goast::Stmt::Expr(goast::Expr::Send {
+                channel: Box::new(var(0)),
+                value: Box::new(var(1)),
+                ty: goty::GoType::TUnit,
+            }),
+            goast::Stmt::Return { expr: Some(unit()) },
+        ],
+        IntrinsicId::ChannelRecv => {
+            let tast::Ty::TChannel { elem } = &params[0] else {
+                panic!("channel.recv expects Channel argument, got {:?}", params[0]);
+            };
+            let value_ty = tast_ty_to_go_type(elem);
+            vec![
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: value_ty.clone(),
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "ok".to_string(),
+                    ty: goty::GoType::TBool,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["value".to_string(), "ok".to_string()],
+                    value: goast::Expr::Receive {
+                        channel: Box::new(var(0)),
+                        ty: goty::GoType::TMulti {
+                            elems: vec![value_ty.clone(), goty::GoType::TBool],
+                        },
+                    },
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::StructLiteral {
+                        fields: vec![
+                            (
+                                "_0".to_string(),
+                                goast::Expr::Var {
+                                    name: "value".to_string(),
+                                    ty: value_ty,
+                                },
+                            ),
+                            (
+                                "_1".to_string(),
+                                goast::Expr::Var {
+                                    name: "ok".to_string(),
+                                    ty: goty::GoType::TBool,
+                                },
+                            ),
+                        ],
+                        ty: tast_ty_to_go_type(ret_ty),
+                    }),
+                },
+            ]
+        }
+        IntrinsicId::ChannelClose => vec![
+            goast::Stmt::Expr(goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: "close".to_string(),
+                    ty: goty::GoType::TFunc {
+                        params: vec![tast_ty_to_go_type(&params[0])],
+                        ret_ty: Box::new(goty::GoType::TVoid),
+                    },
+                }),
+                args: vec![var(0)],
+                ty: goty::GoType::TVoid,
+            }),
+            goast::Stmt::Return { expr: Some(unit()) },
+        ],
+        _ => unreachable!(),
+    };
+    goast::Expr::FuncLit {
+        params: go_params,
+        body,
+        ty: func_ty,
     }
 }
 
@@ -450,23 +567,13 @@ fn compile_slice_callable(
         },
         IntrinsicId::SliceLen => goast::Expr::Call {
             func: Box::new(goast::Expr::Var {
-                name: "int32".to_string(),
+                name: "len".to_string(),
                 ty: goty::GoType::TFunc {
-                    params: vec![goty::GoType::TInt32],
-                    ret_ty: Box::new(goty::GoType::TInt32),
+                    params: vec![tast_ty_to_go_type(&params[0])],
+                    ret_ty: Box::new(goty::GoType::TInt),
                 },
             }),
-            args: vec![goast::Expr::Call {
-                func: Box::new(goast::Expr::Var {
-                    name: "len".to_string(),
-                    ty: goty::GoType::TFunc {
-                        params: vec![tast_ty_to_go_type(&params[0])],
-                        ret_ty: Box::new(goty::GoType::TInt32),
-                    },
-                }),
-                args: vec![var(0)],
-                ty: goty::GoType::TInt32,
-            }],
+            args: vec![var(0)],
             ty: ret_go_ty,
         },
         IntrinsicId::SliceSub => goast::Expr::Slice {
@@ -727,6 +834,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -790,6 +898,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        tast::Ty::TChannel { elem } => tast::Ty::TChannel {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
             key: Box::new(substitute_ty_params(key, subst)),
             value: Box::new(substitute_ty_params(value, subst)),
@@ -849,7 +960,8 @@ fn ty_contains_type_param(ty: &tast::Ty) -> bool {
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
-        | tast::Ty::TRef { elem } => ty_contains_type_param(elem),
+        | tast::Ty::TRef { elem }
+        | tast::Ty::TChannel { elem } => ty_contains_type_param(elem),
         tast::Ty::THashMap { key, value } => {
             ty_contains_type_param(key) || ty_contains_type_param(value)
         }
@@ -1125,6 +1237,9 @@ fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSe
                         self.collect_type(elem);
                     }
                 }
+                tast::Ty::TChannel { elem } => {
+                    self.collect_type(elem);
+                }
                 tast::Ty::THashMap { key, value } => {
                     if self.hashmaps.insert(ty.clone()) {
                         self.collect_type(key);
@@ -1295,6 +1410,7 @@ fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequire
             tast::Ty::TSlice { elem } => collect_ty(req, elem),
             tast::Ty::TVec { elem } => collect_ty(req, elem),
             tast::Ty::TRef { elem } => collect_ty(req, elem),
+            tast::Ty::TChannel { elem } => collect_ty(req, elem),
             tast::Ty::THashMap { key, value } => {
                 collect_ty(req, key);
                 collect_ty(req, value);
@@ -2110,7 +2226,7 @@ fn compile_intrinsic_call(
                 },
                 IntrinsicId::HashMapLen => goty::GoType::TFunc {
                     params: vec![map_go_ty.clone()],
-                    ret_ty: Box::new(goty::GoType::TInt32),
+                    ret_ty: Box::new(goty::GoType::TInt),
                 },
                 IntrinsicId::HashMapContains => goty::GoType::TFunc {
                     params: vec![map_go_ty.clone(), key_go_ty],
@@ -2174,23 +2290,35 @@ fn compile_intrinsic_call(
             let value = compiled_args.into_iter().next().unwrap();
             goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: "int32".to_string(),
+                    name: "len".to_string(),
                     ty: goty::GoType::TFunc {
-                        params: vec![goty::GoType::TInt32],
-                        ret_ty: Box::new(goty::GoType::TInt32),
+                        params: vec![tast_ty_to_go_type(&arg0_ty)],
+                        ret_ty: Box::new(goty::GoType::TInt),
                     },
                 }),
-                args: vec![goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "len".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![tast_ty_to_go_type(&arg0_ty)],
-                            ret_ty: Box::new(goty::GoType::TInt32),
-                        },
-                    }),
-                    args: vec![value],
-                    ty: goty::GoType::TInt32,
-                }],
+                args: vec![value],
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        IntrinsicId::ChannelNew
+        | IntrinsicId::ChannelSend
+        | IntrinsicId::ChannelRecv
+        | IntrinsicId::ChannelClose => {
+            let callable_ty = goty::GoType::TFunc {
+                params: args
+                    .iter()
+                    .map(|arg| tast_ty_to_go_type(&imm_ty(arg)))
+                    .collect(),
+                ret_ty: Box::new(tast_ty_to_go_type(ty)),
+            };
+            goast::Expr::Call {
+                func: Box::new(compile_channel_callable(
+                    id,
+                    &args.iter().map(imm_ty).collect::<Vec<_>>(),
+                    ty,
+                    callable_ty,
+                )),
+                args: compiled_args,
                 ty: tast_ty_to_go_type(ty),
             }
         }
@@ -3161,6 +3289,7 @@ fn needs_closure_to_func_wrap(arg_ty: &tast::Ty, param_ty: &tast::Ty) -> bool {
 
 fn ensure_typed_for_any(expr: goast::Expr, for_ty: &tast::Ty) -> goast::Expr {
     let type_name = match for_ty {
+        tast::Ty::TInt => Some("int"),
         tast::Ty::TInt8 => Some("int8"),
         tast::Ty::TInt16 => Some("int16"),
         tast::Ty::TInt32 => Some("int32"),
@@ -4225,7 +4354,7 @@ fn test_main_function(goenv: &GlobalGoEnv, tests: &[TestDescriptor]) -> Result<g
         }),
         index: Box::new(goast::Expr::Int {
             value: "1".to_string(),
-            ty: goty::GoType::TInt32,
+            ty: goty::GoType::TInt,
         }),
         ty: goty::GoType::TString,
     };

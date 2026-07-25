@@ -39,7 +39,7 @@ fn short_name(value: string) -> string {
     let start = Ref::new(0);
     let index = Ref::new(0);
     while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58u8 && value.byte_get(index.get() + 1) == 58u8 {
+        if value.byte_get(index.get()) == 58 && value.byte_get(index.get() + 1) == 58 {
             start.set(index.get() + 2);
             index.set(index.get() + 2)
         } else {
@@ -127,7 +127,7 @@ fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
     }
 }
 
-fn find_variant(value: EnumInfo, index: int32) -> Option[EnumVariantInfo] {
+fn find_variant(value: EnumInfo, index: int) -> Option[EnumVariantInfo] {
     if index >= 0 && index < value.variants.len() {
         Option::Some(value.variants.get(index))
     } else {
@@ -150,7 +150,7 @@ fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
 fn resolve_user_constructor(
     ctx: Checker,
     value: EnumInfo,
-    variant_index: int32,
+    variant_index: int,
 ) -> Option[ResolvedConstructor] {
     match find_variant(value, variant_index) {
         Option::Some(variant) => {
@@ -205,8 +205,8 @@ fn split_constructor_name(value: string) -> Option[(string, string)] {
     let separator = Ref::new(Option::None);
     let index = Ref::new(0);
     while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58u8
-            && value.byte_get(index.get() + 1) == 58u8
+        if value.byte_get(index.get()) == 58
+            && value.byte_get(index.get() + 1) == 58
         {
             separator.set(Option::Some(index.get()));
             index.set(index.get() + 2)
@@ -285,7 +285,7 @@ fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[Resol
     }
 }
 
-fn bare_constructor_match_count(ctx: Checker, name: string) -> int32 {
+fn bare_constructor_match_count(ctx: Checker, name: string) -> int {
     let count = Ref::new(0);
     for info in ctx.enums {
         for variant in info.variants {
@@ -337,7 +337,7 @@ fn resolve_struct(ctx: Checker, name: string) -> Option[ResolvedStruct] {
 fn instantiate_named_variant(
     ctx: Checker,
     value: EnumInfo,
-    variant_index: int32,
+    variant_index: int,
     named: Vec[(string, Type)],
 ) -> ResolvedStruct {
     let (ty, substitutions) = instantiate_enum(ctx, value);
@@ -437,7 +437,10 @@ fn resolve_named_field_constructor(
 fn nominal_arguments(value: Type) -> Vec[Type] {
     match prune(value) {
         Type::App(_, args) => args,
-        Type::VecType(elem) | Type::Slice(elem) | Type::RefType(elem) => one_type(elem),
+        Type::VecType(elem)
+        | Type::Slice(elem)
+        | Type::RefType(elem)
+        | Type::Channel(elem) => one_type(elem),
         Type::HashMap(key, item) => two_types(key, item),
         _ => Vec::new(),
     }
@@ -562,6 +565,7 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
         (Type::Projection(_, _, _), _) | (_, Type::Projection(_, _, _)) => true,
         (Type::Unit, Type::Unit)
         | (Type::Bool, Type::Bool)
+        | (Type::Int, Type::Int)
         | (Type::Int8, Type::Int8)
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
@@ -590,7 +594,10 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
         },
         (Type::Slice(left), Type::Slice(right))
         | (Type::VecType(left), Type::VecType(right))
-        | (Type::RefType(left), Type::RefType(right)) => call_types_compatible(left, right),
+        | (Type::RefType(left), Type::RefType(right))
+        | (Type::Channel(left), Type::Channel(right)) => {
+            call_types_compatible(left, right)
+        },
         (
             Type::HashMap(left_key, left_value),
             Type::HashMap(right_key, right_value),
@@ -743,7 +750,7 @@ fn context_trait_bound_satisfied(
 fn predicates_satisfied_at(
     ctx: Checker,
     predicates: Vec[TypePredicate],
-    depth: int32,
+    depth: int,
 ) -> bool {
     let satisfied = Ref::new(true);
     for predicate in predicates {
@@ -793,6 +800,73 @@ fn require_predicate(
     })
 }
 
+fn contains_unbound_any_variable(value: Type) -> bool {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound(_, VarKind::Any) => true,
+            TypeVar::Unbound(_, _) => false,
+            TypeVar::Link(inner) => contains_unbound_any_variable(inner),
+        },
+        Type::Tuple(values) => {
+            let found = Ref::new(false);
+            for value in values {
+                if contains_unbound_any_variable(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Projection(base, _, reference) => {
+            let found = Ref::new(contains_unbound_any_variable(base));
+            match reference {
+                Option::Some(reference) => for value in reference.args {
+                    if contains_unbound_any_variable(value) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            found.get()
+        },
+        Type::App(base, args) => {
+            let found = Ref::new(contains_unbound_any_variable(base));
+            for value in args {
+                if contains_unbound_any_variable(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array(_, elem)
+        | Type::Slice(elem)
+        | Type::VecType(elem)
+        | Type::RefType(elem)
+        | Type::Channel(elem) => contains_unbound_any_variable(elem),
+        Type::HashMap(key, value) => {
+            contains_unbound_any_variable(key)
+                || contains_unbound_any_variable(value)
+        },
+        Type::Func(params, ret_ty) => {
+            let found = Ref::new(contains_unbound_any_variable(ret_ty));
+            for value in params {
+                if contains_unbound_any_variable(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
 fn predicate_requirement_message(
     ctx: Checker,
     value: TypePredicate,
@@ -802,14 +876,20 @@ fn predicate_requirement_message(
         match value {
             TypePredicate::Trait(for_ty, reference) => {
                 let unresolved = Ref::new(contains_unbound_type_variable(for_ty));
+                let ambiguous = Ref::new(contains_unbound_any_variable(for_ty));
                 for value in reference.args {
                     if contains_unbound_type_variable(value) {
                         unresolved.set(true)
                     } else {
                         ()
+                    };
+                    if contains_unbound_any_variable(value) {
+                        ambiguous.set(true)
+                    } else {
+                        ()
                     }
                 };
-                if unresolved.get() {
+                if unresolved.get() && ambiguous.get() {
                     "Could not infer the type required to prove "
                         + trait_ref_text(diagnostic_trait_ref(reference))
                         + "<"
@@ -859,7 +939,8 @@ fn type_contains_error(value: Type) -> bool {
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => type_contains_error(elem),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => type_contains_error(elem),
         Type::HashMap(key, value) => {
             type_contains_error(key) || type_contains_error(value)
         },
@@ -898,7 +979,21 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
 }
 
 fn resolve_required_predicates(ctx: Checker) -> unit {
+    let messages: Vec[string] = Vec::new();
+    let spans: Vec[Option[ast::Span]] = Vec::new();
     for requirement in ctx.required_predicates {
+        match requirement.predicate {
+            TypePredicate::Trait(for_ty, _) => {
+                if contains_unbound_type_variable(for_ty)
+                    && is_numeric_type(for_ty)
+                {
+                    let _ = resolve_type(for_ty);
+                } else {
+                    ()
+                }
+            },
+            TypePredicate::Equality(_, _) => (),
+        };
         if predicate_contains_error(requirement.predicate)
             || predicates_satisfied_at(
             ctx,
@@ -907,15 +1002,31 @@ fn resolve_required_predicates(ctx: Checker) -> unit {
         ) {
             ()
         } else {
-            push_diagnostic_at(
+            let message = predicate_requirement_message(
                 ctx,
-                predicate_requirement_message(
-                    ctx,
-                    requirement.predicate,
-                    requirement.message,
-                ),
-                requirement.span,
-            )
+                requirement.predicate,
+                requirement.message,
+            );
+            let duplicate = Ref::new(false);
+            for index in range(0, messages.len()) {
+                if messages.get(index) == message
+                    && optional_spans_equal(
+                        spans.get(index),
+                        requirement.span,
+                    )
+                {
+                    duplicate.set(true)
+                } else {
+                    ()
+                }
+            };
+            if duplicate.get() {
+                ()
+            } else {
+                messages.push(message);
+                spans.push(requirement.span);
+                push_diagnostic_at(ctx, message, requirement.span)
+            }
         }
     }
 }
@@ -924,6 +1035,7 @@ fn builtin_value_trait_type(value: Type) -> bool {
     match prune(value) {
         Type::Unit
         | Type::Bool
+        | Type::Int
         | Type::Int8
         | Type::Int16
         | Type::Int32
@@ -964,7 +1076,7 @@ fn iterator_item_type(value: Type) -> Type {
 fn builtin_iterator_bound_satisfied(
     ctx: Checker,
     bound_ty: Type,
-    depth: int32,
+    depth: int,
 ) -> bool {
     match prune(normalize_type(ctx, bound_ty)) {
         Type::App(Type::Con(name), args) => if name == "FnIterator" && args.len() == 1 {
@@ -1001,7 +1113,7 @@ fn builtin_trait_bound_satisfied(
     ctx: Checker,
     bound_ty: Type,
     reference: TraitRef,
-    depth: int32,
+    depth: int,
 ) -> bool {
     if reference.args.len() > 0 {
         false
@@ -1110,7 +1222,7 @@ fn trait_bound_satisfied_at(
     ctx: Checker,
     bound_ty: Type,
     reference: TraitRef,
-    depth: int32,
+    depth: int,
 ) -> bool {
     let bound_ty = normalize_type(ctx, bound_ty);
     let reference = normalize_trait_ref(ctx, reference);
@@ -1125,7 +1237,10 @@ fn trait_bound_satisfied_at(
     } else {
         let found = Ref::new(false);
         for impl_info in ctx.impls {
-            if !(found.get()) && names_match(impl_info.trait_ref.name, reference.name) {
+            if !(found.get())
+                && !contains_name(ctx.invalid_impl_origins, impl_info.origin)
+                && names_match(impl_info.trait_ref.name, reference.name)
+            {
                 let substitutions = instantiate_substitutions(
                     ctx.counter,
                     impl_info.generics,
@@ -1201,6 +1316,11 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
             let left_impl = ctx.impls.get(left);
             let right_impl = ctx.impls.get(right);
             if impls_overlap(ctx, left_impl, right_impl) {
+                if !contains_name(ctx.invalid_impl_origins, right_impl.origin) {
+                    ctx.invalid_impl_origins.push(right_impl.origin)
+                } else {
+                    ()
+                };
                 if left_impl.generics.len() == 0
                     && right_impl.generics.len() == 0
                     && types_equal(left_impl.for_type, right_impl.for_type)
@@ -1235,9 +1355,9 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
 
 fn builtin_ref_impl_origin(name: string) -> Option[string] {
     if names_match(name, "Eq") {
-        Option::Some("builtin#42 at source range 13385..13388")
+        Option::Some("builtin#45 at source range 14204..14207")
     } else if names_match(name, "Hash") {
-        Option::Some("builtin#43 at source range 13498..13501")
+        Option::Some("builtin#46 at source range 14317..14320")
     } else {
         Option::None
     }
@@ -1399,13 +1519,13 @@ fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string) -> Option[
                 Type::Var(_) => true,
                 _ => false,
             } {
-                expect_type(ctx, receiver, Type::Int32)
+                expect_type(ctx, receiver, Type::Int)
             } else {
                 ()
             };
             let owner = resolve_type(receiver);
             if match owner {
-                Type::Int32 => true,
+                Type::Int | Type::Int32 => true,
                 _ => false,
             } {
                 Option::Some(inherent_callable(
@@ -1464,6 +1584,7 @@ fn resolve_builtin_container_method(
         Type::VecType(elem) => resolve_vec_method(receiver, elem, name),
         Type::Slice(elem) => resolve_slice_method(receiver, elem, name),
         Type::RefType(elem) => resolve_ref_method(receiver, elem, name),
+        Type::Channel(elem) => resolve_channel_method(receiver, elem, name),
         Type::HashMap(key, value) => {
             resolve_hashmap_method(ctx, receiver, key, value, name)
         },
@@ -1480,23 +1601,23 @@ fn resolve_vec_method(
     if name == "push" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Unit))
         } else if name == "get" {
-            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), elem))
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), elem))
         } else if name == "set" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                three_types(receiver, Type::Int32, elem),
+                three_types(receiver, Type::Int, elem),
                 Type::Unit,
             ))
         } else if name == "len" || name == "capacity" {
-            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
         } else if name == "is_empty" {
             Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
         } else if name == "reserve" || name == "truncate" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                two_types(receiver, Type::Int32),
+                two_types(receiver, Type::Int),
                 Type::Unit,
             ))
         } else if name == "clear" || name == "reverse" {
@@ -1512,21 +1633,21 @@ fn resolve_vec_method(
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                three_types(receiver, Type::Int32, Type::Int32),
+                three_types(receiver, Type::Int, Type::Int),
                 Type::Unit,
             ))
         } else if name == "swap_remove" || name == "remove" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                two_types(receiver, Type::Int32),
+                two_types(receiver, Type::Int),
                 elem,
             ))
         } else if name == "insert" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                three_types(receiver, Type::Int32, elem),
+                three_types(receiver, Type::Int, elem),
                 Type::Unit,
             ))
         } else if name == "extend" {
@@ -1542,7 +1663,7 @@ fn resolve_vec_method(
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                three_types(receiver, Type::Int32, Type::Int32),
+                three_types(receiver, Type::Int, Type::Int),
                 Type::Slice(elem),
             ))
         } else if name == "iter" {
@@ -1563,14 +1684,14 @@ fn resolve_slice_method(
     name: string,
 ) -> Option[ResolvedCallable] {
     if name == "get" {
-            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), elem))
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), elem))
         } else if name == "len" {
-            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
         } else if name == "sub" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                three_types(receiver, Type::Int32, Type::Int32),
+                three_types(receiver, Type::Int, Type::Int),
                 receiver,
             ))
         } else if name == "iter" {
@@ -1597,6 +1718,37 @@ fn resolve_ref_method(
         } else {
             Option::None
         }
+}
+
+fn resolve_channel_method(
+    receiver: Type,
+    elem: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    if name == "send" {
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(receiver, elem),
+            Type::Unit,
+        ))
+    } else if name == "recv" {
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            one_type(receiver),
+            nominal_type("Option", one_type(elem)),
+        ))
+    } else if name == "close" {
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            one_type(receiver),
+            Type::Unit,
+        ))
+    } else {
+        Option::None
+    }
 }
 
 fn resolve_hashmap_method(
@@ -1628,7 +1780,7 @@ fn resolve_hashmap_method(
                 Type::Unit,
             ))
         } else if name == "len" {
-            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
         } else if name == "contains" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, key), Type::Bool))
         } else if name == "remove" {
@@ -1647,28 +1799,28 @@ fn resolve_hashmap_method(
 
 fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallable] {
     if name == "len" || name == "byte_len" {
-            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
         } else if name == "get" {
-            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Char))
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::Char))
         } else if name == "byte_get" {
-            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Uint8))
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::Uint8))
         } else if name == "byte_slice" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                three_types(receiver, Type::Int32, Type::Int32),
+                three_types(receiver, Type::Int, Type::Int),
                 Type::String,
             ))
         } else if name == "is_char_boundary" {
-            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Bool))
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::Bool))
         } else if name == "decode_at" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
-                two_types(receiver, Type::Int32),
+                two_types(receiver, Type::Int),
                 nominal_type(
                     "Option",
-                    one_type(Type::Tuple(two_types(Type::Char, Type::Int32))),
+                    one_type(Type::Tuple(two_types(Type::Char, Type::Int))),
                 ),
             ))
         } else if name == "to_bytes" {
@@ -1692,7 +1844,7 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
                 one_type(receiver),
                 nominal_type(
                     "FnIterator",
-                    one_type(Type::Tuple(two_types(Type::Int32, Type::Char))),
+                    one_type(Type::Tuple(two_types(Type::Int, Type::Char))),
                 ),
             ))
         } else {
@@ -2273,6 +2425,12 @@ fn resolve_projection_type(
             candidates,
             report,
         )),
+        Type::Channel(elem) => Type::Channel(resolve_projection_type(
+            ctx,
+            elem,
+            candidates,
+            report,
+        )),
         Type::HashMap(key, value) => Type::HashMap(
             resolve_projection_type(ctx, key, candidates, report),
             resolve_projection_type(ctx, value, candidates, report),
@@ -2335,11 +2493,12 @@ fn resolve_signature_predicates(
     )
 }
 
-fn builtin_nominal_arity(name: string) -> Option[int32] {
+fn builtin_nominal_arity(name: string) -> Option[int] {
     if name == "Option"
         || name == "Vec"
         || name == "Slice"
         || name == "Ref"
+        || name == "Channel"
         || name == "FnIterator"
         || name == "TakeIterator"
     {
@@ -2353,7 +2512,7 @@ fn builtin_nominal_arity(name: string) -> Option[int32] {
     }
 }
 
-fn nominal_arity(ctx: Checker, name: string) -> Option[int32] {
+fn nominal_arity(ctx: Checker, name: string) -> Option[int] {
     match find_enum_by_name(ctx, name) {
         Option::Some(value) => Option::Some(value.generics.len()),
         Option::None => match find_struct_by_name(ctx, name) {
@@ -2500,7 +2659,8 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => type_contains_parameter(elem, expected),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => type_contains_parameter(elem, expected),
         Type::HashMap(key, value) => {
             type_contains_parameter(key, expected)
                 || type_contains_parameter(value, expected)
@@ -2627,7 +2787,8 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         Type::Array(_, element)
         | Type::Slice(element)
         | Type::VecType(element)
-        | Type::RefType(element) => validate_signature_type(ctx, element),
+        | Type::RefType(element)
+        | Type::Channel(element) => validate_signature_type(ctx, element),
         Type::HashMap(key, value) => {
             validate_signature_type(ctx, key);
             validate_signature_type(ctx, value)
@@ -2998,6 +3159,8 @@ fn resolve_builtin_static(
                 fresh_type(ctx.counter, VarKind::Any),
                 fresh_type(ctx.counter, VarKind::Any),
             )
+        } else if owner_name == "Channel" {
+            Type::Channel(fresh_type(ctx.counter, VarKind::Any))
         } else if owner_name == "FnIterator" {
             nominal_type(
                 owner_name,
@@ -3012,12 +3175,22 @@ fn resolve_builtin_static(
         Type::VecType(elem) => if name == "new" {
             Option::Some(inherent_callable(owner, name, Vec::new(), owner))
         } else if name == "with_capacity" {
-            Option::Some(inherent_callable(owner, name, one_type(Type::Int32), owner))
+            Option::Some(inherent_callable(owner, name, one_type(Type::Int), owner))
         } else {
             Option::None
         },
         Type::RefType(elem) => if name == "new" {
             Option::Some(inherent_callable(owner, name, one_type(elem), owner))
+        } else {
+            Option::None
+        },
+        Type::Channel(_) => if name == "new" {
+            Option::Some(inherent_callable(
+                owner,
+                name,
+                one_type(Type::Int),
+                owner,
+            ))
         } else {
             Option::None
         },

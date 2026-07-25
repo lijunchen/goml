@@ -150,11 +150,11 @@ fn artifact_decode_core_value(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "format_version", 13) {
+    match artifact_decode_version_field(object, "format_version", 15) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "compiler_abi", 2) {
+    match artifact_decode_version_field(object, "compiler_abi", 3) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };

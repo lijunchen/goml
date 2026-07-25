@@ -22,8 +22,8 @@ struct Capture {
 }
 
 struct State {
-    next_env: Ref[int32],
-    next_name: Ref[int32],
+    next_env: Ref[int],
+    next_name: Ref[int],
     generated: Vec[core::Function],
     generated_structs: Vec[tast::StructDef],
     closures: Vec[ClosureInfo],
@@ -107,7 +107,8 @@ fn collect_used_types(values: Vec[string], ty: tast::Type) -> unit {
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
         | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => collect_used_types(values, elem),
+        | tast::Type::RefType(elem)
+        | tast::Type::Channel(elem) => collect_used_types(values, elem),
         tast::Type::HashMap(key, value) => {
             collect_used_types(values, key);
             collect_used_types(values, value)
@@ -230,16 +231,16 @@ fn initial_used_types(value: core::File) -> Vec[string] {
 }
 
 fn ascii_alphanumeric(value: uint8) -> bool {
-    (value >= 48u8 && value <= 57u8)
-        || (value >= 65u8 && value <= 90u8)
-        || (value >= 97u8 && value <= 122u8)
+    (value >= 48 && value <= 57)
+        || (value >= 65 && value <= 90)
+        || (value >= 97 && value <= 122)
 }
 
 fn primary_name(value: string) -> string {
     let end = Ref::new(value.byte_len());
     let found = Ref::new(false);
     for index in range(0, value.byte_len()) {
-        if found.get() == false && value.byte_get(index) == 47u8 {
+        if found.get() == false && value.byte_get(index) == 47 {
             end.set(index);
             found.set(true)
         } else {
@@ -262,7 +263,7 @@ fn sanitize_name(value: string) -> Option[string] {
             } else {
                 ()
             };
-            if wrote.get() == false && byte >= 48u8 && byte <= 57u8 {
+            if wrote.get() == false && byte >= 48 && byte <= 57 {
                 builder.write_char('_')
             } else {
                 ()
@@ -310,10 +311,10 @@ fn fresh_name(state: State, prefix: string) -> string {
     prefix + index.to_string()
 }
 
-fn trailing_number(value: string) -> Option[int32] {
+fn trailing_number(value: string) -> Option[int] {
     let slash = Ref::new(false);
     for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 47u8 {
+        if value.byte_get(index) == 47 {
             slash.set(true)
         } else {
             ()
@@ -328,7 +329,7 @@ fn trailing_number(value: string) -> Option[int32] {
         while scanning.get() && index.get() > 0 {
             let next = index.get() - 1;
             let byte = value.byte_get(next);
-            if byte >= 48u8 && byte <= 57u8 {
+            if byte >= 48 && byte <= 57 {
                 start.set(next);
                 index.set(next)
             } else {
@@ -343,27 +344,27 @@ fn trailing_number(value: string) -> Option[int32] {
     }
 }
 
-fn parse_digits(value: string, start: int32) -> int32 {
+fn parse_digits(value: string, start: int) -> int {
     let result = Ref::new(0);
     for index in range(start, value.byte_len()) {
         let byte = value.byte_get(index);
-        let digit = if byte == 48u8 {
+        let digit = if byte == 48 {
             0
-        } else if byte == 49u8 {
+        } else if byte == 49 {
             1
-        } else if byte == 50u8 {
+        } else if byte == 50 {
             2
-        } else if byte == 51u8 {
+        } else if byte == 51 {
             3
-        } else if byte == 52u8 {
+        } else if byte == 52 {
             4
-        } else if byte == 53u8 {
+        } else if byte == 53 {
             5
-        } else if byte == 54u8 {
+        } else if byte == 54 {
             6
-        } else if byte == 55u8 {
+        } else if byte == 55 {
             7
-        } else if byte == 56u8 {
+        } else if byte == 56 {
             8
         } else {
             9
@@ -373,7 +374,7 @@ fn parse_digits(value: string, start: int32) -> int32 {
     result.get()
 }
 
-fn observe_name(maximum: Ref[int32], name: string) -> unit {
+fn observe_name(maximum: Ref[int], name: string) -> unit {
     match trailing_number(name) {
         Option::Some(value) => if value > maximum.get() {
             maximum.set(value)
@@ -384,20 +385,20 @@ fn observe_name(maximum: Ref[int32], name: string) -> unit {
     }
 }
 
-fn observe_exprs(maximum: Ref[int32], values: Vec[core::Expr]) -> unit {
+fn observe_exprs(maximum: Ref[int], values: Vec[core::Expr]) -> unit {
     for value in values {
         observe_expr(maximum, value)
     }
 }
 
-fn observe_optional_expr(maximum: Ref[int32], value: Option[core::Expr]) -> unit {
+fn observe_optional_expr(maximum: Ref[int], value: Option[core::Expr]) -> unit {
     match value {
         Option::Some(value) => observe_expr(maximum, value),
         Option::None => (),
     }
 }
 
-fn observe_block(maximum: Ref[int32], value: core::Block) -> unit {
+fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
@@ -405,7 +406,7 @@ fn observe_block(maximum: Ref[int32], value: core::Block) -> unit {
     observe_optional_expr(maximum, value.tail)
 }
 
-fn observe_expr(maximum: Ref[int32], value: core::Expr) -> unit {
+fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
     match value {
         core::Expr::Var(_, _) => (),
         core::Expr::Constr(_, args, _) => observe_exprs(maximum, args),
@@ -460,7 +461,7 @@ fn observe_expr(maximum: Ref[int32], value: core::Expr) -> unit {
     }
 }
 
-fn initial_name_counter(value: core::File) -> int32 {
+fn initial_name_counter(value: core::File) -> int {
     let maximum = Ref::new(-1);
     for function in value.functions {
         for param in function.params {
@@ -876,7 +877,7 @@ fn collect_captured(
     }
 }
 
-fn make_field_name(name: string, index: int32) -> string {
+fn make_field_name(name: string, index: int) -> string {
     match sanitize_name(name) {
         Option::Some(name) => name + "_" + index.to_string(),
         Option::None => "field_" + index.to_string(),
@@ -1056,7 +1057,7 @@ fn transform_function(state: State, value: core::Function) -> core::Function {
 
 fn lambda_lift_with_counter(
     value: core::File,
-    counter: Ref[int32],
+    counter: Ref[int],
 ) -> core::File {
     let enums = value.enums;
     let structs = value.structs;

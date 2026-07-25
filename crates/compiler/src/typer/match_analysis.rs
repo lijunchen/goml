@@ -47,6 +47,7 @@ enum ConstructorKey {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum ScalarKind {
+    Int,
     Int8,
     Int16,
     Int32,
@@ -904,6 +905,10 @@ fn useful_scalar(
 
 fn scalar_domains(ty: &Ty) -> Option<(ScalarKind, Vec<(i128, i128)>)> {
     let (kind, domains) = match ty {
+        Ty::TInt => (
+            ScalarKind::Int,
+            vec![(isize::MIN as i128, isize::MAX as i128)],
+        ),
         Ty::TInt8 => (ScalarKind::Int8, vec![(i8::MIN as i128, i8::MAX as i128)]),
         Ty::TInt16 => (
             ScalarKind::Int16,
@@ -1001,7 +1006,8 @@ fn primitive_constructor(value: &Prim, _ty: &Ty) -> Constructor {
             ConstructorKey::String(value.clone()),
             ConstructorKind::Literal(format!("{value:?}")),
         ),
-        Prim::Int8 { .. }
+        Prim::Int { .. }
+        | Prim::Int8 { .. }
         | Prim::Int16 { .. }
         | Prim::Int32 { .. }
         | Prim::Int64 { .. }
@@ -1020,6 +1026,7 @@ fn primitive_constructor(value: &Prim, _ty: &Ty) -> Constructor {
 
 fn scalar_prim(value: &Prim) -> Option<(ScalarKind, i128)> {
     match value {
+        Prim::Int { value } => Some((ScalarKind::Int, *value as i128)),
         Prim::Int8 { value } => Some((ScalarKind::Int8, *value as i128)),
         Prim::Int16 { value } => Some((ScalarKind::Int16, *value as i128)),
         Prim::Int32 { value } => Some((ScalarKind::Int32, *value as i128)),

@@ -60,7 +60,7 @@ pub enum Expr {
     Continue(tast::Type),
     Return(Option[Expr], tast::Type),
     Go(Expr, tast::Type),
-    ConstrGet(Expr, tast::Constructor, int32, tast::Type),
+    ConstrGet(Expr, tast::Constructor, int, tast::Type),
     Unary(ast::UnaryOp, Expr, tast::Type),
     Cast(Expr, tast::Type),
     Binary(ast::BinaryOp, Expr, Expr, tast::Type),
@@ -69,7 +69,7 @@ pub enum Expr {
     ToDyn(string, tast::Type, Expr, tast::Type),
     DynCall(string, string, Expr, Vec[Expr], tast::Type),
     TraitCall(tast::TraitRef, string, Expr, Vec[Expr], tast::Type),
-    Proj(Expr, int32, tast::Type),
+    Proj(Expr, int, tast::Type),
 }
 
 pub struct Arm {

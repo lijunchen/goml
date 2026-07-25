@@ -18,7 +18,7 @@ fn non_root(value: Function) -> Function {
     }
 }
 
-pub fn lower_builtins(counter: Ref[int32]) -> File {
+pub fn lower_builtins(counter: Ref[int]) -> File {
     lower_with_counter(
         tast::check(hir::lower(
             ast::lower(parser::parse(builtin_source())),

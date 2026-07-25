@@ -1,0 +1,414 @@
+package runner;
+
+use gomlang::bootstrap_goml::json;
+use gomlang::bootstrap_goml::util;
+use std::bytes;
+use std::fs;
+use std::io;
+use std::process;
+
+pub struct Options {
+    pub filter: Option[string],
+    pub jobs: int,
+    pub list: bool,
+    pub ignored: bool,
+    pub include_ignored: bool,
+    pub json: bool,
+}
+
+struct Test {
+    id: string,
+    display_name: string,
+    ignored: bool,
+    ignore_reason: Option[string],
+}
+
+enum Status {
+    Passed,
+    Failed(int),
+    Ignored,
+}
+
+struct Execution {
+    index: int,
+    test: Test,
+    status: Status,
+    stdout: string,
+    stderr: string,
+}
+
+fn bytes_text(value: bytes::Bytes) -> string {
+    match value.to_string() {
+        Result::Ok(value) => value,
+        Result::Err(_) => "<non-UTF-8 output>",
+    }
+}
+
+fn required_string(value: json::Value, name: string) -> Result[string, string] {
+    match json::field(value, name) {
+        Option::Some(value) => match json::as_string(value) {
+            Option::Some(value) => Result::Ok(value),
+            Option::None => Result::Err(name + " must be a string"),
+        },
+        Option::None => Result::Err("test manifest omitted " + name),
+    }
+}
+
+fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
+    match json::field(value, name) {
+        Option::Some(value) => match json::bool_value(value) {
+            Option::Some(value) => Result::Ok(value),
+            Option::None => Result::Err(name + " must be boolean"),
+        },
+        Option::None => Result::Err("test manifest omitted " + name),
+    }
+}
+
+fn load_tests(manifest_path: string) -> Result[Vec[Test], string] {
+    let source = match fs::read_file(manifest_path) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let root = match json::parse(source) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let values = match json::as_array(root) {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("test manifest must be an array"),
+    };
+    let result = Vec::new();
+    for value in values {
+        let id = match required_string(value, "id") {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        let display_name = match required_string(value, "display_name") {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        let ignored = match required_bool(value, "ignored") {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        let ignore_reason = match json::field(value, "ignore_reason") {
+            Option::Some(value) => json::optional_string(value),
+            Option::None => Option::None,
+        };
+        result.push(Test {
+            id,
+            display_name,
+            ignored,
+            ignore_reason,
+        })
+    };
+    Result::Ok(result)
+}
+
+fn selected(test: Test, options: Options) -> bool {
+    let filter_matches = match options.filter {
+        Option::Some(value) => util::contains(test.display_name, value),
+        Option::None => true,
+    };
+    filter_matches && (!options.ignored || test.ignored)
+}
+
+fn sorted_tests(values: Vec[Test]) -> Vec[Test] {
+    let result = Vec::new();
+    for value in values {
+        let inserted = Ref::new(false);
+        for index in range(0, result.len()) {
+            if !(inserted.get())
+                && value.display_name < result.get(index).display_name
+            {
+                result.insert(index, value);
+                inserted.set(true)
+            } else {
+                ()
+            }
+        };
+        if !(inserted.get()) {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn escape_json(value: string) -> string {
+    let result = Ref::new("");
+    for index in range(0, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if byte == 34 {
+            result.set(result.get() + "\\\"")
+        } else if byte == 92 {
+            result.set(result.get() + "\\\\")
+        } else if byte == 10 {
+            result.set(result.get() + "\\n")
+        } else if byte == 13 {
+            result.set(result.get() + "\\r")
+        } else if byte == 9 {
+            result.set(result.get() + "\\t")
+        } else {
+            result.set(result.get() + value.byte_slice(index, index + 1))
+        }
+    };
+    result.get()
+}
+
+fn print_list(tests: Vec[Test], options: Options) -> unit {
+    for test in tests {
+        if options.json {
+            let reason = match test.ignore_reason {
+                Option::Some(value) => "\"" + escape_json(value) + "\"",
+                Option::None => "null",
+            };
+            io::println(
+                "{\"event\":\"test\",\"ignored\":"
+                    + test.ignored.to_string()
+                    + ",\"kind\":\"internal\",\"name\":\""
+                    + escape_json(test.display_name)
+                    + "\",\"reason\":"
+                    + reason
+                    + "}",
+            )
+        } else if test.ignored {
+            io::println(test.display_name + ": ignored")
+        } else {
+            io::println(test.display_name)
+        }
+    }
+}
+
+fn run_one(
+    module_dir: string,
+    executable: string,
+    index: int,
+    test: Test,
+    options: Options,
+) -> Execution {
+    if test.ignored && !options.ignored && !options.include_ignored {
+        Execution {
+            index,
+            test,
+            status: Status::Ignored,
+            stdout: "",
+            stderr: "",
+        }
+    } else {
+        match process::Command::new(executable)
+            .arg(test.id)
+            .current_dir(module_dir)
+            .env("TZ", "UTC")
+            .output()
+        {
+            Result::Ok(output) => Execution {
+                index,
+                test,
+                status: if process::ExitStatus::success(
+                    process::Output::status(output),
+                ) {
+                    Status::Passed
+                } else {
+                    Status::Failed(match process::ExitStatus::code(
+                        process::Output::status(output),
+                    ) {
+                        Option::Some(value) => value,
+                        Option::None => -1,
+                    })
+                },
+                stdout: bytes_text(process::Output::stdout(output)),
+                stderr: bytes_text(process::Output::stderr(output)),
+            },
+            Result::Err(message) => Execution {
+                index,
+                test,
+                status: Status::Failed(-1),
+                stdout: "",
+                stderr: message,
+            },
+        }
+    }
+}
+
+fn worker(
+    module_dir: string,
+    executable: string,
+    options: Options,
+    work: Channel[(int, Test)],
+    results: Channel[Execution],
+) -> unit {
+    let running = Ref::new(true);
+    while running.get() {
+        match work.recv() {
+            Option::Some(item) => results.send(run_one(
+                module_dir,
+                executable,
+                item.0,
+                item.1,
+                options,
+            )),
+            Option::None => running.set(false),
+        }
+    }
+}
+
+fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
+    let result = Vec::new();
+    for value in values {
+        let inserted = Ref::new(false);
+        for index in range(0, result.len()) {
+            if !(inserted.get()) && value.index < result.get(index).index {
+                result.insert(index, value);
+                inserted.set(true)
+            } else {
+                ()
+            }
+        };
+        if !(inserted.get()) {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn report_text(values: Vec[Execution]) -> int {
+    let passed = Ref::new(0);
+    let failed = Ref::new(0);
+    let ignored = Ref::new(0);
+    for value in values {
+        match value.status {
+            Status::Passed => {
+                passed.set(passed.get() + 1);
+                io::println("test " + value.test.display_name + " ... ok")
+            },
+            Status::Ignored => {
+                ignored.set(ignored.get() + 1);
+                io::println("test " + value.test.display_name + " ... ignored")
+            },
+            Status::Failed(_) => {
+                failed.set(failed.get() + 1);
+                io::println("test " + value.test.display_name + " ... FAILED");
+                if value.stdout != "" {
+                    io::println(value.stdout)
+                } else {
+                    ()
+                };
+                if value.stderr != "" {
+                    io::eprintln(value.stderr)
+                } else {
+                    ()
+                }
+            },
+        }
+    };
+    io::println(
+        "\ntest result: "
+            + if failed.get() == 0 { "ok" } else { "FAILED" }
+            + ". "
+            + passed.get().to_string()
+            + " passed; "
+            + failed.get().to_string()
+            + " failed; "
+            + ignored.get().to_string()
+            + " ignored",
+    );
+    failed.get()
+}
+
+fn report_json(values: Vec[Execution]) -> int {
+    let failed = Ref::new(0);
+    for value in values {
+        let event = match value.status {
+            Status::Passed => "ok",
+            Status::Ignored => "ignored",
+            Status::Failed(_) => {
+                failed.set(failed.get() + 1);
+                "failed"
+            },
+        };
+        io::println(
+            "{\"event\":\""
+                + event
+                + "\",\"name\":\""
+                + escape_json(value.test.display_name)
+                + "\"}",
+        )
+    };
+    failed.get()
+}
+
+pub fn run(
+    module_dir: string,
+    executable: string,
+    manifest_path: string,
+    options: Options,
+) -> Result[unit, string] {
+    let loaded = match load_tests(manifest_path) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let selected_tests = Vec::new();
+    for test in sorted_tests(loaded) {
+        if selected(test, options) {
+            selected_tests.push(test)
+        } else {
+            ()
+        }
+    };
+    if options.list {
+        print_list(selected_tests, options);
+        return Result::Ok(())
+    } else if !options.json {
+        io::println(
+            "running " + selected_tests.len().to_string() + " tests\n",
+        )
+    } else {
+        ()
+    };
+    if selected_tests.len() == 0 {
+        if !options.json {
+            io::println("test result: ok. 0 passed; 0 failed; 0 ignored")
+        } else {
+            ()
+        };
+        return Result::Ok(())
+    } else {
+        ()
+    };
+    let work = Channel::new(selected_tests.len());
+    let results = Channel::new(selected_tests.len());
+    for index in range(0, selected_tests.len()) {
+        work.send((index, selected_tests.get(index)))
+    };
+    work.close();
+    let worker_count = if options.jobs < selected_tests.len() {
+        options.jobs
+    } else {
+        selected_tests.len()
+    };
+    for _ in range(0, worker_count) {
+        go || worker(module_dir, executable, options, work, results)
+    };
+    let executions = Vec::new();
+    for _ in range(0, selected_tests.len()) {
+        match results.recv() {
+            Option::Some(value) => executions.push(value),
+            Option::None => return Result::Err("test result channel closed early"),
+        }
+    };
+    results.close();
+    let failures = if options.json {
+        report_json(ordered_executions(executions))
+    } else {
+        report_text(ordered_executions(executions))
+    };
+    if failures == 0 {
+        Result::Ok(())
+    } else {
+        Result::Err(failures.to_string() + " test(s) failed")
+    }
+}

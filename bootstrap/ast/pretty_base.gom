@@ -2,13 +2,13 @@ package ast;
 
 use std::text;
 
-fn pretty_write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+fn pretty_write_spaces(builder: text::StringBuilder, count: int) -> unit {
     for _ in range(0, count) {
         builder.write_char(' ')
     }
 }
 
-fn pretty_newline(builder: text::StringBuilder, indent: int32) -> unit {
+fn pretty_newline(builder: text::StringBuilder, indent: int) -> unit {
     builder.write_char('\n');
     pretty_write_spaces(builder, indent)
 }
@@ -64,6 +64,7 @@ fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
     match value {
         TypeExpr::Unit => builder.write_string("unit"),
         TypeExpr::Bool => builder.write_string("bool"),
+        TypeExpr::Int => builder.write_string("int"),
         TypeExpr::Int8 => builder.write_string("int8"),
         TypeExpr::Int16 => builder.write_string("int16"),
         TypeExpr::Int32 => builder.write_string("int32"),
@@ -217,12 +218,12 @@ fn pretty_write_visibility(builder: text::StringBuilder, value: Visibility) -> u
     }
 }
 
-fn pretty_utf8_width(value: uint8) -> int32 {
-    if value < 128u8 {
+fn pretty_utf8_width(value: uint8) -> int {
+    if value < 128 {
         1
-    } else if value < 224u8 {
+    } else if value < 224 {
         2
-    } else if value < 240u8 {
+    } else if value < 240 {
         3
     } else {
         4
@@ -231,33 +232,33 @@ fn pretty_utf8_width(value: uint8) -> int32 {
 
 fn pretty_hex_digit(value: uint8) -> char {
     match value {
-        0u8 => '0',
-        1u8 => '1',
-        2u8 => '2',
-        3u8 => '3',
-        4u8 => '4',
-        5u8 => '5',
-        6u8 => '6',
-        7u8 => '7',
-        8u8 => '8',
-        9u8 => '9',
-        10u8 => 'a',
-        11u8 => 'b',
-        12u8 => 'c',
-        13u8 => 'd',
-        14u8 => 'e',
+        0 => '0',
+        1 => '1',
+        2 => '2',
+        3 => '3',
+        4 => '4',
+        5 => '5',
+        6 => '6',
+        7 => '7',
+        8 => '8',
+        9 => '9',
+        10 => 'a',
+        11 => 'b',
+        12 => 'c',
+        13 => 'd',
+        14 => 'e',
         _ => 'f',
     }
 }
 
 fn pretty_write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
     builder.write_string("\\u{");
-    if value >= 16u8 {
-        builder.write_char(pretty_hex_digit(value / 16u8))
+    if value >= 16 {
+        builder.write_char(pretty_hex_digit(value / 16))
     } else {
         ()
     };
-    builder.write_char(pretty_hex_digit(value % 16u8));
+    builder.write_char(pretty_hex_digit(value % 16));
     builder.write_char('}')
 }
 
@@ -266,19 +267,19 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> un
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte == 34u8 {
+        if byte == 34 {
             builder.write_string("\\\"")
-        } else if byte == 92u8 {
+        } else if byte == 92 {
             builder.write_string("\\\\")
-        } else if byte == 10u8 {
+        } else if byte == 10 {
             builder.write_string("\\n")
-        } else if byte == 13u8 {
+        } else if byte == 13 {
             builder.write_string("\\r")
-        } else if byte == 9u8 {
+        } else if byte == 9 {
             builder.write_string("\\t")
-        } else if byte == 0u8 {
+        } else if byte == 0 {
             builder.write_string("\\0")
-        } else if byte < 32u8 || byte == 127u8 {
+        } else if byte < 32 || byte == 127 {
             pretty_write_control_escape(builder, byte)
         } else {
             let width = pretty_utf8_width(byte);
@@ -320,7 +321,7 @@ fn pretty_binary_symbol(value: BinaryOp) -> string {
     }
 }
 
-fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int32) -> unit {
+fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit {
     pretty_write_attributes(builder, value.attrs);
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("enum ");
@@ -366,7 +367,7 @@ fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int32
     builder.write_char('}')
 }
 
-fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: int32) -> unit {
+fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: int) -> unit {
     pretty_write_attributes(builder, value.attrs);
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("struct ");
@@ -412,7 +413,7 @@ fn pretty_write_trait_method(
     builder.write_char(';')
 }
 
-fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int32) -> unit {
+fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int) -> unit {
     pretty_write_attributes(builder, value.attrs);
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("trait ");
@@ -450,7 +451,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
     builder.write_char('}')
 }
 
-fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: int32) -> unit {
+fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
     pretty_write_attributes(builder, value.attrs);
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("fn ");
@@ -508,7 +509,7 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
     }
 }
 
-fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int32) -> unit {
+fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
     pretty_write_attributes(builder, value.attrs);
     builder.write_string("impl");
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
@@ -543,7 +544,7 @@ fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int
     builder.write_char('}')
 }
 
-fn pretty_write_item(builder: text::StringBuilder, value: Item, indent: int32) -> unit {
+fn pretty_write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
     match value {
         Item::EnumDef(value) => pretty_write_enum(builder, value, indent),
         Item::StructDef(value) => pretty_write_struct(builder, value, indent),

@@ -4,7 +4,7 @@ use std::io;
 use std::process;
 
 fn top_level_help() -> string {
-    "Usage: gomlc <COMMAND>\n\nCommands:\n  check       \n  test-check  \n  build       \n  test-build  \n  link        \n  test-link   \n  run-single  \n  version     \n  help        Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
+    "Usage: gomlc <COMMAND>\n\nCommands:\n  check         \n  test-check    \n  build         \n  test-build    \n  link          \n  test-link     \n  package-info  \n  run-single    \n  version       \n  help          Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn package_command_help(command: string) -> string {
@@ -22,6 +22,8 @@ fn command_help(command: string) -> Option[string] {
         Option::Some("Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help")
     } else if command == "test-link" {
         Option::Some("Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help")
+    } else if command == "package-info" {
+        Option::Some("Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help")
     } else if command == "run-single" {
         Option::Some("Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast   \n      --dump-hir   \n      --dump-tast  \n      --dump-core  \n      --dump-mono  \n      --dump-lift  \n      --dump-anf   \n      --dump-go    \n  -h, --help       Print help")
     } else if command == "version" {
@@ -44,6 +46,8 @@ fn command_usage(command: string) -> string {
         "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>"
     } else if command == "test-link" {
         "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>"
+    } else if command == "package-info" {
+        "gomlc package-info [OPTIONS] --input <INPUT>..."
     } else if command == "run-single" {
         "gomlc run-single [OPTIONS] <FILE>"
     } else if command == "version" {
@@ -62,6 +66,8 @@ fn required_command_usage(command: string) -> string {
         "gomlc " + command + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
     } else if command == "run-single" {
         "gomlc run-single <FILE>"
+    } else if command == "package-info" {
+        "gomlc package-info --input <INPUT>..."
     } else {
         command_usage(command)
     }
@@ -111,12 +117,12 @@ fn cli_help_argument(argument: string) -> bool {
         || (argument.byte_len() >= 2 && argument.byte_slice(0, 2) == "-h")
 }
 
-fn cli_minimum(left: int32, middle: int32, right: int32) -> int32 {
+fn cli_minimum(left: int, middle: int, right: int) -> int {
     let first = if left < middle { left } else { middle };
     if first < right { first } else { right }
 }
 
-fn cli_edit_distance(left: string, right: string) -> int32 {
+fn cli_edit_distance(left: string, right: string) -> int {
     let initial = Vec::new();
     for index in range(0, right.byte_len() + 1) {
         initial.push(index)
@@ -165,6 +171,10 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         candidates.push("--output");
         candidates.push("--manifest");
         candidates.push("--help")
+    } else if command == "package-info" {
+        candidates.push("--input");
+        candidates.push("--format");
+        candidates.push("--help")
     } else if command == "run-single" {
         candidates.push("--dump-ast");
         candidates.push("--dump-hir");
@@ -207,6 +217,10 @@ fn similar_cli_argument_usage(command: string, argument: string) -> string {
         "gomlc version --format <FORMAT>"
     } else if command == "version" && argument == "--help" {
         "gomlc version --help"
+    } else if command == "package-info" && argument == "--format" {
+        "gomlc package-info --format <FORMAT> --input <INPUT>..."
+    } else if command == "package-info" && argument == "--help" {
+        "gomlc package-info --help --input <INPUT>..."
     } else if command == "check"
         || command == "test-check"
         || command == "build"
@@ -241,6 +255,8 @@ fn cli_value_option(command: string, argument: string) -> bool {
             || argument == "--package"
             || argument == "--output"
             || argument == "--manifest"
+    } else if command == "package-info" {
+        argument == "--input" || argument == "--format"
     } else if command == "version" {
         argument == "--format"
     } else {
@@ -273,6 +289,9 @@ fn known_cli_option(command: string, argument: string) -> bool {
             || option_string_present(inline_cli_value(argument, "--package"))
             || option_string_present(inline_cli_value(argument, "--output"))
             || option_string_present(inline_cli_value(argument, "--manifest"))
+    } else if command == "package-info" {
+        option_string_present(inline_cli_value(argument, "--input"))
+            || option_string_present(inline_cli_value(argument, "--format"))
     } else if command == "version" {
         option_string_present(inline_cli_value(argument, "--format"))
     } else {

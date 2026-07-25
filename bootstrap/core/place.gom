@@ -9,13 +9,13 @@ enum PlaceRoot {
 }
 
 enum PlaceStep {
-    Proj(tast::Type, int32, tast::Type),
+    Proj(tast::Type, int, tast::Type),
     Field(tast::Type, string, tast::Type),
     Index(tast::Type, tast::Expr, tast::Type),
 }
 
 enum EvaluatedPlaceStep {
-    Proj(string, tast::Type, int32),
+    Proj(string, tast::Type, int),
     Field(string, tast::Type, string),
     Index(string, tast::Type, string, tast::Type),
 }
@@ -152,7 +152,7 @@ fn place_array_set(container: Expr, index: Expr, value: Expr) -> Expr {
     let container_ty = expr_type(container);
     let params: Vec[tast::Type] = Vec::new();
     params.push(container_ty);
-    params.push(tast::Type::Int32);
+    params.push(tast::Type::Int);
     params.push(expr_type(value));
     let args: Vec[Expr] = Vec::new();
     args.push(container);
@@ -164,7 +164,7 @@ fn place_array_set(container: Expr, index: Expr, value: Expr) -> Expr {
 fn place_vec_set(container: Expr, index: Expr, value: Expr) -> Expr {
     let params: Vec[tast::Type] = Vec::new();
     params.push(expr_type(container));
-    params.push(tast::Type::Int32);
+    params.push(tast::Type::Int);
     params.push(expr_type(value));
     let args: Vec[Expr] = Vec::new();
     args.push(container);
@@ -237,7 +237,7 @@ fn place_field_get(
     }
 }
 
-fn rebuild_tuple(parent: Expr, parent_ty: tast::Type, index: int32, value: Expr) -> Expr {
+fn rebuild_tuple(parent: Expr, parent_ty: tast::Type, index: int, value: Expr) -> Expr {
     match tast::resolve_type(parent_ty) {
         tast::Type::Tuple(types) => {
             let items: Vec[Expr] = Vec::new();

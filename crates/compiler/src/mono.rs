@@ -359,6 +359,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TUnit
         | Ty::TNever
         | Ty::TBool
+        | Ty::TInt
         | Ty::TInt8
         | Ty::TInt16
         | Ty::TInt32
@@ -378,6 +379,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TSlice { elem } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
+        Ty::TChannel { elem } => has_tparam(elem),
         Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
         Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
     }
@@ -420,6 +422,7 @@ fn format_ty_for_mono_diag(ty: &Ty) -> String {
         Ty::TUnit => "unit".to_string(),
         Ty::TNever => "never".to_string(),
         Ty::TBool => "bool".to_string(),
+        Ty::TInt => "int".to_string(),
         Ty::TInt8 => "int8".to_string(),
         Ty::TInt16 => "int16".to_string(),
         Ty::TInt32 => "int32".to_string(),
@@ -462,6 +465,7 @@ fn format_ty_for_mono_diag(ty: &Ty) -> String {
         Ty::TSlice { elem } => format!("Slice[{}]", format_ty_for_mono_diag(elem)),
         Ty::TVec { elem } => format!("Vec[{}]", format_ty_for_mono_diag(elem)),
         Ty::TRef { elem } => format!("Ref[{}]", format_ty_for_mono_diag(elem)),
+        Ty::TChannel { elem } => format!("Channel[{}]", format_ty_for_mono_diag(elem)),
         Ty::THashMap { key, value } => format!(
             "HashMap[{}, {}]",
             format_ty_for_mono_diag(key),
@@ -523,6 +527,7 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         Ty::TUnit
         | Ty::TNever
         | Ty::TBool
+        | Ty::TInt
         | Ty::TInt8
         | Ty::TInt16
         | Ty::TInt32
@@ -572,6 +577,9 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         Ty::TRef { elem } => Ty::TRef {
             elem: Box::new(subst_ty(elem, s)),
         },
+        Ty::TChannel { elem } => Ty::TChannel {
+            elem: Box::new(subst_ty(elem, s)),
+        },
         Ty::THashMap { key, value } => Ty::THashMap {
             key: Box::new(subst_ty(key, s)),
             value: Box::new(subst_ty(value, s)),
@@ -590,9 +598,11 @@ fn contains_associated_projection(ty: &Ty) -> bool {
         Ty::TApp { ty, args } => {
             contains_associated_projection(ty) || args.iter().any(contains_associated_projection)
         }
-        Ty::TArray { elem, .. } | Ty::TSlice { elem } | Ty::TVec { elem } | Ty::TRef { elem } => {
-            contains_associated_projection(elem)
-        }
+        Ty::TArray { elem, .. }
+        | Ty::TSlice { elem }
+        | Ty::TVec { elem }
+        | Ty::TRef { elem }
+        | Ty::TChannel { elem } => contains_associated_projection(elem),
         Ty::THashMap { key, value } => {
             contains_associated_projection(key) || contains_associated_projection(value)
         }
@@ -604,6 +614,7 @@ fn contains_associated_projection(ty: &Ty) -> bool {
         | Ty::TUnit
         | Ty::TNever
         | Ty::TBool
+        | Ty::TInt
         | Ty::TInt8
         | Ty::TInt16
         | Ty::TInt32
@@ -773,6 +784,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
         }
         (Ty::TUnit, Ty::TUnit)
         | (Ty::TBool, Ty::TBool)
+        | (Ty::TInt, Ty::TInt)
         | (Ty::TInt8, Ty::TInt8)
         | (Ty::TInt16, Ty::TInt16)
         | (Ty::TInt32, Ty::TInt32)
@@ -826,6 +838,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
         (Ty::TSlice { elem: le }, Ty::TSlice { elem: re }) => unify(le, re, subst),
         (Ty::TVec { elem: le }, Ty::TVec { elem: re }) => unify(le, re, subst),
         (Ty::TRef { elem: le }, Ty::TRef { elem: re }) => unify(le, re, subst),
+        (Ty::TChannel { elem: le }, Ty::TChannel { elem: re }) => unify(le, re, subst),
         (Ty::THashMap { key: lk, value: lv }, Ty::THashMap { key: rk, value: rv }) => {
             unify(lk, rk, subst)?;
             unify(lv, rv, subst)
@@ -1225,7 +1238,11 @@ fn ty_contains_proper_subterm(ty: &Ty, needle: &Ty) -> bool {
                     .iter()
                     .any(|arg| arg == needle || ty_contains_proper_subterm(arg, needle))
         }
-        Ty::TArray { elem, .. } | Ty::TSlice { elem } | Ty::TVec { elem } | Ty::TRef { elem } => {
+        Ty::TArray { elem, .. }
+        | Ty::TSlice { elem }
+        | Ty::TVec { elem }
+        | Ty::TRef { elem }
+        | Ty::TChannel { elem } => {
             elem.as_ref() == needle || ty_contains_proper_subterm(elem, needle)
         }
         Ty::THashMap { key, value } => {
@@ -1256,6 +1273,7 @@ fn ty_outer_constructor_matches(left: &Ty, right: &Ty) -> bool {
         | (Ty::TSlice { .. }, Ty::TSlice { .. })
         | (Ty::TVec { .. }, Ty::TVec { .. })
         | (Ty::TRef { .. }, Ty::TRef { .. })
+        | (Ty::TChannel { .. }, Ty::TChannel { .. })
         | (Ty::THashMap { .. }, Ty::THashMap { .. })
         | (Ty::TFunc { .. }, Ty::TFunc { .. }) => true,
         (Ty::TApp { ty: left, .. }, Ty::TApp { ty: right, .. }) => left == right,
@@ -1375,9 +1393,11 @@ fn collect_mono_ty(ty: &Ty, out: &mut IndexSet<Ty>) {
                 collect_mono_ty(arg, out);
             }
         }
-        Ty::TArray { elem, .. } | Ty::TSlice { elem } | Ty::TVec { elem } | Ty::TRef { elem } => {
-            collect_mono_ty(elem, out);
-        }
+        Ty::TArray { elem, .. }
+        | Ty::TSlice { elem }
+        | Ty::TVec { elem }
+        | Ty::TRef { elem }
+        | Ty::TChannel { elem } => collect_mono_ty(elem, out),
         Ty::THashMap { key, value } => {
             collect_mono_ty(key, out);
             collect_mono_ty(value, out);
@@ -1528,6 +1548,9 @@ fn ensure_runtime_trait_impls_for_ty(ctx: &mut Ctx, ty: &Ty, eq_trait: &str, has
             }
         }
         Ty::TArray { elem, .. } | Ty::TSlice { elem } | Ty::TVec { elem } => {
+            ensure_runtime_trait_impls_for_ty(ctx, elem, eq_trait, hash_trait);
+        }
+        Ty::TChannel { elem } => {
             ensure_runtime_trait_impls_for_ty(ctx, elem, eq_trait, hash_trait);
         }
         Ty::TFunc { params, ret_ty } => {
@@ -2276,6 +2299,9 @@ impl<'a> TypeMono<'a> {
                 key: Box::new(self.expand_specialized_type_aliases_from(key, seen)),
                 value: Box::new(self.expand_specialized_type_aliases_from(value, seen)),
             },
+            Ty::TChannel { elem } => Ty::TChannel {
+                elem: Box::new(self.expand_specialized_type_aliases_from(elem, seen)),
+            },
             _ => ty.clone(),
         }
     }
@@ -2342,6 +2368,9 @@ impl<'a> TypeMono<'a> {
             Ty::THashMap { key, value } => Ty::THashMap {
                 key: Box::new(self.collapse_type_apps(key)),
                 value: Box::new(self.collapse_type_apps(value)),
+            },
+            Ty::TChannel { elem } => Ty::TChannel {
+                elem: Box::new(self.collapse_type_apps(elem)),
             },
             _ => ty.clone(),
         }

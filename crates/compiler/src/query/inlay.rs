@@ -201,17 +201,7 @@ fn collect_hints_from_expr(
         | hir::Expr::EStaticMember { .. }
         | hir::Expr::EBool { .. }
         | hir::Expr::EInt { .. }
-        | hir::Expr::EInt8 { .. }
-        | hir::Expr::EInt16 { .. }
-        | hir::Expr::EInt32 { .. }
-        | hir::Expr::EInt64 { .. }
-        | hir::Expr::EUInt8 { .. }
-        | hir::Expr::EUInt16 { .. }
-        | hir::Expr::EUInt32 { .. }
-        | hir::Expr::EUInt64 { .. }
         | hir::Expr::EFloat { .. }
-        | hir::Expr::EFloat32 { .. }
-        | hir::Expr::EFloat64 { .. }
         | hir::Expr::EString { .. }
         | hir::Expr::EChar { .. }
         | hir::Expr::EBreak
@@ -299,17 +289,7 @@ fn collect_pattern_locals(
         hir::Pat::PUnit
         | hir::Pat::PBool { .. }
         | hir::Pat::PInt { .. }
-        | hir::Pat::PInt8 { .. }
-        | hir::Pat::PInt16 { .. }
-        | hir::Pat::PInt32 { .. }
-        | hir::Pat::PInt64 { .. }
-        | hir::Pat::PUInt8 { .. }
-        | hir::Pat::PUInt16 { .. }
-        | hir::Pat::PUInt32 { .. }
-        | hir::Pat::PUInt64 { .. }
         | hir::Pat::PFloat { .. }
-        | hir::Pat::PFloat32 { .. }
-        | hir::Pat::PFloat64 { .. }
         | hir::Pat::PString { .. }
         | hir::Pat::PChar { .. }
         | hir::Pat::PWild => {}
@@ -340,10 +320,12 @@ fn contains_type_var(ty: &tast::Ty) -> bool {
         tast::Ty::TSlice { elem } => contains_type_var(elem),
         tast::Ty::TVec { elem } => contains_type_var(elem),
         tast::Ty::TRef { elem } => contains_type_var(elem),
+        tast::Ty::TChannel { elem } => contains_type_var(elem),
         tast::Ty::THashMap { key, value } => contains_type_var(key) || contains_type_var(value),
         tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32

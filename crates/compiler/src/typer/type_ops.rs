@@ -18,6 +18,7 @@ pub(crate) fn rewrite_ty(
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -68,6 +69,9 @@ pub(crate) fn rewrite_ty(
             elem: Box::new(rewrite_ty(elem, rewrite)),
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(rewrite_ty(elem, rewrite)),
+        },
+        tast::Ty::TChannel { elem } => tast::Ty::TChannel {
             elem: Box::new(rewrite_ty(elem, rewrite)),
         },
         tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
@@ -204,7 +208,8 @@ fn visit_ty<B>(
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
-        | tast::Ty::TRef { elem } => visit_ty(elem, visitor)?,
+        | tast::Ty::TRef { elem }
+        | tast::Ty::TChannel { elem } => visit_ty(elem, visitor)?,
         tast::Ty::THashMap { key, value } => {
             visit_ty(key, visitor)?;
             visit_ty(value, visitor)?;
@@ -219,6 +224,7 @@ fn visit_ty<B>(
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -306,7 +312,8 @@ pub(crate) fn injective_type_params(ty: &tast::Ty) -> HashSet<String> {
             tast::Ty::TArray { elem, .. }
             | tast::Ty::TSlice { elem }
             | tast::Ty::TVec { elem }
-            | tast::Ty::TRef { elem } => collect(elem, parameters),
+            | tast::Ty::TRef { elem }
+            | tast::Ty::TChannel { elem } => collect(elem, parameters),
             tast::Ty::THashMap { key, value } => {
                 collect(key, parameters);
                 collect(value, parameters);
@@ -322,6 +329,7 @@ pub(crate) fn injective_type_params(ty: &tast::Ty) -> HashSet<String> {
             | tast::Ty::TUnit
             | tast::Ty::TNever
             | tast::Ty::TBool
+            | tast::Ty::TInt
             | tast::Ty::TInt8
             | tast::Ty::TInt16
             | tast::Ty::TInt32

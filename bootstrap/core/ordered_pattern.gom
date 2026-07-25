@@ -47,8 +47,8 @@ fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
     result.get()
 }
 
-fn ordered_int(value: int32) -> Expr {
-    Expr::Prim(tast::Primitive::Int32(value.to_string()), tast::Type::Int32)
+fn ordered_int(value: int) -> Expr {
+    Expr::Prim(tast::Primitive::Int(value.to_string()), tast::Type::Int)
 }
 
 fn ordered_binary(op: ast::BinaryOp, left: Expr, right: Expr, ty: tast::Type) -> Expr {
@@ -86,7 +86,7 @@ fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
             Option::Some(place_intrinsic_call(
                 "vec.len",
                 params,
-                tast::Type::Int32,
+                tast::Type::Int,
                 args,
             ))
         },
@@ -98,7 +98,7 @@ fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
             Option::Some(place_intrinsic_call(
                 "slice.len",
                 params,
-                tast::Type::Int32,
+                tast::Type::Int,
                 args,
             ))
         },
@@ -108,7 +108,7 @@ fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
 
 fn ordered_container_parts(
     container_ty: tast::Type,
-) -> Option[(tast::Type, Option[int32])] {
+) -> Option[(tast::Type, Option[int])] {
     match tast::resolve_type(container_ty) {
         tast::Type::Array(length, elem) => Option::Some((elem, Option::Some(length))),
         tast::Type::VecType(elem) | tast::Type::Slice(elem) => {
@@ -122,9 +122,9 @@ fn ordered_rest_value(
     value: Expr,
     container_ty: tast::Type,
     elem_ty: tast::Type,
-    fixed_len: Option[int32],
-    prefix_len: int32,
-    suffix_len: int32,
+    fixed_len: Option[int],
+    prefix_len: int,
+    suffix_len: int,
     len_expr: Expr,
     rest_ty: tast::Type,
 ) -> Expr {
@@ -153,13 +153,13 @@ fn ordered_rest_value(
                     ast::BinaryOp::Sub,
                     len_expr,
                     ordered_int(suffix_len),
-                    tast::Type::Int32,
+                    tast::Type::Int,
                 )
             };
             let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
-            params.push(tast::Type::Int32);
-            params.push(tast::Type::Int32);
+            params.push(tast::Type::Int);
+            params.push(tast::Type::Int);
             let args: Vec[Expr] = Vec::new();
             args.push(value);
             args.push(ordered_int(prefix_len));
@@ -174,13 +174,13 @@ fn ordered_rest_value(
                     ast::BinaryOp::Sub,
                     len_expr,
                     ordered_int(suffix_len),
-                    tast::Type::Int32,
+                    tast::Type::Int,
                 )
             };
             let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
-            params.push(tast::Type::Int32);
-            params.push(tast::Type::Int32);
+            params.push(tast::Type::Int);
+            params.push(tast::Type::Int);
             let args: Vec[Expr] = Vec::new();
             args.push(value);
             args.push(ordered_int(prefix_len));
@@ -192,10 +192,10 @@ fn ordered_rest_value(
 }
 
 fn ordered_suffix_index(
-    fixed_len: Option[int32],
+    fixed_len: Option[int],
     len_expr: Expr,
-    suffix_len: int32,
-    offset: int32,
+    suffix_len: int,
+    offset: int,
 ) -> Expr {
     match fixed_len {
         Option::Some(length) => ordered_int(length - suffix_len + offset),
@@ -205,10 +205,10 @@ fn ordered_suffix_index(
                 ast::BinaryOp::Sub,
                 len_expr,
                 ordered_int(suffix_len),
-                tast::Type::Int32,
+                tast::Type::Int,
             ),
             ordered_int(offset),
-            tast::Type::Int32,
+            tast::Type::Int,
         ),
     }
 }

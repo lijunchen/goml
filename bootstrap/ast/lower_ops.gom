@@ -66,25 +66,25 @@ fn binary_operator(kind: lexer::TokenKind) -> Option[BinaryOp] {
     }
 }
 
-fn parse_decimal_int32(value: string) -> Option[int32] {
+fn parse_decimal_int32(value: string) -> Option[int] {
     let result = Ref::new(0);
     let index = Ref::new(0);
     let valid = Ref::new(value.byte_len() > 0);
     while index.get() < value.byte_len() && valid.get() {
         let byte = value.byte_get(index.get());
-        if byte < 48u8 || byte > 57u8 {
+        if byte < 48 || byte > 57 {
             valid.set(false)
         } else {
             let digit = match byte {
-                48u8 => 0,
-                49u8 => 1,
-                50u8 => 2,
-                51u8 => 3,
-                52u8 => 4,
-                53u8 => 5,
-                54u8 => 6,
-                55u8 => 7,
-                56u8 => 8,
+                48 => 0,
+                49 => 1,
+                50 => 2,
+                51 => 3,
+                52 => 4,
+                53 => 5,
+                54 => 6,
+                55 => 7,
+                56 => 8,
                 _ => 9,
             };
             if result.get() > 214748364 || (result.get() == 214748364 && digit > 7) {
@@ -426,7 +426,7 @@ fn lower_dot_expr(
     trailing_args: Vec[Expr],
 ) -> Option[Expr] {
     if cst::node_kind_equal(node_kind(rhs), cst::NodeKind::EXPR_INT) {
-        match first_token(rhs, lexer::TokenKind::Int) {
+        match first_token(rhs, lexer::TokenKind::IntLit) {
             Option::Some(token) => match parse_decimal_int32(
                 strip_suffix(token.token.text, ""),
             ) {

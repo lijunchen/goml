@@ -216,6 +216,7 @@ impl Ty {
             Self::TUnit => RcDoc::text("unit"),
             Self::TNever => RcDoc::text("never"),
             Self::TBool => RcDoc::text("bool"),
+            Self::TInt => RcDoc::text("int"),
             Self::TInt8 => RcDoc::text("int8"),
             Self::TInt16 => RcDoc::text("int16"),
             Self::TInt32 => RcDoc::text("int32"),
@@ -277,6 +278,9 @@ impl Ty {
                 .append(elem.to_doc())
                 .append(RcDoc::text("]")),
             Self::TRef { elem } => RcDoc::text("Ref[")
+                .append(elem.to_doc())
+                .append(RcDoc::text("]")),
+            Self::TChannel { elem } => RcDoc::text("Channel[")
                 .append(elem.to_doc())
                 .append(RcDoc::text("]")),
             Self::THashMap { key, value } => RcDoc::text("HashMap[")

@@ -6,9 +6,9 @@ use gomlc::lexer;
 struct LowerCtx {
     diagnostics: Vec[cst::Diagnostic],
     invalid_self_type_spans: Vec[Span],
-    expr_depth: Ref[int32],
-    pattern_depth: Ref[int32],
-    type_depth: Ref[int32],
+    expr_depth: Ref[int],
+    pattern_depth: Ref[int],
+    type_depth: Ref[int],
 }
 
 fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> unit {
@@ -29,8 +29,8 @@ fn contains_string(values: Vec[string], expected: string) -> bool {
 
 fn ident_starts_upper(value: string) -> bool {
     value.byte_len() > 0
-        && value.byte_get(0) >= 65u8
-        && value.byte_get(0) <= 90u8
+        && value.byte_get(0) >= 65
+        && value.byte_get(0) <= 90
 }
 
 fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
@@ -83,10 +83,10 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
     let text_value = value.text;
     let index = Ref::new(0);
     while index.get() < text_value.byte_len()
-        && (text_value.byte_get(index.get()) == 32u8
-            || text_value.byte_get(index.get()) == 9u8
-            || text_value.byte_get(index.get()) == 10u8
-            || text_value.byte_get(index.get()) == 13u8)
+        && (text_value.byte_get(index.get()) == 32
+            || text_value.byte_get(index.get()) == 9
+            || text_value.byte_get(index.get()) == 10
+            || text_value.byte_get(index.get()) == 13)
     {
         index.set(index.get() + 1)
     };
@@ -97,17 +97,17 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
     } else {
         index.set(index.get() + 2);
         while index.get() < text_value.byte_len()
-            && (text_value.byte_get(index.get()) == 32u8
-                || text_value.byte_get(index.get()) == 9u8
-                || text_value.byte_get(index.get()) == 10u8
-                || text_value.byte_get(index.get()) == 13u8)
+            && (text_value.byte_get(index.get()) == 32
+                || text_value.byte_get(index.get()) == 9
+                || text_value.byte_get(index.get()) == 10
+                || text_value.byte_get(index.get()) == 13)
         {
             index.set(index.get() + 1)
         };
         let start = index.get();
         while index.get() < text_value.byte_len() {
             let byte = text_value.byte_get(index.get());
-            if byte == 40u8 || byte == 93u8 || byte == 32u8 || byte == 9u8 {
+            if byte == 40 || byte == 93 || byte == 32 || byte == 9 {
                 break
             } else {
                 index.set(index.get() + 1)
@@ -155,7 +155,7 @@ fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
 
 fn normalized_array_length(value: string) -> Option[string] {
     let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == 48u8 {
+    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == 48 {
         index.set(index.get() + 1)
     };
     let normalized = value.byte_slice(index.get(), value.byte_len());
@@ -197,6 +197,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
         let result = match node_kind(node) {
             cst::NodeKind::TYPE_UNIT => Option::Some(TypeExpr::Unit),
             cst::NodeKind::TYPE_BOOL => Option::Some(TypeExpr::Bool),
+            cst::NodeKind::TYPE_INT => Option::Some(TypeExpr::Int),
             cst::NodeKind::TYPE_INT8 => Option::Some(TypeExpr::Int8),
             cst::NodeKind::TYPE_INT16 => Option::Some(TypeExpr::Int16),
             cst::NodeKind::TYPE_INT32 => Option::Some(TypeExpr::Int32),
@@ -261,7 +262,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
             },
             cst::NodeKind::TYPE_ARRAY => {
                 let types = type_children(node);
-                match first_token(node, lexer::TokenKind::Int) {
+                match first_token(node, lexer::TokenKind::IntLit) {
                     Option::Some(length_token) => match normalized_array_length(
                         strip_suffix(length_token.token.text, ""),
                     ) {

@@ -17,6 +17,7 @@ pub(crate) enum Commands {
     TestBuild(PackageCommandArgs),
     Link(LinkArgs),
     TestLink(TestLinkArgs),
+    PackageInfo(PackageInfoArgs),
     RunSingle(RunArgs),
     Version(VersionArgs),
 }
@@ -74,6 +75,19 @@ pub(crate) struct TestLinkArgs {
     pub output: PathBuf,
     #[arg(long)]
     pub manifest: PathBuf,
+}
+
+#[derive(Args, Debug)]
+pub(crate) struct PackageInfoArgs {
+    #[arg(long, required = true, num_args = 1..)]
+    pub input: Vec<PathBuf>,
+    #[arg(long, value_enum, default_value_t = PackageInfoFormat::Json)]
+    pub format: PackageInfoFormat,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub(crate) enum PackageInfoFormat {
+    Json,
 }
 
 #[derive(Args, Debug)]

@@ -1,0 +1,345 @@
+package json;
+
+use gomlang::bootstrap_goml::util;
+use std::text;
+
+pub enum Value {
+    Null,
+    Bool(bool),
+    Number(string),
+    String(string),
+    Array(Vec[Value]),
+    Object(Vec[(string, Value)]),
+}
+
+struct Parser {
+    input: string,
+    index: Ref[int],
+}
+
+fn skip_whitespace(parser: Parser) -> unit {
+    while parser.index.get() < parser.input.byte_len() {
+        let byte = parser.input.byte_get(parser.index.get());
+        if byte == 32 || byte == 9 || byte == 10 || byte == 13 {
+            parser.index.set(parser.index.get() + 1)
+        } else {
+            return ()
+        }
+    }
+}
+
+fn error(parser: Parser, message: string) -> string {
+    "JSON byte " + parser.index.get().to_string() + ": " + message
+}
+
+fn take_literal(parser: Parser, value: string) -> bool {
+    if parser.index.get() + value.byte_len() <= parser.input.byte_len()
+        && parser.input.byte_slice(
+            parser.index.get(),
+            parser.index.get() + value.byte_len(),
+        ) == value
+    {
+        parser.index.set(parser.index.get() + value.byte_len());
+        true
+    } else {
+        false
+    }
+}
+
+fn hex_digit(value: uint8) -> Option[uint32] {
+    if value == 48 {
+        Option::Some(0)
+    } else if value == 49 {
+        Option::Some(1)
+    } else if value == 50 {
+        Option::Some(2)
+    } else if value == 51 {
+        Option::Some(3)
+    } else if value == 52 {
+        Option::Some(4)
+    } else if value == 53 {
+        Option::Some(5)
+    } else if value == 54 {
+        Option::Some(6)
+    } else if value == 55 {
+        Option::Some(7)
+    } else if value == 56 {
+        Option::Some(8)
+    } else if value == 57 {
+        Option::Some(9)
+    } else if value == 65 || value == 97 {
+        Option::Some(10)
+    } else if value == 66 || value == 98 {
+        Option::Some(11)
+    } else if value == 67 || value == 99 {
+        Option::Some(12)
+    } else if value == 68 || value == 100 {
+        Option::Some(13)
+    } else if value == 69 || value == 101 {
+        Option::Some(14)
+    } else if value == 70 || value == 102 {
+        Option::Some(15)
+    } else {
+        Option::None
+    }
+}
+
+fn parse_unicode_escape(parser: Parser) -> Result[char, string] {
+    if parser.index.get() + 4 > parser.input.byte_len() {
+        return Result::Err(error(parser, "incomplete Unicode escape"))
+    } else {
+        ()
+    };
+    let value = Ref::new(0);
+    for _ in range(0, 4) {
+        match hex_digit(parser.input.byte_get(parser.index.get())) {
+            Option::Some(digit) => {
+                value.set(value.get() * 16 + digit);
+                parser.index.set(parser.index.get() + 1)
+            },
+            Option::None => return Result::Err(error(parser, "invalid Unicode escape")),
+        }
+    };
+    match char_from_uint32(value.get()) {
+        Option::Some(value) => Result::Ok(value),
+        Option::None => Result::Err("invalid Unicode scalar value"),
+    }
+}
+
+fn parse_string(parser: Parser) -> Result[string, string] {
+    if !take_literal(parser, "\"") {
+        return Result::Err(error(parser, "expected string"))
+    } else {
+        ()
+    };
+    let builder = text::StringBuilder::new();
+    while parser.index.get() < parser.input.byte_len() {
+        let byte = parser.input.byte_get(parser.index.get());
+        if byte == 34 {
+            parser.index.set(parser.index.get() + 1);
+            return Result::Ok(builder.finish())
+        } else if byte == 92 {
+            parser.index.set(parser.index.get() + 1);
+            if parser.index.get() >= parser.input.byte_len() {
+                return Result::Err(error(parser, "incomplete escape"))
+            } else {
+                ()
+            };
+            let escape = parser.input.byte_get(parser.index.get());
+            parser.index.set(parser.index.get() + 1);
+            if escape == 34 {
+                builder.write_char('"')
+            } else if escape == 92 {
+                builder.write_char('\\')
+            } else if escape == 47 {
+                builder.write_char('/')
+            } else if escape == 98 {
+                builder.write_char('\u0008')
+            } else if escape == 102 {
+                builder.write_char('\u000c')
+            } else if escape == 110 {
+                builder.write_char('\n')
+            } else if escape == 114 {
+                builder.write_char('\r')
+            } else if escape == 116 {
+                builder.write_char('\t')
+            } else if escape == 117 {
+                match parse_unicode_escape(parser) {
+                    Result::Ok(value) => builder.write_char(value),
+                    Result::Err(message) => return Result::Err(message),
+                }
+            } else {
+                return Result::Err(error(parser, "invalid escape"))
+            }
+        } else if byte < 32 {
+            return Result::Err(error(parser, "control character in string"))
+        } else {
+            match parser.input.decode_at(parser.index.get()) {
+                Option::Some((value, width)) => {
+                    builder.write_char(value);
+                    parser.index.set(parser.index.get() + width)
+                },
+                Option::None => return Result::Err(error(parser, "invalid UTF-8")),
+            }
+        }
+    };
+    Result::Err(error(parser, "unterminated string"))
+}
+
+fn number_byte(value: uint8) -> bool {
+    (value >= 48 && value <= 57)
+        || value == 45
+        || value == 43
+        || value == 46
+        || value == 69
+        || value == 101
+}
+
+fn parse_number(parser: Parser) -> Result[Value, string] {
+    let start = parser.index.get();
+    while parser.index.get() < parser.input.byte_len()
+        && number_byte(parser.input.byte_get(parser.index.get()))
+    {
+        parser.index.set(parser.index.get() + 1)
+    };
+    if parser.index.get() == start {
+        Result::Err(error(parser, "expected number"))
+    } else {
+        Result::Ok(Value::Number(
+            parser.input.byte_slice(start, parser.index.get()),
+        ))
+    }
+}
+
+fn parse_array(parser: Parser) -> Result[Value, string] {
+    take_literal(parser, "[");
+    let values = Vec::new();
+    skip_whitespace(parser);
+    if take_literal(parser, "]") {
+        return Result::Ok(Value::Array(values))
+    } else {
+        ()
+    };
+    while parser.index.get() < parser.input.byte_len() {
+        match parse_value(parser) {
+            Result::Ok(value) => values.push(value),
+            Result::Err(message) => return Result::Err(message),
+        };
+        skip_whitespace(parser);
+        if take_literal(parser, "]") {
+            return Result::Ok(Value::Array(values))
+        } else if take_literal(parser, ",") {
+            skip_whitespace(parser)
+        } else {
+            return Result::Err(error(parser, "expected ',' or ']'"))
+        }
+    };
+    Result::Err(error(parser, "unterminated array"))
+}
+
+fn parse_object(parser: Parser) -> Result[Value, string] {
+    take_literal(parser, "{");
+    let values = Vec::new();
+    skip_whitespace(parser);
+    if take_literal(parser, "}") {
+        return Result::Ok(Value::Object(values))
+    } else {
+        ()
+    };
+    while parser.index.get() < parser.input.byte_len() {
+        let key = match parse_string(parser) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        skip_whitespace(parser);
+        if !take_literal(parser, ":") {
+            return Result::Err(error(parser, "expected ':'"))
+        } else {
+            ()
+        };
+        skip_whitespace(parser);
+        let value = match parse_value(parser) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        values.push((key, value));
+        skip_whitespace(parser);
+        if take_literal(parser, "}") {
+            return Result::Ok(Value::Object(values))
+        } else if take_literal(parser, ",") {
+            skip_whitespace(parser)
+        } else {
+            return Result::Err(error(parser, "expected ',' or '}'"))
+        }
+    };
+    Result::Err(error(parser, "unterminated object"))
+}
+
+fn parse_value(parser: Parser) -> Result[Value, string] {
+    skip_whitespace(parser);
+    if parser.index.get() >= parser.input.byte_len() {
+        Result::Err(error(parser, "expected value"))
+    } else {
+        let byte = parser.input.byte_get(parser.index.get());
+        if byte == 34 {
+            match parse_string(parser) {
+                Result::Ok(value) => Result::Ok(Value::String(value)),
+                Result::Err(message) => Result::Err(message),
+            }
+        } else if byte == 91 {
+            parse_array(parser)
+        } else if byte == 123 {
+            parse_object(parser)
+        } else if take_literal(parser, "null") {
+            Result::Ok(Value::Null)
+        } else if take_literal(parser, "true") {
+            Result::Ok(Value::Bool(true))
+        } else if take_literal(parser, "false") {
+            Result::Ok(Value::Bool(false))
+        } else {
+            parse_number(parser)
+        }
+    }
+}
+
+pub fn parse(input: string) -> Result[Value, string] {
+    let parser = Parser {
+        input,
+        index: Ref::new(0),
+    };
+    let value = match parse_value(parser) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    skip_whitespace(parser);
+    if parser.index.get() == parser.input.byte_len() {
+        Result::Ok(value)
+    } else {
+        Result::Err(error(parser, "trailing input"))
+    }
+}
+
+pub fn field(value: Value, name: string) -> Option[Value] {
+    match value {
+        Value::Object(fields) => {
+            for field in fields {
+                if field.0 == name {
+                    return Option::Some(field.1)
+                } else {
+                    ()
+                }
+            };
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
+pub fn as_string(value: Value) -> Option[string] {
+    match value {
+        Value::String(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+pub fn bool_value(value: Value) -> Option[bool] {
+    match value {
+        Value::Bool(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+pub fn as_array(value: Value) -> Option[Vec[Value]] {
+    match value {
+        Value::Array(values) => Option::Some(values),
+        _ => Option::None,
+    }
+}
+
+pub fn optional_string(value: Value) -> Option[string] {
+    match value {
+        Value::String(value) => Option::Some(value),
+        Value::Null => Option::None,
+        _ => Option::None,
+    }
+}

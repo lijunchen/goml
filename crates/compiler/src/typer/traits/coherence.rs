@@ -152,7 +152,8 @@ fn contains_param(ty: &tast::Ty, param: &str, subst: &HashMap<String, tast::Ty>)
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
-        | tast::Ty::TRef { elem } => contains_param(elem, param, subst),
+        | tast::Ty::TRef { elem }
+        | tast::Ty::TChannel { elem } => contains_param(elem, param, subst),
         tast::Ty::THashMap { key, value } => {
             contains_param(key, param, subst) || contains_param(value, param, subst)
         }
@@ -164,6 +165,7 @@ fn contains_param(ty: &tast::Ty, param: &str, subst: &HashMap<String, tast::Ty>)
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -268,7 +270,8 @@ pub(crate) fn unify(
         ) => left_len == right_len && unify(left, right, subst),
         (tast::Ty::TSlice { elem: left }, tast::Ty::TSlice { elem: right })
         | (tast::Ty::TVec { elem: left }, tast::Ty::TVec { elem: right })
-        | (tast::Ty::TRef { elem: left }, tast::Ty::TRef { elem: right }) => {
+        | (tast::Ty::TRef { elem: left }, tast::Ty::TRef { elem: right })
+        | (tast::Ty::TChannel { elem: left }, tast::Ty::TChannel { elem: right }) => {
             unify(left, right, subst)
         }
         (

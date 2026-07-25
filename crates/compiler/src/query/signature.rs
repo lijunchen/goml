@@ -339,6 +339,7 @@ fn tast_ty_constr_candidates(ty: &tast::Ty) -> Vec<String> {
             tast::Ty::TRef { .. } => out.push("Ref".to_string()),
             tast::Ty::TVec { .. } => out.push("Vec".to_string()),
             tast::Ty::THashMap { .. } => out.push("HashMap".to_string()),
+            tast::Ty::TChannel { .. } => out.push("Channel".to_string()),
             _ => {}
         }
     }

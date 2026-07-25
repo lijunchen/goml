@@ -9,6 +9,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TNever => "never".to_string(),
         tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt => "int".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
@@ -43,6 +44,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TSlice { elem } => format!("Slice_{}", encode_ty_part(elem)),
         tast::Ty::TVec { elem } => format!("Vec_{}", encode_ty_part(elem)),
         tast::Ty::TRef { elem } => format!("Ref_{}", encode_ty_part(elem)),
+        tast::Ty::TChannel { elem } => format!("Channel_{}", encode_ty_part(elem)),
         tast::Ty::THashMap { key, value } => {
             format!("HashMap_{}_{}", encode_ty_part(key), encode_ty_part(value))
         }

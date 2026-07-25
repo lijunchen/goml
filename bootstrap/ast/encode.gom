@@ -23,13 +23,13 @@ fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
     builder.write_string(if value { "B\t1\n" } else { "B\t0\n" })
 }
 
-fn encode_int_value(builder: text::StringBuilder, value: int32) -> unit {
+fn encode_int_value(builder: text::StringBuilder, value: int) -> unit {
     builder.write_string("I\t");
     builder.write_string(value.to_string());
     builder.write_string("\n")
 }
 
-fn encode_list(builder: text::StringBuilder, length: int32) -> unit {
+fn encode_list(builder: text::StringBuilder, length: int) -> unit {
     builder.write_string("L\t");
     builder.write_string(length.to_string());
     builder.write_string("\n")
@@ -67,6 +67,7 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
     match value {
         TypeExpr::Unit => encode_open(builder, "Type.Unit"),
         TypeExpr::Bool => encode_open(builder, "Type.Bool"),
+        TypeExpr::Int => encode_open(builder, "Type.Int"),
         TypeExpr::Int8 => encode_open(builder, "Type.Int8"),
         TypeExpr::Int16 => encode_open(builder, "Type.Int16"),
         TypeExpr::Int32 => encode_open(builder, "Type.Int32"),

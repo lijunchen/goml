@@ -2,7 +2,7 @@ package collections;
 
 pub struct BitSet {
     pub words: Vec[uint64],
-    pub len: Ref[int32],
+    pub len: Ref[int],
 }
 
 impl BitSet {
@@ -13,7 +13,7 @@ impl BitSet {
         }
     }
 
-    pub fn len(self: BitSet) -> int32 {
+    pub fn len(self: BitSet) -> int {
         self.len.get()
     }
 
@@ -21,7 +21,7 @@ impl BitSet {
         self.len.get() == 0
     }
 
-    pub fn contains(self: BitSet, index: int32) -> bool {
+    pub fn contains(self: BitSet, index: int) -> bool {
         if index < 0 {
             false
         } else {
@@ -29,23 +29,23 @@ impl BitSet {
             if word_index >= self.words.len() {
                 false
             } else {
-                let mask = 1u64 << (index % 64);
-                self.words.get(word_index) & mask != 0u64
+                let mask = 1 << (index % 64);
+                self.words.get(word_index) & mask != 0
             }
         }
     }
 
-    pub fn insert(self: BitSet, index: int32) -> bool {
+    pub fn insert(self: BitSet, index: int) -> bool {
         if index < 0 {
             false
         } else {
             let word_index = index / 64;
             while self.words.len() <= word_index {
-                self.words.push(0u64);
+                self.words.push(0);
             };
-            let mask = 1u64 << (index % 64);
+            let mask = 1 << (index % 64);
             let old = self.words.get(word_index);
-            if old & mask != 0u64 {
+            if old & mask != 0 {
                 false
             } else {
                 self.words.set(word_index, old | mask);
@@ -55,12 +55,12 @@ impl BitSet {
         }
     }
 
-    pub fn remove(self: BitSet, index: int32) -> bool {
+    pub fn remove(self: BitSet, index: int) -> bool {
         if !self.contains(index) {
             false
         } else {
             let word_index = index / 64;
-            let mask = 1u64 << (index % 64);
+            let mask = 1 << (index % 64);
             self.words.set(word_index, self.words.get(word_index) & ~mask);
             self.len.set(self.len.get() - 1);
             true

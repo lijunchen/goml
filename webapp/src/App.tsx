@@ -104,7 +104,7 @@ function App() {
         keywords: ['fn', 'let', 'in'],
         tokenizer: {
           root: [
-            [/\b(fn|struct|enum|trait|impl|for|match|if|else|while|let|in|return|break|continue|go|dyn|pub|use|package|extern|true|false|unit|bool|int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|string|char)\b/, "keyword"],
+            [/\b(fn|struct|enum|trait|impl|for|match|if|else|while|let|in|return|break|continue|go|dyn|pub|use|package|extern|true|false|unit|bool|int|int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|string|char)\b/, "keyword"],
             [/\b[A-Z][a-zA-Z0-9_]*\b/, "type"],
             [/\b\d+\b/, "number"],
             [/[a-zA-Z_]\w*(?=\s*\()/, "function"],

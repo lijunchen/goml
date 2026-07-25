@@ -86,6 +86,7 @@ fn inherent_base(receiver_ty: &tast::Ty) -> String {
     match receiver_ty {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt => "int".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
@@ -104,7 +105,8 @@ fn inherent_base(receiver_ty: &tast::Ty) -> String {
         | tast::Ty::TSlice { .. }
         | tast::Ty::TVec { .. }
         | tast::Ty::TRef { .. }
-        | tast::Ty::THashMap { .. } => receiver_ty.get_constr_name_unsafe(),
+        | tast::Ty::THashMap { .. }
+        | tast::Ty::TChannel { .. } => receiver_ty.get_constr_name_unsafe(),
         other => ty_compact(other),
     }
 }

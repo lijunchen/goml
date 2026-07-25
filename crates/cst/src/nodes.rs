@@ -877,17 +877,7 @@ pub enum Expr {
     UnitExpr(UnitExpr),
     BoolExpr(BoolExpr),
     IntExpr(IntExpr),
-    Int8Expr(Int8Expr),
-    Int16Expr(Int16Expr),
-    Int32Expr(Int32Expr),
-    Int64Expr(Int64Expr),
-    UInt8Expr(UInt8Expr),
-    UInt16Expr(UInt16Expr),
-    UInt32Expr(UInt32Expr),
-    UInt64Expr(UInt64Expr),
     FloatExpr(FloatExpr),
-    Float32Expr(Float32Expr),
-    Float64Expr(Float64Expr),
     CharExpr(CharExpr),
     StrExpr(StrExpr),
     MultilineStrExpr(MultilineStrExpr),
@@ -921,17 +911,7 @@ impl CstNode for Expr {
             EXPR_UNIT
                 | EXPR_BOOL
                 | EXPR_INT
-                | EXPR_INT8
-                | EXPR_INT16
-                | EXPR_INT32
-                | EXPR_INT64
-                | EXPR_UINT8
-                | EXPR_UINT16
-                | EXPR_UINT32
-                | EXPR_UINT64
                 | EXPR_FLOAT
-                | EXPR_FLOAT32
-                | EXPR_FLOAT64
                 | EXPR_CHAR
                 | EXPR_STR
                 | EXPR_MULTILINE_STR
@@ -962,17 +942,7 @@ impl CstNode for Expr {
             EXPR_UNIT => Expr::UnitExpr(UnitExpr { syntax }),
             EXPR_BOOL => Expr::BoolExpr(BoolExpr { syntax }),
             EXPR_INT => Expr::IntExpr(IntExpr { syntax }),
-            EXPR_INT8 => Expr::Int8Expr(Int8Expr { syntax }),
-            EXPR_INT16 => Expr::Int16Expr(Int16Expr { syntax }),
-            EXPR_INT32 => Expr::Int32Expr(Int32Expr { syntax }),
-            EXPR_INT64 => Expr::Int64Expr(Int64Expr { syntax }),
-            EXPR_UINT8 => Expr::UInt8Expr(UInt8Expr { syntax }),
-            EXPR_UINT16 => Expr::UInt16Expr(UInt16Expr { syntax }),
-            EXPR_UINT32 => Expr::UInt32Expr(UInt32Expr { syntax }),
-            EXPR_UINT64 => Expr::UInt64Expr(UInt64Expr { syntax }),
             EXPR_FLOAT => Expr::FloatExpr(FloatExpr { syntax }),
-            EXPR_FLOAT32 => Expr::Float32Expr(Float32Expr { syntax }),
-            EXPR_FLOAT64 => Expr::Float64Expr(Float64Expr { syntax }),
             EXPR_CHAR => Expr::CharExpr(CharExpr { syntax }),
             EXPR_STR => Expr::StrExpr(StrExpr { syntax }),
             EXPR_MULTILINE_STR => Expr::MultilineStrExpr(MultilineStrExpr { syntax }),
@@ -1006,17 +976,7 @@ impl CstNode for Expr {
             Self::UnitExpr(it) => &it.syntax,
             Self::BoolExpr(it) => &it.syntax,
             Self::IntExpr(it) => &it.syntax,
-            Self::Int8Expr(it) => &it.syntax,
-            Self::Int16Expr(it) => &it.syntax,
-            Self::Int32Expr(it) => &it.syntax,
-            Self::Int64Expr(it) => &it.syntax,
-            Self::UInt8Expr(it) => &it.syntax,
-            Self::UInt16Expr(it) => &it.syntax,
-            Self::UInt32Expr(it) => &it.syntax,
-            Self::UInt64Expr(it) => &it.syntax,
             Self::FloatExpr(it) => &it.syntax,
-            Self::Float32Expr(it) => &it.syntax,
-            Self::Float64Expr(it) => &it.syntax,
             Self::CharExpr(it) => &it.syntax,
             Self::StrExpr(it) => &it.syntax,
             Self::MultilineStrExpr(it) => &it.syntax,
@@ -1088,134 +1048,6 @@ impl_display_via_syntax!(IntExpr);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int8Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int8Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int8Lit)
-    }
-}
-
-impl_cst_node_simple!(Int8Expr, MySyntaxKind::EXPR_INT8);
-impl_display_via_syntax!(Int8Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int16Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int16Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int16Lit)
-    }
-}
-
-impl_cst_node_simple!(Int16Expr, MySyntaxKind::EXPR_INT16);
-impl_display_via_syntax!(Int16Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int32Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int32Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int32Lit)
-    }
-}
-
-impl_cst_node_simple!(Int32Expr, MySyntaxKind::EXPR_INT32);
-impl_display_via_syntax!(Int32Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int64Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int64Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int64Lit)
-    }
-}
-
-impl_cst_node_simple!(Int64Expr, MySyntaxKind::EXPR_INT64);
-impl_display_via_syntax!(Int64Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt8Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt8Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt8Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt8Expr, MySyntaxKind::EXPR_UINT8);
-impl_display_via_syntax!(UInt8Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt16Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt16Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt16Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt16Expr, MySyntaxKind::EXPR_UINT16);
-impl_display_via_syntax!(UInt16Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt32Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt32Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt32Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt32Expr, MySyntaxKind::EXPR_UINT32);
-impl_display_via_syntax!(UInt32Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt64Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt64Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt64Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt64Expr, MySyntaxKind::EXPR_UINT64);
-impl_display_via_syntax!(UInt64Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FloatExpr {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -1228,38 +1060,6 @@ impl FloatExpr {
 
 impl_cst_node_simple!(FloatExpr, MySyntaxKind::EXPR_FLOAT);
 impl_display_via_syntax!(FloatExpr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Float32Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Float32Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Float32Lit)
-    }
-}
-
-impl_cst_node_simple!(Float32Expr, MySyntaxKind::EXPR_FLOAT32);
-impl_display_via_syntax!(Float32Expr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Float64Expr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Float64Expr {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Float64Lit)
-    }
-}
-
-impl_cst_node_simple!(Float64Expr, MySyntaxKind::EXPR_FLOAT64);
-impl_display_via_syntax!(Float64Expr);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2015,17 +1815,7 @@ pub enum Pattern {
     CharPat(CharPat),
     StringPat(StringPat),
     IntPat(IntPat),
-    Int8Pat(Int8Pat),
-    Int16Pat(Int16Pat),
-    Int32Pat(Int32Pat),
-    Int64Pat(Int64Pat),
-    UInt8Pat(UInt8Pat),
-    UInt16Pat(UInt16Pat),
-    UInt32Pat(UInt32Pat),
-    UInt64Pat(UInt64Pat),
     FloatPat(FloatPat),
-    Float32Pat(Float32Pat),
-    Float64Pat(Float64Pat),
     ConstrPat(ConstrPat),
     TuplePat(TuplePat),
     ArrayPat(ArrayPat),
@@ -2046,17 +1836,7 @@ impl CstNode for Pattern {
                 | PATTERN_CHAR
                 | PATTERN_STRING
                 | PATTERN_INT
-                | PATTERN_INT8
-                | PATTERN_INT16
-                | PATTERN_INT32
-                | PATTERN_INT64
-                | PATTERN_UINT8
-                | PATTERN_UINT16
-                | PATTERN_UINT32
-                | PATTERN_UINT64
                 | PATTERN_FLOAT
-                | PATTERN_FLOAT32
-                | PATTERN_FLOAT64
                 | PATTERN_CONSTR
                 | PATTERN_TUPLE
                 | PATTERN_ARRAY
@@ -2075,17 +1855,7 @@ impl CstNode for Pattern {
             PATTERN_CHAR => Pattern::CharPat(CharPat { syntax }),
             PATTERN_STRING => Pattern::StringPat(StringPat { syntax }),
             PATTERN_INT => Pattern::IntPat(IntPat { syntax }),
-            PATTERN_INT8 => Pattern::Int8Pat(Int8Pat { syntax }),
-            PATTERN_INT16 => Pattern::Int16Pat(Int16Pat { syntax }),
-            PATTERN_INT32 => Pattern::Int32Pat(Int32Pat { syntax }),
-            PATTERN_INT64 => Pattern::Int64Pat(Int64Pat { syntax }),
-            PATTERN_UINT8 => Pattern::UInt8Pat(UInt8Pat { syntax }),
-            PATTERN_UINT16 => Pattern::UInt16Pat(UInt16Pat { syntax }),
-            PATTERN_UINT32 => Pattern::UInt32Pat(UInt32Pat { syntax }),
-            PATTERN_UINT64 => Pattern::UInt64Pat(UInt64Pat { syntax }),
             PATTERN_FLOAT => Pattern::FloatPat(FloatPat { syntax }),
-            PATTERN_FLOAT32 => Pattern::Float32Pat(Float32Pat { syntax }),
-            PATTERN_FLOAT64 => Pattern::Float64Pat(Float64Pat { syntax }),
             PATTERN_CONSTR => Pattern::ConstrPat(ConstrPat { syntax }),
             PATTERN_TUPLE => Pattern::TuplePat(TuplePat { syntax }),
             PATTERN_ARRAY => Pattern::ArrayPat(ArrayPat { syntax }),
@@ -2106,17 +1876,7 @@ impl CstNode for Pattern {
             Self::CharPat(it) => &it.syntax,
             Self::StringPat(it) => &it.syntax,
             Self::IntPat(it) => &it.syntax,
-            Self::Int8Pat(it) => &it.syntax,
-            Self::Int16Pat(it) => &it.syntax,
-            Self::Int32Pat(it) => &it.syntax,
-            Self::Int64Pat(it) => &it.syntax,
-            Self::UInt8Pat(it) => &it.syntax,
-            Self::UInt16Pat(it) => &it.syntax,
-            Self::UInt32Pat(it) => &it.syntax,
-            Self::UInt64Pat(it) => &it.syntax,
             Self::FloatPat(it) => &it.syntax,
-            Self::Float32Pat(it) => &it.syntax,
-            Self::Float64Pat(it) => &it.syntax,
             Self::ConstrPat(it) => &it.syntax,
             Self::TuplePat(it) => &it.syntax,
             Self::ArrayPat(it) => &it.syntax,
@@ -2225,146 +1985,6 @@ impl_display_via_syntax!(IntPat);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int8Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int8Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int8Lit)
-    }
-    pub fn is_negative(&self) -> bool {
-        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
-    }
-}
-
-impl_cst_node_simple!(Int8Pat, MySyntaxKind::PATTERN_INT8);
-impl_display_via_syntax!(Int8Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int16Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int16Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int16Lit)
-    }
-    pub fn is_negative(&self) -> bool {
-        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
-    }
-}
-
-impl_cst_node_simple!(Int16Pat, MySyntaxKind::PATTERN_INT16);
-impl_display_via_syntax!(Int16Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int32Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int32Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int32Lit)
-    }
-    pub fn is_negative(&self) -> bool {
-        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
-    }
-}
-
-impl_cst_node_simple!(Int32Pat, MySyntaxKind::PATTERN_INT32);
-impl_display_via_syntax!(Int32Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Int64Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Int64Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Int64Lit)
-    }
-    pub fn is_negative(&self) -> bool {
-        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
-    }
-}
-
-impl_cst_node_simple!(Int64Pat, MySyntaxKind::PATTERN_INT64);
-impl_display_via_syntax!(Int64Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt8Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt8Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt8Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt8Pat, MySyntaxKind::PATTERN_UINT8);
-impl_display_via_syntax!(UInt8Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt16Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt16Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt16Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt16Pat, MySyntaxKind::PATTERN_UINT16);
-impl_display_via_syntax!(UInt16Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt32Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt32Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt32Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt32Pat, MySyntaxKind::PATTERN_UINT32);
-impl_display_via_syntax!(UInt32Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UInt64Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl UInt64Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::UInt64Lit)
-    }
-}
-
-impl_cst_node_simple!(UInt64Pat, MySyntaxKind::PATTERN_UINT64);
-impl_display_via_syntax!(UInt64Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FloatPat {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -2380,44 +2000,6 @@ impl FloatPat {
 
 impl_cst_node_simple!(FloatPat, MySyntaxKind::PATTERN_FLOAT);
 impl_display_via_syntax!(FloatPat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Float32Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Float32Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Float32Lit)
-    }
-    pub fn is_negative(&self) -> bool {
-        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
-    }
-}
-
-impl_cst_node_simple!(Float32Pat, MySyntaxKind::PATTERN_FLOAT32);
-impl_display_via_syntax!(Float32Pat);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Float64Pat {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl Float64Pat {
-    pub fn value(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Float64Lit)
-    }
-    pub fn is_negative(&self) -> bool {
-        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
-    }
-}
-
-impl_cst_node_simple!(Float64Pat, MySyntaxKind::PATTERN_FLOAT64);
-impl_display_via_syntax!(Float64Pat);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2593,6 +2175,7 @@ pub struct WildPat {
 pub enum Type {
     UnitTy(UnitTy),
     BoolTy(BoolTy),
+    IntTy(IntTy),
     Int8Ty(Int8Ty),
     Int16Ty(Int16Ty),
     Int32Ty(Int32Ty),
@@ -2618,6 +2201,7 @@ impl CstNode for Type {
             kind,
             TYPE_UNIT
                 | TYPE_BOOL
+                | TYPE_INT
                 | TYPE_INT8
                 | TYPE_INT16
                 | TYPE_INT32
@@ -2641,6 +2225,7 @@ impl CstNode for Type {
         let res = match syntax.kind() {
             TYPE_UNIT => Type::UnitTy(UnitTy { syntax }),
             TYPE_BOOL => Type::BoolTy(BoolTy { syntax }),
+            TYPE_INT => Type::IntTy(IntTy { syntax }),
             TYPE_INT8 => Type::Int8Ty(Int8Ty { syntax }),
             TYPE_INT16 => Type::Int16Ty(Int16Ty { syntax }),
             TYPE_INT32 => Type::Int32Ty(Int32Ty { syntax }),
@@ -2666,6 +2251,7 @@ impl CstNode for Type {
         match self {
             Type::UnitTy(it) => &it.syntax,
             Type::BoolTy(it) => &it.syntax,
+            Type::IntTy(it) => &it.syntax,
             Type::Int8Ty(it) => &it.syntax,
             Type::Int16Ty(it) => &it.syntax,
             Type::Int32Ty(it) => &it.syntax,
@@ -2712,6 +2298,18 @@ impl BoolTy {}
 
 impl_cst_node_simple!(BoolTy, MySyntaxKind::TYPE_BOOL);
 impl_display_via_syntax!(BoolTy);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IntTy {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl IntTy {}
+
+impl_cst_node_simple!(IntTy, MySyntaxKind::TYPE_INT);
+impl_display_via_syntax!(IntTy);
 
 ////////////////////////////////////////////////////////////////////////////////
 

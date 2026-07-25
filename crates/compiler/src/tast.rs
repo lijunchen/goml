@@ -79,6 +79,7 @@ pub enum Ty {
     TUnit,
     TNever,
     TBool,
+    TInt,
     TInt8,
     TInt16,
     TInt32,
@@ -129,6 +130,9 @@ pub enum Ty {
         key: Box<Ty>,
         value: Box<Ty>,
     },
+    TChannel {
+        elem: Box<Ty>,
+    },
     TParam {
         name: String,
     },
@@ -145,6 +149,7 @@ impl std::fmt::Debug for Ty {
             Self::TUnit => write!(f, "TUnit"),
             Self::TNever => write!(f, "TNever"),
             Self::TBool => write!(f, "TBool"),
+            Self::TInt => write!(f, "TInt"),
             Self::TInt8 => write!(f, "TInt8"),
             Self::TInt16 => write!(f, "TInt16"),
             Self::TInt32 => write!(f, "TInt32"),
@@ -172,6 +177,7 @@ impl std::fmt::Debug for Ty {
             Self::TVec { elem } => write!(f, "TVec({:?})", elem),
             Self::TRef { elem } => write!(f, "TRef({:?})", elem),
             Self::THashMap { key, value } => write!(f, "THashMap({:?}, {:?})", key, value),
+            Self::TChannel { elem } => write!(f, "TChannel({:?})", elem),
             Self::TParam { name } => write!(f, "TParam({})", name),
             Self::TFunc { params, ret_ty } => write!(f, "TFunc({:?}, {:?})", params, ret_ty),
         }
@@ -187,6 +193,7 @@ impl Ty {
             Self::TVec { .. } => "Vec".to_string(),
             Self::TRef { .. } => "Ref".to_string(),
             Self::THashMap { .. } => "HashMap".to_string(),
+            Self::TChannel { .. } => "Channel".to_string(),
             _ => {
                 panic!("Expected a constructor type, got: {:?}", self)
             }
@@ -215,6 +222,7 @@ impl Prim {
 
     pub fn zero_for_int_ty(ty: &Ty) -> Self {
         match ty {
+            Ty::TInt => Prim::Int { value: 0 },
             Ty::TInt8 => Prim::Int8 { value: 0 },
             Ty::TInt16 => Prim::Int16 { value: 0 },
             Ty::TInt32 => Prim::Int32 { value: 0 },
@@ -247,6 +255,14 @@ impl Prim {
 
     pub fn as_int8(&self) -> Option<i8> {
         if let Prim::Int8 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_int(&self) -> Option<i64> {
+        if let Prim::Int { value } = self {
             Some(*value)
         } else {
             None

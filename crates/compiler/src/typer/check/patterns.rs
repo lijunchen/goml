@@ -37,49 +37,9 @@ impl Typer {
             hir::Pat::PUnit => self.check_pat_unit(diagnostics, ty, astptr),
             hir::Pat::PBool { value } => self.check_pat_bool(diagnostics, value, ty, range, astptr),
             hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range, astptr),
-            hir::Pat::PInt8 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range, astptr)
-            }
-            hir::Pat::PInt16 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt16, ty, range, astptr)
-            }
-            hir::Pat::PInt32 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt32, ty, range, astptr)
-            }
-            hir::Pat::PInt64 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt64, ty, range, astptr)
-            }
-            hir::Pat::PUInt8 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint8, ty, range, astptr)
-            }
-            hir::Pat::PUInt16 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint16, ty, range, astptr)
-            }
-            hir::Pat::PUInt32 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint32, ty, range, astptr)
-            }
-            hir::Pat::PUInt64 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range, astptr)
-            }
             hir::Pat::PFloat { value } => {
                 self.check_pat_float(diagnostics, &value, ty, range, astptr)
             }
-            hir::Pat::PFloat32 { value } => self.check_pat_typed_float(
-                diagnostics,
-                &value,
-                &tast::Ty::TFloat32,
-                ty,
-                range,
-                astptr,
-            ),
-            hir::Pat::PFloat64 { value } => self.check_pat_typed_float(
-                diagnostics,
-                &value,
-                &tast::Ty::TFloat64,
-                ty,
-                range,
-                astptr,
-            ),
             hir::Pat::PString { value } => {
                 self.check_pat_string(diagnostics, &value, ty, range, astptr)
             }
@@ -184,32 +144,24 @@ impl Typer {
         range: Option<TextRange>,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
-        let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt32);
-        let prim = parse_integer_literal_with_ty(diagnostics, value, &target_ty, range)
-            .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
+        let resolved_ty = self.norm(ty);
+        let target_ty = if is_numeric_ty(&resolved_ty) {
+            resolved_ty
+        } else {
+            tast::Ty::TInt
+        };
+        let prim = parse_integer_literal_with_numeric_ty(diagnostics, value, &target_ty, range)
+            .unwrap_or_else(|| {
+                if is_integer_ty(&target_ty) {
+                    Prim::zero_for_int_ty(&target_ty)
+                } else {
+                    Prim::from_float_literal(0.0, &target_ty)
+                }
+            });
         self.equate(diagnostics, &target_ty, ty, range);
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
-            astptr,
-        }
-    }
-
-    fn check_pat_typed_int(
-        &mut self,
-        diagnostics: &mut Diagnostics,
-        value: &str,
-        literal_ty: &tast::Ty,
-        expected_ty: &tast::Ty,
-        range: Option<TextRange>,
-        astptr: Option<MySyntaxNodePtr>,
-    ) -> tast::Pat {
-        let prim = parse_integer_literal_with_ty(diagnostics, value, literal_ty, range)
-            .unwrap_or_else(|| Prim::zero_for_int_ty(literal_ty));
-        self.equate(diagnostics, literal_ty, expected_ty, range);
-        tast::Pat::PPrim {
-            value: prim,
-            ty: literal_ty.clone(),
             astptr,
         }
     }
@@ -222,36 +174,26 @@ impl Typer {
         range: Option<TextRange>,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
-        let target_ty = if is_float_ty(ty) {
-            ty.clone()
+        let resolved_ty = self.norm(ty);
+        let target_ty = if is_numeric_ty(&resolved_ty) {
+            resolved_ty
         } else {
             tast::Ty::TFloat64
         };
-        let prim = parse_float_literal_with_ty(diagnostics, value, &target_ty, range)
-            .unwrap_or(Prim::Float64 { value: 0.0 });
+        let parsed = value.parse::<f64>().unwrap_or(0.0);
+        let prim =
+            parse_float_literal_value_with_numeric_ty(diagnostics, parsed, &target_ty, range)
+                .unwrap_or_else(|| {
+                    if is_integer_ty(&target_ty) {
+                        Prim::zero_for_int_ty(&target_ty)
+                    } else {
+                        Prim::from_float_literal(0.0, &target_ty)
+                    }
+                });
         self.equate(diagnostics, &target_ty, ty, range);
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
-            astptr,
-        }
-    }
-
-    fn check_pat_typed_float(
-        &mut self,
-        diagnostics: &mut Diagnostics,
-        value: &str,
-        literal_ty: &tast::Ty,
-        expected_ty: &tast::Ty,
-        range: Option<TextRange>,
-        astptr: Option<MySyntaxNodePtr>,
-    ) -> tast::Pat {
-        let prim = parse_float_literal_with_ty(diagnostics, value, literal_ty, range)
-            .unwrap_or(Prim::Float64 { value: 0.0 });
-        self.equate(diagnostics, literal_ty, expected_ty, range);
-        tast::Pat::PPrim {
-            value: prim,
-            ty: literal_ty.clone(),
             astptr,
         }
     }
@@ -952,6 +894,7 @@ impl Typer {
 
 fn compare_range_prims(start: &Prim, end: &Prim) -> Option<std::cmp::Ordering> {
     match (start, end) {
+        (Prim::Int { value: left }, Prim::Int { value: right }) => left.partial_cmp(right),
         (Prim::Int8 { value: left }, Prim::Int8 { value: right }) => left.partial_cmp(right),
         (Prim::Int16 { value: left }, Prim::Int16 { value: right }) => left.partial_cmp(right),
         (Prim::Int32 { value: left }, Prim::Int32 { value: right }) => left.partial_cmp(right),

@@ -106,7 +106,7 @@ pub fn host_source() -> string {
         \\pub extern fn path_absolute(path: string) -> (bool, string, string);
         \\
         \\#[runtime("std.process.exit")]
-        \\pub extern fn exit(code: int32) -> unit;
+        \\pub extern fn exit(code: int) -> unit;
         \\
         \\#[runtime("std.process.output")]
         \\pub extern fn process_output(
@@ -115,7 +115,7 @@ pub fn host_source() -> string {
         \\    has_directory: bool,
         \\    directory: string,
         \\    environment: Vec[(string, string)],
-        \\) -> (bool, int32, Vec[uint8], Vec[uint8], string);
+        \\) -> (bool, int, Vec[uint8], Vec[uint8], string);
         \\
         \\#[runtime("std.process.status")]
         \\pub extern fn process_status(
@@ -124,7 +124,7 @@ pub fn host_source() -> string {
         \\    has_directory: bool,
         \\    directory: string,
         \\    environment: Vec[(string, string)],
-        \\) -> (bool, int32, string);
+        \\) -> (bool, int, string);
         \\
         \\#[runtime("std.testing.fail")]
         \\pub extern fn test_fail(message: string) -> unit;
@@ -144,7 +144,7 @@ pub fn bytes_source() -> string {
         \\        Bytes { values: Vec::new() }
         \\    }
         \\
-        \\    pub fn with_capacity(capacity: int32) -> Bytes {
+        \\    pub fn with_capacity(capacity: int) -> Bytes {
         \\        Bytes {
         \\            values: Vec::with_capacity(capacity),
         \\        }
@@ -160,11 +160,11 @@ pub fn bytes_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: Bytes) -> int32 {
+        \\    pub fn len(self: Bytes) -> int {
         \\        self.values.len()
         \\    }
         \\
-        \\    pub fn capacity(self: Bytes) -> int32 {
+        \\    pub fn capacity(self: Bytes) -> int {
         \\        self.values.capacity()
         \\    }
         \\
@@ -172,11 +172,11 @@ pub fn bytes_source() -> string {
         \\        self.values.is_empty()
         \\    }
         \\
-        \\    pub fn get(self: Bytes, index: int32) -> uint8 {
+        \\    pub fn get(self: Bytes, index: int) -> uint8 {
         \\        self.values.get(index)
         \\    }
         \\
-        \\    pub fn set(self: Bytes, index: int32, value: uint8) -> unit {
+        \\    pub fn set(self: Bytes, index: int, value: uint8) -> unit {
         \\        self.values.set(index, value)
         \\    }
         \\
@@ -188,11 +188,11 @@ pub fn bytes_source() -> string {
         \\        self.values.pop()
         \\    }
         \\
-        \\    pub fn reserve(self: Bytes, additional: int32) -> unit {
+        \\    pub fn reserve(self: Bytes, additional: int) -> unit {
         \\        self.values.reserve(additional)
         \\    }
         \\
-        \\    pub fn truncate(self: Bytes, len: int32) -> unit {
+        \\    pub fn truncate(self: Bytes, len: int) -> unit {
         \\        self.values.truncate(len)
         \\    }
         \\
@@ -200,7 +200,7 @@ pub fn bytes_source() -> string {
         \\        self.values.clear()
         \\    }
         \\
-        \\    pub fn slice(self: Bytes, start: int32, end: int32) -> Slice[uint8] {
+        \\    pub fn slice(self: Bytes, start: int, end: int) -> Slice[uint8] {
         \\        self.values.slice(start, end)
         \\    }
         \\
@@ -465,7 +465,7 @@ pub fn process_source() -> string {
         \\use std::internal::host;
         \\
         \\pub struct ExitStatus {
-        \\    pub code_value: int32,
+        \\    pub code_value: int,
         \\}
         \\
         \\impl ExitStatus {
@@ -473,7 +473,7 @@ pub fn process_source() -> string {
         \\        self.code_value == 0
         \\    }
         \\
-        \\    pub fn code(self: ExitStatus) -> Option[int32] {
+        \\    pub fn code(self: ExitStatus) -> Option[int] {
         \\        if self.code_value < 0 {
         \\            Option::None
         \\        } else {
@@ -583,7 +583,7 @@ pub fn process_source() -> string {
         \\    }
         \\}
         \\
-        \\pub fn exit(code: int32) -> unit {
+        \\pub fn exit(code: int) -> unit {
         \\    host::exit(code)
         \\}
     ;
@@ -638,11 +638,11 @@ pub fn collections_source() -> string {
     let source = \\package collections;
         \\
         \\pub struct ArenaId[T] {
-        \\    pub index: int32,
+        \\    pub index: int,
         \\}
         \\
         \\impl[T] ArenaId[T] {
-        \\    pub fn index(self: ArenaId[T]) -> int32 {
+        \\    pub fn index(self: ArenaId[T]) -> int {
         \\        self.index
         \\    }
         \\}
@@ -668,7 +668,7 @@ pub fn collections_source() -> string {
         \\        Arena { values: Vec::new() }
         \\    }
         \\
-        \\    pub fn len(self: Arena[T]) -> int32 {
+        \\    pub fn len(self: Arena[T]) -> int {
         \\        self.values.len()
         \\    }
         \\
@@ -705,7 +705,7 @@ pub fn collections_source() -> string {
         \\
         \\pub struct BitSet {
         \\    pub words: Vec[uint64],
-        \\    pub len: Ref[int32],
+        \\    pub len: Ref[int],
         \\}
         \\
         \\impl BitSet {
@@ -716,7 +716,7 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: BitSet) -> int32 {
+        \\    pub fn len(self: BitSet) -> int {
         \\        self.len.get()
         \\    }
         \\
@@ -724,7 +724,7 @@ pub fn collections_source() -> string {
         \\        self.len.get() == 0
         \\    }
         \\
-        \\    pub fn contains(self: BitSet, index: int32) -> bool {
+        \\    pub fn contains(self: BitSet, index: int) -> bool {
         \\        if index < 0 {
         \\            false
         \\        } else {
@@ -732,23 +732,23 @@ pub fn collections_source() -> string {
         \\            if word_index >= self.words.len() {
         \\                false
         \\            } else {
-        \\                let mask = 1u64 << (index % 64);
-        \\                self.words.get(word_index) & mask != 0u64
+        \\                let mask = 1 << (index % 64);
+        \\                self.words.get(word_index) & mask != 0
         \\            }
         \\        }
         \\    }
         \\
-        \\    pub fn insert(self: BitSet, index: int32) -> bool {
+        \\    pub fn insert(self: BitSet, index: int) -> bool {
         \\        if index < 0 {
         \\            false
         \\        } else {
         \\            let word_index = index / 64;
         \\            while self.words.len() <= word_index {
-        \\                self.words.push(0u64);
+        \\                self.words.push(0);
         \\            };
-        \\            let mask = 1u64 << (index % 64);
+        \\            let mask = 1 << (index % 64);
         \\            let old = self.words.get(word_index);
-        \\            if old & mask != 0u64 {
+        \\            if old & mask != 0 {
         \\                false
         \\            } else {
         \\                self.words.set(word_index, old | mask);
@@ -758,12 +758,12 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn remove(self: BitSet, index: int32) -> bool {
+        \\    pub fn remove(self: BitSet, index: int) -> bool {
         \\        if !self.contains(index) {
         \\            false
         \\        } else {
         \\            let word_index = index / 64;
-        \\            let mask = 1u64 << (index % 64);
+        \\            let mask = 1 << (index % 64);
         \\            self.words.set(word_index, self.words.get(word_index) & ~mask);
         \\            self.len.set(self.len.get() - 1);
         \\            true
@@ -778,8 +778,8 @@ pub fn collections_source() -> string {
         \\
         \\pub struct Deque[T] {
         \\    pub slots: Ref[Vec[Option[T]]],
-        \\    pub head: Ref[int32],
-        \\    pub len: Ref[int32],
+        \\    pub head: Ref[int],
+        \\    pub len: Ref[int],
         \\}
         \\
         \\impl[T] Deque[T] {
@@ -791,7 +791,7 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn with_capacity(capacity: int32) -> Deque[T] {
+        \\    pub fn with_capacity(capacity: int) -> Deque[T] {
         \\        let slots: Vec[Option[T]] = Vec::with_capacity(capacity);
         \\        let index = Ref::new(0);
         \\        while index.get() < capacity {
@@ -805,11 +805,11 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: Deque[T]) -> int32 {
+        \\    pub fn len(self: Deque[T]) -> int {
         \\        self.len.get()
         \\    }
         \\
-        \\    pub fn capacity(self: Deque[T]) -> int32 {
+        \\    pub fn capacity(self: Deque[T]) -> int {
         \\        self.slots.get().len()
         \\    }
         \\
@@ -906,7 +906,7 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn get(self: Deque[T], index: int32) -> Option[T] {
+        \\    pub fn get(self: Deque[T], index: int) -> Option[T] {
         \\        if index < 0 || index >= self.len.get() {
         \\            Option::None
         \\        } else {
@@ -932,7 +932,7 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: HashSet[K]) -> int32 {
+        \\    pub fn len(self: HashSet[K]) -> int {
         \\        self.entries.len()
         \\    }
         \\
@@ -964,11 +964,11 @@ pub fn collections_source() -> string {
         \\}
         \\
         \\pub struct Index[T] {
-        \\    pub value: int32,
+        \\    pub value: int,
         \\}
         \\
         \\impl[T] Index[T] {
-        \\    pub fn value(self: Index[T]) -> int32 {
+        \\    pub fn value(self: Index[T]) -> int {
         \\        self.value
         \\    }
         \\}
@@ -994,13 +994,13 @@ pub fn collections_source() -> string {
         \\        IndexVec { values: Vec::new() }
         \\    }
         \\
-        \\    pub fn with_capacity(capacity: int32) -> IndexVec[T] {
+        \\    pub fn with_capacity(capacity: int) -> IndexVec[T] {
         \\        IndexVec {
         \\            values: Vec::with_capacity(capacity),
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: IndexVec[T]) -> int32 {
+        \\    pub fn len(self: IndexVec[T]) -> int {
         \\        self.values.len()
         \\    }
         \\
@@ -1038,11 +1038,11 @@ pub fn collections_source() -> string {
         \\}
         \\
         \\pub struct Symbol {
-        \\    pub index: int32,
+        \\    pub index: int,
         \\}
         \\
         \\impl Symbol {
-        \\    pub fn index(self: Symbol) -> int32 {
+        \\    pub fn index(self: Symbol) -> int {
         \\        self.index
         \\    }
         \\}
@@ -1072,7 +1072,7 @@ pub fn collections_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: Interner) -> int32 {
+        \\    pub fn len(self: Interner) -> int {
         \\        self.values.len()
         \\    }
         \\
@@ -1120,13 +1120,13 @@ pub fn collections_source() -> string {
         \\        Stack { values: Vec::new() }
         \\    }
         \\
-        \\    pub fn with_capacity(capacity: int32) -> Stack[T] {
+        \\    pub fn with_capacity(capacity: int) -> Stack[T] {
         \\        Stack {
         \\            values: Vec::with_capacity(capacity),
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: Stack[T]) -> int32 {
+        \\    pub fn len(self: Stack[T]) -> int {
         \\        self.values.len()
         \\    }
         \\
@@ -1161,7 +1161,7 @@ pub fn text_source() -> string {
         \\
         \\pub struct StringBuilder {
         \\    pub parts: Vec[string],
-        \\    pub byte_len: Ref[int32],
+        \\    pub byte_len: Ref[int],
         \\}
         \\
         \\impl StringBuilder {
@@ -1172,14 +1172,14 @@ pub fn text_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn with_capacity(part_capacity: int32) -> StringBuilder {
+        \\    pub fn with_capacity(part_capacity: int) -> StringBuilder {
         \\        StringBuilder {
         \\            parts: Vec::with_capacity(part_capacity),
         \\            byte_len: Ref::new(0),
         \\        }
         \\    }
         \\
-        \\    pub fn len(self: StringBuilder) -> int32 {
+        \\    pub fn len(self: StringBuilder) -> int {
         \\        self.byte_len.get()
         \\    }
         \\

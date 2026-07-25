@@ -138,7 +138,9 @@ fn bool_to_string_hook_item() -> Item {
 }
 
 fn integer_to_string_hook_type(key: string) -> Option[Type] {
-    if key == "core.int8_to_string" {
+    if key == "core.int_to_string" {
+        Option::Some(Type::Int)
+    } else if key == "core.int8_to_string" {
         Option::Some(Type::Int8)
     } else if key == "core.int16_to_string" {
         Option::Some(Type::Int16)
@@ -488,6 +490,7 @@ pub fn emit_runtime_hook_items(
     ordered.push("core.string_concat");
     ordered.push("core.char_to_string");
     ordered.push("core.char_from_uint32");
+    ordered.push("core.int_to_string");
     ordered.push("core.int8_to_string");
     ordered.push("core.int16_to_string");
     ordered.push("core.int32_to_string");
@@ -500,6 +503,7 @@ pub fn emit_runtime_hook_items(
     ordered.push("core.float64_to_string");
     ordered.push("core.string_parse_float32");
     ordered.push("core.string_parse_float64");
+    ordered.push("core.int_hash");
     ordered.push("core.int8_hash");
     ordered.push("core.int16_hash");
     ordered.push("core.int32_hash");
@@ -607,7 +611,7 @@ fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
             let lowered_elem = lower_type(elem);
             let get_params: Vec[(string, Type)] = Vec::new();
             get_params.push(("arr", lowered_array));
-            get_params.push(("index", Type::Int32));
+            get_params.push(("index", Type::Int));
             let get_stmts: Vec[Stmt] = Vec::new();
             get_stmts.push(Stmt::Return(Option::Some(Expr::Index(
                 Expr::Var("arr"),
@@ -621,7 +625,7 @@ fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
             }));
             let set_params: Vec[(string, Type)] = Vec::new();
             set_params.push(("arr", lowered_array));
-            set_params.push(("index", Type::Int32));
+            set_params.push(("index", Type::Int));
             set_params.push(("value", lowered_elem));
             let set_stmts: Vec[Stmt] = Vec::new();
             set_stmts.push(Stmt::IndexAssign(
@@ -668,7 +672,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                 body: Block { stmts: new_stmts },
             }));
             let with_capacity_params: Vec[(string, Type)] = Vec::new();
-            with_capacity_params.push(("capacity", Type::Int32));
+            with_capacity_params.push(("capacity", Type::Int));
             let grow_args: Vec[Expr] = Vec::new();
             grow_args.push(Expr::ArrayLiteral(
                 Type::Slice(lowered_elem),
@@ -720,7 +724,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
             }));
             let get_params: Vec[(string, Type)] = Vec::new();
             get_params.push(("vec", lowered_vec));
-            get_params.push(("index", Type::Int32));
+            get_params.push(("index", Type::Int));
             let get_stmts: Vec[Stmt] = Vec::new();
             get_stmts.push(Stmt::Return(Option::Some(Expr::Index(
                 Expr::Field(Expr::Var("vec"), "items"),
@@ -734,7 +738,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
             }));
             let set_params: Vec[(string, Type)] = Vec::new();
             set_params.push(("vec", lowered_vec));
-            set_params.push(("index", Type::Int32));
+            set_params.push(("index", Type::Int));
             set_params.push(("value", lowered_elem));
             let set_stmts: Vec[Stmt] = Vec::new();
             set_stmts.push(Stmt::IndexAssign(
@@ -755,13 +759,13 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
             len_args.push(Expr::Field(Expr::Var("vec"), "items"));
             let len_stmts: Vec[Stmt] = Vec::new();
             len_stmts.push(Stmt::Return(Option::Some(Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), len_args),
             ))));
             result.push(Item::Function(Function {
                 name: runtime_helper_name("vec_len", vec_ty),
                 params: len_params,
-                ret_ty: Option::Some(Type::Int32),
+                ret_ty: Option::Some(Type::Int),
                 body: Block { stmts: len_stmts },
             }));
             let capacity_params: Vec[(string, Type)] = Vec::new();
@@ -770,18 +774,18 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
             capacity_args.push(Expr::Field(Expr::Var("vec"), "items"));
             let capacity_stmts: Vec[Stmt] = Vec::new();
             capacity_stmts.push(Stmt::Return(Option::Some(Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("cap"), capacity_args),
             ))));
             result.push(Item::Function(Function {
                 name: runtime_helper_name("vec_capacity", vec_ty),
                 params: capacity_params,
-                ret_ty: Option::Some(Type::Int32),
+                ret_ty: Option::Some(Type::Int),
                 body: Block { stmts: capacity_stmts },
             }));
             let reserve_params: Vec[(string, Type)] = Vec::new();
             reserve_params.push(("vec", lowered_vec));
-            reserve_params.push(("additional", Type::Int32));
+            reserve_params.push(("additional", Type::Int));
             let reserve_args: Vec[Expr] = Vec::new();
             reserve_args.push(Expr::Field(Expr::Var("vec"), "items"));
             reserve_args.push(Expr::Convert(
@@ -803,7 +807,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
             }));
             let truncate_params: Vec[(string, Type)] = Vec::new();
             truncate_params.push(("vec", lowered_vec));
-            truncate_params.push(("new_len", Type::Int32));
+            truncate_params.push(("new_len", Type::Int));
             let truncate_stmts: Vec[Stmt] = Vec::new();
             let negative_stmts: Vec[Stmt] = Vec::new();
             negative_stmts.push(Stmt::Panic("negative vector length"));
@@ -819,7 +823,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
             let current_len_args: Vec[Expr] = Vec::new();
             current_len_args.push(Expr::Field(Expr::Var("vec"), "items"));
             let current_len = Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), current_len_args),
             );
             let shorten_stmts: Vec[Stmt] = Vec::new();
@@ -830,7 +834,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                 Expr::Field(Expr::Var("vec"), "items"),
                 Expr::Var("new_len"),
                 Expr::Convert(
-                    Type::Int32,
+                    Type::Int,
                     Expr::Call(Expr::Var("len"), clear_len_args),
                 ),
             ));
@@ -1158,7 +1162,7 @@ fn hashmap_len_item(key: tast::Type, value: tast::Type) -> Item {
     Item::Function(Function {
         name: runtime_helper_name("hashmap_len", map_ty),
         params,
-        ret_ty: Option::Some(Type::Int32),
+        ret_ty: Option::Some(Type::Int),
         body: Block { stmts },
     })
 }
@@ -1200,7 +1204,7 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
     ));
     stmts.push(Stmt::Var(
         "i",
-        Type::Int32,
+        Type::Int,
         Option::Some(Expr::Int("0")),
     ));
     let loop_stmts: Vec[Stmt] = Vec::new();
@@ -1213,7 +1217,7 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
             BinaryOp::GreaterEq,
             Expr::Var("i"),
             Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), len_args),
             ),
         ),
@@ -1354,7 +1358,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::Var(
         "reuse_index",
-        Type::Int32,
+        Type::Int,
         Option::Some(Expr::Int("-1")),
     ));
     let nil_stmts: Vec[Stmt] = Vec::new();
@@ -1399,7 +1403,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
     ));
     stmts.push(Stmt::Var(
         "i",
-        Type::Int32,
+        Type::Int,
         Option::Some(Expr::Int("0")),
     ));
     let loop_stmts: Vec[Stmt] = Vec::new();
@@ -1412,7 +1416,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
             BinaryOp::GreaterEq,
             Expr::Var("i"),
             Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), loop_len_args),
             ),
         ),
@@ -1541,7 +1545,7 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
             Expr::Var("h"),
         )),
     ));
-    stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    stmts.push(Stmt::Var("i", Type::Int, Option::Some(Expr::Int("0"))));
     let loop_stmts: Vec[Stmt] = Vec::new();
     let len_args: Vec[Expr] = Vec::new();
     len_args.push(Expr::Var("bucket"));
@@ -1552,7 +1556,7 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
             BinaryOp::GreaterEq,
             Expr::Var("i"),
             Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), len_args),
             ),
         ),
@@ -1643,7 +1647,7 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
             Expr::Var("h"),
         )),
     ));
-    stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    stmts.push(Stmt::Var("i", Type::Int, Option::Some(Expr::Int("0"))));
     let loop_stmts: Vec[Stmt] = Vec::new();
     let len_args: Vec[Expr] = Vec::new();
     len_args.push(Expr::Var("bucket"));
@@ -1654,7 +1658,7 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
             BinaryOp::GreaterEq,
             Expr::Var("i"),
             Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), len_args),
             ),
         ),
@@ -1739,7 +1743,7 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
             Expr::Var("h"),
         )),
     ));
-    range_stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    range_stmts.push(Stmt::Var("i", Type::Int, Option::Some(Expr::Int("0"))));
     let loop_stmts: Vec[Stmt] = Vec::new();
     let len_args: Vec[Expr] = Vec::new();
     len_args.push(Expr::Var("bucket"));
@@ -1750,7 +1754,7 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
             BinaryOp::GreaterEq,
             Expr::Var("i"),
             Expr::Convert(
-                Type::Int32,
+                Type::Int,
                 Expr::Call(Expr::Var("len"), len_args),
             ),
         ),
@@ -1831,7 +1835,7 @@ fn hashmap_items(
         Type::Map(Type::Uint64, Type::Slice(Type::Named(entry_name))),
     ));
     fields.push(("hashes", Type::Slice(Type::Uint64)));
-    fields.push(("len", Type::Int32));
+    fields.push(("len", Type::Int));
     result.push(Item::Struct(StructDef { name, fields }));
     let option = hashmap_option_info(
         value,
@@ -1959,7 +1963,7 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
 fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     let separator = Ref::new(-1);
     for index in range(0, value.byte_len()) {
-        if separator.get() < 0 && value.byte_get(index) == 35u8 {
+        if separator.get() < 0 && value.byte_get(index) == 35 {
             separator.set(index)
         } else {
             ()
@@ -2090,7 +2094,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
     result
 }
 
-fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int32 {
+fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int {
     let count = Ref::new(0);
     for coercion in coercions {
         if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
@@ -2106,7 +2110,7 @@ fn dyn_wrapper_name_count(
     coercions: Vec[DynCoercion],
     functions: Vec[anf::Function],
     expected: string,
-) -> int32 {
+) -> int {
     let count = Ref::new(0);
     for coercion in coercions {
         for method in dyn_methods(functions, coercion.trait_name) {

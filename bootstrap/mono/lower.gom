@@ -50,6 +50,7 @@ fn type_is_concrete(value: tast::Type) -> bool {
         tast::Type::Unit
         | tast::Type::Never
         | tast::Type::Bool
+        | tast::Type::Int
         | tast::Type::Int8
         | tast::Type::Int16
         | tast::Type::Int32
@@ -75,7 +76,8 @@ fn type_is_concrete(value: tast::Type) -> bool {
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
         | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => type_is_concrete(elem),
+        | tast::Type::RefType(elem)
+        | tast::Type::Channel(elem) => type_is_concrete(elem),
         tast::Type::HashMap(key, value) => {
             type_is_concrete(key) && type_is_concrete(value)
         },
@@ -308,6 +310,9 @@ fn expand_specialized_type_aliases_from(
         tast::Type::RefType(elem) => tast::Type::RefType(
             expand_specialized_type_aliases_from(ctx, elem, path),
         ),
+        tast::Type::Channel(elem) => tast::Type::Channel(
+            expand_specialized_type_aliases_from(ctx, elem, path),
+        ),
         tast::Type::HashMap(key, value) => tast::Type::HashMap(
             expand_specialized_type_aliases_from(ctx, key, path),
             expand_specialized_type_aliases_from(ctx, value, path),
@@ -493,6 +498,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
         tast::Type::Unit => tast::Type::Unit,
         tast::Type::Never => tast::Type::Never,
         tast::Type::Bool => tast::Type::Bool,
+        tast::Type::Int => tast::Type::Int,
         tast::Type::Int8 => tast::Type::Int8,
         tast::Type::Int16 => tast::Type::Int16,
         tast::Type::Int32 => tast::Type::Int32,
@@ -533,6 +539,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
         tast::Type::Slice(elem) => tast::Type::Slice(collapse_type(ctx, elem)),
         tast::Type::VecType(elem) => tast::Type::VecType(collapse_type(ctx, elem)),
         tast::Type::RefType(elem) => tast::Type::RefType(collapse_type(ctx, elem)),
+        tast::Type::Channel(elem) => tast::Type::Channel(collapse_type(ctx, elem)),
         tast::Type::HashMap(key, value) => {
             tast::Type::HashMap(collapse_type(ctx, key), collapse_type(ctx, value))
         },
@@ -894,7 +901,8 @@ fn collect_type_names(ctx: TypeCtx, value: tast::Type) -> unit {
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
         | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => collect_type_names(ctx, elem),
+        | tast::Type::RefType(elem)
+        | tast::Type::Channel(elem) => collect_type_names(ctx, elem),
         tast::Type::HashMap(key, value) => {
             collect_type_names(ctx, key);
             collect_type_names(ctx, value)

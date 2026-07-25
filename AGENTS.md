@@ -345,8 +345,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
+* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
 * Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+  * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `int` and unconstrained floating-point literals default to `float64`.
   * Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
   * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
   * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
@@ -383,7 +384,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
 * Single-pass iterators implement `Iterator` and bind its associated `Item` type.
   * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
-  * `range(start, end)` creates a half-open `FnIterator[int32]` over increasing values.
+  * `range(start, end)` creates a half-open `FnIterator[int]` over increasing values.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -439,7 +440,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Builtin `HashMap`
 
 * Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
-* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
+* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
 
 ### Builtin `Iterator`
@@ -452,7 +453,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * `Iterator::next(iterator) -> Option[Iterator::Item]` or `iterator.next()`
   * `Vec::[T]::iter() -> FnIterator[T]`
   * `Slice::[T]::iter() -> FnIterator[T]`
-  * `range(start: int32, end: int32) -> FnIterator[int32]`
+  * `range(start: int, end: int) -> FnIterator[int]`
   * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
   * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`
 * `range` is half-open and increasing; `start >= end` produces an empty iterator.
@@ -462,10 +463,10 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Builtin type: `Slice[T]`, a bounded read-only view over contiguous `Vec[T]` storage.
 * Builtin API:
-  * `slice(vec: Vec[T], start: int32, end: int32) -> Slice[T]`
-  * `slice_get(s: Slice[T], index: int32) -> T`
-  * `slice_len(s: Slice[T]) -> int32`
-  * `slice_sub(s: Slice[T], start: int32, end: int32) -> Slice[T]`
+  * `slice(vec: Vec[T], start: int, end: int) -> Slice[T]`
+  * `slice_get(s: Slice[T], index: int) -> T`
+  * `slice_len(s: Slice[T]) -> int`
+  * `slice_sub(s: Slice[T], start: int, end: int) -> Slice[T]`
 * Inherent methods on `Slice[T]`: `get`, `len`, `sub`.
 * Current limitation: mutable slice operations are intentionally not provided.
 

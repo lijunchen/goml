@@ -4,104 +4,104 @@ use std::text;
 
 fn sha256_constants() -> [uint32; 64] {
     [
-        1116352408u32,
-        1899447441u32,
-        3049323471u32,
-        3921009573u32,
-        961987163u32,
-        1508970993u32,
-        2453635748u32,
-        2870763221u32,
-        3624381080u32,
-        310598401u32,
-        607225278u32,
-        1426881987u32,
-        1925078388u32,
-        2162078206u32,
-        2614888103u32,
-        3248222580u32,
-        3835390401u32,
-        4022224774u32,
-        264347078u32,
-        604807628u32,
-        770255983u32,
-        1249150122u32,
-        1555081692u32,
-        1996064986u32,
-        2554220882u32,
-        2821834349u32,
-        2952996808u32,
-        3210313671u32,
-        3336571891u32,
-        3584528711u32,
-        113926993u32,
-        338241895u32,
-        666307205u32,
-        773529912u32,
-        1294757372u32,
-        1396182291u32,
-        1695183700u32,
-        1986661051u32,
-        2177026350u32,
-        2456956037u32,
-        2730485921u32,
-        2820302411u32,
-        3259730800u32,
-        3345764771u32,
-        3516065817u32,
-        3600352804u32,
-        4094571909u32,
-        275423344u32,
-        430227734u32,
-        506948616u32,
-        659060556u32,
-        883997877u32,
-        958139571u32,
-        1322822218u32,
-        1537002063u32,
-        1747873779u32,
-        1955562222u32,
-        2024104815u32,
-        2227730452u32,
-        2361852424u32,
-        2428436474u32,
-        2756734187u32,
-        3204031479u32,
-        3329325298u32,
+        1116352408,
+        1899447441,
+        3049323471,
+        3921009573,
+        961987163,
+        1508970993,
+        2453635748,
+        2870763221,
+        3624381080,
+        310598401,
+        607225278,
+        1426881987,
+        1925078388,
+        2162078206,
+        2614888103,
+        3248222580,
+        3835390401,
+        4022224774,
+        264347078,
+        604807628,
+        770255983,
+        1249150122,
+        1555081692,
+        1996064986,
+        2554220882,
+        2821834349,
+        2952996808,
+        3210313671,
+        3336571891,
+        3584528711,
+        113926993,
+        338241895,
+        666307205,
+        773529912,
+        1294757372,
+        1396182291,
+        1695183700,
+        1986661051,
+        2177026350,
+        2456956037,
+        2730485921,
+        2820302411,
+        3259730800,
+        3345764771,
+        3516065817,
+        3600352804,
+        4094571909,
+        275423344,
+        430227734,
+        506948616,
+        659060556,
+        883997877,
+        958139571,
+        1322822218,
+        1537002063,
+        1747873779,
+        1955562222,
+        2024104815,
+        2227730452,
+        2361852424,
+        2428436474,
+        2756734187,
+        3204031479,
+        3329325298,
     ]
 }
 
 fn rotate_right(value: uint32, count: uint32) -> uint32 {
-    (value >> count) | (value << (32u32 - count))
+    (value >> count) | (value << (32 - count))
 }
 
 fn padded_byte(
     value: string,
-    index: int32,
-    padded_len: int32,
+    index: int,
+    padded_len: int,
     bit_len: uint64,
 ) -> uint8 {
     if index < value.byte_len() {
         value.byte_get(index)
     } else if index == value.byte_len() {
-        128u8
+        128
     } else if index >= padded_len - 8 {
         let shift = ((padded_len - 1 - index) * 8) as uint64;
-        ((bit_len >> shift) & 255u64) as uint8
+        ((bit_len >> shift) & 255) as uint8
     } else {
-        0u8
+        0
     }
 }
 
 fn message_word(
     value: string,
-    offset: int32,
-    padded_len: int32,
+    offset: int,
+    padded_len: int,
     bit_len: uint64,
 ) -> uint32 {
-    ((padded_byte(value, offset, padded_len, bit_len) as uint32) << 24u32)
-        | ((padded_byte(value, offset + 1, padded_len, bit_len) as uint32) << 16u32)
-        | ((padded_byte(value, offset + 2, padded_len, bit_len) as uint32) << 8u32)
+    ((padded_byte(value, offset, padded_len, bit_len) as uint32) << 24)
+        | ((padded_byte(value, offset + 1, padded_len, bit_len) as uint32) << 16)
+        | ((padded_byte(value, offset + 2, padded_len, bit_len) as uint32) << 8)
         | (padded_byte(value, offset + 3, padded_len, bit_len) as uint32)
 }
 
@@ -109,7 +109,7 @@ fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
     let digits = "0123456789abcdef";
     for index in range(0, 8) {
         let shift = ((7 - index) * 4) as uint32;
-        builder.write_char(digits.get(((value >> shift) & 15u32) as int32))
+        builder.write_char(digits.get(((value >> shift) & 15) as int))
     }
 }
 
@@ -119,15 +119,15 @@ pub fn sha256_hex(value: string) -> string {
     while padded_len.get() % 64 != 0 {
         padded_len.set(padded_len.get() + 1)
     };
-    let bit_len = (value.byte_len() as uint64) * 8u64;
-    let h0 = Ref::new(1779033703u32);
-    let h1 = Ref::new(3144134277u32);
-    let h2 = Ref::new(1013904242u32);
-    let h3 = Ref::new(2773480762u32);
-    let h4 = Ref::new(1359893119u32);
-    let h5 = Ref::new(2600822924u32);
-    let h6 = Ref::new(528734635u32);
-    let h7 = Ref::new(1541459225u32);
+    let bit_len = (value.byte_len() as uint64) * 8;
+    let h0 = Ref::new(1779033703);
+    let h1 = Ref::new(3144134277);
+    let h2 = Ref::new(1013904242);
+    let h3 = Ref::new(2773480762);
+    let h4 = Ref::new(1359893119);
+    let h5 = Ref::new(2600822924);
+    let h6 = Ref::new(528734635);
+    let h7 = Ref::new(1541459225);
     for chunk in range(0, padded_len.get() / 64) {
         let words: Vec[uint32] = Vec::new();
         for index in range(0, 16) {
@@ -141,12 +141,12 @@ pub fn sha256_hex(value: string) -> string {
         for index in range(16, 64) {
             let first = words.get(index - 15);
             let second = words.get(index - 2);
-            let sigma0 = rotate_right(first, 7u32)
-                ^ rotate_right(first, 18u32)
-                ^ (first >> 3u32);
-            let sigma1 = rotate_right(second, 17u32)
-                ^ rotate_right(second, 19u32)
-                ^ (second >> 10u32);
+            let sigma0 = rotate_right(first, 7)
+                ^ rotate_right(first, 18)
+                ^ (first >> 3);
+            let sigma1 = rotate_right(second, 17)
+                ^ rotate_right(second, 19)
+                ^ (second >> 10);
             words.push(
                 words.get(index - 16) + sigma0 + words.get(index - 7) + sigma1,
             )
@@ -160,18 +160,18 @@ pub fn sha256_hex(value: string) -> string {
         let g = Ref::new(h6.get());
         let h = Ref::new(h7.get());
         for index in range(0, 64) {
-            let sigma1 = rotate_right(e.get(), 6u32)
-                ^ rotate_right(e.get(), 11u32)
-                ^ rotate_right(e.get(), 25u32);
+            let sigma1 = rotate_right(e.get(), 6)
+                ^ rotate_right(e.get(), 11)
+                ^ rotate_right(e.get(), 25);
             let choice = (e.get() & f.get()) ^ (~(e.get()) & g.get());
             let temp1 = h.get()
                 + sigma1
                 + choice
                 + array_get(constants, index)
                 + words.get(index);
-            let sigma0 = rotate_right(a.get(), 2u32)
-                ^ rotate_right(a.get(), 13u32)
-                ^ rotate_right(a.get(), 22u32);
+            let sigma0 = rotate_right(a.get(), 2)
+                ^ rotate_right(a.get(), 13)
+                ^ rotate_right(a.get(), 22);
             let majority = (a.get() & b.get())
                 ^ (a.get() & c.get())
                 ^ (b.get() & c.get());

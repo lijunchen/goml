@@ -5,17 +5,17 @@ extern fn unit_to_string(value: unit) -> string;
 extern fn bool_to_string(value: bool) -> string;
 
 #[runtime("core.string_len")]
-extern fn string_len(value: string) -> int32;
+extern fn string_len(value: string) -> int;
 #[runtime("core.string_get")]
-extern fn string_get(value: string, index: int32) -> char;
+extern fn string_get(value: string, index: int) -> char;
 #[runtime("core.string_byte_get")]
-extern fn string_byte_get(value: string, index: int32) -> uint8;
+extern fn string_byte_get(value: string, index: int) -> uint8;
 #[runtime("core.string_byte_slice")]
-extern fn string_byte_slice(value: string, start: int32, end: int32) -> string;
+extern fn string_byte_slice(value: string, start: int, end: int) -> string;
 #[runtime("core.string_is_char_boundary")]
-extern fn string_is_char_boundary(value: string, index: int32) -> bool;
+extern fn string_is_char_boundary(value: string, index: int) -> bool;
 #[runtime("core.string_decode_utf8_at")]
-extern fn string_decode_utf8_at(value: string, index: int32) -> (bool, char, int32);
+extern fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int);
 #[runtime("core.string_to_bytes")]
 extern fn string_to_bytes(value: string) -> Vec[uint8];
 #[runtime("core.string_from_utf8")]
@@ -30,6 +30,9 @@ extern fn string_println(value: string) -> unit;
 extern fn char_to_string(value: char) -> string;
 #[runtime("core.char_from_uint32")]
 extern fn char_from_uint32_raw(value: uint32) -> (bool, char);
+
+#[runtime("core.int_to_string")]
+extern fn int_to_string(value: int) -> string;
 
 #[runtime("core.int8_to_string")]
 extern fn int8_to_string(value: int8) -> string;
@@ -67,6 +70,8 @@ extern fn string_parse_float32(value: string) -> (bool, float64);
 #[runtime("core.string_parse_float64")]
 extern fn string_parse_float64(value: string) -> (bool, float64);
 
+#[runtime("core.int_hash")]
+extern fn int_hash(value: int) -> uint64;
 #[runtime("core.int8_hash")]
 extern fn int8_hash(value: int8) -> uint64;
 #[runtime("core.int16_hash")]
@@ -133,35 +138,35 @@ struct FilterIterator[T, I] {
 
 struct TakeIterator[I] {
     iterator: I,
-    remaining: Ref[int32],
+    remaining: Ref[int],
 }
 
 #[intrinsic("vec.new")]
 extern fn vec_new[T]() -> Vec[T];
 #[intrinsic("vec.with_capacity")]
-extern fn vec_with_capacity[T](capacity: int32) -> Vec[T];
+extern fn vec_with_capacity[T](capacity: int) -> Vec[T];
 #[intrinsic("vec.push")]
 extern fn vec_push[T](vec: Vec[T], elem: T) -> unit;
 #[intrinsic("vec.get")]
-extern fn vec_get[T](vec: Vec[T], index: int32) -> T;
+extern fn vec_get[T](vec: Vec[T], index: int) -> T;
 #[intrinsic("vec.set")]
-extern fn vec_set[T](vec: Vec[T], index: int32, elem: T) -> unit;
+extern fn vec_set[T](vec: Vec[T], index: int, elem: T) -> unit;
 #[intrinsic("vec.len")]
-extern fn vec_len[T](vec: Vec[T]) -> int32;
+extern fn vec_len[T](vec: Vec[T]) -> int;
 #[intrinsic("vec.capacity")]
-extern fn vec_capacity[T](vec: Vec[T]) -> int32;
+extern fn vec_capacity[T](vec: Vec[T]) -> int;
 #[intrinsic("vec.reserve")]
-extern fn vec_reserve[T](vec: Vec[T], additional: int32) -> unit;
+extern fn vec_reserve[T](vec: Vec[T], additional: int) -> unit;
 #[intrinsic("vec.truncate")]
-extern fn vec_truncate[T](vec: Vec[T], len: int32) -> unit;
+extern fn vec_truncate[T](vec: Vec[T], len: int) -> unit;
 #[intrinsic("slice.new")]
-extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T];
+extern fn slice[T](vec: Vec[T], start: int, end: int) -> Slice[T];
 #[intrinsic("slice.get")]
-extern fn slice_get[T](s: Slice[T], index: int32) -> T;
+extern fn slice_get[T](s: Slice[T], index: int) -> T;
 #[intrinsic("slice.len")]
-extern fn slice_len[T](s: Slice[T]) -> int32;
+extern fn slice_len[T](s: Slice[T]) -> int;
 #[intrinsic("slice.sub")]
-extern fn slice_sub[T](s: Slice[T], start: int32, end: int32) -> Slice[T];
+extern fn slice_sub[T](s: Slice[T], start: int, end: int) -> Slice[T];
 
 #[lang("eq")]
 trait Eq {
@@ -185,11 +190,20 @@ extern fn hashmap_set[K: Hash + Eq, V](m: HashMap[K, V], key: K, value: V) -> un
 #[intrinsic("hashmap.remove")]
 extern fn hashmap_remove[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> unit;
 #[intrinsic("hashmap.len")]
-extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int32;
+extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int;
 #[intrinsic("hashmap.contains")]
 extern fn hashmap_contains[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> bool;
 #[intrinsic("hashmap.entries")]
 extern fn hashmap_entries[K: Hash + Eq, V](m: HashMap[K, V]) -> Vec[(K, V)];
+
+#[intrinsic("channel.new")]
+extern fn channel_new[T](capacity: int) -> Channel[T];
+#[intrinsic("channel.send")]
+extern fn channel_send[T](channel: Channel[T], value: T) -> unit;
+#[intrinsic("channel.recv")]
+extern fn channel_recv[T](channel: Channel[T]) -> (T, bool);
+#[intrinsic("channel.close")]
+extern fn channel_close[T](channel: Channel[T]) -> unit;
 
 #[lang("to_string")]
 trait ToString {

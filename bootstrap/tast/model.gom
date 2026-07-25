@@ -9,7 +9,7 @@ pub enum VarKind {
 }
 
 pub enum TypeVar {
-    Unbound(int32, VarKind),
+    Unbound(int, VarKind),
     Link(Type),
 }
 
@@ -18,6 +18,7 @@ pub enum Type {
     Unit,
     Never,
     Bool,
+    Int,
     Int8,
     Int16,
     Int32,
@@ -35,11 +36,12 @@ pub enum Type {
     Dyn(string),
     Projection(Type, string, Option[TraitRef]),
     App(Type, Vec[Type]),
-    Array(int32, Type),
+    Array(int, Type),
     Slice(Type),
     VecType(Type),
     RefType(Type),
     HashMap(Type, Type),
+    Channel(Type),
     Param(string),
     Func(Vec[Type], Type),
     Error,
@@ -73,7 +75,7 @@ pub struct Constructor {
     pub name: string,
     pub fields: Vec[string],
     pub is_struct: bool,
-    pub tag: Option[int32],
+    pub tag: Option[int],
 }
 
 pub enum Callable {
@@ -115,7 +117,7 @@ pub enum Expr {
     Call(Expr, Vec[Expr], Type),
     Unary(ast::UnaryOp, Expr, Type),
     Cast(Expr, Type),
-    Proj(Expr, int32, Type),
+    Proj(Expr, int, Type),
     Field(Expr, string, Type),
     Index(Expr, Expr, Type),
     Binary(ast::BinaryOp, Expr, Expr, Type, BinaryResolution),

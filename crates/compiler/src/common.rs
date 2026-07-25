@@ -4,6 +4,7 @@ use crate::tast::TastIdent;
 pub enum Prim {
     Unit { value: () },
     Bool { value: bool },
+    Int { value: i64 },
     Int8 { value: i8 },
     Int16 { value: i16 },
     Int32 { value: i32 },
@@ -23,6 +24,7 @@ impl std::fmt::Display for Prim {
         match self {
             Prim::Unit { .. } => write!(f, "()"),
             Prim::Bool { value } => write!(f, "{}", value),
+            Prim::Int { value } => write!(f, "{}", value),
             Prim::Int8 { value } => write!(f, "{}", value),
             Prim::Int16 { value } => write!(f, "{}", value),
             Prim::Int32 { value } => write!(f, "{}", value),

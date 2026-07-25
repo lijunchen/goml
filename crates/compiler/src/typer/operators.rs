@@ -7,14 +7,11 @@ use super::{
     util::resolve_type_name,
 };
 
-pub(crate) fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
-    is_integer_ty(expected).then(|| expected.clone())
-}
-
 pub(crate) fn is_integer_ty(ty: &tast::Ty) -> bool {
     matches!(
         ty,
-        tast::Ty::TInt8
+        tast::Ty::TInt
+            | tast::Ty::TInt8
             | tast::Ty::TInt16
             | tast::Ty::TInt32
             | tast::Ty::TInt64
@@ -71,6 +68,7 @@ fn is_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
         | tast::Ty::TBool
         | tast::Ty::TString
         | tast::Ty::TChar
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -140,7 +138,8 @@ pub(crate) fn comparison_operator_text(op: common_defs::BinaryOp) -> &'static st
 pub(crate) fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
     matches!(
         ty,
-        tast::Ty::TInt8
+        tast::Ty::TInt
+            | tast::Ty::TInt8
             | tast::Ty::TInt16
             | tast::Ty::TInt32
             | tast::Ty::TInt64

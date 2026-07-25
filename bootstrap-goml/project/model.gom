@@ -1,0 +1,55 @@
+package project;
+
+pub struct PackageInfoUse {
+    pub path: string,
+    pub alias: Option[string],
+}
+
+pub struct PackageInfoFile {
+    pub path: string,
+    pub package_name: string,
+    pub package_explicit: bool,
+    pub uses: Vec[PackageInfoUse],
+}
+
+pub struct Package {
+    pub name: string,
+    pub declared_name: string,
+    pub directory: string,
+    pub files: Vec[string],
+    pub imports: Vec[string],
+}
+
+pub struct Graph {
+    pub module_dir: string,
+    pub module_path: string,
+    pub entry_package: string,
+    pub packages: Vec[Package],
+    pub order: Vec[string],
+}
+
+pub struct Context {
+    pub graph: Graph,
+    pub compiler: string,
+    pub artifact_root: string,
+}
+
+pub enum Command {
+    Compile(
+        string,
+        string,
+        Vec[string],
+        Vec[string],
+        string,
+    ),
+    Link(Vec[string], string, string),
+    TestLink(Vec[string], Vec[string], string, string),
+    GoBuild(string, string),
+}
+
+pub struct Plan {
+    pub commands: Vec[Command],
+    pub executable: Option[string],
+    pub test_manifest: Option[string],
+    pub test_runner: Option[string],
+}

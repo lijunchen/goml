@@ -143,25 +143,25 @@ fn artifact_json_field_object(
     }
 }
 
-fn artifact_parse_nonnegative_int(value: string) -> Result[int32, string] {
+fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
     if value.byte_len() == 0 {
         Result::Err(artifact_decode_error("nonnegative integer"))
     } else {
-        let result = Ref::new(0i64);
+        let result = Ref::new(0);
         for index in range(0, value.byte_len()) {
             let byte = value.byte_get(index);
-            if byte < 48u8 || byte > 57u8 {
+            if byte < 48 || byte > 57 {
                 return Result::Err(artifact_decode_error("nonnegative integer"))
             } else {
-                result.set(result.get() * 10i64 + (byte - 48u8) as int64)
+                result.set(result.get() * 10 + (byte - 48) as int64)
             };
-            if result.get() > 2147483647i64 {
+            if result.get() > 2147483647 {
                 return Result::Err(artifact_decode_error("32-bit integer"))
             } else {
                 ()
             }
         };
-        Result::Ok(result.get() as int32)
+        Result::Ok(result.get() as int)
     }
 }
 
@@ -283,6 +283,7 @@ fn artifact_decode_type(
             "TUnit" => Result::Ok(tast::Type::Unit),
             "TNever" => Result::Ok(tast::Type::Never),
             "TBool" => Result::Ok(tast::Type::Bool),
+            "TInt" => Result::Ok(tast::Type::Int),
             "TInt8" => Result::Ok(tast::Type::Int8),
             "TInt16" => Result::Ok(tast::Type::Int16),
             "TInt32" => Result::Ok(tast::Type::Int32),
@@ -428,6 +429,11 @@ fn artifact_decode_type(
             } else if kind == "TRef" {
                 match artifact_decode_element_type(context, payload, "reference type") {
                     Result::Ok(value) => Result::Ok(tast::Type::RefType(value)),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TChannel" {
+                match artifact_decode_element_type(context, payload, "channel type") {
+                    Result::Ok(value) => Result::Ok(tast::Type::Channel(value)),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "THashMap" {

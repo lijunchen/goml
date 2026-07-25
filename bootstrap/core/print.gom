@@ -3,13 +3,13 @@ package core;
 use gomlc::tast;
 use std::text;
 
-fn write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
     for _ in range(0, count) {
         builder.write_char(' ')
     }
 }
 
-fn newline(builder: text::StringBuilder, indent: int32) -> unit {
+fn newline(builder: text::StringBuilder, indent: int) -> unit {
     builder.write_char('\n');
     write_spaces(builder, indent)
 }
@@ -17,7 +17,7 @@ fn newline(builder: text::StringBuilder, indent: int32) -> unit {
 fn dyn_method_name(value: string) -> string {
     let start = Ref::new(0);
     for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 35u8 {
+        if value.byte_get(index) == 35 {
             start.set(index + 1)
         } else {
             ()
@@ -61,7 +61,7 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
 fn write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
-    indent: int32,
+    indent: int,
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
@@ -79,7 +79,7 @@ fn write_constructor(
     builder: text::StringBuilder,
     constructor: tast::Constructor,
     args: Vec[Expr],
-    indent: int32,
+    indent: int,
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
@@ -125,7 +125,7 @@ fn write_constructor(
 fn write_block_contents(
     builder: text::StringBuilder,
     value: Block,
-    indent: int32,
+    indent: int,
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
@@ -168,7 +168,7 @@ fn write_block_contents(
 fn write_block_expr(
     builder: text::StringBuilder,
     value: Block,
-    indent: int32,
+    indent: int,
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
@@ -182,7 +182,7 @@ fn write_block_expr(
 fn write_arm(
     builder: text::StringBuilder,
     value: Arm,
-    indent: int32,
+    indent: int,
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
@@ -203,7 +203,7 @@ fn write_arm(
 fn write_expr(
     builder: text::StringBuilder,
     value: Expr,
-    indent: int32,
+    indent: int,
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {

@@ -365,6 +365,9 @@ pub enum TokenKind {
     #[token("bool")]
     BoolKeyword,
 
+    #[token("int")]
+    IntKeyword,
+
     #[token("int8")]
     Int8Keyword,
 
@@ -406,25 +409,6 @@ pub enum TokenKind {
     #[regex("[A-Za-z][A-Za-z_0-9]*|_[A-Za-z_0-9]+")]
     Ident,
 
-    // Suffixed float literals (higher priority than generic Float)
-    #[regex(r"[0-9][0-9_]*\.[0-9][0-9_]*f32", validate_number, priority = 3)]
-    #[regex(
-        r"[0-9][0-9_]*\.[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f32",
-        validate_number,
-        priority = 3
-    )]
-    #[regex(r"[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f32", validate_number, priority = 3)]
-    Float32Lit,
-
-    #[regex(r"[0-9][0-9_]*\.[0-9][0-9_]*f64", validate_number, priority = 3)]
-    #[regex(
-        r"[0-9][0-9_]*\.[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f64",
-        validate_number,
-        priority = 3
-    )]
-    #[regex(r"[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*f64", validate_number, priority = 3)]
-    Float64Lit,
-
     #[regex(r"[0-9][0-9_]*\.[0-9][0-9_]*", validate_number, priority = 2)]
     #[regex(
         r"[0-9][0-9_]*\.[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*",
@@ -434,33 +418,8 @@ pub enum TokenKind {
     #[regex(r"[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*", validate_number, priority = 2)]
     Float,
 
-    // Suffixed integer literals (higher priority than generic Int)
-    #[regex(r"[0-9][0-9_]*i8", validate_number, priority = 3)]
-    Int8Lit,
-
-    #[regex(r"[0-9][0-9_]*i16", validate_number, priority = 3)]
-    Int16Lit,
-
-    #[regex(r"[0-9][0-9_]*i32", validate_number, priority = 3)]
-    Int32Lit,
-
-    #[regex(r"[0-9][0-9_]*i64", validate_number, priority = 3)]
-    Int64Lit,
-
-    #[regex(r"[0-9][0-9_]*u8", validate_number, priority = 3)]
-    UInt8Lit,
-
-    #[regex(r"[0-9][0-9_]*u16", validate_number, priority = 3)]
-    UInt16Lit,
-
-    #[regex(r"[0-9][0-9_]*u32", validate_number, priority = 3)]
-    UInt32Lit,
-
-    #[regex(r"[0-9][0-9_]*u64", validate_number, priority = 3)]
-    UInt64Lit,
-
     #[regex(r"[0-9][0-9_]*", validate_number)]
-    Int,
+    IntLit,
 
     #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#)]
     Str,
@@ -476,6 +435,11 @@ pub enum TokenKind {
     #[regex("//.*")]
     Comment,
 
+    #[regex(r"[0-9][0-9_]*(i8|i16|i32|i64|u8|u16|u32|u64)", priority = 3)]
+    #[regex(
+        r"([0-9][0-9_]*\.[0-9][0-9_]*([eE][+-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][+-]?[0-9][0-9_]*)(f32|f64)",
+        priority = 3
+    )]
     Error,
     Eof,
 }
@@ -562,6 +526,7 @@ impl std::fmt::Display for TokenKind {
             Self::WildcardKeyword => "_",
             Self::UnitKeyword => "unit",
             Self::BoolKeyword => "bool",
+            Self::IntKeyword => "int",
             Self::Int8Keyword => "int8",
             Self::Int16Keyword => "int16",
             Self::Int32Keyword => "int32",
@@ -577,17 +542,7 @@ impl std::fmt::Display for TokenKind {
             Self::ArrayKeyword => "array",
             Self::Ident => "ident",
             Self::Float => "float",
-            Self::Float32Lit => "float32_lit",
-            Self::Float64Lit => "float64_lit",
-            Self::Int => "int",
-            Self::Int8Lit => "int8_lit",
-            Self::Int16Lit => "int16_lit",
-            Self::Int32Lit => "int32_lit",
-            Self::Int64Lit => "int64_lit",
-            Self::UInt8Lit => "uint8_lit",
-            Self::UInt16Lit => "uint16_lit",
-            Self::UInt32Lit => "uint32_lit",
-            Self::UInt64Lit => "uint64_lit",
+            Self::IntLit => "int_lit",
             Self::Str => "str",
             Self::MultilineStr => "multiline_str",
             Self::CharLit => "char_lit",
@@ -674,6 +629,7 @@ macro_rules! T {
     [_] => { $crate::TokenKind::WildcardKeyword };
     [Unit] => { $crate::TokenKind::UnitKeyword };
     [Bool] => { $crate::TokenKind::BoolKeyword };
+    [Int] => { $crate::TokenKind::IntKeyword };
     [Int8] => { $crate::TokenKind::Int8Keyword };
     [Int16] => { $crate::TokenKind::Int16Keyword };
     [Int32] => { $crate::TokenKind::Int32Keyword };
@@ -689,17 +645,7 @@ macro_rules! T {
     [array] => { $crate::TokenKind::ArrayKeyword };
     [ident] => { $crate::TokenKind::Ident };
     [float] => { $crate::TokenKind::Float };
-    [float32_lit] => { $crate::TokenKind::Float32Lit };
-    [float64_lit] => { $crate::TokenKind::Float64Lit };
-    [int] => { $crate::TokenKind::Int };
-    [int8_lit] => { $crate::TokenKind::Int8Lit };
-    [int16_lit] => { $crate::TokenKind::Int16Lit };
-    [int32_lit] => { $crate::TokenKind::Int32Lit };
-    [int64_lit] => { $crate::TokenKind::Int64Lit };
-    [uint8_lit] => { $crate::TokenKind::UInt8Lit };
-    [uint16_lit] => { $crate::TokenKind::UInt16Lit };
-    [uint32_lit] => { $crate::TokenKind::UInt32Lit };
-    [uint64_lit] => { $crate::TokenKind::UInt64Lit };
+    [int_lit] => { $crate::TokenKind::IntLit };
     [str] => { $crate::TokenKind::Str };
     [multiline_str] => { $crate::TokenKind::MultilineStr };
     [char_lit] => { $crate::TokenKind::CharLit };

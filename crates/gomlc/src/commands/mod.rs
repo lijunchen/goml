@@ -15,6 +15,7 @@ pub(crate) fn execute(command: Commands) -> Result<()> {
         Commands::TestBuild(args) => package::test_build(args),
         Commands::Link(args) => package::link(args),
         Commands::TestLink(args) => package::test_link(args),
+        Commands::PackageInfo(args) => package::package_info(args),
         Commands::RunSingle(args) => run_single::execute(args),
         Commands::Version(args) => version::execute(args),
     }

@@ -1,0 +1,610 @@
+package project;
+
+use gomlang::bootstrap_goml::json;
+use gomlang::bootstrap_goml::manifest;
+use gomlang::bootstrap_goml::util;
+use std::bytes;
+use std::env;
+use std::fs;
+use std::path;
+use std::process;
+
+fn result_string(value: Result[string, string], context: string) -> Result[string, string] {
+    match value {
+        Result::Ok(value) => Result::Ok(value),
+        Result::Err(message) => Result::Err(context + ": " + message),
+    }
+}
+
+fn canonical(value: string) -> Result[string, string] {
+    result_string(fs::canonicalize(value), "failed to resolve " + value)
+}
+
+fn manifest_root(start: string) -> Result[string, string] {
+    let current = Ref::new(start);
+    while true {
+        if fs::is_file(path::join(current.get(), "goml.toml")) {
+            return Result::Ok(current.get())
+        } else {
+            match path::parent(current.get()) {
+                Option::Some(parent) => if parent == current.get() {
+                    return Result::Err("could not find goml.toml")
+                } else {
+                    current.set(parent)
+                },
+                Option::None => return Result::Err("could not find goml.toml"),
+            }
+        }
+    };
+    Result::Err("could not find goml.toml")
+}
+
+fn target_directory(target: string) -> Result[string, string] {
+    let resolved = match path::absolute(target) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let resolved = match canonical(resolved) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    if fs::is_file(resolved) {
+        match path::parent(resolved) {
+            Option::Some(value) => Result::Ok(value),
+            Option::None => Result::Err("target file has no parent directory"),
+        }
+    } else if fs::is_dir(resolved) {
+        Result::Ok(resolved)
+    } else {
+        Result::Err("target is not a file or directory")
+    }
+}
+
+fn path_inside(root: string, value: string) -> bool {
+    value == root
+        || (util::starts_with(value, root)
+            && value.byte_len() > root.byte_len()
+            && (value.byte_get(root.byte_len()) == 47
+                || value.byte_get(root.byte_len()) == 92))
+}
+
+fn relative_path(root: string, value: string) -> string {
+    if value == root {
+        "."
+    } else if path_inside(root, value) {
+        value.byte_slice(root.byte_len() + 1, value.byte_len())
+    } else {
+        value
+    }
+}
+
+fn package_name_for_directory(
+    module_dir: string,
+    module_path: string,
+    directory: string,
+) -> Result[string, string] {
+    if !path_inside(module_dir, directory) {
+        return Result::Err("target is outside the module")
+    } else if directory == module_dir {
+        return Result::Ok(module_path)
+    } else {
+        ()
+    };
+    let relative = relative_path(module_dir, directory);
+    let segments = Vec::new();
+    let current = Ref::new("");
+    for index in range(0, relative.byte_len()) {
+        let byte = relative.byte_get(index);
+        if byte == 47 || byte == 92 {
+            if current.get() != "" {
+                segments.push(current.get());
+                current.set("")
+            } else {
+                ()
+            }
+        } else {
+            current.set(current.get() + relative.byte_slice(index, index + 1))
+        }
+    };
+    if current.get() != "" {
+        segments.push(current.get())
+    } else {
+        ()
+    };
+    if segments.len() == 0 {
+        Result::Ok(module_path)
+    } else {
+        Result::Ok(module_path + "::" + util::join(segments, "::"))
+    }
+}
+
+fn directory_for_package(
+    module_dir: string,
+    module_path: string,
+    package_name: string,
+) -> Option[string] {
+    if package_name == module_path {
+        Option::Some(module_dir)
+    } else {
+        let prefix = module_path + "::";
+        if !util::starts_with(package_name, prefix) {
+            Option::None
+        } else {
+            let result = Ref::new(module_dir);
+            let suffix = package_name.byte_slice(
+                prefix.byte_len(),
+                package_name.byte_len(),
+            );
+            for segment in util::split(suffix, "::") {
+                result.set(path::join(result.get(), segment))
+            };
+            Option::Some(result.get())
+        }
+    }
+}
+
+fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], string] {
+    let names = match fs::read_dir(directory) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let result = Vec::new();
+    for name in names {
+        let source_path = path::join(directory, name);
+        if fs::is_file(source_path)
+            && match path::extension(source_path) {
+                Option::Some(value) => value == "gom",
+                Option::None => false,
+            }
+            && (include_tests
+                || match path::file_name(source_path) {
+                    Option::Some(value) => !util::ends_with(value, "_test.gom"),
+                    Option::None => false,
+                })
+        {
+            result.push(source_path)
+        } else {
+            ()
+        }
+    };
+    Result::Ok(util::sorted_unique(result))
+}
+
+fn output_text(value: bytes::Bytes) -> string {
+    match value.to_string() {
+        Result::Ok(value) => value,
+        Result::Err(_) => "<non-UTF-8 output>",
+    }
+}
+
+fn compiler_package_info(
+    compiler: string,
+    module_dir: string,
+    files: Vec[string],
+) -> Result[Vec[PackageInfoFile], string] {
+    let command = process::Command::new(compiler)
+        .arg("package-info")
+        .arg("--format")
+        .arg("json")
+        .arg("--input");
+    for file in files {
+        let _ = command.arg(relative_path(module_dir, file));
+    };
+    let output = match command.current_dir(module_dir).output() {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    if !(process::ExitStatus::success(process::Output::status(output))) {
+        return Result::Err(output_text(process::Output::stderr(output)))
+    } else {
+        ()
+    };
+    let root = match json::parse(output_text(process::Output::stdout(output))) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    match json::field(root, "protocol_version") {
+        Option::Some(json::Value::Number(value)) => if value != "1" {
+            return Result::Err("unsupported package-info protocol " + value)
+        } else {
+            ()
+        },
+        _ => return Result::Err("package-info omitted protocol_version"),
+    };
+    let values = match json::field(root, "files") {
+        Option::Some(value) => match json::as_array(value) {
+            Option::Some(values) => values,
+            Option::None => return Result::Err("package-info files must be an array"),
+        },
+        Option::None => return Result::Err("package-info omitted files"),
+    };
+    let result = Vec::new();
+    for value in values {
+        let source_path = match json::field(value, "path") {
+            Option::Some(value) => match json::as_string(value) {
+                Option::Some(value) => value,
+                Option::None => return Result::Err("package-info path must be a string"),
+            },
+            Option::None => return Result::Err("package-info file omitted path"),
+        };
+        let package_name = match json::field(value, "package") {
+            Option::Some(value) => match json::as_string(value) {
+                Option::Some(value) => value,
+                Option::None => return Result::Err("package-info package must be a string"),
+            },
+            Option::None => return Result::Err("package-info file omitted package"),
+        };
+        let package_explicit = match json::field(value, "package_explicit") {
+            Option::Some(value) => match json::bool_value(value) {
+                Option::Some(value) => value,
+                Option::None => return Result::Err("package_explicit must be boolean"),
+            },
+            Option::None => return Result::Err("package-info omitted package_explicit"),
+        };
+        let uses = match json::field(value, "uses") {
+            Option::Some(value) => match json::as_array(value) {
+                Option::Some(value) => value,
+                Option::None => return Result::Err("package-info uses must be an array"),
+            },
+            Option::None => return Result::Err("package-info omitted uses"),
+        };
+        let parsed_uses = Vec::new();
+        for use_value in uses {
+            let use_path = match json::field(use_value, "path") {
+                Option::Some(value) => match json::as_string(value) {
+                    Option::Some(value) => value,
+                    Option::None => return Result::Err("use path must be a string"),
+                },
+                Option::None => return Result::Err("use omitted path"),
+            };
+            let alias = match json::field(use_value, "alias") {
+                Option::Some(value) => json::optional_string(value),
+                Option::None => Option::None,
+            };
+            parsed_uses.push(PackageInfoUse {
+                path: use_path,
+                alias,
+            })
+        };
+        result.push(PackageInfoFile {
+            path: source_path,
+            package_name,
+            package_explicit,
+            uses: parsed_uses,
+        })
+    };
+    Result::Ok(result)
+}
+
+fn local_import(
+    module_dir: string,
+    module_path: string,
+    import_path: string,
+) -> Result[Option[string], string] {
+    if import_path == "std" || util::starts_with(import_path, "std::") {
+        Result::Ok(Option::None)
+    } else {
+        match directory_for_package(module_dir, module_path, import_path) {
+            Option::Some(directory) => if fs::is_dir(directory) {
+                Result::Ok(Option::Some(import_path))
+            } else {
+                Result::Err("local package does not exist: " + import_path)
+            },
+            Option::None => Result::Ok(Option::None),
+        }
+    }
+}
+
+fn load_package(
+    compiler: string,
+    module_dir: string,
+    module_path: string,
+    package_name: string,
+    include_entry_tests: bool,
+    entry_package: string,
+) -> Result[Package, string] {
+    let directory = match directory_for_package(
+        module_dir,
+        module_path,
+        package_name,
+    ) {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("invalid local package " + package_name),
+    };
+    let files = match source_files(
+        directory,
+        include_entry_tests && package_name == entry_package,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    if files.len() == 0 {
+        return Result::Err("package has no .gom files: " + package_name)
+    } else {
+        ()
+    };
+    let info = match compiler_package_info(compiler, module_dir, files) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let declared_name = Ref::new("");
+    let imports = Vec::new();
+    for file in info {
+        if !file.package_explicit {
+            return Result::Err(file.path + " must declare package <name>;")
+        } else if declared_name.get() == "" {
+            declared_name.set(file.package_name)
+        } else if declared_name.get() != file.package_name {
+            return Result::Err(
+                "package declaration mismatch in " + file.path,
+            )
+        } else {
+            ()
+        };
+        for use_decl in file.uses {
+            match local_import(module_dir, module_path, use_decl.path) {
+                Result::Ok(Option::Some(value)) => imports.push(value),
+                Result::Ok(Option::None) => (),
+                Result::Err(message) => return Result::Err(message),
+            }
+        }
+    };
+    Result::Ok(Package {
+        name: package_name,
+        declared_name: declared_name.get(),
+        directory,
+        files,
+        imports: util::sorted_unique(imports),
+    })
+}
+
+fn find_package(packages: Vec[Package], name: string) -> Option[Package] {
+    for package_value in packages {
+        if package_value.name == name {
+            return Option::Some(package_value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn visit_package(
+    packages: Vec[Package],
+    states: HashMap[string, int],
+    output: Vec[string],
+    name: string,
+) -> Result[unit, string] {
+    match states.get(name) {
+        Option::Some(1) => return Result::Err("package dependency cycle at " + name),
+        Option::Some(2) => return Result::Ok(()),
+        _ => (),
+    };
+    states.set(name, 1);
+    let package_value = match find_package(packages, name) {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("missing package " + name),
+    };
+    for dependency in package_value.imports {
+        match visit_package(packages, states, output, dependency) {
+            Result::Ok(()) => (),
+            Result::Err(message) => return Result::Err(message),
+        }
+    };
+    states.set(name, 2);
+    output.push(name);
+    Result::Ok(())
+}
+
+fn topological_order(packages: Vec[Package], entry: string) -> Result[Vec[string], string] {
+    let output = Vec::new();
+    match visit_package(packages, HashMap::new(), output, entry) {
+        Result::Ok(()) => Result::Ok(output),
+        Result::Err(message) => Result::Err(message),
+    }
+}
+
+fn discover_graph(
+    compiler: string,
+    module_dir: string,
+    module_path: string,
+    entry_dir: string,
+    include_tests: bool,
+) -> Result[Graph, string] {
+    let entry_package = match package_name_for_directory(
+        module_dir,
+        module_path,
+        entry_dir,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let packages = Vec::new();
+    let pending = Vec::new();
+    let seen: HashMap[string, bool] = HashMap::new();
+    pending.push(entry_package);
+    while pending.len() > 0 {
+        let package_name = pending.remove(0);
+        if seen.contains(package_name) {
+            ()
+        } else {
+            let package_value = match load_package(
+                compiler,
+                module_dir,
+                module_path,
+                package_name,
+                include_tests,
+                entry_package,
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            seen.set(package_name, true);
+            for dependency in package_value.imports {
+                if !seen.contains(dependency) {
+                    pending.push(dependency)
+                } else {
+                    ()
+                }
+            };
+            packages.push(package_value)
+        }
+    };
+    let order = match topological_order(packages, entry_package) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    Result::Ok(Graph {
+        module_dir,
+        module_path,
+        entry_package,
+        packages,
+        order,
+    })
+}
+
+fn resolve_compiler(explicit: Option[string]) -> Result[string, string] {
+    let candidate = match explicit {
+        Option::Some(value) => Option::Some(value),
+        Option::None => match env::var("GOMLC") {
+            Option::Some(value) => if value == "" {
+                Option::None
+            } else {
+                Option::Some(value)
+            },
+            Option::None => Option::None,
+        },
+    };
+    let compiler = match candidate {
+        Option::Some(value) => value,
+        Option::None => match env::current_exe() {
+            Result::Ok(value) => match path::parent(value) {
+                Option::Some(parent) => {
+                    let sibling = path::join(parent, "gomlc");
+                    if fs::is_file(sibling) {
+                        sibling
+                    } else {
+                        match env::var("GOML_HOME") {
+                            Option::Some(home) => {
+                                let installed = path::join(
+                                    path::join(home, "bin"),
+                                    "gomlc",
+                                );
+                                if fs::is_file(installed) {
+                                    installed
+                                } else {
+                                    "gomlc"
+                                }
+                            },
+                            Option::None => "gomlc",
+                        }
+                    }
+                },
+                Option::None => match env::var("GOML_HOME") {
+                    Option::Some(home) => {
+                        let installed = path::join(
+                            path::join(home, "bin"),
+                            "gomlc",
+                        );
+                        if fs::is_file(installed) {
+                            installed
+                        } else {
+                            "gomlc"
+                        }
+                    },
+                    Option::None => "gomlc",
+                },
+            },
+            Result::Err(_) => "gomlc",
+        },
+    };
+    let compiler = if fs::is_file(compiler) {
+        match canonical(compiler) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        }
+    } else {
+        compiler
+    };
+    let output = match process::Command::new(compiler)
+        .arg("version")
+        .arg("--format")
+        .arg("json")
+        .output()
+    {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    if !(process::ExitStatus::success(process::Output::status(output))) {
+        return Result::Err("gomlc does not support the driver protocol")
+    } else {
+        ()
+    };
+    let version = match json::parse(output_text(process::Output::stdout(output))) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    match json::field(version, "driver_protocol") {
+        Option::Some(json::Value::Number(value)) => if value == "1" {
+            Result::Ok(compiler)
+        } else {
+            Result::Err("incompatible gomlc driver protocol " + value)
+        },
+        _ => Result::Err("gomlc omitted driver_protocol"),
+    }
+}
+
+pub fn load_context(
+    target: string,
+    target_dir_override: Option[string],
+    compiler_override: Option[string],
+    include_tests: bool,
+) -> Result[Context, string] {
+    let entry_dir = match target_directory(target) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let module_dir = match manifest_root(entry_dir) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let module_manifest = match manifest::load(path::join(module_dir, "goml.toml")) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let compiler = match resolve_compiler(compiler_override) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let artifact_root = match target_dir_override {
+        Option::Some(value) => if path::is_absolute(value) {
+            path::clean(value)
+        } else {
+            path::join(module_dir, value)
+        },
+        Option::None => path::join(module_dir, module_manifest.target_dir),
+    };
+    let graph = match discover_graph(
+        compiler,
+        module_dir,
+        module_manifest.module_path,
+        entry_dir,
+        include_tests,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    Result::Ok(Context {
+        graph,
+        compiler,
+        artifact_root,
+    })
+}
+
+pub fn package_by_name(graph: Graph, name: string) -> Option[Package] {
+    find_package(graph.packages, name)
+}
+
+pub fn module_relative(module_dir: string, value: string) -> string {
+    relative_path(module_dir, value)
+}

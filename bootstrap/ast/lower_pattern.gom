@@ -14,7 +14,7 @@ fn literal_value(node: LocatedNode, kind: lexer::TokenKind) -> Option[string] {
 fn strip_suffix(value: string, suffix: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
     for index in range(0, value.byte_len()) {
-        if value.byte_get(index) != 95u8 {
+        if value.byte_get(index) != 95 {
             builder.write_string(value.byte_slice(index, index + 1))
         } else {
             ()
@@ -90,52 +90,12 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     },
                 },
             },
-            cst::NodeKind::PATTERN_INT => match signed_pattern_value(node, lexer::TokenKind::Int, "") {
+            cst::NodeKind::PATTERN_INT => match signed_pattern_value(node, lexer::TokenKind::IntLit, "") {
                 Option::Some(value) => Option::Some(Pat::Int(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_INT8 => match signed_pattern_value(node, lexer::TokenKind::Int8Lit, "i8") {
-                Option::Some(value) => Option::Some(Pat::Int8(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_INT16 => match signed_pattern_value(node, lexer::TokenKind::Int16Lit, "i16") {
-                Option::Some(value) => Option::Some(Pat::Int16(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_INT32 => match signed_pattern_value(node, lexer::TokenKind::Int32Lit, "i32") {
-                Option::Some(value) => Option::Some(Pat::Int32(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_INT64 => match signed_pattern_value(node, lexer::TokenKind::Int64Lit, "i64") {
-                Option::Some(value) => Option::Some(Pat::Int64(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_UINT8 => match signed_pattern_value(node, lexer::TokenKind::UInt8Lit, "u8") {
-                Option::Some(value) => Option::Some(Pat::UInt8(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_UINT16 => match signed_pattern_value(node, lexer::TokenKind::UInt16Lit, "u16") {
-                Option::Some(value) => Option::Some(Pat::UInt16(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_UINT32 => match signed_pattern_value(node, lexer::TokenKind::UInt32Lit, "u32") {
-                Option::Some(value) => Option::Some(Pat::UInt32(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_UINT64 => match signed_pattern_value(node, lexer::TokenKind::UInt64Lit, "u64") {
-                Option::Some(value) => Option::Some(Pat::UInt64(value, value_span)),
                 Option::None => Option::None,
             },
             cst::NodeKind::PATTERN_FLOAT => match signed_pattern_value(node, lexer::TokenKind::Float, "") {
                 Option::Some(value) => Option::Some(Pat::Float(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_FLOAT32 => match signed_pattern_value(node, lexer::TokenKind::Float32Lit, "f32") {
-                Option::Some(value) => Option::Some(Pat::Float32(value, value_span)),
-                Option::None => Option::None,
-            },
-            cst::NodeKind::PATTERN_FLOAT64 => match signed_pattern_value(node, lexer::TokenKind::Float64Lit, "f64") {
-                Option::Some(value) => Option::Some(Pat::Float64(value, value_span)),
                 Option::None => Option::None,
             },
             cst::NodeKind::PATTERN_STRING => match literal_value(node, lexer::TokenKind::Str) {

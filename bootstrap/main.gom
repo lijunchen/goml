@@ -30,7 +30,7 @@ struct RunArgs {
 
 struct CoreStage {
     file: core::File,
-    counter: Ref[int32],
+    counter: Ref[int],
 }
 
 fn fail(message: string) -> unit {
@@ -366,6 +366,8 @@ fn main() -> unit {
         run_link_command(args)
     } else if args.get(1) == "test-link" {
         run_test_link_command(args)
+    } else if args.get(1) == "package-info" {
+        run_package_info(args)
     } else if args.get(1) == "__canonical-stage" {
         run_canonical_stage(args)
     } else if args.get(1) == "__test-diagnostics" {

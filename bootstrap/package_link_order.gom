@@ -5,7 +5,7 @@ use gomlc::hir;
 struct PackageOrderNode {
     name: string,
     dependencies: Vec[string],
-    position: int32,
+    position: int,
 }
 
 fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
@@ -49,7 +49,7 @@ fn package_node_is_ready(
     ready.get()
 }
 
-fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int32], string] {
+fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string] {
     let remaining = Vec::new();
     let names = Vec::new();
     for value in values {

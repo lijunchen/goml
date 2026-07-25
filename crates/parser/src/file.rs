@@ -510,6 +510,7 @@ fn variant(p: &mut Parser) {
 const TYPE_FIRST: &[TokenKind] = &[
     T![Unit],
     T![Bool],
+    T![Int],
     T![Int8],
     T![Int16],
     T![Int32],
@@ -753,6 +754,10 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.advance();
             p.close(m, MySyntaxKind::TYPE_BOOL)
         }
+        T![Int] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_INT)
+        }
         T![Int8] => {
             p.advance();
             p.close(m, MySyntaxKind::TYPE_INT8)
@@ -823,7 +828,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
             } else {
                 p.advance_with_error("expected ';' after array element type");
             }
-            if p.at(T![int]) {
+            if p.at(T![int_lit]) {
                 p.advance();
             } else {
                 p.advance_with_error("expected array length");

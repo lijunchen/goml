@@ -294,7 +294,8 @@ fn validate_no_self_ty(
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
-        | tast::Ty::TRef { elem } => validate_no_self_ty(diagnostics, elem, range),
+        | tast::Ty::TRef { elem }
+        | tast::Ty::TChannel { elem } => validate_no_self_ty(diagnostics, elem, range),
         tast::Ty::THashMap { key, value } => {
             validate_no_self_ty(diagnostics, key, range);
             validate_no_self_ty(diagnostics, value, range);
@@ -568,6 +569,15 @@ fn resolve_ty_projections(
             )),
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(resolve_ty_projections(
+                env,
+                diagnostics,
+                elem,
+                candidates,
+                range,
+            )),
+        },
+        tast::Ty::TChannel { elem } => tast::Ty::TChannel {
             elem: Box::new(resolve_ty_projections(
                 env,
                 diagnostics,
@@ -1532,7 +1542,8 @@ fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
         tast::Ty::TSlice { .. }
         | tast::Ty::TVec { .. }
         | tast::Ty::TRef { .. }
-        | tast::Ty::THashMap { .. } => current_package == BUILTIN_PACKAGE,
+        | tast::Ty::THashMap { .. }
+        | tast::Ty::TChannel { .. } => current_package == BUILTIN_PACKAGE,
         _ => false,
     }
 }
@@ -2924,7 +2935,8 @@ fn ty_contains_proper_subterm(ty: &tast::Ty, needle: &tast::Ty) -> bool {
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
-        | tast::Ty::TRef { elem } => {
+        | tast::Ty::TRef { elem }
+        | tast::Ty::TChannel { elem } => {
             elem.as_ref() == needle || ty_contains_proper_subterm(elem, needle)
         }
         tast::Ty::THashMap { key, value } => {

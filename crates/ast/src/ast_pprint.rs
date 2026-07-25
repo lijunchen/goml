@@ -28,6 +28,7 @@ impl TypeExpr {
         match self {
             Self::TUnit => RcDoc::text("unit"),
             Self::TBool => RcDoc::text("bool"),
+            Self::TInt => RcDoc::text("int"),
             Self::TInt8 => RcDoc::text("int8"),
             Self::TInt16 => RcDoc::text("int16"),
             Self::TInt32 => RcDoc::text("int32"),
@@ -225,17 +226,7 @@ impl Expr {
             }
 
             Self::EInt { value, astptr: _ } => RcDoc::text(value.clone()),
-            Self::EInt8 { value, astptr: _ } => RcDoc::text(format!("{}i8", value)),
-            Self::EInt16 { value, astptr: _ } => RcDoc::text(format!("{}i16", value)),
-            Self::EInt32 { value, astptr: _ } => RcDoc::text(format!("{}i32", value)),
-            Self::EInt64 { value, astptr: _ } => RcDoc::text(format!("{}i64", value)),
-            Self::EUInt8 { value, astptr: _ } => RcDoc::text(format!("{}u8", value)),
-            Self::EUInt16 { value, astptr: _ } => RcDoc::text(format!("{}u16", value)),
-            Self::EUInt32 { value, astptr: _ } => RcDoc::text(format!("{}u32", value)),
-            Self::EUInt64 { value, astptr: _ } => RcDoc::text(format!("{}u64", value)),
             Self::EFloat { value, astptr: _ } => RcDoc::text(value.to_string()),
-            Self::EFloat32 { value, astptr: _ } => RcDoc::text(format!("{}f32", value)),
-            Self::EFloat64 { value, astptr: _ } => RcDoc::text(format!("{}f64", value)),
             Self::EString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
             Self::EChar { value, astptr: _ } => RcDoc::text(format!("'{}'", value)),
 
@@ -537,17 +528,7 @@ impl Pat {
                 }
             }
             Pat::PInt { value, astptr: _ } => RcDoc::text(value.clone()),
-            Pat::PInt8 { value, astptr: _ } => RcDoc::text(format!("{}i8", value)),
-            Pat::PInt16 { value, astptr: _ } => RcDoc::text(format!("{}i16", value)),
-            Pat::PInt32 { value, astptr: _ } => RcDoc::text(format!("{}i32", value)),
-            Pat::PInt64 { value, astptr: _ } => RcDoc::text(format!("{}i64", value)),
-            Pat::PUInt8 { value, astptr: _ } => RcDoc::text(format!("{}u8", value)),
-            Pat::PUInt16 { value, astptr: _ } => RcDoc::text(format!("{}u16", value)),
-            Pat::PUInt32 { value, astptr: _ } => RcDoc::text(format!("{}u32", value)),
-            Pat::PUInt64 { value, astptr: _ } => RcDoc::text(format!("{}u64", value)),
             Pat::PFloat { value, astptr: _ } => RcDoc::text(value.clone()),
-            Pat::PFloat32 { value, astptr: _ } => RcDoc::text(format!("{}f32", value)),
-            Pat::PFloat64 { value, astptr: _ } => RcDoc::text(format!("{}f64", value)),
             Pat::PString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
             Pat::PChar { value, astptr: _ } => RcDoc::text(format!("'{}'", value)),
             Pat::PConstr {

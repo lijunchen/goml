@@ -6,6 +6,7 @@ pub enum GoType {
     },
     TUnit, // struct{}, it has only one value: struct{}{}
     TBool,
+    TInt,
     TInt8,
     TInt16,
     TInt32,
@@ -42,5 +43,8 @@ pub enum GoType {
     TMap {
         key: Box<GoType>,
         value: Box<GoType>,
+    },
+    TChan {
+        elem: Box<GoType>,
     },
 }

@@ -35,11 +35,8 @@ fn builtin_struct_instance(
         let result_ty = match find_instance(instances, "Option", value.args) {
             Option::Some(instance) => Type::Named(go_user_type_name(instance.name)),
             Option::None => {
-                let option_args: Vec[tast::Type] = Vec::new();
-                option_args.push(value.args.get(0));
-                lower_type(tast::Type::App(
-                    tast::Type::Con("Option"),
-                    option_args,
+                Type::Named(go_user_type_name(
+                    "Option__" + compact_type(value.args.get(0)),
                 ))
             },
         };
@@ -73,7 +70,7 @@ fn builtin_struct_instance(
     } else if value.base_name == "TakeIterator" && value.args.len() == 1 {
         let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("iterator", lower_type(value.args.get(0))));
-        fields.push(("remaining", lower_type(tast::Type::RefType(tast::Type::Int32))));
+        fields.push(("remaining", lower_type(tast::Type::RefType(tast::Type::Int))));
         Option::Some(StructDef {
             name: go_user_type_name(value.name),
             fields,
@@ -187,6 +184,9 @@ fn instantiate_type(
         tast::Type::RefType(elem) => {
             tast::Type::RefType(instantiate_type(elem, generics, args, instances))
         },
+        tast::Type::Channel(elem) => {
+            tast::Type::Channel(instantiate_type(elem, generics, args, instances))
+        },
         tast::Type::HashMap(key, value) => tast::Type::HashMap(
             instantiate_type(key, generics, args, instances),
             instantiate_type(value, generics, args, instances),
@@ -223,7 +223,8 @@ fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
         | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => collect_con_names(result, elem),
+        | tast::Type::RefType(elem)
+        | tast::Type::Channel(elem) => collect_con_names(result, elem),
         tast::Type::HashMap(key, value) => {
             collect_con_names(result, key);
             collect_con_names(result, value)
@@ -277,7 +278,7 @@ fn variant_instance_count(
     enums: Vec[tast::EnumDef],
     instances: Vec[core::TypeInstance],
     variant_name: string,
-) -> int32 {
+) -> int {
     let owners = Vec::new();
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
@@ -679,6 +680,29 @@ pub fn emit_user_type_items(
         }
     };
     for instance in instances {
+        if instance.base_name == "FnIterator" && instance.args.len() == 1 {
+            let option_args: Vec[tast::Type] = Vec::new();
+            option_args.push(instance.args.get(0));
+            match find_instance(instances, "Option", option_args) {
+                Option::Some(_) => (),
+                Option::None => emit_enum_instance(
+                    items,
+                    emitted,
+                    variants,
+                    enums,
+                    structs,
+                    instances,
+                    function_names,
+                    core::TypeInstance {
+                        base_name: "Option",
+                        args: option_args,
+                        name: "Option__" + compact_type(instance.args.get(0)),
+                    },
+                ),
+            }
+        } else {
+            ()
+        };
         emit_enum_instance(
             items,
             emitted,
@@ -695,7 +719,7 @@ pub fn emit_user_type_items(
 pub fn variant_type(
     variants: VariantInfos,
     owner_ty: tast::Type,
-    tag: int32,
+    tag: int,
 ) -> Option[Type] {
     match find_variant_info(variants, owner_ty, tag) {
         Option::Some(value) => {
@@ -712,7 +736,7 @@ pub fn variant_type(
 pub fn find_variant_info(
     variants: VariantInfos,
     owner_ty: tast::Type,
-    tag: int32,
+    tag: int,
 ) -> Option[VariantInfo] {
     match tast::resolve_type(owner_ty) {
         tast::Type::Con(owner_name) => {
@@ -731,7 +755,7 @@ pub fn find_variant_info(
     }
 }
 
-fn last_separator(value: string) -> int32 {
+fn last_separator(value: string) -> int {
     let result = Ref::new(-1);
     if value.byte_len() > 1 {
         for index in range(0, value.byte_len() - 1) {

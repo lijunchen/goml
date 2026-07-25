@@ -6,7 +6,7 @@ fn pretty_write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
     separator: string,
-    indent: int32,
+    indent: int,
 ) -> unit {
     let index = Ref::new(0);
     for value in values {
@@ -20,7 +20,7 @@ fn pretty_write_exprs(
     }
 }
 
-fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int32) -> unit {
+fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
     if value.stmts.len() == 0 {
         match value.tail {
             Option::None => builder.write_string("{}"),
@@ -51,7 +51,7 @@ fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int32)
     }
 }
 
-fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit {
+fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
         Stmt::Let(is_mut, pat, annotation, expr, _) => {
             builder.write_string("let ");
@@ -115,23 +115,13 @@ fn pretty_write_path_expr(
     }
 }
 
-fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit {
+fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
         Expr::Path(path, type_args, _) => pretty_write_path_expr(builder, path, type_args),
         Expr::Unit(_) => builder.write_string("()"),
         Expr::Bool(value, _) => builder.write_string(if value { "true" } else { "false" }),
         Expr::Int(value, _) => builder.write_string(value),
-        Expr::Int8(value, _) => builder.write_string(value + "i8"),
-        Expr::Int16(value, _) => builder.write_string(value + "i16"),
-        Expr::Int32(value, _) => builder.write_string(value + "i32"),
-        Expr::Int64(value, _) => builder.write_string(value + "i64"),
-        Expr::UInt8(value, _) => builder.write_string(value + "u8"),
-        Expr::UInt16(value, _) => builder.write_string(value + "u16"),
-        Expr::UInt32(value, _) => builder.write_string(value + "u32"),
-        Expr::UInt64(value, _) => builder.write_string(value + "u64"),
         Expr::Float(value, _) => builder.write_string(value.to_string()),
-        Expr::Float32(value, _) => builder.write_string(value + "f32"),
-        Expr::Float64(value, _) => builder.write_string(value + "f64"),
         Expr::String(value, _) => pretty_write_quoted_string(builder, value),
         Expr::Char(value, _) => {
             builder.write_char('\'');
@@ -311,7 +301,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -
     }
 }
 
-fn pretty_write_arm(builder: text::StringBuilder, value: Arm, indent: int32) -> unit {
+fn pretty_write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
     pretty_write_pat(builder, value.pat, indent);
     match value.guard {
         Option::Some(guard) => {
@@ -336,7 +326,7 @@ fn pretty_write_pats(
     builder: text::StringBuilder,
     values: Vec[Pat],
     separator: string,
-    indent: int32,
+    indent: int,
 ) -> unit {
     let index = Ref::new(0);
     for value in values {
@@ -350,23 +340,13 @@ fn pretty_write_pats(
     }
 }
 
-fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int32) -> unit {
+fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
     match value {
         Pat::Var(name, _) => builder.write_string(name),
         Pat::Unit(_) => builder.write_string("()"),
         Pat::Bool(value, _) => builder.write_string(if value { "true" } else { "false" }),
         Pat::Int(value, _) => builder.write_string(value),
-        Pat::Int8(value, _) => builder.write_string(value + "i8"),
-        Pat::Int16(value, _) => builder.write_string(value + "i16"),
-        Pat::Int32(value, _) => builder.write_string(value + "i32"),
-        Pat::Int64(value, _) => builder.write_string(value + "i64"),
-        Pat::UInt8(value, _) => builder.write_string(value + "u8"),
-        Pat::UInt16(value, _) => builder.write_string(value + "u16"),
-        Pat::UInt32(value, _) => builder.write_string(value + "u32"),
-        Pat::UInt64(value, _) => builder.write_string(value + "u64"),
         Pat::Float(value, _) => builder.write_string(value),
-        Pat::Float32(value, _) => builder.write_string(value + "f32"),
-        Pat::Float64(value, _) => builder.write_string(value + "f64"),
         Pat::String(value, _) => pretty_write_quoted_string(builder, value),
         Pat::Char(value, _) => {
             builder.write_char('\'');

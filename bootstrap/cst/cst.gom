@@ -24,6 +24,7 @@ pub enum NodeKind {
     TYPE_LIST,
     TYPE_UNIT,
     TYPE_BOOL,
+    TYPE_INT,
     TYPE_INT8,
     TYPE_INT16,
     TYPE_INT32,
@@ -65,17 +66,7 @@ pub enum NodeKind {
     EXPR_UNIT,
     EXPR_BOOL,
     EXPR_INT,
-    EXPR_INT8,
-    EXPR_INT16,
-    EXPR_INT32,
-    EXPR_INT64,
-    EXPR_UINT8,
-    EXPR_UINT16,
-    EXPR_UINT32,
-    EXPR_UINT64,
     EXPR_FLOAT,
-    EXPR_FLOAT32,
-    EXPR_FLOAT64,
     EXPR_CHAR,
     EXPR_STR,
     EXPR_MULTILINE_STR,
@@ -105,17 +96,7 @@ pub enum NodeKind {
     PATTERN_BOOL,
     PATTERN_STRING,
     PATTERN_INT,
-    PATTERN_INT8,
-    PATTERN_INT16,
-    PATTERN_INT32,
-    PATTERN_INT64,
-    PATTERN_UINT8,
-    PATTERN_UINT16,
-    PATTERN_UINT32,
-    PATTERN_UINT64,
     PATTERN_FLOAT,
-    PATTERN_FLOAT32,
-    PATTERN_FLOAT64,
     PATTERN_CHAR,
     PATTERN_TUPLE,
     PATTERN_ARRAY,
@@ -146,7 +127,7 @@ pub enum NodeKind {
 pub struct CstNode {
     pub kind: NodeKind,
     pub children: Vec[CstElement],
-    pub byte_len: int32,
+    pub byte_len: int,
 }
 
 pub enum CstElement {
@@ -156,8 +137,8 @@ pub enum CstElement {
 
 pub struct Diagnostic {
     pub message: string,
-    pub start: int32,
-    pub end: int32,
+    pub start: int,
+    pub end: int,
 }
 
 pub struct ParseResult {
@@ -165,11 +146,11 @@ pub struct ParseResult {
     pub diagnostics: Vec[Diagnostic],
 }
 
-pub fn node(kind: NodeKind, children: Vec[CstElement], byte_len: int32) -> CstNode {
+pub fn node(kind: NodeKind, children: Vec[CstElement], byte_len: int) -> CstNode {
     CstNode { kind, children, byte_len }
 }
 
-pub fn diagnostic(message: string, start: int32, end: int32) -> Diagnostic {
+pub fn diagnostic(message: string, start: int, end: int) -> Diagnostic {
     Diagnostic { message, start, end }
 }
 
@@ -185,11 +166,11 @@ pub fn node_children(value: CstNode) -> Vec[CstElement] {
     value.children
 }
 
-pub fn node_byte_len(value: CstNode) -> int32 {
+pub fn node_byte_len(value: CstNode) -> int {
     value.byte_len
 }
 
-pub fn element_byte_len(value: CstElement) -> int32 {
+pub fn element_byte_len(value: CstElement) -> int {
     match value {
         CstElement::Node(node_value) => node_value.byte_len,
         CstElement::Token(token) => token.text.byte_len(),
@@ -205,18 +186,26 @@ pub fn node_kind_equal(left: NodeKind, right: NodeKind) -> bool {
     Eq::eq(left, right)
 }
 
-fn debug_write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+fn debug_write_spaces(builder: text::StringBuilder, count: int) -> unit {
     for _ in range(0, count) {
         builder.write_string("  ")
     }
 }
 
-fn debug_utf8_width(value: uint8) -> int32 {
-    if value < 128u8 {
+fn cst_token_kind_name(kind: lexer::TokenKind) -> string {
+    if lexer::token_kind_equal(kind, lexer::TokenKind::IntLit) {
+        "Int"
+    } else {
+        lexer::token_kind_name(kind)
+    }
+}
+
+fn debug_utf8_width(value: uint8) -> int {
+    if value < 128 {
         1
-    } else if value < 224u8 {
+    } else if value < 224 {
         2
-    } else if value < 240u8 {
+    } else if value < 240 {
         3
     } else {
         4
@@ -225,33 +214,33 @@ fn debug_utf8_width(value: uint8) -> int32 {
 
 fn debug_hex_digit(value: uint8) -> char {
     match value {
-        0u8 => '0',
-        1u8 => '1',
-        2u8 => '2',
-        3u8 => '3',
-        4u8 => '4',
-        5u8 => '5',
-        6u8 => '6',
-        7u8 => '7',
-        8u8 => '8',
-        9u8 => '9',
-        10u8 => 'a',
-        11u8 => 'b',
-        12u8 => 'c',
-        13u8 => 'd',
-        14u8 => 'e',
+        0 => '0',
+        1 => '1',
+        2 => '2',
+        3 => '3',
+        4 => '4',
+        5 => '5',
+        6 => '6',
+        7 => '7',
+        8 => '8',
+        9 => '9',
+        10 => 'a',
+        11 => 'b',
+        12 => 'c',
+        13 => 'd',
+        14 => 'e',
         _ => 'f',
     }
 }
 
 fn debug_write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
     builder.write_string("\\u{");
-    if value >= 16u8 {
-        builder.write_char(debug_hex_digit(value / 16u8))
+    if value >= 16 {
+        builder.write_char(debug_hex_digit(value / 16))
     } else {
         ()
     };
-    builder.write_char(debug_hex_digit(value % 16u8));
+    builder.write_char(debug_hex_digit(value % 16));
     builder.write_char('}')
 }
 
@@ -260,19 +249,19 @@ fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> uni
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte == 34u8 {
+        if byte == 34 {
             builder.write_string("\\\"")
-        } else if byte == 92u8 {
+        } else if byte == 92 {
             builder.write_string("\\\\")
-        } else if byte == 10u8 {
+        } else if byte == 10 {
             builder.write_string("\\n")
-        } else if byte == 13u8 {
+        } else if byte == 13 {
             builder.write_string("\\r")
-        } else if byte == 9u8 {
+        } else if byte == 9 {
             builder.write_string("\\t")
-        } else if byte == 0u8 {
+        } else if byte == 0 {
             builder.write_string("\\0")
-        } else if byte < 32u8 || byte == 127u8 {
+        } else if byte < 32 || byte == 127 {
             debug_write_control_escape(builder, byte)
         } else {
             let width = debug_utf8_width(byte);
@@ -297,10 +286,10 @@ fn debug_token_text(value: string) -> string {
 
 fn debug_write_node(
     value: CstNode,
-    start: int32,
-    depth: int32,
+    start: int,
+    depth: int,
     builder: text::StringBuilder,
-) -> int32 {
+) -> int {
     let end = start + value.byte_len;
     debug_write_spaces(builder, depth);
     builder.write_string(node_kind_name(value.kind));
@@ -321,7 +310,7 @@ fn debug_write_node(
             CstElement::Token(token) => {
                 let token_end = cursor.get() + token.text.byte_len();
                 debug_write_spaces(builder, depth + 1);
-                builder.write_string(lexer::token_kind_name(token.kind));
+                builder.write_string(cst_token_kind_name(token.kind));
                 builder.write_char('@');
                 builder.write_string(cursor.get().to_string());
                 builder.write_string("..");
@@ -343,7 +332,7 @@ pub fn debug_tree(result: ParseResult) -> string {
     rendered.byte_slice(0, rendered.byte_len() - 1)
 }
 
-fn encode_node(value: CstNode, start: int32, builder: text::StringBuilder) -> int32 {
+fn encode_node(value: CstNode, start: int, builder: text::StringBuilder) -> int {
     let end = start + value.byte_len;
     builder.write_string("N\t");
     builder.write_string(node_kind_name(value.kind));
@@ -358,7 +347,7 @@ fn encode_node(value: CstNode, start: int32, builder: text::StringBuilder) -> in
             CstElement::Node(child_node) => cursor.set(encode_node(child_node, cursor.get(), builder)),
             CstElement::Token(token) => {
                 builder.write_string("T\t");
-                builder.write_string(lexer::token_kind_name(token.kind));
+                builder.write_string(cst_token_kind_name(token.kind));
                 builder.write_string("\t");
                 builder.write_string(cursor.get().to_string());
                 builder.write_string("\t");

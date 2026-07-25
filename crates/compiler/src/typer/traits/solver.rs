@@ -911,6 +911,7 @@ fn canonicalize_ty(
         tast::Ty::TUnit => tast::Ty::TUnit,
         tast::Ty::TNever => tast::Ty::TNever,
         tast::Ty::TBool => tast::Ty::TBool,
+        tast::Ty::TInt => tast::Ty::TInt,
         tast::Ty::TInt8 => tast::Ty::TInt8,
         tast::Ty::TInt16 => tast::Ty::TInt16,
         tast::Ty::TInt32 => tast::Ty::TInt32,
@@ -968,6 +969,9 @@ fn canonicalize_ty(
             elem: Box::new(canonicalize_ty(elem, variables, next)),
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(canonicalize_ty(elem, variables, next)),
+        },
+        tast::Ty::TChannel { elem } => tast::Ty::TChannel {
             elem: Box::new(canonicalize_ty(elem, variables, next)),
         },
         tast::Ty::THashMap { key, value } => tast::Ty::THashMap {

@@ -5,18 +5,8 @@ use gomlc::lexer;
 
 fn is_expr_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::Int
-        | lexer::TokenKind::Int8Lit
-        | lexer::TokenKind::Int16Lit
-        | lexer::TokenKind::Int32Lit
-        | lexer::TokenKind::Int64Lit
-        | lexer::TokenKind::UInt8Lit
-        | lexer::TokenKind::UInt16Lit
-        | lexer::TokenKind::UInt32Lit
-        | lexer::TokenKind::UInt64Lit
+        lexer::TokenKind::IntLit
         | lexer::TokenKind::Float
-        | lexer::TokenKind::Float32Lit
-        | lexer::TokenKind::Float64Lit
         | lexer::TokenKind::Str
         | lexer::TokenKind::MultilineStr
         | lexer::TokenKind::CharLit
@@ -55,7 +45,7 @@ fn expect_expr_with_message(parser: Parser, message: string) -> bool {
     }
 }
 
-fn expect_expr_bp_with_message(parser: Parser, min_bp: int32, message: string) -> bool {
+fn expect_expr_bp_with_message(parser: Parser, min_bp: int, message: string) -> bool {
     if marker_is_none(expr_bp(parser, min_bp)) == false {
         true
     } else {
@@ -333,18 +323,8 @@ fn go_expression(parser: Parser) -> MarkerClosed {
 
 fn atom(parser: Parser) -> Option[MarkerClosed] {
     let result = match parser.peek() {
-        lexer::TokenKind::Int => simple_expression(parser, cst::NodeKind::EXPR_INT),
-        lexer::TokenKind::Int8Lit => simple_expression(parser, cst::NodeKind::EXPR_INT8),
-        lexer::TokenKind::Int16Lit => simple_expression(parser, cst::NodeKind::EXPR_INT16),
-        lexer::TokenKind::Int32Lit => simple_expression(parser, cst::NodeKind::EXPR_INT32),
-        lexer::TokenKind::Int64Lit => simple_expression(parser, cst::NodeKind::EXPR_INT64),
-        lexer::TokenKind::UInt8Lit => simple_expression(parser, cst::NodeKind::EXPR_UINT8),
-        lexer::TokenKind::UInt16Lit => simple_expression(parser, cst::NodeKind::EXPR_UINT16),
-        lexer::TokenKind::UInt32Lit => simple_expression(parser, cst::NodeKind::EXPR_UINT32),
-        lexer::TokenKind::UInt64Lit => simple_expression(parser, cst::NodeKind::EXPR_UINT64),
+        lexer::TokenKind::IntLit => simple_expression(parser, cst::NodeKind::EXPR_INT),
         lexer::TokenKind::Float => simple_expression(parser, cst::NodeKind::EXPR_FLOAT),
-        lexer::TokenKind::Float32Lit => simple_expression(parser, cst::NodeKind::EXPR_FLOAT32),
-        lexer::TokenKind::Float64Lit => simple_expression(parser, cst::NodeKind::EXPR_FLOAT64),
         lexer::TokenKind::LBracket => array_literal(parser),
         lexer::TokenKind::Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
         lexer::TokenKind::MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
@@ -583,7 +563,7 @@ fn looks_like_struct_literal(parser: Parser) -> bool {
     }
 }
 
-fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int32] {
+fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int] {
     match kind {
         lexer::TokenKind::LParen | lexer::TokenKind::LBracket => Option::Some(21),
         lexer::TokenKind::Question => Option::Some(22),
@@ -591,14 +571,14 @@ fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int32] {
     }
 }
 
-fn prefix_binding_power(kind: lexer::TokenKind) -> Option[int32] {
+fn prefix_binding_power(kind: lexer::TokenKind) -> Option[int] {
     match kind {
         lexer::TokenKind::Minus | lexer::TokenKind::Bang | lexer::TokenKind::Tilde => Option::Some(23),
         _ => Option::None,
     }
 }
 
-fn infix_binding_power(kind: lexer::TokenKind) -> Option[(int32, int32)] {
+fn infix_binding_power(kind: lexer::TokenKind) -> Option[(int, int)] {
     match kind {
         lexer::TokenKind::OrOr => Option::Some((1, 2)),
         lexer::TokenKind::AndAnd => Option::Some((3, 4)),
@@ -636,7 +616,7 @@ fn expr(parser: Parser) -> Option[MarkerClosed] {
     expr_bp(parser, 0)
 }
 
-fn expr_bp(parser: Parser, min_bp: int32) -> Option[MarkerClosed] {
+fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
     if parser.enter_expr() == false {
         Option::None
     } else {

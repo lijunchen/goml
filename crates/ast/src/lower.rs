@@ -696,6 +696,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
     match node {
         cst::Type::UnitTy(_) => Some(ast::TypeExpr::TUnit),
         cst::Type::BoolTy(_) => Some(ast::TypeExpr::TBool),
+        cst::Type::IntTy(_) => Some(ast::TypeExpr::TInt),
         cst::Type::Int8Ty(_) => Some(ast::TypeExpr::TInt8),
         cst::Type::Int16Ty(_) => Some(ast::TypeExpr::TInt16),
         cst::Type::Int32Ty(_) => Some(ast::TypeExpr::TInt32),
@@ -1247,142 +1248,6 @@ fn lower_expr_with_args(
             }
             Some(ast::Expr::EInt { value, astptr })
         }
-        cst::Expr::Int8Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "Int8Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EInt8 { value, astptr })
-        }
-        cst::Expr::Int16Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "Int16Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EInt16 { value, astptr })
-        }
-        cst::Expr::Int32Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "Int32Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EInt32 { value, astptr })
-        }
-        cst::Expr::Int64Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "Int64Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EInt64 { value, astptr })
-        }
-        cst::Expr::UInt8Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "UInt8Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("u8").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EUInt8 { value, astptr })
-        }
-        cst::Expr::UInt16Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "UInt16Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("u16").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EUInt16 { value, astptr })
-        }
-        cst::Expr::UInt32Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "UInt32Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("u32").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EUInt32 { value, astptr })
-        }
-        cst::Expr::UInt64Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "UInt64Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to integer literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EUInt64 { value, astptr })
-        }
         cst::Expr::FloatExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
@@ -1408,40 +1273,6 @@ fn lower_expr_with_args(
                 return None;
             }
             Some(ast::Expr::EFloat { value, astptr })
-        }
-        cst::Expr::Float32Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "Float32Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("f32").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to float literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EFloat32 { value, astptr })
-        }
-        cst::Expr::Float64Expr(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let Some(token) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "Float64Expr has no value");
-                return None;
-            };
-            let text = token.to_string().replace('_', "");
-            let value = text.strip_suffix("f64").unwrap_or(&text).to_string();
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to float literal",
-                );
-                return None;
-            }
-            Some(ast::Expr::EFloat64 { value, astptr })
         }
         cst::Expr::CharExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -2715,96 +2546,12 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                 astptr: MySyntaxNodePtr::new(it.syntax()),
             })
         }
-        cst::Pattern::Int8Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
-            let neg = if it.is_negative() { "-" } else { "" };
-            Some(ast::Pat::PInt8 {
-                value: format!("{}{}", neg, value),
-                astptr,
-            })
-        }
-        cst::Pattern::Int16Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
-            let neg = if it.is_negative() { "-" } else { "" };
-            Some(ast::Pat::PInt16 {
-                value: format!("{}{}", neg, value),
-                astptr,
-            })
-        }
-        cst::Pattern::Int32Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
-            let neg = if it.is_negative() { "-" } else { "" };
-            Some(ast::Pat::PInt32 {
-                value: format!("{}{}", neg, value),
-                astptr,
-            })
-        }
-        cst::Pattern::Int64Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
-            let neg = if it.is_negative() { "-" } else { "" };
-            Some(ast::Pat::PInt64 {
-                value: format!("{}{}", neg, value),
-                astptr,
-            })
-        }
-        cst::Pattern::UInt8Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("u8").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt8 { value, astptr })
-        }
-        cst::Pattern::UInt16Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("u16").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt16 { value, astptr })
-        }
-        cst::Pattern::UInt32Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("u32").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt32 { value, astptr })
-        }
-        cst::Pattern::UInt64Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt64 { value, astptr })
-        }
         cst::Pattern::FloatPat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string().replace('_', "");
             let neg = if it.is_negative() { "-" } else { "" };
             Some(ast::Pat::PFloat {
                 value: format!("{}{}", neg, text),
-                astptr,
-            })
-        }
-        cst::Pattern::Float32Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("f32").unwrap_or(&text).to_string();
-            let neg = if it.is_negative() { "-" } else { "" };
-            Some(ast::Pat::PFloat32 {
-                value: format!("{}{}", neg, value),
-                astptr,
-            })
-        }
-        cst::Pattern::Float64Pat(it) => {
-            let astptr = MySyntaxNodePtr::new(it.syntax());
-            let text = it.value()?.to_string().replace('_', "");
-            let value = text.strip_suffix("f64").unwrap_or(&text).to_string();
-            let neg = if it.is_negative() { "-" } else { "" };
-            Some(ast::Pat::PFloat64 {
-                value: format!("{}{}", neg, value),
                 astptr,
             })
         }

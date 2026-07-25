@@ -18,6 +18,7 @@ fn function_context(
         source_path: base.source_path,
         current_span: base.current_span,
         coercion_constraints: Vec::new(),
+        numeric_literal_constraints: Vec::new(),
         defer_coercion_depth: Ref::new(0),
         package_aliases: base.package_aliases,
         in_scope_traits: base.in_scope_traits,
@@ -28,6 +29,7 @@ fn function_context(
         rejected_externs: base.rejected_externs,
         methods: base.methods,
         impls: base.impls,
+        invalid_impl_origins: base.invalid_impl_origins,
         invalid_impl_arity_owners: base.invalid_impl_arity_owners,
         predicates,
         param_aliases,
@@ -56,6 +58,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         source_path: base.source_path,
         current_span: base.current_span,
         coercion_constraints: base.coercion_constraints,
+        numeric_literal_constraints: base.numeric_literal_constraints,
         defer_coercion_depth: base.defer_coercion_depth,
         package_aliases: base.package_aliases,
         in_scope_traits: base.in_scope_traits,
@@ -66,6 +69,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         rejected_externs: base.rejected_externs,
         methods: base.methods,
         impls: base.impls,
+        invalid_impl_origins: base.invalid_impl_origins,
         invalid_impl_arity_owners: base.invalid_impl_arity_owners,
         predicates: base.predicates,
         param_aliases: base.param_aliases,
@@ -163,8 +167,9 @@ fn check_function(
     };
     let body = check_block(ctx, value.body, Option::Some(ret_ty));
     resolve_field_constraints(ctx);
-    resolve_required_predicates(ctx);
     resolve_coercion_constraints(ctx);
+    resolve_numeric_literal_constraints(ctx);
+    resolve_required_predicates(ctx);
     Function {
         visibility: value.visibility,
         name: value.name,
@@ -578,7 +583,7 @@ fn by_value_type_has_cycle(
     }
 }
 
-fn validate_struct_sizes(ctx: Checker, struct_count: int32) -> unit {
+fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
     for index in range(0, struct_count) {
         let info = ctx.structs.get(index);
         let active = Vec::new().pushed(info.name);
@@ -606,9 +611,9 @@ fn validate_struct_sizes(ctx: Checker, struct_count: int32) -> unit {
 
 fn validate_local_definitions(
     ctx: Checker,
-    enum_count: int32,
-    struct_count: int32,
-    trait_count: int32,
+    enum_count: int,
+    struct_count: int,
+    trait_count: int,
 ) -> unit {
     for index in range(0, enum_count) {
         for variant in ctx.enums.get(index).variants {
@@ -691,7 +696,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
-fn declaration_name_index(values: Vec[string], expected: string) -> int32 {
+fn declaration_name_index(values: Vec[string], expected: string) -> int {
     for index in range(0, values.len()) {
         if values.get(index) == expected {
             return index
@@ -823,7 +828,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
 
 fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
     let nominal_names: Vec[string] = Vec::new();
-    let nominal_kinds: Vec[int32] = Vec::new();
+    let nominal_kinds: Vec[int] = Vec::new();
     let function_names: Vec[string] = Vec::new();
     for item in value.items {
         let nominal = match item {
@@ -916,11 +921,11 @@ fn validate_cross_file_declaration_names(
         files.push(file)
     };
     let nominal_names: Vec[string] = Vec::new();
-    let nominal_kinds: Vec[int32] = Vec::new();
+    let nominal_kinds: Vec[int] = Vec::new();
     let function_names: Vec[string] = Vec::new();
     for file in files {
         let local_nominal_names: Vec[string] = Vec::new();
-        let local_nominal_kinds: Vec[int32] = Vec::new();
+        let local_nominal_kinds: Vec[int] = Vec::new();
         let local_function_names: Vec[string] = Vec::new();
         for item in file.items {
             let nominal = match item {

@@ -26,8 +26,8 @@ fn core_len(value: Expr) -> Expr {
     core_call("len", args)
 }
 
-fn core_int32(value: Expr) -> Expr {
-    Expr::Convert(Type::Int32, value)
+fn core_int(value: Expr) -> Expr {
+    Expr::Convert(Type::Int, value)
 }
 
 fn core_tuple_type2(first: tast::Type, second: tast::Type) -> Type {
@@ -57,25 +57,25 @@ fn string_len_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Return(Option::Some(core_int32(core_len(Expr::Var("s"))))));
-    core_function_item("core.string_len", params, Type::Int32, stmts)
+    stmts.push(Stmt::Return(Option::Some(core_int(core_len(Expr::Var("s"))))));
+    core_function_item("core.string_len", params, Type::Int, stmts)
 }
 
 fn string_decode_utf8_at_native_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
-    params.push(("i", Type::Int32));
+    params.push(("i", Type::Int));
     let returns: Vec[Type] = Vec::new();
     returns.push(Type::Bool);
     returns.push(Type::Char);
-    returns.push(Type::Int32);
+    returns.push(Type::Int);
     let invalid: Vec[Expr] = Vec::new();
     invalid.push(Expr::Bool(false));
     invalid.push(Expr::Int("0"));
     invalid.push(Expr::Int("0"));
     let invalid_index_stmts: Vec[Stmt] = Vec::new();
     invalid_index_stmts.push(Stmt::ReturnMulti(invalid));
-    let length = core_int32(core_len(Expr::Var("s")));
+    let length = core_int(core_len(Expr::Var("s")));
     let invalid_index = Expr::Binary(
         BinaryOp::Or,
         Expr::Binary(BinaryOp::Less, Expr::Var("i"), Expr::Int("0")),
@@ -93,7 +93,7 @@ fn string_decode_utf8_at_native_item() -> Item {
     decode_args.push(Expr::Slice(
         Expr::Var("s"),
         Expr::Var("i"),
-        core_int32(core_len(Expr::Var("s"))),
+        core_int(core_len(Expr::Var("s"))),
     ));
     let names: Vec[string] = Vec::new();
     names.push("value");
@@ -124,7 +124,7 @@ fn string_decode_utf8_at_native_item() -> Item {
     let valid: Vec[Expr] = Vec::new();
     valid.push(Expr::Bool(true));
     valid.push(Expr::Var("value"));
-    valid.push(core_int32(Expr::Var("width")));
+    valid.push(core_int(Expr::Var("width")));
     stmts.push(Stmt::ReturnMulti(valid));
     Item::Function(Function {
         name: go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
@@ -137,7 +137,7 @@ fn string_decode_utf8_at_native_item() -> Item {
 fn string_get_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
-    params.push(("i", Type::Int32));
+    params.push(("i", Type::Int));
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::Var("valid", Type::Bool, Option::None));
     stmts.push(Stmt::Var("value", Type::Char, Option::None));
@@ -169,7 +169,7 @@ fn string_get_hook_item() -> Item {
 fn string_byte_get_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
-    params.push(("i", Type::Int32));
+    params.push(("i", Type::Int));
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::Return(Option::Some(Expr::Index(
         Expr::Var("s"),
@@ -188,8 +188,8 @@ fn string_boundary_call(index: string) -> Expr {
 fn string_byte_slice_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
-    params.push(("start", Type::Int32));
-    params.push(("end", Type::Int32));
+    params.push(("start", Type::Int));
+    params.push(("end", Type::Int));
     let invalid_stmts: Vec[Stmt] = Vec::new();
     invalid_stmts.push(Stmt::Panic("invalid string byte slice"));
     let stmts: Vec[Stmt] = Vec::new();
@@ -216,12 +216,12 @@ fn string_byte_slice_hook_item() -> Item {
 fn string_is_char_boundary_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
-    params.push(("i", Type::Int32));
+    params.push(("i", Type::Int));
     let out_of_range_stmts: Vec[Stmt] = Vec::new();
     out_of_range_stmts.push(Stmt::Return(Option::Some(Expr::Bool(false))));
     let at_end_stmts: Vec[Stmt] = Vec::new();
     at_end_stmts.push(Stmt::Return(Option::Some(Expr::Bool(true))));
-    let length = core_int32(core_len(Expr::Var("s")));
+    let length = core_int(core_len(Expr::Var("s")));
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::If(
         Expr::Binary(
@@ -236,7 +236,7 @@ fn string_is_char_boundary_hook_item() -> Item {
         Expr::Binary(
             BinaryOp::Eq,
             Expr::Var("i"),
-            core_int32(core_len(Expr::Var("s"))),
+            core_int(core_len(Expr::Var("s"))),
         ),
         Block { stmts: at_end_stmts },
         Option::None,
@@ -258,11 +258,11 @@ fn string_is_char_boundary_hook_item() -> Item {
 fn string_decode_utf8_at_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
-    params.push(("i", Type::Int32));
+    params.push(("i", Type::Int));
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::Var("valid", Type::Bool, Option::None));
     stmts.push(Stmt::Var("value", Type::Char, Option::None));
-    stmts.push(Stmt::Var("width", Type::Int32, Option::None));
+    stmts.push(Stmt::Var("width", Type::Int, Option::None));
     let names: Vec[string] = Vec::new();
     names.push("valid");
     names.push("value");
@@ -280,7 +280,7 @@ fn string_decode_utf8_at_hook_item() -> Item {
     let ret_ty = core_tuple_type3(
         tast::Type::Bool,
         tast::Type::Char,
-        tast::Type::Int32,
+        tast::Type::Int,
     );
     let values: Vec[Expr] = Vec::new();
     values.push(Expr::Var("valid"));
@@ -428,7 +428,9 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
 }
 
 fn integer_hash_hook_type(key: string) -> Option[Type] {
-    if key == "core.int8_hash" {
+    if key == "core.int_hash" {
+        Option::Some(Type::Int)
+    } else if key == "core.int8_hash" {
         Option::Some(Type::Int8)
     } else if key == "core.int16_hash" {
         Option::Some(Type::Int16)
@@ -493,7 +495,7 @@ fn string_hash_hook_item() -> Item {
     ));
     stmts.push(Stmt::Var(
         "i",
-        Type::Int32,
+        Type::Int,
         Option::Some(Expr::Int("0")),
     ));
     let loop_stmts: Vec[Stmt] = Vec::new();
@@ -503,7 +505,7 @@ fn string_hash_hook_item() -> Item {
         Expr::Binary(
             BinaryOp::GreaterEq,
             Expr::Var("i"),
-            core_int32(core_len(Expr::Var("s"))),
+            core_int(core_len(Expr::Var("s"))),
         ),
         Block { stmts: break_stmts },
         Option::None,

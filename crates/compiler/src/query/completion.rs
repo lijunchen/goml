@@ -1234,7 +1234,8 @@ fn completion_constructor_name(ty: &tast::Ty) -> Option<String> {
         | tast::Ty::TSlice { .. }
         | tast::Ty::TVec { .. }
         | tast::Ty::TRef { .. }
-        | tast::Ty::THashMap { .. } => Some(ty.get_constr_name_unsafe()),
+        | tast::Ty::THashMap { .. }
+        | tast::Ty::TChannel { .. } => Some(ty.get_constr_name_unsafe()),
         _ => None,
     }
 }

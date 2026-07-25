@@ -1008,6 +1008,7 @@ impl From<&ast::Path> for QualifiedPath {
 pub enum TypeExpr {
     TUnit,
     TBool,
+    TInt,
     TInt8,
     TInt16,
     TInt32,
@@ -1052,6 +1053,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
         match ty {
             ast::TypeExpr::TUnit => TypeExpr::TUnit,
             ast::TypeExpr::TBool => TypeExpr::TBool,
+            ast::TypeExpr::TInt => TypeExpr::TInt,
             ast::TypeExpr::TInt8 => TypeExpr::TInt8,
             ast::TypeExpr::TInt16 => TypeExpr::TInt16,
             ast::TypeExpr::TInt32 => TypeExpr::TInt32,
@@ -1433,38 +1435,8 @@ pub enum Expr {
     EInt {
         value: String,
     },
-    EInt8 {
-        value: String,
-    },
-    EInt16 {
-        value: String,
-    },
-    EInt32 {
-        value: String,
-    },
-    EInt64 {
-        value: String,
-    },
-    EUInt8 {
-        value: String,
-    },
-    EUInt16 {
-        value: String,
-    },
-    EUInt32 {
-        value: String,
-    },
-    EUInt64 {
-        value: String,
-    },
     EFloat {
         value: f64,
-    },
-    EFloat32 {
-        value: String,
-    },
-    EFloat64 {
-        value: String,
     },
     EString {
         value: String,
@@ -1584,37 +1556,7 @@ pub enum Pat {
     PInt {
         value: String,
     },
-    PInt8 {
-        value: String,
-    },
-    PInt16 {
-        value: String,
-    },
-    PInt32 {
-        value: String,
-    },
-    PInt64 {
-        value: String,
-    },
-    PUInt8 {
-        value: String,
-    },
-    PUInt16 {
-        value: String,
-    },
-    PUInt32 {
-        value: String,
-    },
-    PUInt64 {
-        value: String,
-    },
     PFloat {
-        value: String,
-    },
-    PFloat32 {
-        value: String,
-    },
-    PFloat64 {
         value: String,
     },
     PString {

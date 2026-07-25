@@ -17,6 +17,7 @@ pub(crate) fn parse_integer_literal_with_ty(
     range: Option<TextRange>,
 ) -> Option<Prim> {
     match ty {
+        tast::Ty::TInt => parse_int(diagnostics, literal, range).map(|value| Prim::Int { value }),
         tast::Ty::TInt8 => parse_signed_integer(diagnostics, literal, "int8", range)
             .map(|value| Prim::Int8 { value }),
         tast::Ty::TInt16 => parse_signed_integer(diagnostics, literal, "int16", range)
@@ -35,6 +36,91 @@ pub(crate) fn parse_integer_literal_with_ty(
             .map(|value| Prim::UInt64 { value }),
         _ => None,
     }
+}
+
+fn parse_int(
+    diagnostics: &mut Diagnostics,
+    literal: &str,
+    range: Option<TextRange>,
+) -> Option<i64> {
+    #[cfg(target_pointer_width = "32")]
+    {
+        parse_signed_integer::<i32>(diagnostics, literal, "int", range).map(i64::from)
+    }
+    #[cfg(target_pointer_width = "64")]
+    {
+        parse_signed_integer::<i64>(diagnostics, literal, "int", range)
+    }
+}
+
+pub(crate) fn parse_integer_literal_with_numeric_ty(
+    diagnostics: &mut Diagnostics,
+    literal: &str,
+    ty: &tast::Ty,
+    range: Option<TextRange>,
+) -> Option<Prim> {
+    if super::operators::is_integer_ty(ty) {
+        return parse_integer_literal_with_ty(diagnostics, literal, ty, range);
+    }
+    if super::operators::is_float_ty(ty) {
+        let value = match literal.parse::<f64>() {
+            Ok(value) => value,
+            Err(_) => {
+                push_error_with_range(
+                    diagnostics,
+                    format!("Invalid integer literal: {literal}"),
+                    range,
+                );
+                return None;
+            }
+        };
+        ensure_float_literal_fits(diagnostics, value, ty, range);
+        return Some(Prim::from_float_literal(value, ty));
+    }
+    push_error_with_range(
+        diagnostics,
+        format!(
+            "Numeric literal cannot be used as {}",
+            super::util::format_ty_for_diag(ty)
+        ),
+        range,
+    );
+    None
+}
+
+pub(crate) fn parse_float_literal_value_with_numeric_ty(
+    diagnostics: &mut Diagnostics,
+    value: f64,
+    ty: &tast::Ty,
+    range: Option<TextRange>,
+) -> Option<Prim> {
+    if super::operators::is_float_ty(ty) {
+        ensure_float_literal_fits(diagnostics, value, ty, range);
+        return Some(Prim::from_float_literal(value, ty));
+    }
+    if super::operators::is_integer_ty(ty) {
+        if !value.is_finite() || value.fract() != 0.0 {
+            push_error_with_range(
+                diagnostics,
+                format!(
+                    "Float literal {value} cannot be represented as {}",
+                    super::util::format_ty_for_diag(ty)
+                ),
+                range,
+            );
+            return None;
+        }
+        return parse_integer_literal_with_ty(diagnostics, &format!("{value:.0}"), ty, range);
+    }
+    push_error_with_range(
+        diagnostics,
+        format!(
+            "Numeric literal cannot be used as {}",
+            super::util::format_ty_for_diag(ty)
+        ),
+        range,
+    );
+    None
 }
 
 pub(crate) fn parse_char_literal(
@@ -199,33 +285,5 @@ pub(crate) fn ensure_float_literal_fits(
             format!("Float literal {value} does not fit in float32"),
             range,
         );
-    }
-}
-
-pub(crate) fn parse_float_literal_with_ty(
-    diagnostics: &mut Diagnostics,
-    literal: &str,
-    ty: &tast::Ty,
-    range: Option<TextRange>,
-) -> Option<Prim> {
-    match literal.parse::<f64>() {
-        Ok(value) => {
-            ensure_float_literal_fits(diagnostics, value, ty, range);
-            match ty {
-                tast::Ty::TFloat32 => Some(Prim::Float32 {
-                    value: value as f32,
-                }),
-                tast::Ty::TFloat64 => Some(Prim::Float64 { value }),
-                _ => None,
-            }
-        }
-        Err(_) => {
-            push_error_with_range(
-                diagnostics,
-                format!("Invalid float literal: {literal}"),
-                range,
-            );
-            None
-        }
     }
 }

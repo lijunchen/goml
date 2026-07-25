@@ -3,13 +3,13 @@ package hir;
 use gomlc::ast;
 use std::text;
 
-fn write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
     for _ in range(0, count) {
         builder.write_char(' ')
     }
 }
 
-fn newline(builder: text::StringBuilder, indent: int32) -> unit {
+fn newline(builder: text::StringBuilder, indent: int) -> unit {
     builder.write_char('\n');
     write_spaces(builder, indent)
 }
@@ -52,6 +52,7 @@ fn write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
     match value {
         TypeExpr::Unit => builder.write_string("unit"),
         TypeExpr::Bool => builder.write_string("bool"),
+        TypeExpr::Int => builder.write_string("int"),
         TypeExpr::Int8 => builder.write_string("int8"),
         TypeExpr::Int16 => builder.write_string("int16"),
         TypeExpr::Int32 => builder.write_string("int32"),
@@ -239,12 +240,12 @@ fn write_constructor(builder: text::StringBuilder, value: ConstructorRef) -> uni
     }
 }
 
-fn utf8_width(value: uint8) -> int32 {
-    if value < 128u8 {
+fn utf8_width(value: uint8) -> int {
+    if value < 128 {
         1
-    } else if value < 224u8 {
+    } else if value < 224 {
         2
-    } else if value < 240u8 {
+    } else if value < 240 {
         3
     } else {
         4
@@ -253,33 +254,33 @@ fn utf8_width(value: uint8) -> int32 {
 
 fn hex_digit(value: uint8) -> char {
     match value {
-        0u8 => '0',
-        1u8 => '1',
-        2u8 => '2',
-        3u8 => '3',
-        4u8 => '4',
-        5u8 => '5',
-        6u8 => '6',
-        7u8 => '7',
-        8u8 => '8',
-        9u8 => '9',
-        10u8 => 'a',
-        11u8 => 'b',
-        12u8 => 'c',
-        13u8 => 'd',
-        14u8 => 'e',
+        0 => '0',
+        1 => '1',
+        2 => '2',
+        3 => '3',
+        4 => '4',
+        5 => '5',
+        6 => '6',
+        7 => '7',
+        8 => '8',
+        9 => '9',
+        10 => 'a',
+        11 => 'b',
+        12 => 'c',
+        13 => 'd',
+        14 => 'e',
         _ => 'f',
     }
 }
 
 fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
     builder.write_string("\\u{");
-    if value >= 16u8 {
-        builder.write_char(hex_digit(value / 16u8))
+    if value >= 16 {
+        builder.write_char(hex_digit(value / 16))
     } else {
         ()
     };
-    builder.write_char(hex_digit(value % 16u8));
+    builder.write_char(hex_digit(value % 16));
     builder.write_char('}')
 }
 
@@ -288,19 +289,19 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte == 34u8 {
+        if byte == 34 {
             builder.write_string("\\\"")
-        } else if byte == 92u8 {
+        } else if byte == 92 {
             builder.write_string("\\\\")
-        } else if byte == 10u8 {
+        } else if byte == 10 {
             builder.write_string("\\n")
-        } else if byte == 13u8 {
+        } else if byte == 13 {
             builder.write_string("\\r")
-        } else if byte == 9u8 {
+        } else if byte == 9 {
             builder.write_string("\\t")
-        } else if byte == 0u8 {
+        } else if byte == 0 {
             builder.write_string("\\0")
-        } else if byte < 32u8 || byte == 127u8 {
+        } else if byte < 32 || byte == 127 {
             write_control_escape(builder, byte)
         } else {
             let width = utf8_width(byte);
@@ -346,7 +347,7 @@ fn write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
     separator: string,
-    indent: int32,
+    indent: int,
 ) -> unit {
     let index = Ref::new(0);
     for value in values {
@@ -360,7 +361,7 @@ fn write_exprs(
     }
 }
 
-fn write_block(builder: text::StringBuilder, value: Block, indent: int32) -> unit {
+fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
     if value.stmts.len() == 0 {
         match value.tail {
             Option::None => builder.write_string("{}"),
@@ -391,7 +392,7 @@ fn write_block(builder: text::StringBuilder, value: Block, indent: int32) -> uni
     }
 }
 
-fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit {
+fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
         Stmt::Let(is_mut, pat, annotation, expr) => {
             builder.write_string("let ");
@@ -443,7 +444,7 @@ fn write_static_member(
     }
 }
 
-fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit {
+fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value.kind {
         ExprKind::NameRef(value) => write_name_ref(builder, value),
         ExprKind::StaticMember(owner, member, type_args) => {
@@ -452,17 +453,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
         ExprKind::Unit => builder.write_string("()"),
         ExprKind::Bool(value) => builder.write_string(if value { "true" } else { "false" }),
         ExprKind::Int(value) => builder.write_string(value),
-        ExprKind::Int8(value) => builder.write_string(value + "i8"),
-        ExprKind::Int16(value) => builder.write_string(value + "i16"),
-        ExprKind::Int32(value) => builder.write_string(value + "i32"),
-        ExprKind::Int64(value) => builder.write_string(value + "i64"),
-        ExprKind::UInt8(value) => builder.write_string(value + "u8"),
-        ExprKind::UInt16(value) => builder.write_string(value + "u16"),
-        ExprKind::UInt32(value) => builder.write_string(value + "u32"),
-        ExprKind::UInt64(value) => builder.write_string(value + "u64"),
         ExprKind::Float(value) => builder.write_string(value.to_string()),
-        ExprKind::Float32(value) => builder.write_string(value + "f32"),
-        ExprKind::Float64(value) => builder.write_string(value + "f64"),
         ExprKind::String(value) => write_quoted_string(builder, value),
         ExprKind::Char(value) => {
             builder.write_char('\'');
@@ -641,7 +632,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
     }
 }
 
-fn write_arm(builder: text::StringBuilder, value: Arm, indent: int32) -> unit {
+fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
     write_pat(builder, value.pat, indent);
     match value.guard {
         Option::Some(guard) => {
@@ -666,7 +657,7 @@ fn write_pats(
     builder: text::StringBuilder,
     values: Vec[Pat],
     separator: string,
-    indent: int32,
+    indent: int,
 ) -> unit {
     let index = Ref::new(0);
     for value in values {
@@ -680,23 +671,13 @@ fn write_pats(
     }
 }
 
-fn write_pat(builder: text::StringBuilder, value: Pat, indent: int32) -> unit {
+fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
     match value.kind {
         PatKind::Var(local) => write_local_debug(builder, local),
         PatKind::Unit => builder.write_string("()"),
         PatKind::Bool(value) => builder.write_string(if value { "true" } else { "false" }),
         PatKind::Int(value) => builder.write_string(value),
-        PatKind::Int8(value) => builder.write_string(value + "i8"),
-        PatKind::Int16(value) => builder.write_string(value + "i16"),
-        PatKind::Int32(value) => builder.write_string(value + "i32"),
-        PatKind::Int64(value) => builder.write_string(value + "i64"),
-        PatKind::UInt8(value) => builder.write_string(value + "u8"),
-        PatKind::UInt16(value) => builder.write_string(value + "u16"),
-        PatKind::UInt32(value) => builder.write_string(value + "u32"),
-        PatKind::UInt64(value) => builder.write_string(value + "u64"),
         PatKind::Float(value) => builder.write_string(value),
-        PatKind::Float32(value) => builder.write_string(value + "f32"),
-        PatKind::Float64(value) => builder.write_string(value + "f64"),
         PatKind::String(value) => write_quoted_string(builder, value),
         PatKind::Char(value) => {
             builder.write_char('\'');
@@ -811,7 +792,7 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int32) -> unit {
     }
 }
 
-fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int32) -> unit {
+fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit {
     write_attributes(builder, value.attrs);
     builder.write_string("enum ");
     builder.write_string(value.name);
@@ -856,7 +837,7 @@ fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int32) -> un
     builder.write_char('}')
 }
 
-fn write_struct(builder: text::StringBuilder, value: StructDef, indent: int32) -> unit {
+fn write_struct(builder: text::StringBuilder, value: StructDef, indent: int) -> unit {
     write_attributes(builder, value.attrs);
     builder.write_string("struct ");
     builder.write_string(value.name);
@@ -886,7 +867,7 @@ fn write_trait_method(
     builder.write_char(';')
 }
 
-fn write_trait(builder: text::StringBuilder, value: TraitDef, indent: int32) -> unit {
+fn write_trait(builder: text::StringBuilder, value: TraitDef, indent: int) -> unit {
     write_attributes(builder, value.attrs);
     builder.write_string("trait ");
     builder.write_string(value.name);
@@ -918,7 +899,7 @@ fn write_trait(builder: text::StringBuilder, value: TraitDef, indent: int32) -> 
     builder.write_char('}')
 }
 
-fn write_function(builder: text::StringBuilder, value: Function, indent: int32) -> unit {
+fn write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
     write_attributes(builder, value.attrs);
     builder.write_string("fn ");
     builder.write_string(value.name);
@@ -974,7 +955,7 @@ fn write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
     }
 }
 
-fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int32) -> unit {
+fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
     write_attributes(builder, value.attrs);
     builder.write_string("impl");
     write_bounded_generics(builder, value.generics, value.generic_bounds);
@@ -1004,7 +985,7 @@ fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int32) -> 
     builder.write_char('}')
 }
 
-fn write_item(builder: text::StringBuilder, value: Item, indent: int32) -> unit {
+fn write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
     match value {
         Item::EnumDef(value) => write_enum(builder, value, indent),
         Item::StructDef(value) => write_struct(builder, value, indent),

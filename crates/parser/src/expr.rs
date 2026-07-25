@@ -8,18 +8,8 @@ use lexer::T;
 use lexer::TokenKind;
 
 pub const EXPR_FIRST: &[TokenKind] = &[
-    T![int],
-    T![int8_lit],
-    T![int16_lit],
-    T![int32_lit],
-    T![int64_lit],
-    T![uint8_lit],
-    T![uint16_lit],
-    T![uint32_lit],
-    T![uint64_lit],
+    T![int_lit],
     T![float],
-    T![float32_lit],
-    T![float64_lit],
     T![str],
     T![multiline_str],
     T![char_lit],
@@ -67,65 +57,15 @@ fn expect_expr_bp_with_message(p: &mut Parser, min_bp: u8, message: &str) -> boo
 
 fn atom(p: &mut Parser) -> Option<MarkerClosed> {
     let result = match p.peek() {
-        T![int] => {
+        T![int_lit] => {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::EXPR_INT)
-        }
-        T![int8_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_INT8)
-        }
-        T![int16_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_INT16)
-        }
-        T![int32_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_INT32)
-        }
-        T![int64_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_INT64)
-        }
-        T![uint8_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_UINT8)
-        }
-        T![uint16_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_UINT16)
-        }
-        T![uint32_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_UINT32)
-        }
-        T![uint64_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_UINT64)
         }
         T![float] => {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::EXPR_FLOAT)
-        }
-        T![float32_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_FLOAT32)
-        }
-        T![float64_lit] => {
-            let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_FLOAT64)
         }
         T!['['] => {
             let m = p.open();

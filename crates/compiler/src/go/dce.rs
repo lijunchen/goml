@@ -112,8 +112,12 @@ fn expr_has_label_or_goto(expr: &ast::Expr) -> bool {
         ast::Expr::BinaryOp { lhs, rhs, .. } => {
             expr_has_label_or_goto(lhs) || expr_has_label_or_goto(rhs)
         }
+        ast::Expr::Make { args, .. } => args.iter().any(expr_has_label_or_goto),
+        ast::Expr::Send { channel, value, .. } => {
+            expr_has_label_or_goto(channel) || expr_has_label_or_goto(value)
+        }
+        ast::Expr::Receive { channel, .. } => expr_has_label_or_goto(channel),
         ast::Expr::Nil { .. }
-        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Var { .. }
@@ -509,10 +513,22 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             args: args.into_iter().map(dce_expr).collect(),
             ty,
         },
+        ast::Expr::Make { ty, args } => ast::Expr::Make {
+            ty,
+            args: args.into_iter().map(dce_expr).collect(),
+        },
+        ast::Expr::Send { channel, value, ty } => ast::Expr::Send {
+            channel: Box::new(dce_expr(*channel)),
+            value: Box::new(dce_expr(*value)),
+            ty,
+        },
+        ast::Expr::Receive { channel, ty } => ast::Expr::Receive {
+            channel: Box::new(dce_expr(*channel)),
+            ty,
+        },
         ast::Expr::FuncLit { params, body, ty } => ast::Expr::FuncLit { params, body, ty },
         // Leaves
         e @ ast::Expr::Nil { .. }
-        | e @ ast::Expr::Make { .. }
         | e @ ast::Expr::Void { .. }
         | e @ ast::Expr::Unit { .. }
         | e @ ast::Expr::Var { .. }
@@ -629,6 +645,18 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                 s.extend(vars_used_in_expr(arg));
             }
         }
+        ast::Expr::Make { args, .. } => {
+            for arg in args {
+                s.extend(vars_used_in_expr(arg));
+            }
+        }
+        ast::Expr::Send { channel, value, .. } => {
+            s.extend(vars_used_in_expr(channel));
+            s.extend(vars_used_in_expr(value));
+        }
+        ast::Expr::Receive { channel, .. } => {
+            s.extend(vars_used_in_expr(channel));
+        }
         ast::Expr::Block { stmts, expr, .. } => {
             // Compute free vars from statements/expr inside block without cloning
             let mut used: HashSet<String> = HashSet::new();
@@ -736,7 +764,6 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
             }
         }
         ast::Expr::Nil { .. }
-        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
@@ -943,7 +970,8 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
             fields.iter().any(|(_, e)| expr_has_side_effects(e))
         }
         ast::Expr::ArrayLiteral { elems, .. } => elems.iter().any(expr_has_side_effects),
-        ast::Expr::Make { .. } => false,
+        ast::Expr::Make { args, .. } => args.iter().any(expr_has_side_effects),
+        ast::Expr::Send { .. } | ast::Expr::Receive { .. } => true,
         ast::Expr::FuncLit { .. } => false,
         ast::Expr::Var { .. }
         | ast::Expr::Nil { .. }
@@ -1263,13 +1291,24 @@ fn collect_called_in_expr(
             collect_called_in_expr(lhs, calls, fn_names);
             collect_called_in_expr(rhs, calls, fn_names);
         }
+        ast::Expr::Make { args, .. } => {
+            for arg in args {
+                collect_called_in_expr(arg, calls, fn_names);
+            }
+        }
+        ast::Expr::Send { channel, value, .. } => {
+            collect_called_in_expr(channel, calls, fn_names);
+            collect_called_in_expr(value, calls, fn_names);
+        }
+        ast::Expr::Receive { channel, .. } => {
+            collect_called_in_expr(channel, calls, fn_names);
+        }
         ast::Expr::Var { name, .. } => {
             if fn_names.contains(name) {
                 calls.insert(name.clone());
             }
         }
         ast::Expr::Nil { .. }
-        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
@@ -1544,8 +1583,19 @@ fn collect_packages_in_expr(
         ast::Expr::Var { name, .. } => {
             collect_packages_in_raw_go_type_name(name, imports, used);
         }
+        ast::Expr::Make { args, .. } => {
+            for arg in args {
+                collect_packages_in_expr(arg, imports, used);
+            }
+        }
+        ast::Expr::Send { channel, value, .. } => {
+            collect_packages_in_expr(channel, imports, used);
+            collect_packages_in_expr(value, imports, used);
+        }
+        ast::Expr::Receive { channel, .. } => {
+            collect_packages_in_expr(channel, imports, used);
+        }
         ast::Expr::Nil { .. }
-        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
@@ -1578,7 +1628,8 @@ fn collect_packages_in_go_type(
         }
         crate::go::goty::GoType::TPointer { elem }
         | crate::go::goty::GoType::TArray { elem, .. }
-        | crate::go::goty::GoType::TSlice { elem } => {
+        | crate::go::goty::GoType::TSlice { elem }
+        | crate::go::goty::GoType::TChan { elem } => {
             collect_packages_in_go_type(elem, imports, used);
         }
         crate::go::goty::GoType::TFunc { params, ret_ty } => {
@@ -1597,6 +1648,7 @@ fn collect_packages_in_go_type(
         crate::go::goty::GoType::TVoid
         | crate::go::goty::GoType::TUnit
         | crate::go::goty::GoType::TBool
+        | crate::go::goty::GoType::TInt
         | crate::go::goty::GoType::TInt8
         | crate::go::goty::GoType::TInt16
         | crate::go::goty::GoType::TInt32

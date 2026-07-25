@@ -20,6 +20,7 @@ fn match_ty_with_mode(
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -119,6 +120,12 @@ fn match_ty_with_mode(
         },
         tast::Ty::TRef { elem } => match actual {
             tast::Ty::TRef { elem: actual_elem } => {
+                match_ty_with_mode(elem, actual_elem, subst, erase_projections)
+            }
+            _ => false,
+        },
+        tast::Ty::TChannel { elem } => match actual {
+            tast::Ty::TChannel { elem: actual_elem } => {
                 match_ty_with_mode(elem, actual_elem, subst, erase_projections)
             }
             _ => false,

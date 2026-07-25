@@ -4,7 +4,7 @@ use std::bytes;
 
 pub struct StringBuilder {
     pub parts: Vec[string],
-    pub byte_len: Ref[int32],
+    pub byte_len: Ref[int],
 }
 
 impl StringBuilder {
@@ -15,14 +15,14 @@ impl StringBuilder {
         }
     }
 
-    pub fn with_capacity(part_capacity: int32) -> StringBuilder {
+    pub fn with_capacity(part_capacity: int) -> StringBuilder {
         StringBuilder {
             parts: Vec::with_capacity(part_capacity),
             byte_len: Ref::new(0),
         }
     }
 
-    pub fn len(self: StringBuilder) -> int32 {
+    pub fn len(self: StringBuilder) -> int {
         self.byte_len.get()
     }
 

@@ -266,4 +266,8 @@ pub(crate) enum OperationGoal {
         lhs_ty: tast::Ty,
         rhs_ty: tast::Ty,
     },
+    Cast {
+        source_ty: tast::Ty,
+        target_ty: tast::Ty,
+    },
 }

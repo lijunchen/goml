@@ -1,0 +1,221 @@
+package main;
+
+use gomlc::ast;
+use gomlc::parser;
+use std::io;
+
+struct PackageInfoArgs {
+    inputs: Vec[string],
+}
+
+fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string] {
+    let inputs = Vec::new();
+    let format: Ref[Option[string]] = Ref::new(Option::None);
+    let index = Ref::new(2);
+    let positional = Ref::new(false);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if positional.get() == false && argument == "--" {
+            positional.set(true);
+            index.set(index.get() + 1)
+        } else if positional.get() == false && cli_help_argument(argument) {
+            return Result::Err(cli_help_signal())
+        } else if positional.get() == false
+            && option_string_present(inline_cli_value(argument, "--help"))
+        {
+            let value = match inline_cli_value(argument, "--help") {
+                Option::Some(value) => value,
+                Option::None => "",
+            };
+            return Result::Err(unexpected_value_error_with_usage(
+                value,
+                "--help",
+                "gomlc package-info --help --input <INPUT>...",
+            ))
+        } else if positional.get() {
+            return Result::Err(unexpected_argument_error(
+                "package-info",
+                argument,
+                false,
+            ))
+        } else if argument == "--input" {
+            index.set(index.get() + 1);
+            let previous_len = inputs.len();
+            while index.get() < args.len() && !cli_option(args.get(index.get())) {
+                inputs.push(args.get(index.get()));
+                index.set(index.get() + 1)
+            };
+            if inputs.len() == previous_len {
+                return Result::Err(value_required_error(
+                    "--input <INPUT>...",
+                    Option::None,
+                ))
+            } else {
+                ()
+            }
+        } else if option_string_present(inline_cli_value(argument, "--input")) {
+            let value = match inline_cli_value(argument, "--input") {
+                Option::Some(value) => value,
+                Option::None => "",
+            };
+            if value == "" {
+                return Result::Err(value_required_error(
+                    "--input <INPUT>...",
+                    Option::None,
+                ))
+            } else {
+                inputs.push(value);
+                index.set(index.get() + 1);
+                while index.get() < args.len() && !cli_option(args.get(index.get())) {
+                    inputs.push(args.get(index.get()));
+                    index.set(index.get() + 1)
+                }
+            }
+        } else if argument == "--format" {
+            if index.get() + 1 >= args.len()
+                || cli_option(args.get(index.get() + 1))
+            {
+                return Result::Err(value_required_error(
+                    "--format <FORMAT>",
+                    Option::None,
+                ))
+            } else if option_string_present(format.get()) {
+                return Result::Err(repeated_argument_error(
+                    "package-info",
+                    "--format <FORMAT>",
+                ))
+            } else {
+                format.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else if option_string_present(inline_cli_value(argument, "--format")) {
+            if option_string_empty(inline_cli_value(argument, "--format")) {
+                return Result::Err(value_required_error(
+                    "--format <FORMAT>",
+                    Option::None,
+                ))
+            } else if option_string_present(format.get()) {
+                return Result::Err(repeated_argument_error(
+                    "package-info",
+                    "--format <FORMAT>",
+                ))
+            } else {
+                format.set(inline_cli_value(argument, "--format"));
+                index.set(index.get() + 1)
+            }
+        } else {
+            return Result::Err(unexpected_cli_option_error_with_usage(
+                "package-info",
+                argument,
+                command_usage("package-info"),
+            ))
+        }
+    };
+    let selected_format = match format.get() {
+        Option::Some(value) => value,
+        Option::None => "json",
+    };
+    if selected_format != "json" {
+        Result::Err(
+            "error: invalid value '"
+                + selected_format
+                + "' for '--format <FORMAT>'\n  [possible values: json]\n\n"
+                + cli_error_footer(),
+        )
+    } else if inputs.len() == 0 {
+        Result::Err(missing_required_arguments_error_with_usage(
+            Vec::new().pushed("--input <INPUT>..."),
+            required_command_usage("package-info"),
+        ))
+    } else {
+        Result::Ok(PackageInfoArgs {
+            inputs: sorted_unique_package_inputs(inputs),
+        })
+    }
+}
+
+fn package_info_path(value: ast::Path) -> string {
+    let result = Ref::new("");
+    let index = Ref::new(0);
+    for segment in value.segments {
+        if index.get() > 0 {
+            result.set(result.get() + "::")
+        } else {
+            ()
+        };
+        result.set(result.get() + segment.ident);
+        index.set(index.get() + 1)
+    };
+    result.get()
+}
+
+fn package_info_json(args: PackageInfoArgs) -> string {
+    let writer = new_artifact_json_writer(false);
+    artifact_json_begin_object(writer);
+    artifact_json_name(writer, "files");
+    artifact_json_begin_array(writer);
+    for source_path in args.inputs {
+        let source = read_source(source_path);
+        let parsed = parser::parse(source);
+        fail_on_ast_diagnostics(
+            parsed.diagnostics,
+            "parser",
+            source_path,
+            source,
+        );
+        let lowered = ast::lower(parsed);
+        fail_on_ast_diagnostics(
+            lowered.diagnostics,
+            "lower",
+            source_path,
+            source,
+        );
+        let file = match lowered.ast {
+            Option::Some(value) => value,
+            Option::None => {
+                fail("error[compile]: missing AST for " + source_path);
+                ast::File {
+                    package_name: "",
+                    package_explicit: false,
+                    uses: Vec::new(),
+                    items: Vec::new(),
+                    invalid_self_type_spans: Vec::new(),
+                }
+            },
+        };
+        artifact_json_begin_object(writer);
+        artifact_json_name(writer, "package");
+        artifact_json_string(writer, file.package_name);
+        artifact_json_name(writer, "package_explicit");
+        artifact_json_bool(writer, file.package_explicit);
+        artifact_json_name(writer, "path");
+        artifact_json_string(writer, source_path);
+        artifact_json_name(writer, "uses");
+        artifact_json_begin_array(writer);
+        for use_decl in file.uses {
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "alias");
+            match use_decl.alias {
+                Option::Some(value) => artifact_json_string(writer, value),
+                Option::None => artifact_json_null(writer),
+            };
+            artifact_json_name(writer, "path");
+            artifact_json_string(writer, package_info_path(use_decl.path));
+            artifact_json_end_object(writer)
+        };
+        artifact_json_end_array(writer);
+        artifact_json_end_object(writer)
+    };
+    artifact_json_end_array(writer);
+    artifact_json_name(writer, "protocol_version");
+    artifact_json_number(writer, "1");
+    artifact_json_end_object(writer);
+    artifact_json_finish(writer)
+}
+
+fn run_package_info(args: Vec[string]) -> unit {
+    match parse_package_info_args(args) {
+        Result::Ok(value) => io::println(package_info_json(value)),
+        Result::Err(error) => handle_cli_parse_error("package-info", error),
+    }
+}

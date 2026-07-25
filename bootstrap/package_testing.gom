@@ -16,8 +16,8 @@ struct TestDescriptor {
     symbol: string,
     display_name: string,
     source_path: string,
-    start: int32,
-    end: int32,
+    start: int,
+    end: int,
     ignored: bool,
     ignore_reason: Option[string],
 }
@@ -25,9 +25,9 @@ struct TestDescriptor {
 struct TestCandidate {
     name: string,
     source_path: string,
-    start: int32,
-    end: int32,
-    label_end: int32,
+    start: int,
+    end: int,
+    label_end: int,
     ignored: bool,
     ignore_reason: Option[string],
 }
@@ -43,7 +43,7 @@ struct TestValidation {
 }
 
 fn test_ascii_whitespace(value: uint8) -> bool {
-    value == 32u8 || value == 9u8 || value == 10u8 || value == 13u8
+    value == 32 || value == 9 || value == 10 || value == 13
 }
 
 fn trim_test_text(value: string) -> string {
@@ -62,7 +62,7 @@ fn trim_test_text(value: string) -> string {
     value.byte_slice(start.get(), end.get())
 }
 
-fn find_test_byte(value: string, expected: uint8) -> Option[int32] {
+fn find_test_byte(value: string, expected: uint8) -> Option[int] {
     for index in range(0, value.byte_len()) {
         if value.byte_get(index) == expected {
             return Option::Some(index)
@@ -82,7 +82,7 @@ fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
         Option::None
     } else {
         let inner = trim_test_text(normalized.byte_slice(2, normalized.byte_len() - 1));
-        match find_test_byte(inner, 40u8) {
+        match find_test_byte(inner, 40) {
             Option::Some(open) => {
                 let name = trim_test_text(inner.byte_slice(0, open));
                 let tail = trim_test_text(inner.byte_slice(open + 1, inner.byte_len()));
@@ -594,8 +594,8 @@ fn validate_package_tests(
 
 fn write_test_json_hex(builder: text::StringBuilder, value: uint8) -> unit {
     let digits = "0123456789abcdef";
-    builder.write_char(digits.get((value / 16u8) as int32));
-    builder.write_char(digits.get((value % 16u8) as int32))
+    builder.write_char(digits.get((value / 16) as int));
+    builder.write_char(digits.get((value % 16) as int))
 }
 
 fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
@@ -603,37 +603,37 @@ fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte == 34u8 {
+        if byte == 34 {
             builder.write_string("\\\"");
             index.set(index.get() + 1)
-        } else if byte == 92u8 {
+        } else if byte == 92 {
             builder.write_string("\\\\");
             index.set(index.get() + 1)
-        } else if byte == 8u8 {
+        } else if byte == 8 {
             builder.write_string("\\b");
             index.set(index.get() + 1)
-        } else if byte == 12u8 {
+        } else if byte == 12 {
             builder.write_string("\\f");
             index.set(index.get() + 1)
-        } else if byte == 10u8 {
+        } else if byte == 10 {
             builder.write_string("\\n");
             index.set(index.get() + 1)
-        } else if byte == 13u8 {
+        } else if byte == 13 {
             builder.write_string("\\r");
             index.set(index.get() + 1)
-        } else if byte == 9u8 {
+        } else if byte == 9 {
             builder.write_string("\\t");
             index.set(index.get() + 1)
-        } else if byte < 32u8 {
+        } else if byte < 32 {
             builder.write_string("\\u00");
             write_test_json_hex(builder, byte);
             index.set(index.get() + 1)
         } else {
-            let width = if byte < 128u8 {
+            let width = if byte < 128 {
                 1
-            } else if byte < 224u8 {
+            } else if byte < 224 {
                 2
-            } else if byte < 240u8 {
+            } else if byte < 240 {
                 3
             } else {
                 4

@@ -511,7 +511,7 @@ fn std_fs_read_dir_item() -> Item {
         Option::None,
     ));
     stmts.push(Stmt::Var("names", names_type, Option::None));
-    stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    stmts.push(Stmt::Var("i", Type::Int, Option::Some(Expr::Int("0"))));
     let loop_stmts: Vec[Stmt] = Vec::new();
     let len_args: Vec[Expr] = Vec::new();
     len_args.push(Expr::Var("entries"));
@@ -521,7 +521,7 @@ fn std_fs_read_dir_item() -> Item {
         Expr::Binary(
             BinaryOp::GreaterEq,
             Expr::Var("i"),
-            Expr::Convert(Type::Int32, std_call("len", len_args)),
+            Expr::Convert(Type::Int, std_call("len", len_args)),
         ),
         Block { stmts: finished },
         Option::None,
@@ -978,7 +978,7 @@ fn std_process_params() -> Vec[(string, Type)] {
 fn std_process_output_type() -> Type {
     let values: Vec[tast::Type] = Vec::new();
     values.push(tast::Type::Bool);
-    values.push(tast::Type::Int32);
+    values.push(tast::Type::Int);
     values.push(std_vec_type(tast::Type::Uint8));
     values.push(std_vec_type(tast::Type::Uint8));
     values.push(tast::Type::String);
@@ -988,7 +988,7 @@ fn std_process_output_type() -> Type {
 fn std_process_status_type() -> Type {
     let values: Vec[tast::Type] = Vec::new();
     values.push(tast::Type::Bool);
-    values.push(tast::Type::Int32);
+    values.push(tast::Type::Int);
     values.push(tast::Type::String);
     std_tuple_type(values)
 }
@@ -1091,7 +1091,7 @@ fn std_process_status_expr(valid: bool, code: Expr, error: Expr) -> Expr {
 
 fn std_process_exit_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
-    params.push(("code", Type::Int32));
+    params.push(("code", Type::Int));
     let convert_args: Vec[Expr] = Vec::new();
     convert_args.push(Expr::Var("code"));
     let exit_args: Vec[Expr] = Vec::new();
@@ -1131,7 +1131,7 @@ fn std_process_output_item() -> Item {
     ));
     stmts.push(Stmt::Var(
         "code",
-        Type::Int32,
+        Type::Int,
         Option::Some(Expr::Int("0")),
     ));
     let failed: Vec[Stmt] = Vec::new();
@@ -1158,7 +1158,7 @@ fn std_process_output_item() -> Item {
         "ExitCode",
         Vec::new(),
     ));
-    failed.push(Stmt::Assign("code", std_call("int32", code_args)));
+    failed.push(Stmt::Assign("code", std_call("int", code_args)));
     stmts.push(Stmt::If(
         std_error_condition(),
         Block { stmts: failed },
@@ -1201,7 +1201,7 @@ fn std_process_status_item() -> Item {
     ));
     stmts.push(Stmt::Var(
         "code",
-        Type::Int32,
+        Type::Int,
         Option::Some(Expr::Int("0")),
     ));
     let failed: Vec[Stmt] = Vec::new();
@@ -1228,7 +1228,7 @@ fn std_process_status_item() -> Item {
         "ExitCode",
         Vec::new(),
     ));
-    failed.push(Stmt::Assign("code", std_call("int32", code_args)));
+    failed.push(Stmt::Assign("code", std_call("int", code_args)));
     stmts.push(Stmt::If(
         std_error_condition(),
         Block { stmts: failed },

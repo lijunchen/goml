@@ -4,31 +4,31 @@ use gomlc::cst;
 use gomlc::lexer;
 
 enum Event {
-    Open(cst::NodeKind, Option[int32]),
+    Open(cst::NodeKind, Option[int]),
     Close,
     Advance,
     Error(string),
 }
 
 struct MarkerOpened {
-    index: int32,
+    index: int,
 }
 
 struct MarkerClosed {
-    index: int32,
+    index: int,
 }
 
 struct Parser {
     tokens: Vec[lexer::Token],
-    cursor: Ref[int32],
-    fuel: Ref[int32],
+    cursor: Ref[int],
+    fuel: Ref[int],
     events: Vec[Event],
     diagnostics: Vec[cst::Diagnostic],
     stuck_reported: Ref[bool],
     depth_limit_hit: Ref[bool],
-    expr_depth: Ref[int32],
-    pattern_depth: Ref[int32],
-    type_depth: Ref[int32],
+    expr_depth: Ref[int],
+    pattern_depth: Ref[int],
+    type_depth: Ref[int],
     struct_literals_allowed: Ref[bool],
 }
 
@@ -81,7 +81,7 @@ fn input_peek(parser: Parser) -> lexer::TokenKind {
     input_peek_raw(parser)
 }
 
-fn input_nth(parser: Parser, offset: int32) -> lexer::TokenKind {
+fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
     let index = Ref::new(parser.cursor.get());
     let remaining = Ref::new(offset);
     let result = Ref::new(lexer::TokenKind::Eof);
@@ -101,7 +101,7 @@ fn input_nth(parser: Parser, offset: int32) -> lexer::TokenKind {
     result.get()
 }
 
-fn input_nth_text(parser: Parser, offset: int32) -> string {
+fn input_nth_text(parser: Parser, offset: int) -> string {
     let index = Ref::new(parser.cursor.get());
     let remaining = Ref::new(offset);
     let result = Ref::new("");
@@ -130,7 +130,7 @@ fn input_current_text(parser: Parser) -> string {
     }
 }
 
-fn current_range(parser: Parser) -> (int32, int32) {
+fn current_range(parser: Parser) -> (int, int) {
     if parser.cursor.get() < parser.tokens.len() {
         let token = parser.tokens.get(parser.cursor.get());
         (token.start, token.end)
@@ -185,7 +185,7 @@ impl Parser {
         }
     }
 
-    pub fn nth(self: Parser, offset: int32) -> lexer::TokenKind {
+    pub fn nth(self: Parser, offset: int) -> lexer::TokenKind {
         if self.depth_limit_hit.get() {
             lexer::TokenKind::Eof
         } else if self.fuel.get() == 0 {
@@ -197,7 +197,7 @@ impl Parser {
         }
     }
 
-    pub fn nth_text(self: Parser, offset: int32) -> string {
+    pub fn nth_text(self: Parser, offset: int) -> string {
         if self.depth_limit_hit.get() || self.fuel.get() == 0 {
             ""
         } else {
@@ -225,7 +225,7 @@ impl Parser {
                 false
             } else {
                 let first = text_value.byte_get(0);
-                (first >= 97u8 && first <= 122u8) || first == 95u8
+                (first >= 97 && first <= 122) || first == 95
             }
         } else {
             false
@@ -239,7 +239,7 @@ impl Parser {
                 false
             } else {
                 let first = text_value.byte_get(0);
-                first >= 65u8 && first <= 90u8
+                first >= 65 && first <= 90
             }
         } else {
             false
@@ -356,7 +356,7 @@ impl Parser {
         self.type_depth.set(self.type_depth.get() - 1)
     }
 
-    pub fn enter_depth(self: Parser, depth: Ref[int32], message: string) -> bool {
+    pub fn enter_depth(self: Parser, depth: Ref[int], message: string) -> bool {
         if depth.get() >= 512 {
             if self.depth_limit_hit.get() == false {
                 self.error(message);
@@ -419,7 +419,7 @@ fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
         && lexer::token_kind_equal(kind, lexer::TokenKind::Comma) == false
 }
 
-fn element_byte_len(element: cst::CstElement) -> int32 {
+fn element_byte_len(element: cst::CstElement) -> int {
     match element {
         cst::CstElement::Node(value) => value.byte_len,
         cst::CstElement::Token(value) => value.text.byte_len(),
@@ -452,7 +452,7 @@ fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
     }
 }
 
-fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int32])] {
+fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
     match event {
         Event::Open(kind, parent) => Option::Some((kind, parent)),
         _ => Option::None,

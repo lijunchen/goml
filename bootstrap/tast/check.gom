@@ -6,16 +6,16 @@ use gomlc::hir;
 struct FloatDecimal {
     negative: bool,
     digits: string,
-    exponent: int32,
+    exponent: int,
 }
 
 fn char_hex_value(value: uint8) -> Option[uint32] {
-    if value >= 48u8 && value <= 57u8 {
-        Option::Some((value - 48u8) as uint32)
-    } else if value >= 65u8 && value <= 70u8 {
-        Option::Some((value - 55u8) as uint32)
-    } else if value >= 97u8 && value <= 102u8 {
-        Option::Some((value - 87u8) as uint32)
+    if value >= 48 && value <= 57 {
+        Option::Some((value - 48) as uint32)
+    } else if value >= 65 && value <= 70 {
+        Option::Some((value - 55) as uint32)
+    } else if value >= 97 && value <= 102 {
+        Option::Some((value - 87) as uint32)
     } else {
         Option::None
     }
@@ -24,7 +24,7 @@ fn char_hex_value(value: uint8) -> Option[uint32] {
 fn parse_char_literal(value: string) -> Option[char] {
     if value.byte_len() == 0 {
         Option::None
-    } else if value.byte_get(0) != 92u8 {
+    } else if value.byte_get(0) != 92 {
         let character = value.get(0);
         if character.to_string().byte_len() == value.byte_len() {
             Option::Some(character)
@@ -33,23 +33,23 @@ fn parse_char_literal(value: string) -> Option[char] {
         }
     } else if value.byte_len() == 2 {
         match value.byte_get(1) {
-            39u8 => Option::Some('\''),
-            34u8 => Option::Some('"'),
-            92u8 => Option::Some('\\'),
-            47u8 => Option::Some('/'),
-            98u8 => char_from_uint32(8u32),
-            102u8 => char_from_uint32(12u32),
-            110u8 => Option::Some('\n'),
-            114u8 => Option::Some('\r'),
-            116u8 => Option::Some('\t'),
+            39 => Option::Some('\''),
+            34 => Option::Some('"'),
+            92 => Option::Some('\\'),
+            47 => Option::Some('/'),
+            98 => char_from_uint32(8),
+            102 => char_from_uint32(12),
+            110 => Option::Some('\n'),
+            114 => Option::Some('\r'),
+            116 => Option::Some('\t'),
             _ => Option::None,
         }
-    } else if value.byte_len() == 6 && value.byte_get(1) == 117u8 {
-        let code = Ref::new(0u32);
+    } else if value.byte_len() == 6 && value.byte_get(1) == 117 {
+        let code = Ref::new(0);
         let valid = Ref::new(true);
         for index in range(2, 6) {
             match char_hex_value(value.byte_get(index)) {
-                Option::Some(digit) => code.set(code.get() * 16u32 + digit),
+                Option::Some(digit) => code.set(code.get() * 16 + digit),
                 Option::None => valid.set(false),
             }
         };
@@ -68,7 +68,7 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
         Option::Some(character) => character,
         Option::None => {
             push_diagnostic(ctx, "invalid char literal");
-            match char_from_uint32(0u32) {
+            match char_from_uint32(0) {
                 Option::Some(character) => character,
                 Option::None => ' ',
             }
@@ -78,15 +78,15 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
 
 fn decimal_digit(value: uint8) -> string {
     match value {
-        0u8 => "0",
-        1u8 => "1",
-        2u8 => "2",
-        3u8 => "3",
-        4u8 => "4",
-        5u8 => "5",
-        6u8 => "6",
-        7u8 => "7",
-        8u8 => "8",
+        0 => "0",
+        1 => "1",
+        2 => "2",
+        3 => "3",
+        4 => "4",
+        5 => "5",
+        6 => "6",
+        7 => "7",
+        8 => "8",
         _ => "9",
     }
 }
@@ -99,10 +99,10 @@ fn increment_decimal(value: string) -> string {
         let index = value.byte_len() - offset.get() - 1;
         let byte = value.byte_get(index);
         if carry.get() {
-            if byte == 57u8 {
+            if byte == 57 {
                 result.set("0" + result.get())
             } else {
-                result.set(decimal_digit(byte - 47u8) + result.get());
+                result.set(decimal_digit(byte - 47) + result.get());
                 carry.set(false)
             }
         } else {
@@ -113,7 +113,7 @@ fn increment_decimal(value: string) -> string {
     if carry.get() { "1" + result.get() } else { result.get() }
 }
 
-fn repeated_zeros(count: int32) -> string {
+fn repeated_zeros(count: int) -> string {
     let result = Ref::new("");
     for _ in range(0, count) {
         result.set(result.get() + "0")
@@ -124,7 +124,7 @@ fn repeated_zeros(count: int32) -> string {
 fn trim_fractional_zeros(value: string) -> string {
     let has_decimal = Ref::new(false);
     for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 46u8 {
+        if value.byte_get(index) == 46 {
             has_decimal.set(true)
         } else {
             ()
@@ -134,10 +134,10 @@ fn trim_fractional_zeros(value: string) -> string {
         value
     } else {
         let end = Ref::new(value.byte_len());
-        while end.get() > 0 && value.byte_get(end.get() - 1) == 48u8 {
+        while end.get() > 0 && value.byte_get(end.get() - 1) == 48 {
             end.set(end.get() - 1)
         };
-        if end.get() > 0 && value.byte_get(end.get() - 1) == 46u8 {
+        if end.get() > 0 && value.byte_get(end.get() - 1) == 46 {
             end.set(end.get() - 1)
         } else {
             ()
@@ -146,7 +146,7 @@ fn trim_fractional_zeros(value: string) -> string {
     }
 }
 
-fn fixed_decimal(coefficient: string, power: int32) -> string {
+fn fixed_decimal(coefficient: string, power: int) -> string {
     let decimal_position = coefficient.byte_len() + power;
     let value = if decimal_position <= 0 {
         "0." + repeated_zeros(-decimal_position) + coefficient
@@ -161,16 +161,16 @@ fn fixed_decimal(coefficient: string, power: int32) -> string {
 }
 
 fn float_decimal(value: string) -> Option[FloatDecimal] {
-    let negative = value.byte_len() > 0 && value.byte_get(0) == 45u8;
+    let negative = value.byte_len() > 0 && value.byte_get(0) == 45;
     let start = if negative { 1 } else { 0 };
     let digits = Ref::new("");
     let decimal_position = Ref::new(-1);
     let valid = Ref::new(true);
     for index in range(start, value.byte_len()) {
         let byte = value.byte_get(index);
-        if byte == 46u8 && decimal_position.get() < 0 {
+        if byte == 46 && decimal_position.get() < 0 {
             decimal_position.set(digits.get().byte_len())
-        } else if byte >= 48u8 && byte <= 57u8 {
+        } else if byte >= 48 && byte <= 57 {
             digits.set(digits.get() + value.byte_slice(index, index + 1))
         } else {
             valid.set(false)
@@ -183,7 +183,7 @@ fn float_decimal(value: string) -> Option[FloatDecimal] {
     };
     let first = Ref::new(0);
     while first.get() < digits.get().byte_len()
-        && digits.get().byte_get(first.get()) == 48u8
+        && digits.get().byte_get(first.get()) == 48
     {
         first.set(first.get() + 1)
     };
@@ -212,8 +212,8 @@ fn absolute_float64(value: float64) -> float64 {
 }
 
 fn decimal_coefficient_even(value: string) -> bool {
-    let digit = value.byte_get(value.byte_len() - 1) - 48u8;
-    digit % 2u8 == 0u8
+    let digit = value.byte_get(value.byte_len() - 1) - 48;
+    digit % 2 == 0
 }
 
 fn closer_float_literal(
@@ -312,13 +312,13 @@ fn normalized_float64_literal(value: string) -> string {
 }
 
 fn integer_magnitude(value: string) -> string {
-    let start = Ref::new(if value.byte_len() > 0 && value.byte_get(0) == 45u8 {
+    let start = Ref::new(if value.byte_len() > 0 && value.byte_get(0) == 45 {
         1
     } else {
         0
     });
     while start.get() + 1 < value.byte_len()
-        && value.byte_get(start.get()) == 48u8
+        && value.byte_get(start.get()) == 48
     {
         start.set(start.get() + 1)
     };
@@ -353,8 +353,12 @@ fn decimal_magnitude_fits(value: string, limit: string) -> bool {
 }
 
 fn integer_literal_fits(value: string, ty: Type) -> bool {
-    let negative = value.byte_len() > 0 && value.byte_get(0) == 45u8;
+    let negative = value.byte_len() > 0 && value.byte_get(0) == 45;
     match prune(ty) {
+        Type::Int => decimal_magnitude_fits(
+            value,
+            if negative { "9223372036854775808" } else { "9223372036854775807" },
+        ),
         Type::Int8 => decimal_magnitude_fits(value, if negative { "128" } else { "127" }),
         Type::Int16 => decimal_magnitude_fits(value, if negative { "32768" } else { "32767" }),
         Type::Int32 => decimal_magnitude_fits(
@@ -384,16 +388,6 @@ fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> unit {
     }
 }
 
-fn validate_suffixed_integer_expr(
-    ctx: Checker,
-    value: string,
-    primitive: Primitive,
-    ty: Type,
-) -> Option[Expr] {
-    validate_integer_literal(ctx, value, ty);
-    Option::Some(Expr::Prim(primitive, ty))
-}
-
 fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
     match value {
         Expr::Prim(Primitive::Float(raw), ty) => match prune(expected) {
@@ -408,6 +402,23 @@ fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
             _ => Expr::Prim(Primitive::Float(raw), ty),
         },
         other => other,
+    }
+}
+
+fn float_literal_integer(value: string) -> Option[string] {
+    let normalized = normalized_float64_literal(value);
+    let integral = Ref::new(true);
+    for index in range(0, normalized.byte_len()) {
+        if normalized.byte_get(index) == 46 {
+            integral.set(false)
+        } else {
+            ()
+        }
+    };
+    if integral.get() {
+        Option::Some(normalized)
+    } else {
+        Option::None
     }
 }
 
@@ -459,6 +470,68 @@ fn resolve_coercion_constraints(ctx: Checker) -> unit {
     }
 }
 
+fn defer_numeric_literal(
+    ctx: Checker,
+    raw: string,
+    ty: Type,
+    float: bool,
+) -> unit {
+    ctx.numeric_literal_constraints.push(NumericLiteralConstraint {
+        raw,
+        ty,
+        float,
+        negative: Ref::new(false),
+        span: ctx.current_span.get(),
+    })
+}
+
+fn same_type_variable(left: Type, right: Type) -> bool {
+    match (left, right) {
+        (Type::Var(left), Type::Var(right)) => ptr_eq(left, right),
+        _ => false,
+    }
+}
+
+fn negate_numeric_literal_constraint(ctx: Checker, ty: Type) -> unit {
+    for constraint in ctx.numeric_literal_constraints {
+        if same_type_variable(constraint.ty, ty) {
+            constraint.negative.set(!(constraint.negative.get()))
+        } else {
+            ()
+        }
+    }
+}
+
+fn resolve_numeric_literal_constraints(ctx: Checker) -> unit {
+    for constraint in ctx.numeric_literal_constraints {
+        let previous_span = ctx.current_span.get();
+        ctx.current_span.set(constraint.span);
+        let raw = if constraint.negative.get() {
+            "-" + constraint.raw
+        } else {
+            constraint.raw
+        };
+        let ty = resolve_type(constraint.ty);
+        if constraint.float && is_integer_type(ty) {
+            match float_literal_integer(raw) {
+                Option::Some(integer) => validate_integer_literal(ctx, integer, ty),
+                Option::None => push_diagnostic(
+                    ctx,
+                    "Float literal "
+                        + raw
+                        + " cannot be represented as "
+                        + type_text(ty),
+                ),
+            }
+        } else if constraint.float {
+            ()
+        } else {
+            validate_integer_literal(ctx, raw, ty)
+        };
+        ctx.current_span.set(previous_span)
+    }
+}
+
 fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
     match (prune(expr_type(value)), prune(expected)) {
         (Type::Error, Type::Var(variable)) => match variable.get() {
@@ -470,6 +543,17 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
     match value {
         Expr::Prim(Primitive::Int(raw), _) => {
             validate_integer_literal(ctx, raw, expected)
+        },
+        Expr::Prim(Primitive::Float(raw), _) => if is_integer_type(expected) {
+            match float_literal_integer(raw) {
+                Option::Some(integer) => validate_integer_literal(ctx, integer, expected),
+                Option::None => push_diagnostic(
+                    ctx,
+                    "Float literal " + raw + " cannot be represented as " + type_text(expected),
+                ),
+            }
+        } else {
+            ()
         },
         Expr::Unary(
             ast::UnaryOp::Neg,
@@ -528,8 +612,15 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                             ) {
                                 ()
                             } else {
-                                push_diagnostic(
+                                require_predicate(
                                     ctx,
+                                    TypePredicate::Trait(
+                                        actual,
+                                        TraitRef {
+                                            name: trait_name,
+                                            args: Vec::new(),
+                                        },
+                                    ),
                                     "Type "
                                         + type_text(actual)
                                         + " does not implement trait "
@@ -598,7 +689,8 @@ fn contains_unbound_type_variable(value: Type) -> bool {
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => contains_unbound_type_variable(elem),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => contains_unbound_type_variable(elem),
         Type::HashMap(key, item) => {
             contains_unbound_type_variable(key)
                 || contains_unbound_type_variable(item)
@@ -679,7 +771,8 @@ fn contains_unresolved_inference(ctx: Checker, value: Type) -> bool {
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => contains_unresolved_inference(ctx, elem),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => contains_unresolved_inference(ctx, elem),
         Type::HashMap(key, value) => {
             contains_unresolved_inference(ctx, key)
                 || contains_unresolved_inference(ctx, value)
@@ -760,7 +853,8 @@ fn has_unresolved_projection(value: Type) -> bool {
         Type::Array(_, elem)
         | Type::Slice(elem)
         | Type::VecType(elem)
-        | Type::RefType(elem) => has_unresolved_projection(elem),
+        | Type::RefType(elem)
+        | Type::Channel(elem) => has_unresolved_projection(elem),
         Type::HashMap(key, item) => {
             has_unresolved_projection(key) || has_unresolved_projection(item)
         },
@@ -814,65 +908,9 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
             Primitive::Int(value),
             fresh_type(ctx.counter, VarKind::Integer),
         )),
-        hir::ExprKind::Int8(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Int8(value),
-            Type::Int8,
-        ),
-        hir::ExprKind::Int16(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Int16(value),
-            Type::Int16,
-        ),
-        hir::ExprKind::Int32(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Int32(value),
-            Type::Int32,
-        ),
-        hir::ExprKind::Int64(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Int64(value),
-            Type::Int64,
-        ),
-        hir::ExprKind::UInt8(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Uint8(value),
-            Type::Uint8,
-        ),
-        hir::ExprKind::UInt16(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Uint16(value),
-            Type::Uint16,
-        ),
-        hir::ExprKind::UInt32(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Uint32(value),
-            Type::Uint32,
-        ),
-        hir::ExprKind::UInt64(value) => validate_suffixed_integer_expr(
-            ctx,
-            value,
-            Primitive::Uint64(value),
-            Type::Uint64,
-        ),
         hir::ExprKind::Float(value) => Option::Some(Expr::Prim(
             Primitive::Float(value.to_string()),
             fresh_type(ctx.counter, VarKind::Float),
-        )),
-        hir::ExprKind::Float32(value) => Option::Some(Expr::Prim(
-            Primitive::Float32(normalized_float32_literal(value)),
-            Type::Float32,
-        )),
-        hir::ExprKind::Float64(value) => Option::Some(Expr::Prim(
-            Primitive::Float64(normalized_float64_literal(value)),
-            Type::Float64,
         )),
         hir::ExprKind::String(value) => Option::Some(Expr::Prim(
             Primitive::String(value),
@@ -1449,16 +1487,22 @@ fn check_closure_expr(
     )
 }
 
-fn callable_parts(ctx: Checker, value: Type, arity: int32) -> (Vec[Type], Type) {
+fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
     match prune(value) {
         Type::Func(params, ret_ty) => (params, ret_ty),
         Type::Var(variable) => {
             let params: Vec[Type] = Vec::new();
             for _ in range(0, arity) {
-                params.push(fresh_type(ctx.counter, VarKind::Any))
+                params.push(fresh_unresolved_inference(ctx))
             };
-            let ret_ty = fresh_type(ctx.counter, VarKind::Any);
+            let ret_ty = fresh_unresolved_inference(ctx);
+            let numeric = is_numeric_type(Type::Var(variable));
             expect_type(ctx, Type::Var(variable), Type::Func(params, ret_ty));
+            if numeric {
+                push_diagnostic(ctx, "Could not infer type")
+            } else {
+                ()
+            };
             (params, ret_ty)
         },
         Type::Error => (Vec::new(), Type::Error),
@@ -1542,13 +1586,53 @@ fn dyn_trait_method(
     }
 }
 
+fn arity_diagnostic_types(values: Vec[Type]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::new();
+    for value in values {
+        result.push(arity_diagnostic_type(value))
+    };
+    result
+}
+
+fn arity_diagnostic_type(value: Type) -> Type {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound(_, _) => Type::Con("unknown"),
+            TypeVar::Link(inner) => arity_diagnostic_type(inner),
+        },
+        Type::Tuple(values) => Type::Tuple(arity_diagnostic_types(values)),
+        Type::Projection(base, name, reference) => {
+            Type::Projection(arity_diagnostic_type(base), name, reference)
+        },
+        Type::App(base, args) => {
+            Type::App(arity_diagnostic_type(base), arity_diagnostic_types(args))
+        },
+        Type::Array(length, elem) => {
+            Type::Array(length, arity_diagnostic_type(elem))
+        },
+        Type::Slice(elem) => Type::Slice(arity_diagnostic_type(elem)),
+        Type::VecType(elem) => Type::VecType(arity_diagnostic_type(elem)),
+        Type::RefType(elem) => Type::RefType(arity_diagnostic_type(elem)),
+        Type::HashMap(key, value) => Type::HashMap(
+            arity_diagnostic_type(key),
+            arity_diagnostic_type(value),
+        ),
+        Type::Channel(elem) => Type::Channel(arity_diagnostic_type(elem)),
+        Type::Func(params, ret_ty) => Type::Func(
+            arity_diagnostic_types(params),
+            arity_diagnostic_type(ret_ty),
+        ),
+        other => other,
+    }
+}
+
 fn apply_typed_call(
     ctx: Checker,
     function: Expr,
     raw_values: Vec[Expr],
     params: Vec[Type],
     ret_ty: Type,
-    prefix_len: int32,
+    prefix_len: int,
     is_static: bool,
 ) -> Expr {
     let values: Vec[Expr] = Vec::new();
@@ -1568,6 +1652,23 @@ fn apply_typed_call(
     let arity_mismatch = !types_equal(ret_ty, Type::Error)
         && values.len() != params.len();
     let trait_method = trait_method_callable(function);
+    let trait_argument_mismatch = Ref::new(false);
+    if trait_method && !arity_mismatch {
+        for index in range(1, values.len()) {
+            if index < params.len()
+                && !call_types_compatible(
+                    params.get(index),
+                    expr_type(values.get(index)),
+                )
+            {
+                trait_argument_mismatch.set(true)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
     let dyn_method = dyn_trait_method(function, values);
     if arity_mismatch {
         let actual_params: Vec[Type] = Vec::new();
@@ -1587,21 +1688,27 @@ fn apply_typed_call(
                     + values.len().to_string(),
             ),
             Option::None => if trait_method {
+                let expected_params = arity_diagnostic_types(actual_params);
+                let found_params = arity_diagnostic_types(params);
                 push_diagnostic(
                     ctx,
                     "Function arity mismatch: expected "
-                        + type_text(Type::Func(actual_params, ret_ty))
+                        + type_text(Type::Func(expected_params, ret_ty))
                         + ", found "
-                        + type_text(expr_type(function)),
+                        + type_text(Type::Func(found_params, ret_ty)),
                 )
             } else {
+                let found_params: Vec[Type] = Vec::new();
+                for _ in actual_params {
+                    found_params.push(Type::Con("unknown"))
+                };
                 push_diagnostic(
                     ctx,
                     "Function arity mismatch: expected "
                         + type_text(expr_type(function))
                         + ", found "
                         + type_text(Type::Func(
-                            actual_params,
+                            found_params,
                             Type::Con("unknown"),
                         )),
                 )
@@ -1623,7 +1730,21 @@ fn apply_typed_call(
             } else {
                 ()
             };
-            if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
+            if contains_unbound_type_variable(receiver_ty)
+                && is_numeric_type(receiver_ty)
+            {
+                require_predicate(
+                    ctx,
+                    TypePredicate::Trait(receiver_ty, reference),
+                    "type predicate not satisfied",
+                )
+            } else if arity_mismatch || trait_argument_mismatch.get() {
+                require_predicate(
+                    ctx,
+                    TypePredicate::Trait(receiver_ty, reference),
+                    "type predicate not satisfied",
+                )
+            } else if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
                 push_diagnostic(
                     ctx,
                     predicate_requirement_message(
@@ -2022,6 +2143,7 @@ fn equality_comparable_type(ctx: Checker, value: Type) -> bool {
         | Type::Var(_)
         | Type::Unit
         | Type::Bool
+        | Type::Int
         | Type::Int8
         | Type::Int16
         | Type::Int32
@@ -2095,6 +2217,16 @@ fn is_shift_op(value: ast::BinaryOp) -> bool {
     }
 }
 
+fn is_numeric_literal_source(value: hir::Expr) -> bool {
+    match value.kind {
+        hir::ExprKind::Int(_) | hir::ExprKind::Float(_) => true,
+        hir::ExprKind::Unary(ast::UnaryOp::Neg, source) => {
+            is_numeric_literal_source(source)
+        },
+        _ => false,
+    }
+}
+
 fn push_operator_not_defined(
     ctx: Checker,
     op: ast::BinaryOp,
@@ -2134,12 +2266,32 @@ fn check_binary_expr(
             },
             Option::None => Option::None,
         };
-        let left = check_expr(ctx, left_source, contextual);
-        let right = if is_shift_op(op) || is_comparison_op(op) {
-            check_expr(ctx, right_source, Option::None)
+        let operands = if !is_shift_op(op)
+            && is_numeric_literal_source(left_source)
+            && !is_numeric_literal_source(right_source)
+        {
+            let right = check_expr(ctx, right_source, contextual);
+            let left = check_expr(
+                ctx,
+                left_source,
+                Option::Some(expr_type(right)),
+            );
+            (left, right)
         } else {
-            check_expr(ctx, right_source, Option::Some(expr_type(left)))
+            let left = check_expr(ctx, left_source, contextual);
+            let right = if is_shift_op(op) {
+                check_expr(ctx, right_source, Option::None)
+            } else if is_comparison_op(op)
+                && !is_numeric_literal_source(right_source)
+            {
+                check_expr(ctx, right_source, Option::None)
+            } else {
+                check_expr(ctx, right_source, Option::Some(expr_type(left)))
+            };
+            (left, right)
         };
+        let left = operands.0;
+        let right = operands.1;
         match right_source.kind {
             hir::ExprKind::NameRef(hir::NameRef::Local(local)) => {
                 if contains_local(ctx.unresolved_locals, local)
@@ -2262,6 +2414,11 @@ fn check_unary_expr(
             let contextual = match propagated_expected(expected) {
                 Option::Some(ty) => if is_numeric_type(ty) && !is_unsigned_type(ty) {
                     Option::Some(ty)
+                } else if match prune(ty) {
+                    Type::Var(_) => true,
+                    _ => false,
+                } {
+                    Option::Some(ty)
                 } else {
                     Option::None
                 },
@@ -2279,6 +2436,7 @@ fn check_unary_expr(
                 },
                 Option::None => check_expr(ctx, source, Option::None),
             };
+            negate_numeric_literal_constraint(ctx, expr_type(value));
             if !is_numeric_type(expr_type(value)) {
                 push_diagnostic_at(
                     ctx,
@@ -2355,6 +2513,14 @@ fn check_match_expr(
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
     };
+    if typed_arms.len() > 0
+        && contains_unbound_type_variable(expr_type(scrutinee))
+        && is_numeric_type(expr_type(scrutinee))
+    {
+        let _ = resolve_type(expr_type(scrutinee));
+    } else {
+        ()
+    };
     let useful_arms = match_useful_arms(ctx, typed_arms);
     for index in range(0, useful_arms.len()) {
         if !(useful_arms.get(index)) {
@@ -2421,7 +2587,7 @@ fn try_type_parts(value: Type) -> Option[(string, Vec[Type])] {
     }
 }
 
-fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[int32] {
+fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[int] {
     match find_enum_by_name(ctx, name) {
         Option::Some(definition) => {
             let result = Ref::new(Option::None);
@@ -2541,7 +2707,7 @@ fn result_try_shape_is_valid(
 
 fn check_option_try(
     ctx: Checker,
-    index: int32,
+    index: int,
     inner: Expr,
     name: string,
     args: Vec[Type],
@@ -2600,7 +2766,7 @@ fn check_option_try(
 
 fn check_result_try(
     ctx: Checker,
-    index: int32,
+    index: int,
     inner: Expr,
     name: string,
     args: Vec[Type],
@@ -2668,8 +2834,33 @@ fn check_result_try(
     Expr::Match(inner, arms, ok_ty)
 }
 
-fn check_try_expr(ctx: Checker, index: int32, source: hir::Expr) -> Expr {
-    let inner = check_expr(ctx, source, Option::None);
+fn check_try_expr(ctx: Checker, index: int, source: hir::Expr) -> Expr {
+    let expected = if is_numeric_literal_source(source) {
+        match try_type_parts(ctx.return_ty) {
+        Option::Some(parts) => if names_match(parts.0, "Option")
+            && parts.1.len() == 1
+        {
+            Option::Some(nominal_type(
+                parts.0,
+                one_type(fresh_type(ctx.counter, VarKind::Any)),
+            ))
+        } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
+            Option::Some(nominal_type(
+                parts.0,
+                two_types(
+                    fresh_type(ctx.counter, VarKind::Any),
+                    parts.1.get(1),
+                ),
+            ))
+        } else {
+            Option::None
+        },
+        Option::None => Option::None,
+        }
+    } else {
+        Option::None
+    };
+    let inner = check_expr(ctx, source, expected);
     match try_type_parts(expr_type(inner)) {
         Option::Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
             if option_try_shape_is_valid(ctx, parts.0, parts.1) {
@@ -2697,18 +2888,25 @@ fn check_try_expr(ctx: Checker, index: int32, source: hir::Expr) -> Expr {
             Expr::Var("<try>", Type::Error)
         },
         Option::None => {
-            push_diagnostic(
-                ctx,
-                "`?` can only be used on values of type Option[T] or Result[T, E]",
-            );
+            if match expected {
+                Option::Some(_) => is_numeric_type(expr_type(inner)),
+                Option::None => false,
+            } {
+                ()
+            } else {
+                push_diagnostic(
+                    ctx,
+                    "`?` can only be used on values of type Option[T] or Result[T, E]",
+                )
+            };
             Expr::Var("<try>", Type::Error)
         },
     }
 }
 
 fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr) -> Expr {
-    let start = check_expr(ctx, start, Option::Some(Type::Int32));
-    let end = check_expr(ctx, end, Option::Some(Type::Int32));
+    let start = check_expr(ctx, start, Option::Some(Type::Int));
+    let end = check_expr(ctx, end, Option::Some(Type::Int));
     let args: Vec[Expr] = Vec::new();
     args.push(start);
     args.push(end);
@@ -2845,22 +3043,22 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
                     match prune(expr_type(value)) {
                         Type::Tuple(_) => push_diagnostic(
                             ctx,
-                            "Tuple type "
-                                + type_text(expr_type(value))
-                                + " has no named field "
+                            "Field "
                                 + name
-                                + "; use tuple indexing like .0",
+                                + " not found on type "
+                                + type_text(expr_type(value)),
                         ),
                         _ => push_diagnostic(ctx, "field not found: " + name),
                     };
-                    Expr::Field(value, name, Type::Error)
+                    push_diagnostic(ctx, "Could not infer type");
+                    Expr::Field(value, name, fresh_unresolved_inference(ctx))
                 },
             },
         }
     }
 }
 
-fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int32) -> Expr {
+fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int) -> Expr {
     let always_exits = hir_expr_always_exits_loop_control(source);
     let value = check_expr(ctx, source, Option::None);
     if always_exits {
@@ -2875,7 +3073,7 @@ fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int32) -> Expr 
                     "Tuple index "
                         + index.to_string()
                         + " out of bounds for type "
-                        + type_text(expr_type(value)),
+                        + type_text(arity_diagnostic_type(expr_type(value))),
                 );
                 push_diagnostic(ctx, "Could not infer type");
                 Expr::Proj(value, index, fresh_unresolved_inference(ctx))
@@ -2894,7 +3092,7 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
     if base_always_exits {
         Expr::Index(
             base,
-            check_expr(ctx, index_source, Option::Some(Type::Int32)),
+            check_expr(ctx, index_source, Option::Some(Type::Int)),
             Type::Unit,
         )
     } else if hir_expr_always_exits_loop_control(index_source) {
@@ -2906,13 +3104,13 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
     } else {
         let parts = match prune(expr_type(base)) {
             Type::Array(_, elem) | Type::VecType(elem) | Type::Slice(elem) => {
-                (Type::Int32, elem)
+                (Type::Int, elem)
             },
             Type::HashMap(key, value) => (
                 key,
                 nominal_type("Option", one_type(value)),
             ),
-            Type::String => (Type::Int32, Type::Char),
+            Type::String => (Type::Int, Type::Char),
             _ => {
                 push_diagnostic(ctx, "indexable value required");
                 (Type::Error, Type::Error)
@@ -2932,15 +3130,15 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
             let parts = match prune(expr_type(base)) {
                 Type::Array(_, elem) => {
                     validate_array_assignment_root(ctx, local_root, base, target_span);
-                    (Type::Int32, Type::Unit, elem)
+                    (Type::Int, Type::Unit, elem)
                 },
-                Type::VecType(elem) => (Type::Int32, Type::Unit, elem),
+                Type::VecType(elem) => (Type::Int, Type::Unit, elem),
                 Type::Slice(elem) => {
                     push_diagnostic_at(ctx,
                         "cannot assign through Slice indexing; Slice is read-only",
                         Option::Some(target_span),
                     );
-                    (Type::Int32, Type::Unit, elem)
+                    (Type::Int, Type::Unit, elem)
                 },
                 Type::HashMap(key, value) => (
                     key,
@@ -3328,30 +3526,107 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             coerce_expr(ctx, result, expected)
         },
         hir::ExprKind::Int(raw) => {
-            let target = match propagated_expected(expected) {
+            let deferred = match expected {
                 Option::Some(ty) => match prune(ty) {
-                    Type::Int8
+                    Type::Var(_) => true,
+                    Type::Dyn(name) => match find_trait(ctx, name) {
+                        Option::Some(_) => false,
+                        Option::None => true,
+                    },
+                    other => !(is_numeric_type(other)),
+                },
+                Option::None => true,
+            };
+            if deferred {
+                let ty = fresh_type(ctx.counter, VarKind::Integer);
+                defer_numeric_literal(ctx, raw, ty, false);
+                coerce_expr(
+                    ctx,
+                    Expr::Prim(Primitive::Int(raw), ty),
+                    expected,
+                )
+            } else {
+                let target = match propagated_expected(expected) {
+                Option::Some(ty) => match prune(ty) {
+                    Type::Int
+                    | Type::Int8
                     | Type::Int16
                     | Type::Int32
                     | Type::Int64
                     | Type::Uint8
                     | Type::Uint16
                     | Type::Uint32
-                    | Type::Uint64 => (ty, true),
-                    _ => (Type::Int32, false),
+                    | Type::Uint64
+                    | Type::Float32
+                    | Type::Float64 => (ty, true),
+                    _ => (Type::Int, false),
                 },
-                Option::None => (Type::Int32, false),
+                Option::None => (Type::Int, false),
             };
-            if target.1 {
-                ()
+                if target.1 {
+                    ()
+                } else {
+                    validate_integer_literal(ctx, raw, target.0)
+                };
+                coerce_expr(
+                    ctx,
+                    Expr::Prim(Primitive::Int(raw), target.0),
+                    expected,
+                )
+            }
+        },
+        hir::ExprKind::Float(raw) => {
+            let raw_text = raw.to_string();
+            let deferred = match expected {
+                Option::Some(ty) => match prune(ty) {
+                    Type::Var(_) => true,
+                    Type::Dyn(name) => match find_trait(ctx, name) {
+                        Option::Some(_) => false,
+                        Option::None => true,
+                    },
+                    other => !(is_numeric_type(other)),
+                },
+                Option::None => true,
+            };
+            if deferred {
+                let ty = fresh_type(ctx.counter, VarKind::Float);
+                defer_numeric_literal(ctx, raw_text, ty, true);
+                coerce_expr(
+                    ctx,
+                    Expr::Prim(Primitive::Float(raw_text), ty),
+                    expected,
+                )
             } else {
-                validate_integer_literal(ctx, raw, target.0)
-            };
-            coerce_expr(
-                ctx,
-                Expr::Prim(Primitive::Int(raw), target.0),
-                expected,
-            )
+                let target = match propagated_expected(expected) {
+                    Option::Some(ty) => if is_numeric_type(ty) {
+                        ty
+                    } else {
+                        Type::Float64
+                    },
+                    Option::None => Type::Float64,
+                };
+                let primitive = if is_integer_type(target) {
+                    match float_literal_integer(raw_text) {
+                        Option::Some(integer) => {
+                            validate_integer_literal(ctx, integer, target);
+                            Primitive::Int(integer)
+                        },
+                        Option::None => {
+                            push_diagnostic(
+                                ctx,
+                                "Float literal "
+                                    + raw_text
+                                    + " cannot be represented as "
+                                    + type_text(target),
+                            );
+                            Primitive::Int("0")
+                        },
+                    }
+                } else {
+                    Primitive::Float(raw_text)
+                };
+                coerce_expr(ctx, Expr::Prim(primitive, target), expected)
+            }
         },
         hir::ExprKind::Unary(op, source) => {
             let result = check_unary_expr(ctx, op, source, expected);
@@ -3413,25 +3688,9 @@ fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)]
             Primitive::Int(value),
             fresh_type(ctx.counter, VarKind::Integer),
         )),
-        hir::PatKind::Int8(value) => Option::Some((Primitive::Int8(value), Type::Int8)),
-        hir::PatKind::Int16(value) => Option::Some((Primitive::Int16(value), Type::Int16)),
-        hir::PatKind::Int32(value) => Option::Some((Primitive::Int32(value), Type::Int32)),
-        hir::PatKind::Int64(value) => Option::Some((Primitive::Int64(value), Type::Int64)),
-        hir::PatKind::UInt8(value) => Option::Some((Primitive::Uint8(value), Type::Uint8)),
-        hir::PatKind::UInt16(value) => Option::Some((Primitive::Uint16(value), Type::Uint16)),
-        hir::PatKind::UInt32(value) => Option::Some((Primitive::Uint32(value), Type::Uint32)),
-        hir::PatKind::UInt64(value) => Option::Some((Primitive::Uint64(value), Type::Uint64)),
         hir::PatKind::Float(value) => Option::Some((
             Primitive::Float(value),
             fresh_type(ctx.counter, VarKind::Float),
-        )),
-        hir::PatKind::Float32(value) => Option::Some((
-            Primitive::Float32(normalized_float32_literal(value)),
-            Type::Float32,
-        )),
-        hir::PatKind::Float64(value) => Option::Some((
-            Primitive::Float64(normalized_float64_literal(value)),
-            Type::Float64,
         )),
         hir::PatKind::String(value) => Option::Some((Primitive::String(value), Type::String)),
         hir::PatKind::Char(value) => Option::Some((
@@ -3675,7 +3934,7 @@ fn check_struct_pattern(
 fn array_pattern_types(
     ctx: Checker,
     expected: Type,
-    fixed_count: int32,
+    fixed_count: int,
 ) -> (Type, Type) {
     match prune(expected) {
         Type::Array(length, elem) => (
@@ -3910,8 +4169,12 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                     ty
                 },
             };
+            let simple_pattern = match pat.kind {
+                hir::PatKind::Var(_) | hir::PatKind::Wild => true,
+                _ => false,
+            };
             let pattern = check_pattern(ctx, pat, pattern_ty);
-            if pattern_is_irrefutable(ctx, pattern) {
+            if simple_pattern || pattern_is_irrefutable(ctx, pattern) {
                 ()
             } else {
                 push_diagnostic_at(ctx,

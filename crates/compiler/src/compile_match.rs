@@ -494,6 +494,7 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TUnit
         | Ty::TNever
         | Ty::TBool
+        | Ty::TInt
         | Ty::TInt8
         | Ty::TInt16
         | Ty::TInt32
@@ -555,6 +556,9 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
         Ty::TRef { elem } => Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        Ty::TChannel { elem } => Ty::TChannel {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
         Ty::THashMap { key, value } => Ty::THashMap {
@@ -813,19 +817,19 @@ fn compile_index_read_core(
     match container_ty {
         Ty::TArray { .. } => intrinsic_call(
             IntrinsicId::ArrayGet,
-            vec![container_ty.clone(), Ty::TInt32],
+            vec![container_ty.clone(), Ty::TInt],
             item_ty.clone(),
             vec![container, index],
         ),
         Ty::TVec { .. } => intrinsic_call(
             IntrinsicId::VecGet,
-            vec![container_ty.clone(), Ty::TInt32],
+            vec![container_ty.clone(), Ty::TInt],
             item_ty.clone(),
             vec![container, index],
         ),
         Ty::TSlice { .. } => intrinsic_call(
             IntrinsicId::SliceGet,
-            vec![container_ty.clone(), Ty::TInt32],
+            vec![container_ty.clone(), Ty::TInt],
             item_ty.clone(),
             vec![container, index],
         ),
@@ -872,7 +876,7 @@ fn compile_array_set_core(
     let container_ty = container.get_ty();
     intrinsic_call(
         IntrinsicId::ArraySet,
-        vec![container_ty.clone(), Ty::TInt32, value.get_ty()],
+        vec![container_ty.clone(), Ty::TInt, value.get_ty()],
         container_ty,
         vec![container, index, value],
     )
@@ -882,7 +886,7 @@ fn compile_vec_set_core(container: core::Expr, index: core::Expr, value: core::E
     let container_ty = container.get_ty();
     intrinsic_call(
         IntrinsicId::VecSet,
-        vec![container_ty, Ty::TInt32, value.get_ty()],
+        vec![container_ty, Ty::TInt, value.get_ty()],
         Ty::TUnit,
         vec![container, index, value],
     )
@@ -1595,6 +1599,20 @@ fn compile_int_case(
     match_range: Option<TextRange>,
 ) -> core::Expr {
     match literal_ty {
+        Ty::TInt => {
+            return compile_int_case_impl::<i64, _, _>(
+                genv,
+                gensym,
+                diagnostics,
+                rows,
+                bvar,
+                ty,
+                Ty::TInt,
+                match_range,
+                |prim| prim.as_int(),
+                |value| Prim::Int { value },
+            );
+        }
         Ty::TInt8 => {
             return compile_int_case_impl::<i8, _, _>(
                 genv,
@@ -2340,17 +2358,17 @@ fn compile_ordered_array_pattern(
     };
 
     let len_expr = match container_ty {
-        Ty::TArray { len, .. } => core_prim(Prim::Int32 { value: *len as i32 }, &Ty::TInt32),
+        Ty::TArray { len, .. } => core_prim(Prim::Int { value: *len as i64 }, &Ty::TInt),
         Ty::TVec { .. } => intrinsic_call(
             IntrinsicId::VecLen,
             vec![container_ty.clone()],
-            Ty::TInt32,
+            Ty::TInt,
             vec![value.clone()],
         ),
         Ty::TSlice { .. } => intrinsic_call(
             IntrinsicId::SliceLen,
             vec![container_ty.clone()],
-            Ty::TInt32,
+            Ty::TInt,
             vec![value.clone()],
         ),
         _ => unreachable!(),
@@ -2361,10 +2379,10 @@ fn compile_ordered_array_pattern(
         && let Some(binding) = &rest.binding
     {
         let start = core_prim(
-            Prim::Int32 {
-                value: prefix.len() as i32,
+            Prim::Int {
+                value: prefix.len() as i64,
             },
-            &Ty::TInt32,
+            &Ty::TInt,
         );
         let end = if suffix.is_empty() {
             len_expr.clone()
@@ -2373,12 +2391,12 @@ fn compile_ordered_array_pattern(
                 common_defs::BinaryOp::Sub,
                 len_expr.clone(),
                 core_prim(
-                    Prim::Int32 {
-                        value: suffix.len() as i32,
+                    Prim::Int {
+                        value: suffix.len() as i64,
                     },
-                    &Ty::TInt32,
+                    &Ty::TInt,
                 ),
-                Ty::TInt32,
+                Ty::TInt,
             )
         };
         let rest_value = match container_ty {
@@ -2392,10 +2410,10 @@ fn compile_ordered_array_pattern(
                             value.clone(),
                             container_ty,
                             core_prim(
-                                Prim::Int32 {
-                                    value: index as i32,
+                                Prim::Int {
+                                    value: index as i64,
                                 },
-                                &Ty::TInt32,
+                                &Ty::TInt,
                             ),
                             &elem_ty,
                             match_range,
@@ -2409,13 +2427,13 @@ fn compile_ordered_array_pattern(
             }
             Ty::TVec { .. } => intrinsic_call(
                 IntrinsicId::SliceNew,
-                vec![container_ty.clone(), Ty::TInt32, Ty::TInt32],
+                vec![container_ty.clone(), Ty::TInt, Ty::TInt],
                 rest.ty.clone(),
                 vec![value.clone(), start, end],
             ),
             Ty::TSlice { .. } => intrinsic_call(
                 IntrinsicId::SliceSub,
-                vec![container_ty.clone(), Ty::TInt32, Ty::TInt32],
+                vec![container_ty.clone(), Ty::TInt, Ty::TInt],
                 rest.ty.clone(),
                 vec![value.clone(), start, end],
             ),
@@ -2428,10 +2446,10 @@ fn compile_ordered_array_pattern(
     for (offset, pat) in suffix.iter().enumerate().rev() {
         let index = if let Some(start) = suffix_start {
             core_prim(
-                Prim::Int32 {
-                    value: (start + offset) as i32,
+                Prim::Int {
+                    value: (start + offset) as i64,
                 },
-                &Ty::TInt32,
+                &Ty::TInt,
             )
         } else {
             core_binary(
@@ -2440,20 +2458,20 @@ fn compile_ordered_array_pattern(
                     common_defs::BinaryOp::Sub,
                     len_expr.clone(),
                     core_prim(
-                        Prim::Int32 {
-                            value: suffix.len() as i32,
+                        Prim::Int {
+                            value: suffix.len() as i64,
                         },
-                        &Ty::TInt32,
+                        &Ty::TInt,
                     ),
-                    Ty::TInt32,
+                    Ty::TInt,
                 ),
                 core_prim(
-                    Prim::Int32 {
-                        value: offset as i32,
+                    Prim::Int {
+                        value: offset as i64,
                     },
-                    &Ty::TInt32,
+                    &Ty::TInt,
                 ),
-                Ty::TInt32,
+                Ty::TInt,
             )
         };
         let item = compile_index_read_core(
@@ -2482,10 +2500,10 @@ fn compile_ordered_array_pattern(
             value.clone(),
             container_ty,
             core_prim(
-                Prim::Int32 {
-                    value: index as i32,
+                Prim::Int {
+                    value: index as i64,
                 },
-                &Ty::TInt32,
+                &Ty::TInt,
             ),
             &elem_ty,
             match_range,
@@ -2515,10 +2533,10 @@ fn compile_ordered_array_pattern(
         },
         len_expr,
         core_prim(
-            Prim::Int32 {
-                value: required as i32,
+            Prim::Int {
+                value: required as i64,
             },
-            &Ty::TInt32,
+            &Ty::TInt,
         ),
         Ty::TBool,
     );
@@ -2599,6 +2617,16 @@ fn compile_rows(
         Ty::TNever => emissing(ty),
         Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
+        Ty::TInt => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt,
+            match_range,
+        ),
         Ty::TInt32 => compile_int_case(
             genv,
             gensym,
@@ -2837,6 +2865,14 @@ fn compile_rows(
             push_compile_error(
                 diagnostics,
                 "matching on reference types is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TChannel { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on Channel types is not supported",
                 match_range,
             );
             emissing(ty)
@@ -4179,20 +4215,20 @@ fn compile_structural_eq(
             let items = (0..*len)
                 .map(|index| {
                     let index = core::Expr::EPrim {
-                        value: Prim::Int32 {
-                            value: index as i32,
+                        value: Prim::Int {
+                            value: index as i64,
                         },
-                        ty: Ty::TInt32,
+                        ty: Ty::TInt,
                     };
                     let left = intrinsic_call(
                         IntrinsicId::ArrayGet,
-                        vec![ty.clone(), Ty::TInt32],
+                        vec![ty.clone(), Ty::TInt],
                         elem.as_ref().clone(),
                         vec![lhs.clone(), index.clone()],
                     );
                     let right = intrinsic_call(
                         IntrinsicId::ArrayGet,
-                        vec![ty.clone(), Ty::TInt32],
+                        vec![ty.clone(), Ty::TInt],
                         elem.as_ref().clone(),
                         vec![rhs.clone(), index],
                     );

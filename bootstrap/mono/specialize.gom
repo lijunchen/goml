@@ -139,6 +139,7 @@ fn unify_type(
         (tast::Type::Unit, tast::Type::Unit)
         | (tast::Type::Never, tast::Type::Never)
         | (tast::Type::Bool, tast::Type::Bool)
+        | (tast::Type::Int, tast::Type::Int)
         | (tast::Type::Int8, tast::Type::Int8)
         | (tast::Type::Int16, tast::Type::Int16)
         | (tast::Type::Int32, tast::Type::Int32)
@@ -194,7 +195,8 @@ fn unify_type(
         },
         (tast::Type::Slice(template), tast::Type::Slice(actual))
         | (tast::Type::VecType(template), tast::Type::VecType(actual))
-        | (tast::Type::RefType(template), tast::Type::RefType(actual)) => {
+        | (tast::Type::RefType(template), tast::Type::RefType(actual))
+        | (tast::Type::Channel(template), tast::Type::Channel(actual)) => {
             unify_type(template, actual, bindings)
         },
         (
@@ -263,6 +265,7 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
         tast::Type::Unit => tast::Type::Unit,
         tast::Type::Never => tast::Type::Never,
         tast::Type::Bool => tast::Type::Bool,
+        tast::Type::Int => tast::Type::Int,
         tast::Type::Int8 => tast::Type::Int8,
         tast::Type::Int16 => tast::Type::Int16,
         tast::Type::Int32 => tast::Type::Int32,
@@ -309,6 +312,9 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
         },
         tast::Type::RefType(elem) => {
             tast::Type::RefType(substitute_type(elem, bindings))
+        },
+        tast::Type::Channel(elem) => {
+            tast::Type::Channel(substitute_type(elem, bindings))
         },
         tast::Type::HashMap(key, value) => tast::Type::HashMap(
             substitute_type(key, bindings),
@@ -677,7 +683,8 @@ fn mono_type_contains_proper_subterm(
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
         | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => {
+        | tast::Type::RefType(elem)
+        | tast::Type::Channel(elem) => {
             mono_types_equal(elem, expected)
                 || mono_type_contains_proper_subterm(elem, expected)
         },
@@ -717,6 +724,7 @@ fn mono_type_outer_constructor_matches(
         | (tast::Type::Slice(_), tast::Type::Slice(_))
         | (tast::Type::VecType(_), tast::Type::VecType(_))
         | (tast::Type::RefType(_), tast::Type::RefType(_))
+        | (tast::Type::Channel(_), tast::Type::Channel(_))
         | (tast::Type::HashMap(_, _), tast::Type::HashMap(_, _))
         | (tast::Type::Func(_, _), tast::Type::Func(_, _)) => true,
         (tast::Type::App(left, _), tast::Type::App(right, _)) => {
@@ -1105,6 +1113,7 @@ fn normalize_type(
         tast::Type::Unit => tast::Type::Unit,
         tast::Type::Never => tast::Type::Never,
         tast::Type::Bool => tast::Type::Bool,
+        tast::Type::Int => tast::Type::Int,
         tast::Type::Int8 => tast::Type::Int8,
         tast::Type::Int16 => tast::Type::Int16,
         tast::Type::Int32 => tast::Type::Int32,
@@ -1143,6 +1152,9 @@ fn normalize_type(
         tast::Type::RefType(elem) => {
             tast::Type::RefType(normalize_type(ctx, elem, active))
         },
+        tast::Type::Channel(elem) => {
+            tast::Type::Channel(normalize_type(ctx, elem, active))
+        },
         tast::Type::HashMap(key, value) => tast::Type::HashMap(
             normalize_type(ctx, key, active),
             normalize_type(ctx, value, active),
@@ -1179,7 +1191,8 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
         | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => type_contains_associated_projection(elem),
+        | tast::Type::RefType(elem)
+        | tast::Type::Channel(elem) => type_contains_associated_projection(elem),
         tast::Type::HashMap(key, value) => {
             type_contains_associated_projection(key)
                 || type_contains_associated_projection(value)
@@ -1192,6 +1205,7 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
         | tast::Type::Unit
         | tast::Type::Never
         | tast::Type::Bool
+        | tast::Type::Int
         | tast::Type::Int8
         | tast::Type::Int16
         | tast::Type::Int32
@@ -1366,6 +1380,7 @@ fn builtin_scalar_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
         tast::Type::Unit
         | tast::Type::Bool
+        | tast::Type::Int
         | tast::Type::Int8
         | tast::Type::Int16
         | tast::Type::Int32
@@ -1961,7 +1976,8 @@ fn ensure_runtime_trait_impls_for_type(
         },
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem) => ensure_runtime_trait_impls_for_type(ctx, elem),
+        | tast::Type::VecType(elem)
+        | tast::Type::Channel(elem) => ensure_runtime_trait_impls_for_type(ctx, elem),
         tast::Type::RefType(elem) => {
             ensure_eq_hash_impls(ctx, elem);
             ensure_runtime_trait_impls_for_type(ctx, elem)

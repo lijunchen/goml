@@ -15,8 +15,8 @@ use text_size::TextRange;
 use crate::common::{self, Prim};
 use crate::hir::{self};
 use crate::typer::literals::{
-    ensure_float_literal_fits, parse_char_literal, parse_float_literal_with_ty,
-    parse_integer_literal_with_ty,
+    parse_char_literal, parse_float_literal_value_with_numeric_ty,
+    parse_integer_literal_with_numeric_ty, parse_integer_literal_with_ty,
 };
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::match_analysis;
@@ -25,9 +25,7 @@ use crate::typer::member_lookup::{
     report_method_not_found, resolve_explicit_trait_args, resolve_field_ty_eager,
 };
 use crate::typer::obligations::InstantiatedScheme;
-use crate::typer::operators::{
-    integer_literal_target, is_float_ty, is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
-};
+use crate::typer::operators::{is_integer_ty, is_numeric_ty, is_signed_numeric_ty};
 use crate::typer::results::{
     CallElab, CalleeElab, ForElab, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
     StructPatElab, TryElab, TryKind,
@@ -41,8 +39,9 @@ use crate::{
     intrinsics::LangItemId,
     tast::{self},
     typer::{
-        ArithmeticKind, CoercionGoal, LoopControlContext, MethodGoal, ObligationCause,
-        ObligationCauseKind, OperationGoal, Predicate, ProjectionGoal, TraitGoal, Typer,
+        ArithmeticKind, CoercionGoal, LoopControlContext, MethodGoal, NumericLiteralKind,
+        ObligationCause, ObligationCauseKind, OperationGoal, Predicate, ProjectionGoal, TraitGoal,
+        Typer,
     },
 };
 
@@ -420,90 +419,36 @@ impl Typer {
                 ty: tast::Ty::TBool,
             },
             hir::Expr::EInt { value } => {
-                let ty = tast::Ty::TInt32;
                 let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EInt8 { value } => {
-                let ty = tast::Ty::TInt8;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EInt16 { value } => {
-                let ty = tast::Ty::TInt16;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EInt32 { value } => {
-                let ty = tast::Ty::TInt32;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EInt64 { value } => {
-                let ty = tast::Ty::TInt64;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EUInt8 { value } => {
-                let ty = tast::Ty::TUint8;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EUInt16 { value } => {
-                let ty = tast::Ty::TUint16;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EUInt32 { value } => {
-                let ty = tast::Ty::TUint32;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EUInt64 { value } => {
-                let ty = tast::Ty::TUint64;
-                let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                tast::Expr::EPrim { value: prim, ty }
+                let tast::Ty::TVar(variable) = self.fresh_ty_var() else {
+                    unreachable!()
+                };
+                self.numeric_literals
+                    .push(crate::typer::NumericLiteralConstraint {
+                        variable,
+                        kind: crate::typer::NumericLiteralKind::Integer(value),
+                        range,
+                    });
+                tast::Expr::EPrim {
+                    value: Prim::Int { value: 0 },
+                    ty: tast::Ty::TVar(variable),
+                }
             }
             hir::Expr::EFloat { value } => {
                 let range = self.expr_range(e);
-                ensure_float_literal_fits(diagnostics, value, &tast::Ty::TFloat64, range);
-                let ty = tast::Ty::TFloat64;
+                let tast::Ty::TVar(variable) = self.fresh_ty_var() else {
+                    unreachable!()
+                };
+                self.numeric_literals
+                    .push(crate::typer::NumericLiteralConstraint {
+                        variable,
+                        kind: crate::typer::NumericLiteralKind::Float(value),
+                        range,
+                    });
                 tast::Expr::EPrim {
-                    value: Prim::from_float_literal(value, &ty),
-                    ty,
+                    value: Prim::Float64 { value },
+                    ty: tast::Ty::TVar(variable),
                 }
-            }
-            hir::Expr::EFloat32 { value } => {
-                let ty = tast::Ty::TFloat32;
-                let range = self.expr_range(e);
-                let prim = parse_float_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::from_float_literal(0.0, &ty));
-                tast::Expr::EPrim { value: prim, ty }
-            }
-            hir::Expr::EFloat64 { value } => {
-                let ty = tast::Ty::TFloat64;
-                let range = self.expr_range(e);
-                let prim = parse_float_literal_with_ty(diagnostics, &value, &ty, range)
-                    .unwrap_or_else(|| Prim::from_float_literal(0.0, &ty));
-                tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EString { value } => tast::Expr::EPrim {
                 value: Prim::string(value),
@@ -701,20 +646,35 @@ impl Typer {
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }
-            hir::Expr::EInt { ref value } if is_integer_ty(expected) => {
+            hir::Expr::EInt { ref value } if is_numeric_ty(expected) => {
                 let range = self.expr_range(e);
-                let prim = parse_integer_literal_with_ty(diagnostics, value, expected, range)
-                    .unwrap_or_else(|| Prim::zero_for_int_ty(expected));
+                let prim =
+                    parse_integer_literal_with_numeric_ty(diagnostics, value, expected, range)
+                        .unwrap_or_else(|| {
+                            if is_integer_ty(expected) {
+                                Prim::zero_for_int_ty(expected)
+                            } else {
+                                Prim::from_float_literal(0.0, expected)
+                            }
+                        });
                 tast::Expr::EPrim {
                     value: prim,
                     ty: expected.clone(),
                 }
             }
-            hir::Expr::EFloat { value } if is_float_ty(expected) => {
+            hir::Expr::EFloat { value } if is_numeric_ty(expected) => {
                 let range = self.expr_range(e);
-                ensure_float_literal_fits(diagnostics, value, expected, range);
+                let prim =
+                    parse_float_literal_value_with_numeric_ty(diagnostics, value, expected, range)
+                        .unwrap_or_else(|| {
+                            if is_integer_ty(expected) {
+                                Prim::zero_for_int_ty(expected)
+                            } else {
+                                Prim::from_float_literal(0.0, expected)
+                            }
+                        });
                 tast::Expr::EPrim {
-                    value: Prim::from_float_literal(value, expected),
+                    value: prim,
                     ty: expected.clone(),
                 }
             }
@@ -2665,6 +2625,9 @@ impl Typer {
                 }
             }
             common_defs::UnaryOp::Neg => {
+                if self.is_numeric_literal_negation_chain(expr) {
+                    self.negate_numeric_literal_constraint(&expr_ty);
+                }
                 self.push_obligation(
                     Predicate::Operation(OperationGoal::Arithmetic {
                         kind: ArithmeticKind::Numeric,
@@ -2699,6 +2662,41 @@ impl Typer {
         }
     }
 
+    fn is_numeric_literal_negation_chain(&self, expr: hir::ExprId) -> bool {
+        match self.hir_table.expr(expr) {
+            hir::Expr::EInt { .. } | hir::Expr::EFloat { .. } => true,
+            hir::Expr::EUnary {
+                op: common_defs::UnaryOp::Neg,
+                expr,
+            } => self.is_numeric_literal_negation_chain(*expr),
+            _ => false,
+        }
+    }
+
+    fn negate_numeric_literal_constraint(&mut self, ty: &tast::Ty) {
+        let target = self.norm(ty);
+        let variables = self
+            .numeric_literals
+            .iter()
+            .map(|constraint| constraint.variable)
+            .collect::<Vec<_>>();
+        let index = variables
+            .iter()
+            .rposition(|variable| self.norm(&tast::Ty::TVar(*variable)) == target);
+        let Some(index) = index else {
+            return;
+        };
+        match &mut self.numeric_literals[index].kind {
+            NumericLiteralKind::Integer(value) => {
+                *value = match value.strip_prefix('-') {
+                    Some(value) => value.to_string(),
+                    None => format!("-{value}"),
+                };
+            }
+            NumericLiteralKind::Float(value) => *value = -*value,
+        }
+    }
+
     fn infer_cast_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -2712,11 +2710,22 @@ impl Typer {
         let target_ty = tast::Ty::from_hir(genv, target, &local_env.current_tparams_env());
         let source_ty = self.norm(&source_ty);
         let target_ty = self.norm(&target_ty);
-        let valid = (is_integer_ty(&source_ty) && is_integer_ty(&target_ty))
-            || matches!(
-                (&source_ty, &target_ty),
-                (tast::Ty::TChar, tast::Ty::TUint32)
+        let valid = if contains_tvar(&source_ty) || contains_tvar(&target_ty) {
+            self.push_obligation(
+                Predicate::Operation(OperationGoal::Cast {
+                    source_ty: source_ty.clone(),
+                    target_ty: target_ty.clone(),
+                }),
+                ObligationCause::new(self.expr_range(expr), ObligationCauseKind::Operation),
             );
+            true
+        } else {
+            (is_integer_ty(&source_ty) && is_integer_ty(&target_ty))
+                || matches!(
+                    (&source_ty, &target_ty),
+                    (tast::Ty::TChar, tast::Ty::TUint32)
+                )
+        };
         if !valid {
             diagnostics.push(
                 Diagnostic::new(
@@ -2774,9 +2783,7 @@ impl Typer {
             | common_defs::BinaryOp::Rem
             | common_defs::BinaryOp::BitAnd
             | common_defs::BinaryOp::BitOr
-            | common_defs::BinaryOp::BitXor
-            | common_defs::BinaryOp::Shl
-            | common_defs::BinaryOp::Shr => {
+            | common_defs::BinaryOp::BitXor => {
                 let norm_lhs = self.norm(&lhs_ty);
                 if matches!(norm_lhs, tast::Ty::TVar(..)) {
                     self.fresh_ty_var()
@@ -2784,6 +2791,7 @@ impl Typer {
                     norm_lhs
                 }
             }
+            common_defs::BinaryOp::Shl | common_defs::BinaryOp::Shr => lhs_ty.clone(),
         };
 
         match op {
@@ -2897,8 +2905,8 @@ impl Typer {
         start: hir::ExprId,
         end: hir::ExprId,
     ) -> tast::Expr {
-        let start = self.check_expr(genv, local_env, diagnostics, start, &tast::Ty::TInt32);
-        let end = self.check_expr(genv, local_env, diagnostics, end, &tast::Ty::TInt32);
+        let start = self.check_expr(genv, local_env, diagnostics, start, &tast::Ty::TInt);
+        let end = self.check_expr(genv, local_env, diagnostics, end, &tast::Ty::TInt);
         let name = genv
             .lang_item(LangItemId::Range)
             .cloned()
@@ -3039,7 +3047,7 @@ impl Typer {
         let (index_tast, result_ty) = match &base_ty {
             tast::Ty::TArray { elem, .. } | tast::Ty::TVec { elem } | tast::Ty::TSlice { elem } => {
                 (
-                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt),
                     elem.as_ref().clone(),
                 )
             }
@@ -3186,7 +3194,7 @@ impl Typer {
                 );
                 let elem_ty = elem.as_ref().clone();
                 (
-                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt),
                     elem_ty.clone(),
                     elem_ty,
                 )
@@ -3194,7 +3202,7 @@ impl Typer {
             tast::Ty::TVec { elem } => {
                 let elem_ty = elem.as_ref().clone();
                 (
-                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt),
                     elem_ty.clone(),
                     elem_ty,
                 )
@@ -3207,7 +3215,7 @@ impl Typer {
                 );
                 let elem_ty = elem.as_ref().clone();
                 (
-                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt),
                     elem_ty.clone(),
                     elem_ty,
                 )

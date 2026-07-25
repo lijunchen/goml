@@ -77,6 +77,7 @@ fn artifact_json_type(
         tast::Type::Unit => artifact_json_string(writer, "TUnit"),
         tast::Type::Never => artifact_json_string(writer, "TNever"),
         tast::Type::Bool => artifact_json_string(writer, "TBool"),
+        tast::Type::Int => artifact_json_string(writer, "TInt"),
         tast::Type::Int8 => artifact_json_string(writer, "TInt8"),
         tast::Type::Int16 => artifact_json_string(writer, "TInt16"),
         tast::Type::Int32 => artifact_json_string(writer, "TInt32"),
@@ -165,6 +166,15 @@ fn artifact_json_type(
         tast::Type::RefType(element) => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TRef");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "elem");
+            artifact_json_type(writer, context, element);
+            artifact_json_end_object(writer);
+            artifact_json_end_object(writer)
+        },
+        tast::Type::Channel(element) => {
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "TChannel");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);

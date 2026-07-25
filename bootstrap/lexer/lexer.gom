@@ -77,6 +77,7 @@ pub enum TokenKind {
     WildcardKeyword,
     UnitKeyword,
     BoolKeyword,
+    IntKeyword,
     Int8Keyword,
     Int16Keyword,
     Int32Keyword,
@@ -91,18 +92,8 @@ pub enum TokenKind {
     CharKeyword,
     ArrayKeyword,
     Ident,
-    Float32Lit,
-    Float64Lit,
     Float,
-    Int8Lit,
-    Int16Lit,
-    Int32Lit,
-    Int64Lit,
-    UInt8Lit,
-    UInt16Lit,
-    UInt32Lit,
-    UInt64Lit,
-    Int,
+    IntLit,
     Str,
     MultilineStr,
     CharLit,
@@ -115,25 +106,25 @@ pub enum TokenKind {
 pub struct Token {
     pub kind: TokenKind,
     pub text: string,
-    pub start: int32,
-    pub end: int32,
+    pub start: int,
+    pub end: int,
 }
 
-fn byte_at(source: string, index: int32) -> uint8 {
+fn byte_at(source: string, index: int) -> uint8 {
     source.byte_get(index)
 }
 
-fn starts_with(source: string, index: int32, expected: string) -> bool {
+fn starts_with(source: string, index: int, expected: string) -> bool {
     let end = index + expected.byte_len();
     end <= source.byte_len() && source.byte_slice(index, end) == expected
 }
 
 fn is_ascii_lower(value: uint8) -> bool {
-    value >= 97u8 && value <= 122u8
+    value >= 97 && value <= 122
 }
 
 fn is_ascii_upper(value: uint8) -> bool {
-    value >= 65u8 && value <= 90u8
+    value >= 65 && value <= 90
 }
 
 fn is_ascii_letter(value: uint8) -> bool {
@@ -141,36 +132,36 @@ fn is_ascii_letter(value: uint8) -> bool {
 }
 
 fn is_ascii_digit(value: uint8) -> bool {
-    value >= 48u8 && value <= 57u8
+    value >= 48 && value <= 57
 }
 
 fn is_ident_continue(value: uint8) -> bool {
-    is_ascii_letter(value) || is_ascii_digit(value) || value == 95u8
+    is_ascii_letter(value) || is_ascii_digit(value) || value == 95
 }
 
 fn is_whitespace(value: uint8) -> bool {
-    value == 32u8 || value == 9u8 || value == 13u8 || value == 10u8
+    value == 32 || value == 9 || value == 13 || value == 10
 }
 
 fn is_hex_digit(value: uint8) -> bool {
     is_ascii_digit(value)
-        || (value >= 65u8 && value <= 70u8)
-        || (value >= 97u8 && value <= 102u8)
+        || (value >= 65 && value <= 70)
+        || (value >= 97 && value <= 102)
 }
 
-fn utf8_width(value: uint8) -> int32 {
-    if value < 128u8 {
+fn utf8_width(value: uint8) -> int {
+    if value < 128 {
         1
-    } else if value < 224u8 {
+    } else if value < 224 {
         2
-    } else if value < 240u8 {
+    } else if value < 240 {
         3
     } else {
         4
     }
 }
 
-fn option_int_is_none(value: Option[int32]) -> bool {
+fn option_int_is_none(value: Option[int]) -> bool {
     match value {
         Option::Some(_) => false,
         Option::None => true,
@@ -213,6 +204,7 @@ fn keyword_kind(text_value: string) -> TokenKind {
         "_" => TokenKind::WildcardKeyword,
         "unit" => TokenKind::UnitKeyword,
         "bool" => TokenKind::BoolKeyword,
+        "int" => TokenKind::IntKeyword,
         "int8" => TokenKind::Int8Keyword,
         "int16" => TokenKind::Int16Keyword,
         "int32" => TokenKind::Int32Keyword,
@@ -230,7 +222,7 @@ fn keyword_kind(text_value: string) -> TokenKind {
     }
 }
 
-fn scan_ident_end(source: string, start: int32) -> int32 {
+fn scan_ident_end(source: string, start: int) -> int {
     let index = Ref::new(start);
     while index.get() < source.byte_len() && is_ident_continue(byte_at(source, index.get())) {
         index.set(index.get() + 1)
@@ -238,22 +230,22 @@ fn scan_ident_end(source: string, start: int32) -> int32 {
     index.get()
 }
 
-fn scan_digits_end(source: string, start: int32) -> int32 {
+fn scan_digits_end(source: string, start: int) -> int {
     let index = Ref::new(start);
     while index.get() < source.byte_len()
         && (is_ascii_digit(byte_at(source, index.get()))
-            || byte_at(source, index.get()) == 95u8)
+            || byte_at(source, index.get()) == 95)
     {
         index.set(index.get() + 1)
     };
     index.get()
 }
 
-fn valid_digits(source: string, start: int32, end: int32) -> bool {
+fn valid_digits(source: string, start: int, end: int) -> bool {
     let index = Ref::new(start);
     let valid = Ref::new(start < end);
     while index.get() < end && valid.get() {
-        if byte_at(source, index.get()) == 95u8
+        if byte_at(source, index.get()) == 95
             && (index.get() == start
                 || index.get() + 1 >= end
                 || !is_ascii_digit(byte_at(source, index.get() - 1))
@@ -267,13 +259,13 @@ fn valid_digits(source: string, start: int32, end: int32) -> bool {
     valid.get()
 }
 
-fn scan_number(source: string, start: int32) -> (TokenKind, int32) {
+fn scan_number(source: string, start: int) -> (TokenKind, int) {
     let integer_end = scan_digits_end(source, start);
     let number_end = Ref::new(integer_end);
     let is_float = Ref::new(false);
     let valid = Ref::new(valid_digits(source, start, integer_end));
     if integer_end + 1 < source.byte_len()
-        && byte_at(source, integer_end) == 46u8
+        && byte_at(source, integer_end) == 46
         && is_ascii_digit(byte_at(source, integer_end + 1))
     {
         let fraction_end = scan_digits_end(source, integer_end + 1);
@@ -284,13 +276,13 @@ fn scan_number(source: string, start: int32) -> (TokenKind, int32) {
         ()
     };
     if number_end.get() < source.byte_len()
-        && (byte_at(source, number_end.get()) == 101u8
-            || byte_at(source, number_end.get()) == 69u8)
+        && (byte_at(source, number_end.get()) == 101
+            || byte_at(source, number_end.get()) == 69)
     {
         let exponent_start = Ref::new(number_end.get() + 1);
         if exponent_start.get() < source.byte_len()
-            && (byte_at(source, exponent_start.get()) == 43u8
-                || byte_at(source, exponent_start.get()) == 45u8)
+            && (byte_at(source, exponent_start.get()) == 43
+                || byte_at(source, exponent_start.get()) == 45)
         {
             exponent_start.set(exponent_start.get() + 1)
         } else {
@@ -313,49 +305,49 @@ fn scan_number(source: string, start: int32) -> (TokenKind, int32) {
         (TokenKind::Error, number_end.get())
     } else if is_float.get() {
         if starts_with(source, number_end.get(), "f32") {
-            (TokenKind::Float32Lit, number_end.get() + 3)
+            (TokenKind::Error, number_end.get() + 3)
         } else if starts_with(source, number_end.get(), "f64") {
-            (TokenKind::Float64Lit, number_end.get() + 3)
+            (TokenKind::Error, number_end.get() + 3)
         } else {
             (TokenKind::Float, number_end.get())
         }
     } else if starts_with(source, integer_end, "i16") {
-        (TokenKind::Int16Lit, integer_end + 3)
+        (TokenKind::Error, integer_end + 3)
     } else if starts_with(source, integer_end, "i32") {
-        (TokenKind::Int32Lit, integer_end + 3)
+        (TokenKind::Error, integer_end + 3)
     } else if starts_with(source, integer_end, "i64") {
-        (TokenKind::Int64Lit, integer_end + 3)
+        (TokenKind::Error, integer_end + 3)
     } else if starts_with(source, integer_end, "u16") {
-        (TokenKind::UInt16Lit, integer_end + 3)
+        (TokenKind::Error, integer_end + 3)
     } else if starts_with(source, integer_end, "u32") {
-        (TokenKind::UInt32Lit, integer_end + 3)
+        (TokenKind::Error, integer_end + 3)
     } else if starts_with(source, integer_end, "u64") {
-        (TokenKind::UInt64Lit, integer_end + 3)
+        (TokenKind::Error, integer_end + 3)
     } else if starts_with(source, integer_end, "i8") {
-        (TokenKind::Int8Lit, integer_end + 2)
+        (TokenKind::Error, integer_end + 2)
     } else if starts_with(source, integer_end, "u8") {
-        (TokenKind::UInt8Lit, integer_end + 2)
+        (TokenKind::Error, integer_end + 2)
     } else {
-        (TokenKind::Int, integer_end)
+        (TokenKind::IntLit, integer_end)
     }
 }
 
-fn scan_escape_end(source: string, slash: int32, quote: uint8) -> Option[int32] {
+fn scan_escape_end(source: string, slash: int, quote: uint8) -> Option[int] {
     if slash + 1 >= source.byte_len() {
         Option::None
     } else {
         let escaped = byte_at(source, slash + 1);
         if escaped == quote
-            || escaped == 92u8
-            || escaped == 98u8
-            || escaped == 110u8
-            || escaped == 102u8
-            || escaped == 114u8
-            || escaped == 116u8
-            || escaped == 47u8
+            || escaped == 92
+            || escaped == 98
+            || escaped == 110
+            || escaped == 102
+            || escaped == 114
+            || escaped == 116
+            || escaped == 47
         {
             Option::Some(slash + 2)
-        } else if escaped == 117u8 && slash + 5 < source.byte_len() {
+        } else if escaped == 117 && slash + 5 < source.byte_len() {
             if is_hex_digit(byte_at(source, slash + 2))
                 && is_hex_digit(byte_at(source, slash + 3))
                 && is_hex_digit(byte_at(source, slash + 4))
@@ -371,20 +363,20 @@ fn scan_escape_end(source: string, slash: int32, quote: uint8) -> Option[int32] 
     }
 }
 
-fn scan_string(source: string, start: int32) -> (bool, int32) {
+fn scan_string(source: string, start: int) -> (bool, int) {
     let index = Ref::new(start + 1);
     let success = Ref::new(false);
     let finished = Ref::new(false);
     while finished.get() == false && index.get() < source.byte_len() {
         let value = byte_at(source, index.get());
-        if value == 34u8 {
+        if value == 34 {
             index.set(index.get() + 1);
             success.set(true);
             finished.set(true)
-        } else if value < 32u8 {
+        } else if value < 32 {
             finished.set(true)
-        } else if value == 92u8 {
-            match scan_escape_end(source, index.get(), 34u8) {
+        } else if value == 92 {
+            match scan_escape_end(source, index.get(), 34) {
                 Option::Some(next) => index.set(next),
                 Option::None => finished.set(true),
             }
@@ -395,22 +387,22 @@ fn scan_string(source: string, start: int32) -> (bool, int32) {
     (success.get(), index.get())
 }
 
-fn scan_char_end(source: string, start: int32) -> Option[int32] {
+fn scan_char_end(source: string, start: int) -> Option[int] {
     let content = start + 1;
     if content >= source.byte_len() {
         Option::None
     } else {
         let value = byte_at(source, content);
-        let content_end = if value < 32u8 || value == 39u8 {
+        let content_end = if value < 32 || value == 39 {
             Option::None
-        } else if value == 92u8 {
-            scan_escape_end(source, content, 39u8)
+        } else if value == 92 {
+            scan_escape_end(source, content, 39)
         } else {
             Option::Some(content + utf8_width(value))
         };
         match content_end {
             Option::Some(end) => {
-                if end < source.byte_len() && byte_at(source, end) == 39u8 {
+                if end < source.byte_len() && byte_at(source, end) == 39 {
                     Option::Some(end + 1)
                 } else {
                     Option::None
@@ -421,9 +413,9 @@ fn scan_char_end(source: string, start: int32) -> Option[int32] {
     }
 }
 
-fn scan_multiline_string_end(source: string, start: int32) -> Option[int32] {
+fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
     let cursor = Ref::new(start + 2);
-    while cursor.get() < source.byte_len() && byte_at(source, cursor.get()) != 10u8 {
+    while cursor.get() < source.byte_len() && byte_at(source, cursor.get()) != 10 {
         cursor.set(cursor.get() + 1)
     };
     if cursor.get() >= source.byte_len() {
@@ -437,13 +429,13 @@ fn scan_multiline_string_end(source: string, start: int32) -> Option[int32] {
             let line_start = cursor.get();
             let index = Ref::new(line_start);
             while index.get() < source.byte_len()
-                && (byte_at(source, index.get()) == 32u8 || byte_at(source, index.get()) == 9u8)
+                && (byte_at(source, index.get()) == 32 || byte_at(source, index.get()) == 9)
             {
                 index.set(index.get() + 1)
             };
             if index.get() + 1 >= source.byte_len()
-                || byte_at(source, index.get()) != 92u8
-                || byte_at(source, index.get() + 1) != 92u8
+                || byte_at(source, index.get()) != 92
+                || byte_at(source, index.get() + 1) != 92
             {
                 if lines.get() >= 2 {
                     result.set(Option::Some(line_start - 1))
@@ -452,7 +444,7 @@ fn scan_multiline_string_end(source: string, start: int32) -> Option[int32] {
                 }
             } else {
                 index.set(index.get() + 2);
-                while index.get() < source.byte_len() && byte_at(source, index.get()) != 10u8 {
+                while index.get() < source.byte_len() && byte_at(source, index.get()) != 10 {
                     index.set(index.get() + 1)
                 };
                 lines.set(lines.get() + 1);
@@ -474,7 +466,7 @@ fn scan_multiline_string_end(source: string, start: int32) -> Option[int32] {
     }
 }
 
-fn scan_symbol(source: string, start: int32) -> Option[(TokenKind, int32)] {
+fn scan_symbol(source: string, start: int) -> Option[(TokenKind, int)] {
     if starts_with(source, start, "..=") {
         Option::Some((TokenKind::DotDotEq, start + 3))
     } else if starts_with(source, start, "::") {
@@ -503,32 +495,32 @@ fn scan_symbol(source: string, start: int32) -> Option[(TokenKind, int32)] {
         Option::Some((TokenKind::NotEq, start + 2))
     } else {
         let kind = match byte_at(source, start) {
-            40u8 => Option::Some(TokenKind::LParen),
-            41u8 => Option::Some(TokenKind::RParen),
-            123u8 => Option::Some(TokenKind::LBrace),
-            125u8 => Option::Some(TokenKind::RBrace),
-            91u8 => Option::Some(TokenKind::LBracket),
-            93u8 => Option::Some(TokenKind::RBracket),
-            61u8 => Option::Some(TokenKind::Eq),
-            59u8 => Option::Some(TokenKind::Semi),
-            44u8 => Option::Some(TokenKind::Comma),
-            58u8 => Option::Some(TokenKind::Colon),
-            43u8 => Option::Some(TokenKind::Plus),
-            45u8 => Option::Some(TokenKind::Minus),
-            42u8 => Option::Some(TokenKind::Star),
-            47u8 => Option::Some(TokenKind::Slash),
-            37u8 => Option::Some(TokenKind::Percent),
-            46u8 => Option::Some(TokenKind::Dot),
-            64u8 => Option::Some(TokenKind::At),
-            38u8 => Option::Some(TokenKind::Amp),
-            124u8 => Option::Some(TokenKind::Pipe),
-            94u8 => Option::Some(TokenKind::Caret),
-            126u8 => Option::Some(TokenKind::Tilde),
-            33u8 => Option::Some(TokenKind::Bang),
-            60u8 => Option::Some(TokenKind::Less),
-            62u8 => Option::Some(TokenKind::Greater),
-            63u8 => Option::Some(TokenKind::Question),
-            35u8 => Option::Some(TokenKind::Pound),
+            40 => Option::Some(TokenKind::LParen),
+            41 => Option::Some(TokenKind::RParen),
+            123 => Option::Some(TokenKind::LBrace),
+            125 => Option::Some(TokenKind::RBrace),
+            91 => Option::Some(TokenKind::LBracket),
+            93 => Option::Some(TokenKind::RBracket),
+            61 => Option::Some(TokenKind::Eq),
+            59 => Option::Some(TokenKind::Semi),
+            44 => Option::Some(TokenKind::Comma),
+            58 => Option::Some(TokenKind::Colon),
+            43 => Option::Some(TokenKind::Plus),
+            45 => Option::Some(TokenKind::Minus),
+            42 => Option::Some(TokenKind::Star),
+            47 => Option::Some(TokenKind::Slash),
+            37 => Option::Some(TokenKind::Percent),
+            46 => Option::Some(TokenKind::Dot),
+            64 => Option::Some(TokenKind::At),
+            38 => Option::Some(TokenKind::Amp),
+            124 => Option::Some(TokenKind::Pipe),
+            94 => Option::Some(TokenKind::Caret),
+            126 => Option::Some(TokenKind::Tilde),
+            33 => Option::Some(TokenKind::Bang),
+            60 => Option::Some(TokenKind::Less),
+            62 => Option::Some(TokenKind::Greater),
+            63 => Option::Some(TokenKind::Question),
+            35 => Option::Some(TokenKind::Pound),
             _ => Option::None,
         };
         match kind {
@@ -538,7 +530,7 @@ fn scan_symbol(source: string, start: int32) -> Option[(TokenKind, int32)] {
     }
 }
 
-fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: int32, end: int32) -> unit {
+fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: int, end: int) -> unit {
     tokens.push(Token {
         kind,
         text: source.byte_slice(start, end),
@@ -561,7 +553,7 @@ pub fn lex(source: string) -> Vec[Token] {
             push_token(tokens, source, TokenKind::Whitespace, start, index.get())
         } else if starts_with(source, start, "//") {
             index.set(start + 2);
-            while index.get() < source.byte_len() && byte_at(source, index.get()) != 10u8 {
+            while index.get() < source.byte_len() && byte_at(source, index.get()) != 10 {
                 index.set(index.get() + 1)
             };
             push_token(tokens, source, TokenKind::Comment, start, index.get())
@@ -576,7 +568,7 @@ pub fn lex(source: string) -> Vec[Token] {
                     push_token(tokens, source, TokenKind::Error, start, start + 2)
                 },
             }
-        } else if value == 34u8 {
+        } else if value == 34 {
             let (valid, end) = scan_string(source, start);
             index.set(end);
             if valid {
@@ -584,7 +576,7 @@ pub fn lex(source: string) -> Vec[Token] {
             } else {
                 push_token(tokens, source, TokenKind::Error, start, end)
             }
-        } else if value == 39u8 {
+        } else if value == 39 {
             match scan_char_end(source, start) {
                 Option::Some(end) => {
                     index.set(end);
@@ -595,8 +587,8 @@ pub fn lex(source: string) -> Vec[Token] {
                     push_token(tokens, source, TokenKind::Error, start, start + 1)
                 },
             }
-        } else if is_ascii_letter(value) || value == 95u8 {
-            let end = if value == 95u8
+        } else if is_ascii_letter(value) || value == 95 {
+            let end = if value == 95
                 && (start + 1 >= source.byte_len() || !is_ident_continue(byte_at(source, start + 1)))
             {
                 start + 1
@@ -707,6 +699,7 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         TokenKind::WildcardKeyword => "_",
         TokenKind::UnitKeyword => "unit",
         TokenKind::BoolKeyword => "bool",
+        TokenKind::IntKeyword => "int",
         TokenKind::Int8Keyword => "int8",
         TokenKind::Int16Keyword => "int16",
         TokenKind::Int32Keyword => "int32",
@@ -721,18 +714,8 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         TokenKind::CharKeyword => "char",
         TokenKind::ArrayKeyword => "array",
         TokenKind::Ident => "ident",
-        TokenKind::Float32Lit => "float32_lit",
-        TokenKind::Float64Lit => "float64_lit",
         TokenKind::Float => "float",
-        TokenKind::Int8Lit => "int8_lit",
-        TokenKind::Int16Lit => "int16_lit",
-        TokenKind::Int32Lit => "int32_lit",
-        TokenKind::Int64Lit => "int64_lit",
-        TokenKind::UInt8Lit => "uint8_lit",
-        TokenKind::UInt16Lit => "uint16_lit",
-        TokenKind::UInt32Lit => "uint32_lit",
-        TokenKind::UInt64Lit => "uint64_lit",
-        TokenKind::Int => "int",
+        TokenKind::IntLit => "int_lit",
         TokenKind::Str => "str",
         TokenKind::MultilineStr => "multiline_str",
         TokenKind::CharLit => "char_lit",
@@ -753,21 +736,21 @@ pub fn token_is_trivia(kind: TokenKind) -> bool {
 
 fn hex_digit(value: uint8) -> string {
     match value {
-        0u8 => "0",
-        1u8 => "1",
-        2u8 => "2",
-        3u8 => "3",
-        4u8 => "4",
-        5u8 => "5",
-        6u8 => "6",
-        7u8 => "7",
-        8u8 => "8",
-        9u8 => "9",
-        10u8 => "a",
-        11u8 => "b",
-        12u8 => "c",
-        13u8 => "d",
-        14u8 => "e",
+        0 => "0",
+        1 => "1",
+        2 => "2",
+        3 => "3",
+        4 => "4",
+        5 => "5",
+        6 => "6",
+        7 => "7",
+        8 => "8",
+        9 => "9",
+        10 => "a",
+        11 => "b",
+        12 => "c",
+        13 => "d",
+        14 => "e",
         _ => "f",
     }
 }
@@ -777,8 +760,8 @@ pub fn encode_text_hex(value: string) -> string {
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        builder.write_string(hex_digit(byte >> 4u8));
-        builder.write_string(hex_digit(byte & 15u8));
+        builder.write_string(hex_digit(byte >> 4));
+        builder.write_string(hex_digit(byte & 15));
         index.set(index.get() + 1)
     };
     builder.finish()

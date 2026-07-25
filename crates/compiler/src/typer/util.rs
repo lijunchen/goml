@@ -32,6 +32,7 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TNever => "never".to_string(),
         tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt => "int".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
@@ -81,6 +82,9 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
         tast::Ty::TSlice { elem } => format!("Slice[{}]", format_ty_for_diag(elem.as_ref())),
         tast::Ty::TVec { elem } => format!("Vec[{}]", format_ty_for_diag(elem.as_ref())),
         tast::Ty::TRef { elem } => format!("Ref[{}]", format_ty_for_diag(elem.as_ref())),
+        tast::Ty::TChannel { elem } => {
+            format!("Channel[{}]", format_ty_for_diag(elem.as_ref()))
+        }
         tast::Ty::THashMap { key, value } => format!(
             "HashMap[{}, {}]",
             format_ty_for_diag(key.as_ref()),
@@ -123,6 +127,7 @@ pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
         tast::Ty::TVec { .. } => Some("Vec".to_string()),
         tast::Ty::TRef { .. } => Some("Ref".to_string()),
         tast::Ty::THashMap { .. } => Some("HashMap".to_string()),
+        tast::Ty::TChannel { .. } => Some("Channel".to_string()),
         _ => None,
     }
 }
@@ -139,6 +144,7 @@ pub(crate) fn validate_ty(
         tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -166,6 +172,9 @@ pub(crate) fn validate_ty(
             validate_ty(genv, diagnostics, elem, range, tparams);
         }
         tast::Ty::TVec { elem } => {
+            validate_ty(genv, diagnostics, elem, range, tparams);
+        }
+        tast::Ty::TChannel { elem } => {
             validate_ty(genv, diagnostics, elem, range, tparams);
         }
         tast::Ty::THashMap { key, value } => {
@@ -365,7 +374,8 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
-        | tast::Ty::TRef { elem } => validate_dyn_object_safety_in_ty(genv, diagnostics, elem),
+        | tast::Ty::TRef { elem }
+        | tast::Ty::TChannel { elem } => validate_dyn_object_safety_in_ty(genv, diagnostics, elem),
         tast::Ty::TProjection {
             trait_ref, for_ty, ..
         } => {
@@ -390,6 +400,7 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -483,6 +494,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         tast::Ty::TSlice { elem } => ty_contains_self(elem),
         tast::Ty::TVec { elem } => ty_contains_self(elem),
         tast::Ty::TRef { elem } => ty_contains_self(elem),
+        tast::Ty::TChannel { elem } => ty_contains_self(elem),
         tast::Ty::THashMap { key, value } => ty_contains_self(key) || ty_contains_self(value),
         tast::Ty::TFunc { params, ret_ty } => {
             params.iter().any(ty_contains_self) || ty_contains_self(ret_ty)
@@ -501,6 +513,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         | tast::Ty::TUnit
         | tast::Ty::TNever
         | tast::Ty::TBool
+        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -526,6 +539,7 @@ impl tast::Ty {
         match hir_ty {
             hir::TypeExpr::TUnit => Self::TUnit,
             hir::TypeExpr::TBool => Self::TBool,
+            hir::TypeExpr::TInt => Self::TInt,
             hir::TypeExpr::TInt8 => Self::TInt8,
             hir::TypeExpr::TInt16 => Self::TInt16,
             hir::TypeExpr::TInt32 => Self::TInt32,
@@ -624,6 +638,17 @@ impl tast::Ty {
                         value: Box::new(Self::from_hir(genv, value, tparams_env)),
                     };
                 }
+                if let hir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.package.is_none()
+                    && path.len() == 1
+                    && path.last_ident().is_some_and(|name| name == "Channel")
+                    && args.len() == 1
+                    && let Some(arg0) = args.first()
+                {
+                    return Self::TChannel {
+                        elem: Box::new(Self::from_hir(genv, arg0, tparams_env)),
+                    };
+                }
                 Self::TApp {
                     ty: Box::new(Self::from_hir(genv, ty, tparams_env)),
                     args: args
@@ -703,6 +728,7 @@ pub(crate) fn type_expr_range(ty: &hir::TypeExpr) -> Option<TextRange> {
             .or_else(|| type_expr_range(ret_ty)),
         hir::TypeExpr::TUnit
         | hir::TypeExpr::TBool
+        | hir::TypeExpr::TInt
         | hir::TypeExpr::TInt8
         | hir::TypeExpr::TInt16
         | hir::TypeExpr::TInt32

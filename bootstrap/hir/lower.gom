@@ -22,16 +22,16 @@ struct ResolvedUses {
 
 struct LowerCtx {
     package_name: string,
-    package_id: int32,
+    package_id: int,
     definitions: Vec[(string, DefId)],
     enums: Vec[EnumInfo],
     nominal_types: Vec[string],
     traits: Vec[string],
     aliases: Vec[AliasEntry],
     qualify_imports: bool,
-    local_counter: Ref[int32],
-    method_counter: Ref[int32],
-    expr_counter: Ref[int32],
+    local_counter: Ref[int],
+    method_counter: Ref[int],
+    expr_counter: Ref[int],
     diagnostics: Vec[Diagnostic],
     current_pattern_span: Ref[Option[ast::Span]],
 }
@@ -93,7 +93,7 @@ fn is_special_package(package_name: string) -> bool {
     package_name == "main" || package_name == "builtin"
 }
 
-fn package_id(package_name: string) -> int32 {
+fn package_id(package_name: string) -> int {
     if package_name == "builtin" {
         0
     } else if package_name == "main" {
@@ -332,7 +332,7 @@ fn fresh_method(ctx: LowerCtx) -> DefId {
     }
 }
 
-fn enum_variant(info: EnumInfo, name: string) -> Option[int32] {
+fn enum_variant(info: EnumInfo, name: string) -> Option[int] {
     let result = Ref::new(Option::None);
     let index = Ref::new(0);
     for variant in info.variants {
@@ -371,7 +371,7 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
                 && (parts.get(1) == "Ok" || parts.get(1) == "Err"))) {
         Option::Some(ConstructorRef::Unresolved(join_segments(parts)))
     } else if parts.len() == 1 {
-        let matches: Vec[(DefId, int32)] = Vec::new();
+        let matches: Vec[(DefId, int)] = Vec::new();
         for info in ctx.enums {
             match enum_variant(info, parts.get(0)) {
                 Option::Some(index) => matches.push((info.def_id, index)),
@@ -428,6 +428,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
     match value {
         ast::TypeExpr::Unit => TypeExpr::Unit,
         ast::TypeExpr::Bool => TypeExpr::Bool,
+        ast::TypeExpr::Int => TypeExpr::Int,
         ast::TypeExpr::Int8 => TypeExpr::Int8,
         ast::TypeExpr::Int16 => TypeExpr::Int16,
         ast::TypeExpr::Int32 => TypeExpr::Int32,
@@ -680,17 +681,7 @@ fn lower_pattern_inner(
         ast::Pat::Unit(_) => PatKind::Unit,
         ast::Pat::Bool(value, _) => PatKind::Bool(value),
         ast::Pat::Int(value, _) => PatKind::Int(value),
-        ast::Pat::Int8(value, _) => PatKind::Int8(value),
-        ast::Pat::Int16(value, _) => PatKind::Int16(value),
-        ast::Pat::Int32(value, _) => PatKind::Int32(value),
-        ast::Pat::Int64(value, _) => PatKind::Int64(value),
-        ast::Pat::UInt8(value, _) => PatKind::UInt8(value),
-        ast::Pat::UInt16(value, _) => PatKind::UInt16(value),
-        ast::Pat::UInt32(value, _) => PatKind::UInt32(value),
-        ast::Pat::UInt64(value, _) => PatKind::UInt64(value),
         ast::Pat::Float(value, _) => PatKind::Float(value),
-        ast::Pat::Float32(value, _) => PatKind::Float32(value),
-        ast::Pat::Float64(value, _) => PatKind::Float64(value),
         ast::Pat::String(value, _) => PatKind::String(value),
         ast::Pat::Char(value, _) => PatKind::Char(value),
         ast::Pat::Constr(path, args, _) => {
@@ -888,17 +879,7 @@ fn lower_expr_value(
         ast::Expr::Unit(_) => ExprKind::Unit,
         ast::Expr::Bool(value, _) => ExprKind::Bool(value),
         ast::Expr::Int(value, _) => ExprKind::Int(value),
-        ast::Expr::Int8(value, _) => ExprKind::Int8(value),
-        ast::Expr::Int16(value, _) => ExprKind::Int16(value),
-        ast::Expr::Int32(value, _) => ExprKind::Int32(value),
-        ast::Expr::Int64(value, _) => ExprKind::Int64(value),
-        ast::Expr::UInt8(value, _) => ExprKind::UInt8(value),
-        ast::Expr::UInt16(value, _) => ExprKind::UInt16(value),
-        ast::Expr::UInt32(value, _) => ExprKind::UInt32(value),
-        ast::Expr::UInt64(value, _) => ExprKind::UInt64(value),
         ast::Expr::Float(value, _) => ExprKind::Float(value),
-        ast::Expr::Float32(value, _) => ExprKind::Float32(value),
-        ast::Expr::Float64(value, _) => ExprKind::Float64(value),
         ast::Expr::String(value, _) => ExprKind::String(value),
         ast::Expr::Char(value, _) => ExprKind::Char(value),
         ast::Expr::Constr(path, args, _) => {
@@ -1387,7 +1368,7 @@ fn lower_file_with_context(
     canonical_package_name: string,
     qualify_imports: bool,
     base: LowerCtx,
-    item_offset: int32,
+    item_offset: int,
     diagnostics: Vec[Diagnostic],
 ) -> File {
     let ctx = file_context(base, file, diagnostics);

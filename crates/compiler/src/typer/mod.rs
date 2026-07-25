@@ -40,6 +40,19 @@ pub(crate) enum LoopControlContext {
     Allowed,
 }
 
+#[derive(Debug, Clone)]
+pub(crate) enum NumericLiteralKind {
+    Integer(String),
+    Float(f64),
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct NumericLiteralConstraint {
+    pub variable: TypeVar,
+    pub kind: NumericLiteralKind,
+    pub range: Option<text_size::TextRange>,
+}
+
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) obligations: Vec<Obligation>,
@@ -57,6 +70,7 @@ pub struct Typer {
     pub(crate) param_projection_aliases: HashMap<tast::Ty, tast::Ty>,
     pub(crate) array_wildcard_counter: usize,
     pub(crate) array_wildcard_resolutions: HashMap<usize, usize>,
+    pub(crate) numeric_literals: Vec<NumericLiteralConstraint>,
 }
 
 impl Typer {
@@ -79,6 +93,7 @@ impl Typer {
             param_projection_aliases: HashMap::new(),
             array_wildcard_counter: 0,
             array_wildcard_resolutions: HashMap::new(),
+            numeric_literals: Vec::new(),
         }
     }
 

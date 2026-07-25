@@ -4,7 +4,10 @@ use crate::{
     env::PackageTypeEnv,
     tast::{self, TastIdent, TypeVar},
     typer::{
-        Typer,
+        NumericLiteralKind, Typer,
+        literals::{
+            parse_float_literal_value_with_numeric_ty, parse_integer_literal_with_numeric_ty,
+        },
         member_lookup::resolve_field_ty_eager,
         obligations::{
             ArithmeticKind, InstantiatedScheme, MethodGoal, Obligation, ObligationCause,
@@ -131,6 +134,13 @@ impl Typer {
                 OperationGoal::Comparison { lhs_ty, rhs_ty, .. } => {
                     add(lhs_ty, self);
                     add(rhs_ty, self);
+                }
+                OperationGoal::Cast {
+                    source_ty,
+                    target_ty,
+                } => {
+                    add(source_ty, self);
+                    add(target_ty, self);
                 }
             },
         }
@@ -566,6 +576,49 @@ impl Typer {
         );
     }
 
+    fn default_numeric_literals(&mut self, diagnostics: &mut Diagnostics) {
+        let constraints = std::mem::take(&mut self.numeric_literals);
+        let mut float_defaults = HashMap::new();
+        for constraint in &constraints {
+            if let tast::Ty::TVar(variable) = self.norm(&tast::Ty::TVar(constraint.variable)) {
+                let has_float = matches!(constraint.kind, NumericLiteralKind::Float(_));
+                float_defaults
+                    .entry(variable)
+                    .and_modify(|value| *value |= has_float)
+                    .or_insert(has_float);
+            }
+        }
+        for (variable, has_float) in float_defaults {
+            let default = if has_float {
+                tast::Ty::TFloat64
+            } else {
+                tast::Ty::TInt
+            };
+            self.unify(diagnostics, &tast::Ty::TVar(variable), &default, None);
+        }
+        for constraint in constraints {
+            let ty = self.norm(&tast::Ty::TVar(constraint.variable));
+            match constraint.kind {
+                NumericLiteralKind::Integer(value) => {
+                    let _ = parse_integer_literal_with_numeric_ty(
+                        diagnostics,
+                        &value,
+                        &ty,
+                        constraint.range,
+                    );
+                }
+                NumericLiteralKind::Float(value) => {
+                    let _ = parse_float_literal_value_with_numeric_ty(
+                        diagnostics,
+                        value,
+                        &ty,
+                        constraint.range,
+                    );
+                }
+            }
+        }
+    }
+
     pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         self.reported_unresolved_type_origins.clear();
         let param_env = ParamEnv::from_predicates(&self.param_env_predicates);
@@ -574,6 +627,7 @@ impl Typer {
         let mut reported = HashSet::new();
         let mut failed = HashSet::new();
         let mut allow_trait_inference = false;
+        let mut numeric_literals_defaulted = false;
 
         loop {
             while let Some(obligation) = worklist.pop() {
@@ -1295,12 +1349,55 @@ impl Typer {
                                 );
                             }
                         }
+                        OperationGoal::Cast {
+                            source_ty,
+                            target_ty,
+                        } => {
+                            let source_ty = self.norm(&source_ty);
+                            let target_ty = self.norm(&target_ty);
+                            if contains_tvar(&source_ty) || contains_tvar(&target_ty) {
+                                let predicate = Predicate::Operation(OperationGoal::Cast {
+                                    source_ty,
+                                    target_ty,
+                                });
+                                let variables = self.predicate_type_vars(&predicate);
+                                worklist.defer(
+                                    Obligation {
+                                        id,
+                                        predicate,
+                                        cause,
+                                    },
+                                    variables,
+                                );
+                                continue;
+                            }
+                            let valid = (is_integer_ty(&source_ty) && is_integer_ty(&target_ty))
+                                || matches!(
+                                    (&source_ty, &target_ty),
+                                    (tast::Ty::TChar, tast::Ty::TUint32)
+                                );
+                            if !valid {
+                                self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Invalid cast from {} to {}",
+                                        super::util::format_ty_for_diag(&source_ty),
+                                        super::util::format_ty_for_diag(&target_ty)
+                                    ),
+                                    &cause,
+                                );
+                            }
+                        }
                     },
                 }
             }
 
             let waiting = worklist.drain_waiting();
             if waiting.is_empty() {
+                if !numeric_literals_defaulted {
+                    self.default_numeric_literals(diagnostics);
+                }
                 break;
             }
 
@@ -1332,6 +1429,12 @@ impl Typer {
                 }
             }
             if fallback_progress {
+                worklist = ObligationWorklist::new(retained);
+                continue;
+            }
+            if !numeric_literals_defaulted {
+                self.default_numeric_literals(diagnostics);
+                numeric_literals_defaulted = true;
                 worklist = ObligationWorklist::new(retained);
                 continue;
             }
@@ -1394,6 +1497,9 @@ impl Typer {
                         "Could not infer the operand type for operator {}",
                         comparison_operator_text(*operator)
                     ),
+                    Predicate::Operation(OperationGoal::Cast { .. }) => {
+                        "Could not infer the source or target type for cast".to_string()
+                    }
                 };
                 self.push_obligation_error(diagnostics, &mut reported, message, &obligation.cause);
                 self.reported_unresolved_type_origins

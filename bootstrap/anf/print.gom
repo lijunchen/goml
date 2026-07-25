@@ -3,13 +3,13 @@ package anf;
 use gomlc::tast;
 use std::text;
 
-fn write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
     for _ in range(0, count) {
         builder.write_char(' ')
     }
 }
 
-fn newline(builder: text::StringBuilder, indent: int32) -> unit {
+fn newline(builder: text::StringBuilder, indent: int) -> unit {
     builder.write_char('\n');
     write_spaces(builder, indent)
 }
@@ -17,7 +17,7 @@ fn newline(builder: text::StringBuilder, indent: int32) -> unit {
 fn dyn_method_name(value: string) -> string {
     let start = Ref::new(0);
     for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 35u8 {
+        if value.byte_get(index) == 35 {
             start.set(index + 1)
         } else {
             ()
@@ -240,7 +240,7 @@ fn write_params(
 fn write_join(
     builder: text::StringBuilder,
     value: JoinBind,
-    indent: int32,
+    indent: int,
 ) -> unit {
     builder.write_string("join ");
     builder.write_string(value.name);
@@ -255,7 +255,7 @@ fn write_join(
     builder.write_string("} in")
 }
 
-fn write_bind(builder: text::StringBuilder, value: Bind, indent: int32) -> unit {
+fn write_bind(builder: text::StringBuilder, value: Bind, indent: int) -> unit {
     match value {
         Bind::Let(value) => {
             builder.write_string("let ");
@@ -277,7 +277,7 @@ fn write_bind(builder: text::StringBuilder, value: Bind, indent: int32) -> unit 
     }
 }
 
-fn write_arm(builder: text::StringBuilder, value: Arm, indent: int32) -> unit {
+fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
     write_imm(builder, value.lhs);
     builder.write_string(" => {");
     newline(builder, indent + 2);
@@ -286,7 +286,7 @@ fn write_arm(builder: text::StringBuilder, value: Arm, indent: int32) -> unit {
     builder.write_string("},")
 }
 
-fn write_term(builder: text::StringBuilder, value: Term, indent: int32) -> unit {
+fn write_term(builder: text::StringBuilder, value: Term, indent: int) -> unit {
     match value {
         Term::Return(value) => write_imm(builder, value),
         Term::Jump(target, args, _) => {
@@ -335,7 +335,7 @@ fn write_term(builder: text::StringBuilder, value: Term, indent: int32) -> unit 
     }
 }
 
-fn write_block(builder: text::StringBuilder, value: Block, indent: int32) -> unit {
+fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
     for bind in value.binds {
         write_bind(builder, bind, indent);
         newline(builder, indent)

@@ -7,6 +7,7 @@ pub enum Type {
     Any,
     Unit,
     Bool,
+    Int,
     Int8,
     Int16,
     Int32,
@@ -21,9 +22,10 @@ pub enum Type {
     Char,
     Named(string),
     Pointer(Type),
-    Array(int32, Type),
+    Array(int, Type),
     Slice(Type),
     Map(Type, Type),
+    Chan(Type),
     Func(Vec[Type], Type),
     Multi(Vec[Type]),
 }
@@ -74,6 +76,8 @@ pub enum Expr {
     Cast(Expr, Type),
     Convert(Type, Expr),
     Make(Type, Vec[Expr]),
+    Send(Expr, Expr),
+    Receive(Expr),
     StructLiteral(Type, Vec[(string, Expr)]),
     ArrayLiteral(Type, Vec[Expr]),
     FuncLit(Vec[(string, Type)], Type, Block),
@@ -188,7 +192,7 @@ pub struct DynHelperNames {
 
 pub struct VariantInfo {
     pub owner_name: string,
-    pub tag: int32,
+    pub tag: int,
     pub variant_name: string,
     pub field_types: Vec[tast::Type],
     pub tag_only: bool,

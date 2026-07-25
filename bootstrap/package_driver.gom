@@ -31,7 +31,7 @@ struct ArtifactCompilation {
 }
 
 struct PackageWorld {
-    counter: Ref[int32],
+    counter: Ref[int],
     builtins: core::File,
     standard: StandardLibrary,
 }
@@ -307,6 +307,7 @@ fn collect_private_type_names(
         },
         hir::TypeExpr::Unit
         | hir::TypeExpr::Bool
+        | hir::TypeExpr::Int
         | hir::TypeExpr::Int8
         | hir::TypeExpr::Int16
         | hir::TypeExpr::Int32

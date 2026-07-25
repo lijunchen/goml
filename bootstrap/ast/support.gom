@@ -6,12 +6,12 @@ use std::text;
 
 struct LocatedNode {
     node: cst::CstNode,
-    start: int32,
+    start: int,
 }
 
 struct LocatedToken {
     token: lexer::Token,
-    start: int32,
+    start: int,
 }
 
 fn root_node(result: cst::ParseResult) -> LocatedNode {
@@ -26,7 +26,7 @@ fn node_span(value: LocatedNode) -> Span {
     span(value.start, value.start + cst::node_byte_len(value.node))
 }
 
-fn trimmed_node_end(value: LocatedNode) -> int32 {
+fn trimmed_node_end(value: LocatedNode) -> int {
     let cursor = Ref::new(value.start);
     let end = Ref::new(value.start);
     for element in cst::node_children(value.node) {
@@ -259,17 +259,7 @@ fn is_expr_kind(kind: cst::NodeKind) -> bool {
         | cst::NodeKind::EXPR_UNIT
         | cst::NodeKind::EXPR_BOOL
         | cst::NodeKind::EXPR_INT
-        | cst::NodeKind::EXPR_INT8
-        | cst::NodeKind::EXPR_INT16
-        | cst::NodeKind::EXPR_INT32
-        | cst::NodeKind::EXPR_INT64
-        | cst::NodeKind::EXPR_UINT8
-        | cst::NodeKind::EXPR_UINT16
-        | cst::NodeKind::EXPR_UINT32
-        | cst::NodeKind::EXPR_UINT64
         | cst::NodeKind::EXPR_FLOAT
-        | cst::NodeKind::EXPR_FLOAT32
-        | cst::NodeKind::EXPR_FLOAT64
         | cst::NodeKind::EXPR_CHAR
         | cst::NodeKind::EXPR_STR
         | cst::NodeKind::EXPR_MULTILINE_STR
@@ -290,17 +280,7 @@ fn is_pattern_kind(kind: cst::NodeKind) -> bool {
         | cst::NodeKind::PATTERN_BOOL
         | cst::NodeKind::PATTERN_STRING
         | cst::NodeKind::PATTERN_INT
-        | cst::NodeKind::PATTERN_INT8
-        | cst::NodeKind::PATTERN_INT16
-        | cst::NodeKind::PATTERN_INT32
-        | cst::NodeKind::PATTERN_INT64
-        | cst::NodeKind::PATTERN_UINT8
-        | cst::NodeKind::PATTERN_UINT16
-        | cst::NodeKind::PATTERN_UINT32
-        | cst::NodeKind::PATTERN_UINT64
         | cst::NodeKind::PATTERN_FLOAT
-        | cst::NodeKind::PATTERN_FLOAT32
-        | cst::NodeKind::PATTERN_FLOAT64
         | cst::NodeKind::PATTERN_CHAR
         | cst::NodeKind::PATTERN_TUPLE
         | cst::NodeKind::PATTERN_ARRAY
@@ -319,6 +299,7 @@ fn is_type_kind(kind: cst::NodeKind) -> bool {
     match kind {
         cst::NodeKind::TYPE_UNIT
         | cst::NodeKind::TYPE_BOOL
+        | cst::NodeKind::TYPE_INT
         | cst::NodeKind::TYPE_INT8
         | cst::NodeKind::TYPE_INT16
         | cst::NodeKind::TYPE_INT32

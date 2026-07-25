@@ -81,6 +81,11 @@ fn add_expr_uses(values: DceNames, value: Expr) -> unit {
                 add_expr_uses(values, arg)
             }
         },
+        Expr::Send(channel, value) => {
+            add_expr_uses(values, channel);
+            add_expr_uses(values, value)
+        },
+        Expr::Receive(channel) => add_expr_uses(values, channel),
         Expr::StructLiteral(_, fields) => {
             for field in fields {
                 add_expr_uses(values, field.1)
@@ -396,6 +401,7 @@ fn expr_has_side_effects(value: Expr) -> bool {
             };
             found.get()
         },
+        Expr::Send(_, _) | Expr::Receive(_) => true,
         Expr::StructLiteral(_, fields) => {
             let found = Ref::new(false);
             for field in fields {

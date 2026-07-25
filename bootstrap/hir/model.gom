@@ -3,14 +3,14 @@ package hir;
 use gomlc::ast;
 
 pub struct LocalId {
-    pub pkg: int32,
-    pub index: int32,
+    pub pkg: int,
+    pub index: int,
     pub hint: string,
 }
 
 pub struct DefId {
-    pub pkg: int32,
-    pub index: int32,
+    pub pkg: int,
+    pub index: int,
 }
 
 pub struct ImportAlias {
@@ -25,13 +25,14 @@ pub enum NameRef {
 }
 
 pub enum ConstructorRef {
-    Resolved(DefId, int32),
+    Resolved(DefId, int),
     Unresolved(string),
 }
 
 pub enum TypeExpr {
     Unit,
     Bool,
+    Int,
     Int8,
     Int16,
     Int32,
@@ -200,17 +201,7 @@ pub enum ExprKind {
     Unit,
     Bool(bool),
     Int(string),
-    Int8(string),
-    Int16(string),
-    Int32(string),
-    Int64(string),
-    UInt8(string),
-    UInt16(string),
-    UInt32(string),
-    UInt64(string),
     Float(float64),
-    Float32(string),
-    Float64(string),
     String(string),
     Char(string),
     Constr(ConstructorRef, Vec[Expr]),
@@ -229,10 +220,10 @@ pub enum ExprKind {
     Call(Expr, Vec[Expr]),
     Unary(ast::UnaryOp, Expr),
     Cast(Expr, TypeExpr),
-    Try(int32, Expr),
+    Try(int, Expr),
     Range(Expr, Expr),
     Binary(ast::BinaryOp, Expr, Expr),
-    Proj(Expr, int32),
+    Proj(Expr, int),
     Field(Expr, string),
     Index(Expr, Expr),
     Block(Block),
@@ -258,17 +249,7 @@ pub enum PatKind {
     Unit,
     Bool(bool),
     Int(string),
-    Int8(string),
-    Int16(string),
-    Int32(string),
-    Int64(string),
-    UInt8(string),
-    UInt16(string),
-    UInt32(string),
-    UInt64(string),
     Float(string),
-    Float32(string),
-    Float64(string),
     String(string),
     Char(string),
     Constr(ConstructorRef, Vec[Pat]),

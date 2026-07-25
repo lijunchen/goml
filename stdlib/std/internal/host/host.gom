@@ -88,7 +88,7 @@ pub extern fn path_with_extension(path: string, extension: string) -> string;
 pub extern fn path_absolute(path: string) -> (bool, string, string);
 
 #[runtime("std.process.exit")]
-pub extern fn exit(code: int32) -> unit;
+pub extern fn exit(code: int) -> unit;
 
 #[runtime("std.process.output")]
 pub extern fn process_output(
@@ -97,7 +97,7 @@ pub extern fn process_output(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int32, Vec[uint8], Vec[uint8], string);
+) -> (bool, int, Vec[uint8], Vec[uint8], string);
 
 #[runtime("std.process.status")]
 pub extern fn process_status(
@@ -106,7 +106,7 @@ pub extern fn process_status(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int32, string);
+) -> (bool, int, string);
 
 #[runtime("std.testing.fail")]
 pub extern fn test_fail(message: string) -> unit;
