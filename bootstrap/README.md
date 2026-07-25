@@ -104,6 +104,12 @@ The GoML pipeline snapshot tests cover every non-empty fixture under `crates/com
 just test-bootstrap-pipeline
 ```
 
+The GoML compiler corpus tests cover e2e programs, diagnostics, module projects, and crashers:
+
+```sh
+just test-bootstrap-compiler
+```
+
 Run only the bootstrap differential tests:
 
 ```sh
