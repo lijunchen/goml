@@ -2325,3 +2325,10 @@ fn checks_contextual_numeric_expressions_and_inherent_arguments() -> unit {
         "struct Counter { value: uint8 } impl Counter { fn add(self: Counter, value: uint8) -> Counter { Counter { value: self.value + value } } } fn main() -> unit { let negative: int8 = -128; let total: uint8 = 10 + 20; let counter = Counter { value: total }.add(5); println(counter.value.to_string()) }",
     );
 }
+
+#[test]
+fn qualified_struct_variants_win_over_same_named_structs() -> unit {
+    let _ = checked_file(
+        "struct Path { segment: string } struct Block { value: int } enum Expr { Path { path: Path, span: int }, Block { block: Block, span: int } } fn span(value: Expr) -> int { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> unit { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
+    );
+}
