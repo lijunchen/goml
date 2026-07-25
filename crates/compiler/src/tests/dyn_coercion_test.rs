@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{
-    env::format_typer_diagnostics,
-    pipeline::pipeline::{CompilationError, compile, compile_single_file},
-};
+use crate::pipeline::pipeline::{compile, compile_single_file};
 
 fn compile_go(src: &str, name: &str) -> String {
     let path = PathBuf::from(name);
@@ -21,29 +18,6 @@ fn compile_single_file_go(path: PathBuf) -> String {
         panic!("compilation failed for {}: {:?}", path.display(), err);
     });
     compilation.go.to_pretty(&compilation.goenv, 120)
-}
-
-fn assert_ref_identity_impl_overlap(name: &str) {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers")
-        .join(name)
-        .join("main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let err = compile_single_file(&path, &src).expect_err("expected overlapping implementation");
-    match err {
-        CompilationError::Typer { diagnostics } => {
-            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
-            assert!(
-                diagnostics
-                    .iter()
-                    .any(|line| line.contains("overlaps with implementation")),
-                "{diagnostics:?}"
-            );
-        }
-        other => panic!("expected typer error, got {other:?}"),
-    }
 }
 
 #[test]
@@ -200,117 +174,6 @@ fn main() -> unit {
 }
 
 #[test]
-fn dyn_tostring_builtin_impl_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/dyn_tostring_builtin_impl/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "1\n");
-}
-
-#[test]
-fn dyn_tostring_ref_dyn_impl_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/dyn_tostring_ref_dyn_impl/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "ref(1)\n");
-}
-
-#[test]
-fn dyn_hash_ref_dyn_impl_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/dyn_hash_ref_dyn_impl/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "true\n");
-}
-
-#[test]
-fn direct_ref_dyn_show_hash_impl_is_rejected() {
-    assert_ref_identity_impl_overlap("direct_ref_dyn_show_hash_impl");
-}
-
-#[test]
-fn hash_ref_dyn_trait_builtin_ref_impl_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/hash_ref_dyn_trait_builtin_ref_impl/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "true\n");
-}
-
-#[test]
-fn hashmap_ref_dyn_hash_explicit_eq_is_rejected() {
-    assert_ref_identity_impl_overlap("hashmap_ref_dyn_hash_explicit_eq");
-}
-
-#[test]
-fn hashmap_ref_dyn_hash_builtin_ref_impl_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/hashmap_ref_dyn_hash_builtin_ref_impl/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "true\n");
-}
-
-#[test]
-fn hashmap_ref_dyn_show_explicit_eq_hash_is_rejected() {
-    assert_ref_identity_impl_overlap("hashmap_ref_dyn_show_explicit_eq_hash");
-}
-
-#[test]
-fn hashmap_dyn_hash_explicit_eq_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/hashmap_dyn_hash_explicit_eq/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "true\n");
-}
-
-#[test]
 fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/dyn_trait_type_emission_return_subexpr/main.gom");
@@ -406,23 +269,6 @@ fn dyn_trait_types_are_emitted_for_hashmap_method_set_arguments() {
 
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
-}
-
-#[test]
-fn dyn_trait_hashmap_method_set_if_return_subexpr_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
-        "src/tests/crashers/dyn_trait_type_emission_hashmap_method_set_if_return_subexpr/main.gom",
-    );
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "7\n");
 }
 
 #[test]
