@@ -133,8 +133,8 @@ fn read_wrap(w: WrapBool) -> bool {
 }
 
 fn main() -> unit {
-    while read_wrap(WrapBool::Value(match 0i32 {
-        0i32 => break,
+    while read_wrap(WrapBool::Value(match 0 {
+        0 => break,
         _ => continue,
     })) {
         break;
@@ -156,10 +156,10 @@ fn first(pair: (bool, int32)) -> bool {
 }
 
 fn main() -> unit {
-    while first((match 0i32 {
-        0i32 => break,
+    while first((match 0 {
+        0 => break,
         _ => continue,
-    }, 0i32)) {
+    }, 0)) {
         break;
     };
 }
@@ -175,12 +175,12 @@ fn array_wrapped_all_exit_match_while_condition_reports_typer_error() {
         "while_condition_all_exit_match_wrapped_array.gom",
         r#"
 fn first(items: [bool; 2]) -> bool {
-    items[0i32]
+    items[0]
 }
 
 fn main() -> unit {
-    while first([match 0i32 {
-        0i32 => break,
+    while first([match 0 {
+        0 => break,
         _ => continue,
     }, false]) {
         break;

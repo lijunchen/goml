@@ -76,14 +76,14 @@ fn main() -> unit {
         println(value);
     };
 
-    let sum = iterator_fold(range(1, 5), 0, |total: int32, value: int32| {
+    let sum = iterator_fold(range(1, 5), 0, |total: int, value: int| {
         total + value
     });
     println(sum);
 
     let texts: Vec[string] = iterator_collect(iterator_map(
         range(1, 4),
-        |value: int32| "v" + value.to_string(),
+        |value: int| "v" + value.to_string(),
     ));
     for text in texts {
         println(text);

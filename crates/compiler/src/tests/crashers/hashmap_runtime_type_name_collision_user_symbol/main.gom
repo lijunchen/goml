@@ -3,11 +3,11 @@ struct HashmapInt32Int32X {
 }
 
 fn main() -> unit {
-    let c = HashmapInt32Int32X { value: 4i32 };
+    let c = HashmapInt32Int32X { value: 4 };
     let m: HashMap[int32, int32] = HashMap::new();
-    m.set(1i32, 5i32);
-    match m.get(1i32) {
+    m.set(1, 5);
+    match m.get(1) {
         Option::Some(v) => println(c.value + v),
-        Option::None => println(0i32),
+        Option::None => println(0),
     }
 }

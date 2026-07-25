@@ -14,10 +14,10 @@ fn deep_struct_pattern_source(depth: usize) -> String {
     }
 
     src.push_str("\nfn main() -> unit {\n");
-    src.push_str("    let s0 = S0 { value: 7i32 };\n");
+    src.push_str("    let s0 = S0 { value: 7 };\n");
     for index in 1..=depth {
         src.push_str(&format!(
-            "    let s{} = S{} {{ inner: s{}, other: {}i32 }};\n",
+            "    let s{} = S{} {{ inner: s{}, other: {} }};\n",
             index,
             index,
             index - 1,
@@ -55,7 +55,7 @@ fn deep_struct_pattern_reports_lower_error() {
 
 #[test]
 fn deep_parenthesized_expression_reports_depth_error() {
-    let mut expr = "1i32".to_string();
+    let mut expr = "1".to_string();
     for _ in 0..15_000 {
         expr = format!("({expr})");
     }

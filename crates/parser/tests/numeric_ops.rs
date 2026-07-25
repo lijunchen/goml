@@ -6,7 +6,7 @@ use parser::{debug_tree, parse};
 fn parses_numeric_bit_operators_and_casts() {
     let source = r#"
 fn f(x: uint32, y: uint32) -> uint8 {
-    (~x & y | x ^ y) % 17u32 << 2u32 >> 1u32 as uint8
+    (~x & y | x ^ y) % 17 << 2 >> 1 as uint8
 }
 "#;
     let result = parse(Path::new("numeric_ops.gom"), source);

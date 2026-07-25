@@ -15,11 +15,13 @@ impl Hash for dyn Display {
 }
 
 fn main() -> unit {
-    let inner: dyn Display = 1i32;
+    let first: int32 = 1;
+    let inner: dyn Display = first;
     let r = Ref::new(inner);
     let alias = r;
     let before = Hash::hash(r);
-    let replacement: dyn Display = 2i32;
+    let second: int32 = 2;
+    let replacement: dyn Display = second;
     r.set(replacement);
     println((before == Hash::hash(alias)).to_string());
 }

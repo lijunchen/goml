@@ -7,7 +7,7 @@ fn wide_call_source(arg_count: usize) -> String {
         .map(|idx| format!("x{}: int32", idx))
         .collect::<Vec<_>>()
         .join(", ");
-    let args = std::iter::repeat_n("1i32", arg_count)
+    let args = std::iter::repeat_n("1", arg_count)
         .collect::<Vec<_>>()
         .join(", ");
 
@@ -22,7 +22,7 @@ fn wide_struct_source(field_count: usize) -> String {
         .collect::<Vec<_>>()
         .join(", ");
     let values = (0..field_count)
-        .map(|idx| format!("f{}: 1i32", idx))
+        .map(|idx| format!("f{}: 1", idx))
         .collect::<Vec<_>>()
         .join(", ");
 
@@ -36,7 +36,7 @@ fn wide_complex_call_source(arg_count: usize) -> String {
         .map(|idx| format!("x{}: int32", idx))
         .collect::<Vec<_>>()
         .join(", ");
-    let args = std::iter::repeat_n("id(1i32)", arg_count)
+    let args = std::iter::repeat_n("id(1)", arg_count)
         .collect::<Vec<_>>()
         .join(", ");
 
@@ -50,7 +50,7 @@ fn wide_match_call_source(arg_count: usize) -> String {
         .map(|idx| format!("x{}: int32", idx))
         .collect::<Vec<_>>()
         .join(", ");
-    let args = std::iter::repeat_n("match 0i32 { 0i32 => 1i32, _ => 2i32 }", arg_count)
+    let args = std::iter::repeat_n("match 0 { 0 => 1, _ => 2 }", arg_count)
         .collect::<Vec<_>>()
         .join(", ");
 
@@ -78,11 +78,11 @@ fn wide_or_pattern_source(alternative_count: usize) -> String {
 
 fn wide_if_chain_source(branch_count: usize) -> String {
     let branches = (0..branch_count)
-        .map(|index| format!("if value == {index}i32 {{ {index}i32 }} else "))
+        .map(|index| format!("if value == {index} {{ {index} }} else "))
         .collect::<String>();
 
     format!(
-        "fn choose(value: int32) -> int32 {{ {branches}{{ -1i32 }} }}\nfn main() -> unit {{ println(choose(0i32).to_string()) }}\n"
+        "fn choose(value: int32) -> int32 {{ {branches}{{ -1 }} }}\nfn main() -> unit {{ println(choose(0).to_string()) }}\n"
     )
 }
 

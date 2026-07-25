@@ -16,18 +16,18 @@ impl[T: Hash] Hash for Wrap[T] {
 
 fn main() -> unit {
     let map: HashMap[Ref[Wrap[int32]], string] = HashMap::new();
-    let key = Ref::new(Wrap { value: 42i32 });
+    let key = Ref::new(Wrap { value: 42 });
     let alias = key;
     map.set(key, "ok");
     match map.get(alias) {
         Option::Some(value) => println(value),
         Option::None => println("missing"),
     };
-    match map.get(Ref::new(Wrap { value: 42i32 })) {
+    match map.get(Ref::new(Wrap { value: 42 })) {
         Option::Some(value) => println(value),
         Option::None => println("missing"),
     };
-    key.set(Wrap { value: 7i32 });
+    key.set(Wrap { value: 7 });
     match map.get(key) {
         Option::Some(value) => println(value),
         Option::None => println("missing"),

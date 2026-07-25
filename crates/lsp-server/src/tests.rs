@@ -954,7 +954,7 @@ fn main() -> unit {
         let src = r#"package main;
 
 fn main() -> unit {
-    let marker = "🙂"; let _ = 7.5f64 % 2.0f64;
+    let marker = "🙂"; let _ = 7.5 % 2.0;
 }
 "#;
         let path = write_minimal_project(dir.path(), src);
@@ -965,7 +965,7 @@ fn main() -> unit {
             .find(|diagnostic| diagnostic.message.contains("Operator %"))
             .unwrap();
         let line = src.lines().nth(3).unwrap();
-        let byte_column = line.find("7.5f64").unwrap();
+        let byte_column = line.find("7.5").unwrap();
         let utf16_column = line[..byte_column].encode_utf16().count();
 
         assert_eq!(diagnostic.range.start.line, 3);
@@ -1082,7 +1082,7 @@ fn main() {
             12,
             expect![[r#"
                 ```goml
-                int32
+                int
                 ```"#]],
         );
     }
@@ -1467,7 +1467,7 @@ fn main() {
             panic!("expected count completion item");
         };
         assert_eq!(item.kind, Some(CompletionItemKind::VARIABLE));
-        assert_eq!(item.detail.as_deref(), Some("int32"));
+        assert_eq!(item.detail.as_deref(), Some("int"));
     }
 
     #[test]
@@ -1907,7 +1907,7 @@ fn main() {
                     character: 0,
                 },
             },
-            expect!["4:9 type : int32"],
+            expect!["4:9 type : int"],
         );
     }
 
@@ -1933,8 +1933,8 @@ fn main() {
                 },
             },
             expect![[r#"
-                4:9 type : (int32) -> int32
-                4:14 type : int32"#]],
+                4:9 type : (int) -> int
+                4:14 type : int"#]],
         );
     }
 
@@ -1960,7 +1960,7 @@ fn main() {
                     character: 0,
                 },
             },
-            expect!["5:9 type : int32"],
+            expect!["5:9 type : int"],
         );
     }
 }
@@ -2676,7 +2676,7 @@ fn render(value: dyn Display) -> string {
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin_contract.gom:95:4"],
+            expect!["src/builtin_contract.gom:100:4"],
         );
     }
 
@@ -2693,7 +2693,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin_prelude.gom:503:7"],
+            expect!["src/builtin_prelude.gom:527:7"],
         );
     }
 
@@ -2712,7 +2712,7 @@ fn main() -> unit {
 "#,
             "r.get()",
             "get",
-            expect!["src/builtin_prelude.gom:746:7"],
+            expect!["src/builtin_prelude.gom:770:7"],
         );
     }
 
@@ -2737,13 +2737,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin_prelude.gom:712:7"],
+            expect!["src/builtin_prelude.gom:736:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin_prelude.gom:720:7"],
+            expect!["src/builtin_prelude.gom:744:7"],
         );
     }
 
@@ -3145,7 +3145,7 @@ fn main() {
             12,
             expect![[r#"
                 ```goml
-                (int32) -> int32
+                (int) -> int
                 ```"#]],
         );
     }
@@ -3276,7 +3276,7 @@ fn main() {
             8,
             expect![[r#"
                 ```goml
-                Ref[int32]
+                Ref[int]
                 ```"#]],
         );
     }
@@ -3316,7 +3316,7 @@ fn main() {
             8,
             expect![[r#"
                 ```goml
-                (int32, string)
+                (int, string)
                 ```"#]],
         );
     }
@@ -3791,7 +3791,7 @@ fn main() -> int32 {
 }
 "#,
             expect![
-                "[4:4] error: non-exhaustive match: missing patterns -2147483648..=-1, 2..=2147483647"
+                "[4:4] error: non-exhaustive match: missing patterns -9223372036854775808..=-1, 2..=9223372036854775807"
             ],
         );
     }
@@ -4009,12 +4009,12 @@ fn main() -> unit {
             r#"
 fn classify(value: int8) -> int32 {
     match value {
-        -128i8..=127i8 => 1,
+        -128..=127 => 1,
     }
 }
 
 fn main() -> int32 {
-    classify(0i8)
+    classify(0)
 }
 "#,
             expect!["no diagnostics"],

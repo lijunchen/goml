@@ -369,17 +369,17 @@ fn main() {
 "#;
 
     check(src, 3, 8, expect![[r#"
-        "int32"
+        "int"
     "#]]);
     check(src, 3, 9, expect![[r#"
-        "int32"
+        "int"
     "#]]);
     check(src, 3, 10, expect![[r#"
         "<None>"
     "#]]);
 
     check(src, 4, 8, expect![[r#"
-        "(bool, int32)"
+        "(bool, int)"
     "#]]);
 
     check(src, 5, 8, expect![[r#"
@@ -399,7 +399,7 @@ fn main() {
 "#;
 
     check(src, 2, 12, expect![[r#"
-        "int32"
+        "int"
     "#]]);
     check(src, 3, 12, expect![[r#"
         "bool"
@@ -438,42 +438,42 @@ fn main() {
                 name: "slice",
                 kind: Function,
                 detail: Some(
-                    "(Vec[T], int32, int32) -> Slice[T]",
+                    "(Vec[T], int, int) -> Slice[T]",
                 ),
             },
             ValueCompletionItem {
                 name: "slice_get",
                 kind: Function,
                 detail: Some(
-                    "(Slice[T], int32) -> T",
+                    "(Slice[T], int) -> T",
                 ),
             },
             ValueCompletionItem {
                 name: "slice_len",
                 kind: Function,
                 detail: Some(
-                    "(Slice[T]) -> int32",
+                    "(Slice[T]) -> int",
                 ),
             },
             ValueCompletionItem {
                 name: "slice_sub",
                 kind: Function,
                 detail: Some(
-                    "(Slice[T], int32, int32) -> Slice[T]",
+                    "(Slice[T], int, int) -> Slice[T]",
                 ),
             },
             ValueCompletionItem {
                 name: "string_byte_get",
                 kind: Function,
                 detail: Some(
-                    "(string, int32) -> uint8",
+                    "(string, int) -> uint8",
                 ),
             },
             ValueCompletionItem {
                 name: "string_byte_slice",
                 kind: Function,
                 detail: Some(
-                    "(string, int32, int32) -> string",
+                    "(string, int, int) -> string",
                 ),
             },
             ValueCompletionItem {
@@ -487,7 +487,7 @@ fn main() {
                 name: "string_decode_utf8_at",
                 kind: Function,
                 detail: Some(
-                    "(string, int32) -> (bool, char, int32)",
+                    "(string, int) -> (bool, char, int)",
                 ),
             },
             ValueCompletionItem {
@@ -501,7 +501,7 @@ fn main() {
                 name: "string_get",
                 kind: Function,
                 detail: Some(
-                    "(string, int32) -> char",
+                    "(string, int) -> char",
                 ),
             },
             ValueCompletionItem {
@@ -515,14 +515,14 @@ fn main() {
                 name: "string_is_char_boundary",
                 kind: Function,
                 detail: Some(
-                    "(string, int32) -> bool",
+                    "(string, int) -> bool",
                 ),
             },
             ValueCompletionItem {
                 name: "string_len",
                 kind: Function,
                 detail: Some(
-                    "(string) -> int32",
+                    "(string) -> int",
                 ),
             },
             ValueCompletionItem {
@@ -616,7 +616,7 @@ fn main() {
                 name: "count",
                 kind: Variable,
                 detail: Some(
-                    "int32",
+                    "int",
                 ),
             },
         ]
@@ -807,7 +807,7 @@ fn main() {
         [
             InlayHintItem {
                 offset: 23,
-                label: ": int32",
+                label: ": int",
                 kind: Type,
             },
         ]
@@ -828,12 +828,12 @@ fn main() {
         [
             InlayHintItem {
                 offset: 23,
-                label: ": (int32) -> int32",
+                label: ": (int) -> int",
                 kind: Type,
             },
             InlayHintItem {
                 offset: 27,
-                label: ": int32",
+                label: ": int",
                 kind: Type,
             },
         ]
@@ -852,16 +852,16 @@ fn main() {
 "#;
 
     check(src, 2, 9, expect![[r#"
-        "int32"
+        "int"
     "#]]);
     check(src, 3, 17, expect![[r#"
-        "int32"
+        "int"
     "#]]);
     check_inlay_hints(src, expect![[r#"
         [
             InlayHintItem {
                 offset: 27,
-                label: ": int32",
+                label: ": int",
                 kind: Type,
             },
         ]
@@ -887,34 +887,34 @@ fn main() {
 "#;
 
     check(src, 5, 8, expect![[r#"
-        "Vec[int32]"
+        "Vec[int]"
     "#]]);
     check(src, 5, 17, expect![[r#"
-        "int32"
+        "int"
     "#]]);
     check(src, 5, 24, expect![[r#"
-        "Slice[int32]"
+        "Slice[int]"
     "#]]);
     check_inlay_hints(src, expect![[r#"
         [
             InlayHintItem {
                 offset: 28,
-                label: ": Vec[int32]",
+                label: ": Vec[int]",
                 kind: Type,
             },
             InlayHintItem {
                 offset: 98,
-                label: ": Vec[int32]",
+                label: ": Vec[int]",
                 kind: Type,
             },
             InlayHintItem {
                 offset: 107,
-                label: ": int32",
+                label: ": int",
                 kind: Type,
             },
             InlayHintItem {
                 offset: 113,
-                label: ": Slice[int32]",
+                label: ": Slice[int]",
                 kind: Type,
             },
         ]
@@ -947,7 +947,7 @@ fn main() {
 "#;
 
     check(src, 2, 13, expect![[r#"
-        "int32"
+        "int"
     "#]]);
 }
 
@@ -1030,7 +1030,7 @@ fn main() -> unit {
     check_at(src, "identity[T]", 9, expect!["T"]);
     check_at(src, "identity[T](value: T) -> T", 25, expect!["T"]);
     check_at(src, "let value: int32", 11, expect!["int32"]);
-    check_at(src, "Point { x: 1", 8, expect!["int32"]);
+    check_at(src, "Point { x: 1", 8, expect!["int"]);
     check_at(src, "Choice::Some(value)", 0, expect!["Choice"]);
     check_at(src, "Choice::Some(value)", 8, expect!["(int32) -> Choice"]);
     check_at(src, "|item: int32|", 0, expect!["(int32) -> int32"]);
@@ -1061,7 +1061,7 @@ fn hover_isolated_by_source_file_within_a_package() {
         3,
         8,
         expect![[r#"
-            "int32"
+            "int"
         "#]],
     );
     check_with_path(
@@ -1168,21 +1168,21 @@ fn main() {
                     name: "eq",
                     kind: Method,
                     detail: Some(
-                        "(int32, int32) -> bool",
+                        "(int, int) -> bool",
                     ),
                 },
                 DotCompletionItem {
                     name: "hash",
                     kind: Method,
                     detail: Some(
-                        "(int32) -> uint64",
+                        "(int) -> uint64",
                     ),
                 },
                 DotCompletionItem {
                     name: "to_string",
                     kind: Method,
                     detail: Some(
-                        "(int32) -> string",
+                        "(int) -> string",
                     ),
                 },
             ]
@@ -1358,7 +1358,7 @@ fn main() {
 "#;
 
     check(src, 2, 21, expect![[r#"
-        "(int32, int32) -> FnIterator[int32]"
+        "(int, int) -> FnIterator[int]"
     "#]]);
 }
 

@@ -1,24 +1,24 @@
 fn main() {
-    let sum = Ref::new(0i32);
-    let i = Ref::new(1i32);
-    while i.get() <= 100i32 {
-        if i.get() == 50i32 {
+    let sum = Ref::new(0);
+    let i = Ref::new(1);
+    while i.get() <= 100 {
+        if i.get() == 50 {
             break
         } else {
             ()
         };
         sum.set(sum.get() + i.get());
-        i.set(i.get() + 1i32);
+        i.set(i.get() + 1);
     };
     let _ = print("sum up to break: ");
     let _ = println(sum.get());
 
-    let even_sum = Ref::new(0i32);
-    let j = Ref::new(1i32);
-    while j.get() <= 10i32 {
+    let even_sum = Ref::new(0);
+    let j = Ref::new(1);
+    while j.get() <= 10 {
         let cur = j.get();
-        j.set(cur + 1i32);
-        if cur == (cur / 2i32) * 2i32 {
+        j.set(cur + 1);
+        if cur == (cur / 2) * 2 {
             even_sum.set(even_sum.get() + cur);
             continue
         } else {

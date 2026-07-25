@@ -44,7 +44,7 @@ fn wide_struct_pattern_program(field_count: usize) -> String {
         .collect::<Vec<_>>()
         .join(", ");
     let values = (0..field_count)
-        .map(|idx| format!("f{}: {}i32", idx, idx))
+        .map(|idx| format!("f{}: {}", idx, idx))
         .collect::<Vec<_>>()
         .join(", ");
     let pattern_fields = (0..field_count)
@@ -550,7 +550,7 @@ impl traits::Show for Box {
 }
 
 pub fn make() -> Box {
-    Box { value: 21i32 }
+    Box { value: 21 }
 }
 "#,
     )?;
@@ -590,7 +590,7 @@ pub struct Box {
 }
 
 pub fn make() -> Box {
-    Box { value: 42i32 }
+    Box { value: 42 }
 }
 "#,
     )?;
@@ -744,7 +744,7 @@ pub struct Box {
 }
 
 pub fn make() -> Box {
-    Box { value: 42i32 }
+    Box { value: 42 }
 }
 "#,
     )?;
@@ -2494,7 +2494,7 @@ fn incremental_build_recompiles_only_changed_packages_and_dependents() -> anyhow
 
     fs::write(
         root.join("dep/dep.gom"),
-        "package dep;\n\npub fn value() -> int64 {\n    private_value()\n}\n\nfn private_value() -> int64 {\n    2i64\n}\n",
+        "package dep;\n\npub fn value() -> int64 {\n    private_value()\n}\n\nfn private_value() -> int64 {\n    2\n}\n",
     )?;
     clear_invocation_log(&log)?;
     let public_change = build.output()?;

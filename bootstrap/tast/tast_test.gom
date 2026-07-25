@@ -278,7 +278,7 @@ fn recovers_rejected_externs_with_builtin_signatures() -> unit {
     ));
     testing::assert(has_diagnostic(
         diagnostics,
-        "Type mismatch: expected int32, found Ref[unknown]",
+        "Numeric literal cannot be used as Ref[unknown]",
     ))
 }
 
@@ -426,22 +426,10 @@ fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
 }
 
 #[test]
-fn reports_deferred_generic_coercions_at_arguments() -> unit {
+fn infers_numeric_generic_arguments_from_expected_types() -> unit {
     let source = "fn main() -> unit { let r: Ref[uint8] = Ref::new(10); }";
     let diagnostics = checked_diagnostics(source);
-    testing::assert_eq(diagnostics.len(), 1);
-    let diagnostic = diagnostics.get(0);
-    testing::assert_eq(
-        diagnostic.message,
-        "Type mismatch: expected int32, found uint8",
-    );
-    match diagnostic.span {
-        Option::Some(span) => {
-            testing::assert_eq(span.start, 49);
-            testing::assert_eq(span.end, 51)
-        },
-        Option::None => testing::fail("expected coercion diagnostic span"),
-    }
+    testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]
@@ -541,7 +529,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     testing::assert_eq(negative_unsigned.diagnostics.len(), 1);
     testing::assert_eq(
         negative_unsigned.diagnostics.get(0).message,
-        "Type mismatch: expected int32, found uint8",
+        "Integer literal -1 does not fit in uint8",
     )
 }
 
@@ -637,14 +625,14 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
     testing::assert_eq(sequence_complete.diagnostics.len(), 0);
     let range_complete = check(hir::lower(
         ast::lower(parser::parse(
-            "fn choose(value: uint8) -> int32 { match value { 0u8..=127u8 => 0, 128u8..=255u8 => 1 } }",
+            "fn choose(value: uint8) -> int32 { match value { 0..=127 => 0, 128..=255 => 1 } }",
         )),
         "main.gom",
     ));
     testing::assert_eq(range_complete.diagnostics.len(), 0);
     let range_gap = check(hir::lower(
         ast::lower(parser::parse(
-            "fn choose(value: uint8) -> int32 { match value { 0u8..=126u8 => 0, 128u8..=255u8 => 1 } }",
+            "fn choose(value: uint8) -> int32 { match value { 0..=126 => 0, 128..=255 => 1 } }",
         )),
         "main.gom",
     ));
@@ -698,16 +686,16 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
 #[test]
 fn rejects_impls_overlapping_builtin_ref_blankets() -> unit {
     let diagnostics = checked_diagnostics(
-        "impl Eq for Ref[int32] { fn eq(self: Ref[int32], other: Ref[int32]) -> bool { true } } impl Hash for Ref[int32] { fn hash(self: Ref[int32]) -> uint64 { 0u64 } }",
+        "impl Eq for Ref[int32] { fn eq(self: Ref[int32], other: Ref[int32]) -> bool { true } } impl Hash for Ref[int32] { fn hash(self: Ref[int32]) -> uint64 { 0 } }",
     );
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert_eq(
         diagnostics.get(0).message,
-        "Trait Eq implementation for Ref[int32] overlaps with implementation builtin#42 at source range 13385..13388",
+        "Trait Eq implementation for Ref[int32] overlaps with implementation builtin#45 at source range 14204..14207",
     );
     testing::assert_eq(
         diagnostics.get(1).message,
-        "Trait Hash implementation for Ref[int32] overlaps with implementation builtin#43 at source range 13498..13501",
+        "Trait Hash implementation for Ref[int32] overlaps with implementation builtin#46 at source range 14317..14320",
     );
     for diagnostic in diagnostics {
         testing::assert(match diagnostic.span {
@@ -724,7 +712,7 @@ fn rejects_invalid_for_sources_and_patterns() -> unit {
     );
     testing::assert(has_diagnostic(
         non_iterator,
-        "for loop expects a type implementing IntoIterator, got int32",
+        "for loop expects a type implementing IntoIterator, got int",
     ));
     let refutable = checked_diagnostics(
         "fn main() -> unit { for 1 in range(0, 3) {} }",
@@ -985,8 +973,8 @@ fn infers_shift_operands_independently() -> unit {
                     _ => testing::fail("expected uint8 left operand"),
                 };
                 match resolve_type(expr_type(right)) {
-                    Type::Int32 => (),
-                    _ => testing::fail("expected int32 shift count"),
+                    Type::Int => (),
+                    _ => testing::fail("expected int shift count"),
                 };
                 match resolve_type(ty) {
                     Type::Uint8 => (),
@@ -1088,7 +1076,7 @@ fn checks_closures_with_call_context() -> unit {
                         _ => testing::fail("expected contextual closure return"),
                     };
                     match (resolve_type(params.get(0).ty), resolve_type(params.get(1).ty)) {
-                        (Type::Int32, Type::String) => (),
+                        (Type::Int, Type::String) => (),
                         _ => testing::fail("expected contextual closure parameters"),
                     };
                     match body {
@@ -1112,11 +1100,11 @@ fn checks_closures_with_call_context() -> unit {
                                 resolve_type(call_ty),
                                 resolve_type(body_ty),
                             ) {
-                                (Type::Int32, Type::String, Type::String) => (),
-                                _ => testing::fail("expected contextual int32 method types"),
+                                (Type::Int, Type::String, Type::String) => (),
+                                _ => testing::fail("expected contextual int method types"),
                             }
                         },
-                        _ => testing::fail("expected contextual int32 method"),
+                        _ => testing::fail("expected contextual int method"),
                     }
                 },
                 _ => testing::fail("expected contextual closure argument"),
@@ -1129,31 +1117,31 @@ fn checks_closures_with_call_context() -> unit {
 
 #[test]
 fn infers_trait_goals_from_function_calls() -> unit {
-    let source = "trait Measure { fn measure(self: Self) -> int32; } impl Measure for Vec[int32] { fn measure(self: Vec[int32]) -> int32 { self.len() } } fn read_measure[T: Measure](value: T) -> int32 { Measure::measure(value) } fn main() -> int32 { let values = vec_new(); read_measure(values) }";
+    let source = "trait Measure { fn measure(self: Self) -> int; } impl Measure for Vec[int] { fn measure(self: Vec[int]) -> int { self.len() } } fn read_measure[T: Measure](value: T) -> int { Measure::measure(value) } fn main() -> int { let values = vec_new(); read_measure(values) }";
     let file = checked_file(source);
     match file.items.get(2) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
                 Stmt::Let(_, Pat::Var(_, pattern_ty), expression) => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
-                        (Type::VecType(Type::Int32), Type::VecType(Type::Int32)) => (),
-                        _ => testing::fail("expected inferred Vec[int32] binding"),
+                        (Type::VecType(Type::Int), Type::VecType(Type::Int)) => (),
+                        _ => testing::fail("expected inferred Vec[int] binding"),
                     }
                 },
                 _ => testing::fail("expected inferred vector binding"),
             };
             match value.body.tail {
                 Option::Some(Expr::Call(
-                    Expr::Callable(Callable::Function(name), Type::Func(params, Type::Int32)),
+                    Expr::Callable(Callable::Function(name), Type::Func(params, Type::Int)),
                     args,
-                    Type::Int32,
+                    Type::Int,
                 )) => {
                     testing::assert_eq(name, "read_measure");
                     match (
                         resolve_type(params.get(0)),
                         resolve_type(expr_type(args.get(0))),
                     ) {
-                        (Type::VecType(Type::Int32), Type::VecType(Type::Int32)) => (),
+                        (Type::VecType(Type::Int), Type::VecType(Type::Int)) => (),
                         _ => testing::fail("expected inferred trait goal argument"),
                     }
                 },
@@ -1430,11 +1418,11 @@ fn checks_char_from_uint32_builtin() -> unit {
 #[test]
 fn validates_explicit_casts() -> unit {
     let valid = checked_diagnostics(
-        "fn main() -> unit { let wide = 1u8 as uint64; let code = 'A' as uint32; }",
+        "fn main() -> unit { let wide = 1 as uint64; let code = 'A' as uint32; }",
     );
     testing::assert_eq(valid.len(), 0);
     let invalid = checked_diagnostics(
-        "fn main() -> unit { let a = true as uint8; let b = 1.5f64 as int32; let c = 'A' as uint16; let d = 65u16 as char; let e = 65u32 as char; }",
+        "fn main() -> unit { let a = true as uint8; let b = 1.5 as int32; let c = 'A' as uint16; let value16: uint16 = 65; let d = value16 as char; let value32: uint32 = 65; let e = value32 as char; }",
     );
     testing::assert_eq(invalid.len(), 5);
     testing::assert(has_diagnostic(invalid, "Invalid cast from bool to uint8"));
@@ -1462,7 +1450,7 @@ fn validates_numeric_unary_operators() -> unit {
 
 #[test]
 fn types_control_flow_member_subexpressions_as_unit() -> unit {
-    let source = "fn projected() -> int32 { let _: int32 = (return 1i32).0; 0i32 } fn indexed() -> int32 { let _: int32 = (return 1i32)[0i32]; 0i32 } fn field() -> int32 { let _: int32 = (return 1i32).value; 0i32 }";
+    let source = "fn projected() -> int32 { let _: int32 = (return 1).0; 0 } fn indexed() -> int32 { let _: int32 = (return 1)[0]; 0 } fn field() -> int32 { let _: int32 = (return 1).value; 0 }";
     let file = checked_file(source);
     for index in range(0, 3) {
         match file.items.get(index) {
@@ -1476,7 +1464,7 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
                         match expression {
                             Expr::Index(
                                 _,
-                                Expr::Prim(Primitive::Int32(value), Type::Int32),
+                                Expr::Prim(Primitive::Int(value), Type::Int),
                                 Type::Unit,
                             ) => testing::assert_eq(value, "0"),
                             _ => testing::fail("expected preserved index expression"),
@@ -1495,7 +1483,7 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
 #[test]
 fn suppresses_unreachable_while_condition_type_errors() -> unit {
     let wrapped_index = checked_diagnostics(
-        "fn main() -> unit { while (match 0i32 { 0i32 => break, _ => continue, })[0i32] { break; }; }",
+        "fn main() -> unit { while (match 0 { 0 => break, _ => continue, })[0] { break; }; }",
     );
     testing::assert_eq(wrapped_index.len(), 2);
     testing::assert(has_diagnostic(
@@ -1541,7 +1529,7 @@ fn preserves_fn_iterator_static_owner() -> unit {
 
 #[test]
 fn preserves_bare_generic_static_owner() -> unit {
-    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[int32] { Box::new(1i32) }";
+    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[int32] { Box::new(1) }";
     let file = checked_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
@@ -1564,7 +1552,7 @@ fn preserves_bare_generic_static_owner() -> unit {
 
 #[test]
 fn specializes_constructor_only_static_owner() -> unit {
-    let file = checked_file("fn make() -> Ref[int32] { Ref::new(1i32) }");
+    let file = checked_file("fn make() -> Ref[int32] { Ref::new(1) }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::Call(
@@ -1670,7 +1658,7 @@ fn resolves_trait_methods_from_call_context() -> unit {
 
 #[test]
 fn infers_iterator_adapter_builtins() -> unit {
-    let source = "fn exercise() -> Vec[string] { let mapped = iterator_map(range(0, 4), |value: int32| value + 1); let filtered = iterator_filter(mapped, |value: int32| value > 1); let limited = iterator_take(filtered, 2); for value in limited { let _: int32 = value; }; let _: int32 = iterator_fold(range(0, 4), 0, |total: int32, value: int32| total + value); iterator_collect(iterator_map(range(0, 2), |value: int32| value.to_string())) }";
+    let source = "fn exercise() -> Vec[string] { let mapped = iterator_map(range(0, 4), |value: int| value + 1); let filtered = iterator_filter(mapped, |value: int| value > 1); let limited = iterator_take(filtered, 2); for value in limited { let _: int = value; }; let _: int = iterator_fold(range(0, 4), 0, |total: int, value: int| total + value); iterator_collect(iterator_map(range(0, 2), |value: int| value.to_string())) }";
     let file = checked_file(source);
     match file.items.get(0) {
         Item::Function(value) => {
@@ -1690,14 +1678,14 @@ fn infers_iterator_adapter_builtins() -> unit {
                 }
             };
             match value.body.stmts.get(3) {
-                Stmt::Expr(Expr::For(Pat::Var(_, Type::Int32), _, _, _, _, _, Type::Unit)) => (),
-                _ => testing::fail("expected int32 adapter iteration"),
+                Stmt::Expr(Expr::For(Pat::Var(_, Type::Int), _, _, _, _, _, Type::Unit)) => (),
+                _ => testing::fail("expected int adapter iteration"),
             };
             match value.body.stmts.get(4) {
                 Stmt::Let(_, Pat::Wild(pattern_ty), expression) => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
-                        (Type::Int32, Type::Int32) => (),
-                        _ => testing::fail("expected int32 iterator fold"),
+                        (Type::Int, Type::Int) => (),
+                        _ => testing::fail("expected int iterator fold"),
                     }
                 },
                 _ => testing::fail("expected iterator fold binding"),
@@ -1992,7 +1980,7 @@ fn rounds_float32_literals() -> unit {
         "0.00000000000000000001",
     );
     testing::assert_eq(normalized_float32_literal("-0.0"), "-0");
-    let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14f32 }");
+    let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14 }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::Prim(Primitive::Float(literal), ty)) => {
@@ -2008,7 +1996,7 @@ fn rounds_float32_literals() -> unit {
     };
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Prim(Primitive::Float32(literal), Type::Float32)) => {
+            Option::Some(Expr::Prim(Primitive::Float(literal), Type::Float32)) => {
                 testing::assert_eq(literal, "3.14")
             },
             _ => testing::fail("expected rounded explicit float32 literal"),
@@ -2108,7 +2096,7 @@ fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> unit {
 #[test]
 fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let value: dyn Label = 1i32; let _ = match value { 1i32 => 2i32, _ => 3i32 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let concrete: int32 = 1; let value: dyn Label = concrete; let _ = match value { 1 => 2, _ => 3 }; }",
     );
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert_eq(
@@ -2145,14 +2133,11 @@ fn rejects_recursive_struct_layouts() -> unit {
 }
 
 #[test]
-fn defaults_literals_before_generic_result_constraints() -> unit {
+fn propagates_generic_result_constraints_to_literals() -> unit {
     let diagnostics = checked_diagnostics(
         "fn main() -> unit { let value: Ref[uint8] = Ref::new(10); }",
     );
-    testing::assert(has_diagnostic(
-        diagnostics,
-        "Type mismatch: expected int32, found uint8",
-    ))
+    testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]

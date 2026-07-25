@@ -169,6 +169,11 @@ fn multi_package_compile_project_035() -> anyhow::Result<()> {
 }
 
 #[test]
+fn multi_package_compile_project_036() -> anyhow::Result<()> {
+    run_project("project036_channel")
+}
+
+#[test]
 fn std_host_binary_stdio_round_trip() -> anyhow::Result<()> {
     if !super::go_available() {
         return Ok(());

@@ -441,11 +441,11 @@ trait Show {
 }
 
 impl Hash for Ref[dyn Show] {
-    fn hash(self: Ref[dyn Show]) -> uint64 { 0u64 }
+    fn hash(self: Ref[dyn Show]) -> uint64 { 0 }
 }
 
 impl Hash for dyn Show {
-    fn hash(self: dyn Show) -> uint64 { 0u64 }
+    fn hash(self: dyn Show) -> uint64 { 0 }
 }
 "#;
 
@@ -520,7 +520,7 @@ fn recursive_blanket_trait_impl_bound_does_not_crash() {
             assert!(
                 diagnostics
                     .iter()
-                    .any(|line| line.contains("No instance found for trait Foo<int32>")),
+                    .any(|line| line.contains("No instance found for trait Foo<int>")),
                 "{diagnostics:?}"
             );
         }
@@ -1387,7 +1387,8 @@ fn convert[T, U](value: T) -> U where T = U {
 }
 
 fn main() -> unit {
-    let value: string = convert(7);
+    let number: int32 = 7;
+    let value: string = convert(number);
     ()
 }
 "#;
@@ -1425,7 +1426,8 @@ impl[T] Selected for Wrap[T] where Vec[T]: Ready {
 fn require[T: Selected](value: T) -> unit { () }
 
 fn main() -> unit {
-    require(Wrap { value: 7 })
+    let value: int32 = 7;
+    require(Wrap { value })
 }
 "#;
     let rejected = r#"
@@ -2065,7 +2067,7 @@ fn main() -> unit {
     assert!(
         diagnostics
             .iter()
-            .any(|line| line.contains("Method extra not found for type int32")),
+            .any(|line| line.contains("Method extra not found for type int")),
         "{diagnostics:?}"
     );
 }
@@ -2090,7 +2092,8 @@ impl[T: Mark] Extra for T {
 }
 
 fn main() -> unit {
-    let value: int32 = 1.extra();
+    let source: int32 = 1;
+    let value: int32 = source.extra();
     let _ = value;
 }
 "#;

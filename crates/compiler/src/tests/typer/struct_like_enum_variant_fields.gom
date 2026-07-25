@@ -9,12 +9,12 @@ enum Event {
 
 fn inspect(value: Event) -> int32 {
     let _ = Event::Move {
-        x: 1i32,
-        x: 2i32,
-        extra: 3i32,
+        x: 1,
+        x: 2,
+        extra: 3,
     };
-    let _ = Event::Tuple { value: 1i32 };
-    let _ = Event::Move(1i32, 2i32);
+    let _ = Event::Tuple { value: 1 };
+    let _ = Event::Move(1, 2);
     match value {
         Event::Move { x } => x,
         Event::Tuple(value) => value,

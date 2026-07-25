@@ -45,5 +45,5 @@ fn closure_with_vec_capture_equality_reports_typer_error() {
         diagnostics.contains("No instance found for trait Eq"),
         "{diagnostics}"
     );
-    assert!(diagnostics.contains("() -> int32"), "{diagnostics}");
+    assert!(diagnostics.contains("() -> int"), "{diagnostics}");
 }

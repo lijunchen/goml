@@ -86,6 +86,7 @@ impl Encoder {
         match ty {
             TypeExpr::TUnit => self.open("Type.Unit"),
             TypeExpr::TBool => self.open("Type.Bool"),
+            TypeExpr::TInt => self.open("Type.Int"),
             TypeExpr::TInt8 => self.open("Type.Int8"),
             TypeExpr::TInt16 => self.open("Type.Int16"),
             TypeExpr::TInt32 => self.open("Type.Int32"),
@@ -494,19 +495,9 @@ impl Encoder {
                 self.boolean(*value);
             }
             Expr::EInt { value, astptr } => self.literal_expr("Int", value, astptr),
-            Expr::EInt8 { value, astptr } => self.literal_expr("Int8", value, astptr),
-            Expr::EInt16 { value, astptr } => self.literal_expr("Int16", value, astptr),
-            Expr::EInt32 { value, astptr } => self.literal_expr("Int32", value, astptr),
-            Expr::EInt64 { value, astptr } => self.literal_expr("Int64", value, astptr),
-            Expr::EUInt8 { value, astptr } => self.literal_expr("UInt8", value, astptr),
-            Expr::EUInt16 { value, astptr } => self.literal_expr("UInt16", value, astptr),
-            Expr::EUInt32 { value, astptr } => self.literal_expr("UInt32", value, astptr),
-            Expr::EUInt64 { value, astptr } => self.literal_expr("UInt64", value, astptr),
             Expr::EFloat { value, astptr } => {
                 self.literal_expr("Float", &value.to_bits().to_string(), astptr);
             }
-            Expr::EFloat32 { value, astptr } => self.literal_expr("Float32", value, astptr),
-            Expr::EFloat64 { value, astptr } => self.literal_expr("Float64", value, astptr),
             Expr::EString { value, astptr } => self.literal_expr("String", value, astptr),
             Expr::EChar { value, astptr } => self.literal_expr("Char", value, astptr),
             Expr::EConstr {
@@ -735,17 +726,7 @@ impl Encoder {
                 self.boolean(*value);
             }
             Pat::PInt { value, astptr } => self.literal_pat("Int", value, astptr),
-            Pat::PInt8 { value, astptr } => self.literal_pat("Int8", value, astptr),
-            Pat::PInt16 { value, astptr } => self.literal_pat("Int16", value, astptr),
-            Pat::PInt32 { value, astptr } => self.literal_pat("Int32", value, astptr),
-            Pat::PInt64 { value, astptr } => self.literal_pat("Int64", value, astptr),
-            Pat::PUInt8 { value, astptr } => self.literal_pat("UInt8", value, astptr),
-            Pat::PUInt16 { value, astptr } => self.literal_pat("UInt16", value, astptr),
-            Pat::PUInt32 { value, astptr } => self.literal_pat("UInt32", value, astptr),
-            Pat::PUInt64 { value, astptr } => self.literal_pat("UInt64", value, astptr),
             Pat::PFloat { value, astptr } => self.literal_pat("Float", value, astptr),
-            Pat::PFloat32 { value, astptr } => self.literal_pat("Float32", value, astptr),
-            Pat::PFloat64 { value, astptr } => self.literal_pat("Float64", value, astptr),
             Pat::PString { value, astptr } => self.literal_pat("String", value, astptr),
             Pat::PChar { value, astptr } => self.literal_pat("Char", value, astptr),
             Pat::PConstr {

@@ -1,17 +1,17 @@
 fn first_gt_two(limit: int32) -> int32 {
-    let i = Ref::new(0i32);
+    let i = Ref::new(0);
     while i.get() < limit {
-        if i.get() > 2i32 {
+        if i.get() > 2 {
             return i.get()
         } else {
             ()
         };
-        i.set(i.get() + 1i32);
+        i.set(i.get() + 1);
     };
-    -1i32
+    -1
 }
 
 fn main() {
-    println(first_gt_two(10i32).to_string());
-    println(first_gt_two(2i32).to_string());
+    println(first_gt_two(10).to_string());
+    println(first_gt_two(2).to_string());
 }

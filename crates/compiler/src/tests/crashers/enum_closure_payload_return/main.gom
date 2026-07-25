@@ -5,7 +5,7 @@ enum MaybeFn {
 
 fn next(flag: bool) -> MaybeFn {
     if flag {
-        MaybeFn::Some(|x| x + 1i32)
+        MaybeFn::Some(|x| x + 1)
     } else {
         MaybeFn::None
     }
@@ -13,7 +13,7 @@ fn next(flag: bool) -> MaybeFn {
 
 fn main() -> unit {
     match next(true) {
-        MaybeFn::Some(f) => println(f(41i32).to_string()),
+        MaybeFn::Some(f) => println(f(41).to_string()),
         MaybeFn::None => println("none"),
     }
 }

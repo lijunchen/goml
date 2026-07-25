@@ -54,7 +54,7 @@ fn string_contains(value: string, expected: string) -> bool {
     }
 }
 
-fn string_index(value: string, expected: string) -> int32 {
+fn string_index(value: string, expected: string) -> int {
     if expected.byte_len() == 0 {
         0
     } else if value.byte_len() < expected.byte_len() {
@@ -103,7 +103,7 @@ fn retains_linked_monomorphic_trait_impls() -> unit {
 #[test]
 fn specializes_generic_functions_for_matching_dyn_bounds() -> unit {
     let output = encode(lower_linked_source(
-        "fn main() -> unit { let value: dyn ToString = 1i32; println(value) }",
+        "fn main() -> unit { let value: dyn ToString = 1; println(value) }",
     ));
     testing::assert(string_contains(output, "fn println__T_dynToString"));
     testing::assert(string_contains(output, "dyn_call[ToString::to_string]"))
@@ -131,7 +131,7 @@ fn queues_inherent_callees_after_call_arguments() -> unit {
     ));
     let get_index = string_index(
         output,
-        "fn inherent#Ref#Ref[T]#get__T_int32",
+        "fn inherent#Ref#Ref[T]#get__T_int",
     );
     let from_fn_index = string_index(
         output,
@@ -160,11 +160,11 @@ fn infers_generic_arguments_from_trait_predicates() -> unit {
     let output = encode(lower_source(source));
     testing::assert(string_contains(
         output,
-        "describe__B_Box[int32]__T_int32",
+        "describe__B_Box[int]__T_int",
     ));
     testing::assert(string_contains(
         output,
-        "trait_impl#Child#[int32]@Box__int32#child",
+        "trait_impl#Child#[int]@Box__int#child",
     ));
     testing::assert(!string_contains(output, "trait_impl#Child#[T]"))
 }
@@ -297,7 +297,7 @@ fn retains_generic_eq_hash_impls_for_runtime_keys() -> unit {
 
 #[test]
 fn specializes_generic_enum_constructors() -> unit {
-    let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
+    let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn main() -> unit {\n  let x/0 = Weird__int32::Done(1) in\n  match x/0 {\n    Weird__int32::Next(x0) => {\n      {\n        let x0 = Weird__int32::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird__int32::Done(x1) => {\n      {\n        let x1 = Weird__int32::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#int32#int32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
@@ -306,16 +306,16 @@ fn specializes_generic_enum_constructors() -> unit {
 
 #[test]
 fn specializes_generic_functions_with_collision_safe_names() -> unit {
-    let source = "fn id[T](x: T) -> T { x } fn id__T_int32(x: int32) -> int32 { x + 1i32 } fn main() -> unit { println(id(10i32)); println(id__T_int32(10i32)) }";
+    let source = "fn id[T](x: T) -> T { x } fn id__T_int32(x: int32) -> int32 { x + 1 } fn main() -> unit { println(id(10)); println(id__T_int32(10)) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn id__T_int32(x/1: int32) -> int32 {\n  (x/1 + 1)\n}\n\nfn main() -> unit {\n  let _wild0 = println(id__T_int32__mono1(10)) in\n  println(id__T_int32(10))\n}\n\nfn id__T_int32__mono1(x/0: int32) -> int32 {\n  x/0\n}",
+        "fn id__T_int32(x/1: int32) -> int32 {\n  (x/1 + 1)\n}\n\nfn main() -> unit {\n  let _wild0 = println(id__T_int(10)) in\n  println(id__T_int32(10))\n}\n\nfn id__T_int(x/0: int) -> int {\n  x/0\n}",
     )
 }
 
 #[test]
 fn prints_monomorphic_closures_without_parameter_types() -> unit {
-    let source = "enum MaybeFn { Some((int32) -> int32), None } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1i32) } else { MaybeFn::None } } fn main() -> unit { match next(true) { MaybeFn::Some(f) => println(f(41i32).to_string()), MaybeFn::None => println(\"none\"), } }";
+    let source = "enum MaybeFn { Some((int32) -> int32), None } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> unit { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn next(flag/0: bool) -> MaybeFn {\n  if flag/0 {\n      {\n        MaybeFn::Some(|x/1| (x/1 + 1))\n      }\n  } else {\n      {\n        MaybeFn::None\n      }\n  }\n}\n\nfn main() -> unit {\n  {\n    let mtmp0 = next(true) in\n    match mtmp0 {\n      MaybeFn::Some(x1) => {\n        {\n          let x1 = MaybeFn::Some._0(mtmp0) in\n          {\n            let f/2 = x1 in\n            println(inherent#int32#int32#to_string(f/2(41)))\n          }\n        }\n      },\n      MaybeFn::None => {\n        println(\"none\")\n      },\n    }\n  }\n}",
@@ -338,7 +338,7 @@ fn retains_generic_trait_impls_for_dyn_coercions() -> unit {
 
 #[test]
 fn specializes_generic_types_with_collision_safe_names() -> unit {
-    let source = "struct Box[T] { value: T } struct Box__int32 { value: int32 } fn main() -> unit { let a = Box { value: 10i32 }; let b = Box__int32 { value: 20i32 }; println(a.value + b.value) }";
+    let source = "struct Box[T] { value: T } struct Box__int32 { value: int32 } fn main() -> unit { let a = Box { value: 10 }; let b = Box__int32 { value: 20 }; println(a.value + b.value) }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn main() -> unit {\n  let a/0 = Box__int32__mono1 { value: 10 } in\n  let b/1 = Box__int32 { value: 20 } in\n  println((Box__int32__mono1.value(a/0) + Box__int32.value(b/1)))\n}",
@@ -375,12 +375,12 @@ fn orders_nested_associated_calls_by_resolved_callees() -> unit {
 #[test]
 fn rejects_recursive_generic_function_specialization() -> unit {
     let result = lower_checked_source(
-        "fn blow[T](value: T) -> unit { blow((value, value)) } fn main() -> unit { blow(0i32) }",
+        "fn blow[T](value: T) -> unit { blow((value, value)) } fn main() -> unit { blow(0) }",
     );
     match result.error {
         Option::Some(error) => testing::assert_eq(
             error,
-            "Infinite monomorphization detected for generic function blow: recursive specialization grows type parameter T from (int32, int32) to ((int32, int32), (int32, int32))",
+            "Infinite monomorphization detected for generic function blow: recursive specialization grows type parameter T from (int, int) to ((int, int), (int, int))",
         ),
         Option::None => testing::fail("expected recursive function specialization error"),
     }

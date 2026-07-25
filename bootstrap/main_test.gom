@@ -28,7 +28,7 @@ fn main_string_contains(value: string, expected: string) -> bool {
 
 #[test]
 fn stage_lowering_preserves_hidden_fresh_names() -> unit {
-    let source = "enum E { A(int32), B(int32), C(int32) } fn main() -> unit { let value = E::B(1i32); match value { E::B(item) => (), _ => () } }";
+    let source = "enum E { A(int32), B(int32), C(int32) } fn main() -> unit { let value = E::B(1); match value { E::B(item) => (), _ => () } }";
     let stage = lower_core_stage("main.gom", source);
     testing::assert_eq(stage.counter.get(), 3)
 }
@@ -80,7 +80,7 @@ fn assert_parse_error(values: Vec[string], expected: string) -> unit {
     }
 }
 
-fn core_function_index(value: core::File, expected: string) -> int32 {
+fn core_function_index(value: core::File, expected: string) -> int {
     let result = Ref::new(-1);
     for index in range(0, value.functions.len()) {
         if value.functions.get(index).name == expected {
@@ -229,7 +229,7 @@ fn reports_driver_protocol_version() -> unit {
     );
     testing::assert_eq(
         version_output(VersionFormat::Json),
-        "{\"artifact_format\":12,\"compiler_abi\":2,\"driver_protocol\":1,\"git_date\":\"2026-07-22\",\"git_hash\":\"a3c94540a\",\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
+        "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":\"2026-07-22\",\"git_hash\":\"a3c94540a\",\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
     );
     match parse_version_format("yaml") {
         Result::Err(error) => testing::assert_eq(
@@ -940,13 +940,13 @@ fn writes_rust_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "8d754ab1d493aaa4a609fff841da2efc297a9675cc12609d54e9136e02925831",
+        "5e9c6908951f06d1c9abc812f620c6f987f8b9ef60ac92701cee47cc1542fd33",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":13,\"compiler_abi\":2,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
-        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d\"},\"interface_hash\":\"8d754ab1d493aaa4a609fff841da2efc297a9675cc12609d54e9136e02925831\"}",
+        "{\"format_version\":15,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
+        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d\"},\"interface_hash\":\"5e9c6908951f06d1c9abc812f620c6f987f8b9ef60ac92701cee47cc1542fd33\"}",
     );
     match decode_artifact_interface_unit(encoded) {
         Result::Ok(value) => testing::assert_eq(
@@ -1023,7 +1023,7 @@ fn extracts_rust_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "8d754ab1d493aaa4a609fff841da2efc297a9675cc12609d54e9136e02925831",
+        "5e9c6908951f06d1c9abc812f620c6f987f8b9ef60ac92701cee47cc1542fd33",
     )
 }
 
@@ -1088,7 +1088,7 @@ fn extracts_rust_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "697c0770568bd2a0f7dbf55321a0d7cdf1038a7aad6b05e0fb5227eeb8697249",
+        "2cd3a0d1209ce1e5fa547f3cfb005fa1067311d140e0bf079941176d5307ec6a",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     match decode_artifact_interface_unit(encoded) {
@@ -1232,7 +1232,7 @@ fn writes_rust_core_unit_from_checked_package() -> unit {
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         go_backend::sha256_hex(encoded),
-        "e01458a525222246627ccd56d34db4dbf352c488808b283cf5ab428fc7fac8f9",
+        "cd04c32c2249561c3781b4fc17d90548400354ecc89466c73322773ed2e77784",
     );
     match decode_artifact_core_unit(encoded) {
         Result::Ok(value) => testing::assert_eq(
@@ -1551,43 +1551,43 @@ fn matches_rust_standard_interface_hashes() -> unit {
     let standard = package_world().standard;
     testing::assert_eq(
         standard.root.interface_unit.interface_hash,
-        "4d8cdd3e926b12c7317a3cb3146b0ea9693b440adce57ac2978564814936f5bc",
+        "c39f9fb8a6c42eea07a0b180e3f649cbd7f42a741fdd01cab4196bacb6ca0405",
     );
     testing::assert_eq(
         standard.bytes.interface_unit.interface_hash,
-        "113e337e690b1857f074a70146f3f93e4b15f9c34244a99ae23a5fbe019bd4ce",
+        "e7bd6e6451b31978bbbd19f926476dcdaa6c1322de24c3d4a3e871c873d042f8",
     );
     testing::assert_eq(
         standard.collections.interface_unit.interface_hash,
-        "31fdcc6deb19a0de5851f175da618b55b4d840be1eec0135015fa010c30342ea",
+        "44d607d8b3efb9b14db97e2bdfcbeeb3b5a620163560851c49f207992882aca2",
     );
     testing::assert_eq(
         standard.env.interface_unit.interface_hash,
-        "f18f6db405f01e58b6be0253107c56f487408a5074c6d1297f2742c74f3c8e5f",
+        "d998919d5afe6c5e818057475305a3a38f1b2ac1025bde0f8483274880b53368",
     );
     testing::assert_eq(
         standard.fs.interface_unit.interface_hash,
-        "4c719479b959301121ff051e6d2b0dabadad8b26576cff59f40bb97025c65971",
+        "623f5de623e0380db9cba10c6f4826b369edd895b3d70e26241522dfa5b3e544",
     );
     testing::assert_eq(
         standard.io.interface_unit.interface_hash,
-        "80e4a090d5fe40ea7c542ab89e47e8ec347019528315d3572cc2ac78d96abbb5",
+        "e6e20384fe370b846d298d78f8ecf5b5d54f904237aaf9aad6d15215f87667fa",
     );
     testing::assert_eq(
         standard.path.interface_unit.interface_hash,
-        "ce76615d58140b90fd417d948fbf9955131188b9ab7952e724d618049ac88110",
+        "7ca4e23aaeb7ab2003022c186e4a80215ffb29b5a4180779f174c3946eb1c040",
     );
     testing::assert_eq(
         standard.process.interface_unit.interface_hash,
-        "9d6b137296fc1b820971b2d10a2fbbf8c62e3b6d9fbf24de60bb2f29c149a819",
+        "9abeb64c5228661dee11899144ccf06f49cc23ce75bd8123b1a871e1f988f6b9",
     );
     testing::assert_eq(
         standard.testing.interface_unit.interface_hash,
-        "d9e2001e2e55675cffda0c68281c3a6600ba565bef828682c01483de7631f82c",
+        "5a1e7febbea9e36f959f138c5ef8f442183aae9e955168fc1c783cb539cf30dc",
     );
     testing::assert_eq(
         standard.text.interface_unit.interface_hash,
-        "c801d902afd11cf434022d773de2cee7e5380124ce11f24ac4618f17d81325f9",
+        "6ee82571b02c1e05cb0c4a11ae85faf422e104f59bd6db708c00229d5b98786c",
     )
 }
 #[test]
@@ -1600,6 +1600,6 @@ fn renders_all_parser_diagnostics_with_spans() -> unit {
             "main.gom",
             source,
         ),
-        "error[parser]: expect \"=\", actual \"int\"\nprimary: main.gom:2:11-2:13\n2 |     let x 42;\n  |           ^^\n\nerror[parser]: let statement expected an expression\nprimary: main.gom:2:13-2:14\n2 |     let x 42;\n  |             ^\n\nerror[parser]: expect \";\", actual \"}\"\nprimary: main.gom:3:1-3:2\n3 | }\n  | ^",
+        "error[parser]: expect \"=\", actual \"int_lit\"\nprimary: main.gom:2:11-2:13\n2 |     let x 42;\n  |           ^^\n\nerror[parser]: let statement expected an expression\nprimary: main.gom:2:13-2:14\n2 |     let x 42;\n  |             ^\n\nerror[parser]: expect \";\", actual \"}\"\nprimary: main.gom:3:1-3:2\n3 | }\n  | ^",
     )
 }

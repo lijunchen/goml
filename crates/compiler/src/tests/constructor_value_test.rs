@@ -24,7 +24,7 @@ fn prepend_with(make: (int32, List[int32]) -> List[int32], x: int32, xs: List[in
 
 fn main() -> unit {
     let cons: (int32, List[int32]) -> List[int32] = List::Cons;
-    let xs = prepend_with(cons, 1i32, prepend_with(cons, 2i32, List::Nil));
+    let xs = prepend_with(cons, 1, prepend_with(cons, 2, List::Nil));
     let _ = xs;
 }
 "#;

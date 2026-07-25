@@ -19,6 +19,7 @@ fn env_registers_builtin_function_signatures() {
         &[
             "string_print",
             "string_byte_slice",
+            "int_to_string",
             "int8_to_string",
             "uint8_to_string",
             "ref",
@@ -31,11 +32,16 @@ fn env_registers_builtin_function_signatures() {
             "slice_len",
             "slice_sub",
             "vec_set",
+            "channel_new",
+            "channel_send",
+            "channel_recv",
+            "channel_close",
             "range",
         ],
         expect![[r#"
             string_print: Some(TFunc([TString], TUnit))
-            string_byte_slice: Some(TFunc([TString, TInt32, TInt32], TString))
+            string_byte_slice: Some(TFunc([TString, TInt, TInt], TString))
+            int_to_string: Some(TFunc([TInt], TString))
             int8_to_string: Some(TFunc([TInt8], TString))
             uint8_to_string: Some(TFunc([TUint8], TString))
             ref: Some(TFunc([TParam(T)], TRef(TParam(T))))
@@ -43,33 +49,30 @@ fn env_registers_builtin_function_signatures() {
             ref_set: Some(TFunc([TRef(TParam(T)), TParam(T)], TUnit))
             ptr_eq: Some(TFunc([TRef(TParam(T)), TRef(TParam(T))], TBool))
             ptr_hash: Some(TFunc([TRef(TParam(T))], TUint64))
-            slice: Some(TFunc([TVec(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
-            slice_get: Some(TFunc([TSlice(TParam(T)), TInt32], TParam(T)))
-            slice_len: Some(TFunc([TSlice(TParam(T))], TInt32))
-            slice_sub: Some(TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
-            vec_set: Some(TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit))
-            range: Some(TFunc([TInt32, TInt32], TApp(TStruct(FnIterator), [TInt32])))"#]],
+            slice: Some(TFunc([TVec(TParam(T)), TInt, TInt], TSlice(TParam(T))))
+            slice_get: Some(TFunc([TSlice(TParam(T)), TInt], TParam(T)))
+            slice_len: Some(TFunc([TSlice(TParam(T))], TInt))
+            slice_sub: Some(TFunc([TSlice(TParam(T)), TInt, TInt], TSlice(TParam(T))))
+            vec_set: Some(TFunc([TVec(TParam(T)), TInt, TParam(T)], TUnit))
+            channel_new: Some(TFunc([TInt], TChannel(TParam(T))))
+            channel_send: Some(TFunc([TChannel(TParam(T)), TParam(T)], TUnit))
+            channel_recv: Some(TFunc([TChannel(TParam(T))], TTuple([TParam(T), TBool])))
+            channel_close: Some(TFunc([TChannel(TParam(T))], TUnit))
+            range: Some(TFunc([TInt, TInt], TApp(TStruct(FnIterator), [TInt])))"#]],
     );
 }
 
 #[test]
-fn env_does_not_register_legacy_int_aliases() {
+fn env_does_not_register_legacy_int_operator_aliases() {
     let env = builtins::builtin_env();
     let legacy_symbols = [
-        "int_to_string",
-        "int_neg",
-        "int_add",
-        "int_sub",
-        "int_mul",
-        "int_div",
-        "int_less",
+        "int_neg", "int_add", "int_sub", "int_mul", "int_div", "int_less",
     ];
 
     expect_function_types(
         &env,
         &legacy_symbols,
         expect![[r#"
-            int_to_string: None
             int_neg: None
             int_add: None
             int_sub: None
@@ -77,6 +80,20 @@ fn env_does_not_register_legacy_int_aliases() {
             int_div: None
             int_less: None"#]],
     );
+}
+
+#[test]
+fn env_registers_builtin_int_inherent_to_string() {
+    let env = builtins::builtin_env();
+    let method = tast::TastIdent("to_string".to_string());
+
+    let result = env.lookup_inherent_method(&tast::Ty::TInt, &method);
+    expect![[r#"
+        Some(
+            TFunc([TInt], TString),
+        )
+    "#]]
+    .assert_debug_eq(&result);
 }
 
 #[test]
@@ -119,7 +136,7 @@ fn env_registers_builtin_vec_inherent_methods() {
     let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
     expect![[r#"
         Some(
-            TFunc([TVec(TParam(T)), TInt32], TParam(T)),
+            TFunc([TVec(TParam(T)), TInt], TParam(T)),
         )
     "#]]
     .assert_debug_eq(&get);
@@ -127,7 +144,7 @@ fn env_registers_builtin_vec_inherent_methods() {
     let set = env.lookup_inherent_method(&receiver, &tast::TastIdent("set".to_string()));
     expect![[r#"
         Some(
-            TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit),
+            TFunc([TVec(TParam(T)), TInt, TParam(T)], TUnit),
         )
     "#]]
     .assert_debug_eq(&set);
@@ -135,7 +152,7 @@ fn env_registers_builtin_vec_inherent_methods() {
     let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
     expect![[r#"
         Some(
-            TFunc([TVec(TParam(T))], TInt32),
+            TFunc([TVec(TParam(T))], TInt),
         )
     "#]]
     .assert_debug_eq(&len);
@@ -182,6 +199,46 @@ fn env_registers_builtin_ref_inherent_methods() {
 }
 
 #[test]
+fn env_registers_builtin_channel_inherent_methods() {
+    let env = builtins::builtin_env();
+    let receiver = tast::Ty::TChannel {
+        elem: Box::new(tast::Ty::TInt32),
+    };
+
+    let new = env.lookup_inherent_method(&receiver, &tast::TastIdent("new".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TInt], TChannel(TParam(T))),
+        )
+    "#]]
+    .assert_debug_eq(&new);
+
+    let send = env.lookup_inherent_method(&receiver, &tast::TastIdent("send".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TChannel(TParam(T)), TParam(T)], TUnit),
+        )
+    "#]]
+    .assert_debug_eq(&send);
+
+    let recv = env.lookup_inherent_method(&receiver, &tast::TastIdent("recv".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TChannel(TParam(T))], TApp(TEnum(Option), [TParam(T)])),
+        )
+    "#]]
+    .assert_debug_eq(&recv);
+
+    let close = env.lookup_inherent_method(&receiver, &tast::TastIdent("close".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TChannel(TParam(T))], TUnit),
+        )
+    "#]]
+    .assert_debug_eq(&close);
+}
+
+#[test]
 fn env_registers_builtin_slice_inherent_methods() {
     let env = builtins::builtin_env();
     let receiver = tast::Ty::TSlice {
@@ -191,7 +248,7 @@ fn env_registers_builtin_slice_inherent_methods() {
     let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
     expect![[r#"
         Some(
-            TFunc([TSlice(TParam(T)), TInt32], TParam(T)),
+            TFunc([TSlice(TParam(T)), TInt], TParam(T)),
         )
     "#]]
     .assert_debug_eq(&get);
@@ -199,7 +256,7 @@ fn env_registers_builtin_slice_inherent_methods() {
     let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
     expect![[r#"
         Some(
-            TFunc([TSlice(TParam(T))], TInt32),
+            TFunc([TSlice(TParam(T))], TInt),
         )
     "#]]
     .assert_debug_eq(&len);
@@ -207,7 +264,7 @@ fn env_registers_builtin_slice_inherent_methods() {
     let sub = env.lookup_inherent_method(&receiver, &tast::TastIdent("sub".to_string()));
     expect![[r#"
         Some(
-            TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))),
+            TFunc([TSlice(TParam(T)), TInt, TInt], TSlice(TParam(T))),
         )
     "#]]
     .assert_debug_eq(&sub);
@@ -296,7 +353,7 @@ fn env_registers_builtin_string_inherent_methods() {
     let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
     expect![[r#"
         Some(
-            TFunc([TString], TInt32),
+            TFunc([TString], TInt),
         )
     "#]]
     .assert_debug_eq(&len);
@@ -304,7 +361,7 @@ fn env_registers_builtin_string_inherent_methods() {
     let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
     expect![[r#"
         Some(
-            TFunc([TString, TInt32], TChar),
+            TFunc([TString, TInt], TChar),
         )
     "#]]
     .assert_debug_eq(&get);

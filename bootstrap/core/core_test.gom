@@ -31,16 +31,8 @@ fn folds_negative_integer_primitives() -> unit {
 }
 
 #[test]
-fn preserves_suffixed_negative_integer_unaries() -> unit {
-    testing::assert_eq(
-        encode(lower_source("fn main() -> int32 { -1i32 }")),
-        "fn main() -> int32 {\n  (-1)\n}",
-    )
-}
-
-#[test]
 fn preserves_exiting_accessor_subexpressions() -> unit {
-    let source = "fn proj_case() -> int32 { let _: int32 = (return 1i32).0; 0i32 } fn index_case() -> int32 { let _: int32 = (return 1i32)[0i32]; 0i32 } fn field_case() -> int32 { let _: int32 = (return 1i32).value; 0i32 }";
+    let source = "fn proj_case() -> int32 { let _: int32 = (return 1).0; 0 } fn index_case() -> int32 { let _: int32 = (return 1)[0]; 0 } fn field_case() -> int32 { let _: int32 = (return 1).value; 0 }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn proj_case() -> int32 {\n  let mtmp1 = {\n    let _wild0 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}\n\nfn index_case() -> int32 {\n  let mtmp3 = {\n    let _wild2 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}\n\nfn field_case() -> int32 {\n  let mtmp5 = {\n    let _wild4 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}",
@@ -57,7 +49,7 @@ fn nests_discard_patterns_around_the_continuation() -> unit {
 
 #[test]
 fn lowers_enum_payload_patterns_in_definition_order() -> unit {
-    let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
+    let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn main() -> unit {\n  let x/0 = Weird::Done(1) in\n  match x/0 {\n    Weird::Next(x0) => {\n      {\n        let x0 = Weird::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird::Done(x1) => {\n      {\n        let x1 = Weird::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#int32#int32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
@@ -87,7 +79,7 @@ fn allocates_statement_names_after_lowering_the_value() -> unit {
 
 #[test]
 fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
-    let source = "fn build() -> Option[() -> int32] { Option::Some(|| 1i32) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0i32), } }";
+    let source = "fn build() -> Option[() -> int32] { Option::Some(|| 1) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
     let file = lower_source(source);
     match file.functions.get(1).body.tail {
         Option::Some(Expr::Block(block, _)) => {

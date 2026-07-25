@@ -1,5 +1,5 @@
 fn bump(counter: Ref[int32], ok: bool) -> Result[int32, string] {
-    counter.set(counter.get() + 1i32);
+    counter.set(counter.get() + 1);
     if ok {
         Result::Ok(counter.get())
     } else {
@@ -20,7 +20,7 @@ fn show(res: Result[int32, string]) -> string {
 }
 
 fn run(ok: bool) -> string {
-    let counter = Ref::new(0i32);
+    let counter = Ref::new(0);
     let result = use_try(counter, ok);
     show(result) + " count=" + counter.get().to_string()
 }

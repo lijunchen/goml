@@ -46,18 +46,18 @@ fn numeric_bit_operators_and_casts_execute() {
     let path = PathBuf::from("numeric_bit_operators_and_casts_execute.gom");
     let src = r#"
 fn main() -> unit {
-    let byte: uint8 = 240u8;
-    println(byte & 15u8);
-    println(byte | 15u8);
-    println(byte ^ 255u8);
-    println(1u8 << 7u32);
-    println(byte >> 4u16);
+    let byte: uint8 = 240;
+    println(byte & 15);
+    println(byte | 15);
+    println(byte ^ 255);
+    println(1 << 7);
+    println(byte >> 4);
     println(~byte);
-    println(-13i32 % 5i32);
-    println(511u16 as uint8);
-    println(-1i16 as uint8);
+    println(-13 % 5);
+    println(511 as uint8);
+    println(-1 as uint8);
     println(('A' as uint32).to_string());
-    match char_from_uint32(128512u32) {
+    match char_from_uint32(128512) {
         Option::Some(value) => println(value.to_string()),
         Option::None => println("invalid"),
     }

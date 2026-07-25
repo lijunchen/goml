@@ -18,7 +18,7 @@ fn test_1() {
                 {kind: Whitespace, text: " "},
                 {kind: Eq, text: "="},
                 {kind: Whitespace, text: " "},
-                {kind: Int, text: "123"},
+                {kind: IntLit, text: "123"},
             ]
         "#]],
     )
@@ -91,7 +91,7 @@ fn test_error_token() {
                 {kind: Whitespace, text: " "},
                 {kind: Plus, text: "+"},
                 {kind: Whitespace, text: " "},
-                {kind: Int, text: "123"},
+                {kind: IntLit, text: "123"},
             ]
         "#]],
     )
@@ -107,15 +107,15 @@ fn pattern_operator_tokens() {
                 {kind: Whitespace, text: " "},
                 {kind: At, text: "@"},
                 {kind: Whitespace, text: " "},
-                {kind: Int, text: "1"},
+                {kind: IntLit, text: "1"},
                 {kind: DotDot, text: ".."},
-                {kind: Int, text: "2"},
+                {kind: IntLit, text: "2"},
                 {kind: Whitespace, text: " "},
                 {kind: Pipe, text: "|"},
                 {kind: Whitespace, text: " "},
-                {kind: Int, text: "3"},
+                {kind: IntLit, text: "3"},
                 {kind: DotDotEq, text: "..="},
-                {kind: Int, text: "4"},
+                {kind: IntLit, text: "4"},
             ]
         "#]],
     )
@@ -137,7 +137,7 @@ fn test_comment() {
                 {kind: Whitespace, text: " "},
                 {kind: Eq, text: "="},
                 {kind: Whitespace, text: " "},
-                {kind: Int, text: "1"},
+                {kind: IntLit, text: "1"},
                 {kind: Whitespace, text: "\n            "},
                 {kind: Comment, text: "// comment"},
             ]
@@ -338,17 +338,17 @@ fn lexes_separated_and_exponent_numbers() {
         "1_000 12_345i32 4_294_967_296u64 1.25e2 2_5.0_0e-1f32 1e6f64",
         expect![[r#"
             [
-                {kind: Int, text: "1_000"},
+                {kind: IntLit, text: "1_000"},
                 {kind: Whitespace, text: " "},
-                {kind: Int32Lit, text: "12_345i32"},
+                {kind: Error, text: "12_345i32"},
                 {kind: Whitespace, text: " "},
-                {kind: UInt64Lit, text: "4_294_967_296u64"},
+                {kind: Error, text: "4_294_967_296u64"},
                 {kind: Whitespace, text: " "},
                 {kind: Float, text: "1.25e2"},
                 {kind: Whitespace, text: " "},
-                {kind: Float32Lit, text: "2_5.0_0e-1f32"},
+                {kind: Error, text: "2_5.0_0e-1f32"},
                 {kind: Whitespace, text: " "},
-                {kind: Float64Lit, text: "1e6f64"},
+                {kind: Error, text: "1e6f64"},
             ]
         "#]],
     );
@@ -362,7 +362,7 @@ fn keeps_tuple_projection_token_boundaries() {
             [
                 {kind: Ident, text: "export"},
                 {kind: Dot, text: "."},
-                {kind: Int, text: "1"},
+                {kind: IntLit, text: "1"},
                 {kind: Dot, text: "."},
                 {kind: Ident, text: "to_string"},
                 {kind: LParen, text: "("},
@@ -370,7 +370,7 @@ fn keeps_tuple_projection_token_boundaries() {
                 {kind: Whitespace, text: " "},
                 {kind: Ident, text: "signature"},
                 {kind: Dot, text: "."},
-                {kind: Int, text: "0"},
+                {kind: IntLit, text: "0"},
                 {kind: Dot, text: "."},
                 {kind: Ident, text: "get"},
                 {kind: LParen, text: "("},

@@ -14,12 +14,12 @@ struct Holder[T] {
 
 fn build() -> (int32) -> int32 {
     let _: Holder[dyn Callable] = Holder {
-        value: return |x: int32| x + 1i32,
+        value: return |x: int32| x + 1,
     };
     |x: int32| x
 }
 
 fn main() -> unit {
     let f = build();
-    println(f(41i32).to_string())
+    println(f(41).to_string())
 }

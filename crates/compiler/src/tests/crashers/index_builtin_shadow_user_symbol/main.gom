@@ -1,13 +1,13 @@
 fn array_get(arr: [int32; 2], index: int32) -> int32 {
-    90i32 + index
+    90 + index
 }
 
 fn array_set(arr: [int32; 2], index: int32, value: int32) -> [int32; 2] {
-    [77i32, 88i32]
+    [77, 88]
 }
 
 fn vec_get(v: Vec[int32], index: int32) -> int32 {
-    70i32 + index
+    70 + index
 }
 
 fn vec_set(v: Vec[int32], index: int32, value: int32) -> unit {
@@ -15,11 +15,11 @@ fn vec_set(v: Vec[int32], index: int32, value: int32) -> unit {
 }
 
 fn slice_get(s: Slice[int32], index: int32) -> int32 {
-    60i32 + index
+    60 + index
 }
 
 fn hashmap_get(m: HashMap[string, int32], key: string) -> Option[int32] {
-    Option::Some(55i32)
+    Option::Some(55)
 }
 
 fn hashmap_set(m: HashMap[string, int32], key: string, value: int32) -> unit {
@@ -27,46 +27,46 @@ fn hashmap_set(m: HashMap[string, int32], key: string, value: int32) -> unit {
 }
 
 fn main() -> unit {
-    let a = [4i32, 5i32];
-    println(array_get(a, 1i32));
-    println(a[1i32]);
+    let a = [4, 5];
+    println(array_get(a, 1));
+    println(a[1]);
 
-    let c: [int32; 2] = array_set(a, 0i32, 9i32);
-    println(c[0i32]);
+    let c: [int32; 2] = array_set(a, 0, 9);
+    println(c[0]);
 
-    let mut b = [1i32, 2i32];
-    b[0i32] = 9i32;
-    println(array_get(b, 0i32));
-    println(b[0i32]);
+    let mut b = [1, 2];
+    b[0] = 9;
+    println(array_get(b, 0));
+    println(b[0]);
 
-    let v: Vec[int32] = Vec::new().pushed(8i32).pushed(9i32);
-    println(vec_get(v, 1i32));
-    println(v[1i32]);
+    let v: Vec[int32] = Vec::new().pushed(8).pushed(9);
+    println(vec_get(v, 1));
+    println(v[1]);
 
-    let mut v2: Vec[int32] = Vec::new().pushed(1i32).pushed(2i32);
-    vec_set(v2, 0i32, 99i32);
-    println(v2[0i32]);
-    v2[1i32] = 99i32;
-    println(v2[1i32]);
+    let mut v2: Vec[int32] = Vec::new().pushed(1).pushed(2);
+    vec_set(v2, 0, 99);
+    println(v2[0]);
+    v2[1] = 99;
+    println(v2[1]);
 
-    let s = v.slice(0i32, 2i32);
-    println(slice_get(s, 1i32));
-    println(s[1i32]);
+    let s = v.slice(0, 2);
+    println(slice_get(s, 1));
+    println(s[1]);
 
     let m: HashMap[string, int32] = HashMap::new();
-    hashmap_set(m, "b", 11i32);
+    hashmap_set(m, "b", 11);
     match m["b"] {
         Option::Some(x) => println(x),
-        Option::None => println(0i32),
+        Option::None => println(0),
     };
 
-    m["a"] = 42i32;
+    m["a"] = 42;
     match hashmap_get(m, "a") {
         Option::Some(x) => println(x),
-        Option::None => println(0i32),
+        Option::None => println(0),
     };
     match m["a"] {
         Option::Some(x) => println(x),
-        Option::None => println(0i32),
+        Option::None => println(0),
     };
 }

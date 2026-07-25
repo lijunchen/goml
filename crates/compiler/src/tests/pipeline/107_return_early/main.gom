@@ -1,25 +1,25 @@
 fn early(x: int32) -> int32 {
-    if x < 0i32 {
-        return 0i32
+    if x < 0 {
+        return 0
     } else {
         ()
     };
-    if x == 0i32 {
-        return 1i32
+    if x == 0 {
+        return 1
     } else {
         ()
     };
-    x + 2i32
+    x + 2
 }
 
 fn closure_early(x: int32) -> int32 {
     let f = |y: int32| {
-        if y > 5i32 {
+        if y > 5 {
             return y
         } else {
             ()
         };
-        y + 10i32
+        y + 10
     };
     f(x)
 }
@@ -35,15 +35,15 @@ fn unit_ret(flag: bool) {
 
 fn main() {
     let _ = print("e-1: ");
-    let _ = println(early(-1i32));
+    let _ = println(early(-1));
     let _ = print("e0: ");
-    let _ = println(early(0i32));
+    let _ = println(early(0));
     let _ = print("e3: ");
-    let _ = println(early(3i32));
+    let _ = println(early(3));
     let _ = print("c7: ");
-    let _ = println(closure_early(7i32));
+    let _ = println(closure_early(7));
     let _ = print("c2: ");
-    let _ = println(closure_early(2i32));
+    let _ = println(closure_early(2));
     unit_ret(true);
     unit_ret(false);
 }

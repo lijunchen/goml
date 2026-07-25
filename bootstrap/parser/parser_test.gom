@@ -13,7 +13,7 @@ fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> unit {
     }
 }
 
-fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int32 {
+fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
     let count = Ref::new(if cst::node_kind_equal(cst::node_kind(node), kind) { 1 } else { 0 });
     for child in cst::node_children(node) {
         match child {

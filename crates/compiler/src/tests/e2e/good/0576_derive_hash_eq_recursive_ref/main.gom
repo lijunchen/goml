@@ -22,14 +22,14 @@ impl Eq for Maybe[Node] {
 impl Hash for Maybe[Node] {
     fn hash(self: Maybe[Node]) -> uint64 {
         match self {
-            Maybe::None => 0u64,
+            Maybe::None => 0,
             Maybe::Some(node) => Hash::hash(node),
         }
     }
 }
 
 fn main() -> unit {
-    let n = Node { value: 1i32, next: Ref::new(Maybe::None) };
+    let n = Node { value: 1, next: Ref::new(Maybe::None) };
     let m: HashMap[Node, string] = HashMap::new();
     m.set(n, "ok");
     println(m.len().to_string())

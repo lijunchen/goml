@@ -347,7 +347,7 @@ pub struct Box {
 }
 
 pub fn make() -> Box {
-    Box { value: 42i32 }
+    Box { value: 42 }
 }
 "#,
         ),
@@ -386,7 +386,7 @@ fn main() -> unit {
             r#"package model;
 
 pub fn make() -> int32 {
-    42i32
+    42
 }
 "#,
         ),

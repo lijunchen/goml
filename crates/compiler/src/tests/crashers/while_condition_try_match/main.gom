@@ -1,17 +1,17 @@
 fn step(i: int32) -> Option[bool] {
     match i {
-        0i32 => Option::Some(true),
-        1i32 => Option::Some(true),
-        2i32 => Option::Some(false),
+        0 => Option::Some(true),
+        1 => Option::Some(true),
+        2 => Option::Some(false),
         _ => Option::None,
     }
 }
 
 fn main() -> Option[unit] {
-    let i = Ref::new(0i32);
+    let i = Ref::new(0);
     while match step(i.get())? {
         true => {
-            i.set(i.get() + 1i32);
+            i.set(i.get() + 1);
             true
         },
         false => false,

@@ -15,7 +15,7 @@ fn vec_method_push_mutates_shared_storage_in_go_codegen() {
     let src = r#"
 fn main() -> unit {
     let v: Vec[int32] = Vec::new();
-    v.push(1i32);
+    v.push(1);
     println(v.len().to_string());
 }
 "#;

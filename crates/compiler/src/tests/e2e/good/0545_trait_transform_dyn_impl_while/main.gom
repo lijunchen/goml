@@ -15,7 +15,7 @@ impl Transform for Multiplier {
 
 fn apply_all(transforms: Vec[dyn Transform], x: int32) -> int32 {
     let result = Ref::new(x);
-    let i = Ref::new(0i32);
+    let i = Ref::new(0);
     while i.get() < transforms.len() {
         let t = transforms[i.get()];
         result.set(Transform::apply(t, result.get()));

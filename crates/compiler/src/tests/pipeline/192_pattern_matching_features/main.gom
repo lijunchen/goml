@@ -43,7 +43,7 @@ fn describe(value: Maybe, numbers: Vec[int32], view: Slice[int32]) -> string {
 
     let from_vec = match numbers {
         [] => "empty",
-        [first, tail @ ..] if first == tail.len() => "balanced",
+        [first, tail @ ..] if first == tail.len() as int32 => "balanced",
         [_, ..] => "nonempty",
     };
 

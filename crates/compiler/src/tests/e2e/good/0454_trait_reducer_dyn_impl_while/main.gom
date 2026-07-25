@@ -10,7 +10,7 @@ impl Reducer for Multiplier { fn reduce(self: Multiplier, acc: int32) -> int32 {
 
 fn apply_reducer(r: dyn Reducer, init: int32, n: int32) -> int32 {
     let acc = Ref::new(init);
-    let i = Ref::new(0i32);
+    let i = Ref::new(0);
     while i.get() < n {
         acc.set(Reducer::reduce(r, acc.get()));
         i.set(i.get() + 1);

@@ -23,7 +23,7 @@ pub fn verify() -> bool {
     };
 
     let invalid = bytes::Bytes::new();
-    invalid.push(255u8);
+    invalid.push(255);
     match invalid.to_string() {
         Result::Ok(_) => check(ok, false),
         Result::Err(message) => check(ok, message == "invalid UTF-8"),

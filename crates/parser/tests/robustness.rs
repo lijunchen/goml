@@ -27,15 +27,15 @@ trait Parse[T] { type Error; fn parse(self: Self, arg1: Slice[T]) -> Result[T, S
 impl Parse[char] for Token[char] {
     type Error = string;
     fn parse(self: Token[char], input: Slice[char]) -> Result[char, string] {
-        let first = if input.len() > 0i32 { input.get(0i32) } else { '中' };
+        let first = if input.len() > 0 { input.get(0) } else { '中' };
         match first { '\n' => Result::Err("line"), value => Result::Ok(value) }
     }
 }
 fn main() -> unit {
-    let values = [1i32, 2i32, 3i32];
-    let total = values[0i32] + values[1i32] * values[2i32];
-    let mapper = |value: int32| value << 1i32;
-    while mapper(total) > 0i32 { break; };
+    let values = [1, 2, 3];
+    let total = values[0] + values[1] * values[2];
+    let mapper = |value: int32| value << 1;
+    while mapper(total) > 0 { break; };
 }
 "#,
         r#"fn broken(x: Vec[Option[(int32, string)] -> unit {
@@ -88,7 +88,7 @@ fn fixed_seed_token_noise_parses_losslessly() {
         "#",
         "_",
         "name",
-        "0i32",
+        "0",
         "\"text\"",
         "'x'",
         " ",
@@ -99,8 +99,8 @@ fn fixed_seed_token_noise_parses_losslessly() {
         "\0",
     ];
     let seeds = [
-        0x8a5c_1937_2df4_6b01u64,
-        0x4d59_5df4_d0f3_3173u64,
+        0x8a5c_1937_2df4_6b01,
+        0x4d59_5df4_d0f3_3173,
         0xa076_1d64_78bd_642fu64,
         0xe703_7ed1_a0b4_28dbu64,
     ];
@@ -179,7 +179,7 @@ fn assert_depth_error(source: &str, expected: &str) {
 #[test]
 fn deeply_nested_expression_reports_an_error() {
     let source = format!(
-        "fn main() -> unit {{ let value = {}1i32{}; }}",
+        "fn main() -> unit {{ let value = {}1{}; }}",
         "(".repeat(4096),
         ")".repeat(4096)
     );
@@ -189,7 +189,7 @@ fn deeply_nested_expression_reports_an_error() {
 #[test]
 fn deeply_nested_pattern_reports_an_error() {
     let source = format!(
-        "fn main() -> unit {{ let {}_{} = 0i32; }}",
+        "fn main() -> unit {{ let {}_{} = 0; }}",
         "(".repeat(4096),
         ")".repeat(4096)
     );
@@ -199,7 +199,7 @@ fn deeply_nested_pattern_reports_an_error() {
 #[test]
 fn deeply_nested_alias_pattern_reports_an_error() {
     let source = format!(
-        "fn main() -> unit {{ let {}_ = 0i32; }}",
+        "fn main() -> unit {{ let {}_ = 0; }}",
         "value @ ".repeat(4096),
     );
     assert_depth_error(&source, "pattern is too deeply nested");

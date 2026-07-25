@@ -10,8 +10,9 @@ impl Display for int32 {
 
 fn build() -> int32 {
     let m: HashMap[int32, dyn Display] = HashMap::new();
-    m.set(1i32, if true { return 7i32 } else { 1i32 });
-    0i32
+    let value: int32 = 1;
+    m.set(1, if true { return 7 } else { value });
+    0
 }
 
 fn main() -> unit {

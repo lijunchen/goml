@@ -71,10 +71,11 @@ impl Show for Wrap {
 
 fn main() -> unit {
     let v: Vec[dyn Show] = Vec::new();
-    v.push(10i32);
+    let value: int32 = 10;
+    v.push(value);
     v.push(Wrap { value: "ok" });
-    let _ = println(Show::show(v[0i32]));
-    let _ = println(Show::show(v[1i32]));
+    let _ = println(Show::show(v[0]));
+    let _ = println(Show::show(v[1]));
 }
 "#;
 
@@ -110,7 +111,8 @@ fn render(x: dyn Show) -> string {
 }
 
 fn main() -> unit {
-    let _ = println(render(make_wrap(42i32)));
+    let value: int32 = 42;
+    let _ = println(render(make_wrap(value)));
 }
 "#;
 
@@ -147,7 +149,8 @@ fn render(x: dyn Show) -> string {
 }
 
 fn main() -> unit {
-    let _ = println(render(make_boxed(42i32)));
+    let value: int32 = 42;
+    let _ = println(render(make_boxed(value)));
 }
 "#;
 
@@ -183,7 +186,8 @@ fn render(x: dyn Show) -> string {
 }
 
 fn main() -> unit {
-    let _ = println(render(Boxed::One(42i32)));
+    let value: int32 = 42;
+    let _ = println(render(Boxed::One(value)));
 }
 "#;
 
@@ -335,8 +339,8 @@ enum Boxed {
 }
 
 fn build() -> int32 {
-    let _: Boxed = Boxed::One(return 9i32);
-    0i32
+    let _: Boxed = Boxed::One(return 9);
+    0
 }
 
 fn main() -> unit {

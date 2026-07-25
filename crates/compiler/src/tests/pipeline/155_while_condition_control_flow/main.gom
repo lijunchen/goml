@@ -1,36 +1,36 @@
 fn main() -> unit {
-    let i = Ref::new(0i32);
-    while if i.get() < 3i32 { true } else { false } {
+    let i = Ref::new(0);
+    while if i.get() < 3 { true } else { false } {
         println(i.get());
-        i.set(i.get() + 1i32);
+        i.set(i.get() + 1);
     };
 
-    let j = Ref::new(0i32);
-    let total = Ref::new(0i32);
-    while if j.get() < 4i32 {
-        if j.get() == 1i32 {
+    let j = Ref::new(0);
+    let total = Ref::new(0);
+    while if j.get() < 4 {
+        if j.get() == 1 {
             true
         } else {
-            j.get() != 3i32
+            j.get() != 3
         }
     } else {
         false
     } {
         total.set(total.get() + j.get());
-        j.set(j.get() + 1i32);
+        j.set(j.get() + 1);
     };
     println(total.get());
 
-    let k = Ref::new(0i32);
-    let sum = Ref::new(0i32);
+    let k = Ref::new(0);
+    let sum = Ref::new(0);
     while match k.get() {
-        0i32 => true,
-        1i32 => if sum.get() == 0i32 { true } else { false },
-        2i32 => true,
+        0 => true,
+        1 => if sum.get() == 0 { true } else { false },
+        2 => true,
         _ => false,
     } {
         sum.set(sum.get() + k.get());
-        k.set(k.get() + 1i32);
+        k.set(k.get() + 1);
     };
     println(sum.get());
 }
