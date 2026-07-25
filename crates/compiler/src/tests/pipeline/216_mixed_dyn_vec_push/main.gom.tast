@@ -1,0 +1,20 @@
+impl Show for int32{
+  fn show(self/0: int32) -> string {
+      (int32::to_string : (int32) -> string)((self/0 : int32))
+  }
+}
+
+impl Show for Wrap{
+  fn show(self/1: Wrap) -> string {
+      (self/1 : Wrap).value
+  }
+}
+
+fn main() -> unit {
+    let values/2: Vec[dyn Show] = (Vec[dyn Show]::new : () -> Vec[dyn Show])();
+    let value/3: int32 = 10;
+    (Vec[dyn Show]::push : (Vec[dyn Show], dyn Show) -> unit)((values/2 : Vec[dyn Show]), to_dyn[Show]{int32}((value/3 : int32)));
+    (Vec[dyn Show]::push : (Vec[dyn Show], dyn Show) -> unit)((values/2 : Vec[dyn Show]), to_dyn[Show]{Wrap}(Wrap { value: "ok" }));
+    (println : (string) -> unit)((dyn Show::show : (dyn Show) -> string)((values/2 : Vec[dyn Show])[0]));
+    (println : (string) -> unit)((dyn Show::show : (dyn Show) -> string)((values/2 : Vec[dyn Show])[1]))
+}
