@@ -35,16 +35,28 @@ pub struct Context {
 }
 
 pub enum Command {
-    Compile(
-        string,
-        string,
-        Vec[string],
-        Vec[string],
-        string,
-    ),
-    Link(Vec[string], string, string),
-    TestLink(Vec[string], Vec[string], string, string),
-    GoBuild(string, string),
+    Compile {
+        subcommand: string,
+        package_name: string,
+        input_files: Vec[string],
+        interface_files: Vec[string],
+        output: string,
+    },
+    Link {
+        input_cores: Vec[string],
+        entry_package: string,
+        output: string,
+    },
+    TestLink {
+        input_cores: Vec[string],
+        packages: Vec[string],
+        output: string,
+        manifest: string,
+    },
+    GoBuild {
+        input: string,
+        output: string,
+    },
 }
 
 pub struct Plan {

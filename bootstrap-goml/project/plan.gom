@@ -113,16 +113,16 @@ fn compile_commands(
         } else {
             dependency_command
         };
-        result.push(Command::Compile(
-            command,
+        result.push(Command::Compile {
+            subcommand: command,
             package_name,
-            util::sorted(inputs),
-            relative_interfaces,
-            module_relative(
+            input_files: util::sorted(inputs),
+            interface_files: relative_interfaces,
+            output: module_relative(
                 context.graph.module_dir,
                 package_artifact_base(output_root, package_name),
             ),
-        ))
+        })
     };
     Result::Ok(result)
 }
@@ -173,19 +173,19 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         Result::Err(message) => return Result::Err(message),
     };
     let main_go = path::join(context.artifact_root, "main.go");
-    commands.push(Command::Link(
-        core_outputs(context, output_root),
-        context.graph.entry_package,
-        module_relative(context.graph.module_dir, main_go),
-    ));
+    commands.push(Command::Link {
+        input_cores: core_outputs(context, output_root),
+        entry_package: context.graph.entry_package,
+        output: module_relative(context.graph.module_dir, main_go),
+    });
     let executable = path::join(
         path::join(context.artifact_root, "bin"),
         last_segment(context.graph.entry_package),
     );
-    commands.push(Command::GoBuild(
-        module_relative(context.graph.module_dir, main_go),
-        module_relative(context.graph.module_dir, executable),
-    ));
+    commands.push(Command::GoBuild {
+        input: module_relative(context.graph.module_dir, main_go),
+        output: module_relative(context.graph.module_dir, executable),
+    });
     Result::Ok(Plan {
         commands,
         executable: Option::Some(executable),
@@ -210,17 +210,17 @@ pub fn test_plan(context: Context) -> Result[Plan, string] {
     };
     let main_go = path::join(output_root, "main.go");
     let manifest = path::join(output_root, "tests.json");
-    commands.push(Command::TestLink(
-        core_outputs(context, output_root),
-        Vec::new().pushed(context.graph.entry_package),
-        module_relative(context.graph.module_dir, main_go),
-        module_relative(context.graph.module_dir, manifest),
-    ));
+    commands.push(Command::TestLink {
+        input_cores: core_outputs(context, output_root),
+        packages: Vec::new().pushed(context.graph.entry_package),
+        output: module_relative(context.graph.module_dir, main_go),
+        manifest: module_relative(context.graph.module_dir, manifest),
+    });
     let runner = path::join(output_root, "runner");
-    commands.push(Command::GoBuild(
-        module_relative(context.graph.module_dir, main_go),
-        module_relative(context.graph.module_dir, runner),
-    ));
+    commands.push(Command::GoBuild {
+        input: module_relative(context.graph.module_dir, main_go),
+        output: module_relative(context.graph.module_dir, runner),
+    });
     Result::Ok(Plan {
         commands,
         executable: Option::None,
@@ -239,22 +239,22 @@ fn display_args(program: string, args: Vec[string]) -> string {
 
 fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
-        Command::Compile(
-            command,
+        Command::Compile {
+            subcommand,
             package_name,
-            inputs,
-            interfaces,
+            input_files,
+            interface_files,
             output,
-        ) => {
+        } => {
             let args = Vec::new();
-            args.push(command);
+            args.push(subcommand);
             args.push("--package");
             args.push(package_name);
-            for input in inputs {
+            for input in input_files {
                 args.push("--input");
                 args.push(input)
             };
-            for interface in interfaces {
+            for interface in interface_files {
                 args.push("--interface-path");
                 args.push(interface)
             };
@@ -262,24 +262,33 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push(output);
             ("gomlc", args)
         },
-        Command::Link(inputs, entry, output) => {
+        Command::Link {
+            input_cores,
+            entry_package,
+            output,
+        } => {
             let args = Vec::new();
             args.push("link");
             args.push("--input");
-            for input in inputs {
+            for input in input_cores {
                 args.push(input)
             };
             args.push("--output");
             args.push(output);
             args.push("--entry");
-            args.push(entry);
+            args.push(entry_package);
             ("gomlc", args)
         },
-        Command::TestLink(inputs, packages, output, manifest) => {
+        Command::TestLink {
+            input_cores,
+            packages,
+            output,
+            manifest,
+        } => {
             let args = Vec::new();
             args.push("test-link");
             args.push("--input");
-            for input in inputs {
+            for input in input_cores {
                 args.push(input)
             };
             args.push("--output");
@@ -292,7 +301,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             };
             ("gomlc", args)
         },
-        Command::GoBuild(input, output) => (
+        Command::GoBuild { input, output } => (
             "go",
             Vec::new()
                 .pushed("build")
@@ -310,10 +319,10 @@ pub fn display_command(value: Command) -> string {
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
     let output = match value {
-        Command::Compile(_, _, _, _, output)
-        | Command::Link(_, _, output)
-        | Command::TestLink(_, _, output, _)
-        | Command::GoBuild(_, output) => output,
+        Command::Compile { output, .. }
+        | Command::Link { output, .. }
+        | Command::TestLink { output, .. }
+        | Command::GoBuild { output, .. } => output,
     };
     let absolute = if path::is_absolute(output) {
         output
