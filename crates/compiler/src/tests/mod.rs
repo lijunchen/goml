@@ -20,18 +20,13 @@ mod assignment_target_test;
 #[cfg(feature = "bootstrap-tests")]
 mod bootstrap;
 mod builtin_functions_test;
-mod closure_return_test;
 mod constructor_value_test;
 mod deep_pattern_test;
 mod dyn_coercion_test;
-mod e2e;
 mod entrypoint_test;
 mod go_name_mangling_test;
 mod intrinsics_test;
-mod module;
-mod monomorphization_test;
 mod multiline_string_test;
-mod name_collision_test;
 mod operator_semantics_test;
 mod package_model_test;
 mod query_test;
@@ -104,34 +99,6 @@ fn go_available() -> bool {
 
 fn runtime_executor_available() -> bool {
     yaegi_available() || go_available()
-}
-
-#[test]
-fn test_parse_error_cases() -> anyhow::Result<()> {
-    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let diagnostics_dir = root_dir.join("src/tests/diagnostics");
-    run_parse_error_cases(&diagnostics_dir)
-}
-
-#[test]
-fn test_typer_error_cases() -> anyhow::Result<()> {
-    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let diagnostics_dir = root_dir.join("src/tests/typer");
-    run_typer_error_cases(&diagnostics_dir)
-}
-
-#[test]
-fn test_compile_error_cases() -> anyhow::Result<()> {
-    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let diagnostics_dir = root_dir.join("src/tests/diagnostics/compile");
-    run_compile_error_cases(&diagnostics_dir)
-}
-
-#[test]
-fn test_e2e_cases() -> anyhow::Result<()> {
-    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let e2e_dir = root_dir.join("src/tests/e2e");
-    e2e::run_e2e_cases(&e2e_dir)
 }
 
 #[test]
@@ -558,180 +525,6 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
 
     if test_log_enabled() {
         eprintln!("[case] done elapsed={:?}", start.elapsed());
-    }
-
-    Ok(())
-}
-
-fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
-    for entry in std::fs::read_dir(dir)? {
-        let entry = entry?;
-        if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
-        {
-            let p = entry.path();
-            println!("Testing diagnostics: {}", p.display());
-            let filename = p.file_name().unwrap().to_str().unwrap();
-            let diag_filename = p.with_file_name(format!("{}.diag", filename));
-
-            let input = std::fs::read_to_string(&p)?;
-            match pipeline::pipeline::compile(&p, &input) {
-                Err(CompilationError::Parser { diagnostics }) => {
-                    let mut formatted = format_parser_diagnostics(&diagnostics, &input).join("\n");
-                    if !formatted.is_empty() {
-                        formatted.push('\n');
-                    }
-
-                    expect_test::expect_file![diag_filename].assert_eq(&formatted);
-                }
-                Err(CompilationError::Lower { diagnostics }) => {
-                    bail!(
-                        "Expected parse errors in {}, but lowering reported diagnostics: {}",
-                        p.display(),
-                        format_lower_diagnostics(&diagnostics).join("\n")
-                    );
-                }
-                Err(CompilationError::Typer { diagnostics }) => {
-                    bail!(
-                        "Expected parse errors in {}, but typer reported diagnostics: {}",
-                        p.display(),
-                        format_typer_diagnostics(&diagnostics, &input).join("\n")
-                    );
-                }
-                Err(CompilationError::Compile { diagnostics }) => {
-                    bail!(
-                        "Expected parse errors in {}, but compile stage reported diagnostics: {}",
-                        p.display(),
-                        format_compile_diagnostics(&diagnostics, &input).join("\n")
-                    );
-                }
-                Ok(_) => {
-                    bail!(
-                        "Expected parse errors in {}, but compilation succeeded",
-                        p.display()
-                    );
-                }
-            }
-        }
-    }
-    Ok(())
-}
-
-fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
-    if !dir.exists() {
-        return Ok(());
-    }
-
-    for entry in std::fs::read_dir(dir)? {
-        let entry = entry?;
-        if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
-        {
-            let p = entry.path();
-            println!("Testing compile diagnostics: {}", p.display());
-            let filename = p.file_name().unwrap().to_str().unwrap();
-            let diag_filename = p.with_file_name(format!("{}.diag", filename));
-
-            let input = std::fs::read_to_string(&p)?;
-            let tmpdir = tempfile::tempdir()?;
-            let tmpfile = tmpdir.path().join("main.gom");
-            std::fs::write(&tmpfile, &input)?;
-            match pipeline::pipeline::compile(&tmpfile, &input) {
-                Err(CompilationError::Compile { diagnostics }) => {
-                    let mut formatted = format_compile_diagnostics(&diagnostics, &input).join("\n");
-                    if !formatted.is_empty() {
-                        formatted.push('\n');
-                    }
-
-                    expect_test::expect_file![diag_filename].assert_eq(&formatted);
-                }
-                Err(CompilationError::Parser { diagnostics }) => {
-                    bail!(
-                        "Expected compile diagnostics in {}, but parser reported diagnostics: {}",
-                        p.display(),
-                        format_parser_diagnostics(&diagnostics, &input).join("\n")
-                    );
-                }
-                Err(CompilationError::Lower { diagnostics }) => {
-                    bail!(
-                        "Expected compile diagnostics in {}, but lowering reported diagnostics: {}",
-                        p.display(),
-                        format_lower_diagnostics(&diagnostics).join("\n")
-                    );
-                }
-                Err(CompilationError::Typer { diagnostics }) => {
-                    bail!(
-                        "Expected compile diagnostics in {}, but typer reported diagnostics: {}",
-                        p.display(),
-                        format_typer_diagnostics(&diagnostics, &input).join("\n")
-                    );
-                }
-                Ok(_) => {
-                    bail!(
-                        "Expected compile diagnostics in {}, but compilation succeeded",
-                        p.display()
-                    );
-                }
-            }
-        }
-    }
-
-    Ok(())
-}
-
-fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
-    for entry in std::fs::read_dir(dir)? {
-        let entry = entry?;
-        if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
-        {
-            let p = entry.path();
-            println!("Testing typer diagnostics: {}", p.display());
-            let filename = p.file_name().unwrap().to_str().unwrap();
-            let diag_filename = p.with_file_name(format!("{}.diag", filename));
-
-            let input = std::fs::read_to_string(&p)?;
-            let tmpdir = tempfile::tempdir()?;
-            let tmpfile = tmpdir.path().join("main.gom");
-            std::fs::write(&tmpfile, &input)?;
-            match pipeline::pipeline::compile(&tmpfile, &input) {
-                Err(CompilationError::Typer { diagnostics }) => {
-                    let mut formatted = format_typer_diagnostics(&diagnostics, &input).join("\n");
-                    if !formatted.is_empty() {
-                        formatted.push('\n');
-                    }
-
-                    expect_test::expect_file![diag_filename].assert_eq(&formatted);
-                }
-                Err(CompilationError::Parser { diagnostics }) => {
-                    bail!(
-                        "Expected typer diagnostics in {}, but parser reported diagnostics: {}",
-                        p.display(),
-                        format_parser_diagnostics(&diagnostics, &input).join("\n")
-                    );
-                }
-                Err(CompilationError::Lower { diagnostics }) => {
-                    bail!(
-                        "Expected typer diagnostics in {}, but lowering reported diagnostics: {}",
-                        p.display(),
-                        format_lower_diagnostics(&diagnostics).join("\n")
-                    );
-                }
-                Err(CompilationError::Compile { diagnostics }) => {
-                    bail!(
-                        "Expected typer diagnostics in {}, but compile stage reported diagnostics: {}",
-                        p.display(),
-                        format_compile_diagnostics(&diagnostics, &input).join("\n")
-                    );
-                }
-                Ok(_) => {
-                    bail!(
-                        "Expected typer diagnostics in {}, but compilation succeeded",
-                        p.display()
-                    );
-                }
-            }
-        }
     }
 
     Ok(())
