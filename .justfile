@@ -35,6 +35,12 @@ install-vscode-ext:
 install:
     home="${GOML_HOME:-$HOME/.goml}"; cargo install --path ./crates/gomlc --debug --offline --root "$home" --force --locked; cargo install --path ./crates/goml --debug --offline --root "$home" --force --locked; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
 
+install-bootstrap:
+    cargo build -p goml -p gomlc
+    target/debug/goml build bootstrap --compiler target/debug/gomlc
+    target/debug/goml build bootstrap-goml --compiler bootstrap/artifact/bin/gomlc
+    home="${GOML_HOME:-$HOME/.goml}"; mkdir -p "$home/bin"; cp bootstrap/artifact/bin/gomlc "$home/bin/gomlc"; cp bootstrap-goml/artifact/bin/bootstrap_goml "$home/bin/goml"; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
+
 install-lsp-suite:
     just install-lsp
     just install-vscode-ext
