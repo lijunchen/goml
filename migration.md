@@ -19,13 +19,13 @@ explicitly refers to fixture cases.
 | Rust source or fixture suite | GoML equivalent | Status |
 | --- | --- | --- |
 | `crates/compiler/src/tests/pipeline/` | `bootstrap/pipeline_test/pipeline_test.gom` | migrated; Rust `tests::test_cases` remains as snapshot oracle |
-| `crates/compiler/src/tests/e2e/good/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 555 fixtures |
+| `crates/compiler/src/tests/e2e/good/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 558 fixtures |
 | `crates/compiler/src/tests/e2e/bad/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 71 fixtures |
 | `crates/compiler/src/tests/diagnostics/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 4 fixtures |
 | `crates/compiler/src/tests/typer/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 84 fixtures |
 | `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage |
 | `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 24 projects |
-| `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 97 fixtures |
+| `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 100 fixtures |
 | `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 54 fixtures representing 50 Rust tests |
 | `crates/compiler/src/tests/bootstrap/` | no replacement | oracle; Rust/bootstrap differential infrastructure |
 
@@ -55,16 +55,16 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 | `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
 | `toplevel_validation_test.rs` | 1 | crasher fixtures | partially migrated; 11 migrated and 1 blocked |
 | `dyn_coercion_test.rs` | 23 | future diagnostic/runtime fixtures | pending; retain Go AST assertions |
-| `while_expr_test.rs` | 14 | future diagnostic/runtime fixtures | pending |
-| `operator_semantics_test.rs` | 9 | future diagnostic/runtime fixtures | pending; several cases overlap crashers |
+| `while_expr_test.rs` | 0 | crasher fixtures | migrated |
+| `operator_semantics_test.rs` | 0 | e2e and crasher fixtures | migrated |
 | `struct_type_test.rs` | 11 | future diagnostic fixtures | pending; retain `GlobalTypeEnv` assertions |
-| `assignment_target_test.rs` | 2 | future diagnostic/runtime fixtures | pending |
+| `assignment_target_test.rs` | 0 | e2e and crasher fixtures | migrated |
 | `constructor_value_test.rs` | 1 | future runtime fixture | pending |
-| `multiline_string_test.rs` | 2 | future runtime fixtures | pending |
+| `multiline_string_test.rs` | 0 | e2e and crasher fixtures | migrated |
 | `ref_type_test.rs` | 1 | future diagnostic fixture | pending |
 | `try_expr_test.rs` | 3 | future diagnostic/runtime fixtures | pending |
 | `tuple_projection_test.rs` | 2 | future runtime fixtures | pending |
-| `vec_effect_test.rs` | 4 | future runtime fixtures | pending; retain Go AST assertions |
+| `vec_effect_test.rs` | 1 | crasher fixtures | partially migrated; retain Go AST assertion |
 | `testing_test.rs` | 7 | future `bootstrap-goml` CLI fixtures | pending |
 | `separate_compile_test.rs` | 5 | future `bootstrap-goml` CLI fixtures | pending |
 | `query_test.rs` | 44 | no bootstrap query API yet | blocked |
@@ -254,6 +254,40 @@ The retained package model blockers are:
 - `ambiguous_package_alias_is_rejected`
 - `nested_module_is_not_loaded_as_a_package`
 - `transitive_dependencies_are_not_source_visible`
+
+## Runtime and control-flow migration
+
+The complete `operator_semantics_test.rs` module is migrated. Its diagnostic
+and short-circuit cases map to same-named crasher fixtures. The
+`numeric_bit_operators_and_casts_execute` case maps to
+`e2e/good/0592_numeric_bit_operators_and_casts/`.
+
+The complete `assignment_target_test.rs` module is migrated:
+
+| Removed Rust test | GoML coverage |
+| --- | --- |
+| `shadowed_ref_get_array_assignment_is_rejected` | `crashers/ref_get_shadow_array_assignment_target/` |
+| `intrinsic_ref_get_array_assignment_executes` | `e2e/good/0593_intrinsic_ref_get_array_assignment/` |
+
+The complete `while_expr_test.rs` module maps to crasher fixtures. Three
+previously inline cases now have dedicated fixtures:
+
+- `crashers/while_condition_all_exit_match_wrapped_enum/`
+- `crashers/while_condition_all_exit_match_wrapped_tuple/`
+- `crashers/while_condition_all_exit_match_wrapped_array/`
+
+The complete `multiline_string_test.rs` module is migrated:
+
+| Removed Rust test | GoML coverage |
+| --- | --- |
+| `multiline_string_prints_lines` | `e2e/good/0594_multiline_string/` |
+| `string_nul_escape_executes` | `crashers/string_nul_escape/` |
+
+Three runtime-only tests from `vec_effect_test.rs` map to the existing
+`discarded_let_vec_push_side_effect`, `vec_push_preserves_existing_binding`,
+and `discarded_vec_len_pure_call` crasher fixtures. The remaining
+`vec_method_push_mutates_shared_storage_in_go_codegen` test stays in Rust
+because it asserts the generated Go representation directly.
 
 ## Verification commands
 
