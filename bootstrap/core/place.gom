@@ -3,26 +3,31 @@ package core;
 use gomlc::tast;
 
 enum PlaceRoot {
-    Local(string, tast::Type),
-    Ref(tast::Expr, tast::Type),
-    Value(tast::Expr, tast::Type),
+    Local { name: string, ty: tast::Type },
+    Ref { expr: tast::Expr, ty: tast::Type },
+    Value { expr: tast::Expr, ty: tast::Type },
 }
 
 enum PlaceStep {
-    Proj(tast::Type, int, tast::Type),
-    Field(tast::Type, string, tast::Type),
-    Index(tast::Type, tast::Expr, tast::Type),
+    Proj { parent_ty: tast::Type, index: int, item_ty: tast::Type },
+    Field { parent_ty: tast::Type, field_name: string, item_ty: tast::Type },
+    Index { container_ty: tast::Type, index: tast::Expr, item_ty: tast::Type },
 }
 
 enum EvaluatedPlaceStep {
-    Proj(string, tast::Type, int),
-    Field(string, tast::Type, string),
-    Index(string, tast::Type, string, tast::Type),
+    Proj { parent_var: string, parent_ty: tast::Type, index: int },
+    Field { parent_var: string, parent_ty: tast::Type, field_name: string },
+    Index {
+        parent_var: string,
+        parent_ty: tast::Type,
+        index_var: string,
+        index_ty: tast::Type,
+    },
 }
 
 enum CompiledPlaceRoot {
-    Local(string, tast::Type),
-    Ref(string, tast::Type),
+    Local { name: string, ty: tast::Type },
+    Ref { ref_var: string, ref_ty: tast::Type },
     Value,
 }
 
@@ -59,37 +64,49 @@ fn ref_get_argument(value: tast::Expr) -> Option[tast::Expr] {
 
 fn decompose_place_from(value: tast::Expr, steps: Vec[PlaceStep]) -> Option[PlaceRoot] {
     match value {
-        tast::Expr::Var { name, ty } => Option::Some(PlaceRoot::Local(name, ty)),
+        tast::Expr::Var { name, ty } => Option::Some(PlaceRoot::Local { name, ty }),
         tast::Expr::Proj { tuple: parent, index, ty } => match decompose_place_from(parent, steps) {
             Option::Some(root) => {
-                steps.push(PlaceStep::Proj(tast::expr_type(parent), index, ty));
+                steps.push(PlaceStep::Proj {
+                    parent_ty: tast::expr_type(parent),
+                    index,
+                    item_ty: ty,
+                });
                 Option::Some(root)
             },
             Option::None => Option::None,
         },
         tast::Expr::Field { expr: parent, field_name: name, ty } => match decompose_place_from(parent, steps) {
             Option::Some(root) => {
-                steps.push(PlaceStep::Field(tast::expr_type(parent), name, ty));
+                steps.push(PlaceStep::Field {
+                    parent_ty: tast::expr_type(parent),
+                    field_name: name,
+                    item_ty: ty,
+                });
                 Option::Some(root)
             },
             Option::None => Option::None,
         },
         tast::Expr::Index { base: parent, index, ty } => match decompose_place_from(parent, steps) {
             Option::Some(root) => {
-                steps.push(PlaceStep::Index(tast::expr_type(parent), index, ty));
+                steps.push(PlaceStep::Index {
+                    container_ty: tast::expr_type(parent),
+                    index,
+                    item_ty: ty,
+                });
                 Option::Some(root)
             },
             Option::None => Option::None,
         },
         other => match ref_get_argument(other) {
-            Option::Some(reference) => Option::Some(PlaceRoot::Ref(
-                reference,
-                tast::expr_type(other),
-            )),
-            Option::None => Option::Some(PlaceRoot::Value(
-                other,
-                tast::expr_type(other),
-            )),
+            Option::Some(reference) => Option::Some(PlaceRoot::Ref {
+                expr: reference,
+                ty: tast::expr_type(other),
+            }),
+            Option::None => Option::Some(PlaceRoot::Value {
+                expr: other,
+                ty: tast::expr_type(other),
+            }),
         },
     }
 }
@@ -307,18 +324,18 @@ fn lower_index_assignment(
             let current_name = Ref::new("");
             let current_ty = Ref::new(tast::Type::Error);
             match root {
-                PlaceRoot::Local(name, ty) => {
+                PlaceRoot::Local { name, ty } => {
                     let root_name = gensym(ctx, "place_root");
                     stmts.push(LetStmt {
                         name: root_name,
                         value: Expr::Var { name, ty },
                         ty,
                     });
-                    compiled_root.set(CompiledPlaceRoot::Local(name, ty));
+                    compiled_root.set(CompiledPlaceRoot::Local { name, ty });
                     current_name.set(root_name);
                     current_ty.set(ty)
                 },
-                PlaceRoot::Ref(reference, ty) => {
+                PlaceRoot::Ref { expr: reference, ty } => {
                     let ref_ty = tast::expr_type(reference);
                     let ref_name = gensym(ctx, "place_ref");
                     stmts.push(LetStmt {
@@ -332,11 +349,11 @@ fn lower_index_assignment(
                         value: place_ref_get(Expr::Var { name: ref_name, ty: ref_ty }, ref_ty, ty),
                         ty,
                     });
-                    compiled_root.set(CompiledPlaceRoot::Ref(ref_name, ref_ty));
+                    compiled_root.set(CompiledPlaceRoot::Ref { ref_var: ref_name, ref_ty });
                     current_name.set(root_name);
                     current_ty.set(ty)
                 },
-                PlaceRoot::Value(expr, ty) => {
+                PlaceRoot::Value { expr, ty } => {
                     let root_name = gensym(ctx, "place_root");
                     stmts.push(LetStmt {
                         name: root_name,
@@ -350,7 +367,7 @@ fn lower_index_assignment(
             let evaluated: Vec[EvaluatedPlaceStep] = Vec::new();
             for step in steps {
                 match step {
-                    PlaceStep::Proj(parent_ty, index, item_ty) => {
+                    PlaceStep::Proj { parent_ty, index, item_ty } => {
                         let parent_name = current_name.get();
                         let next_name = gensym(ctx, "place");
                         stmts.push(LetStmt {
@@ -362,15 +379,15 @@ fn lower_index_assignment(
                             },
                             ty: item_ty,
                         });
-                        evaluated.push(EvaluatedPlaceStep::Proj(
-                            parent_name,
+                        evaluated.push(EvaluatedPlaceStep::Proj {
+                            parent_var: parent_name,
                             parent_ty,
                             index,
-                        ));
+                        });
                         current_name.set(next_name);
                         current_ty.set(item_ty)
                     },
-                    PlaceStep::Field(parent_ty, field_name, item_ty) => {
+                    PlaceStep::Field { parent_ty, field_name, item_ty } => {
                         let parent_name = current_name.get();
                         let next_name = gensym(ctx, "place");
                         stmts.push(LetStmt {
@@ -384,15 +401,15 @@ fn lower_index_assignment(
                             ),
                             ty: item_ty,
                         });
-                        evaluated.push(EvaluatedPlaceStep::Field(
-                            parent_name,
+                        evaluated.push(EvaluatedPlaceStep::Field {
+                            parent_var: parent_name,
                             parent_ty,
                             field_name,
-                        ));
+                        });
                         current_name.set(next_name);
                         current_ty.set(item_ty)
                     },
-                    PlaceStep::Index(container_ty, index, item_ty) => {
+                    PlaceStep::Index { container_ty, index, item_ty } => {
                         let parent_name = current_name.get();
                         let index_ty = tast::expr_type(index);
                         let index_name = gensym(ctx, "index");
@@ -412,12 +429,12 @@ fn lower_index_assignment(
                             ),
                             ty: item_ty,
                         });
-                        evaluated.push(EvaluatedPlaceStep::Index(
-                            parent_name,
-                            container_ty,
-                            index_name,
+                        evaluated.push(EvaluatedPlaceStep::Index {
+                            parent_var: parent_name,
+                            parent_ty: container_ty,
+                            index_var: index_name,
                             index_ty,
-                        ));
+                        });
                         current_name.set(next_name);
                         current_ty.set(item_ty)
                     },
@@ -438,7 +455,7 @@ fn lower_index_assignment(
                     ()
                 } else {
                     match evaluated.get(evaluated.len() - 1 - offset) {
-                        EvaluatedPlaceStep::Proj(parent_name, parent_ty, index) => {
+                        EvaluatedPlaceStep::Proj { parent_var: parent_name, parent_ty, index } => {
                             updated.set(rebuild_tuple(
                                 Expr::Var { name: parent_name, ty: parent_ty },
                                 parent_ty,
@@ -446,7 +463,7 @@ fn lower_index_assignment(
                                 updated.get(),
                             ))
                         },
-                        EvaluatedPlaceStep::Field(parent_name, parent_ty, field_name) => {
+                        EvaluatedPlaceStep::Field { parent_var: parent_name, parent_ty, field_name } => {
                             updated.set(rebuild_struct(
                                 ctx,
                                 Expr::Var { name: parent_name, ty: parent_ty },
@@ -455,12 +472,12 @@ fn lower_index_assignment(
                                 updated.get(),
                             ))
                         },
-                        EvaluatedPlaceStep::Index(
-                            parent_name,
+                        EvaluatedPlaceStep::Index {
+                            parent_var: parent_name,
                             parent_ty,
-                            index_name,
+                            index_var: index_name,
                             index_ty,
-                        ) => match tast::resolve_type(parent_ty) {
+                        } => match tast::resolve_type(parent_ty) {
                             tast::Type::Array { len: _, elem: _ } => updated.set(place_array_set(
                                 Expr::Var { name: parent_name, ty: parent_ty },
                                 Expr::Var { name: index_name, ty: index_ty },
@@ -493,13 +510,13 @@ fn lower_index_assignment(
             let action = match final_action.get() {
                 Option::Some(value) => value,
                 Option::None => match compiled_root.get() {
-                    CompiledPlaceRoot::Local(name, ty) => Expr::Assign {
+                    CompiledPlaceRoot::Local { name, ty } => Expr::Assign {
                         name,
                         value: updated.get(),
                         target_ty: ty,
                         ty: tast::Type::Unit,
                     },
-                    CompiledPlaceRoot::Ref(name, ty) => place_ref_set(
+                    CompiledPlaceRoot::Ref { ref_var: name, ref_ty: ty } => place_ref_set(
                         Expr::Var { name, ty },
                         updated.get(),
                         ty,
