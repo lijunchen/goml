@@ -271,7 +271,7 @@ fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedCon
 
 fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[ResolvedConstructor] {
     match value {
-        hir::ConstructorRef::Resolved(id, variant) => match find_enum_by_def(ctx, id) {
+        hir::ConstructorRef::Resolved { enum_def: id, variant_index: variant } => match find_enum_by_def(ctx, id) {
             Option::Some(info) => resolve_user_constructor(ctx, info, variant),
             Option::None => Option::None,
         },

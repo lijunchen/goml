@@ -266,40 +266,40 @@ fn collect_private_type_names(
     value: hir::TypeExpr,
 ) -> unit {
     match value {
-        hir::TypeExpr::Con(name) => add_private_local_name(
+        hir::TypeExpr::Con { name } => add_private_local_name(
             result,
             package_name,
             public_names,
             name,
         ),
-        hir::TypeExpr::Dyn(name) => add_private_local_name(
+        hir::TypeExpr::Dyn { trait_name: name } => add_private_local_name(
             result,
             package_name,
             public_names,
             name,
         ),
-        hir::TypeExpr::Tuple(values) => for value in values {
+        hir::TypeExpr::Tuple { items: values } => for value in values {
             collect_private_type_names(result, package_name, public_names, value)
         },
-        hir::TypeExpr::Projection(base, _) => collect_private_type_names(
+        hir::TypeExpr::Projection { base, associated: _ } => collect_private_type_names(
             result,
             package_name,
             public_names,
             base,
         ),
-        hir::TypeExpr::App(base, args) => {
+        hir::TypeExpr::App { ty: base, args } => {
             collect_private_type_names(result, package_name, public_names, base);
             for arg in args {
                 collect_private_type_names(result, package_name, public_names, arg)
             }
         },
-        hir::TypeExpr::Array(_, element) => collect_private_type_names(
+        hir::TypeExpr::Array { len: _, elem: element } => collect_private_type_names(
             result,
             package_name,
             public_names,
             element,
         ),
-        hir::TypeExpr::Func(params, ret_ty) => {
+        hir::TypeExpr::Func { params, ret_ty } => {
             for param in params {
                 collect_private_type_names(result, package_name, public_names, param)
             };
@@ -342,7 +342,7 @@ fn collect_private_predicate_names(
     value: hir::Predicate,
 ) -> unit {
     match value {
-        hir::Predicate::Trait(for_ty, trait_ref) => {
+        hir::Predicate::Trait { ty: for_ty, trait_ref } => {
             collect_private_type_names(result, package_name, public_names, for_ty);
             collect_private_trait_ref_names(
                 result,
@@ -351,7 +351,7 @@ fn collect_private_predicate_names(
                 trait_ref,
             )
         },
-        hir::Predicate::Equality(left, right) => {
+        hir::Predicate::Equality { lhs: left, rhs: right } => {
             collect_private_type_names(result, package_name, public_names, left);
             collect_private_type_names(result, package_name, public_names, right)
         },

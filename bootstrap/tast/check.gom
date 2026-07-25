@@ -903,23 +903,23 @@ fn propagated_expected(expected: Option[Type]) -> Option[Type] {
 fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
     match value.kind {
         hir::ExprKind::Unit => Option::Some(Expr::Prim { value: Primitive::Unit, ty: Type::Unit }),
-        hir::ExprKind::Bool(value) => Option::Some(Expr::Prim {
+        hir::ExprKind::Bool { value } => Option::Some(Expr::Prim {
             value: Primitive::Bool(value),
             ty: Type::Bool,
         }),
-        hir::ExprKind::Int(value) => Option::Some(Expr::Prim {
+        hir::ExprKind::Int { value } => Option::Some(Expr::Prim {
             value: Primitive::Int(value),
             ty: fresh_type(ctx.counter, VarKind::Integer),
         }),
-        hir::ExprKind::Float(value) => Option::Some(Expr::Prim {
+        hir::ExprKind::Float { value } => Option::Some(Expr::Prim {
             value: Primitive::Float(value.to_string()),
             ty: fresh_type(ctx.counter, VarKind::Float),
         }),
-        hir::ExprKind::String(value) => Option::Some(Expr::Prim {
+        hir::ExprKind::String { value } => Option::Some(Expr::Prim {
             value: Primitive::String(value),
             ty: Type::String,
         }),
-        hir::ExprKind::Char(value) => Option::Some(Expr::Prim {
+        hir::ExprKind::Char { value } => Option::Some(Expr::Prim {
             value: Primitive::Char(checked_char_literal(ctx, value)),
             ty: Type::Char,
         }),
@@ -1176,7 +1176,7 @@ fn check_constructor_expr(
                 },
                 Option::None => missing_constructor_expr(ctx, name),
             },
-            hir::ConstructorRef::Resolved(_, _) => missing_constructor_expr(ctx, "<error>"),
+            hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => missing_constructor_expr(ctx, "<error>"),
         },
     }
 }
@@ -1999,10 +1999,10 @@ fn check_call_expr(
     expected: Option[Type],
 ) -> Expr {
     let result = match function.kind {
-        hir::ExprKind::Field(receiver, name) => {
+        hir::ExprKind::Field { expr: receiver, field_name: name } => {
             check_method_call(ctx, receiver, name, args, expected)
         },
-        hir::ExprKind::NameRef(reference) => match function_scheme_for_name_ref(ctx, reference) {
+        hir::ExprKind::NameRef { name_ref: reference } => match function_scheme_for_name_ref(ctx, reference) {
             Option::Some(scheme) => {
                 let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::new());
                 constrain_callable_return(ctx, candidate.ty, expected);
@@ -2037,7 +2037,7 @@ fn check_call_expr(
                 ),
             },
         },
-        hir::ExprKind::StaticMember(owner, member, type_args) => {
+        hir::ExprKind::StaticMember { owner, member, type_args } => {
             match resolve_named_constructor(ctx, owner, member) {
                 Option::Some(info) => {
                     check_resolved_constructor_expr(ctx, info, args, expected)
@@ -2256,8 +2256,8 @@ fn is_shift_op(value: ast::BinaryOp) -> bool {
 
 fn is_numeric_literal_source(value: hir::Expr) -> bool {
     match value.kind {
-        hir::ExprKind::Int(_) | hir::ExprKind::Float(_) => true,
-        hir::ExprKind::Unary(ast::UnaryOp::Neg, source) => {
+        hir::ExprKind::Int { value: _ } | hir::ExprKind::Float { value: _ } => true,
+        hir::ExprKind::Unary { op: ast::UnaryOp::Neg, expr: source } => {
             is_numeric_literal_source(source)
         },
         _ => false,
@@ -2336,7 +2336,7 @@ fn check_binary_expr(
         let left = operands.0;
         let right = operands.1;
         match right_source.kind {
-            hir::ExprKind::NameRef(hir::NameRef::Local(local)) => {
+            hir::ExprKind::NameRef { name_ref: hir::NameRef::Local(local) } => {
                 if contains_local(ctx.unresolved_locals, local)
                     && contains_unbound_type_variable(expr_type(right))
                 {
@@ -2469,7 +2469,7 @@ fn check_unary_expr(
             };
             let value = match contextual {
                 Option::Some(ty) => match source.kind {
-                    hir::ExprKind::Int(raw) => if is_integer_type(ty) {
+                    hir::ExprKind::Int { value: raw } => if is_integer_type(ty) {
                         validate_integer_literal(ctx, "-" + raw, ty);
                         Expr::Prim { value: Primitive::Int(raw), ty }
                     } else {
@@ -3187,7 +3187,7 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
 fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
     let target_span = target.span;
     match target.kind {
-        hir::ExprKind::Index(base_source, index_source) => {
+        hir::ExprKind::Index { base: base_source, index: index_source } => {
             let local_root = array_assignment_local_root(base_source);
             let base = check_expr(ctx, base_source, Option::None);
             let parts = match prune(expr_type(base)) {
@@ -3225,10 +3225,10 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
 
 fn array_assignment_local_root(value: hir::Expr) -> Option[hir::LocalId] {
     match value.kind {
-        hir::ExprKind::NameRef(hir::NameRef::Local(local)) => Option::Some(local),
-        hir::ExprKind::Proj(base, _)
-        | hir::ExprKind::Field(base, _)
-        | hir::ExprKind::Index(base, _) => array_assignment_local_root(base),
+        hir::ExprKind::NameRef { name_ref: hir::NameRef::Local(local) } => Option::Some(local),
+        hir::ExprKind::Proj { tuple: base, index: _ }
+        | hir::ExprKind::Field { expr: base, field_name: _ }
+        | hir::ExprKind::Index { base, index: _ } => array_assignment_local_root(base),
         _ => Option::None,
     }
 }
@@ -3446,29 +3446,29 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
     match primitive_expr(ctx, value) {
         Option::Some(result) => result,
         Option::None => match value.kind {
-            hir::ExprKind::NameRef(reference) => check_name_ref(ctx, reference),
-            hir::ExprKind::StaticMember(owner, member, args) => {
+            hir::ExprKind::NameRef { name_ref: reference } => check_name_ref(ctx, reference),
+            hir::ExprKind::StaticMember { owner, member, type_args: args } => {
                 check_static_member(ctx, owner, member, args)
             },
-            hir::ExprKind::Constr(constructor, args) => {
+            hir::ExprKind::Constr { constructor, args } => {
                 check_constructor_expr(ctx, constructor, args, Option::None)
             },
-            hir::ExprKind::StructLiteral(name, fields) => {
+            hir::ExprKind::StructLiteral { name, fields } => {
                 check_struct_expr(ctx, name, fields, Option::None)
             },
-            hir::ExprKind::Tuple(values) => check_tuple_expr(ctx, values, Option::None),
-            hir::ExprKind::Array(values) => check_array_expr(ctx, values, Option::None),
-            hir::ExprKind::Closure(params, body) => {
+            hir::ExprKind::Tuple { items: values } => check_tuple_expr(ctx, values, Option::None),
+            hir::ExprKind::Array { items: values } => check_array_expr(ctx, values, Option::None),
+            hir::ExprKind::Closure { params, body } => {
                 check_closure_expr(ctx, params, body, Option::None)
             },
-            hir::ExprKind::Match(source, arms) => {
+            hir::ExprKind::Match { expr: source, arms } => {
                 check_match_expr(ctx, source, arms, Option::None)
             },
-            hir::ExprKind::If(cond, then_branch, else_branch) => {
+            hir::ExprKind::If { cond, then_branch, else_branch } => {
                 check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
             },
-            hir::ExprKind::While(cond, body) => check_while_expr(ctx, cond, body),
-            hir::ExprKind::For(pat, iterator, body) => check_for_expr(ctx, pat, iterator, body),
+            hir::ExprKind::While { cond, body } => check_while_expr(ctx, cond, body),
+            hir::ExprKind::For { pat, iterator, body } => check_for_expr(ctx, pat, iterator, body),
             hir::ExprKind::Break => {
                 check_loop_control(ctx, true);
                 Expr::Break { ty: Type::Never }
@@ -3477,7 +3477,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 check_loop_control(ctx, false);
                 Expr::Continue { ty: Type::Never }
             },
-            hir::ExprKind::Return(value) => {
+            hir::ExprKind::Return { expr: value } => {
                 let typed = match value {
                     Option::Some(inner) => Option::Some(check_expr(
                         ctx,
@@ -3491,7 +3491,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 };
                 Expr::Return { expr: typed, ty: Type::Never }
             },
-            hir::ExprKind::Go(value) => {
+            hir::ExprKind::Go { expr: value } => {
                 let span = value.span;
                 let value = check_expr(ctx, value, Option::None);
                 let actual = resolve_type(expr_type(value));
@@ -3513,13 +3513,13 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 };
                 Expr::Go { expr: value, ty: Type::Unit }
             },
-            hir::ExprKind::Call(function, args) => {
+            hir::ExprKind::Call { func: function, args } => {
                 check_call_expr(ctx, function, args, Option::None)
             },
-            hir::ExprKind::Unary(op, value) => {
+            hir::ExprKind::Unary { op, expr: value } => {
                 check_unary_expr(ctx, op, value, Option::None)
             },
-            hir::ExprKind::Cast(value, ty) => {
+            hir::ExprKind::Cast { expr: value, ty } => {
                 let target = resolve_signature_type(
                     ctx,
                     type_from_hir(ty, ctx.type_params, ctx.self_ty),
@@ -3549,15 +3549,15 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 };
                 Expr::Cast { expr: source, ty: target }
             },
-            hir::ExprKind::Try(index, value) => check_try_expr(ctx, index, value),
-            hir::ExprKind::Range(start, end) => check_range_expr(ctx, start, end),
-            hir::ExprKind::Binary(op, left, right) => {
+            hir::ExprKind::Try { depth: index, expr: value } => check_try_expr(ctx, index, value),
+            hir::ExprKind::Range { start, end } => check_range_expr(ctx, start, end),
+            hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
                 check_binary_expr(ctx, op, left, right, Option::None)
             },
-            hir::ExprKind::Proj(value, index) => check_projection_expr(ctx, value, index),
-            hir::ExprKind::Field(value, name) => check_field_expr(ctx, value, name),
-            hir::ExprKind::Index(base, index) => check_index_expr(ctx, base, index),
-            hir::ExprKind::Block(block) => {
+            hir::ExprKind::Proj { tuple: value, index } => check_projection_expr(ctx, value, index),
+            hir::ExprKind::Field { expr: value, field_name: name } => check_field_expr(ctx, value, name),
+            hir::ExprKind::Index { base, index } => check_index_expr(ctx, base, index),
+            hir::ExprKind::Block { block } => {
                 let typed = check_block(ctx, block, Option::None);
                 Expr::Block { block: typed.0, ty: typed.1 }
             },
@@ -3572,7 +3572,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
 fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
     let always_exits = hir_expr_always_exits_loop_control(value);
     match value.kind {
-        hir::ExprKind::NameRef(reference) => {
+        hir::ExprKind::NameRef { name_ref: reference } => {
             let unresolved_other = match reference {
                 hir::NameRef::Other(_) => true,
                 _ => false,
@@ -3591,7 +3591,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             };
             coerce_expr(ctx, result, expected)
         },
-        hir::ExprKind::Int(raw) => {
+        hir::ExprKind::Int { value: raw } => {
             let deferred = match expected {
                 Option::Some(ty) => match prune(ty) {
                     Type::Var(_) => true,
@@ -3641,7 +3641,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 )
             }
         },
-        hir::ExprKind::Float(raw) => {
+        hir::ExprKind::Float { value: raw } => {
             let raw_text = raw.to_string();
             let deferred = match expected {
                 Option::Some(ty) => match prune(ty) {
@@ -3694,39 +3694,39 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 coerce_expr(ctx, Expr::Prim { value: primitive, ty: target }, expected)
             }
         },
-        hir::ExprKind::Unary(op, source) => {
+        hir::ExprKind::Unary { op, expr: source } => {
             let result = check_unary_expr(ctx, op, source, expected);
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
         },
-        hir::ExprKind::Range(start, end) => {
+        hir::ExprKind::Range { start, end } => {
             coerce_expr(ctx, check_range_expr(ctx, start, end), expected)
         },
-        hir::ExprKind::Binary(op, left, right) => {
+        hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
             let result = check_binary_expr(ctx, op, left, right, expected);
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
         },
-        hir::ExprKind::Call(function, args) => {
+        hir::ExprKind::Call { func: function, args } => {
             let result = check_call_expr(ctx, function, args, expected);
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
         },
-        hir::ExprKind::Constr(constructor, args) => {
+        hir::ExprKind::Constr { constructor, args } => {
             check_constructor_expr(ctx, constructor, args, expected)
         },
-        hir::ExprKind::StructLiteral(name, fields) => {
+        hir::ExprKind::StructLiteral { name, fields } => {
             check_struct_expr(ctx, name, fields, expected)
         },
-        hir::ExprKind::Tuple(values) => check_tuple_expr(ctx, values, expected),
-        hir::ExprKind::Array(values) => check_array_expr(ctx, values, expected),
-        hir::ExprKind::Closure(params, body) => coerce_expr(
+        hir::ExprKind::Tuple { items: values } => check_tuple_expr(ctx, values, expected),
+        hir::ExprKind::Array { items: values } => check_array_expr(ctx, values, expected),
+        hir::ExprKind::Closure { params, body } => coerce_expr(
             ctx,
             check_closure_expr(ctx, params, body, expected),
             expected,
         ),
-        hir::ExprKind::Match(source, arms) => check_match_expr(ctx, source, arms, expected),
-        hir::ExprKind::If(cond, then_branch, else_branch) => {
+        hir::ExprKind::Match { expr: source, arms } => check_match_expr(ctx, source, arms, expected),
+        hir::ExprKind::If { cond, then_branch, else_branch } => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },
-        hir::ExprKind::Block(block) => {
+        hir::ExprKind::Block { block } => {
             let typed = check_block(ctx, block, expected);
             let result = Expr::Block { block: typed.0, ty: typed.1 };
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
@@ -3749,17 +3749,17 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
 fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)] {
     match value.kind {
         hir::PatKind::Unit => Option::Some((Primitive::Unit, Type::Unit)),
-        hir::PatKind::Bool(value) => Option::Some((Primitive::Bool(value), Type::Bool)),
-        hir::PatKind::Int(value) => Option::Some((
+        hir::PatKind::Bool { value } => Option::Some((Primitive::Bool(value), Type::Bool)),
+        hir::PatKind::Int { value } => Option::Some((
             Primitive::Int(value),
             fresh_type(ctx.counter, VarKind::Integer),
         )),
-        hir::PatKind::Float(value) => Option::Some((
+        hir::PatKind::Float { value } => Option::Some((
             Primitive::Float(value),
             fresh_type(ctx.counter, VarKind::Float),
         )),
-        hir::PatKind::String(value) => Option::Some((Primitive::String(value), Type::String)),
-        hir::PatKind::Char(value) => Option::Some((
+        hir::PatKind::String { value } => Option::Some((Primitive::String(value), Type::String)),
+        hir::PatKind::Char { value } => Option::Some((
             Primitive::Char(checked_char_literal(ctx, value)),
             Type::Char,
         )),
@@ -3824,7 +3824,7 @@ fn check_constructor_pattern(
                         push_diagnostic(ctx, "pattern constructor not found")
                     }
                 },
-                hir::ConstructorRef::Resolved(_, _) => {
+                hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
                     push_diagnostic(ctx, "pattern constructor not found")
                 },
             };
@@ -3835,20 +3835,20 @@ fn check_constructor_pattern(
 
 fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
     match value.kind {
-        hir::PatKind::Var(local) => if contains_local(ctx.unresolved_locals, local) {
+        hir::PatKind::Var { name: local } => if contains_local(ctx.unresolved_locals, local) {
             ()
         } else {
             ctx.unresolved_locals.push(local)
         },
-        hir::PatKind::Constr(_, values)
-        | hir::PatKind::Tuple(values)
-        | hir::PatKind::Or(values) => for value in values {
+        hir::PatKind::Constr { constructor: _, args: values }
+        | hir::PatKind::Tuple { items: values }
+        | hir::PatKind::Or { pats: values } => for value in values {
             mark_unresolved_pattern_locals(ctx, value)
         },
-        hir::PatKind::Struct(_, fields, _) => for field in fields {
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
             mark_unresolved_pattern_locals(ctx, field.1)
         },
-        hir::PatKind::Array(prefix, _, suffix) => {
+        hir::PatKind::Array { prefix, rest: _, suffix } => {
             for value in prefix {
                 mark_unresolved_pattern_locals(ctx, value)
             };
@@ -3856,7 +3856,7 @@ fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
                 mark_unresolved_pattern_locals(ctx, value)
             }
         },
-        hir::PatKind::Alias(local, pat) => {
+        hir::PatKind::Alias { name: local, pat } => {
             if contains_local(ctx.unresolved_locals, local) {
                 ()
             } else {
@@ -3864,7 +3864,7 @@ fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
             };
             mark_unresolved_pattern_locals(ctx, pat)
         },
-        hir::PatKind::Range(start, end, _) => {
+        hir::PatKind::Range { start, end, inclusive: _ } => {
             mark_unresolved_pattern_locals(ctx, start);
             mark_unresolved_pattern_locals(ctx, end)
         },
@@ -4071,7 +4071,7 @@ fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
 fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     match prune(expected) {
         Type::Dyn { trait_name: name } => match value.kind {
-            hir::PatKind::Var(_) | hir::PatKind::Wild => (),
+            hir::PatKind::Var { name: _ } | hir::PatKind::Wild => (),
             _ => {
                 push_diagnostic(
                     ctx,
@@ -4088,17 +4088,17 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
             Pat::Prim { value: normalize_pattern_primitive(result.0, expected), ty: expected }
         },
         Option::None => match value.kind {
-            hir::PatKind::Var(local) => {
+            hir::PatKind::Var { name: local } => {
                 insert_local(ctx, local, expected);
                 Pat::Var { name: local_name(local), ty: expected }
             },
-            hir::PatKind::Constr(constructor, args) => {
+            hir::PatKind::Constr { constructor, args } => {
                 check_constructor_pattern(ctx, constructor, args, expected)
             },
-            hir::PatKind::Struct(name, fields, has_rest) => {
+            hir::PatKind::Struct { name, fields, has_rest } => {
                 check_struct_pattern(ctx, name, fields, has_rest, expected)
             },
-            hir::PatKind::Tuple(values) => {
+            hir::PatKind::Tuple { items: values } => {
                 let types: Vec[Type] = Vec::new();
                 for _ in values {
                     types.push(fresh_type(ctx.counter, VarKind::Any))
@@ -4110,10 +4110,10 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 };
                 Pat::Tuple { items, ty: expected }
             },
-            hir::PatKind::Array(prefix, rest, suffix) => {
+            hir::PatKind::Array { prefix, rest, suffix } => {
                 check_array_pattern(ctx, prefix, rest, suffix, expected)
             },
-            hir::PatKind::Alias(local, pat) => {
+            hir::PatKind::Alias { name: local, pat } => {
                 insert_local(ctx, local, expected);
                 Pat::Alias {
                     name: local_name(local),
@@ -4121,14 +4121,14 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                     ty: expected,
                 }
             },
-            hir::PatKind::Or(values) => {
+            hir::PatKind::Or { pats: values } => {
                 let items: Vec[Pat] = Vec::new();
                 for value in values {
                     items.push(check_pattern(ctx, value, expected))
                 };
                 Pat::Or { pats: items, ty: expected }
             },
-            hir::PatKind::Range(start, end, inclusive) => {
+            hir::PatKind::Range { start, end, inclusive } => {
                 let typed_start = check_pattern(ctx, start, expected);
                 let typed_end = check_pattern(ctx, end, expected);
                 let start_value = primitive_from_pattern(typed_start);
@@ -4182,11 +4182,11 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
 
 fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
     match value {
-        hir::Stmt::Let(is_mut, pat, annotation, source) => {
+        hir::Stmt::Let { is_mut, pat, annotation, value: source } => {
             let invalid_annotation = Ref::new(false);
             let previous_span = ctx.current_span.get();
             ctx.current_span.set(match annotation {
-                Option::Some(hir::TypeExpr::Dyn(_)) => Option::Some(source.span),
+                Option::Some(hir::TypeExpr::Dyn { trait_name: _ }) => Option::Some(source.span),
                 _ => previous_span,
             });
             let annotation_ty = match annotation {
@@ -4236,7 +4236,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 },
             };
             let simple_pattern = match pat.kind {
-                hir::PatKind::Var(_) | hir::PatKind::Wild => true,
+                hir::PatKind::Var { name: _ } | hir::PatKind::Wild => true,
                 _ => false,
             };
             let pattern = check_pattern(ctx, pat, pattern_ty);
@@ -4250,27 +4250,29 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             };
             Stmt::Let { is_mut, pat: pattern, value: expression }
         },
-        hir::Stmt::Assign(target, source) => {
+        hir::Stmt::Assign { target, value: source } => {
             let checked = check_assign_target(ctx, target);
             let source = check_expr(ctx, source, Option::Some(checked.1));
             Stmt::Assign { target: checked.0, value: source }
         },
-        hir::Stmt::Expr(value) => Stmt::Expr { expr: check_expr(ctx, value, Option::None) },
+        hir::Stmt::Expr { expr: value } => Stmt::Expr { expr: check_expr(ctx, value, Option::None) },
     }
 }
 
 fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
     match value.kind {
-        hir::PatKind::Var(local) => mark_mutable_local(ctx, local),
-        hir::PatKind::Constr(_, values) | hir::PatKind::Tuple(values) | hir::PatKind::Or(values) => {
+        hir::PatKind::Var { name: local } => mark_mutable_local(ctx, local),
+        hir::PatKind::Constr { constructor: _, args: values } | hir::PatKind::Tuple { items: values } | hir::PatKind::Or {
+            pats: values,
+        } => {
             for value in values {
                 mark_mutable_pattern(ctx, value)
             }
         },
-        hir::PatKind::Struct(_, fields, _) => for field in fields {
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
             mark_mutable_pattern(ctx, field.1)
         },
-        hir::PatKind::Array(prefix, rest, suffix) => {
+        hir::PatKind::Array { prefix, rest, suffix } => {
             for value in prefix {
                 mark_mutable_pattern(ctx, value)
             };
@@ -4285,11 +4287,11 @@ fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
                 mark_mutable_pattern(ctx, value)
             }
         },
-        hir::PatKind::Alias(local, pat) => {
+        hir::PatKind::Alias { name: local, pat } => {
             mark_mutable_local(ctx, local);
             mark_mutable_pattern(ctx, pat)
         },
-        hir::PatKind::Range(start, end, _) => {
+        hir::PatKind::Range { start, end, inclusive: _ } => {
             mark_mutable_pattern(ctx, start);
             mark_mutable_pattern(ctx, end)
         },
@@ -4325,7 +4327,7 @@ fn hir_match_has_catch_all(arms: Vec[hir::Arm]) -> bool {
     let result = Ref::new(false);
     for arm in arms {
         match arm.pat.kind {
-            hir::PatKind::Var(_) | hir::PatKind::Wild => result.set(true),
+            hir::PatKind::Var { name: _ } | hir::PatKind::Wild => result.set(true),
             _ => (),
         }
     };
@@ -4346,48 +4348,48 @@ fn hir_match_bodies_all_exit_loop_control(arms: Vec[hir::Arm]) -> bool {
 
 fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
     match value.kind {
-        hir::ExprKind::Break | hir::ExprKind::Continue | hir::ExprKind::Return(_) => true,
-        hir::ExprKind::Constr(_, args) => hir_exprs_any_exit_loop_control(args),
-        hir::ExprKind::StructLiteral(_, fields) => {
+        hir::ExprKind::Break | hir::ExprKind::Continue | hir::ExprKind::Return { expr: _ } => true,
+        hir::ExprKind::Constr { constructor: _, args } => hir_exprs_any_exit_loop_control(args),
+        hir::ExprKind::StructLiteral { name: _, fields } => {
             hir_fields_any_exit_loop_control(fields)
         },
-        hir::ExprKind::Tuple(values) | hir::ExprKind::Array(values) => {
+        hir::ExprKind::Tuple { items: values } | hir::ExprKind::Array { items: values } => {
             hir_exprs_any_exit_loop_control(values)
         },
-        hir::ExprKind::Call(function, args) => {
+        hir::ExprKind::Call { func: function, args } => {
             hir_expr_always_exits_loop_control(function)
                 || hir_exprs_any_exit_loop_control(args)
         },
-        hir::ExprKind::Unary(_, source)
-        | hir::ExprKind::Cast(source, _)
-        | hir::ExprKind::Try(_, source)
-        | hir::ExprKind::Go(source)
-        | hir::ExprKind::Field(source, _) => {
+        hir::ExprKind::Unary { op: _, expr: source }
+        | hir::ExprKind::Cast { expr: source, ty: _ }
+        | hir::ExprKind::Try { depth: _, expr: source }
+        | hir::ExprKind::Go { expr: source }
+        | hir::ExprKind::Field { expr: source, field_name: _ } => {
             hir_expr_always_exits_loop_control(source)
         },
-        hir::ExprKind::Binary(op, left, right) => {
+        hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
             hir_expr_always_exits_loop_control(left)
                 || match op {
                     ast::BinaryOp::And | ast::BinaryOp::Or => false,
                     _ => hir_expr_always_exits_loop_control(right),
                 }
         },
-        hir::ExprKind::Proj(source, _) => hir_expr_always_exits_loop_control(source),
-        hir::ExprKind::Index(base, index) => {
+        hir::ExprKind::Proj { tuple: source, index: _ } => hir_expr_always_exits_loop_control(source),
+        hir::ExprKind::Index { base, index } => {
             hir_expr_always_exits_loop_control(base)
                 || hir_expr_always_exits_loop_control(index)
         },
-        hir::ExprKind::Block(block) => hir_block_always_exits_loop_control(block),
-        hir::ExprKind::If(_, then_branch, else_branch) => {
+        hir::ExprKind::Block { block } => hir_block_always_exits_loop_control(block),
+        hir::ExprKind::If { cond: _, then_branch, else_branch } => {
             hir_expr_always_exits_loop_control(then_branch)
                 && hir_expr_always_exits_loop_control(else_branch)
         },
-        hir::ExprKind::Match(_, arms) => {
+        hir::ExprKind::Match { expr: _, arms } => {
             hir_match_has_catch_all(arms)
                 && hir_match_bodies_all_exit_loop_control(arms)
         },
-        hir::ExprKind::While(cond, _) => hir_expr_always_exits_loop_control(cond),
-        hir::ExprKind::For(_, iterator, _) => {
+        hir::ExprKind::While { cond, body: _ } => hir_expr_always_exits_loop_control(cond),
+        hir::ExprKind::For { pat: _, iterator, body: _ } => {
             hir_expr_always_exits_loop_control(iterator)
         },
         _ => false,
@@ -4396,7 +4398,7 @@ fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
 
 fn hir_stmt_always_exits_loop_control(value: hir::Stmt) -> bool {
     match value {
-        hir::Stmt::Expr(expr) => hir_expr_always_exits_loop_control(expr),
+        hir::Stmt::Expr { expr } => hir_expr_always_exits_loop_control(expr),
         _ => false,
     }
 }
