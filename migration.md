@@ -24,6 +24,7 @@ explicitly refers to fixture cases.
 | `crates/compiler/src/tests/diagnostics/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 4 fixtures |
 | `crates/compiler/src/tests/typer/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 84 fixtures |
 | `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage |
+| `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 24 projects |
 | `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 97 fixtures |
 | `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 54 fixtures representing 50 Rust tests |
 | `crates/compiler/src/tests/bootstrap/` | no replacement | oracle; Rust/bootstrap differential infrastructure |
@@ -49,10 +50,10 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 | Rust module | Current count | GoML destination | Status |
 | --- | ---: | --- | --- |
 | `trait_impl_test.rs` | 28 | `bootstrap/compiler_test/trait_impl_test.gom` | partially migrated; details below |
-| `visibility_test.rs` | 20 | future module-project fixtures | pending |
-| `package_model_test.rs` | 11 | future module-project fixtures | pending |
-| `entrypoint_test.rs` | 5 | future module-project and diagnostic fixtures | pending |
-| `toplevel_validation_test.rs` | 12 | future diagnostic fixtures | pending |
+| `visibility_test.rs` | 2 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 18 migrated and 2 blocked |
+| `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 3 migrated and 8 blocked |
+| `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
+| `toplevel_validation_test.rs` | 1 | crasher fixtures | partially migrated; 11 migrated and 1 blocked |
 | `dyn_coercion_test.rs` | 23 | future diagnostic/runtime fixtures | pending; retain Go AST assertions |
 | `while_expr_test.rs` | 14 | future diagnostic/runtime fixtures | pending |
 | `operator_semantics_test.rs` | 9 | future diagnostic/runtime fixtures | pending; several cases overlap crashers |
@@ -191,6 +192,68 @@ bootstrap diagnostic output exactly matches the Rust oracle.
 - `inherent_impl_instantiates_self_types`
 
 These inspect `GlobalTypeEnv`, method schemes, and TAST nodes directly.
+
+## Module and validation migration
+
+The following entrypoint tests are migrated:
+
+| Removed Rust test | GoML coverage |
+| --- | --- |
+| `main_function_with_parameter_is_rejected` | `crashers/main_with_parameter/main.gom` |
+| `missing_main_function_is_rejected` | `crashers/missing_main/main.gom` |
+| `canonical_main_package_rejects_parameter` | `module_diagnostics/canonical_main_package_rejects_parameter/` |
+| `canonical_main_package_rejects_type_parameter` | `module_diagnostics/canonical_main_package_rejects_type_parameter/` |
+| `canonical_main_package_requires_main_function` | `module_diagnostics/canonical_main_package_requires_main_function/` |
+
+Eleven `toplevel_validation_test.rs` tests map directly to same-purpose
+fixtures in `crates/compiler/src/tests/crashers/`. The remaining
+`user_lang_item_declaration_is_rejected` test is blocked because bootstrap
+currently accepts the declaration.
+
+The following visibility tests are migrated to same-named directories under
+`crates/compiler/src/tests/module_diagnostics/`:
+
+- `public_function_is_visible`
+- `private_function_is_hidden`
+- `private_function_can_feed_public_function`
+- `public_struct_is_visible`
+- `private_struct_is_hidden`
+- `public_enum_is_visible`
+- `private_enum_is_hidden`
+- `public_trait_import_enables_method_syntax`
+- `private_trait_import_is_hidden`
+- `public_associated_type_cannot_expose_private_type`
+- `private_struct_field_is_hidden`
+- `struct_with_private_fields_cannot_be_constructed_cross_package`
+- `struct_pattern_with_private_fields_requires_rest`
+- `struct_pattern_with_private_fields_accepts_rest`
+- `public_inherent_method_is_visible`
+- `private_inherent_method_is_hidden`
+- `enum_variant_fields_cannot_use_pub`
+- `trait_implementation_methods_cannot_use_pub`
+
+The retained visibility blockers are:
+
+- `public_field_cannot_expose_private_type`
+- `public_inherent_method_cannot_expose_private_type`
+
+The following package model tests are migrated to same-named directories
+under `crates/compiler/src/tests/module_diagnostics/`:
+
+- `explicit_aliases_allow_same_declared_package_name`
+- `declared_package_name_is_the_default_alias`
+- `transitive_public_type_metadata_is_available`
+
+The retained package model blockers are:
+
+- `imports_are_file_scoped`
+- `package_alias_trait_use_is_order_independent`
+- `every_project_file_requires_a_package_declaration`
+- `files_in_one_directory_must_declare_one_package`
+- `duplicate_package_import_is_rejected`
+- `ambiguous_package_alias_is_rejected`
+- `nested_module_is_not_loaded_as_a_package`
+- `transitive_dependencies_are_not_source_visible`
 
 ## Verification commands
 
