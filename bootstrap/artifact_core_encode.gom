@@ -89,7 +89,7 @@ fn artifact_json_primitive(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Primitive::Bool(value) => {
+        tast::Primitive::Bool { value } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "Bool");
             artifact_json_begin_object(writer);
@@ -98,85 +98,85 @@ fn artifact_json_primitive(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Primitive::Int(value) => artifact_json_primitive_value(
+        tast::Primitive::Int { value } => artifact_json_primitive_value(
             writer,
             artifact_integer_kind(ty),
             value,
             false,
         ),
-        tast::Primitive::Int8(value) => artifact_json_primitive_value(
+        tast::Primitive::Int8 { value } => artifact_json_primitive_value(
             writer,
             "Int8",
             value,
             false,
         ),
-        tast::Primitive::Int16(value) => artifact_json_primitive_value(
+        tast::Primitive::Int16 { value } => artifact_json_primitive_value(
             writer,
             "Int16",
             value,
             false,
         ),
-        tast::Primitive::Int32(value) => artifact_json_primitive_value(
+        tast::Primitive::Int32 { value } => artifact_json_primitive_value(
             writer,
             "Int32",
             value,
             false,
         ),
-        tast::Primitive::Int64(value) => artifact_json_primitive_value(
+        tast::Primitive::Int64 { value } => artifact_json_primitive_value(
             writer,
             "Int64",
             value,
             false,
         ),
-        tast::Primitive::Uint8(value) => artifact_json_primitive_value(
+        tast::Primitive::Uint8 { value } => artifact_json_primitive_value(
             writer,
             "UInt8",
             value,
             false,
         ),
-        tast::Primitive::Uint16(value) => artifact_json_primitive_value(
+        tast::Primitive::Uint16 { value } => artifact_json_primitive_value(
             writer,
             "UInt16",
             value,
             false,
         ),
-        tast::Primitive::Uint32(value) => artifact_json_primitive_value(
+        tast::Primitive::Uint32 { value } => artifact_json_primitive_value(
             writer,
             "UInt32",
             value,
             false,
         ),
-        tast::Primitive::Uint64(value) => artifact_json_primitive_value(
+        tast::Primitive::Uint64 { value } => artifact_json_primitive_value(
             writer,
             "UInt64",
             value,
             false,
         ),
-        tast::Primitive::Float(value) => artifact_json_primitive_value(
+        tast::Primitive::Float { value } => artifact_json_primitive_value(
             writer,
             artifact_float_kind(ty),
             artifact_float_number(value),
             false,
         ),
-        tast::Primitive::Float32(value) => artifact_json_primitive_value(
+        tast::Primitive::Float32 { value } => artifact_json_primitive_value(
             writer,
             "Float32",
             artifact_float_number(value),
             false,
         ),
-        tast::Primitive::Float64(value) => artifact_json_primitive_value(
+        tast::Primitive::Float64 { value } => artifact_json_primitive_value(
             writer,
             "Float64",
             artifact_float_number(value),
             false,
         ),
-        tast::Primitive::String(value) => artifact_json_primitive_value(
+        tast::Primitive::String { value } => artifact_json_primitive_value(
             writer,
             "String",
             value,
             true,
         ),
-        tast::Primitive::Char(value) => artifact_json_primitive_value(
+        tast::Primitive::Char { value } => artifact_json_primitive_value(
             writer,
             "Char",
             value.to_string(),

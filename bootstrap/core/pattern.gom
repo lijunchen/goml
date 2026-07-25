@@ -310,7 +310,7 @@ fn bool_pattern_row(
     for column in row.columns {
         if column.source == source {
             match column.pattern {
-                tast::Pat::Prim { value: tast::Primitive::Bool(value), ty: _ } => if value == expected {
+                tast::Pat::Prim { value: tast::Primitive::Bool { value }, ty: _ } => if value == expected {
                     ()
                 } else {
                     matches.set(false)

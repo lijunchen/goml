@@ -1248,7 +1248,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
                     _ => testing::fail("expected constructor pattern"),
                 };
                 match arms.get(1).body {
-                    Expr::Prim { value: Primitive::Int(value), ty: literal_ty } => {
+                    Expr::Prim { value: Primitive::Int { value }, ty: literal_ty } => {
                         testing::assert_eq(value, "0");
                         match resolve_type(literal_ty) {
                             Type::Int32 => (),
@@ -1522,7 +1522,7 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
                         match expression {
                             Expr::Index {
                                 base: _,
-                                index: Expr::Prim { value: Primitive::Int(value), ty: Type::Int },
+                                index: Expr::Prim { value: Primitive::Int { value }, ty: Type::Int },
                                 ty: Type::Unit,
                             } => testing::assert_eq(value, "0"),
                             _ => testing::fail("expected preserved index expression"),
@@ -1648,9 +1648,9 @@ fn normalizes_and_escapes_char_literals() -> unit {
         Option::Some(value) => testing::assert(value == 'A'),
         Option::None => testing::fail("expected unicode char literal"),
     };
-    testing::assert_eq(primitive_text(Primitive::Char('A')), "'A'");
-    testing::assert_eq(primitive_text(Primitive::Char('\n')), "'\\n'");
-    testing::assert_eq(primitive_text(Primitive::Char('\\')), "'\\\\'")
+    testing::assert_eq(primitive_text(Primitive::Char { value: 'A' }), "'A'");
+    testing::assert_eq(primitive_text(Primitive::Char { value: '\n' }), "'\\n'");
+    testing::assert_eq(primitive_text(Primitive::Char { value: '\\' }), "'\\\\'")
 }
 
 #[test]
@@ -2116,7 +2116,7 @@ fn normalizes_float_pattern_literals() -> unit {
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::Match { expr: _, arms, ty: Type::String }) => match arms.get(0).pat {
-                Pat::Prim { value: Primitive::Float(literal), ty: Type::Float64 } => {
+                Pat::Prim { value: Primitive::Float { value: literal }, ty: Type::Float64 } => {
                     testing::assert_eq(literal, "-0")
                 },
                 _ => testing::fail("expected normalized float pattern"),
@@ -2144,7 +2144,7 @@ fn rounds_float32_literals() -> unit {
     let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14 }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Prim { value: Primitive::Float(literal), ty }) => {
+            Option::Some(Expr::Prim { value: Primitive::Float { value: literal }, ty }) => {
                 testing::assert_eq(literal, "3.14");
                 match resolve_type(ty) {
                     Type::Float32 => (),
@@ -2157,7 +2157,7 @@ fn rounds_float32_literals() -> unit {
     };
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Prim { value: Primitive::Float(literal), ty: Type::Float32 }) => {
+            Option::Some(Expr::Prim { value: Primitive::Float { value: literal }, ty: Type::Float32 }) => {
                 testing::assert_eq(literal, "3.14")
             },
             _ => testing::fail("expected rounded explicit float32 literal"),
@@ -2170,7 +2170,7 @@ fn rounds_float32_literals() -> unit {
     match generic.items.get(1) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::Call { func: _, args, ty: Type::Float32 }) => match args.get(0) {
-                Expr::Prim { value: Primitive::Float(literal), ty } => {
+                Expr::Prim { value: Primitive::Float { value: literal }, ty } => {
                     testing::assert_eq(literal, "3.14");
                     match resolve_type(ty) {
                         Type::Float32 => (),

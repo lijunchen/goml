@@ -53,7 +53,7 @@ fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
 }
 
 fn ordered_int(value: int) -> Expr {
-    Expr::Prim { value: tast::Primitive::Int(value.to_string()), ty: tast::Type::Int }
+    Expr::Prim { value: tast::Primitive::Int { value: value.to_string() }, ty: tast::Type::Int }
 }
 
 fn ordered_binary(op: ast::BinaryOp, left: Expr, right: Expr, ty: tast::Type) -> Expr {

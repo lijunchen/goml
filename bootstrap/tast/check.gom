@@ -390,16 +390,16 @@ fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> unit {
 
 fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
     match value {
-        Expr::Prim { value: Primitive::Float(raw), ty } => match prune(expected) {
+        Expr::Prim { value: Primitive::Float { value: raw }, ty } => match prune(expected) {
             Type::Float32 => Expr::Prim {
-                value: Primitive::Float(normalized_float32_literal(raw)),
+                value: Primitive::Float { value: normalized_float32_literal(raw) },
                 ty,
             },
             Type::Float64 => Expr::Prim {
-                value: Primitive::Float(normalized_float64_literal(raw)),
+                value: Primitive::Float { value: normalized_float64_literal(raw) },
                 ty,
             },
-            _ => Expr::Prim { value: Primitive::Float(raw), ty },
+            _ => Expr::Prim { value: Primitive::Float { value: raw }, ty },
         },
         other => other,
     }
@@ -541,10 +541,10 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
         _ => (),
     };
     match value {
-        Expr::Prim { value: Primitive::Int(raw), ty: _ } => {
+        Expr::Prim { value: Primitive::Int { value: raw }, ty: _ } => {
             validate_integer_literal(ctx, raw, expected)
         },
-        Expr::Prim { value: Primitive::Float(raw), ty: _ } => if is_integer_type(expected) {
+        Expr::Prim { value: Primitive::Float { value: raw }, ty: _ } => if is_integer_type(expected) {
             match float_literal_integer(raw) {
                 Option::Some(integer) => validate_integer_literal(ctx, integer, expected),
                 Option::None => push_diagnostic(
@@ -557,7 +557,7 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
         },
         Expr::Unary {
             op: ast::UnaryOp::Neg,
-            expr: Expr::Prim { value: Primitive::Int(_), ty: _ },
+            expr: Expr::Prim { value: Primitive::Int { value: _ }, ty: _ },
             ty: _,
         } => if is_unsigned_type(expected)
             && types_equal(expr_type(value), expected)
@@ -904,23 +904,23 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
     match value.kind {
         hir::ExprKind::Unit => Option::Some(Expr::Prim { value: Primitive::Unit, ty: Type::Unit }),
         hir::ExprKind::Bool { value } => Option::Some(Expr::Prim {
-            value: Primitive::Bool(value),
+            value: Primitive::Bool { value },
             ty: Type::Bool,
         }),
         hir::ExprKind::Int { value } => Option::Some(Expr::Prim {
-            value: Primitive::Int(value),
+            value: Primitive::Int { value },
             ty: fresh_type(ctx.counter, VarKind::Integer),
         }),
         hir::ExprKind::Float { value } => Option::Some(Expr::Prim {
-            value: Primitive::Float(value.to_string()),
+            value: Primitive::Float { value: value.to_string() },
             ty: fresh_type(ctx.counter, VarKind::Float),
         }),
         hir::ExprKind::String { value } => Option::Some(Expr::Prim {
-            value: Primitive::String(value),
+            value: Primitive::String { value },
             ty: Type::String,
         }),
         hir::ExprKind::Char { value } => Option::Some(Expr::Prim {
-            value: Primitive::Char(checked_char_literal(ctx, value)),
+            value: Primitive::Char { value: checked_char_literal(ctx, value) },
             ty: Type::Char,
         }),
         _ => Option::None,
@@ -2471,7 +2471,7 @@ fn check_unary_expr(
                 Option::Some(ty) => match source.kind {
                     hir::ExprKind::Int { value: raw } => if is_integer_type(ty) {
                         validate_integer_literal(ctx, "-" + raw, ty);
-                        Expr::Prim { value: Primitive::Int(raw), ty }
+                        Expr::Prim { value: Primitive::Int { value: raw }, ty }
                     } else {
                         check_expr(ctx, source, Option::Some(ty))
                     },
@@ -3608,7 +3608,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 defer_numeric_literal(ctx, raw, ty, false);
                 coerce_expr(
                     ctx,
-                    Expr::Prim { value: Primitive::Int(raw), ty },
+                    Expr::Prim { value: Primitive::Int { value: raw }, ty },
                     expected,
                 )
             } else {
@@ -3636,7 +3636,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 };
                 coerce_expr(
                     ctx,
-                    Expr::Prim { value: Primitive::Int(raw), ty: target.0 },
+                    Expr::Prim { value: Primitive::Int { value: raw }, ty: target.0 },
                     expected,
                 )
             }
@@ -3659,7 +3659,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 defer_numeric_literal(ctx, raw_text, ty, true);
                 coerce_expr(
                     ctx,
-                    Expr::Prim { value: Primitive::Float(raw_text), ty },
+                    Expr::Prim { value: Primitive::Float { value: raw_text }, ty },
                     expected,
                 )
             } else {
@@ -3675,7 +3675,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                     match float_literal_integer(raw_text) {
                         Option::Some(integer) => {
                             validate_integer_literal(ctx, integer, target);
-                            Primitive::Int(integer)
+                            Primitive::Int { value: integer }
                         },
                         Option::None => {
                             push_diagnostic(
@@ -3685,11 +3685,11 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                                     + " cannot be represented as "
                                     + type_text(target),
                             );
-                            Primitive::Int("0")
+                            Primitive::Int { value: "0" }
                         },
                     }
                 } else {
-                    Primitive::Float(raw_text)
+                    Primitive::Float { value: raw_text }
                 };
                 coerce_expr(ctx, Expr::Prim { value: primitive, ty: target }, expected)
             }
@@ -3749,18 +3749,18 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
 fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)] {
     match value.kind {
         hir::PatKind::Unit => Option::Some((Primitive::Unit, Type::Unit)),
-        hir::PatKind::Bool { value } => Option::Some((Primitive::Bool(value), Type::Bool)),
+        hir::PatKind::Bool { value } => Option::Some((Primitive::Bool { value }, Type::Bool)),
         hir::PatKind::Int { value } => Option::Some((
-            Primitive::Int(value),
+            Primitive::Int { value },
             fresh_type(ctx.counter, VarKind::Integer),
         )),
         hir::PatKind::Float { value } => Option::Some((
-            Primitive::Float(value),
+            Primitive::Float { value },
             fresh_type(ctx.counter, VarKind::Float),
         )),
-        hir::PatKind::String { value } => Option::Some((Primitive::String(value), Type::String)),
+        hir::PatKind::String { value } => Option::Some((Primitive::String { value }, Type::String)),
         hir::PatKind::Char { value } => Option::Some((
-            Primitive::Char(checked_char_literal(ctx, value)),
+            Primitive::Char { value: checked_char_literal(ctx, value) },
             Type::Char,
         )),
         _ => Option::None,
@@ -4060,9 +4060,9 @@ fn primitive_from_pattern(value: Pat) -> Primitive {
 
 fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
     match value {
-        Primitive::Float(raw) => match prune(expected) {
-            Type::Float32 => Primitive::Float(normalized_float32_literal(raw)),
-            _ => Primitive::Float(normalized_float64_literal(raw)),
+        Primitive::Float { value: raw } => match prune(expected) {
+            Type::Float32 => Primitive::Float { value: normalized_float32_literal(raw) },
+            _ => Primitive::Float { value: normalized_float64_literal(raw) },
         },
         other => other,
     }
@@ -4134,18 +4134,18 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 let start_value = primitive_from_pattern(typed_start);
                 let end_value = primitive_from_pattern(typed_end);
                 let equal = match (start_value, end_value) {
-                    (Primitive::Int(left), Primitive::Int(right))
-                    | (Primitive::Int8(left), Primitive::Int8(right))
-                    | (Primitive::Int16(left), Primitive::Int16(right))
-                    | (Primitive::Int32(left), Primitive::Int32(right))
-                    | (Primitive::Int64(left), Primitive::Int64(right))
-                    | (Primitive::Uint8(left), Primitive::Uint8(right))
-                    | (Primitive::Uint16(left), Primitive::Uint16(right))
-                    | (Primitive::Uint32(left), Primitive::Uint32(right))
-                    | (Primitive::Uint64(left), Primitive::Uint64(right)) => {
+                    (Primitive::Int { value: left }, Primitive::Int { value: right })
+                    | (Primitive::Int8 { value: left }, Primitive::Int8 { value: right })
+                    | (Primitive::Int16 { value: left }, Primitive::Int16 { value: right })
+                    | (Primitive::Int32 { value: left }, Primitive::Int32 { value: right })
+                    | (Primitive::Int64 { value: left }, Primitive::Int64 { value: right })
+                    | (Primitive::Uint8 { value: left }, Primitive::Uint8 { value: right })
+                    | (Primitive::Uint16 { value: left }, Primitive::Uint16 { value: right })
+                    | (Primitive::Uint32 { value: left }, Primitive::Uint32 { value: right })
+                    | (Primitive::Uint64 { value: left }, Primitive::Uint64 { value: right }) => {
                         left == right
                     },
-                    (Primitive::Char(left), Primitive::Char(right)) => left == right,
+                    (Primitive::Char { value: left }, Primitive::Char { value: right }) => left == right,
                     _ => false,
                 };
                 if !inclusive && equal {

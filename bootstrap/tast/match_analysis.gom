@@ -126,36 +126,36 @@ fn coverage_value_key(value: Constructor) -> string {
 fn coverage_primitive_value(value: Primitive) -> string {
     match value {
         Primitive::Unit => "unit",
-        Primitive::Bool(value) => if value { "bool:true" } else { "bool:false" },
-        Primitive::Int(value) => "int:" + value,
-        Primitive::Int8(value) => "int8:" + value,
-        Primitive::Int16(value) => "int16:" + value,
-        Primitive::Int32(value) => "int32:" + value,
-        Primitive::Int64(value) => "int64:" + value,
-        Primitive::Uint8(value) => "uint8:" + value,
-        Primitive::Uint16(value) => "uint16:" + value,
-        Primitive::Uint32(value) => "uint32:" + value,
-        Primitive::Uint64(value) => "uint64:" + value,
-        Primitive::Float(value) => "float:" + value,
-        Primitive::Float32(value) => "float32:" + value,
-        Primitive::Float64(value) => "float64:" + value,
-        Primitive::String(value) => "string:" + value,
-        Primitive::Char(value) => "char:" + (value as uint32).to_string(),
+        Primitive::Bool { value } => if value { "bool:true" } else { "bool:false" },
+        Primitive::Int { value } => "int:" + value,
+        Primitive::Int8 { value } => "int8:" + value,
+        Primitive::Int16 { value } => "int16:" + value,
+        Primitive::Int32 { value } => "int32:" + value,
+        Primitive::Int64 { value } => "int64:" + value,
+        Primitive::Uint8 { value } => "uint8:" + value,
+        Primitive::Uint16 { value } => "uint16:" + value,
+        Primitive::Uint32 { value } => "uint32:" + value,
+        Primitive::Uint64 { value } => "uint64:" + value,
+        Primitive::Float { value } => "float:" + value,
+        Primitive::Float32 { value } => "float32:" + value,
+        Primitive::Float64 { value } => "float64:" + value,
+        Primitive::String { value } => "string:" + value,
+        Primitive::Char { value } => "char:" + (value as uint32).to_string(),
     }
 }
 
 fn coverage_primitive_raw(value: Primitive) -> Option[string] {
     match value {
-        Primitive::Int(value)
-        | Primitive::Int8(value)
-        | Primitive::Int16(value)
-        | Primitive::Int32(value)
-        | Primitive::Int64(value)
-        | Primitive::Uint8(value)
-        | Primitive::Uint16(value)
-        | Primitive::Uint32(value)
-        | Primitive::Uint64(value) => Option::Some(value),
-        Primitive::Char(value) => Option::Some((value as uint32).to_string()),
+        Primitive::Int { value }
+        | Primitive::Int8 { value }
+        | Primitive::Int16 { value }
+        | Primitive::Int32 { value }
+        | Primitive::Int64 { value }
+        | Primitive::Uint8 { value }
+        | Primitive::Uint16 { value }
+        | Primitive::Uint32 { value }
+        | Primitive::Uint64 { value } => Option::Some(value),
+        Primitive::Char { value } => Option::Some((value as uint32).to_string()),
         _ => Option::None,
     }
 }
@@ -1766,7 +1766,7 @@ fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
 fn coverage_guard(value: Option[Expr]) -> bool {
     match value {
         Option::None => true,
-        Option::Some(Expr::Prim { value: Primitive::Bool(value), ty: _ }) => value,
+        Option::Some(Expr::Prim { value: Primitive::Bool { value }, ty: _ }) => value,
         Option::Some(_) => false,
     }
 }

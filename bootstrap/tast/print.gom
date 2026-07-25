@@ -307,21 +307,21 @@ fn trait_ref_text(value: TraitRef) -> string {
 pub fn write_primitive(builder: text::StringBuilder, value: Primitive) -> unit {
     match value {
         Primitive::Unit => builder.write_string("()"),
-        Primitive::Bool(value) => builder.write_string(if value { "true" } else { "false" }),
-        Primitive::Int(value)
-        | Primitive::Int8(value)
-        | Primitive::Int16(value)
-        | Primitive::Int32(value)
-        | Primitive::Int64(value)
-        | Primitive::Uint8(value)
-        | Primitive::Uint16(value)
-        | Primitive::Uint32(value)
-        | Primitive::Uint64(value)
-        | Primitive::Float(value)
-        | Primitive::Float32(value)
-        | Primitive::Float64(value) => builder.write_string(value),
-        Primitive::String(value) => write_quoted_string(builder, value),
-        Primitive::Char(value) => write_quoted_char(builder, value),
+        Primitive::Bool { value } => builder.write_string(if value { "true" } else { "false" }),
+        Primitive::Int { value }
+        | Primitive::Int8 { value }
+        | Primitive::Int16 { value }
+        | Primitive::Int32 { value }
+        | Primitive::Int64 { value }
+        | Primitive::Uint8 { value }
+        | Primitive::Uint16 { value }
+        | Primitive::Uint32 { value }
+        | Primitive::Uint64 { value }
+        | Primitive::Float { value }
+        | Primitive::Float32 { value }
+        | Primitive::Float64 { value } => builder.write_string(value),
+        Primitive::String { value } => write_quoted_string(builder, value),
+        Primitive::Char { value } => write_quoted_char(builder, value),
     }
 }
 

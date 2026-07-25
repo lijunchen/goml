@@ -150,7 +150,7 @@ fn arguments_after_first(values: Vec[Expr]) -> Vec[Expr] {
 }
 
 fn bool_expr(value: bool) -> Expr {
-    Expr::Prim { value: tast::Primitive::Bool(value), ty: tast::Type::Bool }
+    Expr::Prim { value: tast::Primitive::Bool { value }, ty: tast::Type::Bool }
 }
 
 fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
@@ -221,7 +221,7 @@ fn structural_eq(
             let values: Vec[Expr] = Vec::new();
             for index in range(0, length) {
                 let index_expr = Expr::Prim {
-                    value: tast::Primitive::Int(index.to_string()),
+                    value: tast::Primitive::Int { value: index.to_string() },
                     ty: tast::Type::Int,
                 };
                 let parameter_types: Vec[tast::Type] = Vec::new();
@@ -313,7 +313,7 @@ fn lower_eq_expr(
 
 fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
     match value {
-        tast::Primitive::Int(value) => Option::Some(tast::Primitive::Int("-" + value)),
+        tast::Primitive::Int { value } => Option::Some(tast::Primitive::Int { value: "-" + value }),
         _ => Option::None,
     }
 }
@@ -438,7 +438,7 @@ fn missing_expr(ty: tast::Type) -> Expr {
     params.push(tast::Type::String);
     let args: Vec[Expr] = Vec::new();
     args.push(Expr::Prim {
-        value: tast::Primitive::String(""),
+        value: tast::Primitive::String { value: "" },
         ty: tast::Type::String,
     });
     Expr::Call {
@@ -524,7 +524,7 @@ fn lower_generic_match(
 
 fn pattern_matches_bool(value: tast::Pat, expected: bool) -> bool {
     match value {
-        tast::Pat::Prim { value: tast::Primitive::Bool(value), ty: _ } => value == expected,
+        tast::Pat::Prim { value: tast::Primitive::Bool { value }, ty: _ } => value == expected,
         tast::Pat::Wild { ty: _ } | tast::Pat::Var { name: _, ty: _ } => true,
         _ => false,
     }

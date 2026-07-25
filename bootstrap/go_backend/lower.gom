@@ -300,21 +300,21 @@ fn go_float_literal(value: string, ty: tast::Type) -> string {
 fn compile_primitive(value: tast::Primitive, ty: tast::Type) -> Expr {
     match value {
         tast::Primitive::Unit => Expr::Unit,
-        tast::Primitive::Bool(value) => Expr::Bool { value },
-        tast::Primitive::Int(value)
-        | tast::Primitive::Int8(value)
-        | tast::Primitive::Int16(value)
-        | tast::Primitive::Int32(value)
-        | tast::Primitive::Int64(value)
-        | tast::Primitive::Uint8(value)
-        | tast::Primitive::Uint16(value)
-        | tast::Primitive::Uint32(value)
-        | tast::Primitive::Uint64(value) => Expr::Int { value },
-        tast::Primitive::Float(value)
-        | tast::Primitive::Float32(value)
-        | tast::Primitive::Float64(value) => Expr::Float { value: go_float_literal(value, ty) },
-        tast::Primitive::String(value) => Expr::String { value },
-        tast::Primitive::Char(value) => Expr::Int { value: (value as uint32).to_string() },
+        tast::Primitive::Bool { value } => Expr::Bool { value },
+        tast::Primitive::Int { value }
+        | tast::Primitive::Int8 { value }
+        | tast::Primitive::Int16 { value }
+        | tast::Primitive::Int32 { value }
+        | tast::Primitive::Int64 { value }
+        | tast::Primitive::Uint8 { value }
+        | tast::Primitive::Uint16 { value }
+        | tast::Primitive::Uint32 { value }
+        | tast::Primitive::Uint64 { value } => Expr::Int { value },
+        tast::Primitive::Float { value }
+        | tast::Primitive::Float32 { value }
+        | tast::Primitive::Float64 { value } => Expr::Float { value: go_float_literal(value, ty) },
+        tast::Primitive::String { value } => Expr::String { value },
+        tast::Primitive::Char { value } => Expr::Int { value: (value as uint32).to_string() },
     }
 }
 

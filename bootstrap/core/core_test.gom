@@ -182,13 +182,13 @@ fn binds_nested_match_sources_before_lowering_them() -> unit {
             match outer.tail {
                 Option::Some(Expr::Match { expr: _, arms, default: Option::None, ty: _ }) => {
                     match arms.get(0).lhs {
-                        Expr::Prim { value: tast::Primitive::Bool(value), ty: _ } => {
+                        Expr::Prim { value: tast::Primitive::Bool { value }, ty: _ } => {
                             testing::assert_eq(value, true)
                         },
                         _ => testing::fail("expected true arm"),
                     };
                     match arms.get(1).lhs {
-                        Expr::Prim { value: tast::Primitive::Bool(value), ty: _ } => {
+                        Expr::Prim { value: tast::Primitive::Bool { value }, ty: _ } => {
                             testing::assert_eq(value, false)
                         },
                         _ => testing::fail("expected false arm"),

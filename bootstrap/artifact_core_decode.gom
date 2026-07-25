@@ -71,17 +71,17 @@ fn artifact_decode_numeric_primitive(
         Result::Err(error) => return Result::Err(error),
     };
     match kind {
-        "Int" => Result::Ok(tast::Primitive::Int(value)),
-        "Int8" => Result::Ok(tast::Primitive::Int8(value)),
-        "Int16" => Result::Ok(tast::Primitive::Int16(value)),
-        "Int32" => Result::Ok(tast::Primitive::Int32(value)),
-        "Int64" => Result::Ok(tast::Primitive::Int64(value)),
-        "UInt8" => Result::Ok(tast::Primitive::Uint8(value)),
-        "UInt16" => Result::Ok(tast::Primitive::Uint16(value)),
-        "UInt32" => Result::Ok(tast::Primitive::Uint32(value)),
-        "UInt64" => Result::Ok(tast::Primitive::Uint64(value)),
-        "Float32" => Result::Ok(tast::Primitive::Float32(value)),
-        "Float64" => Result::Ok(tast::Primitive::Float64(value)),
+        "Int" => Result::Ok(tast::Primitive::Int { value }),
+        "Int8" => Result::Ok(tast::Primitive::Int8 { value }),
+        "Int16" => Result::Ok(tast::Primitive::Int16 { value }),
+        "Int32" => Result::Ok(tast::Primitive::Int32 { value }),
+        "Int64" => Result::Ok(tast::Primitive::Int64 { value }),
+        "UInt8" => Result::Ok(tast::Primitive::Uint8 { value }),
+        "UInt16" => Result::Ok(tast::Primitive::Uint16 { value }),
+        "UInt32" => Result::Ok(tast::Primitive::Uint32 { value }),
+        "UInt64" => Result::Ok(tast::Primitive::Uint64 { value }),
+        "Float32" => Result::Ok(tast::Primitive::Float32 { value }),
+        "Float64" => Result::Ok(tast::Primitive::Float64 { value }),
         _ => Result::Err(artifact_decode_error("numeric primitive kind")),
     }
 }
@@ -107,7 +107,7 @@ fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive
     } else if kind == "Bool" {
         match artifact_decode_primitive_payload(payload) {
             Result::Ok(value) => match artifact_json_bool_value(value, "boolean primitive") {
-                Result::Ok(value) => Result::Ok(tast::Primitive::Bool(value)),
+                Result::Ok(value) => Result::Ok(tast::Primitive::Bool { value }),
                 Result::Err(error) => Result::Err(error),
             },
             Result::Err(error) => Result::Err(error),
@@ -115,7 +115,7 @@ fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive
     } else if kind == "String" {
         match artifact_decode_primitive_payload(payload) {
             Result::Ok(value) => match artifact_json_string_value(value, "string primitive") {
-                Result::Ok(value) => Result::Ok(tast::Primitive::String(value)),
+                Result::Ok(value) => Result::Ok(tast::Primitive::String { value }),
                 Result::Err(error) => Result::Err(error),
             },
             Result::Err(error) => Result::Err(error),
@@ -131,7 +131,7 @@ fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive
         if value.len() != 1 {
             Result::Err(artifact_decode_error("single character primitive"))
         } else {
-            Result::Ok(tast::Primitive::Char(value.get(0)))
+            Result::Ok(tast::Primitive::Char { value: value.get(0) })
         }
     } else {
         artifact_decode_numeric_primitive(kind, payload)
