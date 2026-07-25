@@ -4,7 +4,7 @@ use gomlc::cst;
 use gomlc::lexer;
 
 enum Event {
-    Open(cst::NodeKind, Option[int]),
+    Open { kind: cst::NodeKind, forward_parent: Option[int] },
     Close,
     Advance,
     Error(string),
@@ -33,7 +33,7 @@ struct Parser {
 }
 
 fn event_tombstone() -> Event {
-    Event::Open(cst::NodeKind::TombStone, Option::None)
+    Event::Open { kind: cst::NodeKind::TombStone, forward_parent: Option::None }
 }
 
 fn token_is(left: lexer::TokenKind, right: lexer::TokenKind) -> bool {
@@ -327,7 +327,7 @@ impl Parser {
     }
 
     pub fn close(self: Parser, marker: MarkerOpened, kind: cst::NodeKind) -> MarkerClosed {
-        self.events.set(marker.index, Event::Open(kind, Option::None));
+        self.events.set(marker.index, Event::Open { kind, forward_parent: Option::None });
         self.events.push(Event::Close);
         MarkerClosed { index: marker.index }
     }
@@ -382,9 +382,9 @@ impl MarkerClosed {
     pub fn precede(self: MarkerClosed, parser: Parser) -> MarkerOpened {
         let marker = parser.open();
         match parser.events.get(self.index) {
-            Event::Open(kind, _) => parser.events.set(
+            Event::Open { kind, forward_parent: _ } => parser.events.set(
                 self.index,
-                Event::Open(kind, Option::Some(marker.index - self.index)),
+                Event::Open { kind, forward_parent: Option::Some(marker.index - self.index) },
             ),
             _ => (),
         };
@@ -454,7 +454,7 @@ fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
 
 fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
     match event {
-        Event::Open(kind, parent) => Option::Some((kind, parent)),
+        Event::Open { kind, forward_parent: parent } => Option::Some((kind, parent)),
         _ => Option::None,
     }
 }
@@ -468,7 +468,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
         let event = parser.events.get(index.get());
         parser.events.set(index.get(), event_tombstone());
         match event {
-            Event::Open(kind, forward_parent) => {
+            Event::Open { kind, forward_parent } => {
                 let kinds: Vec[cst::NodeKind] = Vec::new();
                 kinds.push(kind);
                 let event_index = Ref::new(index.get());
