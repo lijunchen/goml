@@ -63,7 +63,11 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
     let result = Vec::new();
     for name in read_directory(directory) {
         let entry = path::join(directory, name);
-        if fs::is_file(entry) {
+        if fs::is_dir(entry) {
+            for source in collect_diagnostic_sources(entry) {
+                result.push(source)
+            }
+        } else if fs::is_file(entry) {
             match path::extension(entry) {
                 Option::Some(extension) => if extension == "gom" {
                     if fs::is_file(entry + ".diag") {

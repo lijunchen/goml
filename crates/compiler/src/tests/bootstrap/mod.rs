@@ -260,16 +260,6 @@ fn gom_files(roots: &[PathBuf]) -> Vec<PathBuf> {
     files
 }
 
-fn immediate_gom_files(root: &Path) -> Vec<PathBuf> {
-    let mut files: Vec<PathBuf> = fs::read_dir(root)
-        .unwrap()
-        .map(|entry| entry.unwrap().path())
-        .filter(|path| path.extension().and_then(OsStr::to_str) == Some("gom"))
-        .collect();
-    files.sort();
-    files
-}
-
 fn pipeline_sources(root: &Path) -> Vec<PathBuf> {
     let mut files: Vec<PathBuf> = fs::read_dir(root)
         .unwrap()
@@ -490,10 +480,16 @@ fn bootstrap_diagnostics(repository: &Repository, source: &Path) -> Vec<u8> {
 }
 
 fn compare_diagnostic_suite(repository: &Repository, suite: &str) -> usize {
-    let sources = immediate_gom_files(&repository.tests().join(suite));
+    let sources = gom_files(&[repository.tests().join(suite)]);
     assert!(!sources.is_empty());
     for source in &sources {
-        let expected = fs::read(PathBuf::from(format!("{}.diag", source.display()))).unwrap();
+        let expected_path = PathBuf::from(format!("{}.diag", source.display()));
+        if env::var_os("UPDATE_EXPECT").is_some() {
+            let text = fs::read_to_string(source).unwrap();
+            fs::write(&expected_path, oracle::encode_diagnostics(source, &text)).unwrap();
+            continue;
+        }
+        let expected = fs::read(expected_path).unwrap();
         let actual = bootstrap_diagnostics(repository, source);
         assert_bytes(
             &format!("{suite} mismatch for {}", source.display()),
@@ -649,6 +645,7 @@ fn compiler_test_suites_match() {
     let temporary = TempDir::new("compiler-suites");
     let mut matched = compare_diagnostic_suite(&repository, "diagnostics");
     matched += compare_diagnostic_suite(&repository, "typer");
+    matched += compare_diagnostic_suite(&repository, "trait_impl");
     matched += compare_e2e(&repository);
     matched += compare_modules(&repository, &temporary);
     matched += compare_crashers(&repository, &temporary);
