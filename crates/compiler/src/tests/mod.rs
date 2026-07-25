@@ -16,7 +16,6 @@ use crate::{
 };
 
 mod anf_stack_test;
-mod assignment_target_test;
 #[cfg(feature = "bootstrap-tests")]
 mod bootstrap;
 mod builtin_functions_test;
@@ -25,8 +24,6 @@ mod deep_pattern_test;
 mod dyn_coercion_test;
 mod go_name_mangling_test;
 mod intrinsics_test;
-mod multiline_string_test;
-mod operator_semantics_test;
 mod package_model_test;
 mod query_test;
 mod ref_type_test;
@@ -39,7 +36,6 @@ mod try_expr_test;
 mod tuple_projection_test;
 mod vec_effect_test;
 mod visibility_test;
-mod while_expr_test;
 
 #[test]
 fn test_cases() -> anyhow::Result<()> {

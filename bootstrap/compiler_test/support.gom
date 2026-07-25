@@ -242,7 +242,7 @@ pub fn assert_e2e_counts() -> unit {
     let root = path::join(compiler_tests_root(), "e2e");
     collect_main_sources(path::join(root, "good"), good);
     collect_main_sources(path::join(root, "bad"), bad);
-    testing::assert_eq(good.len(), 555);
+    testing::assert_eq(good.len(), 558);
     testing::assert_eq(bad.len(), 71)
 }
 
@@ -529,7 +529,7 @@ fn crasher_sources(extension: string) -> Vec[string] {
 }
 
 pub fn assert_crasher_counts() -> unit {
-    testing::assert_eq(crasher_sources(".diag").len(), 40);
+    testing::assert_eq(crasher_sources(".diag").len(), 43);
     testing::assert_eq(crasher_sources(".out").len(), 56)
 }
 
