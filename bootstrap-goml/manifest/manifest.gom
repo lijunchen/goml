@@ -135,7 +135,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
     };
     let section = Ref::new("");
     let module_path: Ref[Option[string]] = Ref::new(Option::None);
-    let target_dir = Ref::new("artifact");
+    let target_dir = Ref::new("_artifact");
     for original in util::split_lines(source) {
         let line = util::trim(strip_comment(original));
         if line == "" {

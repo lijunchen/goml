@@ -37,7 +37,8 @@ impl Repository {
         let bootstrap = root.join("bootstrap");
         let goml = env_path("GOML_BIN", root.join("target/debug/goml"));
         let rust_gomlc = env_path("RUST_GOMLC_BIN", root.join("target/debug/gomlc"));
-        let bootstrap_gomlc = env_path("BOOTSTRAP_GOMLC_BIN", bootstrap.join("artifact/bin/gomlc"));
+        let bootstrap_gomlc =
+            env_path("BOOTSTRAP_GOMLC_BIN", bootstrap.join("_artifact/bin/gomlc"));
         Self {
             root,
             bootstrap,
@@ -230,7 +231,7 @@ fn gom_files(roots: &[PathBuf]) -> Vec<PathBuf> {
         if path.is_dir() {
             if matches!(
                 path.file_name().and_then(OsStr::to_str),
-                Some("artifact" | "target")
+                Some("_artifact" | "artifact" | "target")
             ) {
                 return;
             }

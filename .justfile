@@ -38,8 +38,8 @@ install:
 install-bootstrap:
     cargo build -p goml -p gomlc
     target/debug/goml build bootstrap --compiler target/debug/gomlc
-    target/debug/goml build bootstrap-goml --compiler bootstrap/artifact/bin/gomlc
-    home="${GOML_HOME:-$HOME/.goml}"; mkdir -p "$home/bin"; cp bootstrap/artifact/bin/gomlc "$home/bin/gomlc"; cp bootstrap-goml/artifact/bin/bootstrap_goml "$home/bin/goml"; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
+    target/debug/goml build bootstrap-goml --compiler bootstrap/_artifact/bin/gomlc
+    home="${GOML_HOME:-$HOME/.goml}"; mkdir -p "$home/bin"; cp bootstrap/_artifact/bin/gomlc "$home/bin/gomlc"; cp bootstrap-goml/_artifact/bin/bootstrap_goml "$home/bin/goml"; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
 
 install-lsp-suite:
     just install-lsp

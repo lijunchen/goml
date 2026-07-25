@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
-pub const DEFAULT_TARGET_DIR: &str = "artifact";
+pub const DEFAULT_TARGET_DIR: &str = "_artifact";
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -247,7 +247,7 @@ path = "acme::hello"
         .unwrap();
         let manifest = load_module_manifest(&path).unwrap();
         assert_eq!(manifest.module.path, "acme::hello");
-        assert_eq!(manifest.build.target_dir, PathBuf::from("artifact"));
+        assert_eq!(manifest.build.target_dir, PathBuf::from("_artifact"));
         assert_eq!(
             manifest.dependencies.get("alice::http"),
             Some(&"1.2.3".to_string())
