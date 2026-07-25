@@ -1,0 +1,15 @@
+trait Left {
+    fn label(self: Self) -> string;
+}
+
+trait Right {
+    fn label(self: Self) -> string;
+}
+
+trait Both: Left + Right {
+    fn own(self: Self) -> string;
+}
+
+fn render(value: dyn Both) -> string {
+    value.label()
+}

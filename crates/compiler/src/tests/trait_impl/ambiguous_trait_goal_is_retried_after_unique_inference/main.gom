@@ -1,0 +1,35 @@
+trait First {
+    fn first(self: Self) -> unit;
+}
+
+trait Second {
+    fn second(self: Self) -> unit;
+}
+
+impl First for int32 {
+    fn first(self: int32) -> unit { () }
+}
+
+impl First for string {
+    fn first(self: string) -> unit { () }
+}
+
+impl Second for string {
+    fn second(self: string) -> unit { () }
+}
+
+fn require_first[T: First](value: T) -> unit {
+    ()
+}
+
+fn require_second[T: Second](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let consume = |value| {
+        require_first(value);
+        require_second(value)
+    };
+    ()
+}

@@ -1,0 +1,11 @@
+trait Convert[T] {
+    fn convert(self: Self) -> T;
+}
+
+struct Token {}
+
+fn missing[T: Convert](value: T) -> unit { () }
+
+impl Convert[int32, string] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}

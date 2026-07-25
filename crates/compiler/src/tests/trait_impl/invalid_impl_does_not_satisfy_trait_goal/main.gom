@@ -1,0 +1,15 @@
+trait Render {
+    fn render(self: Self) -> string;
+}
+
+struct Item {}
+
+impl Render for Item {}
+
+fn require_render[T: Render](value: T) -> unit {
+    ()
+}
+
+fn use_item(value: Item) -> unit {
+    require_render(value)
+}

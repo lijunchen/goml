@@ -1,0 +1,14 @@
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+trait Container[T: Mark] {
+    fn value(self: Self) -> T;
+}
+
+struct Item {}
+struct Box {}
+
+impl Container[Item] for Box {
+    fn value(self: Box) -> Item { Item {} }
+}
