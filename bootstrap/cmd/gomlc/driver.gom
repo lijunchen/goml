@@ -19,15 +19,15 @@ use std::path;
 use std::process;
 use std::text;
 
-struct Compilation {
-    ast_value: ast::LowerResult,
-    hir_value: hir::LowerResult,
-    tast_value: tast::CheckResult,
-    core_value: core::File,
-    mono_value: core::File,
-    lift_value: core::File,
-    anf_value: anf::File,
-    go_value: go_backend::File,
+pub struct Compilation {
+    pub ast_value: ast::LowerResult,
+    pub hir_value: hir::LowerResult,
+    pub tast_value: tast::CheckResult,
+    pub core_value: core::File,
+    pub mono_value: core::File,
+    pub lift_value: core::File,
+    pub anf_value: anf::File,
+    pub go_value: go_backend::File,
 }
 
 struct PackageCompilation {
@@ -1298,7 +1298,7 @@ fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> unit {
     }
 }
 
-fn compile_source(source_path: string, source: string) -> Compilation {
+pub fn compile_source(source_path: string, source: string) -> Compilation {
     let parsed = parser::parse(source);
     fail_on_ast_diagnostics(parsed.diagnostics, "parser", source_path, source);
     let ast_value = ast::lower(parsed);
