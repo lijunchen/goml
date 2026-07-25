@@ -11,7 +11,8 @@ explicitly refers to fixture cases.
   bootstrap implementations.
 - `blocked`: the Rust and bootstrap implementations do not currently agree.
 - `internal`: the test inspects Rust-only data structures or implementation
-  invariants and should remain in Rust.
+  invariants and remains in Rust; a GoML fixture may provide additive
+  user-visible coverage.
 - `pending`: the test has not been migrated yet.
 
 ## Corpus suites
@@ -24,10 +25,10 @@ explicitly refers to fixture cases.
 | `crates/compiler/src/tests/diagnostics/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 4 fixtures |
 | `crates/compiler/src/tests/typer/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 84 fixtures |
 | `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage |
-| `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 24 projects |
-| `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 100 fixtures |
+| `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 35 projects |
+| `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 102 fixtures |
 | `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 84 fixtures representing 76 Rust tests |
-| `crates/compiler/src/tests/struct_type/` | `bootstrap/compiler_test/struct_type_test.gom` | migrated, 3 fixtures |
+| `crates/compiler/src/tests/struct_type/` | `bootstrap/compiler_test/struct_type_test.gom` | migrated, 6 fixtures |
 | `crates/compiler/src/tests/bootstrap/` | no replacement | oracle; Rust/bootstrap differential infrastructure |
 
 Every migrated diagnostic fixture maps as follows:
@@ -51,33 +52,33 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 | Rust module | Current count | GoML destination | Status |
 | --- | ---: | --- | --- |
 | `trait_impl_test.rs` | 2 | `bootstrap/compiler_test/trait_impl_test.gom` | migrated; 76 observable tests migrated and 2 internal assertions retained |
-| `visibility_test.rs` | 2 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 18 migrated and 2 blocked |
-| `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 3 migrated and 8 blocked |
+| `visibility_test.rs` | 2 | `bootstrap/compiler_test/module_test.gom` | migrated; Rust internal tests retained |
+| `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | migrated; Rust internal tests retained |
 | `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
-| `toplevel_validation_test.rs` | 1 | crasher fixtures | partially migrated; 11 migrated and 1 blocked |
-| `dyn_coercion_test.rs` | 13 | crasher fixtures | partially migrated; retain Go AST assertions |
+| `toplevel_validation_test.rs` | 1 | crasher fixtures | migrated; Rust test retained |
+| `dyn_coercion_test.rs` | 13 | pipeline and crasher fixtures | additive coverage; Rust Go AST assertions retained |
 | `while_expr_test.rs` | 0 | crasher fixtures | migrated |
 | `operator_semantics_test.rs` | 0 | e2e and crasher fixtures | migrated |
-| `struct_type_test.rs` | 8 | `bootstrap/compiler_test/struct_type_test.gom` | partially migrated; 3 migrated, 3 blocked, and 5 internal |
+| `struct_type_test.rs` | 8 | pipeline and struct diagnostics | additive coverage; Rust environment assertions retained |
 | `assignment_target_test.rs` | 0 | e2e and crasher fixtures | migrated |
-| `constructor_value_test.rs` | 1 | future runtime fixture | pending |
+| `constructor_value_test.rs` | 1 | `pipeline/209_payload_enum_constructor_value/` | migrated; Rust test retained |
 | `multiline_string_test.rs` | 0 | e2e and crasher fixtures | migrated |
-| `ref_type_test.rs` | 1 | future diagnostic fixture | pending |
-| `try_expr_test.rs` | 3 | future diagnostic/runtime fixtures | pending |
-| `tuple_projection_test.rs` | 2 | future runtime fixtures | pending |
-| `vec_effect_test.rs` | 1 | crasher fixtures | partially migrated; retain Go AST assertion |
-| `testing_test.rs` | 2 | bootstrap `gomlc` and `goml test` self-tests | partially migrated; 5 migrated and 2 internal |
-| `separate_compile_test.rs` | 3 | module corpus | partially migrated; 2 migrated, 1 blocked, and 2 internal |
+| `ref_type_test.rs` | 1 | `pipeline/208_ref_typecheck_and_collect/` | additive coverage; Rust AST/TAST assertion retained |
+| `try_expr_test.rs` | 3 | pipeline and crasher fixtures | migrated; Rust tests retained |
+| `tuple_projection_test.rs` | 2 | pipeline fixtures | migrated; Rust tests retained |
+| `vec_effect_test.rs` | 1 | `pipeline/215_builtin_environment_surface/` and crasher fixtures | additive coverage; Rust Go AST assertion retained |
+| `testing_test.rs` | 2 | bootstrap `gomlc` and `goml test` self-tests | additive coverage; Rust API assertions retained |
+| `separate_compile_test.rs` | 3 | module corpus and bootstrap linker self-tests | additive coverage; Rust artifact assertions retained |
 | `query_test.rs` | 44 | no replacement by decision | retained in Rust; query tests are intentionally not migrated |
-| `builtin_functions_test.rs` | 11 | no replacement | internal |
-| `intrinsics_test.rs` | 7 | no replacement | internal |
-| `anf_stack_test.rs` | 7 | no replacement | internal stress and complexity coverage |
-| `deep_pattern_test.rs` | 2 | no replacement | internal stress coverage |
-| `go_name_mangling_test.rs` | 1 | no replacement | internal Go output invariant |
-| `tests::reference_runtime_executes` | 1 | no replacement | internal Rust executor smoke test |
-| `tests::go_run_failure_is_error` | 1 | no replacement | internal Rust executor error-path test |
-| `compile_match::tests` | 5 | no replacement | internal match compiler unit tests |
-| `go::mangle::tests` | 6 | no replacement | internal mangling unit tests |
+| `builtin_functions_test.rs` | 11 | pipeline, crasher, and iterator fixtures | additive coverage; Rust environment catalog retained |
+| `intrinsics_test.rs` | 7 | bootstrap TAST and Go backend self-tests | additive coverage; Rust catalog invariants retained |
+| `anf_stack_test.rs` | 7 | bootstrap ANF self-tests and pipeline corpus | partial additive coverage; Rust scale tests retained |
+| `deep_pattern_test.rs` | 2 | `bootstrap/ast/ast_test.gom` | additive coverage; Rust stack tests retained |
+| `go_name_mangling_test.rs` | 1 | `pipeline/151_generic_closure_multi_instantiation/` | additive coverage; Rust length assertion retained |
+| `tests::reference_runtime_executes` | 1 | bootstrap pipeline execution | additive coverage; Rust executor smoke test retained |
+| `tests::go_run_failure_is_error` | 1 | bootstrap process and compiler command failure tests | additive coverage; Rust helper error path retained |
+| `compile_match::tests` | 5 | bootstrap ANF/Go backend tests and pattern fixtures | additive coverage; Rust IR unit tests retained |
+| `go::mangle::tests` | 6 | bootstrap Go backend self-tests and collision fixtures | additive coverage; Rust unit tests retained |
 
 ## Trait implementation migration
 
@@ -175,7 +176,7 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 
 ### Covered by the migrated crasher corpus
 
-| Removed Rust test | Existing fixture |
+| Rust test | Existing fixture |
 | --- | --- |
 | `builtin_generic_constraints_are_checked_at_call_site` | `crashers/println_option_without_tostring/main.gom` |
 | `generic_constraints_reject_overlapping_trait_impls_at_definition` | `crashers/hashmap_ref_dyn_hash_overlapping_impl/main.gom` |
@@ -192,7 +193,7 @@ These inspect `GlobalTypeEnv`, method schemes, and TAST nodes directly.
 
 The following entrypoint tests are migrated:
 
-| Removed Rust test | GoML coverage |
+| Rust test | GoML coverage |
 | --- | --- |
 | `main_function_with_parameter_is_rejected` | `crashers/main_with_parameter/main.gom` |
 | `missing_main_function_is_rejected` | `crashers/missing_main/main.gom` |
@@ -201,9 +202,9 @@ The following entrypoint tests are migrated:
 | `canonical_main_package_requires_main_function` | `module_diagnostics/canonical_main_package_requires_main_function/` |
 
 Eleven `toplevel_validation_test.rs` tests map directly to same-purpose
-fixtures in `crates/compiler/src/tests/crashers/`. The remaining
-`user_lang_item_declaration_is_rejected` test is blocked because bootstrap
-currently accepts the declaration.
+fixtures in `crates/compiler/src/tests/crashers/`.
+`user_lang_item_declaration_is_rejected` maps to
+`crashers/user_lang_item_declaration/`.
 
 The following visibility tests are migrated to same-named directories under
 `crates/compiler/src/tests/module_diagnostics/`:
@@ -227,19 +228,18 @@ The following visibility tests are migrated to same-named directories under
 - `enum_variant_fields_cannot_use_pub`
 - `trait_implementation_methods_cannot_use_pub`
 
-The retained visibility blockers are:
+The retained Rust visibility assertions have same-named module diagnostic
+fixtures:
 
 - `public_field_cannot_expose_private_type`
 - `public_inherent_method_cannot_expose_private_type`
 
-The following package model tests are migrated to same-named directories
-under `crates/compiler/src/tests/module_diagnostics/`:
+All package model tests are migrated to same-named directories under
+`crates/compiler/src/tests/module_diagnostics/`, including:
 
 - `explicit_aliases_allow_same_declared_package_name`
 - `declared_package_name_is_the_default_alias`
 - `transitive_public_type_metadata_is_available`
-
-The retained package model blockers are:
 
 - `imports_are_file_scoped`
 - `package_alias_trait_use_is_order_independent`
@@ -259,13 +259,18 @@ The following struct type diagnostics map to same-named fixtures under
 - `unknown_type_constructor_reports_error`
 - `unbound_type_parameter_reports_error`
 
-The three equivalent enum payload diagnostics remain in Rust because the
-bootstrap compiler omits the source position emitted by Rust. The other five
-retained tests inspect `GlobalTypeEnv` or TAST nodes directly.
+The three equivalent enum payload diagnostics map to same-named fixtures and
+include matching source positions. The five environment and TAST assertions
+remain in Rust and receive additive coverage from
+`pipeline/214_internal_type_environment/`.
+
+- `enum_struct_type_arity_mismatch_reports_error`
+- `enum_struct_unknown_type_constructor_reports_error`
+- `enum_struct_unbound_type_parameter_reports_error`
 
 The following `testing_test.rs` coverage is migrated:
 
-| Removed Rust test | GoML coverage |
+| Rust test | GoML coverage |
 | --- | --- |
 | `test_build_collects_and_links_top_level_tests` | `bootstrap/cmd/gomlc/main_test.gom::collects_and_encodes_test_descriptors` and `bootstrap-goml/cmd/goml/cli_migration_test.gom::project_test_runs_private_tests_and_ignores_test_sources_in_check` |
 | `invalid_test_signatures_are_rejected` | `bootstrap/cmd/gomlc/main_test.gom::collects_all_invalid_test_signature_diagnostics` and `bootstrap-goml/cmd/goml/cli_migration_test.gom::project_test_dry_run_and_invalid_signature_diagnostics` |
@@ -274,24 +279,138 @@ The following `testing_test.rs` coverage is migrated:
 | `duplicate_test_ids_have_cross_file_labels` | `bootstrap/cmd/gomlc/main_test.gom::labels_duplicate_test_ids_across_files` |
 
 `test_link_accepts_multiple_test_package_roots` and
-`analysis_compilation_retains_exact_override_sources` remain as Rust-only API
-invariants.
+`analysis_compilation_retains_exact_override_sources` remain Rust API
+invariants. Their test-runner and source-override behavior is additionally
+covered by `bootstrap/go_backend/go_test.gom::emits_test_runner_entrypoint`
+and the bootstrap `goml` CLI migration tests.
 
 Two `separate_compile_test.rs` behaviors are covered by stronger module
 fixtures:
 
-| Removed Rust test | GoML coverage |
+| Rust test | GoML coverage |
 | --- | --- |
 | `separate_build_link_matches_project_008` | `module/project008_trait_bounds_across_packages/` |
 | `separate_build_link_supports_std` | `module/project032_std_host_api/` |
 
-`user_package_cannot_import_std_internal_host` remains in Rust because the
-bootstrap compiler currently reports a missing static member instead of the
-Rust compiler's package visibility diagnostic. The remaining two tests assert
-linker artifact invariants and remain internal.
+`user_package_cannot_import_std_internal_host` maps to the same-named module
+diagnostic fixture. The remaining two linker artifact assertions stay in Rust
+and are additionally covered by bootstrap artifact, link-order, and interface
+hash self-tests.
 
 All 44 `query_test.rs` tests intentionally remain in Rust and are excluded
 from the migration scope.
+
+## Constructor, reference, try, and tuple migration
+
+All Rust tests in this section remain in place. The GoML fixtures add
+end-to-end pipeline and bootstrap coverage.
+
+| Rust test | GoML coverage |
+| --- | --- |
+| `payload_enum_constructor_values_compile` | `pipeline/209_payload_enum_constructor_value/` |
+| `references_typecheck_and_collect` | `pipeline/208_ref_typecheck_and_collect/` |
+| `reversed_result_variants_work_with_try` | `pipeline/210_reversed_result_try/` |
+| `user_defined_option_variants_work_with_try` | `pipeline/211_user_option_try/` |
+| `try_inside_match_while_condition_compiles_in_single_file_mode` | `crashers/while_condition_try_match/` |
+| `function_value_tuple_return_can_be_projected_without_annotation` | `pipeline/212_function_value_tuple_projection/` |
+| `generic_function_value_tuple_return_can_be_projected_without_annotation` | `pipeline/213_generic_function_value_tuple_projection/` |
+
+The reference test remains an internal Rust assertion because it validates
+the exact AST and TAST representation. Its pipeline fixture verifies the
+same source-level operations through every emitted IR stage.
+
+## Retained environment and representation assertions
+
+These Rust tests inspect compiler data structures or generated Go text and
+remain in Rust. Their GoML mappings provide additive source-level, snapshot,
+runtime, or self-host coverage.
+
+| Retained Rust test | Additive GoML coverage |
+| --- | --- |
+| `inherent_impl_registers_methods` | `pipeline/214_internal_type_environment/` |
+| `inherent_impl_instantiates_self_types` | `pipeline/214_internal_type_environment/` |
+| `collects_struct_definitions` | `pipeline/214_internal_type_environment/` |
+| `enum_variants_record_struct_types` | `pipeline/214_internal_type_environment/` |
+| `structs_and_enums_can_reference_each_other` | `pipeline/214_internal_type_environment/` |
+| `closure_infers_param_and_return_types` | `pipeline/214_internal_type_environment/` |
+| `closure_parameter_annotations_use_enclosing_generics` | `pipeline/214_internal_type_environment/` |
+| `env_registers_builtin_function_signatures` | `pipeline/215_builtin_environment_surface/` |
+| `env_does_not_register_legacy_int_operator_aliases` | `crashers/legacy_int_operator_aliases_unavailable/` |
+| `env_registers_builtin_int_inherent_to_string` | `pipeline/215_builtin_environment_surface/` |
+| `env_registers_builtin_int32_inherent_to_string` | `pipeline/214_internal_type_environment/` |
+| `env_registers_builtin_vec_inherent_methods` | `pipeline/169_generic_trait_iterator/` and `pipeline/215_builtin_environment_surface/` |
+| `env_registers_builtin_ref_inherent_methods` | `pipeline/208_ref_typecheck_and_collect/` |
+| `env_registers_builtin_channel_inherent_methods` | `pipeline/206_channel/` and `pipeline/215_builtin_environment_surface/` |
+| `env_registers_builtin_slice_inherent_methods` | `pipeline/169_generic_trait_iterator/` and `pipeline/215_builtin_environment_surface/` |
+| `env_registers_builtin_iterator_trait_and_fn_iterator_methods` | `pipeline/169_generic_trait_iterator/` |
+| `env_registers_builtin_string_inherent_methods` | `pipeline/215_builtin_environment_surface/` |
+| `builtin_function_names_include_container_and_iterator_builtins` | `pipeline/165_self_host_builtins/`, `pipeline/169_generic_trait_iterator/`, and `pipeline/215_builtin_environment_surface/` |
+
+| Retained Rust Go representation test | Additive GoML coverage |
+| --- | --- |
+| `mixed_dyn_vec_push_with_distinct_impls_compiles` | `pipeline/216_mixed_dyn_vec_push/` |
+| `implicit_dyn_coercion_from_generic_call_result_compiles` | `pipeline/217_generic_call_dyn_coercion/` |
+| `implicit_dyn_coercion_from_generic_enum_call_result_compiles` | `pipeline/218_generic_enum_call_dyn_coercion/` |
+| `implicit_dyn_coercion_from_generic_enum_constructor_compiles` | `pipeline/219_generic_enum_constructor_dyn_coercion/` |
+| `dyn_trait_types_are_emitted_for_early_return_subexpressions` | `crashers/dyn_trait_type_emission_return_subexpr/` |
+| `dyn_trait_types_are_emitted_for_enum_fields_in_early_return_subexpressions` | `pipeline/220_dyn_enum_early_return_type_emission/` |
+| `dyn_trait_tuple_types_are_emitted_for_nested_struct_fields_in_early_return_subexpressions` | `crashers/dyn_trait_type_emission_nested_tuple_return_subexpr/` |
+| `dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_subexpressions` | `crashers/dyn_trait_type_emission_enum_nested_tuple_return_subexpr/` |
+| `dyn_trait_types_are_emitted_for_effect_only_hashmap_set_arguments` | `crashers/dyn_trait_type_emission_hashmap_set_return_subexpr/` |
+| `dyn_trait_types_are_emitted_for_hashmap_method_set_arguments` | `crashers/dyn_trait_type_emission_hashmap_method_set_return_subexpr/` |
+| `dyn_callable_types_are_emitted_for_early_return_subexpressions` | `crashers/dyn_callable_return_subexpr/` |
+| `dyn_callable_tuple_types_are_emitted_for_nested_early_return_subexpressions` | `crashers/dyn_callable_nested_tuple_return_subexpr/` |
+| `dyn_callable_types_are_emitted_for_hashmap_set_early_return_subexpressions` | `crashers/dyn_callable_hashmap_set_return_subexpr/` |
+| `vec_method_push_mutates_shared_storage_in_go_codegen` | `pipeline/215_builtin_environment_surface/` |
+| `complex_generated_names_are_bounded_and_execute` | `pipeline/151_generic_closure_multi_instantiation/` and `bootstrap/go_backend/go_test.gom::hashes_and_compacts_long_go_identifiers` |
+
+## Retained intrinsic, runtime, and executor assertions
+
+| Retained Rust test | Additive GoML coverage |
+| --- | --- |
+| `callable_ids_have_unique_round_trip_keys` | bootstrap artifact callable serialization and Go runtime-hook self-tests |
+| `callable_catalog_signatures_validate_themselves` | bootstrap TAST extern validation and Go runtime-hook emission self-tests |
+| `builtin_contract_declares_every_core_callable_once` | `pipeline/215_builtin_environment_surface/` and `bootstrap/go_backend/go_test.gom::lowers_callable_intrinsics` |
+| `callable_catalog_rejects_signature_drift` | `bootstrap/tast/tast_test.gom::enforces_source_extern_capabilities` |
+| `extern_capabilities_are_partitioned` | `bootstrap/tast/tast_test.gom::enforces_source_extern_capabilities` and `recovers_rejected_externs_with_builtin_signatures` |
+| `callable_effects_describe_mutation_and_host_calls` | bootstrap Go backend effect, DCE, and intrinsic lowering tests |
+| `every_runtime_hook_has_a_go_implementation` | `bootstrap/go_backend/go_test.gom::emits_every_core_runtime_hook` and `emits_every_standard_runtime_hook` |
+| `reference_runtime_executes` | bootstrap pipeline execution, including `pipeline/215_builtin_environment_surface/` |
+| `go_run_failure_is_error` | bootstrap process-command failure assertions; Rust helper error propagation remains directly tested in Rust |
+
+## Retained stress, match, and mangling assertions
+
+| Retained Rust test group | Additive GoML coverage |
+| --- | --- |
+| `wide_call_argument_list_compiles_without_crashing_anf` | `bootstrap/anf/anf_test.gom` plus pipeline ANF snapshots; Rust retains the 1500-argument scale limit |
+| `wide_struct_literal_compiles_without_crashing_anf` | bootstrap struct and ANF snapshots; Rust retains the 1500-field scale limit |
+| `wide_complex_call_argument_list_compiles_without_crashing_anf` | bootstrap call lowering and ANF snapshots; Rust retains the 500-argument scale limit |
+| `wide_match_call_argument_list_compiles_without_crashing_anf` | bootstrap match lowering and ANF snapshots; Rust retains the 600-argument scale limit |
+| `very_wide_match_call_argument_list_compiles_without_crashing_anf` | bootstrap match lowering and ANF snapshots; Rust retains the 2000-argument scale limit |
+| `wide_or_pattern_compiles_without_exponential_growth` | `pipeline/192_pattern_matching_features/` and `pipeline/193_pattern_matching_invariants/`; Rust retains the complexity guard |
+| `wide_if_chain_compiles_without_quadratic_join_resolution` | bootstrap ANF join-point tests; Rust retains the 128-branch complexity guard |
+| `deep_struct_pattern_reports_lower_error` | `bootstrap/ast/ast_test.gom::rejects_deeply_nested_patterns_without_overflowing` |
+| `deep_parenthesized_expression_reports_depth_error` | `bootstrap/ast/ast_test.gom::rejects_deeply_nested_expressions_without_overflowing` |
+| `return_always_exits_control_flow` | bootstrap ANF unreachable-continuation tests |
+| `rows_body_ty_ignores_return_only_arms` | `pipeline/201_never_control_flow/` and bootstrap ANF exiting-branch tests |
+| `pure_or_patterns_expand_in_the_selected_column` | `pipeline/192_pattern_matching_features/` |
+| `or_pattern_columns_expand_lazily` | `pipeline/193_pattern_matching_invariants/` |
+| `enum_case_partition_keeps_unmentioned_variants_in_default` | bootstrap ANF enum-match and Go primitive-match tests |
+| `valid_name_stays_readable` | bootstrap Go snapshots preserve readable user identifiers |
+| `qualified_name_uses_compact_escapes` | `bootstrap/go_backend/go_test.gom::bounds_qualified_variant_names_after_qualification` |
+| `compact_escapes_do_not_collide_with_user_text` | generated-name collision crasher fixtures |
+| `long_names_are_bounded_and_deterministic` | `bootstrap/go_backend/go_test.gom::hashes_and_compacts_long_go_identifiers` |
+| `generated_namespace_is_protected_from_user_names` | generated-name collision crasher fixtures |
+| `hashed_names_keep_a_readable_hint` | `pipeline/151_generic_closure_multi_instantiation/` and the bootstrap long-name test |
+
+## Retained testing and linker artifact assertions
+
+| Retained Rust test | Additive GoML coverage |
+| --- | --- |
+| `test_link_accepts_multiple_test_package_roots` | bootstrap Go test-runner emission and bootstrap `goml test` CLI tests |
+| `analysis_compilation_retains_exact_override_sources` | bootstrap `goml` source-override CLI tests |
+| `link_rejects_interface_hash_mismatch` | bootstrap artifact interface-hash and dependency-link tests |
+| `link_ignores_unreachable_core_inputs` | bootstrap core link ordering and Go dead-code elimination tests |
 
 ## Runtime and control-flow migration
 
@@ -302,7 +421,7 @@ and short-circuit cases map to same-named crasher fixtures. The
 
 The complete `assignment_target_test.rs` module is migrated:
 
-| Removed Rust test | GoML coverage |
+| Rust test | GoML coverage |
 | --- | --- |
 | `shadowed_ref_get_array_assignment_is_rejected` | `crashers/ref_get_shadow_array_assignment_target/` |
 | `intrinsic_ref_get_array_assignment_executes` | `e2e/good/0593_intrinsic_ref_get_array_assignment/` |
@@ -316,7 +435,7 @@ previously inline cases now have dedicated fixtures:
 
 The complete `multiline_string_test.rs` module is migrated:
 
-| Removed Rust test | GoML coverage |
+| Rust test | GoML coverage |
 | --- | --- |
 | `multiline_string_prints_lines` | `e2e/good/0594_multiline_string/` |
 | `string_nul_escape_executes` | `crashers/string_nul_escape/` |
