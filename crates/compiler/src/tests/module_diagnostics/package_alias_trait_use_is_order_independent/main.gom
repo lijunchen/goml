@@ -1,0 +1,17 @@
+package main;
+
+use traits::Render;
+use package_model_test::trait_source as traits;
+
+struct Item {}
+
+impl traits::Render for Item {
+    fn render(self: Item) -> string {
+        "ok"
+    }
+}
+
+fn main() -> unit {
+    let item = Item {};
+    let _ = item.render();
+}

@@ -1,0 +1,39 @@
+fn main() -> unit {
+    let native: int = 7;
+    let small: int8 = 8;
+    let unsigned: uint8 = 9;
+    let text = int_to_string(native)
+        + int8_to_string(small)
+        + uint8_to_string(unsigned)
+        + string_byte_slice("abcd", 1, 3);
+
+    let value: Ref[int32] = ref(1);
+    ref_set(value, 2);
+    let same = ptr_eq(value, value);
+    let _ = ptr_hash(value);
+
+    let values: Vec[int32] = vec_new();
+    vec_push(values, ref_get(value));
+    vec_push(values, 3);
+    vec_set(values, 1, 4);
+
+    let values_slice = slice(values, 0, vec_len(values));
+    let nested = slice_sub(values_slice, 0, slice_len(values_slice));
+
+    let channel: Channel[int32] = channel_new(1);
+    channel_send(channel, slice_get(nested, 1));
+    let received = channel_recv(channel);
+    channel_close(channel);
+
+    let total = iterator_fold(range(0, 3), 0, |sum: int, item: int| {
+        sum + item
+    });
+
+    println(
+        text
+            + same.to_string()
+            + received.0.to_string()
+            + received.1.to_string()
+            + total.to_string(),
+    )
+}

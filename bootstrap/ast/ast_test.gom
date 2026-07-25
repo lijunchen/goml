@@ -1,5 +1,6 @@
 package ast;
 
+use gomlc::cst;
 use gomlc::parser;
 use std::testing;
 
@@ -19,6 +20,53 @@ fn lowered_file(source: string) -> File {
             }
         },
     }
+}
+
+fn has_diagnostic(
+    values: Vec[cst::Diagnostic],
+    expected: string,
+) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.message == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+#[test]
+fn rejects_deeply_nested_patterns_without_overflowing() -> unit {
+    let pattern = Ref::new("_");
+    for _ in range(0, 150) {
+        pattern.set("(" + pattern.get() + ", _)")
+    };
+    let result = lower(parser::parse(
+        "fn main() -> unit { let " + pattern.get() + " = (); }",
+    ));
+    testing::assert(has_diagnostic(
+        result.diagnostics,
+        "pattern is too deeply nested",
+    ))
+}
+
+#[test]
+fn rejects_deeply_nested_expressions_without_overflowing() -> unit {
+    let expression = Ref::new("1");
+    for _ in range(0, 600) {
+        expression.set("(" + expression.get() + ")")
+    };
+    let result = lower(parser::parse(
+        "fn main() -> unit { let value = "
+            + expression.get()
+            + "; println(value); }",
+    ));
+    testing::assert(has_diagnostic(
+        result.diagnostics,
+        "expression is too deeply nested",
+    ))
 }
 
 #[test]

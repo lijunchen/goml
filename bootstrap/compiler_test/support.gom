@@ -399,7 +399,7 @@ fn module_diagnostic_projects() -> Vec[string] {
 
 pub fn assert_module_diagnostics() -> unit {
     let projects = module_diagnostic_projects();
-    testing::assert_eq(projects.len(), 24);
+    testing::assert_eq(projects.len(), 35);
     for source_project in projects {
         let name = match path::file_name(source_project) {
             Option::Some(value) => value,
@@ -529,7 +529,7 @@ fn crasher_sources(extension: string) -> Vec[string] {
 }
 
 pub fn assert_crasher_counts() -> unit {
-    testing::assert_eq(crasher_sources(".diag").len(), 43);
+    testing::assert_eq(crasher_sources(".diag").len(), 45);
     testing::assert_eq(crasher_sources(".out").len(), 56)
 }
 
