@@ -2,8 +2,30 @@ package main;
 
 use gomlang::bootstrap_goml::json;
 use gomlang::bootstrap_goml::manifest;
+use gomlang::bootstrap_goml::project;
 use gomlang::bootstrap_goml::util;
+use std::path;
 use std::testing;
+
+fn project_context(entry_package: string) -> project::Context {
+    project::Context {
+        graph: project::Graph {
+            module_dir: ".",
+            module_path: "alice::demo",
+            entry_package,
+            packages: Vec::new().pushed(project::Package {
+                name: entry_package,
+                declared_name: "main",
+                directory: ".",
+                files: Vec::new(),
+                imports: Vec::new(),
+            }),
+            order: Vec::new().pushed(entry_package),
+        },
+        compiler: "gomlc",
+        artifact_root: "_artifact",
+    }
+}
 
 #[test]
 fn utility_text_operations_are_deterministic() -> unit {
@@ -59,6 +81,50 @@ fn manifest_parser_reads_project_manifest() -> unit {
             testing::assert_eq(value.target_dir, "_artifact")
         },
         Result::Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn build_plan_places_executables_under_package_paths() -> unit {
+    let root = match project::build_plan(project_context("alice::demo")) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            return ()
+        },
+    };
+    match root.executable {
+        Option::Some(value) => testing::assert_eq(
+            value,
+            path::join(path::join("_artifact", "bin"), "demo"),
+        ),
+        Option::None => testing::fail("missing root executable"),
+    };
+
+    let nested = match project::build_plan(
+        project_context("alice::demo::cmd::server"),
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            return ()
+        },
+    };
+    match nested.executable {
+        Option::Some(value) => testing::assert_eq(
+            value,
+            path::join(
+                path::join(
+                    path::join(
+                        path::join("_artifact", "bin"),
+                        "cmd",
+                    ),
+                    "server",
+                ),
+                "server",
+            ),
+        ),
+        Option::None => testing::fail("missing nested executable"),
     }
 }
 

@@ -1985,7 +1985,7 @@ pub fn value() -> int32 {
 }
 
 #[test]
-fn project_build_dry_run_preserves_entry_directory_structure() -> anyhow::Result<()> {
+fn project_build_preserves_entry_directory_structure() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
 
@@ -2029,7 +2029,7 @@ pub fn msg() -> string {
         gomlc build --package demo::src::Lib --input src/Lib/Lib.gom --output _artifact/build/pkg/demo/src/Lib/package
         gomlc build --package demo::src --input src/main.gom --interface-path _artifact/build/pkg/demo/src/Lib/package.interface --output _artifact/build/pkg/demo/src/package
         gomlc link --input _artifact/build/pkg/demo/src/Lib/package.core _artifact/build/pkg/demo/src/package.core --output _artifact/main.go --entry demo::src
-        go build -o _artifact/bin/src _artifact/main.go
+        go build -o _artifact/bin/src/src _artifact/main.go
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
@@ -2049,9 +2049,23 @@ pub fn msg() -> string {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
-    assert!(stdout.contains("go build -o output/bin/src output/main.go\n"));
-    assert!(stdout.ends_with("output/bin/src value\n"));
+    assert!(stdout.contains("go build -o output/bin/src/src output/main.go\n"));
+    assert!(stdout.ends_with("output/bin/src/src value\n"));
     assert!(!root.join("output").exists());
+
+    if go_available() {
+        let output = run_goml(&["build", "src"], root)?;
+        assert!(
+            output.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(
+            root.join("_artifact/bin/src")
+                .join(format!("src{}", std::env::consts::EXE_SUFFIX))
+                .is_file()
+        );
+    }
 
     Ok(())
 }
