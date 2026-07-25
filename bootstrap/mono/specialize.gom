@@ -1686,18 +1686,18 @@ fn specialize_found_var_with_projection_bindings(
                     || !has_projection_binding(call_bindings))
                 && complete_bindings(ctx, function, call_bindings)
             {
-                core::Expr::Var(
-                    ensure_instance(ctx, function.name, call_bindings),
+                core::Expr::Var {
+                    name: ensure_instance(ctx, function.name, call_bindings),
                     ty,
-                )
+                }
             } else {
-                core::Expr::Var(name, ty)
+                core::Expr::Var { name, ty }
             }
         } else {
-            core::Expr::Var(name, ty)
+            core::Expr::Var { name, ty }
         }
     } else {
-        core::Expr::Var(name, ty)
+        core::Expr::Var { name, ty }
     }
 }
 
@@ -1740,7 +1740,7 @@ fn specialize_var(
     let ty = specialize_type(ctx, ty, bindings);
     match find_function(ctx, name) {
         Option::Some(function) => specialize_found_var(ctx, function, name, ty),
-        Option::None => core::Expr::Var(name, ty),
+        Option::None => core::Expr::Var { name, ty },
     }
 }
 
@@ -1755,20 +1755,20 @@ fn specialize_call(
     let args = specialize_exprs(ctx, bindings, args);
     let ty = specialize_type(ctx, ty, bindings);
     let func = match func {
-        core::Expr::Var(name, func_ty) => match find_callee_function(ctx, name) {
+        core::Expr::Var { name, ty: func_ty } => match find_callee_function(ctx, name) {
             Option::Some(function) => if function_is_generic(function) {
                 specialize_call_var(ctx, function, name, func_ty)
             } else {
-                core::Expr::Var(
-                    ensure_instance(ctx, function.name, Vec::new()),
-                    func_ty,
-                )
+                core::Expr::Var {
+                    name: ensure_instance(ctx, function.name, Vec::new()),
+                    ty: func_ty,
+                }
             },
-            Option::None => core::Expr::Var(name, func_ty),
+            Option::None => core::Expr::Var { name, ty: func_ty },
         },
         other => other,
     };
-    core::Expr::Call(func, args, ty)
+    core::Expr::Call { func, args, ty }
 }
 
 fn specialize_expr(
@@ -1777,117 +1777,117 @@ fn specialize_expr(
     value: core::Expr,
 ) -> core::Expr {
     match value {
-        core::Expr::Var(name, ty) => specialize_var(ctx, bindings, name, ty),
-        core::Expr::Callable(callable, ty) => core::Expr::Callable(
-            specialize_callable(ctx, callable, bindings),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Prim(value, ty) => {
-            core::Expr::Prim(value, specialize_type(ctx, ty, bindings))
+        core::Expr::Var { name, ty } => specialize_var(ctx, bindings, name, ty),
+        core::Expr::Callable { callable, ty } => core::Expr::Callable {
+            callable: specialize_callable(ctx, callable, bindings),
+            ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Constr(constructor, args, ty) => core::Expr::Constr(
+        core::Expr::Prim { value, ty } => {
+            core::Expr::Prim { value, ty: specialize_type(ctx, ty, bindings) }
+        },
+        core::Expr::Constr { constructor, args, ty } => core::Expr::Constr {
             constructor,
-            specialize_exprs(ctx, bindings, args),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Tuple(items, ty) => core::Expr::Tuple(
-            specialize_exprs(ctx, bindings, items),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Array(items, ty) => core::Expr::Array(
-            specialize_exprs(ctx, bindings, items),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Closure(params, body, ty) => core::Expr::Closure(
-            specialize_closure_params(ctx, params, bindings),
-            specialize_expr(ctx, bindings, body),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Block(block, ty) => core::Expr::Block(
-            specialize_block(ctx, bindings, block),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
-            specialize_expr(ctx, bindings, expr),
-            specialize_arms(ctx, bindings, arms),
-            specialize_optional_expr(ctx, bindings, default),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::If(cond, then_branch, else_branch, ty) => core::Expr::If(
-            specialize_expr(ctx, bindings, cond),
-            specialize_expr(ctx, bindings, then_branch),
-            specialize_expr(ctx, bindings, else_branch),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::While(cond, body, ty) => core::Expr::While(
-            specialize_expr(ctx, bindings, cond),
-            specialize_expr(ctx, bindings, body),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Break(ty) => core::Expr::Break(specialize_type(ctx, ty, bindings)),
-        core::Expr::Continue(ty) => {
-            core::Expr::Continue(specialize_type(ctx, ty, bindings))
+            args: specialize_exprs(ctx, bindings, args),
+            ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Return(expr, ty) => core::Expr::Return(
-            specialize_optional_expr(ctx, bindings, expr),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Go(expr, ty) => core::Expr::Go(
-            specialize_expr(ctx, bindings, expr),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::ConstrGet(expr, constructor, field_index, ty) => {
-            core::Expr::ConstrGet(
-                specialize_expr(ctx, bindings, expr),
+        core::Expr::Tuple { items, ty } => core::Expr::Tuple {
+            items: specialize_exprs(ctx, bindings, items),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Array { items, ty } => core::Expr::Array {
+            items: specialize_exprs(ctx, bindings, items),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Closure { params, body, ty } => core::Expr::Closure {
+            params: specialize_closure_params(ctx, params, bindings),
+            body: specialize_expr(ctx, bindings, body),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Block { block, ty } => core::Expr::Block {
+            block: specialize_block(ctx, bindings, block),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Match { expr, arms, default, ty } => core::Expr::Match {
+            expr: specialize_expr(ctx, bindings, expr),
+            arms: specialize_arms(ctx, bindings, arms),
+            default: specialize_optional_expr(ctx, bindings, default),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::If { cond, then_branch, else_branch, ty } => core::Expr::If {
+            cond: specialize_expr(ctx, bindings, cond),
+            then_branch: specialize_expr(ctx, bindings, then_branch),
+            else_branch: specialize_expr(ctx, bindings, else_branch),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::While { cond, body, ty } => core::Expr::While {
+            cond: specialize_expr(ctx, bindings, cond),
+            body: specialize_expr(ctx, bindings, body),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Break { ty } => core::Expr::Break { ty: specialize_type(ctx, ty, bindings) },
+        core::Expr::Continue { ty } => {
+            core::Expr::Continue { ty: specialize_type(ctx, ty, bindings) }
+        },
+        core::Expr::Return { expr, ty } => core::Expr::Return {
+            expr: specialize_optional_expr(ctx, bindings, expr),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Go { expr, ty } => core::Expr::Go {
+            expr: specialize_expr(ctx, bindings, expr),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::ConstrGet { expr, constructor, field_index, ty } => {
+            core::Expr::ConstrGet {
+                expr: specialize_expr(ctx, bindings, expr),
                 constructor,
                 field_index,
-                specialize_type(ctx, ty, bindings),
-            )
+                ty: specialize_type(ctx, ty, bindings),
+            }
         },
-        core::Expr::Unary(op, expr, ty) => core::Expr::Unary(
+        core::Expr::Unary { op, expr, ty } => core::Expr::Unary {
             op,
-            specialize_expr(ctx, bindings, expr),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Cast(expr, ty) => core::Expr::Cast(
-            specialize_expr(ctx, bindings, expr),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Binary(op, lhs, rhs, ty) => core::Expr::Binary(
+            expr: specialize_expr(ctx, bindings, expr),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Cast { expr, ty } => core::Expr::Cast {
+            expr: specialize_expr(ctx, bindings, expr),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Binary { op, lhs, rhs, ty } => core::Expr::Binary {
             op,
-            specialize_expr(ctx, bindings, lhs),
-            specialize_expr(ctx, bindings, rhs),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Assign(name, value, target_ty, ty) => core::Expr::Assign(
+            lhs: specialize_expr(ctx, bindings, lhs),
+            rhs: specialize_expr(ctx, bindings, rhs),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Assign { name, value, target_ty, ty } => core::Expr::Assign {
             name,
-            specialize_expr(ctx, bindings, value),
-            specialize_type(ctx, target_ty, bindings),
-            specialize_type(ctx, ty, bindings),
-        ),
-        core::Expr::Call(func, args, ty) => {
+            value: specialize_expr(ctx, bindings, value),
+            target_ty: specialize_type(ctx, target_ty, bindings),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        core::Expr::Call { func, args, ty } => {
             specialize_call(ctx, bindings, func, args, ty)
         },
-        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => {
+        core::Expr::ToDyn { trait_name, for_ty, expr, ty } => {
             let for_ty = specialize_type(ctx, for_ty, bindings);
             ensure_dyn_trait_impls(ctx, trait_name, for_ty);
-            core::Expr::ToDyn(
+            core::Expr::ToDyn {
                 trait_name,
                 for_ty,
-                specialize_expr(ctx, bindings, expr),
-                specialize_type(ctx, ty, bindings),
-            )
+                expr: specialize_expr(ctx, bindings, expr),
+                ty: specialize_type(ctx, ty, bindings),
+            }
         },
-        core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
-            core::Expr::DynCall(
+        core::Expr::DynCall { trait_name, method_name, receiver, args, ty } => {
+            core::Expr::DynCall {
                 trait_name,
                 method_name,
-                specialize_expr(ctx, bindings, receiver),
-                specialize_exprs(ctx, bindings, args),
-                specialize_type(ctx, ty, bindings),
-            )
+                receiver: specialize_expr(ctx, bindings, receiver),
+                args: specialize_exprs(ctx, bindings, args),
+                ty: specialize_type(ctx, ty, bindings),
+            }
         },
-        core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
+        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
             let reference = specialize_trait_ref(ctx, reference, bindings);
             let receiver = specialize_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
@@ -1900,13 +1900,13 @@ fn specialize_expr(
                 args,
                 ty,
             );
-            core::Expr::TraitCall(reference, method_name, receiver, args, ty)
+            core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty }
         },
-        core::Expr::Proj(tuple, index, ty) => core::Expr::Proj(
-            specialize_expr(ctx, bindings, tuple),
+        core::Expr::Proj { tuple, index, ty } => core::Expr::Proj {
+            tuple: specialize_expr(ctx, bindings, tuple),
             index,
-            specialize_type(ctx, ty, bindings),
-        ),
+            ty: specialize_type(ctx, ty, bindings),
+        },
     }
 }
 
@@ -2031,18 +2031,18 @@ fn ensure_runtime_trait_impls_for_expr(
 ) -> unit {
     ensure_runtime_trait_impls_for_type(ctx, core::expr_type(value));
     match value {
-        core::Expr::Constr(_, args, _) => ensure_runtime_trait_impls_for_exprs(ctx, args),
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Constr { constructor: _, args, ty: _ } => ensure_runtime_trait_impls_for_exprs(ctx, args),
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             ensure_runtime_trait_impls_for_exprs(ctx, items)
         },
-        core::Expr::Closure(params, body, _) => {
+        core::Expr::Closure { params, body, ty: _ } => {
             for param in params {
                 ensure_runtime_trait_impls_for_type(ctx, param.ty)
             };
             ensure_runtime_trait_impls_for_expr(ctx, body)
         },
-        core::Expr::Block(block, _) => ensure_runtime_trait_impls_for_block(ctx, block),
-        core::Expr::Match(expr, arms, default, _) => {
+        core::Expr::Block { block, ty: _ } => ensure_runtime_trait_impls_for_block(ctx, block),
+        core::Expr::Match { expr, arms, default, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, expr);
             for arm in arms {
                 ensure_runtime_trait_impls_for_expr(ctx, arm.lhs);
@@ -2050,47 +2050,47 @@ fn ensure_runtime_trait_impls_for_expr(
             };
             ensure_runtime_trait_impls_for_optional_expr(ctx, default)
         },
-        core::Expr::If(cond, then_, else_, _) => {
+        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, cond);
             ensure_runtime_trait_impls_for_expr(ctx, then_);
             ensure_runtime_trait_impls_for_expr(ctx, else_)
         },
-        core::Expr::While(cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, cond);
             ensure_runtime_trait_impls_for_expr(ctx, body)
         },
-        core::Expr::Return(expr, _) => ensure_runtime_trait_impls_for_optional_expr(ctx, expr),
-        core::Expr::Go(expr, _)
-        | core::Expr::ConstrGet(expr, _, _, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::Proj(expr, _, _) => ensure_runtime_trait_impls_for_expr(ctx, expr),
-        core::Expr::Binary(_, lhs, rhs, _) => {
+        core::Expr::Return { expr, ty: _ } => ensure_runtime_trait_impls_for_optional_expr(ctx, expr),
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => ensure_runtime_trait_impls_for_expr(ctx, expr),
+        core::Expr::Binary { op: _, lhs, rhs, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, lhs);
             ensure_runtime_trait_impls_for_expr(ctx, rhs)
         },
-        core::Expr::Assign(_, expr, target_ty, _) => {
+        core::Expr::Assign { name: _, value: expr, target_ty, ty: _ } => {
             ensure_runtime_trait_impls_for_type(ctx, target_ty);
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Call { func, args, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, func);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        core::Expr::ToDyn(_, for_ty, expr, _) => {
+        core::Expr::ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
             ensure_runtime_trait_impls_for_type(ctx, for_ty);
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        core::Expr::Var(_, _)
-        | core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_) => (),
+        core::Expr::Var { name: _, ty: _ }
+        | core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
     }
 }
 

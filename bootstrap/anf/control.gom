@@ -139,7 +139,7 @@ fn lower_if(
     ty: tast::Type,
     k: (Imm) -> Block,
 ) -> Block {
-    let expr = core::Expr::If(cond, then_, else_, ty);
+    let expr = core::Expr::If { cond, then_branch: then_, else_branch: else_, ty };
     let reified = reify_k_for_expr(state, expr, k);
     let join = reified.0;
     let ret_ty = reified.1;
@@ -198,7 +198,7 @@ fn lower_match(
     ty: tast::Type,
     k: (Imm) -> Block,
 ) -> Block {
-    let expr = core::Expr::Match(scrutinee, arms, default, ty);
+    let expr = core::Expr::Match { expr: scrutinee, arms, default, ty };
     let reified = reify_k_for_expr(state, expr, k);
     let join = reified.0;
     let ret_ty = reified.1;
@@ -313,15 +313,15 @@ fn lower_expr(
     match try_imm(value) {
         Option::Some(value) => k(value),
         Option::None => match value {
-            core::Expr::Block(block, _) => lower_core_block(state, block, k),
-            core::Expr::If(cond, then_, else_, ty) => {
+            core::Expr::Block { block, ty: _ } => lower_core_block(state, block, k),
+            core::Expr::If { cond, then_branch: then_, else_branch: else_, ty } => {
                 lower_if(state, cond, then_, else_, ty, k)
             },
-            core::Expr::Match(scrutinee, arms, default, ty) => {
+            core::Expr::Match { expr: scrutinee, arms, default, ty } => {
                 lower_match(state, scrutinee, arms, default, ty, k)
             },
-            core::Expr::While(cond, body, _) => lower_while(state, cond, body, k),
-            core::Expr::Break(_) => match state.loop_ctx.get() {
+            core::Expr::While { cond, body, ty: _ } => lower_while(state, cond, body, k),
+            core::Expr::Break { ty: _ } => match state.loop_ctx.get() {
                 Option::Some(ctx) => Block {
                     binds: no_binds(),
                     term: Term::Jump {
@@ -335,7 +335,7 @@ fn lower_expr(
                     term: Term::Unreachable { ty: tast::Type::Error },
                 },
             },
-            core::Expr::Continue(_) => match state.loop_ctx.get() {
+            core::Expr::Continue { ty: _ } => match state.loop_ctx.get() {
                 Option::Some(ctx) => Block {
                     binds: no_binds(),
                     term: Term::Jump {
@@ -349,8 +349,14 @@ fn lower_expr(
                     term: Term::Unreachable { ty: tast::Type::Error },
                 },
             },
-            core::Expr::Return(value, _) => lower_return(state, value),
-            core::Expr::Closure(_, _, _) | core::Expr::TraitCall(_, _, _, _, _) => {
+            core::Expr::Return { expr: value, ty: _ } => lower_return(state, value),
+            core::Expr::Closure { params: _, body: _, ty: _ } | core::Expr::TraitCall {
+                trait_ref: _,
+                method_name: _,
+                receiver: _,
+                args: _,
+                ty: _,
+            } => {
                 k(unit_imm())
             },
             other => lower_imm(state, other, k),

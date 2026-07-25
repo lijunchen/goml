@@ -105,7 +105,7 @@ fn place_intrinsic_call(
     ret_ty: tast::Type,
     args: Vec[Expr],
 ) -> Expr {
-    Expr::Call(intrinsic_expr(name, params, ret_ty), args, ret_ty)
+    Expr::Call { func: intrinsic_expr(name, params, ret_ty), args, ty: ret_ty }
 }
 
 fn place_ref_get(value: Expr, ref_ty: tast::Type, inner_ty: tast::Type) -> Expr {
@@ -231,7 +231,12 @@ fn place_field_get(
                     ()
                 }
             };
-            Expr::ConstrGet(parent, constructor, field_index.get(), item_ty)
+            Expr::ConstrGet {
+                expr: parent,
+                constructor,
+                field_index: field_index.get(),
+                ty: item_ty,
+            }
         },
         Option::None => missing_expr(item_ty),
     }
@@ -245,10 +250,14 @@ fn rebuild_tuple(parent: Expr, parent_ty: tast::Type, index: int, value: Expr) -
                 if item_index == index {
                     items.push(value)
                 } else {
-                    items.push(Expr::Proj(parent, item_index, types.get(item_index)))
+                    items.push(Expr::Proj {
+                        tuple: parent,
+                        index: item_index,
+                        ty: types.get(item_index),
+                    })
                 }
             };
-            Expr::Tuple(items, parent_ty)
+            Expr::Tuple { items, ty: parent_ty }
         },
         _ => missing_expr(parent_ty),
     }
@@ -269,10 +278,15 @@ fn rebuild_struct(
                 if field.0 == field_name {
                     args.push(value)
                 } else {
-                    args.push(Expr::ConstrGet(parent, constructor, index, field.1))
+                    args.push(Expr::ConstrGet {
+                        expr: parent,
+                        constructor,
+                        field_index: index,
+                        ty: field.1,
+                    })
                 }
             };
-            Expr::Constr(constructor, args, parent_ty)
+            Expr::Constr { constructor, args, ty: parent_ty }
         },
         Option::None => missing_expr(parent_ty),
     }
@@ -294,7 +308,7 @@ fn lower_index_assignment(
                     let root_name = gensym(ctx, "place_root");
                     stmts.push(LetStmt {
                         name: root_name,
-                        value: Expr::Var(name, ty),
+                        value: Expr::Var { name, ty },
                         ty,
                     });
                     compiled_root.set(CompiledPlaceRoot::Local(name, ty));
@@ -312,7 +326,7 @@ fn lower_index_assignment(
                     let root_name = gensym(ctx, "place_root");
                     stmts.push(LetStmt {
                         name: root_name,
-                        value: place_ref_get(Expr::Var(ref_name, ref_ty), ref_ty, ty),
+                        value: place_ref_get(Expr::Var { name: ref_name, ty: ref_ty }, ref_ty, ty),
                         ty,
                     });
                     compiled_root.set(CompiledPlaceRoot::Ref(ref_name, ref_ty));
@@ -338,11 +352,11 @@ fn lower_index_assignment(
                         let next_name = gensym(ctx, "place");
                         stmts.push(LetStmt {
                             name: next_name,
-                            value: Expr::Proj(
-                                Expr::Var(parent_name, current_ty.get()),
+                            value: Expr::Proj {
+                                tuple: Expr::Var { name: parent_name, ty: current_ty.get() },
                                 index,
-                                item_ty,
-                            ),
+                                ty: item_ty,
+                            },
                             ty: item_ty,
                         });
                         evaluated.push(EvaluatedPlaceStep::Proj(
@@ -360,7 +374,7 @@ fn lower_index_assignment(
                             name: next_name,
                             value: place_field_get(
                                 ctx,
-                                Expr::Var(parent_name, current_ty.get()),
+                                Expr::Var { name: parent_name, ty: current_ty.get() },
                                 parent_ty,
                                 field_name,
                                 item_ty,
@@ -388,9 +402,9 @@ fn lower_index_assignment(
                         stmts.push(LetStmt {
                             name: next_name,
                             value: place_index_read(
-                                Expr::Var(parent_name, current_ty.get()),
+                                Expr::Var { name: parent_name, ty: current_ty.get() },
                                 container_ty,
-                                Expr::Var(index_name, index_ty),
+                                Expr::Var { name: index_name, ty: index_ty },
                                 item_ty,
                             ),
                             ty: item_ty,
@@ -413,7 +427,7 @@ fn lower_index_assignment(
                 value: lower_expr(ctx, value),
                 ty: value_ty,
             });
-            let updated = Ref::new(Expr::Var(value_name, value_ty));
+            let updated = Ref::new(Expr::Var { name: value_name, ty: value_ty });
             let final_action: Ref[Option[Expr]] = Ref::new(Option::None);
             let stopped = Ref::new(false);
             for offset in range(0, evaluated.len()) {
@@ -423,7 +437,7 @@ fn lower_index_assignment(
                     match evaluated.get(evaluated.len() - 1 - offset) {
                         EvaluatedPlaceStep::Proj(parent_name, parent_ty, index) => {
                             updated.set(rebuild_tuple(
-                                Expr::Var(parent_name, parent_ty),
+                                Expr::Var { name: parent_name, ty: parent_ty },
                                 parent_ty,
                                 index,
                                 updated.get(),
@@ -432,7 +446,7 @@ fn lower_index_assignment(
                         EvaluatedPlaceStep::Field(parent_name, parent_ty, field_name) => {
                             updated.set(rebuild_struct(
                                 ctx,
-                                Expr::Var(parent_name, parent_ty),
+                                Expr::Var { name: parent_name, ty: parent_ty },
                                 parent_ty,
                                 field_name,
                                 updated.get(),
@@ -445,22 +459,22 @@ fn lower_index_assignment(
                             index_ty,
                         ) => match tast::resolve_type(parent_ty) {
                             tast::Type::Array(_, _) => updated.set(place_array_set(
-                                Expr::Var(parent_name, parent_ty),
-                                Expr::Var(index_name, index_ty),
+                                Expr::Var { name: parent_name, ty: parent_ty },
+                                Expr::Var { name: index_name, ty: index_ty },
                                 updated.get(),
                             )),
                             tast::Type::VecType(_) => {
                                 final_action.set(Option::Some(place_vec_set(
-                                    Expr::Var(parent_name, parent_ty),
-                                    Expr::Var(index_name, index_ty),
+                                    Expr::Var { name: parent_name, ty: parent_ty },
+                                    Expr::Var { name: index_name, ty: index_ty },
                                     updated.get(),
                                 )));
                                 stopped.set(true)
                             },
                             tast::Type::HashMap(_, _) => {
                                 final_action.set(Option::Some(place_hashmap_set(
-                                    Expr::Var(parent_name, parent_ty),
-                                    Expr::Var(index_name, index_ty),
+                                    Expr::Var { name: parent_name, ty: parent_ty },
+                                    Expr::Var { name: index_name, ty: index_ty },
                                     updated.get(),
                                 )));
                                 stopped.set(true)
@@ -476,27 +490,27 @@ fn lower_index_assignment(
             let action = match final_action.get() {
                 Option::Some(value) => value,
                 Option::None => match compiled_root.get() {
-                    CompiledPlaceRoot::Local(name, ty) => Expr::Assign(
+                    CompiledPlaceRoot::Local(name, ty) => Expr::Assign {
                         name,
-                        updated.get(),
-                        ty,
-                        tast::Type::Unit,
-                    ),
+                        value: updated.get(),
+                        target_ty: ty,
+                        ty: tast::Type::Unit,
+                    },
                     CompiledPlaceRoot::Ref(name, ty) => place_ref_set(
-                        Expr::Var(name, ty),
+                        Expr::Var { name, ty },
                         updated.get(),
                         ty,
                     ),
                     CompiledPlaceRoot::Value => missing_expr(tast::Type::Unit),
                 },
             };
-            Expr::Block(
-                Block {
-                    stmts,
-                    tail: Option::Some(action),
-                },
-                tast::Type::Unit,
-            )
+            Expr::Block {
+                block: Block {
+                                    stmts,
+                                    tail: Option::Some(action),
+                                },
+                ty: tast::Type::Unit,
+            }
         } else {
             missing_expr(tast::Type::Unit)
         },
@@ -506,12 +520,12 @@ fn lower_index_assignment(
 
 fn lower_assignment(ctx: Lowerer, target: tast::Expr, value: tast::Expr) -> Expr {
     match target {
-        tast::Expr::Var(name, target_ty) => Expr::Assign(
+        tast::Expr::Var(name, target_ty) => Expr::Assign {
             name,
-            lower_expr(ctx, value),
+            value: lower_expr(ctx, value),
             target_ty,
-            tast::Type::Unit,
-        ),
+            ty: tast::Type::Unit,
+        },
         tast::Expr::Index(_, _, _) => lower_index_assignment(ctx, target, value),
         _ => missing_expr(tast::Type::Unit),
     }

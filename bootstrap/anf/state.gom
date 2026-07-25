@@ -103,30 +103,30 @@ fn jump_block(
 
 fn expr_is_control(value: core::Expr) -> bool {
     match value {
-        core::Expr::Block(_, _)
-        | core::Expr::If(_, _, _, _)
-        | core::Expr::Match(_, _, _, _)
-        | core::Expr::While(_, _, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_)
-        | core::Expr::Return(_, _) => true,
+        core::Expr::Block { block: _, ty: _ }
+        | core::Expr::If { cond: _, then_branch: _, else_branch: _, ty: _ }
+        | core::Expr::Match { expr: _, arms: _, default: _, ty: _ }
+        | core::Expr::While { cond: _, body: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ }
+        | core::Expr::Return { expr: _, ty: _ } => true,
         _ => false,
     }
 }
 
 fn expr_always_exits(value: core::Expr) -> bool {
     match value {
-        core::Expr::Break(_) | core::Expr::Continue(_) | core::Expr::Return(_, _) => true,
-        core::Expr::Constr(_, args, _) => exprs_always_exit(args),
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Break { ty: _ } | core::Expr::Continue { ty: _ } | core::Expr::Return { expr: _, ty: _ } => true,
+        core::Expr::Constr { constructor: _, args, ty: _ } => exprs_always_exit(args),
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             exprs_always_exit(items)
         },
-        core::Expr::Closure(_, body, _) => expr_always_exits(body),
-        core::Expr::Block(block, _) => block_always_exits(block),
-        core::Expr::If(_, then_, else_, _) => {
+        core::Expr::Closure { params: _, body, ty: _ } => expr_always_exits(body),
+        core::Expr::Block { block, ty: _ } => block_always_exits(block),
+        core::Expr::If { cond: _, then_branch: then_, else_branch: else_, ty: _ } => {
             expr_always_exits(then_) && expr_always_exits(else_)
         },
-        core::Expr::Match(_, arms, default, _) => {
+        core::Expr::Match { expr: _, arms, default, ty: _ } => {
             let has_catch_all = Ref::new(match default {
                 Option::Some(_) => true,
                 Option::None => false,
@@ -134,7 +134,7 @@ fn expr_always_exits(value: core::Expr) -> bool {
             let exits = Ref::new(true);
             for arm in arms {
                 match arm.lhs {
-                    core::Expr::Var(_, _) => has_catch_all.set(true),
+                    core::Expr::Var { name: _, ty: _ } => has_catch_all.set(true),
                     _ => (),
                 };
                 if expr_always_exits(arm.body) {
@@ -153,30 +153,30 @@ fn expr_always_exits(value: core::Expr) -> bool {
             };
             has_catch_all.get() && exits.get()
         },
-        core::Expr::While(cond, _, _) => expr_always_exits(cond),
-        core::Expr::Go(expr, _)
-        | core::Expr::ConstrGet(expr, _, _, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::ToDyn(_, _, expr, _)
-        | core::Expr::Proj(expr, _, _) => expr_always_exits(expr),
-        core::Expr::Binary(op, lhs, rhs, _) => {
+        core::Expr::While { cond, body: _, ty: _ } => expr_always_exits(cond),
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => expr_always_exits(expr),
+        core::Expr::Binary { op, lhs, rhs, ty: _ } => {
             expr_always_exits(lhs) || match op {
                 ast::BinaryOp::And | ast::BinaryOp::Or => false,
                 _ => expr_always_exits(rhs),
             }
         },
-        core::Expr::Assign(_, expr, _, _) => expr_always_exits(expr),
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => expr_always_exits(expr),
+        core::Expr::Call { func, args, ty: _ } => {
             expr_always_exits(func) || exprs_always_exit(args)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
-        core::Expr::Var(_, _)
-        | core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _) => false,
+        core::Expr::Var { name: _, ty: _ }
+        | core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ } => false,
     }
 }
 

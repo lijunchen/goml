@@ -150,18 +150,18 @@ fn collect_used_block(values: Vec[string], block: core::Block) -> unit {
 fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
     collect_used_types(values, core::expr_type(expr));
     match expr {
-        core::Expr::Constr(_, args, _) => collect_used_exprs(values, args),
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Constr { constructor: _, args, ty: _ } => collect_used_exprs(values, args),
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             collect_used_exprs(values, items)
         },
-        core::Expr::Closure(params, body, _) => {
+        core::Expr::Closure { params, body, ty: _ } => {
             for param in params {
                 collect_used_types(values, param.ty)
             };
             collect_used_expr(values, body)
         },
-        core::Expr::Block(block, _) => collect_used_block(values, block),
-        core::Expr::Match(scrutinee, arms, default, _) => {
+        core::Expr::Block { block, ty: _ } => collect_used_block(values, block),
+        core::Expr::Match { expr: scrutinee, arms, default, ty: _ } => {
             collect_used_expr(values, scrutinee);
             for arm in arms {
                 collect_used_expr(values, arm.lhs);
@@ -169,43 +169,43 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             };
             collect_used_optional_expr(values, default)
         },
-        core::Expr::If(cond, then_, else_, _) => {
+        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             collect_used_expr(values, cond);
             collect_used_expr(values, then_);
             collect_used_expr(values, else_)
         },
-        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } | core::Expr::Binary { op: _, lhs: cond, rhs: body, ty: _ } => {
             collect_used_expr(values, cond);
             collect_used_expr(values, body)
         },
-        core::Expr::Return(expr, _) => collect_used_optional_expr(values, expr),
-        core::Expr::Go(expr, _)
-        | core::Expr::ConstrGet(expr, _, _, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::Proj(expr, _, _) => collect_used_expr(values, expr),
-        core::Expr::Assign(_, expr, target_ty, _) => {
+        core::Expr::Return { expr, ty: _ } => collect_used_optional_expr(values, expr),
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => collect_used_expr(values, expr),
+        core::Expr::Assign { name: _, value: expr, target_ty, ty: _ } => {
             collect_used_types(values, target_ty);
             collect_used_expr(values, expr)
         },
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Call { func, args, ty: _ } => {
             collect_used_expr(values, func);
             collect_used_exprs(values, args)
         },
-        core::Expr::ToDyn(_, for_ty, expr, _) => {
+        core::Expr::ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
             collect_used_types(values, for_ty);
             collect_used_expr(values, expr)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
-        core::Expr::Var(_, _)
-        | core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_) => (),
+        core::Expr::Var { name: _, ty: _ }
+        | core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
     }
 }
 
@@ -408,19 +408,19 @@ fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
 
 fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
     match value {
-        core::Expr::Var(_, _) => (),
-        core::Expr::Constr(_, args, _) => observe_exprs(maximum, args),
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Var { name: _, ty: _ } => (),
+        core::Expr::Constr { constructor: _, args, ty: _ } => observe_exprs(maximum, args),
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             observe_exprs(maximum, items)
         },
-        core::Expr::Closure(params, body, _) => {
+        core::Expr::Closure { params, body, ty: _ } => {
             for param in params {
                 observe_name(maximum, param.name)
             };
             observe_expr(maximum, body)
         },
-        core::Expr::Block(block, _) => observe_block(maximum, block),
-        core::Expr::Match(expr, arms, default, _) => {
+        core::Expr::Block { block, ty: _ } => observe_block(maximum, block),
+        core::Expr::Match { expr, arms, default, ty: _ } => {
             observe_expr(maximum, expr);
             for arm in arms {
                 observe_expr(maximum, arm.lhs);
@@ -428,36 +428,36 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             };
             observe_optional_expr(maximum, default)
         },
-        core::Expr::If(cond, then_, else_, _) => {
+        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             observe_expr(maximum, cond);
             observe_expr(maximum, then_);
             observe_expr(maximum, else_)
         },
-        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } | core::Expr::Binary { op: _, lhs: cond, rhs: body, ty: _ } => {
             observe_expr(maximum, cond);
             observe_expr(maximum, body)
         },
-        core::Expr::Return(expr, _) => observe_optional_expr(maximum, expr),
-        core::Expr::Go(expr, _)
-        | core::Expr::ConstrGet(expr, _, _, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::ToDyn(_, _, expr, _)
-        | core::Expr::Proj(expr, _, _) => observe_expr(maximum, expr),
-        core::Expr::Assign(_, expr, _, _) => observe_expr(maximum, expr),
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Return { expr, ty: _ } => observe_optional_expr(maximum, expr),
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => observe_expr(maximum, expr),
+        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => observe_expr(maximum, expr),
+        core::Expr::Call { func, args, ty: _ } => {
             observe_expr(maximum, func);
             observe_exprs(maximum, args)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_) => (),
+        core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
     }
 }
 
@@ -516,7 +516,7 @@ fn transform_block(
     let stmts = Vec::new();
     for stmt in value.stmts {
         let transformed = match stmt.value {
-            core::Expr::Closure(params, body, ty) => transform_closure(
+            core::Expr::Closure { params, body, ty } => transform_closure(
                 state,
                 scope,
                 params,
@@ -585,7 +585,7 @@ fn transform_call(
     let func = transform_expr(state, scope, func, context);
     let args = transform_exprs(state, scope, args, context);
     let closure = match func {
-        core::Expr::Var(name, _) => match find_scope(scope, name) {
+        core::Expr::Var { name, ty: _ } => match find_scope(scope, name) {
             Option::Some(entry) => match entry.closure_struct {
                 Option::Some(name) => find_closure(state, name),
                 Option::None => closure_for_type(state, entry.ty),
@@ -601,13 +601,13 @@ fn transform_call(
             for arg in args {
                 call_args.push(arg)
             };
-            core::Expr::Call(
-                core::Expr::Var(info.apply_name, info.apply_ty),
-                call_args,
+            core::Expr::Call {
+                func: core::Expr::Var { name: info.apply_name, ty: info.apply_ty },
+                args: call_args,
                 ty,
-            )
+            }
         },
-        Option::None => core::Expr::Call(func, args, ty),
+        Option::None => core::Expr::Call { func, args, ty },
     }
 }
 
@@ -618,26 +618,26 @@ fn transform_expr(
     context: Option[string],
 ) -> core::Expr {
     match value {
-        core::Expr::Var(name, ty) => match find_scope(scope, name) {
-            Option::Some(entry) => core::Expr::Var(name, entry.ty),
-            Option::None => core::Expr::Var(name, ty),
+        core::Expr::Var { name, ty } => match find_scope(scope, name) {
+            Option::Some(entry) => core::Expr::Var { name, ty: entry.ty },
+            Option::None => core::Expr::Var { name, ty },
         },
-        core::Expr::Callable(callable, ty) => core::Expr::Callable(callable, ty),
-        core::Expr::Prim(value, ty) => core::Expr::Prim(value, ty),
-        core::Expr::Constr(constructor, args, ty) => core::Expr::Constr(
+        core::Expr::Callable { callable, ty } => core::Expr::Callable { callable, ty },
+        core::Expr::Prim { value, ty } => core::Expr::Prim { value, ty },
+        core::Expr::Constr { constructor, args, ty } => core::Expr::Constr {
             constructor,
-            transform_exprs(state, scope, args, context),
+            args: transform_exprs(state, scope, args, context),
             ty,
-        ),
-        core::Expr::Tuple(items, ty) => core::Expr::Tuple(
-            transform_exprs(state, scope, items, context),
+        },
+        core::Expr::Tuple { items, ty } => core::Expr::Tuple {
+            items: transform_exprs(state, scope, items, context),
             ty,
-        ),
-        core::Expr::Array(items, ty) => core::Expr::Array(
-            transform_exprs(state, scope, items, context),
+        },
+        core::Expr::Array { items, ty } => core::Expr::Array {
+            items: transform_exprs(state, scope, items, context),
             ty,
-        ),
-        core::Expr::Closure(params, body, ty) => transform_closure(
+        },
+        core::Expr::Closure { params, body, ty } => transform_closure(
             state,
             scope,
             params,
@@ -646,96 +646,96 @@ fn transform_expr(
             Option::None,
             context,
         ),
-        core::Expr::Block(block, _) => {
+        core::Expr::Block { block, ty: _ } => {
             let block = transform_block(state, scope, block, context);
-            core::Expr::Block(block, block_type(block))
+            core::Expr::Block { block, ty: block_type(block) }
         },
-        core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
-            transform_expr(state, scope, expr, context),
-            transform_arms(state, scope, arms, context),
-            transform_optional_expr(state, scope, default, context),
+        core::Expr::Match { expr, arms, default, ty } => core::Expr::Match {
+            expr: transform_expr(state, scope, expr, context),
+            arms: transform_arms(state, scope, arms, context),
+            default: transform_optional_expr(state, scope, default, context),
             ty,
-        ),
-        core::Expr::If(cond, then_, else_, ty) => core::Expr::If(
-            transform_expr(state, scope, cond, context),
-            transform_expr(state, scope, then_, context),
-            transform_expr(state, scope, else_, context),
+        },
+        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty } => core::Expr::If {
+            cond: transform_expr(state, scope, cond, context),
+            then_branch: transform_expr(state, scope, then_, context),
+            else_branch: transform_expr(state, scope, else_, context),
             ty,
-        ),
-        core::Expr::While(cond, body, ty) => core::Expr::While(
-            transform_expr(state, scope, cond, context),
-            transform_expr(state, scope, body, context),
+        },
+        core::Expr::While { cond, body, ty } => core::Expr::While {
+            cond: transform_expr(state, scope, cond, context),
+            body: transform_expr(state, scope, body, context),
             ty,
-        ),
-        core::Expr::Break(ty) => core::Expr::Break(ty),
-        core::Expr::Continue(ty) => core::Expr::Continue(ty),
-        core::Expr::Return(expr, ty) => core::Expr::Return(
-            transform_optional_expr(state, scope, expr, context),
+        },
+        core::Expr::Break { ty } => core::Expr::Break { ty },
+        core::Expr::Continue { ty } => core::Expr::Continue { ty },
+        core::Expr::Return { expr, ty } => core::Expr::Return {
+            expr: transform_optional_expr(state, scope, expr, context),
             ty,
-        ),
-        core::Expr::Go(expr, ty) => core::Expr::Go(
-            transform_expr(state, scope, expr, context),
+        },
+        core::Expr::Go { expr, ty } => core::Expr::Go {
+            expr: transform_expr(state, scope, expr, context),
             ty,
-        ),
-        core::Expr::ConstrGet(expr, constructor, index, ty) => core::Expr::ConstrGet(
-            transform_expr(state, scope, expr, context),
+        },
+        core::Expr::ConstrGet { expr, constructor, field_index: index, ty } => core::Expr::ConstrGet {
+            expr: transform_expr(state, scope, expr, context),
             constructor,
-            index,
+            field_index: index,
             ty,
-        ),
-        core::Expr::Unary(op, expr, ty) => core::Expr::Unary(
+        },
+        core::Expr::Unary { op, expr, ty } => core::Expr::Unary {
             op,
-            transform_expr(state, scope, expr, context),
+            expr: transform_expr(state, scope, expr, context),
             ty,
-        ),
-        core::Expr::Cast(expr, ty) => core::Expr::Cast(
-            transform_expr(state, scope, expr, context),
+        },
+        core::Expr::Cast { expr, ty } => core::Expr::Cast {
+            expr: transform_expr(state, scope, expr, context),
             ty,
-        ),
-        core::Expr::Binary(op, lhs, rhs, ty) => core::Expr::Binary(
+        },
+        core::Expr::Binary { op, lhs, rhs, ty } => core::Expr::Binary {
             op,
-            transform_expr(state, scope, lhs, context),
-            transform_expr(state, scope, rhs, context),
+            lhs: transform_expr(state, scope, lhs, context),
+            rhs: transform_expr(state, scope, rhs, context),
             ty,
-        ),
-        core::Expr::Assign(name, expr, target_ty, ty) => core::Expr::Assign(
+        },
+        core::Expr::Assign { name, value: expr, target_ty, ty } => core::Expr::Assign {
             name,
-            transform_expr(state, scope, expr, context),
+            value: transform_expr(state, scope, expr, context),
             target_ty,
             ty,
-        ),
-        core::Expr::Call(func, args, ty) => {
+        },
+        core::Expr::Call { func, args, ty } => {
             transform_call(state, scope, func, args, ty, context)
         },
-        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => core::Expr::ToDyn(
+        core::Expr::ToDyn { trait_name, for_ty, expr, ty } => core::Expr::ToDyn {
             trait_name,
             for_ty,
-            transform_expr(state, scope, expr, context),
+            expr: transform_expr(state, scope, expr, context),
             ty,
-        ),
-        core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
-            core::Expr::DynCall(
+        },
+        core::Expr::DynCall { trait_name, method_name, receiver, args, ty } => {
+            core::Expr::DynCall {
                 trait_name,
                 method_name,
-                transform_expr(state, scope, receiver, context),
-                transform_exprs(state, scope, args, context),
+                receiver: transform_expr(state, scope, receiver, context),
+                args: transform_exprs(state, scope, args, context),
                 ty,
-            )
+            }
         },
-        core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
-            core::Expr::TraitCall(
-                reference,
+        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
+            core::Expr::TraitCall {
+                trait_ref: reference,
                 method_name,
-                transform_expr(state, scope, receiver, context),
-                transform_exprs(state, scope, args, context),
+                receiver: transform_expr(state, scope, receiver, context),
+                args: transform_exprs(state, scope, args, context),
                 ty,
-            )
+            }
         },
-        core::Expr::Proj(expr, index, ty) => core::Expr::Proj(
-            transform_expr(state, scope, expr, context),
+        core::Expr::Proj { tuple: expr, index, ty } => core::Expr::Proj {
+            tuple: transform_expr(state, scope, expr, context),
             index,
             ty,
-        ),
+        },
     }
 }
 
@@ -803,7 +803,7 @@ fn collect_captured(
     scope: Vec[ScopeEntry],
 ) -> unit {
     match value {
-        core::Expr::Var(name, _) => if bound_contains(bound, name) {
+        core::Expr::Var { name, ty: _ } => if bound_contains(bound, name) {
             ()
         } else {
             match find_scope(scope, name) {
@@ -818,19 +818,19 @@ fn collect_captured(
                 Option::None => (),
             }
         },
-        core::Expr::Constr(_, args, _) => {
+        core::Expr::Constr { constructor: _, args, ty: _ } => {
             collect_captured_exprs(args, bound, captured, scope)
         },
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             collect_captured_exprs(items, bound, captured, scope)
         },
-        core::Expr::Closure(_, body, _) => {
+        core::Expr::Closure { params: _, body, ty: _ } => {
             collect_captured(body, bound, captured, scope)
         },
-        core::Expr::Block(block, _) => {
+        core::Expr::Block { block, ty: _ } => {
             collect_captured_block(block, bound, captured, scope)
         },
-        core::Expr::Match(expr, arms, default, _) => {
+        core::Expr::Match { expr, arms, default, ty: _ } => {
             collect_captured(expr, bound, captured, scope);
             for arm in arms {
                 collect_captured(arm.lhs, bound, captured, scope);
@@ -838,42 +838,42 @@ fn collect_captured(
             };
             collect_captured_optional(default, bound, captured, scope)
         },
-        core::Expr::If(cond, then_, else_, _) => {
+        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             collect_captured(cond, bound, captured, scope);
             collect_captured(then_, bound, captured, scope);
             collect_captured(else_, bound, captured, scope)
         },
-        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } | core::Expr::Binary { op: _, lhs: cond, rhs: body, ty: _ } => {
             collect_captured(cond, bound, captured, scope);
             collect_captured(body, bound, captured, scope)
         },
-        core::Expr::Return(expr, _) => {
+        core::Expr::Return { expr, ty: _ } => {
             collect_captured_optional(expr, bound, captured, scope)
         },
-        core::Expr::Go(expr, _)
-        | core::Expr::ConstrGet(expr, _, _, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::ToDyn(_, _, expr, _)
-        | core::Expr::Proj(expr, _, _) => {
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => {
             collect_captured(expr, bound, captured, scope)
         },
-        core::Expr::Assign(_, expr, _, _) => {
+        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => {
             collect_captured(expr, bound, captured, scope)
         },
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Call { func, args, ty: _ } => {
             collect_captured(func, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
-        core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_) => (),
+        core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
     }
 }
 
@@ -886,7 +886,7 @@ fn make_field_name(name: string, index: int) -> string {
 
 fn closure_body_block(value: core::Expr) -> core::Block {
     match value {
-        core::Expr::Block(block, _) => block,
+        core::Expr::Block { block, ty: _ } => block,
         other => core::Block {
             stmts: Vec::new(),
             tail: Option::Some(other),
@@ -906,12 +906,12 @@ fn prepend_captures(
         let capture = captures.get(index);
         stmts.push(core::LetStmt {
             name: capture.name,
-            value: core::Expr::ConstrGet(
-                core::Expr::Var(env_name, env_ty),
+            value: core::Expr::ConstrGet {
+                expr: core::Expr::Var { name: env_name, ty: env_ty },
                 constructor,
-                index,
-                capture.ty,
-            ),
+                field_index: index,
+                ty: capture.ty,
+            },
             ty: capture.ty,
         })
     };
@@ -976,7 +976,7 @@ fn transform_closure(
                 let field_name = make_field_name(capture.name, index);
                 fields.push(field_name);
                 struct_fields.push((field_name, capture.ty));
-                captured_args.push(core::Expr::Var(capture.name, capture.ty))
+                captured_args.push(core::Expr::Var { name: capture.name, ty: capture.ty })
             };
             let constructor = tast::Constructor {
                 name: struct_name,
@@ -1024,9 +1024,9 @@ fn transform_closure(
                 ret_ty: signature.1,
                 body: fn_body,
             });
-            core::Expr::Constr(constructor, captured_args, env_ty)
+            core::Expr::Constr { constructor, args: captured_args, ty: env_ty }
         },
-        Option::None => core::Expr::Closure(params, body, ty),
+        Option::None => core::Expr::Closure { params, body, ty },
     }
 }
 

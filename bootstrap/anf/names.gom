@@ -102,18 +102,18 @@ fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
 
 fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
     match value {
-        core::Expr::Constr(_, args, _) => observe_exprs(maximum, args),
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Constr { constructor: _, args, ty: _ } => observe_exprs(maximum, args),
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             observe_exprs(maximum, items)
         },
-        core::Expr::Closure(params, body, _) => {
+        core::Expr::Closure { params, body, ty: _ } => {
             for param in params {
                 observe_name(maximum, param.name)
             };
             observe_expr(maximum, body)
         },
-        core::Expr::Block(block, _) => observe_block(maximum, block),
-        core::Expr::Match(expr, arms, default, _) => {
+        core::Expr::Block { block, ty: _ } => observe_block(maximum, block),
+        core::Expr::Match { expr, arms, default, ty: _ } => {
             observe_expr(maximum, expr);
             for arm in arms {
                 observe_expr(maximum, arm.lhs);
@@ -121,37 +121,37 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             };
             observe_optional_expr(maximum, default)
         },
-        core::Expr::If(cond, then_, else_, _) => {
+        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             observe_expr(maximum, cond);
             observe_expr(maximum, then_);
             observe_expr(maximum, else_)
         },
-        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } | core::Expr::Binary { op: _, lhs: cond, rhs: body, ty: _ } => {
             observe_expr(maximum, cond);
             observe_expr(maximum, body)
         },
-        core::Expr::Return(expr, _) => observe_optional_expr(maximum, expr),
-        core::Expr::Go(expr, _)
-        | core::Expr::ConstrGet(expr, _, _, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::ToDyn(_, _, expr, _)
-        | core::Expr::Proj(expr, _, _) => observe_expr(maximum, expr),
-        core::Expr::Assign(_, expr, _, _) => observe_expr(maximum, expr),
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Return { expr, ty: _ } => observe_optional_expr(maximum, expr),
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => observe_expr(maximum, expr),
+        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => observe_expr(maximum, expr),
+        core::Expr::Call { func, args, ty: _ } => {
             observe_expr(maximum, func);
             observe_exprs(maximum, args)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        core::Expr::Var(_, _)
-        | core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_) => (),
+        core::Expr::Var { name: _, ty: _ }
+        | core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
     }
 }
 

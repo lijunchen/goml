@@ -230,16 +230,16 @@ fn artifact_prepare_core_expr(
     definitions: Vec[tast::StructDef],
 ) -> unit {
     match value {
-        core::Expr::Constr(constructor, args, _) => {
+        core::Expr::Constr { constructor, args, ty: _ } => {
             artifact_fill_constructor_fields(constructor, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             artifact_prepare_core_exprs(items, definitions)
         },
-        core::Expr::Closure(_, body, _) => artifact_prepare_core_expr(body, definitions),
-        core::Expr::Block(block, _) => artifact_prepare_core_block(block, definitions),
-        core::Expr::Match(expr, arms, default, _) => {
+        core::Expr::Closure { params: _, body, ty: _ } => artifact_prepare_core_expr(body, definitions),
+        core::Expr::Block { block, ty: _ } => artifact_prepare_core_block(block, definitions),
+        core::Expr::Match { expr, arms, default, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions);
             for arm in arms {
                 artifact_prepare_core_expr(arm.lhs, definitions);
@@ -247,50 +247,50 @@ fn artifact_prepare_core_expr(
             };
             artifact_prepare_optional_core_expr(default, definitions)
         },
-        core::Expr::If(cond, then_branch, else_branch, _) => {
+        core::Expr::If { cond, then_branch, else_branch, ty: _ } => {
             artifact_prepare_core_expr(cond, definitions);
             artifact_prepare_core_expr(then_branch, definitions);
             artifact_prepare_core_expr(else_branch, definitions)
         },
-        core::Expr::While(cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } => {
             artifact_prepare_core_expr(cond, definitions);
             artifact_prepare_core_expr(body, definitions)
         },
-        core::Expr::Return(expr, _) => {
+        core::Expr::Return { expr, ty: _ } => {
             artifact_prepare_optional_core_expr(expr, definitions)
         },
-        core::Expr::Go(expr, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::Proj(expr, _, _) => artifact_prepare_core_expr(expr, definitions),
-        core::Expr::ConstrGet(expr, constructor, _, _) => {
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => artifact_prepare_core_expr(expr, definitions),
+        core::Expr::ConstrGet { expr, constructor, field_index: _, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions);
             artifact_fill_constructor_fields(constructor, definitions)
         },
-        core::Expr::Binary(_, lhs, rhs, _) => {
+        core::Expr::Binary { op: _, lhs, rhs, ty: _ } => {
             artifact_prepare_core_expr(lhs, definitions);
             artifact_prepare_core_expr(rhs, definitions)
         },
-        core::Expr::Assign(_, expr, _, _) => {
+        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions)
         },
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Call { func, args, ty: _ } => {
             artifact_prepare_core_expr(func, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        core::Expr::ToDyn(_, _, expr, _) => {
+        core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions)
         },
-        core::Expr::DynCall(_, _, receiver, args, _)
-        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
             artifact_prepare_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        core::Expr::Var(_, _)
-        | core::Expr::Callable(_, _)
-        | core::Expr::Prim(_, _)
-        | core::Expr::Break(_)
-        | core::Expr::Continue(_) => (),
+        core::Expr::Var { name: _, ty: _ }
+        | core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
     }
 }
 

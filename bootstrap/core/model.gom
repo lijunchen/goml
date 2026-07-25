@@ -45,31 +45,48 @@ pub struct Block {
 }
 
 pub enum Expr {
-    Var(string, tast::Type),
-    Callable(tast::Callable, tast::Type),
-    Prim(tast::Primitive, tast::Type),
-    Constr(tast::Constructor, Vec[Expr], tast::Type),
-    Tuple(Vec[Expr], tast::Type),
-    Array(Vec[Expr], tast::Type),
-    Closure(Vec[tast::ClosureParam], Expr, tast::Type),
-    Block(Block, tast::Type),
-    Match(Expr, Vec[Arm], Option[Expr], tast::Type),
-    If(Expr, Expr, Expr, tast::Type),
-    While(Expr, Expr, tast::Type),
-    Break(tast::Type),
-    Continue(tast::Type),
-    Return(Option[Expr], tast::Type),
-    Go(Expr, tast::Type),
-    ConstrGet(Expr, tast::Constructor, int, tast::Type),
-    Unary(ast::UnaryOp, Expr, tast::Type),
-    Cast(Expr, tast::Type),
-    Binary(ast::BinaryOp, Expr, Expr, tast::Type),
-    Assign(string, Expr, tast::Type, tast::Type),
-    Call(Expr, Vec[Expr], tast::Type),
-    ToDyn(string, tast::Type, Expr, tast::Type),
-    DynCall(string, string, Expr, Vec[Expr], tast::Type),
-    TraitCall(tast::TraitRef, string, Expr, Vec[Expr], tast::Type),
-    Proj(Expr, int, tast::Type),
+    Var { name: string, ty: tast::Type },
+    Callable { callable: tast::Callable, ty: tast::Type },
+    Prim { value: tast::Primitive, ty: tast::Type },
+    Constr { constructor: tast::Constructor, args: Vec[Expr], ty: tast::Type },
+    Tuple { items: Vec[Expr], ty: tast::Type },
+    Array { items: Vec[Expr], ty: tast::Type },
+    Closure { params: Vec[tast::ClosureParam], body: Expr, ty: tast::Type },
+    Block { block: Block, ty: tast::Type },
+    Match { expr: Expr, arms: Vec[Arm], default: Option[Expr], ty: tast::Type },
+    If { cond: Expr, then_branch: Expr, else_branch: Expr, ty: tast::Type },
+    While { cond: Expr, body: Expr, ty: tast::Type },
+    Break { ty: tast::Type },
+    Continue { ty: tast::Type },
+    Return { expr: Option[Expr], ty: tast::Type },
+    Go { expr: Expr, ty: tast::Type },
+    ConstrGet {
+        expr: Expr,
+        constructor: tast::Constructor,
+        field_index: int,
+        ty: tast::Type,
+    },
+    Unary { op: ast::UnaryOp, expr: Expr, ty: tast::Type },
+    Cast { expr: Expr, ty: tast::Type },
+    Binary { op: ast::BinaryOp, lhs: Expr, rhs: Expr, ty: tast::Type },
+    Assign { name: string, value: Expr, target_ty: tast::Type, ty: tast::Type },
+    Call { func: Expr, args: Vec[Expr], ty: tast::Type },
+    ToDyn { trait_name: string, for_ty: tast::Type, expr: Expr, ty: tast::Type },
+    DynCall {
+        trait_name: string,
+        method_name: string,
+        receiver: Expr,
+        args: Vec[Expr],
+        ty: tast::Type,
+    },
+    TraitCall {
+        trait_ref: tast::TraitRef,
+        method_name: string,
+        receiver: Expr,
+        args: Vec[Expr],
+        ty: tast::Type,
+    },
+    Proj { tuple: Expr, index: int, ty: tast::Type },
 }
 
 pub struct Arm {
@@ -79,30 +96,30 @@ pub struct Arm {
 
 pub fn expr_type(value: Expr) -> tast::Type {
     match value {
-        Expr::Var(_, ty) => ty,
-        Expr::Callable(_, ty) => ty,
-        Expr::Prim(_, ty) => ty,
-        Expr::Constr(_, _, ty) => ty,
-        Expr::Tuple(_, ty) => ty,
-        Expr::Array(_, ty) => ty,
-        Expr::Closure(_, _, ty) => ty,
-        Expr::Block(_, ty) => ty,
-        Expr::Match(_, _, _, ty) => ty,
-        Expr::If(_, _, _, ty) => ty,
-        Expr::While(_, _, ty) => ty,
-        Expr::Break(ty) => ty,
-        Expr::Continue(ty) => ty,
-        Expr::Return(_, ty) => ty,
-        Expr::Go(_, ty) => ty,
-        Expr::ConstrGet(_, _, _, ty) => ty,
-        Expr::Unary(_, _, ty) => ty,
-        Expr::Cast(_, ty) => ty,
-        Expr::Binary(_, _, _, ty) => ty,
-        Expr::Assign(_, _, _, ty) => ty,
-        Expr::Call(_, _, ty) => ty,
-        Expr::ToDyn(_, _, _, ty) => ty,
-        Expr::DynCall(_, _, _, _, ty) => ty,
-        Expr::TraitCall(_, _, _, _, ty) => ty,
-        Expr::Proj(_, _, ty) => ty,
+        Expr::Var { ty, .. }
+        | Expr::Callable { ty, .. }
+        | Expr::Prim { ty, .. }
+        | Expr::Constr { ty, .. }
+        | Expr::Tuple { ty, .. }
+        | Expr::Array { ty, .. }
+        | Expr::Closure { ty, .. }
+        | Expr::Block { ty, .. }
+        | Expr::Match { ty, .. }
+        | Expr::If { ty, .. }
+        | Expr::While { ty, .. }
+        | Expr::Break { ty }
+        | Expr::Continue { ty }
+        | Expr::Return { ty, .. }
+        | Expr::Go { ty, .. }
+        | Expr::ConstrGet { ty, .. }
+        | Expr::Unary { ty, .. }
+        | Expr::Cast { ty, .. }
+        | Expr::Binary { ty, .. }
+        | Expr::Assign { ty, .. }
+        | Expr::Call { ty, .. }
+        | Expr::ToDyn { ty, .. }
+        | Expr::DynCall { ty, .. }
+        | Expr::TraitCall { ty, .. }
+        | Expr::Proj { ty, .. } => ty,
     }
 }

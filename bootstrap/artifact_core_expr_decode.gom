@@ -146,7 +146,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Var(name, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Var { name, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "ECallable" {
@@ -162,7 +162,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Callable(callable, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Callable { callable, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EPrim" {
@@ -174,7 +174,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Prim(primitive, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Prim { value: primitive, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EConstr" {
@@ -190,7 +190,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Constr(constructor, args, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Constr { constructor, args, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "ETuple" || kind == "EArray" {
@@ -200,9 +200,9 @@ fn artifact_decode_core_expr(
         };
         match artifact_decode_core_type_field(context, object, "ty") {
             Result::Ok(ty) => if kind == "ETuple" {
-                Result::Ok(core::Expr::Tuple(items, ty))
+                Result::Ok(core::Expr::Tuple { items, ty })
             } else {
-                Result::Ok(core::Expr::Array(items, ty))
+                Result::Ok(core::Expr::Array { items, ty })
             },
             Result::Err(error) => Result::Err(error),
         }
@@ -219,7 +219,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Closure(params, body, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Closure { params, body, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EBlock" {
@@ -231,7 +231,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Block(block, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Block { block, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EMatch" {
@@ -254,7 +254,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Match(expr, arms, default, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Match { expr, arms, default, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EIf" {
@@ -271,7 +271,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::If(cond, then_branch, else_branch, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::If { cond, then_branch, else_branch, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EWhile" {
@@ -284,15 +284,15 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::While(cond, body, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::While { cond, body, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EBreak" || kind == "EContinue" {
         match artifact_decode_core_type_field(context, object, "ty") {
             Result::Ok(ty) => if kind == "EBreak" {
-                Result::Ok(core::Expr::Break(ty))
+                Result::Ok(core::Expr::Break { ty })
             } else {
-                Result::Ok(core::Expr::Continue(ty))
+                Result::Ok(core::Expr::Continue { ty })
             },
             Result::Err(error) => Result::Err(error),
         }
@@ -305,7 +305,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Return(expr, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Return { expr, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EGo" {
@@ -314,7 +314,7 @@ fn artifact_decode_core_expr(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Go(expr, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Go { expr, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else {
@@ -357,12 +357,12 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::ConstrGet(
+            Result::Ok(ty) => Result::Ok(core::Expr::ConstrGet {
                 expr,
                 constructor,
                 field_index,
                 ty,
-            )),
+            }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EUnary" {
@@ -378,7 +378,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Unary(op, expr, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Unary { op, expr, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "ECast" {
@@ -387,7 +387,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Cast(expr, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Cast { expr, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EBinary" {
@@ -407,7 +407,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Binary(op, lhs, rhs, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Binary { op, lhs, rhs, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EAssign" {
@@ -424,7 +424,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Assign(name, value, target_ty, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Assign { name, value, target_ty, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "ECall" {
@@ -437,7 +437,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Call(func, args, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Call { func, args, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EToDyn" {
@@ -454,7 +454,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::ToDyn(trait_name, for_ty, expr, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::ToDyn { trait_name, for_ty, expr, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EDynCall" {
@@ -475,13 +475,13 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::DynCall(
+            Result::Ok(ty) => Result::Ok(core::Expr::DynCall {
                 trait_name,
                 method_name,
                 receiver,
                 args,
                 ty,
-            )),
+            }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "ETraitCall" {
@@ -505,13 +505,13 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::TraitCall(
+            Result::Ok(ty) => Result::Ok(core::Expr::TraitCall {
                 trait_ref,
                 method_name,
                 receiver,
                 args,
                 ty,
-            )),
+            }),
             Result::Err(error) => Result::Err(error),
         }
     } else if kind == "EProj" {
@@ -524,7 +524,7 @@ fn artifact_decode_core_expr_tail(
             Result::Err(error) => return Result::Err(error),
         };
         match artifact_decode_core_type_field(context, object, "ty") {
-            Result::Ok(ty) => Result::Ok(core::Expr::Proj(tuple, index, ty)),
+            Result::Ok(ty) => Result::Ok(core::Expr::Proj { tuple, index, ty }),
             Result::Err(error) => Result::Err(error),
         }
     } else {

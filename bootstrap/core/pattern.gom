@@ -68,11 +68,11 @@ fn plan_flat_pattern(
                     let projection_name = names.get(index);
                     projections.push(LetStmt {
                         name: projection_name,
-                        value: Expr::Proj(
-                            Expr::Var(source, tuple_ty),
+                        value: Expr::Proj {
+                            tuple: Expr::Var { name: source, ty: tuple_ty },
                             index,
-                            item_ty,
-                        ),
+                            ty: item_ty,
+                        },
                         ty: item_ty,
                     });
                     match items.get(index) {
@@ -107,12 +107,12 @@ fn plan_flat_pattern(
                 let projection_name = names.get(index);
                 projections.push(LetStmt {
                     name: projection_name,
-                    value: Expr::ConstrGet(
-                        Expr::Var(source, struct_ty),
+                    value: Expr::ConstrGet {
+                        expr: Expr::Var { name: source, ty: struct_ty },
                         constructor,
-                        index,
-                        item_ty,
-                    ),
+                        field_index: index,
+                        ty: item_ty,
+                    },
                     ty: item_ty,
                 });
                 match item {
@@ -146,24 +146,24 @@ fn apply_pattern_plan(
         let stmts: Vec[LetStmt] = Vec::new();
         stmts.push(LetStmt {
             name: binding.name,
-            value: Expr::Var(binding.source, binding.ty),
+            value: Expr::Var { name: binding.source, ty: binding.ty },
             ty: binding.ty,
         });
-        result.set(Expr::Block(
-            Block {
-                stmts,
-                tail: Option::Some(result.get()),
-            },
-            body_ty,
-        ))
+        result.set(Expr::Block {
+            block: Block {
+                            stmts,
+                            tail: Option::Some(result.get()),
+                        },
+            ty: body_ty,
+        })
     };
-    Expr::Block(
-        Block {
-            stmts: plan.projections,
-            tail: Option::Some(result.get()),
-        },
-        body_ty,
-    )
+    Expr::Block {
+        block: Block {
+                    stmts: plan.projections,
+                    tail: Option::Some(result.get()),
+                },
+        ty: body_ty,
+    }
 }
 
 fn normalize_pattern_rows(rows: Vec[PatternRow]) -> Vec[PatternRow] {
@@ -286,16 +286,16 @@ fn lower_pattern_row_body(ctx: Lowerer, row: PatternRow) -> Expr {
         let stmts: Vec[LetStmt] = Vec::new();
         stmts.push(LetStmt {
             name: binding.name,
-            value: Expr::Var(binding.source, binding.ty),
+            value: Expr::Var { name: binding.source, ty: binding.ty },
             ty: binding.ty,
         });
-        result.set(Expr::Block(
-            Block {
-                stmts,
-                tail: Option::Some(result.get()),
-            },
-            body_ty,
-        ))
+        result.set(Expr::Block {
+            block: Block {
+                            stmts,
+                            tail: Option::Some(result.get()),
+                        },
+            ty: body_ty,
+        })
     };
     result.get()
 }
@@ -422,21 +422,21 @@ fn lower_tuple_pattern_rows(
     for index in range(0, types.len()) {
         stmts.push(LetStmt {
             name: names.get(index),
-            value: Expr::Proj(
-                Expr::Var(column.source, column.source_ty),
+            value: Expr::Proj {
+                tuple: Expr::Var { name: column.source, ty: column.source_ty },
                 index,
-                types.get(index),
-            ),
+                ty: types.get(index),
+            },
             ty: types.get(index),
         })
     };
-    Expr::Block(
-        Block {
-            stmts,
-            tail: Option::Some(inner),
-        },
+    Expr::Block {
+        block: Block {
+                    stmts,
+                    tail: Option::Some(inner),
+                },
         ty,
-    )
+    }
 }
 
 fn struct_pattern_row(
@@ -517,22 +517,22 @@ fn lower_struct_pattern_rows(
     for index in range(0, fields.len()) {
         stmts.push(LetStmt {
             name: names.get(index),
-            value: Expr::ConstrGet(
-                Expr::Var(column.source, column.source_ty),
+            value: Expr::ConstrGet {
+                expr: Expr::Var { name: column.source, ty: column.source_ty },
                 constructor,
-                index,
-                fields.get(index).1,
-            ),
+                field_index: index,
+                ty: fields.get(index).1,
+            },
             ty: fields.get(index).1,
         })
     };
-    Expr::Block(
-        Block {
-            stmts,
-            tail: Option::Some(inner),
-        },
+    Expr::Block {
+        block: Block {
+                    stmts,
+                    tail: Option::Some(inner),
+                },
         ty,
-    )
+    }
 }
 
 fn enum_pattern_row(
@@ -686,15 +686,15 @@ fn lower_enum_pattern_rows(
         let stmts: Vec[LetStmt] = Vec::new();
         for index in range(0, case.variables.len()) {
             let variable = case.variables.get(index);
-            args.push(Expr::Var(variable.0, variable.1));
+            args.push(Expr::Var { name: variable.0, ty: variable.1 });
             stmts.push(LetStmt {
                 name: variable.0,
-                value: Expr::ConstrGet(
-                    Expr::Var(column.source, column.source_ty),
-                    case.constructor,
-                    index,
-                    variable.1,
-                ),
+                value: Expr::ConstrGet {
+                    expr: Expr::Var { name: column.source, ty: column.source_ty },
+                    constructor: case.constructor,
+                    field_index: index,
+                    ty: variable.1,
+                },
                 ty: variable.1,
             })
         };
@@ -702,16 +702,16 @@ fn lower_enum_pattern_rows(
         let body = if stmts.len() == 0 {
             inner
         } else {
-            Expr::Block(
-                Block {
-                    stmts,
-                    tail: Option::Some(inner),
-                },
+            Expr::Block {
+                block: Block {
+                                    stmts,
+                                    tail: Option::Some(inner),
+                                },
                 ty,
-            )
+            }
         };
         arms.push(Arm {
-            lhs: Expr::Constr(case.constructor, args, column.source_ty),
+            lhs: Expr::Constr { constructor: case.constructor, args, ty: column.source_ty },
             body,
         })
     };
@@ -721,12 +721,12 @@ fn lower_enum_pattern_rows(
     } else {
         Option::Some(lower_pattern_rows(ctx, defaults, ty))
     };
-    Expr::Match(
-        Expr::Var(column.source, column.source_ty),
+    Expr::Match {
+        expr: Expr::Var { name: column.source, ty: column.source_ty },
         arms,
         default,
         ty,
-    )
+    }
 }
 
 fn lower_bool_pattern_rows(
@@ -746,12 +746,12 @@ fn lower_bool_pattern_rows(
             ),
         })
     };
-    Expr::Match(
-        Expr::Var(column.source, column.source_ty),
+    Expr::Match {
+        expr: Expr::Var { name: column.source, ty: column.source_ty },
         arms,
-        Option::None,
+        default: Option::None,
         ty,
-    )
+    }
 }
 
 fn unit_pattern_rows(rows: Vec[PatternRow], source: string) -> Vec[PatternRow] {
@@ -790,15 +790,15 @@ fn lower_unit_pattern_rows(
 ) -> Expr {
     let arms: Vec[Arm] = Vec::new();
     arms.push(Arm {
-        lhs: Expr::Prim(tast::Primitive::Unit, tast::Type::Unit),
+        lhs: Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
         body: lower_pattern_rows(ctx, unit_pattern_rows(rows, column.source), ty),
     });
-    Expr::Match(
-        Expr::Var(column.source, column.source_ty),
+    Expr::Match {
+        expr: Expr::Var { name: column.source, ty: column.source_ty },
         arms,
-        Option::None,
+        default: Option::None,
         ty,
-    )
+    }
 }
 
 fn primitive_pattern_key(value: tast::Primitive, ty: tast::Type) -> string {
@@ -903,7 +903,7 @@ fn lower_primitive_pattern_rows(
     let arms: Vec[Arm] = Vec::new();
     for case in primitive_pattern_cases(rows, column.source) {
         arms.push(Arm {
-            lhs: Expr::Prim(case.value, case.ty),
+            lhs: Expr::Prim { value: case.value, ty: case.ty },
             body: lower_pattern_rows(
                 ctx,
                 primitive_pattern_rows(rows, column.source, case.key),
@@ -917,12 +917,12 @@ fn lower_primitive_pattern_rows(
     } else {
         Option::Some(lower_pattern_rows(ctx, defaults, ty))
     };
-    Expr::Match(
-        Expr::Var(column.source, column.source_ty),
+    Expr::Match {
+        expr: Expr::Var { name: column.source, ty: column.source_ty },
         arms,
         default,
         ty,
-    )
+    }
 }
 
 fn primitive_pattern_type(value: tast::Type) -> bool {

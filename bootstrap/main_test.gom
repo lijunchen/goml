@@ -513,10 +513,10 @@ fn adds_canonical_entry_wrapper() -> unit {
         ret_ty: tast::Type::Unit,
         body: core::Block {
             stmts: Vec::new(),
-            tail: Option::Some(core::Expr::Prim(
-                tast::Primitive::Unit,
-                tast::Type::Unit,
-            )),
+            tail: Option::Some(core::Expr::Prim {
+                value: tast::Primitive::Unit,
+                ty: tast::Type::Unit,
+            }),
         },
     });
     let wrapped = add_entry_wrapper(core::File {
@@ -529,11 +529,11 @@ fn adds_canonical_entry_wrapper() -> unit {
     testing::assert_eq(wrapped.functions.get(0).name, "alice::app::main");
     testing::assert_eq(wrapped.functions.get(1).name, "main");
     match wrapped.functions.get(1).body.tail {
-        Option::Some(core::Expr::Call(
-            core::Expr::Var(name, tast::Type::Func(params, tast::Type::Unit)),
+        Option::Some(core::Expr::Call {
+            func: core::Expr::Var { name, ty: tast::Type::Func(params, tast::Type::Unit) },
             args,
-            tast::Type::Unit,
-        )) => {
+            ty: tast::Type::Unit,
+        }) => {
             testing::assert_eq(name, "alice::app::main");
             testing::assert_eq(params.len(), 0);
             testing::assert_eq(args.len(), 0)
@@ -872,10 +872,10 @@ fn writes_rust_core_file_shape() -> unit {
             ret_ty: tast::Type::Int32,
             body: core::Block {
                 stmts: Vec::new(),
-                tail: Option::Some(core::Expr::Prim(
-                    tast::Primitive::Int32("41"),
-                    tast::Type::Int32,
-                )),
+                tail: Option::Some(core::Expr::Prim {
+                    value: tast::Primitive::Int32("41"),
+                    ty: tast::Type::Int32,
+                }),
             },
         }),
         enums: Vec::new(),

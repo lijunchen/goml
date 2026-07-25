@@ -150,7 +150,7 @@ fn arguments_after_first(values: Vec[Expr]) -> Vec[Expr] {
 }
 
 fn bool_expr(value: bool) -> Expr {
-    Expr::Prim(tast::Primitive::Bool(value), tast::Type::Bool)
+    Expr::Prim { value: tast::Primitive::Bool(value), ty: tast::Type::Bool }
 }
 
 fn trait_eq_call(left: Expr, right: Expr) -> Expr {
@@ -161,21 +161,21 @@ fn trait_eq_call(left: Expr, right: Expr) -> Expr {
     let args: Vec[Expr] = Vec::new();
     args.push(left);
     args.push(right);
-    Expr::Call(
-        Expr::Var(
-            trait_impl_method_name(
-                tast::TraitRef {
-                    name: "Eq",
-                    args: Vec::new(),
+    Expr::Call {
+        func: Expr::Var {
+                    name: trait_impl_method_name(
+                                    tast::TraitRef {
+                                        name: "Eq",
+                                        args: Vec::new(),
+                                    },
+                                    ty,
+                                    "eq",
+                                ),
+                    ty: tast::Type::Func(params, tast::Type::Bool),
                 },
-                ty,
-                "eq",
-            ),
-            tast::Type::Func(params, tast::Type::Bool),
-        ),
         args,
-        tast::Type::Bool,
-    )
+        ty: tast::Type::Bool,
+    }
 }
 
 fn eq_conjunction(values: Vec[Expr]) -> Expr {
@@ -185,12 +185,12 @@ fn eq_conjunction(values: Vec[Expr]) -> Expr {
         let result = Ref::new(values.get(values.len() - 1));
         let index = Ref::new(values.len() - 2);
         while index.get() >= 0 {
-            result.set(Expr::If(
-                values.get(index.get()),
-                result.get(),
-                bool_expr(false),
-                tast::Type::Bool,
-            ));
+            result.set(Expr::If {
+                cond: values.get(index.get()),
+                then_branch: result.get(),
+                else_branch: bool_expr(false),
+                ty: tast::Type::Bool,
+            });
             index.set(index.get() - 1)
         };
         result.get()
@@ -204,8 +204,8 @@ fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
             for index in range(0, types.len()) {
                 let item_ty = types.get(index);
                 values.push(structural_eq(
-                    Expr::Proj(left, index, item_ty),
-                    Expr::Proj(right, index, item_ty),
+                    Expr::Proj { tuple: left, index, ty: item_ty },
+                    Expr::Proj { tuple: right, index, ty: item_ty },
                     item_ty,
                 ))
             };
@@ -214,10 +214,10 @@ fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
         tast::Type::Array(length, element) => {
             let values: Vec[Expr] = Vec::new();
             for index in range(0, length) {
-                let index_expr = Expr::Prim(
-                    tast::Primitive::Int(index.to_string()),
-                    tast::Type::Int,
-                );
+                let index_expr = Expr::Prim {
+                    value: tast::Primitive::Int(index.to_string()),
+                    ty: tast::Type::Int,
+                };
                 let parameter_types: Vec[tast::Type] = Vec::new();
                 parameter_types.push(ty);
                 parameter_types.push(tast::Type::Int);
@@ -229,22 +229,22 @@ fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
                 right_args.push(right);
                 right_args.push(index_expr);
                 values.push(structural_eq(
-                    Expr::Call(
-                        Expr::Callable(
-                            tast::Callable::Intrinsic("array.get"),
-                            function_ty,
-                        ),
-                        left_args,
-                        element,
-                    ),
-                    Expr::Call(
-                        Expr::Callable(
-                            tast::Callable::Intrinsic("array.get"),
-                            function_ty,
-                        ),
-                        right_args,
-                        element,
-                    ),
+                    Expr::Call {
+                        func: Expr::Callable {
+                                                    callable: tast::Callable::Intrinsic("array.get"),
+                                                    ty: function_ty,
+                                                },
+                        args: left_args,
+                        ty: element,
+                    },
+                    Expr::Call {
+                        func: Expr::Callable {
+                                                    callable: tast::Callable::Intrinsic("array.get"),
+                                                    ty: function_ty,
+                                                },
+                        args: right_args,
+                        ty: element,
+                    },
                     element,
                 ))
             };
@@ -278,17 +278,17 @@ fn lower_eq_expr(
                 value: right_value,
                 ty: operand_ty,
             });
-            Expr::Block(
-                Block {
-                    stmts,
-                    tail: Option::Some(structural_eq(
-                        Expr::Var(left_name, operand_ty),
-                        Expr::Var(right_name, operand_ty),
-                        operand_ty,
-                    )),
-                },
-                tast::Type::Bool,
-            )
+            Expr::Block {
+                block: Block {
+                                    stmts,
+                                    tail: Option::Some(structural_eq(
+                                        Expr::Var { name: left_name, ty: operand_ty },
+                                        Expr::Var { name: right_name, ty: operand_ty },
+                                        operand_ty,
+                                    )),
+                                },
+                ty: tast::Type::Bool,
+            }
         },
         _ => trait_eq_call(left_value, right_value),
     };
@@ -296,7 +296,7 @@ fn lower_eq_expr(
         ast::BinaryOp::NotEq => true,
         _ => false,
     } {
-        Expr::Unary(ast::UnaryOp::Not, eq, tast::Type::Bool)
+        Expr::Unary { op: ast::UnaryOp::Not, expr: eq, ty: tast::Type::Bool }
     } else {
         eq
     }
@@ -318,42 +318,55 @@ fn lower_call(
     let args = lower_exprs(ctx, arguments);
     match function {
         tast::Expr::Callable(tast::Callable::TraitMethod(reference, name), _) => if args.len() > 0 {
-            Expr::TraitCall(reference, name, args.get(0), arguments_after_first(args), ty)
+            Expr::TraitCall {
+                trait_ref: reference,
+                method_name: name,
+                receiver: args.get(0),
+                args: arguments_after_first(args),
+                ty,
+            }
         } else {
-            Expr::Call(
-                Expr::Callable(tast::Callable::TraitMethod(reference, name), tast::Type::Error),
+            Expr::Call {
+                func: Expr::Callable {
+                                    callable: tast::Callable::TraitMethod(reference, name),
+                                    ty: tast::Type::Error,
+                                },
                 args,
                 ty,
-            )
+            }
         },
         tast::Expr::Callable(tast::Callable::DynTraitMethod(owner, dispatch, name), _) => if args.len() > 0 {
-            Expr::DynCall(
-                owner,
-                dispatch + "#" + name,
-                args.get(0),
-                arguments_after_first(args),
+            Expr::DynCall {
+                trait_name: owner,
+                method_name: dispatch + "#" + name,
+                receiver: args.get(0),
+                args: arguments_after_first(args),
                 ty,
-            )
+            }
         } else {
-            Expr::Call(
-                Expr::Callable(
-                    tast::Callable::DynTraitMethod(owner, dispatch, name),
-                    tast::Type::Error,
-                ),
+            Expr::Call {
+                func: Expr::Callable {
+                                    callable: tast::Callable::DynTraitMethod(owner, dispatch, name),
+                                    ty: tast::Type::Error,
+                                },
                 args,
                 ty,
-            )
+            }
         },
         tast::Expr::Callable(tast::Callable::InherentMethod(owner, name), method_ty) => {
-            Expr::Call(Expr::Var(inherent_method_name(owner, name), method_ty), args, ty)
+            Expr::Call {
+                func: Expr::Var { name: inherent_method_name(owner, name), ty: method_ty },
+                args,
+                ty,
+            }
         },
-        other => Expr::Call(lower_expr(ctx, other), args, ty),
+        other => Expr::Call { func: lower_expr(ctx, other), args, ty },
     }
 }
 
 fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
     match value {
-        tast::Pat::Prim(primitive, ty) => Option::Some(Expr::Prim(primitive, ty)),
+        tast::Pat::Prim(primitive, ty) => Option::Some(Expr::Prim { value: primitive, ty }),
         tast::Pat::Constr(constructor, args, ty) => {
             let result: Vec[Expr] = Vec::new();
             let valid = Ref::new(true);
@@ -364,7 +377,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
                 }
             };
             if valid.get() {
-                Option::Some(Expr::Constr(constructor, result, ty))
+                Option::Some(Expr::Constr { constructor, args: result, ty })
             } else {
                 Option::None
             }
@@ -379,7 +392,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
                 }
             };
             if valid.get() {
-                Option::Some(Expr::Tuple(result, ty))
+                Option::Some(Expr::Tuple { items: result, ty })
             } else {
                 Option::None
             }
@@ -392,18 +405,18 @@ fn missing_expr(ty: tast::Type) -> Expr {
     let params: Vec[tast::Type] = Vec::new();
     params.push(tast::Type::String);
     let args: Vec[Expr] = Vec::new();
-    args.push(Expr::Prim(
-        tast::Primitive::String(""),
-        tast::Type::String,
-    ));
-    Expr::Call(
-        Expr::Callable(
-            tast::Callable::Intrinsic("compiler.missing"),
-            tast::Type::Func(params, ty),
-        ),
+    args.push(Expr::Prim {
+        value: tast::Primitive::String(""),
+        ty: tast::Type::String,
+    });
+    Expr::Call {
+        func: Expr::Callable {
+                    callable: tast::Callable::Intrinsic("compiler.missing"),
+                    ty: tast::Type::Func(params, ty),
+                },
         args,
         ty,
-    )
+    }
 }
 
 fn bind_match_pattern(
@@ -418,16 +431,16 @@ fn bind_match_pattern(
             let stmts: Vec[LetStmt] = Vec::new();
             stmts.push(LetStmt {
                 name,
-                value: Expr::Var(source_name, source_ty),
+                value: Expr::Var { name: source_name, ty: source_ty },
                 ty: pat_ty,
             });
-            Expr::Block(
-                Block {
-                    stmts,
-                    tail: Option::Some(body),
-                },
+            Expr::Block {
+                block: Block {
+                                    stmts,
+                                    tail: Option::Some(body),
+                                },
                 ty,
-            )
+            }
         },
         _ => body,
     }
@@ -469,12 +482,12 @@ fn lower_generic_match(
             },
         }
     };
-    Expr::Match(
-        Expr::Var(source_name, source_ty),
-        result,
-        default.get(),
+    Expr::Match {
+        expr: Expr::Var { name: source_name, ty: source_ty },
+        arms: result,
+        default: default.get(),
         ty,
-    )
+    }
 }
 
 fn pattern_matches_bool(value: tast::Pat, expected: bool) -> bool {
@@ -523,12 +536,12 @@ fn lower_bool_match(
             body,
         })
     };
-    Expr::Match(
-        Expr::Var(source_name, tast::Type::Bool),
-        result,
-        Option::None,
+    Expr::Match {
+        expr: Expr::Var { name: source_name, ty: tast::Type::Bool },
+        arms: result,
+        default: Option::None,
         ty,
-    )
+    }
 }
 
 fn lower_unit_match(
@@ -560,15 +573,15 @@ fn lower_unit_match(
     };
     let result: Vec[Arm] = Vec::new();
     result.push(Arm {
-        lhs: Expr::Prim(tast::Primitive::Unit, tast::Type::Unit),
+        lhs: Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
         body,
     });
-    Expr::Match(
-        Expr::Var(source_name, tast::Type::Unit),
-        result,
-        Option::None,
+    Expr::Match {
+        expr: Expr::Var { name: source_name, ty: tast::Type::Unit },
+        arms: result,
+        default: Option::None,
         ty,
-    )
+    }
 }
 
 fn enum_rows_for_variant(
@@ -699,41 +712,41 @@ fn lower_enum_cases(
         let extractions: Vec[LetStmt] = Vec::new();
         for index in range(0, case.variables.len()) {
             let variable = case.variables.get(index);
-            args.push(Expr::Var(variable.0, variable.1));
+            args.push(Expr::Var { name: variable.0, ty: variable.1 });
             extractions.push(LetStmt {
                 name: variable.0,
-                value: Expr::ConstrGet(
-                    Expr::Var(source_name, source_ty),
-                    case.constructor,
-                    index,
-                    variable.1,
-                ),
+                value: Expr::ConstrGet {
+                    expr: Expr::Var { name: source_name, ty: source_ty },
+                    constructor: case.constructor,
+                    field_index: index,
+                    ty: variable.1,
+                },
                 ty: variable.1,
             })
         };
         let body = lower_pattern_rows(ctx, case.rows, ty);
         let body = if extractions.len() > 0 {
-            Expr::Block(
-                Block {
-                    stmts: extractions,
-                    tail: Option::Some(body),
-                },
+            Expr::Block {
+                block: Block {
+                                    stmts: extractions,
+                                    tail: Option::Some(body),
+                                },
                 ty,
-            )
+            }
         } else {
             body
         };
         result.push(Arm {
-            lhs: Expr::Constr(case.constructor, args, source_ty),
+            lhs: Expr::Constr { constructor: case.constructor, args, ty: source_ty },
             body,
         })
     };
-    Expr::Match(
-        Expr::Var(source_name, source_ty),
-        result,
-        Option::None,
+    Expr::Match {
+        expr: Expr::Var { name: source_name, ty: source_ty },
+        arms: result,
+        default: Option::None,
         ty,
-    )
+    }
 }
 
 fn lower_match_on_variable(
@@ -816,13 +829,13 @@ fn lower_match(
             value: source_value,
             ty: source_ty,
         });
-        Expr::Block(
-            Block {
-                stmts,
-                tail: Option::Some(missing_expr(ty)),
-            },
+        Expr::Block {
+            block: Block {
+                            stmts,
+                            tail: Option::Some(missing_expr(ty)),
+                        },
             ty,
-        )
+        }
     } else {
         match source {
             tast::Expr::Var(source_name, _) => {
@@ -838,13 +851,13 @@ fn lower_match(
                     value: source_value,
                     ty: source_ty,
                 });
-                Expr::Block(
-                    Block {
-                        stmts,
-                        tail: Option::Some(body),
-                    },
+                Expr::Block {
+                    block: Block {
+                                            stmts,
+                                            tail: Option::Some(body),
+                                        },
                     ty,
-                )
+                }
             },
         }
     }
@@ -861,11 +874,11 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
     let args: Vec[Expr] = Vec::new();
     args.push(lower_expr(ctx, base));
     args.push(lower_expr(ctx, index));
-    Expr::Call(
-        Expr::Callable(tast::Callable::Intrinsic(key), tast::Type::Error),
+    Expr::Call {
+        func: Expr::Callable { callable: tast::Callable::Intrinsic(key), ty: tast::Type::Error },
         args,
         ty,
-    )
+    }
 }
 
 fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) -> Expr {
@@ -883,32 +896,32 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
                     ()
                 }
             };
-            Expr::ConstrGet(
-                lower_expr(ctx, value),
-                tast::Constructor {
-                    name: owner,
-                    fields,
-                    is_struct: true,
-                    tag: Option::None,
-                },
-                field_index.get(),
+            Expr::ConstrGet {
+                expr: lower_expr(ctx, value),
+                constructor: tast::Constructor {
+                                    name: owner,
+                                    fields,
+                                    is_struct: true,
+                                    tag: Option::None,
+                                },
+                field_index: field_index.get(),
                 ty,
-            )
+            }
         },
         Option::None => {
             let fields: Vec[string] = Vec::new();
             fields.push(name);
-            Expr::ConstrGet(
-                lower_expr(ctx, value),
-                tast::Constructor {
-                    name: owner,
-                    fields,
-                    is_struct: true,
-                    tag: Option::None,
-                },
-                0,
+            Expr::ConstrGet {
+                expr: lower_expr(ctx, value),
+                constructor: tast::Constructor {
+                                    name: owner,
+                                    fields,
+                                    is_struct: true,
+                                    tag: Option::None,
+                                },
+                field_index: 0,
                 ty,
-            )
+            }
         },
     }
 }
@@ -929,21 +942,21 @@ fn lower_for(
     let iterator_name = gensym(ctx, "for_iter");
     let next_name = gensym(ctx, "for_next");
     let no_args: Vec[Expr] = Vec::new();
-    let iterator_value = Expr::TraitCall(
-        into_iterator,
-        "into_iter",
-        lower_expr(ctx, iterator),
-        no_args,
-        iterator_ty,
-    );
+    let iterator_value = Expr::TraitCall {
+        trait_ref: into_iterator,
+        method_name: "into_iter",
+        receiver: lower_expr(ctx, iterator),
+        args: no_args,
+        ty: iterator_ty,
+    };
     let next_args: Vec[Expr] = Vec::new();
-    let next_value = Expr::TraitCall(
-        iterator_trait,
-        "next",
-        Expr::Var(iterator_name, iterator_ty),
-        next_args,
-        option_ty,
-    );
+    let next_value = Expr::TraitCall {
+        trait_ref: iterator_trait,
+        method_name: "next",
+        receiver: Expr::Var { name: iterator_name, ty: iterator_ty },
+        args: next_args,
+        ty: option_ty,
+    };
     let some_patterns: Vec[tast::Pat] = Vec::new();
     some_patterns.push(pattern);
     let arms: Vec[tast::Arm] = Vec::new();
@@ -981,62 +994,62 @@ fn lower_for(
         value: next_value,
         ty: option_ty,
     });
-    let loop_body = Expr::Block(
-        Block {
-            stmts: loop_stmts,
-            tail: Option::Some(lower_match_on_variable(
-                ctx,
-                next_name,
-                option_ty,
-                arms,
-                tast::Type::Unit,
-            )),
-        },
-        tast::Type::Unit,
-    );
+    let loop_body = Expr::Block {
+        block: Block {
+                    stmts: loop_stmts,
+                    tail: Option::Some(lower_match_on_variable(
+                        ctx,
+                        next_name,
+                        option_ty,
+                        arms,
+                        tast::Type::Unit,
+                    )),
+                },
+        ty: tast::Type::Unit,
+    };
     let stmts: Vec[LetStmt] = Vec::new();
     stmts.push(LetStmt {
         name: iterator_name,
         value: iterator_value,
         ty: iterator_ty,
     });
-    Expr::Block(
-        Block {
-            stmts,
-            tail: Option::Some(Expr::While(
-                bool_expr(true),
-                loop_body,
-                tast::Type::Unit,
-            )),
-        },
-        tast::Type::Unit,
-    )
+    Expr::Block {
+        block: Block {
+                    stmts,
+                    tail: Option::Some(Expr::While {
+                        cond: bool_expr(true),
+                        body: loop_body,
+                        ty: tast::Type::Unit,
+                    }),
+                },
+        ty: tast::Type::Unit,
+    }
 }
 
 fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
     match value {
-        tast::Expr::Var(name, ty) => Expr::Var(name, ty),
-        tast::Expr::Callable(tast::Callable::Function(name), ty) => Expr::Var(name, ty),
-        tast::Expr::Callable(callable, ty) => Expr::Callable(callable, ty),
-        tast::Expr::Prim(value, ty) => Expr::Prim(value, ty),
+        tast::Expr::Var(name, ty) => Expr::Var { name, ty },
+        tast::Expr::Callable(tast::Callable::Function(name), ty) => Expr::Var { name, ty },
+        tast::Expr::Callable(callable, ty) => Expr::Callable { callable, ty },
+        tast::Expr::Prim(value, ty) => Expr::Prim { value, ty },
         tast::Expr::Constr(constructor, args, ty) => {
-            Expr::Constr(constructor, lower_exprs(ctx, args), ty)
+            Expr::Constr { constructor, args: lower_exprs(ctx, args), ty }
         },
-        tast::Expr::Tuple(items, ty) => Expr::Tuple(lower_exprs(ctx, items), ty),
-        tast::Expr::Array(items, ty) => Expr::Array(lower_exprs(ctx, items), ty),
+        tast::Expr::Tuple(items, ty) => Expr::Tuple { items: lower_exprs(ctx, items), ty },
+        tast::Expr::Array(items, ty) => Expr::Array { items: lower_exprs(ctx, items), ty },
         tast::Expr::Closure(params, body, ty) => {
-            Expr::Closure(params, lower_expr(ctx, body), ty)
+            Expr::Closure { params, body: lower_expr(ctx, body), ty }
         },
-        tast::Expr::Block(block, ty) => Expr::Block(lower_block(ctx, block, ty), ty),
+        tast::Expr::Block(block, ty) => Expr::Block { block: lower_block(ctx, block, ty), ty },
         tast::Expr::Match(source, arms, ty) => lower_match(ctx, source, arms, ty),
-        tast::Expr::If(cond, then_branch, else_branch, ty) => Expr::If(
-            lower_expr(ctx, cond),
-            lower_expr(ctx, then_branch),
-            lower_expr(ctx, else_branch),
+        tast::Expr::If(cond, then_branch, else_branch, ty) => Expr::If {
+            cond: lower_expr(ctx, cond),
+            then_branch: lower_expr(ctx, then_branch),
+            else_branch: lower_expr(ctx, else_branch),
             ty,
-        ),
+        },
         tast::Expr::While(cond, body, ty) => {
-            Expr::While(lower_expr(ctx, cond), lower_expr(ctx, body), ty)
+            Expr::While { cond: lower_expr(ctx, cond), body: lower_expr(ctx, body), ty }
         },
         tast::Expr::For(
             pattern,
@@ -1055,30 +1068,33 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             iterator_ty,
             body,
         ),
-        tast::Expr::Break(ty) => Expr::Break(ty),
-        tast::Expr::Continue(ty) => Expr::Continue(ty),
-        tast::Expr::Return(value, ty) => Expr::Return(match value {
-            Option::Some(expr) => Option::Some(lower_expr(ctx, expr)),
-            Option::None => Option::None,
-        }, ty),
-        tast::Expr::Go(value, ty) => Expr::Go(lower_expr(ctx, value), ty),
+        tast::Expr::Break(ty) => Expr::Break { ty },
+        tast::Expr::Continue(ty) => Expr::Continue { ty },
+        tast::Expr::Return(value, ty) => Expr::Return {
+            expr: match value {
+                        Option::Some(expr) => Option::Some(lower_expr(ctx, expr)),
+                        Option::None => Option::None,
+                    },
+            ty,
+        },
+        tast::Expr::Go(value, ty) => Expr::Go { expr: lower_expr(ctx, value), ty },
         tast::Expr::Call(function, args, ty) => lower_call(ctx, function, args, ty),
         tast::Expr::Unary(ast::UnaryOp::Neg, tast::Expr::Prim(value, _), ty) => {
             match negated_integer(value) {
-                Option::Some(primitive) => Expr::Prim(primitive, ty),
-                Option::None => Expr::Unary(
-                    ast::UnaryOp::Neg,
-                    lower_expr(ctx, tast::Expr::Prim(value, ty)),
+                Option::Some(primitive) => Expr::Prim { value: primitive, ty },
+                Option::None => Expr::Unary {
+                    op: ast::UnaryOp::Neg,
+                    expr: lower_expr(ctx, tast::Expr::Prim(value, ty)),
                     ty,
-                ),
+                },
             }
         },
-        tast::Expr::Unary(op, value, ty) => Expr::Unary(op, lower_expr(ctx, value), ty),
-        tast::Expr::Cast(value, ty) => Expr::Cast(lower_expr(ctx, value), ty),
+        tast::Expr::Unary(op, value, ty) => Expr::Unary { op, expr: lower_expr(ctx, value), ty },
+        tast::Expr::Cast(value, ty) => Expr::Cast { expr: lower_expr(ctx, value), ty },
         tast::Expr::Proj(value, index, ty) => if tast_expr_exits(value) {
             exit_expr_as(ctx, lower_expr(ctx, value), ty)
         } else {
-            Expr::Proj(lower_expr(ctx, value), index, ty)
+            Expr::Proj { tuple: lower_expr(ctx, value), index, ty }
         },
         tast::Expr::Field(value, name, ty) => if tast_expr_exits(value) {
             exit_expr_as(ctx, lower_expr(ctx, value), ty)
@@ -1097,36 +1113,36 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
                 value: base_value,
                 ty: base_ty,
             });
-            Expr::Block(
-                Block {
-                    stmts,
-                    tail: Option::Some(exit_expr_as(ctx, index_value, ty)),
-                },
+            Expr::Block {
+                block: Block {
+                                    stmts,
+                                    tail: Option::Some(exit_expr_as(ctx, index_value, ty)),
+                                },
                 ty,
-            )
+            }
         } else {
             lower_index(ctx, base, index, ty)
         },
-        tast::Expr::Binary(ast::BinaryOp::And, left, right, ty, _) => Expr::If(
-            lower_expr(ctx, left),
-            lower_expr(ctx, right),
-            bool_expr(false),
+        tast::Expr::Binary(ast::BinaryOp::And, left, right, ty, _) => Expr::If {
+            cond: lower_expr(ctx, left),
+            then_branch: lower_expr(ctx, right),
+            else_branch: bool_expr(false),
             ty,
-        ),
-        tast::Expr::Binary(ast::BinaryOp::Or, left, right, ty, _) => Expr::If(
-            lower_expr(ctx, left),
-            bool_expr(true),
-            lower_expr(ctx, right),
+        },
+        tast::Expr::Binary(ast::BinaryOp::Or, left, right, ty, _) => Expr::If {
+            cond: lower_expr(ctx, left),
+            then_branch: bool_expr(true),
+            else_branch: lower_expr(ctx, right),
             ty,
-        ),
+        },
         tast::Expr::Binary(op, left, right, _, tast::BinaryResolution::EqTrait) => {
             lower_eq_expr(ctx, op, left, right)
         },
         tast::Expr::Binary(op, left, right, ty, _) => {
-            Expr::Binary(op, lower_expr(ctx, left), lower_expr(ctx, right), ty)
+            Expr::Binary { op, lhs: lower_expr(ctx, left), rhs: lower_expr(ctx, right), ty }
         },
         tast::Expr::ToDyn(name, for_ty, value, ty) => {
-            Expr::ToDyn(name, for_ty, lower_expr(ctx, value), ty)
+            Expr::ToDyn { trait_name: name, for_ty, expr: lower_expr(ctx, value), ty }
         },
     }
 }
@@ -1171,7 +1187,7 @@ fn lower_pattern_continuation(
         lower_ordered_pattern(
             ctx,
             pattern,
-            Expr::Var(source_name, source_ty),
+            Expr::Var { name: source_name, ty: source_ty },
             lower_expr(ctx, body),
             missing_expr(ty),
             ty,
@@ -1236,7 +1252,7 @@ fn lower_block_from(
                             stmts: result,
                             tail: Option::Some(apply_pattern_plan(
                                 plan,
-                                Expr::Block(rest, ty),
+                                Expr::Block { block: rest, ty },
                                 ty,
                             )),
                         }

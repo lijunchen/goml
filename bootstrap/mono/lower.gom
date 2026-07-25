@@ -701,7 +701,7 @@ fn lower_trait_call(
     match tast::resolve_type(receiver_ty) {
         tast::Type::Dyn(name) => {
             if reference.args.len() == 0 && reference.name == name {
-                core::Expr::DynCall(name, method_name, receiver, args, ty)
+                core::Expr::DynCall { trait_name: name, method_name, receiver, args, ty }
             } else {
                 lower_static_trait_call(reference, method_name, receiver, args, ty)
             }
@@ -727,141 +727,141 @@ fn lower_static_trait_call(
         call_args.push(arg)
     };
     let name = trait_impl_name(reference, receiver_ty, method_name);
-    core::Expr::Call(
-        core::Expr::Var(name, tast::Type::Func(params, ty)),
-        call_args,
+    core::Expr::Call {
+        func: core::Expr::Var { name, ty: tast::Type::Func(params, ty) },
+        args: call_args,
         ty,
-    )
+    }
 }
 
 fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
     match value {
-        core::Expr::Var(name, ty) => core::Expr::Var(name, collapse_type(ctx, ty)),
-        core::Expr::Callable(callable, ty) => {
-            core::Expr::Callable(callable, collapse_type(ctx, ty))
+        core::Expr::Var { name, ty } => core::Expr::Var { name, ty: collapse_type(ctx, ty) },
+        core::Expr::Callable { callable, ty } => {
+            core::Expr::Callable { callable, ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Prim(primitive, ty) => {
-            core::Expr::Prim(primitive, collapse_type(ctx, ty))
+        core::Expr::Prim { value: primitive, ty } => {
+            core::Expr::Prim { value: primitive, ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Constr(constructor, args, ty) => {
+        core::Expr::Constr { constructor, args, ty } => {
             let ty = collapse_type(ctx, ty);
-            core::Expr::Constr(
-                update_constructor(constructor, ty),
-                lower_exprs(ctx, args),
+            core::Expr::Constr {
+                constructor: update_constructor(constructor, ty),
+                args: lower_exprs(ctx, args),
                 ty,
-            )
+            }
         },
-        core::Expr::Tuple(items, ty) => {
-            core::Expr::Tuple(lower_exprs(ctx, items), collapse_type(ctx, ty))
+        core::Expr::Tuple { items, ty } => {
+            core::Expr::Tuple { items: lower_exprs(ctx, items), ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Array(items, ty) => {
-            core::Expr::Array(lower_exprs(ctx, items), collapse_type(ctx, ty))
+        core::Expr::Array { items, ty } => {
+            core::Expr::Array { items: lower_exprs(ctx, items), ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Closure(params, body, ty) => {
-            core::Expr::Closure(
-                collapse_closure_params(ctx, params),
-                lower_expr(ctx, body),
-                collapse_type(ctx, ty),
-            )
+        core::Expr::Closure { params, body, ty } => {
+            core::Expr::Closure {
+                params: collapse_closure_params(ctx, params),
+                body: lower_expr(ctx, body),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::Block(block, ty) => {
-            core::Expr::Block(lower_block(ctx, block), collapse_type(ctx, ty))
+        core::Expr::Block { block, ty } => {
+            core::Expr::Block { block: lower_block(ctx, block), ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
-            lower_expr(ctx, expr),
-            lower_arms(ctx, arms),
-            lower_optional_expr(ctx, default),
-            collapse_type(ctx, ty),
-        ),
-        core::Expr::If(cond, then_branch, else_branch, ty) => core::Expr::If(
-            lower_expr(ctx, cond),
-            lower_expr(ctx, then_branch),
-            lower_expr(ctx, else_branch),
-            collapse_type(ctx, ty),
-        ),
-        core::Expr::While(cond, body, ty) => {
-            core::Expr::While(
-                lower_expr(ctx, cond),
-                lower_expr(ctx, body),
-                collapse_type(ctx, ty),
-            )
+        core::Expr::Match { expr, arms, default, ty } => core::Expr::Match {
+            expr: lower_expr(ctx, expr),
+            arms: lower_arms(ctx, arms),
+            default: lower_optional_expr(ctx, default),
+            ty: collapse_type(ctx, ty),
         },
-        core::Expr::Break(ty) => core::Expr::Break(collapse_type(ctx, ty)),
-        core::Expr::Continue(ty) => core::Expr::Continue(collapse_type(ctx, ty)),
-        core::Expr::Return(expr, ty) => {
-            core::Expr::Return(
-                lower_optional_expr(ctx, expr),
-                collapse_type(ctx, ty),
-            )
+        core::Expr::If { cond, then_branch, else_branch, ty } => core::Expr::If {
+            cond: lower_expr(ctx, cond),
+            then_branch: lower_expr(ctx, then_branch),
+            else_branch: lower_expr(ctx, else_branch),
+            ty: collapse_type(ctx, ty),
         },
-        core::Expr::Go(expr, ty) => {
-            core::Expr::Go(lower_expr(ctx, expr), collapse_type(ctx, ty))
+        core::Expr::While { cond, body, ty } => {
+            core::Expr::While {
+                cond: lower_expr(ctx, cond),
+                body: lower_expr(ctx, body),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::ConstrGet(expr, constructor, field_index, ty) => {
+        core::Expr::Break { ty } => core::Expr::Break { ty: collapse_type(ctx, ty) },
+        core::Expr::Continue { ty } => core::Expr::Continue { ty: collapse_type(ctx, ty) },
+        core::Expr::Return { expr, ty } => {
+            core::Expr::Return {
+                expr: lower_optional_expr(ctx, expr),
+                ty: collapse_type(ctx, ty),
+            }
+        },
+        core::Expr::Go { expr, ty } => {
+            core::Expr::Go { expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
+        },
+        core::Expr::ConstrGet { expr, constructor, field_index, ty } => {
             let expr = lower_expr(ctx, expr);
             let constructor = update_constructor(constructor, core::expr_type(expr));
-            core::Expr::ConstrGet(
+            core::Expr::ConstrGet {
                 expr,
                 constructor,
                 field_index,
-                collapse_type(ctx, ty),
-            )
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::Unary(op, expr, ty) => {
-            core::Expr::Unary(op, lower_expr(ctx, expr), collapse_type(ctx, ty))
+        core::Expr::Unary { op, expr, ty } => {
+            core::Expr::Unary { op, expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Cast(expr, ty) => {
-            core::Expr::Cast(lower_expr(ctx, expr), collapse_type(ctx, ty))
+        core::Expr::Cast { expr, ty } => {
+            core::Expr::Cast { expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
-        core::Expr::Binary(op, lhs, rhs, ty) => {
-            core::Expr::Binary(
+        core::Expr::Binary { op, lhs, rhs, ty } => {
+            core::Expr::Binary {
                 op,
-                lower_expr(ctx, lhs),
-                lower_expr(ctx, rhs),
-                collapse_type(ctx, ty),
-            )
+                lhs: lower_expr(ctx, lhs),
+                rhs: lower_expr(ctx, rhs),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::Assign(name, value, target_ty, ty) => {
-            core::Expr::Assign(
+        core::Expr::Assign { name, value, target_ty, ty } => {
+            core::Expr::Assign {
                 name,
-                lower_expr(ctx, value),
-                collapse_type(ctx, target_ty),
-                collapse_type(ctx, ty),
-            )
+                value: lower_expr(ctx, value),
+                target_ty: collapse_type(ctx, target_ty),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::Call(func, args, ty) => {
-            core::Expr::Call(
-                lower_expr(ctx, func),
-                lower_exprs(ctx, args),
-                collapse_type(ctx, ty),
-            )
+        core::Expr::Call { func, args, ty } => {
+            core::Expr::Call {
+                func: lower_expr(ctx, func),
+                args: lower_exprs(ctx, args),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => {
-            core::Expr::ToDyn(
+        core::Expr::ToDyn { trait_name, for_ty, expr, ty } => {
+            core::Expr::ToDyn {
                 trait_name,
-                collapse_type(ctx, for_ty),
-                lower_expr(ctx, expr),
-                collapse_type(ctx, ty),
-            )
+                for_ty: collapse_type(ctx, for_ty),
+                expr: lower_expr(ctx, expr),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
-            core::Expr::DynCall(
+        core::Expr::DynCall { trait_name, method_name, receiver, args, ty } => {
+            core::Expr::DynCall {
                 trait_name,
                 method_name,
-                lower_expr(ctx, receiver),
-                lower_exprs(ctx, args),
-                collapse_type(ctx, ty),
-            )
+                receiver: lower_expr(ctx, receiver),
+                args: lower_exprs(ctx, args),
+                ty: collapse_type(ctx, ty),
+            }
         },
-        core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
+        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
             lower_trait_call(ctx, reference, method_name, receiver, args, ty)
         },
-        core::Expr::Proj(tuple, index, ty) => {
-            core::Expr::Proj(
-                lower_expr(ctx, tuple),
+        core::Expr::Proj { tuple, index, ty } => {
+            core::Expr::Proj {
+                tuple: lower_expr(ctx, tuple),
                 index,
-                collapse_type(ctx, ty),
-            )
+                ty: collapse_type(ctx, ty),
+            }
         },
     }
 }
@@ -974,23 +974,23 @@ fn collect_block_type_names(ctx: TypeCtx, value: core::Block) -> unit {
 fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
     collect_type_names(ctx, core::expr_type(value));
     match value {
-        core::Expr::Var(_, _) | core::Expr::Prim(_, _) => (),
-        core::Expr::Callable(callable, _) => collect_callable_type_names(ctx, callable),
-        core::Expr::Constr(constructor, args, _) => {
+        core::Expr::Var { name: _, ty: _ } | core::Expr::Prim { value: _, ty: _ } => (),
+        core::Expr::Callable { callable, ty: _ } => collect_callable_type_names(ctx, callable),
+        core::Expr::Constr { constructor, args, ty: _ } => {
             add_used_type_name(ctx, constructor_owner(constructor.name));
             collect_exprs_type_names(ctx, args)
         },
-        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
             collect_exprs_type_names(ctx, items)
         },
-        core::Expr::Closure(params, body, _) => {
+        core::Expr::Closure { params, body, ty: _ } => {
             for param in params {
                 collect_type_names(ctx, param.ty)
             };
             collect_expr_type_names(ctx, body)
         },
-        core::Expr::Block(block, _) => collect_block_type_names(ctx, block),
-        core::Expr::Match(expr, arms, default, _) => {
+        core::Expr::Block { block, ty: _ } => collect_block_type_names(ctx, block),
+        core::Expr::Match { expr, arms, default, ty: _ } => {
             collect_expr_type_names(ctx, expr);
             for arm in arms {
                 collect_expr_type_names(ctx, arm.lhs);
@@ -998,42 +998,42 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             };
             collect_optional_expr_type_names(ctx, default)
         },
-        core::Expr::If(cond, then_branch, else_branch, _) => {
+        core::Expr::If { cond, then_branch, else_branch, ty: _ } => {
             collect_expr_type_names(ctx, cond);
             collect_expr_type_names(ctx, then_branch);
             collect_expr_type_names(ctx, else_branch)
         },
-        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+        core::Expr::While { cond, body, ty: _ } | core::Expr::Binary { op: _, lhs: cond, rhs: body, ty: _ } => {
             collect_expr_type_names(ctx, cond);
             collect_expr_type_names(ctx, body)
         },
-        core::Expr::Break(_) | core::Expr::Continue(_) => (),
-        core::Expr::Return(expr, _) => collect_optional_expr_type_names(ctx, expr),
-        core::Expr::Go(expr, _)
-        | core::Expr::Unary(_, expr, _)
-        | core::Expr::Cast(expr, _)
-        | core::Expr::Proj(expr, _, _) => collect_expr_type_names(ctx, expr),
-        core::Expr::ConstrGet(expr, constructor, _, _) => {
+        core::Expr::Break { ty: _ } | core::Expr::Continue { ty: _ } => (),
+        core::Expr::Return { expr, ty: _ } => collect_optional_expr_type_names(ctx, expr),
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => collect_expr_type_names(ctx, expr),
+        core::Expr::ConstrGet { expr, constructor, field_index: _, ty: _ } => {
             add_used_type_name(ctx, constructor_owner(constructor.name));
             collect_expr_type_names(ctx, expr)
         },
-        core::Expr::Assign(_, value, target_ty, _) => {
+        core::Expr::Assign { name: _, value, target_ty, ty: _ } => {
             collect_type_names(ctx, target_ty);
             collect_expr_type_names(ctx, value)
         },
-        core::Expr::Call(func, args, _) => {
+        core::Expr::Call { func, args, ty: _ } => {
             collect_expr_type_names(ctx, func);
             collect_exprs_type_names(ctx, args)
         },
-        core::Expr::ToDyn(_, for_ty, expr, _) => {
+        core::Expr::ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
             collect_type_names(ctx, for_ty);
             collect_expr_type_names(ctx, expr)
         },
-        core::Expr::DynCall(_, _, receiver, args, _) => {
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             collect_expr_type_names(ctx, receiver);
             collect_exprs_type_names(ctx, args)
         },
-        core::Expr::TraitCall(reference, _, receiver, args, _) => {
+        core::Expr::TraitCall { trait_ref: reference, method_name: _, receiver, args, ty: _ } => {
             collect_trait_ref_type_names(ctx, reference);
             collect_expr_type_names(ctx, receiver);
             collect_exprs_type_names(ctx, args)
