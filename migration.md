@@ -27,6 +27,7 @@ explicitly refers to fixture cases.
 | `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 24 projects |
 | `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 100 fixtures |
 | `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 54 fixtures representing 50 Rust tests |
+| `crates/compiler/src/tests/struct_type/` | `bootstrap/compiler_test/struct_type_test.gom` | migrated, 3 fixtures |
 | `crates/compiler/src/tests/bootstrap/` | no replacement | oracle; Rust/bootstrap differential infrastructure |
 
 Every migrated diagnostic fixture maps as follows:
@@ -57,7 +58,7 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 | `dyn_coercion_test.rs` | 13 | crasher fixtures | partially migrated; retain Go AST assertions |
 | `while_expr_test.rs` | 0 | crasher fixtures | migrated |
 | `operator_semantics_test.rs` | 0 | e2e and crasher fixtures | migrated |
-| `struct_type_test.rs` | 11 | future diagnostic fixtures | pending; retain `GlobalTypeEnv` assertions |
+| `struct_type_test.rs` | 8 | `bootstrap/compiler_test/struct_type_test.gom` | partially migrated; 3 migrated, 3 blocked, and 5 internal |
 | `assignment_target_test.rs` | 0 | e2e and crasher fixtures | migrated |
 | `constructor_value_test.rs` | 1 | future runtime fixture | pending |
 | `multiline_string_test.rs` | 0 | e2e and crasher fixtures | migrated |
@@ -65,9 +66,9 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 | `try_expr_test.rs` | 3 | future diagnostic/runtime fixtures | pending |
 | `tuple_projection_test.rs` | 2 | future runtime fixtures | pending |
 | `vec_effect_test.rs` | 1 | crasher fixtures | partially migrated; retain Go AST assertion |
-| `testing_test.rs` | 7 | future `bootstrap-goml` CLI fixtures | pending |
-| `separate_compile_test.rs` | 5 | future `bootstrap-goml` CLI fixtures | pending |
-| `query_test.rs` | 44 | no bootstrap query API yet | blocked |
+| `testing_test.rs` | 2 | bootstrap `gomlc` and `goml test` self-tests | partially migrated; 5 migrated and 2 internal |
+| `separate_compile_test.rs` | 3 | module corpus | partially migrated; 2 migrated, 1 blocked, and 2 internal |
+| `query_test.rs` | 44 | no replacement by decision | retained in Rust; query tests are intentionally not migrated |
 | `builtin_functions_test.rs` | 11 | no replacement | internal |
 | `intrinsics_test.rs` | 7 | no replacement | internal |
 | `anf_stack_test.rs` | 7 | no replacement | internal stress and complexity coverage |
@@ -254,6 +255,49 @@ The retained package model blockers are:
 - `ambiguous_package_alias_is_rejected`
 - `nested_module_is_not_loaded_as_a_package`
 - `transitive_dependencies_are_not_source_visible`
+
+## Struct, testing, and separate compilation migration
+
+The following struct type diagnostics map to same-named fixtures under
+`crates/compiler/src/tests/struct_type/`:
+
+- `struct_type_arity_mismatch_reports_error`
+- `unknown_type_constructor_reports_error`
+- `unbound_type_parameter_reports_error`
+
+The three equivalent enum payload diagnostics remain in Rust because the
+bootstrap compiler omits the source position emitted by Rust. The other five
+retained tests inspect `GlobalTypeEnv` or TAST nodes directly.
+
+The following `testing_test.rs` coverage is migrated:
+
+| Removed Rust test | GoML coverage |
+| --- | --- |
+| `test_build_collects_and_links_top_level_tests` | `bootstrap/cmd/gomlc/main_test.gom::collects_and_encodes_test_descriptors` and `bootstrap-goml/cmd/goml/cli_migration_test.gom::project_test_runs_private_tests_and_ignores_test_sources_in_check` |
+| `invalid_test_signatures_are_rejected` | `bootstrap/cmd/gomlc/main_test.gom::collects_all_invalid_test_signature_diagnostics` and `bootstrap-goml/cmd/goml/cli_migration_test.gom::project_test_dry_run_and_invalid_signature_diagnostics` |
+| `test_attribute_rejects_non_top_level_functions` | `bootstrap/cmd/gomlc/main_test.gom::collects_all_invalid_test_attribute_diagnostics` |
+| `malformed_test_attributes_are_rejected` | `bootstrap/cmd/gomlc/main_test.gom::collects_all_invalid_test_attribute_diagnostics` |
+| `duplicate_test_ids_have_cross_file_labels` | `bootstrap/cmd/gomlc/main_test.gom::labels_duplicate_test_ids_across_files` |
+
+`test_link_accepts_multiple_test_package_roots` and
+`analysis_compilation_retains_exact_override_sources` remain as Rust-only API
+invariants.
+
+Two `separate_compile_test.rs` behaviors are covered by stronger module
+fixtures:
+
+| Removed Rust test | GoML coverage |
+| --- | --- |
+| `separate_build_link_matches_project_008` | `module/project008_trait_bounds_across_packages/` |
+| `separate_build_link_supports_std` | `module/project032_std_host_api/` |
+
+`user_package_cannot_import_std_internal_host` remains in Rust because the
+bootstrap compiler currently reports a missing static member instead of the
+Rust compiler's package visibility diagnostic. The remaining two tests assert
+linker artifact invariants and remain internal.
+
+All 44 `query_test.rs` tests intentionally remain in Rust and are excluded
+from the migration scope.
 
 ## Runtime and control-flow migration
 
