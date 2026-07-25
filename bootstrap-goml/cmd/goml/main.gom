@@ -29,18 +29,18 @@ fn fail(message: string) -> unit {
 }
 
 fn top_help() -> string {
-    "Usage: bootstrap-goml <COMMAND>\n\nCommands:\n  check\n  build\n  run\n  test\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
+    "Usage: goml <COMMAND>\n\nCommands:\n  check\n  build\n  run\n  test\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn command_help(command: string) -> string {
     if command == "check" {
-        "Usage: bootstrap-goml check [OPTIONS] [TARGET]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
+        "Usage: goml check [OPTIONS] [TARGET]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
     } else if command == "build" {
-        "Usage: bootstrap-goml build [OPTIONS] [TARGET]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
+        "Usage: goml build [OPTIONS] [TARGET]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "run" {
-        "Usage: bootstrap-goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
+        "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "test" {
-        "Usage: bootstrap-goml test [OPTIONS] [TARGET] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --format <FORMAT>  [default: text] [possible values: text, json]\n      --jobs <JOBS>      [default: 1]\n  -h, --help"
+        "Usage: goml test [OPTIONS] [TARGET] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --format <FORMAT>  [default: text] [possible values: text, json]\n      --jobs <JOBS>      [default: 1]\n  -h, --help"
     } else {
         top_help()
     }
@@ -361,7 +361,7 @@ fn main() -> unit {
             io::println(command_help(args.get(2)))
         }
     } else if args.get(1) == "version" {
-        io::println("bootstrap-goml 0.1.0")
+        io::println("goml 0.1.0")
     } else {
         match parse_cli(args) {
             Result::Ok(value) => match run_command(value) {
