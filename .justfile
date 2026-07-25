@@ -41,6 +41,24 @@ install-bootstrap:
     target/debug/goml build bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
     home="${GOML_HOME:-$HOME/.goml}"; mkdir -p "$home/bin"; cp bootstrap/_artifact/bin/cmd/gomlc/gomlc "$home/bin/gomlc"; cp bootstrap-goml/_artifact/bin/cmd/goml/goml "$home/bin/goml"; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
 
+test-bootstrap-goml:
+    cargo build -p goml -p gomlc
+    target/debug/goml build bootstrap-goml/cmd/goml --compiler target/debug/gomlc
+    target/debug/goml test bootstrap-goml/cmd/goml --compiler target/debug/gomlc --jobs 1
+
+test-bootstrap-self: _bootstrap-check _bootstrap-test
+
+test-bootstrap-self-full: _bootstrap-check _bootstrap-build _bootstrap-test
+
+_bootstrap-check:
+    bootstrap-goml/_artifact/bin/cmd/goml/goml check bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
+
+_bootstrap-build:
+    bootstrap-goml/_artifact/bin/cmd/goml/goml build bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
+
+_bootstrap-test:
+    bootstrap-goml/_artifact/bin/cmd/goml/goml test bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 1
+
 install-lsp-suite:
     just install-lsp
     just install-vscode-ext
