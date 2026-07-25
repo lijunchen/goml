@@ -1985,7 +1985,13 @@ fn collect_dyn_call_method(
     value: anf::Value,
 ) -> unit {
     match value {
-        anf::Value::DynCall(owner, encoded, _, args, ret_ty) => if owner == trait_name {
+        anf::Value::DynCall {
+            trait_name: owner,
+            method_name: encoded,
+            receiver: _,
+            args,
+            ty: ret_ty,
+        } => if owner == trait_name {
             let parts = dyn_method_parts(encoded, owner);
             if contains_method(result, parts.1) == false {
                 let params: Vec[tast::Type] = Vec::new();
@@ -2027,11 +2033,11 @@ fn collect_dyn_call_methods(
         }
     };
     match block.term {
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             collect_dyn_call_methods(result, trait_name, then_);
             collect_dyn_call_methods(result, trait_name, else_)
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             for arm in arms {
                 collect_dyn_call_methods(result, trait_name, arm.body)
             };

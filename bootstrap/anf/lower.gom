@@ -16,7 +16,7 @@ fn lower_function(state: State, value: core::Function) -> Function {
             ret_ty: value.ret_ty,
             body: Block {
                 binds: no_binds(),
-                term: Term::Return(Imm::Var(ret_value, value.ret_ty)),
+                term: Term::Return(Imm::Var { name: ret_value, ty: value.ret_ty }),
             },
         }
     } else {

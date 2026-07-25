@@ -20,7 +20,7 @@ fn reify_k(
         }, ret_ty)
     } else {
         let param = fresh(state, "jp");
-        let body = k(Imm::Var(param, value_ty));
+        let body = k(Imm::Var { name: param, ty: value_ty });
         let ret_ty = block_type(body);
         let params = Vec::new();
         params.push((param, value_ty));
@@ -53,7 +53,7 @@ fn reify_k_for_expr(
             ret_ty,
             body: Block {
                 binds: no_binds(),
-                term: Term::Unreachable(ret_ty),
+                term: Term::Unreachable { ty: ret_ty },
             },
         }, ret_ty)
     } else {
@@ -162,7 +162,7 @@ fn lower_if(
         );
         Block {
             binds: one_bind(Bind::Join(join)),
-            term: Term::If(cond, then_block, else_block, ret_ty),
+            term: Term::If { cond, then_: then_block, else_: else_block, ret_ty },
         }
     })
 }
@@ -224,7 +224,7 @@ fn lower_match(
         };
         Block {
             binds: one_bind(Bind::Join(join)),
-            term: Term::Match(scrutinee, lowered_arms, lowered_default, ret_ty),
+            term: Term::Match { scrutinee, arms: lowered_arms, default: lowered_default, ret_ty },
         }
     })
 }
@@ -255,16 +255,16 @@ fn lower_while(
         let then_block = lower_expr(state, body, |_| {
             Block {
                 binds: no_binds(),
-                term: Term::Jump(loop_id, no_imms(), exit_ret_ty),
+                term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty },
             }
         });
         let else_block = Block {
             binds: no_binds(),
-            term: Term::Jump(exit_id, no_imms(), exit_ret_ty),
+            term: Term::Jump { target: exit_id, args: no_imms(), ret_ty: exit_ret_ty },
         };
         Block {
             binds: no_binds(),
-            term: Term::If(cond, then_block, else_block, exit_ret_ty),
+            term: Term::If { cond, then_: then_block, else_: else_block, ret_ty: exit_ret_ty },
         }
     });
     state.loop_ctx.set(previous);
@@ -280,7 +280,7 @@ fn lower_while(
     binds.push(Bind::JoinRec(recursive));
     Block {
         binds,
-        term: Term::Jump(loop_id, no_imms(), exit_ret_ty),
+        term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty },
     }
 }
 
@@ -295,12 +295,12 @@ fn lower_return(
             }),
             Option::None => Block {
                 binds: no_binds(),
-                term: Term::Jump(ctx.join_id, no_imms(), ctx.ret_ty),
+                term: Term::Jump { target: ctx.join_id, args: no_imms(), ret_ty: ctx.ret_ty },
             },
         },
         Option::None => Block {
             binds: no_binds(),
-            term: Term::Unreachable(tast::Type::Error),
+            term: Term::Unreachable { ty: tast::Type::Error },
         },
     }
 }
@@ -324,21 +324,29 @@ fn lower_expr(
             core::Expr::Break(_) => match state.loop_ctx.get() {
                 Option::Some(ctx) => Block {
                     binds: no_binds(),
-                    term: Term::Jump(ctx.exit_id, no_imms(), ctx.exit_ret_ty),
+                    term: Term::Jump {
+                        target: ctx.exit_id,
+                        args: no_imms(),
+                        ret_ty: ctx.exit_ret_ty,
+                    },
                 },
                 Option::None => Block {
                     binds: no_binds(),
-                    term: Term::Unreachable(tast::Type::Error),
+                    term: Term::Unreachable { ty: tast::Type::Error },
                 },
             },
             core::Expr::Continue(_) => match state.loop_ctx.get() {
                 Option::Some(ctx) => Block {
                     binds: no_binds(),
-                    term: Term::Jump(ctx.loop_id, no_imms(), ctx.exit_ret_ty),
+                    term: Term::Jump {
+                        target: ctx.loop_id,
+                        args: no_imms(),
+                        ret_ty: ctx.exit_ret_ty,
+                    },
                 },
                 Option::None => Block {
                     binds: no_binds(),
-                    term: Term::Unreachable(tast::Type::Error),
+                    term: Term::Unreachable { ty: tast::Type::Error },
                 },
             },
             core::Expr::Return(value, _) => lower_return(state, value),

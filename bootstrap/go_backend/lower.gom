@@ -316,18 +316,18 @@ fn compile_primitive(value: tast::Primitive, ty: tast::Type) -> Expr {
 
 fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
     match value {
-        anf::Imm::Var(name, _) => {
+        anf::Imm::Var { name, ty: _ } => {
             match mapped_function_name(env.function_names, name) {
                 Option::Some(value) => Expr::Var(value),
                 Option::None => Expr::Var(go_local_ident(name)),
             }
         },
-        anf::Imm::Callable(tast::Callable::Intrinsic(key), function_ty) => {
+        anf::Imm::Callable { callable: tast::Callable::Intrinsic(key), ty: function_ty } => {
             compile_intrinsic_callable(key, function_ty)
         },
-        anf::Imm::Callable(value, _) => Expr::Var(callable_name(env, value)),
-        anf::Imm::Prim(value, ty) => compile_primitive(value, ty),
-        anf::Imm::Tag(index, owner_ty) => {
+        anf::Imm::Callable { callable: value, ty: _ } => Expr::Var(callable_name(env, value)),
+        anf::Imm::Prim { value, ty } => compile_primitive(value, ty),
+        anf::Imm::Tag { index, ty: owner_ty } => {
             match find_variant_info(env.variants, owner_ty, index) {
                 Option::Some(info) => {
                     if info.tag_only {
@@ -349,7 +349,7 @@ fn compile_runtime_imm(
 ) -> CompiledValue {
     let expr = compile_imm(env, value);
     match value {
-        anf::Imm::Prim(_, ty) => {
+        anf::Imm::Prim { value: _, ty } => {
             let stmts = Vec::new();
             stmts.push(Stmt::Var(name, lower_type(ty), Option::Some(expr)));
             CompiledValue {
@@ -458,7 +458,7 @@ fn compile_closure_function(
 
 fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: tast::Type) -> Expr {
     match value {
-        anf::Imm::Tag(tag, owner_ty) => match variant_type(env.variants, owner_ty, tag) {
+        anf::Imm::Tag { index: tag, ty: owner_ty } => match variant_type(env.variants, owner_ty, tag) {
             Option::Some(ty) => Expr::StructLiteral(ty, Vec::new()),
             Option::None => compile_imm(env, value),
         },
@@ -743,7 +743,7 @@ fn compile_intrinsic_callable(key: string, function_ty: tast::Type) -> Expr {
 
 fn compile_callable(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
     match func {
-        anf::Imm::Callable(tast::Callable::Intrinsic(key), function_ty) => {
+        anf::Imm::Callable { callable: tast::Callable::Intrinsic(key), ty: function_ty } => {
             match intrinsic_helper_call_name(key, function_ty, args) {
                 Option::Some(name) => Expr::Var(name),
                 Option::None => compile_imm(env, func),
@@ -770,7 +770,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
             };
             let compiled = compile_imms_expected(env, args, expected);
             match func {
-                anf::Imm::Callable(tast::Callable::Intrinsic(key), _) => {
+                anf::Imm::Callable { callable: tast::Callable::Intrinsic(key), ty: _ } => {
                     if key == "eq.primitive" {
                         Expr::Binary(BinaryOp::Eq, compiled.get(0), compiled.get(1))
                     } else if key == "slice.new" {
@@ -956,8 +956,8 @@ fn compile_value(
     let stmts: Vec[Stmt] = Vec::new();
     let expr = match value {
         anf::Value::Imm(value) => compile_imm_expected(env, value, expected_ty),
-        anf::Value::Constr(constructor, args, ty) => compile_constructor(env, constructor, args, ty),
-        anf::Value::Tuple(items, ty) => {
+        anf::Value::Constr { constructor, args, ty } => compile_constructor(env, constructor, args, ty),
+        anf::Value::Tuple { items, ty } => {
             let fields: Vec[(string, Expr)] = Vec::new();
             match tast::resolve_type(ty) {
                 tast::Type::Tuple(item_types) => {
@@ -976,7 +976,7 @@ fn compile_value(
             };
             Expr::StructLiteral(lower_type(ty), fields)
         },
-        anf::Value::Array(items, ty) => {
+        anf::Value::Array { items, ty } => {
             let expected = match tast::resolve_type(ty) {
                 tast::Type::Array(_, elem) => {
                     let values: Vec[tast::Type] = Vec::new();
@@ -989,7 +989,7 @@ fn compile_value(
             };
             Expr::ArrayLiteral(lower_type(ty), compile_imms_expected(env, items, expected))
         },
-        anf::Value::ConstrGet(expr, constructor, index, _) => {
+        anf::Value::ConstrGet { expr, constructor, field_index: index, ty: _ } => {
             let field = if constructor.is_struct && index < constructor.fields.len() {
                 go_ident(constructor.fields.get(index))
             } else {
@@ -1010,7 +1010,7 @@ fn compile_value(
             };
             Expr::Field(target, field)
         },
-        anf::Value::Unary(op, operand, _) => {
+        anf::Value::Unary { op, expr: operand, ty: _ } => {
             let compiled = match op {
                 ast::UnaryOp::BitNot => compile_runtime_imm(
                     env,
@@ -1025,7 +1025,7 @@ fn compile_value(
             append_stmts(stmts, compiled.stmts);
             Expr::Unary(compile_unary(op), compiled.expr)
         },
-        anf::Value::Cast(source, ty) => {
+        anf::Value::Cast { expr: source, ty } => {
             let source_ty = lower_type(anf::imm_type(source));
             let compiled = compile_runtime_imm(
                 env,
@@ -1038,7 +1038,7 @@ fn compile_value(
                 Expr::Convert(source_ty, compiled.expr),
             )
         },
-        anf::Value::Binary(op, lhs, rhs, _) => {
+        anf::Value::Binary { op, lhs, rhs, ty: _ } => {
             let compiled_lhs = if materializes_binary_operands(op) {
                 compile_runtime_imm(
                     env,
@@ -1071,15 +1071,15 @@ fn compile_value(
                 compiled_rhs.expr,
             )
         },
-        anf::Value::Assign(name, value, target_ty, _) => {
+        anf::Value::Assign { name, value, target_ty, ty: _ } => {
             stmts.push(Stmt::Assign(
                 go_local_ident(name),
                 compile_imm_expected(env, value, target_ty),
             ));
             Expr::Unit
         },
-        anf::Value::Call(func, args, _) => compile_call(env, func, args),
-        anf::Value::ToDyn(trait_name, for_ty, expr, ty) => {
+        anf::Value::Call { func, args, ty: _ } => compile_call(env, func, args),
+        anf::Value::ToDyn { trait_name, for_ty, expr, ty } => {
             let fields: Vec[(string, Expr)] = Vec::new();
             let compiled = compile_imm_expected(env, expr, for_ty);
             let data = match tast::resolve_type(for_ty) {
@@ -1109,7 +1109,7 @@ fn compile_value(
             ));
             Expr::StructLiteral(lower_type(ty), fields)
         },
-        anf::Value::DynCall(trait_name, method, receiver, args, _) => {
+        anf::Value::DynCall { trait_name, method_name: method, receiver, args, ty: _ } => {
             let method_name = dyn_method_parts(method, trait_name).1;
             let receiver = compile_imm(env, receiver);
             let values: Vec[Expr] = Vec::new();
@@ -1126,12 +1126,12 @@ fn compile_value(
                 values,
             )
         },
-        anf::Value::Go(value, _) => {
+        anf::Value::Go { closure: value, ty: _ } => {
             let call = compile_call(env, value, Vec::new());
             stmts.push(Stmt::Go(call));
             Expr::Unit
         },
-        anf::Value::Proj(tuple, index, _) => {
+        anf::Value::Proj { tuple, index, ty: _ } => {
             Expr::Field(compile_imm(env, tuple), "_" + index.to_string())
         },
     };
@@ -1152,11 +1152,11 @@ fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
 
 fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
     match value {
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             collect_joins_block(result, then_);
             collect_joins_block(result, else_)
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             for arm in arms {
                 collect_joins_block(result, arm.body)
             };
@@ -1166,8 +1166,8 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
             }
         },
         anf::Term::Return(_)
-        | anf::Term::Jump(_, _, _)
-        | anf::Term::Unreachable(_) => (),
+        | anf::Term::Jump { target: _, args: _, ret_ty: _ }
+        | anf::Term::Unreachable { ty: _ } => (),
     }
 }
 
@@ -1215,11 +1215,11 @@ fn same_target(lhs: Option[string], rhs: Option[string]) -> Option[string] {
 
 fn term_target(value: anf::Term) -> Option[string] {
     match value {
-        anf::Term::Jump(target, _, _) => Option::Some(target),
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::Jump { target, args: _, ret_ty: _ } => Option::Some(target),
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             same_target(block_target(then_), block_target(else_))
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             let result: Ref[Option[string]] = Ref::new(Option::None);
             let initialized = Ref::new(false);
             let valid = Ref::new(true);
@@ -1270,7 +1270,7 @@ fn term_target(value: anf::Term) -> Option[string] {
             };
             if valid.get() { result.get() } else { Option::None }
         },
-        anf::Term::Return(_) | anf::Term::Unreachable(_) => Option::None,
+        anf::Term::Return(_) | anf::Term::Unreachable { ty: _ } => Option::None,
     }
 }
 
@@ -1368,7 +1368,7 @@ fn compile_branch_to_join(
         }
     };
     let suppress = match value.term {
-        anf::Term::Jump(target, args, _) => {
+        anf::Term::Jump { target, args, ret_ty: _ } => {
             args.len() == 0 && contains_string(loop_names, target)
         },
         _ => false,
@@ -1482,7 +1482,7 @@ fn compile_match_leaf(
 
 fn arm_type(env: LowerEnv, value: anf::Imm) -> Option[Type] {
     match value {
-        anf::Imm::Tag(tag, owner_ty) => variant_type(env.variants, owner_ty, tag),
+        anf::Imm::Tag { index: tag, ty: owner_ty } => variant_type(env.variants, owner_ty, tag),
         _ => Option::None,
     }
 }
@@ -1510,22 +1510,22 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
         anf::Term::Return(value) => result.push(Stmt::Return(Option::Some(
             compile_imm_expected(env, value, anf::imm_type(value)),
         ))),
-        anf::Term::Jump(target, args, _) => match find_join(env.joins, target) {
+        anf::Term::Jump { target, args, ret_ty: _ } => match find_join(env.joins, target) {
             Option::Some(join) => {
                 append_stmts(result, compile_jump_args(env, join, args));
                 append_stmts(result, compile_block(env, join.body).stmts)
             },
             Option::None => result.push(Stmt::Unreachable),
         },
-        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+        anf::Term::If { cond, then_, else_, ret_ty: _ } => result.push(Stmt::If(
             compile_imm(env, cond),
             compile_block(env, then_),
             Option::Some(compile_block(env, else_)),
         )),
-        anf::Term::Match(scrut, arms, default, _) => {
+        anf::Term::Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             append_stmts(result, compile_match_leaf(env, scrut, arms, default))
         },
-        anf::Term::Unreachable(_) => result.push(Stmt::Unreachable),
+        anf::Term::Unreachable { ty: _ } => result.push(Stmt::Unreachable),
     };
     result
 }
@@ -1538,15 +1538,15 @@ fn compile_term_to_join(
 ) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::new();
     match value {
-        anf::Term::Jump(_, args, _) => {
+        anf::Term::Jump { target: _, args, ret_ty: _ } => {
             append_stmts(result, compile_jump_args(env, join, args))
         },
-        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+        anf::Term::If { cond, then_, else_, ret_ty: _ } => result.push(Stmt::If(
             compile_imm(env, cond),
             compile_branch_to_join(env, then_, target, join),
             Option::Some(compile_branch_to_join(env, else_, target, join)),
         )),
-        anf::Term::Match(scrut, arms, default, _) => {
+        anf::Term::Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             if match_scrutinee_is_unit(scrut) {
                 match first_match_body(arms, default) {
                     Option::Some(body) => append_stmts(
@@ -1691,7 +1691,7 @@ fn term_reaches_target(
     visited: Vec[string],
 ) -> bool {
     match value {
-        anf::Term::Jump(name, args, _) => {
+        anf::Term::Jump { target: name, args, ret_ty: _ } => {
             if name == target && args.len() == 0 {
                 true
             } else if contains_string(visited, name) {
@@ -1706,11 +1706,11 @@ fn term_reaches_target(
                 }
             }
         },
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             block_reaches_target(then_, target, joins, visited)
                 || block_reaches_target(else_, target, joins, visited)
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             let reaches = Ref::new(false);
             for arm in arms {
                 if block_reaches_target(arm.body, target, joins, visited) {
@@ -1731,7 +1731,7 @@ fn term_reaches_target(
             };
             reaches.get()
         },
-        anf::Term::Return(_) | anf::Term::Unreachable(_) => false,
+        anf::Term::Return(_) | anf::Term::Unreachable { ty: _ } => false,
     }
 }
 
@@ -1750,7 +1750,7 @@ fn term_tail_target_through_joins(
     visited: Vec[string],
 ) -> Option[string] {
     match value {
-        anf::Term::Jump(target, args, _) => {
+        anf::Term::Jump { target, args, ret_ty: _ } => {
             if args.len() == 0 {
                 Option::Some(target)
             } else if contains_string(visited, target) {
@@ -1771,13 +1771,13 @@ fn term_tail_target_through_joins(
                 }
             }
         },
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             same_target(
                 block_tail_target_through_joins(then_, joins, visited),
                 block_tail_target_through_joins(else_, joins, visited),
             )
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             let result: Ref[Option[string]] = Ref::new(Option::None);
             let valid = Ref::new(true);
             for arm in arms {
@@ -1815,7 +1815,7 @@ fn term_tail_target_through_joins(
             };
             if valid.get() { result.get() } else { Option::None }
         },
-        anf::Term::Return(_) | anf::Term::Unreachable(_) => Option::None,
+        anf::Term::Return(_) | anf::Term::Unreachable { ty: _ } => Option::None,
     }
 }
 
@@ -1836,7 +1836,7 @@ fn term_all_paths_reach_or_terminate(
     visited: Vec[string],
 ) -> bool {
     match value {
-        anf::Term::Jump(name, _, _) => {
+        anf::Term::Jump { target: name, args: _, ret_ty: _ } => {
             if name == target {
                 true
             } else if contains_string(visited, name) {
@@ -1858,11 +1858,11 @@ fn term_all_paths_reach_or_terminate(
                 }
             }
         },
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             block_all_paths_reach_or_terminate(then_, target, joins, visited)
                 && block_all_paths_reach_or_terminate(else_, target, joins, visited)
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             let result = Ref::new(true);
             for arm in arms {
                 if !block_all_paths_reach_or_terminate(arm.body, target, joins, visited) {
@@ -1883,7 +1883,7 @@ fn term_all_paths_reach_or_terminate(
             };
             result.get()
         },
-        anf::Term::Return(_) | anf::Term::Unreachable(_) => true,
+        anf::Term::Return(_) | anf::Term::Unreachable { ty: _ } => true,
     }
 }
 
@@ -1894,7 +1894,7 @@ fn all_paths_reach_or_terminate(value: anf::Block, target: string) -> bool {
 fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
     let joins = scoped_joins(Vec::new(), value);
     match value.term {
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::new());
             let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::new());
             if then_reaches && !else_reaches {
@@ -1905,7 +1905,7 @@ fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
                 Option::None
             }
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             let saw_continue = Ref::new(false);
             let exit_target: Ref[Option[string]] = Ref::new(Option::None);
             let valid = Ref::new(true);
@@ -2027,7 +2027,7 @@ fn compile_loop_branch_to_join(
         }
     };
     let suppress = match value.term {
-        anf::Term::Jump(target, args, _) => {
+        anf::Term::Jump { target, args, ret_ty: _ } => {
             args.len() == 0 && contains_string(loop_names, target)
         },
         _ => false,
@@ -2102,7 +2102,7 @@ fn compile_loop_term_leaf(
 ) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::new();
     match value {
-        anf::Term::Jump(target, _, _) => {
+        anf::Term::Jump { target, args: _, ret_ty: _ } => {
             if target == loop_name {
                 result.push(Stmt::Continue)
             } else if target == exit_name {
@@ -2111,7 +2111,7 @@ fn compile_loop_term_leaf(
                 match find_join(env.joins, target) {
                     Option::Some(join) => {
                         match value {
-                            anf::Term::Jump(_, args, _) => {
+                            anf::Term::Jump { target: _, args, ret_ty: _ } => {
                                 append_stmts(result, compile_jump_args(env, join, args))
                             },
                             _ => (),
@@ -2125,12 +2125,12 @@ fn compile_loop_term_leaf(
                 }
             }
         },
-        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+        anf::Term::If { cond, then_, else_, ret_ty: _ } => result.push(Stmt::If(
             compile_imm(env, cond),
             compile_loop_block(env, then_, loop_name, exit_name, label),
             Option::Some(compile_loop_block(env, else_, loop_name, exit_name, label)),
         )),
-        anf::Term::Match(scrut, arms, default, _) => {
+        anf::Term::Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             if match_scrutinee_is_unit(scrut) {
                 match first_match_body(arms, default) {
                     Option::Some(body) => append_stmts(
@@ -2219,10 +2219,10 @@ fn compile_loop_term_to_join(
 ) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::new();
     match value {
-        anf::Term::Jump(_, args, _) => {
+        anf::Term::Jump { target: _, args, ret_ty: _ } => {
             append_stmts(result, compile_jump_args(env, join, args))
         },
-        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+        anf::Term::If { cond, then_, else_, ret_ty: _ } => result.push(Stmt::If(
             compile_imm(env, cond),
             compile_loop_branch_to_join(
                 env,
@@ -2243,7 +2243,7 @@ fn compile_loop_term_to_join(
                 label,
             )),
         )),
-        anf::Term::Match(scrut, arms, default, _) => {
+        anf::Term::Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             if match_scrutinee_is_unit(scrut) {
                 match first_match_body(arms, default) {
                     Option::Some(body) => append_stmts(
@@ -2412,7 +2412,7 @@ fn compile_loop_block(
         }
     };
     let suppress = match value.term {
-        anf::Term::Jump(target, args, _) => {
+        anf::Term::Jump { target, args, ret_ty: _ } => {
             args.len() == 0 && contains_string(loop_names, target)
         },
         _ => false,
@@ -2609,7 +2609,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
         }
     };
     let suppress = match value.term {
-        anf::Term::Jump(target, args, _) => {
+        anf::Term::Jump { target, args, ret_ty: _ } => {
             args.len() == 0 && contains_string(loop_names, target)
         },
         _ => false,
@@ -2701,14 +2701,14 @@ fn collect_runtime_imm(
     value: anf::Imm,
 ) -> unit {
     match value {
-        anf::Imm::Callable(tast::Callable::Runtime(key), _) => {
+        anf::Imm::Callable { callable: tast::Callable::Runtime(key), ty: _ } => {
             if contains_string(result, key) == false {
                 result.push(key)
             } else {
                 ()
             }
         },
-        anf::Imm::Callable(tast::Callable::Intrinsic(key), function_ty) => {
+        anf::Imm::Callable { callable: tast::Callable::Intrinsic(key), ty: function_ty } => {
             if contains_string(intrinsics, key) == false {
                 intrinsics.push(key)
             } else {
@@ -2737,37 +2737,37 @@ fn collect_runtime_value(
         anf::Value::Imm(value) => {
             collect_runtime_imm(result, missing_types, intrinsics, value)
         },
-        anf::Value::Constr(_, args, _)
-        | anf::Value::Tuple(args, _)
-        | anf::Value::Array(args, _) => {
+        anf::Value::Constr { constructor: _, args, ty: _ }
+        | anf::Value::Tuple { items: args, ty: _ }
+        | anf::Value::Array { items: args, ty: _ } => {
             for arg in args {
                 collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
-        anf::Value::ConstrGet(expr, _, _, _)
-        | anf::Value::Unary(_, expr, _)
-        | anf::Value::Cast(expr, _)
-        | anf::Value::Go(expr, _)
-        | anf::Value::Proj(expr, _, _) => {
+        anf::Value::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | anf::Value::Unary { op: _, expr, ty: _ }
+        | anf::Value::Cast { expr, ty: _ }
+        | anf::Value::Go { closure: expr, ty: _ }
+        | anf::Value::Proj { tuple: expr, index: _, ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, expr)
         },
-        anf::Value::Binary(_, lhs, rhs, _) => {
+        anf::Value::Binary { op: _, lhs, rhs, ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, lhs);
             collect_runtime_imm(result, missing_types, intrinsics, rhs)
         },
-        anf::Value::Assign(_, expr, _, _) => {
+        anf::Value::Assign { name: _, value: expr, target_ty: _, ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, expr)
         },
-        anf::Value::Call(func, args, _) => {
+        anf::Value::Call { func, args, ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, func);
             for arg in args {
                 collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
-        anf::Value::ToDyn(_, _, expr, _) => {
+        anf::Value::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, expr)
         },
-        anf::Value::DynCall(_, _, receiver, args, _) => {
+        anf::Value::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, receiver);
             for arg in args {
                 collect_runtime_imm(result, missing_types, intrinsics, arg)
@@ -2801,17 +2801,17 @@ fn collect_runtime_block(
         anf::Term::Return(value) => {
             collect_runtime_imm(result, missing_types, intrinsics, value)
         },
-        anf::Term::Jump(_, args, _) => {
+        anf::Term::Jump { target: _, args, ret_ty: _ } => {
             for arg in args {
                 collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
-        anf::Term::If(cond, then_, else_, _) => {
+        anf::Term::If { cond, then_, else_, ret_ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, cond);
             collect_runtime_block(result, missing_types, intrinsics, then_);
             collect_runtime_block(result, missing_types, intrinsics, else_)
         },
-        anf::Term::Match(scrut, arms, default, _) => {
+        anf::Term::Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             collect_runtime_imm(result, missing_types, intrinsics, scrut);
             for arm in arms {
                 collect_runtime_imm(result, missing_types, intrinsics, arm.lhs);
@@ -2824,7 +2824,7 @@ fn collect_runtime_block(
                 Option::None => (),
             }
         },
-        anf::Term::Unreachable(_) => (),
+        anf::Term::Unreachable { ty: _ } => (),
     }
 }
 
@@ -2832,37 +2832,37 @@ fn collect_value_type(result: CollectedTypes, value: anf::Value) -> unit {
     collect_type(result, anf::value_type(value));
     match value {
         anf::Value::Imm(value) => collect_imm_type(result, value),
-        anf::Value::Constr(_, args, _)
-        | anf::Value::Tuple(args, _)
-        | anf::Value::Array(args, _) => {
+        anf::Value::Constr { constructor: _, args, ty: _ }
+        | anf::Value::Tuple { items: args, ty: _ }
+        | anf::Value::Array { items: args, ty: _ } => {
             for arg in args {
                 collect_imm_type(result, arg)
             }
         },
-        anf::Value::ConstrGet(expr, _, _, _)
-        | anf::Value::Unary(_, expr, _)
-        | anf::Value::Cast(expr, _)
-        | anf::Value::Go(expr, _)
-        | anf::Value::Proj(expr, _, _) => collect_imm_type(result, expr),
-        anf::Value::Binary(_, lhs, rhs, _) => {
+        anf::Value::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | anf::Value::Unary { op: _, expr, ty: _ }
+        | anf::Value::Cast { expr, ty: _ }
+        | anf::Value::Go { closure: expr, ty: _ }
+        | anf::Value::Proj { tuple: expr, index: _, ty: _ } => collect_imm_type(result, expr),
+        anf::Value::Binary { op: _, lhs, rhs, ty: _ } => {
             collect_imm_type(result, lhs);
             collect_imm_type(result, rhs)
         },
-        anf::Value::Assign(_, expr, target_ty, _) => {
+        anf::Value::Assign { name: _, value: expr, target_ty, ty: _ } => {
             collect_imm_type(result, expr);
             collect_type(result, target_ty)
         },
-        anf::Value::Call(func, args, _) => {
+        anf::Value::Call { func, args, ty: _ } => {
             collect_imm_type(result, func);
             for arg in args {
                 collect_imm_type(result, arg)
             }
         },
-        anf::Value::ToDyn(_, for_ty, expr, _) => {
+        anf::Value::ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
             collect_type(result, for_ty);
             collect_imm_type(result, expr)
         },
-        anf::Value::DynCall(_, _, receiver, args, _) => {
+        anf::Value::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             collect_imm_type(result, receiver);
             for arg in args {
                 collect_imm_type(result, arg)
@@ -2898,19 +2898,19 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> unit {
     };
     match value.term {
         anf::Term::Return(value) => collect_imm_type(result, value),
-        anf::Term::Jump(_, args, ty) => {
+        anf::Term::Jump { target: _, args, ret_ty: ty } => {
             collect_type(result, ty);
             for arg in args {
                 collect_imm_type(result, arg)
             }
         },
-        anf::Term::If(cond, then_, else_, ty) => {
+        anf::Term::If { cond, then_, else_, ret_ty: ty } => {
             collect_imm_type(result, cond);
             collect_type(result, ty);
             collect_block_types(result, then_);
             collect_block_types(result, else_)
         },
-        anf::Term::Match(scrut, arms, default, ty) => {
+        anf::Term::Match { scrutinee: scrut, arms, default, ret_ty: ty } => {
             collect_imm_type(result, scrut);
             collect_type(result, ty);
             for arm in arms {
@@ -2922,7 +2922,7 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> unit {
                 Option::None => (),
             }
         },
-        anf::Term::Unreachable(ty) => collect_type(result, ty),
+        anf::Term::Unreachable { ty } => collect_type(result, ty),
     }
 }
 
@@ -3049,7 +3049,7 @@ fn add_dyn_coercion(
 
 fn collect_dyn_value(result: Vec[DynCoercion], value: anf::Value) -> unit {
     match value {
-        anf::Value::ToDyn(trait_name, for_ty, _, _) => {
+        anf::Value::ToDyn { trait_name, for_ty, expr: _, ty: _ } => {
             add_dyn_coercion(result, trait_name, for_ty)
         },
         _ => (),
@@ -3069,11 +3069,11 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
         }
     };
     match value.term {
-        anf::Term::If(_, then_, else_, _) => {
+        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
             collect_dyn_block(result, then_);
             collect_dyn_block(result, else_)
         },
-        anf::Term::Match(_, arms, default, _) => {
+        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
             for arm in arms {
                 collect_dyn_block(result, arm.body)
             };

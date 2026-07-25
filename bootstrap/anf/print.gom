@@ -62,10 +62,10 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
 
 fn write_imm(builder: text::StringBuilder, value: Imm) -> unit {
     match value {
-        Imm::Var(name, _) => builder.write_string(name),
-        Imm::Callable(callable, _) => write_callable(builder, callable),
-        Imm::Prim(value, _) => tast::write_primitive(builder, value),
-        Imm::Tag(index, _) => {
+        Imm::Var { name, ty: _ } => builder.write_string(name),
+        Imm::Callable { callable, ty: _ } => write_callable(builder, callable),
+        Imm::Prim { value, ty: _ } => tast::write_primitive(builder, value),
+        Imm::Tag { index, ty: _ } => {
             builder.write_string("Tag_");
             builder.write_string(index.to_string())
         },
@@ -124,20 +124,20 @@ fn write_constructor(
 fn write_value(builder: text::StringBuilder, value: Value) -> unit {
     match value {
         Value::Imm(value) => write_imm(builder, value),
-        Value::Constr(constructor, args, _) => {
+        Value::Constr { constructor, args, ty: _ } => {
             write_constructor(builder, constructor, args)
         },
-        Value::Tuple(items, _) => {
+        Value::Tuple { items, ty: _ } => {
             builder.write_char('(');
             write_imms(builder, items);
             builder.write_char(')')
         },
-        Value::Array(items, _) => {
+        Value::Array { items, ty: _ } => {
             builder.write_char('[');
             write_imms(builder, items);
             builder.write_char(']')
         },
-        Value::ConstrGet(expr, constructor, index, _) => {
+        Value::ConstrGet { expr, constructor, field_index: index, ty: _ } => {
             if constructor.is_struct && index < constructor.fields.len() {
                 builder.write_string(constructor.name);
                 builder.write_char('.');
@@ -151,20 +151,20 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             write_imm(builder, expr);
             builder.write_char(')')
         },
-        Value::Unary(op, expr, _) => {
+        Value::Unary { op, expr, ty: _ } => {
             builder.write_char('(');
             builder.write_string(tast::unary_symbol(op));
             write_imm(builder, expr);
             builder.write_char(')')
         },
-        Value::Cast(expr, ty) => {
+        Value::Cast { expr, ty } => {
             builder.write_char('(');
             write_imm(builder, expr);
             builder.write_string(" as ");
             tast::write_type(builder, ty);
             builder.write_char(')')
         },
-        Value::Binary(op, lhs, rhs, _) => {
+        Value::Binary { op, lhs, rhs, ty: _ } => {
             builder.write_char('(');
             write_imm(builder, lhs);
             builder.write_char(' ');
@@ -173,18 +173,18 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             write_imm(builder, rhs);
             builder.write_char(')')
         },
-        Value::Assign(name, value, _, _) => {
+        Value::Assign { name, value, target_ty: _, ty: _ } => {
             builder.write_string(name);
             builder.write_string(" = ");
             write_imm(builder, value)
         },
-        Value::Call(func, args, _) => {
+        Value::Call { func, args, ty: _ } => {
             write_imm(builder, func);
             builder.write_char('(');
             write_imms(builder, args);
             builder.write_char(')')
         },
-        Value::ToDyn(trait_name, for_ty, expr, _) => {
+        Value::ToDyn { trait_name, for_ty, expr, ty: _ } => {
             builder.write_string("to_dyn[");
             builder.write_string(trait_name);
             builder.write_string("]{");
@@ -193,7 +193,7 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             write_imm(builder, expr);
             builder.write_char(')')
         },
-        Value::DynCall(trait_name, method_name, receiver, args, _) => {
+        Value::DynCall { trait_name, method_name, receiver, args, ty: _ } => {
             builder.write_string("dyn_call[");
             builder.write_string(trait_name);
             builder.write_string("::");
@@ -208,11 +208,11 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             };
             builder.write_char(')')
         },
-        Value::Go(closure, _) => {
+        Value::Go { closure, ty: _ } => {
             builder.write_string("go ");
             write_imm(builder, closure)
         },
-        Value::Proj(tuple, index, _) => {
+        Value::Proj { tuple, index, ty: _ } => {
             write_imm(builder, tuple);
             builder.write_char('.');
             builder.write_string(index.to_string())
@@ -289,14 +289,14 @@ fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
 fn write_term(builder: text::StringBuilder, value: Term, indent: int) -> unit {
     match value {
         Term::Return(value) => write_imm(builder, value),
-        Term::Jump(target, args, _) => {
+        Term::Jump { target, args, ret_ty: _ } => {
             builder.write_string("jump ");
             builder.write_string(target);
             builder.write_char('(');
             write_imms(builder, args);
             builder.write_char(')')
         },
-        Term::If(cond, then_, else_, _) => {
+        Term::If { cond, then_, else_, ret_ty: _ } => {
             builder.write_string("if ");
             write_imm(builder, cond);
             builder.write_string(" {");
@@ -309,7 +309,7 @@ fn write_term(builder: text::StringBuilder, value: Term, indent: int) -> unit {
             newline(builder, indent);
             builder.write_char('}')
         },
-        Term::Match(scrutinee, arms, default, _) => {
+        Term::Match { scrutinee, arms, default, ret_ty: _ } => {
             builder.write_string("match ");
             write_imm(builder, scrutinee);
             builder.write_string(" {");
@@ -331,7 +331,7 @@ fn write_term(builder: text::StringBuilder, value: Term, indent: int) -> unit {
             newline(builder, indent);
             builder.write_char('}')
         },
-        Term::Unreachable(_) => builder.write_string("unreachable"),
+        Term::Unreachable { ty: _ } => builder.write_string("unreachable"),
     }
 }
 

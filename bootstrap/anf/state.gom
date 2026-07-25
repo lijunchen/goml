@@ -29,7 +29,7 @@ fn fresh(state: State, prefix: string) -> string {
 }
 
 fn unit_imm() -> Imm {
-    Imm::Prim(tast::Primitive::Unit, tast::Type::Unit)
+    Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }
 }
 
 fn type_is_unit(value: tast::Type) -> bool {
@@ -93,11 +93,11 @@ fn jump_block(
 ) -> Block {
     Block {
         binds: no_binds(),
-        term: Term::Jump(
+        term: Term::Jump {
             target,
-            if takes_arg { one_imm(value) } else { no_imms() },
+            args: if takes_arg { one_imm(value) } else { no_imms() },
             ret_ty,
-        ),
+        },
     }
 }
 
