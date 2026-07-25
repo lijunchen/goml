@@ -379,6 +379,75 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
     }
 }
 
+fn module_diagnostic_projects() -> Vec[string] {
+    let directory = path::join(compiler_tests_root(), "module_diagnostics");
+    let result = Vec::new();
+    for name in read_directory(directory) {
+        let project = path::join(directory, name);
+        if fs::is_dir(project)
+            && (fs::is_file(path::join(project, "main.gom.expect"))
+                || fs::is_file(path::join(project, "main.gom.ok"))
+                || fs::is_file(path::join(project, "main.gom.build")))
+        {
+            result.push(project)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+pub fn assert_module_diagnostics() -> unit {
+    let projects = module_diagnostic_projects();
+    testing::assert_eq(projects.len(), 24);
+    for source_project in projects {
+        let name = match path::file_name(source_project) {
+            Option::Some(value) => value,
+            Option::None => "module-diagnostic",
+        };
+        let project = path::join(
+            path::join(
+                repository_root(),
+                "bootstrap/_artifact/test-work/compiler/module-diagnostics-source",
+            ),
+            name,
+        );
+        copy_directory(source_project, project);
+        let target = path::join(
+            path::join(
+                repository_root(),
+                "bootstrap/_artifact/test-work/compiler/module-diagnostics",
+            ),
+            name,
+        );
+        let command = if fs::is_file(path::join(source_project, "main.gom.build")) {
+            "build"
+        } else {
+            "check"
+        };
+        let checked = project_command(command, project, target);
+        if fs::is_file(path::join(source_project, "main.gom.ok")) {
+            assert_command_success(checked, "module check for " + project)
+        } else if fs::is_file(path::join(source_project, "main.gom.build")) {
+            assert_command_success(checked, "module build for " + project)
+        } else {
+            testing::assert(
+                !process::ExitStatus::success(process::Output::status(checked)),
+            );
+            let expected = read_file(
+                path::join(source_project, "main.gom.expect"),
+            );
+            if expected == "" {
+                ()
+            } else {
+                let output = bytes_text(process::Output::stdout(checked))
+                    + bytes_text(process::Output::stderr(checked));
+                testing::assert(text_contains(output, expected))
+            }
+        }
+    }
+}
+
 pub fn assert_standard_binary_stdio() -> unit {
     let project = path::join(
         repository_root(),

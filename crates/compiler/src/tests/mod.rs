@@ -23,7 +23,6 @@ mod builtin_functions_test;
 mod constructor_value_test;
 mod deep_pattern_test;
 mod dyn_coercion_test;
-mod entrypoint_test;
 mod go_name_mangling_test;
 mod intrinsics_test;
 mod multiline_string_test;
