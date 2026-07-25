@@ -646,6 +646,7 @@ fn compiler_test_suites_match() {
     let mut matched = compare_diagnostic_suite(&repository, "diagnostics");
     matched += compare_diagnostic_suite(&repository, "typer");
     matched += compare_diagnostic_suite(&repository, "trait_impl");
+    matched += compare_diagnostic_suite(&repository, "struct_type");
     matched += compare_e2e(&repository);
     matched += compare_modules(&repository, &temporary);
     matched += compare_crashers(&repository, &temporary);
