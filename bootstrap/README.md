@@ -16,13 +16,13 @@ Build the Rust driver and then compile the bootstrap module from the repository 
 
 ```sh
 cargo build -p goml -p gomlc
-target/debug/goml build bootstrap
+target/debug/goml build bootstrap/cmd/gomlc
 ```
 
 The resulting compiler is:
 
 ```text
-bootstrap/_artifact/bin/gomlc
+bootstrap/_artifact/bin/cmd/gomlc/gomlc
 ```
 
 ## Single-file commands
@@ -30,13 +30,13 @@ bootstrap/_artifact/bin/gomlc
 Run a GoML source file:
 
 ```sh
-bootstrap/_artifact/bin/gomlc run-single path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc run-single path/to/file.gom
 ```
 
 Dump selected compiler stages before execution:
 
 ```sh
-bootstrap/_artifact/bin/gomlc run-single \
+bootstrap/_artifact/bin/cmd/gomlc/gomlc run-single \
   --dump-ast \
   --dump-hir \
   --dump-tast \
@@ -51,16 +51,16 @@ bootstrap/_artifact/bin/gomlc run-single \
 Print one stage directly:
 
 ```sh
-bootstrap/_artifact/bin/gomlc lex path/to/file.gom
-bootstrap/_artifact/bin/gomlc cst path/to/file.gom
-bootstrap/_artifact/bin/gomlc ast path/to/file.gom
-bootstrap/_artifact/bin/gomlc hir path/to/file.gom
-bootstrap/_artifact/bin/gomlc tast path/to/file.gom
-bootstrap/_artifact/bin/gomlc core path/to/file.gom
-bootstrap/_artifact/bin/gomlc mono path/to/file.gom
-bootstrap/_artifact/bin/gomlc lift path/to/file.gom
-bootstrap/_artifact/bin/gomlc anf path/to/file.gom
-bootstrap/_artifact/bin/gomlc go path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc lex path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc cst path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc ast path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc hir path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc tast path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc core path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc mono path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc lift path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc anf path/to/file.gom
+bootstrap/_artifact/bin/cmd/gomlc/gomlc go path/to/file.gom
 ```
 
 ## Project commands
@@ -68,9 +68,9 @@ bootstrap/_artifact/bin/gomlc go path/to/file.gom
 Use the bootstrap compiler with the Rust `goml` project driver:
 
 ```sh
-target/debug/goml check --compiler bootstrap/_artifact/bin/gomlc path/to/project
-target/debug/goml build --compiler bootstrap/_artifact/bin/gomlc path/to/project
-target/debug/goml run --compiler bootstrap/_artifact/bin/gomlc path/to/project
+target/debug/goml check --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc path/to/project
+target/debug/goml build --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc path/to/project
+target/debug/goml run --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc path/to/project
 ```
 
 The bootstrap binary also exposes the driver-facing `check`, `test-check`, `build`, `test-build`, `link`, and `test-link` commands.
@@ -80,7 +80,7 @@ The bootstrap binary also exposes the driver-facing `check`, `test-check`, `buil
 Run the GoML package tests with the Rust driver:
 
 ```sh
-target/debug/goml test bootstrap
+target/debug/goml test bootstrap/cmd/gomlc
 target/debug/goml test bootstrap/lexer
 target/debug/goml test bootstrap/parser
 target/debug/goml test bootstrap/ast

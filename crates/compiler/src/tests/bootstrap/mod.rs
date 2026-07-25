@@ -37,8 +37,10 @@ impl Repository {
         let bootstrap = root.join("bootstrap");
         let goml = env_path("GOML_BIN", root.join("target/debug/goml"));
         let rust_gomlc = env_path("RUST_GOMLC_BIN", root.join("target/debug/gomlc"));
-        let bootstrap_gomlc =
-            env_path("BOOTSTRAP_GOMLC_BIN", bootstrap.join("_artifact/bin/gomlc"));
+        let bootstrap_gomlc = env_path(
+            "BOOTSTRAP_GOMLC_BIN",
+            bootstrap.join("_artifact/bin/cmd/gomlc/gomlc"),
+        );
         Self {
             root,
             bootstrap,
@@ -175,7 +177,9 @@ fn prepare() -> Repository {
             .arg("gomlc");
         checked_output(&mut rust_build, "Rust compiler build");
         let mut bootstrap_build = Command::new(&repository.goml);
-        bootstrap_build.arg("build").arg(&repository.bootstrap);
+        bootstrap_build
+            .arg("build")
+            .arg(repository.bootstrap.join("cmd/gomlc"));
         checked_output(&mut bootstrap_build, "bootstrap compiler build");
     });
     assert!(
