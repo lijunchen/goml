@@ -57,6 +57,7 @@ pub enum TypeExpr {
 pub struct TraitRef {
     pub name: string,
     pub args: Vec[TypeExpr],
+    pub arg_spans: Vec[Option[ast::Span]],
 }
 
 pub enum Predicate {
@@ -73,11 +74,13 @@ pub struct TraitMethodSignature {
     pub name: string,
     pub params: Vec[TypeExpr],
     pub ret_ty: TypeExpr,
+    pub ret_ty_span: Option[ast::Span],
 }
 
 pub struct ClosureParam {
     pub name: LocalId,
     pub ty: Option[TypeExpr],
+    pub span: ast::Span,
 }
 
 pub struct Function {
@@ -202,7 +205,12 @@ pub struct Expr {
 
 pub enum ExprKind {
     NameRef { name_ref: NameRef },
-    StaticMember { owner: string, member: string, type_args: Vec[TypeExpr] },
+    StaticMember {
+        owner: string,
+        member: string,
+        type_args: Vec[TypeExpr],
+        type_arg_spans: Vec[Option[ast::Span]],
+    },
     Unit,
     Bool { value: bool },
     Int { value: string },

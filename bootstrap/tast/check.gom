@@ -2062,7 +2062,12 @@ fn check_call_expr(
                 ),
             },
         },
-        hir::ExprKind::StaticMember { owner, member, type_args } => {
+        hir::ExprKind::StaticMember {
+            owner,
+            member,
+            type_args,
+            type_arg_spans: _,
+        } => {
             match resolve_named_constructor(ctx, owner, member) {
                 Option::Some(info) => {
                     check_resolved_constructor_expr(ctx, info, args, expected)
@@ -3472,7 +3477,12 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
         Option::Some(result) => result,
         Option::None => match value.kind {
             hir::ExprKind::NameRef { name_ref: reference } => check_name_ref(ctx, reference),
-            hir::ExprKind::StaticMember { owner, member, type_args: args } => {
+            hir::ExprKind::StaticMember {
+                owner,
+                member,
+                type_args: args,
+                type_arg_spans: _,
+            } => {
                 check_static_member(ctx, owner, member, args)
             },
             hir::ExprKind::Constr { constructor, args } => {

@@ -200,6 +200,187 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
     }
 }
 
+fn pattern_has_unresolved_inference(
+    ctx: Checker,
+    value: hir::Pat,
+) -> bool {
+    match value.kind {
+        hir::PatKind::Var { name } => match find_local(ctx, name) {
+            Option::Some(ty) => contains_unresolved_inference(ctx, ty),
+            Option::None => false,
+        },
+        hir::PatKind::Constr { constructor: _, args }
+        | hir::PatKind::Tuple { items: args }
+        | hir::PatKind::Or { pats: args } => {
+            let found = Ref::new(false);
+            for arg in args {
+                if pattern_has_unresolved_inference(ctx, arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => {
+            let found = Ref::new(false);
+            for field in fields {
+                if pattern_has_unresolved_inference(ctx, field.1) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        hir::PatKind::Array { prefix, rest: _, suffix } => {
+            let found = Ref::new(false);
+            for arg in prefix {
+                if pattern_has_unresolved_inference(ctx, arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            for arg in suffix {
+                if pattern_has_unresolved_inference(ctx, arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        hir::PatKind::Alias { name, pat } => {
+            let alias_unresolved = match find_local(ctx, name) {
+                Option::Some(ty) => contains_unresolved_inference(ctx, ty),
+                Option::None => false,
+            };
+            alias_unresolved || pattern_has_unresolved_inference(ctx, pat)
+        },
+        hir::PatKind::Range { start, end, inclusive: _ } => {
+            pattern_has_unresolved_inference(ctx, start)
+                || pattern_has_unresolved_inference(ctx, end)
+        },
+        _ => false,
+    }
+}
+
+fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr]) -> unit {
+    for value in values {
+        report_unresolved_expr(ctx, value)
+    }
+}
+
+fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
+    for stmt in value.stmts {
+        match stmt {
+            hir::Stmt::Let { is_mut: _, pat, annotation, value } => {
+                if match annotation {
+                    Option::Some(_) => false,
+                    Option::None => pattern_has_unresolved_inference(ctx, pat),
+                } {
+                    push_inference_diagnostic_at(ctx, pat.span, 1);
+                    mark_unresolved_pattern_locals(ctx, pat)
+                } else {
+                    ()
+                };
+                report_unresolved_expr(ctx, value)
+            },
+            hir::Stmt::Assign { target, value } => {
+                report_unresolved_expr(ctx, target);
+                report_unresolved_expr(ctx, value)
+            },
+            hir::Stmt::Expr { expr } => report_unresolved_expr(ctx, expr),
+        }
+    };
+    match value.tail {
+        Option::Some(expr) => report_unresolved_expr(ctx, expr),
+        Option::None => (),
+    }
+}
+
+fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
+    match value.kind {
+        hir::ExprKind::NameRef {
+            name_ref: hir::NameRef::Local(local),
+        } => match find_local(ctx, local) {
+            Option::Some(ty) => if contains_unresolved_inference(ctx, ty) {
+                push_inference_diagnostic_at(ctx, value.span, 2)
+            } else {
+                ()
+            },
+            Option::None => (),
+        },
+        hir::ExprKind::Constr { constructor: _, args }
+        | hir::ExprKind::Tuple { items: args }
+        | hir::ExprKind::Array { items: args } => {
+            report_unresolved_exprs(ctx, args)
+        },
+        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
+            report_unresolved_expr(ctx, field.1)
+        },
+        hir::ExprKind::Closure { params, body } => {
+            report_unresolved_expr(ctx, body);
+            for param in params {
+                match find_local(ctx, param.name) {
+                    Option::Some(ty) => if contains_unresolved_inference(ctx, ty) {
+                        push_inference_diagnostic_at(ctx, param.span, 3)
+                    } else {
+                        ()
+                    },
+                    Option::None => (),
+                }
+            }
+        },
+        hir::ExprKind::Match { expr, arms } => {
+            report_unresolved_expr(ctx, expr);
+            for arm in arms {
+                match arm.guard {
+                    Option::Some(guard) => report_unresolved_expr(ctx, guard),
+                    Option::None => (),
+                };
+                report_unresolved_expr(ctx, arm.body)
+            }
+        },
+        hir::ExprKind::If { cond, then_branch, else_branch } => {
+            report_unresolved_expr(ctx, cond);
+            report_unresolved_expr(ctx, then_branch);
+            report_unresolved_expr(ctx, else_branch)
+        },
+        hir::ExprKind::While { cond, body } => {
+            report_unresolved_expr(ctx, cond);
+            report_unresolved_expr(ctx, body)
+        },
+        hir::ExprKind::For { pat: _, iterator, body } => {
+            report_unresolved_expr(ctx, iterator);
+            report_unresolved_expr(ctx, body)
+        },
+        hir::ExprKind::Return { expr } => match expr {
+            Option::Some(expr) => report_unresolved_expr(ctx, expr),
+            Option::None => (),
+        },
+        hir::ExprKind::Call { func, args } => {
+            report_unresolved_expr(ctx, func);
+            report_unresolved_exprs(ctx, args)
+        },
+        hir::ExprKind::Unary { op: _, expr }
+        | hir::ExprKind::Cast { expr, ty: _ }
+        | hir::ExprKind::Try { depth: _, expr }
+        | hir::ExprKind::Proj { tuple: expr, index: _ }
+        | hir::ExprKind::Field { expr, field_name: _ }
+        | hir::ExprKind::Go { expr } => report_unresolved_expr(ctx, expr),
+        hir::ExprKind::Range { start, end }
+        | hir::ExprKind::Binary { op: _, lhs: start, rhs: end }
+        | hir::ExprKind::Index { base: start, index: end } => {
+            report_unresolved_expr(ctx, start);
+            report_unresolved_expr(ctx, end)
+        },
+        hir::ExprKind::Block { block } => report_unresolved_block(ctx, block),
+        _ => (),
+    }
+}
+
 fn check_function(
     base: Checker,
     value: hir::Function,
@@ -279,7 +460,11 @@ fn check_function(
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
     resolve_numeric_literal_constraints(ctx);
-    resolve_required_predicates(ctx);
+    if resolve_required_predicates(ctx) {
+        report_unresolved_block(ctx, value.body)
+    } else {
+        ()
+    };
     let body = resolve_deferred_block(ctx, checked_body.0);
     Function {
         visibility: value.visibility,
@@ -1415,7 +1600,9 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
         let info = ctx.traits.get(index);
         for reference in info.supertraits {
             if !(reported.get()) {
-                let path = Vec::new().pushed(short_name(reference.name));
+                let path = Vec::new()
+                    .pushed(short_name(info.name))
+                    .pushed(short_name(reference.name));
                 if supertrait_path(
                     ctx,
                     reference.name,
@@ -1423,7 +1610,6 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
                     Vec::new(),
                     path,
                 ) {
-                    path.push(short_name(reference.name));
                     push_diagnostic_at(
                         ctx,
                         "Supertrait cycle detected: " + cycle_text(path),
@@ -1899,6 +2085,210 @@ fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
     result.get()
 }
 
+fn attach_diagnostic_span(
+    ctx: Checker,
+    message: string,
+    span: Option[ast::Span],
+) -> unit {
+    match span {
+        Option::Some(span) => {
+            let attached = Ref::new(false);
+            for index in range(0, ctx.diagnostics.len()) {
+                let value = ctx.diagnostics.get(index);
+                if !(attached.get())
+                    && value.message == message
+                    && value.source_path == ctx.source_path
+                {
+                    ctx.diagnostics.set(index, Diagnostic {
+                        severity: value.severity,
+                        stage: value.stage,
+                        message: value.message,
+                        source_path: value.source_path,
+                        span: Option::Some(span),
+                        primary_label: value.primary_label,
+                        secondary_labels: value.secondary_labels,
+                        sort_order: value.sort_order,
+                    });
+                    attached.set(true)
+                } else {
+                    ()
+                }
+            }
+        },
+        Option::None => (),
+    }
+}
+
+fn attach_type_diagnostic_span(
+    ctx: Checker,
+    value: hir::TypeExpr,
+    span: Option[ast::Span],
+) -> unit {
+    match value {
+        hir::TypeExpr::Con { name } => attach_diagnostic_span(
+            ctx,
+            "Unknown type constructor " + name,
+            span,
+        ),
+        _ => (),
+    }
+}
+
+fn attach_trait_ref_diagnostic_spans(
+    ctx: Checker,
+    value: hir::TraitRef,
+) -> unit {
+    for index in range(0, value.args.len()) {
+        attach_type_diagnostic_span(
+            ctx,
+            value.args.get(index),
+            if index < value.arg_spans.len() {
+                value.arg_spans.get(index)
+            } else {
+                Option::None
+            },
+        )
+    }
+}
+
+fn attach_expr_list_diagnostic_spans(
+    ctx: Checker,
+    values: Vec[hir::Expr],
+) -> unit {
+    for value in values {
+        attach_expr_diagnostic_spans(ctx, value)
+    }
+}
+
+fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
+    for stmt in value.stmts {
+        match stmt {
+            hir::Stmt::Let { is_mut: _, pat: _, annotation: _, value } => {
+                attach_expr_diagnostic_spans(ctx, value)
+            },
+            hir::Stmt::Assign { target, value } => {
+                attach_expr_diagnostic_spans(ctx, target);
+                attach_expr_diagnostic_spans(ctx, value)
+            },
+            hir::Stmt::Expr { expr } => attach_expr_diagnostic_spans(ctx, expr),
+        }
+    };
+    match value.tail {
+        Option::Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
+        Option::None => (),
+    }
+}
+
+fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
+    match value.kind {
+        hir::ExprKind::StaticMember {
+            owner: _,
+            member: _,
+            type_args,
+            type_arg_spans,
+        } => for index in range(0, type_args.len()) {
+            attach_type_diagnostic_span(
+                ctx,
+                type_args.get(index),
+                if index < type_arg_spans.len() {
+                    type_arg_spans.get(index)
+                } else {
+                    Option::None
+                },
+            )
+        },
+        hir::ExprKind::Constr { constructor: _, args }
+        | hir::ExprKind::Tuple { items: args }
+        | hir::ExprKind::Array { items: args } => {
+            attach_expr_list_diagnostic_spans(ctx, args)
+        },
+        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
+            attach_expr_diagnostic_spans(ctx, field.1)
+        },
+        hir::ExprKind::Closure { params: _, body }
+        | hir::ExprKind::Unary { op: _, expr: body }
+        | hir::ExprKind::Cast { expr: body, ty: _ }
+        | hir::ExprKind::Try { depth: _, expr: body }
+        | hir::ExprKind::Proj { tuple: body, index: _ }
+        | hir::ExprKind::Field { expr: body, field_name: _ }
+        | hir::ExprKind::Go { expr: body } => {
+            attach_expr_diagnostic_spans(ctx, body)
+        },
+        hir::ExprKind::Match { expr, arms } => {
+            attach_expr_diagnostic_spans(ctx, expr);
+            for arm in arms {
+                match arm.guard {
+                    Option::Some(guard) => attach_expr_diagnostic_spans(ctx, guard),
+                    Option::None => (),
+                };
+                attach_expr_diagnostic_spans(ctx, arm.body)
+            }
+        },
+        hir::ExprKind::If { cond, then_branch, else_branch } => {
+            attach_expr_diagnostic_spans(ctx, cond);
+            attach_expr_diagnostic_spans(ctx, then_branch);
+            attach_expr_diagnostic_spans(ctx, else_branch)
+        },
+        hir::ExprKind::While { cond, body } => {
+            attach_expr_diagnostic_spans(ctx, cond);
+            attach_expr_diagnostic_spans(ctx, body)
+        },
+        hir::ExprKind::For { pat: _, iterator, body } => {
+            attach_expr_diagnostic_spans(ctx, iterator);
+            attach_expr_diagnostic_spans(ctx, body)
+        },
+        hir::ExprKind::Return { expr } => match expr {
+            Option::Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
+            Option::None => (),
+        },
+        hir::ExprKind::Call { func, args } => {
+            attach_expr_diagnostic_spans(ctx, func);
+            attach_expr_list_diagnostic_spans(ctx, args)
+        },
+        hir::ExprKind::Range { start, end }
+        | hir::ExprKind::Binary { op: _, lhs: start, rhs: end }
+        | hir::ExprKind::Index { base: start, index: end } => {
+            attach_expr_diagnostic_spans(ctx, start);
+            attach_expr_diagnostic_spans(ctx, end)
+        },
+        hir::ExprKind::Block { block } => attach_block_diagnostic_spans(ctx, block),
+        _ => (),
+    }
+}
+
+fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
+    for item in value.items {
+        match item {
+            hir::Item::TraitDef(value) => {
+                for bound in value.generic_bounds {
+                    for reference in bound.1 {
+                        attach_trait_ref_diagnostic_spans(ctx, reference)
+                    }
+                };
+                for method in value.method_sigs {
+                    attach_type_diagnostic_span(
+                        ctx,
+                        method.ret_ty,
+                        method.ret_ty_span,
+                    )
+                }
+            },
+            hir::Item::Function(value) => {
+                for bound in value.generic_bounds {
+                    for reference in bound.1 {
+                        attach_trait_ref_diagnostic_spans(ctx, reference)
+                    }
+                };
+                attach_block_diagnostic_spans(ctx, value.body)
+            },
+            hir::Item::ImplBlock(value) => for method in value.methods {
+                attach_block_diagnostic_spans(ctx, method.body)
+            },
+            _ => (),
+        }
+    }
+}
+
 fn check_file_with_package(
     value: hir::File,
     package_files: Vec[hir::File],
@@ -1955,6 +2345,7 @@ fn check_file_with_package(
             _ => (),
         }
     };
+    attach_file_diagnostic_spans(ctx, value);
     let enums = if include_builtin_types {
         builtin_enum_definitions()
     } else {

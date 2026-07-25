@@ -253,7 +253,11 @@ fn path_text(ctx: LowerCtx, path: ast::Path) -> string {
     join_segments(qualified_segments(ctx, path))
 }
 
-fn static_member(parts: Vec[string], type_args: Vec[TypeExpr]) -> ExprKind {
+fn static_member(
+    parts: Vec[string],
+    type_args: Vec[TypeExpr],
+    type_arg_spans: Vec[Option[ast::Span]],
+) -> ExprKind {
     let owner_parts: Vec[string] = Vec::new();
     if parts.len() > 1 {
         for index in range(0, parts.len() - 1) {
@@ -267,8 +271,26 @@ fn static_member(parts: Vec[string], type_args: Vec[TypeExpr]) -> ExprKind {
         member: match last_string(parts) {
                     Option::Some(member) => member,
                     Option::None => "<error>",
-                },
+        },
         type_args,
+        type_arg_spans,
+    }
+}
+
+fn ast_type_head_span(value: ast::TypeExpr) -> Option[ast::Span] {
+    match value {
+        ast::TypeExpr::Con { path } => if path.segments.len() > 0 {
+            Option::Some(path.segments.get(0).span)
+        } else {
+            Option::None
+        },
+        ast::TypeExpr::Dyn { trait_path } => if trait_path.segments.len() > 0 {
+            Option::Some(trait_path.segments.get(0).span)
+        } else {
+            Option::None
+        },
+        ast::TypeExpr::App { ty, args: _ } => ast_type_head_span(ty),
+        _ => Option::None,
     }
 }
 
@@ -489,12 +511,15 @@ fn lower_plain_trait_ref(
     type_params: Vec[string],
 ) -> TraitRef {
     let args: Vec[TypeExpr] = Vec::new();
+    let arg_spans: Vec[Option[ast::Span]] = Vec::new();
     for arg in value.args {
+        arg_spans.push(ast_type_head_span(arg));
         args.push(lower_type(ctx, arg, type_params))
     };
     TraitRef {
         name: path_text(ctx, value.path),
         args,
+        arg_spans,
     }
 }
 
@@ -510,10 +535,12 @@ fn lower_impl_trait_ref(
         join_segments(parts)
     };
     let args: Vec[TypeExpr] = Vec::new();
+    let arg_spans: Vec[Option[ast::Span]] = Vec::new();
     for arg in value.args {
+        arg_spans.push(ast_type_head_span(arg));
         args.push(lower_type(ctx, arg, type_params))
     };
-    TraitRef { name, args }
+    TraitRef { name, args, arg_spans }
 }
 
 fn lower_predicate(
@@ -849,10 +876,12 @@ fn lower_expr_value(
         ast::Expr::Path { path, type_args, span: _ } => {
             if type_args.len() > 0 {
                 let args: Vec[TypeExpr] = Vec::new();
+                let arg_spans: Vec[Option[ast::Span]] = Vec::new();
                 for arg in type_args {
+                    arg_spans.push(ast_type_head_span(arg));
                     args.push(lower_type(ctx, arg, type_params))
                 };
-                static_member(qualified_segments(ctx, path), args)
+                static_member(qualified_segments(ctx, path), args, arg_spans)
             } else {
                 match constructor_ref(ctx, path) {
                     Option::Some(constructor) => ExprKind::Constr { constructor, args: Vec::new() },
@@ -878,7 +907,11 @@ fn lower_expr_value(
                                 Option::Some(def_id) => ExprKind::NameRef {
                                     name_ref: NameRef::Def(def_id),
                                 },
-                                Option::None => static_member(parts, Vec::new()),
+                                Option::None => static_member(
+                                    parts,
+                                    Vec::new(),
+                                    Vec::new(),
+                                ),
                             }
                         }
                     },
@@ -931,6 +964,7 @@ fn lower_expr_value(
                         Option::Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
                         Option::None => Option::None,
                     },
+                    span: param.span,
                 })
             };
             ExprKind::Closure {
@@ -1231,6 +1265,7 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
         method_sigs.push(TraitMethodSignature {
             name: method.name,
             params,
+            ret_ty_span: ast_type_head_span(method.ret_ty),
             ret_ty: lower_type(ctx, method.ret_ty, type_params),
         })
     };

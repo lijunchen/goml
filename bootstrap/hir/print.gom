@@ -447,7 +447,7 @@ fn write_static_member(
 fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value.kind {
         ExprKind::NameRef { name_ref: value } => write_name_ref(builder, value),
-        ExprKind::StaticMember { owner, member, type_args } => {
+        ExprKind::StaticMember { owner, member, type_args, type_arg_spans: _ } => {
             write_static_member(builder, owner, member, type_args)
         },
         ExprKind::Unit => builder.write_string("()"),

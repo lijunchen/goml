@@ -958,6 +958,7 @@ fn ast_diagnostics(
             }),
             primary_label: Option::None,
             secondary_labels: Vec::new(),
+            sort_order: 0,
         })
     };
     result
@@ -1113,6 +1114,11 @@ fn compact_diagnostic_precedes(
     } else if left_phase == 3 {
         specialized_inference_priority(left.message)
             < specialized_inference_priority(right.message)
+    } else if left_phase == 4
+        && left.sort_order != right.sort_order
+        && (left.sort_order > 0 || right.sort_order > 0)
+    {
+        left.sort_order < right.sort_order
     } else if left_phase == 4 {
         diagnostic_span_start(left) < diagnostic_span_start(right)
     } else {

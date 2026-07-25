@@ -981,7 +981,78 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
     }
 }
 
-fn resolve_required_predicates(ctx: Checker) -> unit {
+fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> unit {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: VarKind::Any } => {
+                if unresolved_inference_var(ctx, variable) {
+                    ()
+                } else {
+                    ctx.unresolved_inference_vars.push(variable)
+                }
+            },
+            TypeVar::Link(inner) => mark_unresolved_inference_type(ctx, inner),
+            _ => (),
+        },
+        Type::Tuple { items } => for item in items {
+            mark_unresolved_inference_type(ctx, item)
+        },
+        Type::Projection { for_ty, name: _, trait_ref } => {
+            mark_unresolved_inference_type(ctx, for_ty);
+            match trait_ref {
+                Option::Some(reference) => for arg in reference.args {
+                    mark_unresolved_inference_type(ctx, arg)
+                },
+                Option::None => (),
+            }
+        },
+        Type::App { ty, args } => {
+            mark_unresolved_inference_type(ctx, ty);
+            for arg in args {
+                mark_unresolved_inference_type(ctx, arg)
+            }
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => {
+            mark_unresolved_inference_type(ctx, elem)
+        },
+        Type::HashMap { key, value } => {
+            mark_unresolved_inference_type(ctx, key);
+            mark_unresolved_inference_type(ctx, value)
+        },
+        Type::Func { params, ret_ty } => {
+            for param in params {
+                mark_unresolved_inference_type(ctx, param)
+            };
+            mark_unresolved_inference_type(ctx, ret_ty)
+        },
+        _ => (),
+    }
+}
+
+fn mark_unresolved_inference_predicate(
+    ctx: Checker,
+    value: TypePredicate,
+) -> unit {
+    match value {
+        TypePredicate::Trait { for_ty, trait_ref } => {
+            mark_unresolved_inference_type(ctx, for_ty);
+            for arg in trait_ref.args {
+                mark_unresolved_inference_type(ctx, arg)
+            }
+        },
+        TypePredicate::Equality { lhs, rhs } => {
+            mark_unresolved_inference_type(ctx, lhs);
+            mark_unresolved_inference_type(ctx, rhs)
+        },
+    }
+}
+
+fn resolve_required_predicates(ctx: Checker) -> bool {
+    let has_ambiguous_inference = Ref::new(false);
     for _ in range(0, ctx.required_predicates.len() + 1) {
         for requirement in ctx.required_predicates {
             let _ = predicates_satisfied_at(
@@ -1035,12 +1106,27 @@ fn resolve_required_predicates(ctx: Checker) -> unit {
             if duplicate.get() {
                 ()
             } else {
+                let inference_prefix =
+                    "Could not infer the type required to prove";
+                if message.byte_len() >= inference_prefix.byte_len()
+                    && message.byte_slice(0, inference_prefix.byte_len())
+                        == inference_prefix
+                {
+                    has_ambiguous_inference.set(true);
+                    mark_unresolved_inference_predicate(
+                        ctx,
+                        requirement.predicate,
+                    )
+                } else {
+                    ()
+                };
                 messages.push(message);
                 spans.push(requirement.span);
                 push_diagnostic_at(ctx, message, requirement.span)
             }
         }
-    }
+    };
+    has_ambiguous_inference.get()
 }
 
 fn builtin_value_trait_type(value: Type) -> bool {
@@ -3246,7 +3332,7 @@ fn resolve_trait_static(
                 if ctx.diagnostics.len() > diagnostics_start {
                     return Option::Some(ResolvedCallable {
                         callable: Callable::Function("<error>"),
-                        ty: Type::Error,
+                        ty: fresh_unresolved_inference(ctx),
                     })
                 } else {
                     ()
