@@ -386,15 +386,18 @@ fn resolve_named_field_constructor(
     ctx: Checker,
     name: string,
 ) -> NamedFieldConstructorResolution {
-    match resolve_struct(ctx, name) {
-        Option::Some(value) => return NamedFieldConstructorResolution::Found(value),
+    match split_constructor_name(name) {
+        Option::Some(parts) => match find_enum_by_name(ctx, parts.0) {
+            Option::Some(value) => match resolve_named_variant_in(ctx, value, parts.1) {
+                NamedFieldConstructorResolution::Missing => (),
+                result => return result,
+            },
+            Option::None => (),
+        },
         Option::None => (),
     };
-    match split_constructor_name(name) {
-        Option::Some(parts) => return match find_enum_by_name(ctx, parts.0) {
-            Option::Some(value) => resolve_named_variant_in(ctx, value, parts.1),
-            Option::None => NamedFieldConstructorResolution::Missing,
-        },
+    match resolve_struct(ctx, name) {
+        Option::Some(value) => return NamedFieldConstructorResolution::Found(value),
         Option::None => (),
     };
     let found_enum: Ref[Option[EnumInfo]] = Ref::new(Option::None);
