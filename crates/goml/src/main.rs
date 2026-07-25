@@ -157,6 +157,7 @@ struct CompilerCompatArgs {
 
 struct ProjectContext {
     module_dir: PathBuf,
+    module_path: String,
     entry_path: PathBuf,
     target_role: ProjectTargetRole,
     dependencies: BTreeMap<String, String>,
@@ -193,11 +194,19 @@ impl ArtifactLayout {
         self.root.join("main.go")
     }
 
-    fn binary(&self, entry_package: &str) -> PathBuf {
+    fn binary(&self, module_path: &str, entry_package: &str) -> anyhow::Result<PathBuf> {
         let name = entry_package.rsplit("::").next().unwrap_or(entry_package);
-        self.root
-            .join("bin")
-            .join(format!("{name}{}", std::env::consts::EXE_SUFFIX))
+        let mut output = self.root.join("bin");
+        if entry_package != module_path {
+            let relative_package = entry_package
+                .strip_prefix(module_path)
+                .and_then(|value| value.strip_prefix("::"))
+                .ok_or_else(|| {
+                    anyhow!("entry package {entry_package} is outside module {module_path}")
+                })?;
+            output.extend(relative_package.split("::"));
+        }
+        Ok(output.join(format!("{name}{}", std::env::consts::EXE_SUFFIX)))
     }
 
     fn internal_test_go(&self) -> PathBuf {
@@ -994,7 +1003,9 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectB
         .ok_or_else(|| anyhow!("project build plan is missing a link command"))?;
     let go = GoBuildCommand {
         input: project.artifacts.main_go(),
-        output: project.artifacts.binary(entry_package),
+        output: project
+            .artifacts
+            .binary(&project.module_path, entry_package)?,
     };
     Ok(ProjectBuildCommandPlan { compiler, go })
 }
@@ -2115,6 +2126,7 @@ fn load_project(
     };
     Ok(ProjectContext {
         module_dir,
+        module_path: manifest.module.path,
         entry_path,
         target_role,
         dependencies: manifest.dependencies,

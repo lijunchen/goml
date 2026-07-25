@@ -27,6 +27,16 @@ fn last_segment(value: string) -> string {
     }
 }
 
+fn executable_path(context: Context) -> string {
+    let result = Ref::new(path::join(context.artifact_root, "bin"));
+    let module_segments = util::split(context.graph.module_path, "::");
+    let entry_segments = util::split(context.graph.entry_package, "::");
+    for index in range(module_segments.len(), entry_segments.len()) {
+        result.set(path::join(result.get(), entry_segments.get(index)))
+    };
+    path::join(result.get(), last_segment(context.graph.entry_package))
+}
+
 fn collect_dependencies(
     graph: Graph,
     package_name: string,
@@ -178,10 +188,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         entry_package: context.graph.entry_package,
         output: module_relative(context.graph.module_dir, main_go),
     });
-    let executable = path::join(
-        path::join(context.artifact_root, "bin"),
-        last_segment(context.graph.entry_package),
-    );
+    let executable = executable_path(context);
     commands.push(Command::GoBuild {
         input: module_relative(context.graph.module_dir, main_go),
         output: module_relative(context.graph.module_dir, executable),

@@ -243,6 +243,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - `goml check`, `goml build`, compiler queries, and LSP requests all resolve and typecheck third-party dependencies
 - Third-party source files remain in the registry cache under `~/.goml/cache/registry`
 - Project outputs are written under `[build].target-dir`, which defaults to `_artifact` and can be overridden with `--target-dir`.
+- Root-package executables are written to `<target-dir>/bin/<module-name>`. Nested entry packages preserve their module-relative package path and add the executable name, for example package `alice::app::cmd::server` is written to `<target-dir>/bin/cmd/server/server`.
 - Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/package.*`.
 - External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
 - Interfaces and dependency environments expose only public top-level API; current-package codegen still uses the package's full internal environment so private helpers compile normally.
