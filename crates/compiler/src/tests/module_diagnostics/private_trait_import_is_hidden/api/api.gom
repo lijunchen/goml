@@ -1,0 +1,19 @@
+package api;
+
+trait Hidden {
+    fn hidden(self: Self) -> string;
+}
+
+pub struct Item {
+    value: string,
+}
+
+impl Hidden for Item {
+    fn hidden(self: Item) -> string {
+        self.value
+    }
+}
+
+pub fn item() -> Item {
+    Item { value: "ok" }
+}
