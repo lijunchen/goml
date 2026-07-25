@@ -1170,7 +1170,7 @@ fn compact_typer_diagnostics(
     builder.finish()
 }
 
-fn test_diagnostic_output(source_path: string, source: string) -> string {
+pub fn diagnostic_output(source_path: string, source: string) -> string {
     let parsed = parser::parse(source);
     if parsed.diagnostics.len() > 0 {
         return compact_ast_diagnostics(parsed.diagnostics, source, true)
@@ -1252,7 +1252,7 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
         fail("usage: gomlc __test-diagnostics <FILE>")
     } else {
         let source_path = args.get(2);
-        io::print(test_diagnostic_output(
+        io::print(diagnostic_output(
             source_path,
             read_source(source_path),
         ))
