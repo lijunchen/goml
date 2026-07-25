@@ -526,8 +526,8 @@ fn coverage_sequence_patterns(
 
 fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
     match value {
-        Pat::Var(_, ty) | Pat::Wild(ty) => coverage_one(coverage_wild(ty)),
-        Pat::Prim(value, ty) => coverage_one(CoveragePat {
+        Pat::Var { name: _, ty } | Pat::Wild { ty } => coverage_one(coverage_wild(ty)),
+        Pat::Prim { value, ty } => coverage_one(CoveragePat {
             constructor: Option::Some(CoverageConstructor {
                 key: coverage_primitive_value(value),
                 fields: Vec::new(),
@@ -537,7 +537,7 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
             fields: Vec::new(),
             ty,
         }),
-        Pat::Constr(constructor, args, ty) => {
+        Pat::Constr { constructor, args, ty } => {
             let result = Vec::new();
             for fields in coverage_lists(args) {
                 let field_types = Vec::new();
@@ -557,7 +557,7 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
             };
             result
         },
-        Pat::Tuple(items, ty) => {
+        Pat::Tuple { items, ty } => {
             let result = Vec::new();
             for fields in coverage_lists(items) {
                 let field_types = Vec::new();
@@ -577,15 +577,15 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
             };
             result
         },
-        Pat::Array(prefix, rest, suffix, ty) => match prune(ty) {
-            Type::Array(length, element) => coverage_fixed_array(
+        Pat::Array { prefix, rest, suffix, ty } => match prune(ty) {
+            Type::Array { len: length, elem: element } => coverage_fixed_array(
                 prefix,
                 suffix,
                 length,
                 element,
                 ty,
             ),
-            Type::VecType(element) | Type::Slice(element) => coverage_sequence_patterns(
+            Type::VecType { elem: element } | Type::Slice { elem: element } => coverage_sequence_patterns(
                 prefix,
                 rest,
                 suffix,
@@ -594,8 +594,8 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
             ),
             _ => coverage_one(coverage_wild(ty)),
         },
-        Pat::Alias(_, pat, _) => coverage_patterns(pat),
-        Pat::Or(values, _) => {
+        Pat::Alias { name: _, pat, ty: _ } => coverage_patterns(pat),
+        Pat::Or { pats: values, ty: _ } => {
             let result = Vec::new();
             for value in values {
                 for alternative in coverage_patterns(value) {
@@ -604,7 +604,7 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
             };
             result
         },
-        Pat::Range(start, end, inclusive, ty) => coverage_one(coverage_range_pattern(
+        Pat::Range { start, end, inclusive, ty } => coverage_one(coverage_range_pattern(
             start,
             end,
             inclusive,
@@ -615,7 +615,7 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
 
 fn coverage_type_args(value: Type) -> Vec[Type] {
     match prune(value) {
-        Type::App(_, args) => args,
+        Type::App { ty: _, args } => args,
         _ => Vec::new(),
     }
 }
@@ -697,17 +697,17 @@ fn coverage_domain(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
                     fields: Vec::new(),
                 }),
         ),
-        Type::Tuple(values) => Option::Some(Vec::new().pushed(CoverageConstructor {
+        Type::Tuple { items: values } => Option::Some(Vec::new().pushed(CoverageConstructor {
             key: "tuple:" + values.len().to_string(),
             fields: values,
         })),
-        Type::Array(length, element) => Option::Some(Vec::new().pushed(
+        Type::Array { len: length, elem: element } => Option::Some(Vec::new().pushed(
             CoverageConstructor {
                 key: "array:" + length.to_string(),
                 fields: coverage_repeat(element, length),
             },
         )),
-        Type::Con(name) | Type::App(Type::Con(name), _) => {
+        Type::Con { name } | Type::App { ty: Type::Con { name }, args: _ } => {
             match find_enum_by_name(ctx, name) {
                 Option::Some(info) => Option::Some(coverage_enum_domain(info, ty)),
                 Option::None => match coverage_builtin_domain(name, ty) {
@@ -909,7 +909,7 @@ fn coverage_default(matrix: Vec[Vec[CoveragePat]]) -> Vec[Vec[CoveragePat]] {
 
 fn coverage_sequence_element(ty: Type) -> Option[Type] {
     match prune(ty) {
-        Type::VecType(element) | Type::Slice(element) => Option::Some(element),
+        Type::VecType { elem: element } | Type::Slice { elem: element } => Option::Some(element),
         _ => Option::None,
     }
 }
@@ -1670,7 +1670,7 @@ fn coverage_enum_witness_text(
     ty: Type,
 ) -> string {
     let name = match prune(ty) {
-        Type::Con(name) | Type::App(Type::Con(name), _) => name,
+        Type::Con { name } | Type::App { ty: Type::Con { name }, args: _ } => name,
         _ => "<unknown>",
     };
     let variant = Ref::new("<unknown>");
@@ -1766,7 +1766,7 @@ fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
 fn coverage_guard(value: Option[Expr]) -> bool {
     match value {
         Option::None => true,
-        Option::Some(Expr::Prim(Primitive::Bool(value), _)) => value,
+        Option::Some(Expr::Prim { value: Primitive::Bool(value), ty: _ }) => value,
         Option::Some(_) => false,
     }
 }

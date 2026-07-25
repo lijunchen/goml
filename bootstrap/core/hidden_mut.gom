@@ -47,10 +47,10 @@ fn collect_mutable_exprs(values: Vec[tast::Expr], result: Vec[(string, tast::Typ
 fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) -> unit {
     for stmt in value.stmts {
         match stmt {
-            tast::Stmt::Let(is_mut, pattern, expr) => {
+            tast::Stmt::Let { is_mut, pat: pattern, value: expr } => {
                 if is_mut {
                     match pattern {
-                        tast::Pat::Var(name, ty) => push_mutable(result, name, ty),
+                        tast::Pat::Var { name, ty } => push_mutable(result, name, ty),
                         _ => (),
                     }
                 } else {
@@ -58,11 +58,11 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
                 };
                 collect_mutable_expr(expr, result)
             },
-            tast::Stmt::Assign(target, expr) => {
+            tast::Stmt::Assign { target, value: expr } => {
                 collect_mutable_expr(target, result);
                 collect_mutable_expr(expr, result)
             },
-            tast::Stmt::Expr(expr) => collect_mutable_expr(expr, result),
+            tast::Stmt::Expr { expr } => collect_mutable_expr(expr, result),
         }
     };
     match value.tail {
@@ -73,17 +73,17 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
 
 fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) -> unit {
     match value {
-        tast::Expr::Var(_, _)
-        | tast::Expr::Callable(_, _)
-        | tast::Expr::Prim(_, _)
-        | tast::Expr::Break(_)
-        | tast::Expr::Continue(_) => (),
-        tast::Expr::Constr(_, args, _)
-        | tast::Expr::Tuple(args, _)
-        | tast::Expr::Array(args, _) => collect_mutable_exprs(args, result),
-        tast::Expr::Closure(_, body, _) => collect_mutable_expr(body, result),
-        tast::Expr::Block(block, _) => collect_mutable_block(block, result),
-        tast::Expr::Match(source, arms, _) => {
+        tast::Expr::Var { name: _, ty: _ }
+        | tast::Expr::Callable { callable: _, ty: _ }
+        | tast::Expr::Prim { value: _, ty: _ }
+        | tast::Expr::Break { ty: _ }
+        | tast::Expr::Continue { ty: _ } => (),
+        tast::Expr::Constr { constructor: _, args, ty: _ }
+        | tast::Expr::Tuple { items: args, ty: _ }
+        | tast::Expr::Array { items: args, ty: _ } => collect_mutable_exprs(args, result),
+        tast::Expr::Closure { params: _, body, ty: _ } => collect_mutable_expr(body, result),
+        tast::Expr::Block { block, ty: _ } => collect_mutable_block(block, result),
+        tast::Expr::Match { expr: source, arms, ty: _ } => {
             collect_mutable_expr(source, result);
             for arm in arms {
                 match arm.guard {
@@ -93,34 +93,48 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
                 collect_mutable_expr(arm.body, result)
             }
         },
-        tast::Expr::If(cond, then_branch, else_branch, _) => {
+        tast::Expr::If { cond, then_branch, else_branch, ty: _ } => {
             collect_mutable_expr(cond, result);
             collect_mutable_expr(then_branch, result);
             collect_mutable_expr(else_branch, result)
         },
-        tast::Expr::While(cond, body, _) => {
+        tast::Expr::While { cond, body, ty: _ } => {
             collect_mutable_expr(cond, result);
             collect_mutable_expr(body, result)
         },
-        tast::Expr::For(_, iterator, _, _, _, body, _) => {
+        tast::Expr::For {
+            pat: _,
+            iterator,
+            into_iter_trait_ref: _,
+            iterator_trait_ref: _,
+            iterator_ty: _,
+            body,
+            ty: _,
+        } => {
             collect_mutable_expr(iterator, result);
             collect_mutable_expr(body, result)
         },
-        tast::Expr::Return(expr, _) => match expr {
+        tast::Expr::Return { expr, ty: _ } => match expr {
             Option::Some(value) => collect_mutable_expr(value, result),
             Option::None => (),
         },
-        tast::Expr::Go(expr, _)
-        | tast::Expr::Unary(_, expr, _)
-        | tast::Expr::Cast(expr, _)
-        | tast::Expr::Proj(expr, _, _)
-        | tast::Expr::Field(expr, _, _)
-        | tast::Expr::ToDyn(_, _, expr, _) => collect_mutable_expr(expr, result),
-        tast::Expr::Call(function, args, _) => {
+        tast::Expr::Go { expr, ty: _ }
+        | tast::Expr::Unary { op: _, expr, ty: _ }
+        | tast::Expr::Cast { expr, ty: _ }
+        | tast::Expr::Proj { tuple: expr, index: _, ty: _ }
+        | tast::Expr::Field { expr, field_name: _, ty: _ }
+        | tast::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_mutable_expr(expr, result),
+        tast::Expr::Call { func: function, args, ty: _ } => {
             collect_mutable_expr(function, result);
             collect_mutable_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
+        tast::Expr::Index { base, index, ty: _ } | tast::Expr::Binary {
+            op: _,
+            lhs: base,
+            rhs: index,
+            ty: _,
+            resolution: _,
+        } => {
             collect_mutable_expr(base, result);
             collect_mutable_expr(index, result)
         },
@@ -129,13 +143,16 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
 
 fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> unit {
     match value {
-        tast::Pat::Var(name, _) => push_name(result, name),
-        tast::Pat::Constr(_, args, _) | tast::Pat::Tuple(args, _) | tast::Pat::Or(args, _) => {
+        tast::Pat::Var { name, ty: _ } => push_name(result, name),
+        tast::Pat::Constr { constructor: _, args, ty: _ } | tast::Pat::Tuple { items: args, ty: _ } | tast::Pat::Or {
+            pats: args,
+            ty: _,
+        } => {
             for arg in args {
                 collect_pattern_names(arg, result)
             }
         },
-        tast::Pat::Array(prefix, rest, suffix, _) => {
+        tast::Pat::Array { prefix, rest, suffix, ty: _ } => {
             for item in prefix {
                 collect_pattern_names(item, result)
             };
@@ -150,11 +167,11 @@ fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> unit {
                 collect_pattern_names(item, result)
             }
         },
-        tast::Pat::Alias(name, pattern, _) => {
+        tast::Pat::Alias { name, pat: pattern, ty: _ } => {
             push_name(result, name);
             collect_pattern_names(pattern, result)
         },
-        tast::Pat::Prim(_, _) | tast::Pat::Range(_, _, _, _) | tast::Pat::Wild(_) => (),
+        tast::Pat::Prim { value: _, ty: _ } | tast::Pat::Range { start: _, end: _, inclusive: _, ty: _ } | tast::Pat::Wild { ty: _ } => (),
     }
 }
 
@@ -167,15 +184,15 @@ fn collect_bound_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit {
 fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
-            tast::Stmt::Let(_, pattern, expr) => {
+            tast::Stmt::Let { is_mut: _, pat: pattern, value: expr } => {
                 collect_pattern_names(pattern, result);
                 collect_bound_expr(expr, result)
             },
-            tast::Stmt::Assign(target, expr) => {
+            tast::Stmt::Assign { target, value: expr } => {
                 collect_bound_expr(target, result);
                 collect_bound_expr(expr, result)
             },
-            tast::Stmt::Expr(expr) => collect_bound_expr(expr, result),
+            tast::Stmt::Expr { expr } => collect_bound_expr(expr, result),
         }
     };
     match value.tail {
@@ -186,17 +203,17 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
 
 fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
-        tast::Expr::Var(_, _)
-        | tast::Expr::Callable(_, _)
-        | tast::Expr::Prim(_, _)
-        | tast::Expr::Closure(_, _, _)
-        | tast::Expr::Break(_)
-        | tast::Expr::Continue(_) => (),
-        tast::Expr::Constr(_, args, _)
-        | tast::Expr::Tuple(args, _)
-        | tast::Expr::Array(args, _) => collect_bound_exprs(args, result),
-        tast::Expr::Block(block, _) => collect_bound_block(block, result),
-        tast::Expr::Match(source, arms, _) => {
+        tast::Expr::Var { name: _, ty: _ }
+        | tast::Expr::Callable { callable: _, ty: _ }
+        | tast::Expr::Prim { value: _, ty: _ }
+        | tast::Expr::Closure { params: _, body: _, ty: _ }
+        | tast::Expr::Break { ty: _ }
+        | tast::Expr::Continue { ty: _ } => (),
+        tast::Expr::Constr { constructor: _, args, ty: _ }
+        | tast::Expr::Tuple { items: args, ty: _ }
+        | tast::Expr::Array { items: args, ty: _ } => collect_bound_exprs(args, result),
+        tast::Expr::Block { block, ty: _ } => collect_bound_block(block, result),
+        tast::Expr::Match { expr: source, arms, ty: _ } => {
             collect_bound_expr(source, result);
             for arm in arms {
                 collect_pattern_names(arm.pat, result);
@@ -207,35 +224,49 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_bound_expr(arm.body, result)
             }
         },
-        tast::Expr::If(cond, then_branch, else_branch, _) => {
+        tast::Expr::If { cond, then_branch, else_branch, ty: _ } => {
             collect_bound_expr(cond, result);
             collect_bound_expr(then_branch, result);
             collect_bound_expr(else_branch, result)
         },
-        tast::Expr::While(cond, body, _) => {
+        tast::Expr::While { cond, body, ty: _ } => {
             collect_bound_expr(cond, result);
             collect_bound_expr(body, result)
         },
-        tast::Expr::For(pattern, iterator, _, _, _, body, _) => {
+        tast::Expr::For {
+            pat: pattern,
+            iterator,
+            into_iter_trait_ref: _,
+            iterator_trait_ref: _,
+            iterator_ty: _,
+            body,
+            ty: _,
+        } => {
             collect_pattern_names(pattern, result);
             collect_bound_expr(iterator, result);
             collect_bound_expr(body, result)
         },
-        tast::Expr::Return(expr, _) => match expr {
+        tast::Expr::Return { expr, ty: _ } => match expr {
             Option::Some(value) => collect_bound_expr(value, result),
             Option::None => (),
         },
-        tast::Expr::Go(expr, _)
-        | tast::Expr::Unary(_, expr, _)
-        | tast::Expr::Cast(expr, _)
-        | tast::Expr::Proj(expr, _, _)
-        | tast::Expr::Field(expr, _, _)
-        | tast::Expr::ToDyn(_, _, expr, _) => collect_bound_expr(expr, result),
-        tast::Expr::Call(function, args, _) => {
+        tast::Expr::Go { expr, ty: _ }
+        | tast::Expr::Unary { op: _, expr, ty: _ }
+        | tast::Expr::Cast { expr, ty: _ }
+        | tast::Expr::Proj { tuple: expr, index: _, ty: _ }
+        | tast::Expr::Field { expr, field_name: _, ty: _ }
+        | tast::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_bound_expr(expr, result),
+        tast::Expr::Call { func: function, args, ty: _ } => {
             collect_bound_expr(function, result);
             collect_bound_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
+        tast::Expr::Index { base, index, ty: _ } | tast::Expr::Binary {
+            op: _,
+            lhs: base,
+            rhs: index,
+            ty: _,
+            resolution: _,
+        } => {
             collect_bound_expr(base, result);
             collect_bound_expr(index, result)
         },
@@ -251,12 +282,12 @@ fn collect_reference_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit
 fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
-            tast::Stmt::Let(_, _, expr) => collect_reference_expr(expr, result),
-            tast::Stmt::Assign(target, expr) => {
+            tast::Stmt::Let { is_mut: _, pat: _, value: expr } => collect_reference_expr(expr, result),
+            tast::Stmt::Assign { target, value: expr } => {
                 collect_reference_expr(target, result);
                 collect_reference_expr(expr, result)
             },
-            tast::Stmt::Expr(expr) => collect_reference_expr(expr, result),
+            tast::Stmt::Expr { expr } => collect_reference_expr(expr, result),
         }
     };
     match value.tail {
@@ -267,17 +298,17 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
 
 fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
-        tast::Expr::Var(name, _) => push_name(result, name),
-        tast::Expr::Callable(_, _)
-        | tast::Expr::Prim(_, _)
-        | tast::Expr::Closure(_, _, _)
-        | tast::Expr::Break(_)
-        | tast::Expr::Continue(_) => (),
-        tast::Expr::Constr(_, args, _)
-        | tast::Expr::Tuple(args, _)
-        | tast::Expr::Array(args, _) => collect_reference_exprs(args, result),
-        tast::Expr::Block(block, _) => collect_reference_block(block, result),
-        tast::Expr::Match(source, arms, _) => {
+        tast::Expr::Var { name, ty: _ } => push_name(result, name),
+        tast::Expr::Callable { callable: _, ty: _ }
+        | tast::Expr::Prim { value: _, ty: _ }
+        | tast::Expr::Closure { params: _, body: _, ty: _ }
+        | tast::Expr::Break { ty: _ }
+        | tast::Expr::Continue { ty: _ } => (),
+        tast::Expr::Constr { constructor: _, args, ty: _ }
+        | tast::Expr::Tuple { items: args, ty: _ }
+        | tast::Expr::Array { items: args, ty: _ } => collect_reference_exprs(args, result),
+        tast::Expr::Block { block, ty: _ } => collect_reference_block(block, result),
+        tast::Expr::Match { expr: source, arms, ty: _ } => {
             collect_reference_expr(source, result);
             for arm in arms {
                 match arm.guard {
@@ -287,34 +318,48 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_reference_expr(arm.body, result)
             }
         },
-        tast::Expr::If(cond, then_branch, else_branch, _) => {
+        tast::Expr::If { cond, then_branch, else_branch, ty: _ } => {
             collect_reference_expr(cond, result);
             collect_reference_expr(then_branch, result);
             collect_reference_expr(else_branch, result)
         },
-        tast::Expr::While(cond, body, _) => {
+        tast::Expr::While { cond, body, ty: _ } => {
             collect_reference_expr(cond, result);
             collect_reference_expr(body, result)
         },
-        tast::Expr::For(_, iterator, _, _, _, body, _) => {
+        tast::Expr::For {
+            pat: _,
+            iterator,
+            into_iter_trait_ref: _,
+            iterator_trait_ref: _,
+            iterator_ty: _,
+            body,
+            ty: _,
+        } => {
             collect_reference_expr(iterator, result);
             collect_reference_expr(body, result)
         },
-        tast::Expr::Return(expr, _) => match expr {
+        tast::Expr::Return { expr, ty: _ } => match expr {
             Option::Some(value) => collect_reference_expr(value, result),
             Option::None => (),
         },
-        tast::Expr::Go(expr, _)
-        | tast::Expr::Unary(_, expr, _)
-        | tast::Expr::Cast(expr, _)
-        | tast::Expr::Proj(expr, _, _)
-        | tast::Expr::Field(expr, _, _)
-        | tast::Expr::ToDyn(_, _, expr, _) => collect_reference_expr(expr, result),
-        tast::Expr::Call(function, args, _) => {
+        tast::Expr::Go { expr, ty: _ }
+        | tast::Expr::Unary { op: _, expr, ty: _ }
+        | tast::Expr::Cast { expr, ty: _ }
+        | tast::Expr::Proj { tuple: expr, index: _, ty: _ }
+        | tast::Expr::Field { expr, field_name: _, ty: _ }
+        | tast::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_reference_expr(expr, result),
+        tast::Expr::Call { func: function, args, ty: _ } => {
             collect_reference_expr(function, result);
             collect_reference_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
+        tast::Expr::Index { base, index, ty: _ } | tast::Expr::Binary {
+            op: _,
+            lhs: base,
+            rhs: index,
+            ty: _,
+            resolution: _,
+        } => {
             collect_reference_expr(base, result);
             collect_reference_expr(index, result)
         },
@@ -330,12 +375,12 @@ fn collect_capture_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit {
 fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
-            tast::Stmt::Let(_, _, expr) => collect_capture_expr(expr, result),
-            tast::Stmt::Assign(target, expr) => {
+            tast::Stmt::Let { is_mut: _, pat: _, value: expr } => collect_capture_expr(expr, result),
+            tast::Stmt::Assign { target, value: expr } => {
                 collect_capture_expr(target, result);
                 collect_capture_expr(expr, result)
             },
-            tast::Stmt::Expr(expr) => collect_capture_expr(expr, result),
+            tast::Stmt::Expr { expr } => collect_capture_expr(expr, result),
         }
     };
     match value.tail {
@@ -368,17 +413,17 @@ fn collect_closure_captures(
 
 fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
-        tast::Expr::Var(_, _)
-        | tast::Expr::Callable(_, _)
-        | tast::Expr::Prim(_, _)
-        | tast::Expr::Break(_)
-        | tast::Expr::Continue(_) => (),
-        tast::Expr::Constr(_, args, _)
-        | tast::Expr::Tuple(args, _)
-        | tast::Expr::Array(args, _) => collect_capture_exprs(args, result),
-        tast::Expr::Closure(params, body, _) => collect_closure_captures(params, body, result),
-        tast::Expr::Block(block, _) => collect_capture_block(block, result),
-        tast::Expr::Match(source, arms, _) => {
+        tast::Expr::Var { name: _, ty: _ }
+        | tast::Expr::Callable { callable: _, ty: _ }
+        | tast::Expr::Prim { value: _, ty: _ }
+        | tast::Expr::Break { ty: _ }
+        | tast::Expr::Continue { ty: _ } => (),
+        tast::Expr::Constr { constructor: _, args, ty: _ }
+        | tast::Expr::Tuple { items: args, ty: _ }
+        | tast::Expr::Array { items: args, ty: _ } => collect_capture_exprs(args, result),
+        tast::Expr::Closure { params, body, ty: _ } => collect_closure_captures(params, body, result),
+        tast::Expr::Block { block, ty: _ } => collect_capture_block(block, result),
+        tast::Expr::Match { expr: source, arms, ty: _ } => {
             collect_capture_expr(source, result);
             for arm in arms {
                 match arm.guard {
@@ -388,34 +433,48 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_capture_expr(arm.body, result)
             }
         },
-        tast::Expr::If(cond, then_branch, else_branch, _) => {
+        tast::Expr::If { cond, then_branch, else_branch, ty: _ } => {
             collect_capture_expr(cond, result);
             collect_capture_expr(then_branch, result);
             collect_capture_expr(else_branch, result)
         },
-        tast::Expr::While(cond, body, _) => {
+        tast::Expr::While { cond, body, ty: _ } => {
             collect_capture_expr(cond, result);
             collect_capture_expr(body, result)
         },
-        tast::Expr::For(_, iterator, _, _, _, body, _) => {
+        tast::Expr::For {
+            pat: _,
+            iterator,
+            into_iter_trait_ref: _,
+            iterator_trait_ref: _,
+            iterator_ty: _,
+            body,
+            ty: _,
+        } => {
             collect_capture_expr(iterator, result);
             collect_capture_expr(body, result)
         },
-        tast::Expr::Return(expr, _) => match expr {
+        tast::Expr::Return { expr, ty: _ } => match expr {
             Option::Some(value) => collect_capture_expr(value, result),
             Option::None => (),
         },
-        tast::Expr::Go(expr, _)
-        | tast::Expr::Unary(_, expr, _)
-        | tast::Expr::Cast(expr, _)
-        | tast::Expr::Proj(expr, _, _)
-        | tast::Expr::Field(expr, _, _)
-        | tast::Expr::ToDyn(_, _, expr, _) => collect_capture_expr(expr, result),
-        tast::Expr::Call(function, args, _) => {
+        tast::Expr::Go { expr, ty: _ }
+        | tast::Expr::Unary { op: _, expr, ty: _ }
+        | tast::Expr::Cast { expr, ty: _ }
+        | tast::Expr::Proj { tuple: expr, index: _, ty: _ }
+        | tast::Expr::Field { expr, field_name: _, ty: _ }
+        | tast::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_capture_expr(expr, result),
+        tast::Expr::Call { func: function, args, ty: _ } => {
             collect_capture_expr(function, result);
             collect_capture_exprs(args, result)
         },
-        tast::Expr::Index(base, index, _) | tast::Expr::Binary(_, base, index, _, _) => {
+        tast::Expr::Index { base, index, ty: _ } | tast::Expr::Binary {
+            op: _,
+            lhs: base,
+            rhs: index,
+            ty: _,
+            resolution: _,
+        } => {
             collect_capture_expr(base, result);
             collect_capture_expr(index, result)
         },
@@ -439,7 +498,7 @@ fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
 }
 
 fn hidden_cell_type(value: tast::Type) -> tast::Type {
-    tast::Type::RefType(value)
+    tast::Type::RefType { elem: value }
 }
 
 fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[tast::Type] {
@@ -457,7 +516,7 @@ fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[t
 fn intrinsic_expr(name: string, params: Vec[tast::Type], ret_ty: tast::Type) -> Expr {
     Expr::Callable {
         callable: tast::Callable::Intrinsic(name),
-        ty: tast::Type::Func(params, ret_ty),
+        ty: tast::Type::Func { params, ret_ty },
     }
 }
 

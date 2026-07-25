@@ -407,9 +407,9 @@ fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
             kind.set("intrinsic");
             id.set(Option::Some(artifact_callable_id("intrinsic", value)))
         },
-        tast::Callable::TraitMethod(_, _)
-        | tast::Callable::DynTraitMethod(_, _, _)
-        | tast::Callable::InherentMethod(_, _) => fail(
+        tast::Callable::TraitMethod { trait_ref: _, method_name: _ }
+        | tast::Callable::DynTraitMethod { trait_name: _, dispatch_name: _, method_name: _ }
+        | tast::Callable::InherentMethod { receiver_ty: _, method_name: _ } => fail(
             "error[compile]: unresolved callable in compiler artifact",
         ),
     };

@@ -39,18 +39,18 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
             builder.write_string(name);
             builder.write_char(')')
         },
-        tast::Callable::TraitMethod(reference, name) => {
+        tast::Callable::TraitMethod { trait_ref: reference, method_name: name } => {
             tast::write_trait_ref(builder, reference);
             builder.write_string("::");
             builder.write_string(name)
         },
-        tast::Callable::DynTraitMethod(owner, _, name) => {
+        tast::Callable::DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {
             builder.write_string("dyn ");
             builder.write_string(owner);
             builder.write_string("::");
             builder.write_string(name)
         },
-        tast::Callable::InherentMethod(owner, name) => {
+        tast::Callable::InherentMethod { receiver_ty: owner, method_name: name } => {
             tast::write_type(builder, owner);
             builder.write_string("::");
             builder.write_string(name)

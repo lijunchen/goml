@@ -135,7 +135,7 @@ fn unify_type(
     bindings: Vec[TypeBinding],
 ) -> bool {
     match (tast::resolve_type(template), tast::resolve_type(actual)) {
-        (tast::Type::Param(name), value) => bind_type(bindings, name, value),
+        (tast::Type::Param { name }, value) => bind_type(bindings, name, value),
         (tast::Type::Unit, tast::Type::Unit)
         | (tast::Type::Never, tast::Type::Never)
         | (tast::Type::Bool, tast::Type::Bool)
@@ -153,20 +153,24 @@ fn unify_type(
         | (tast::Type::String, tast::Type::String)
         | (tast::Type::Char, tast::Type::Char)
         | (tast::Type::Error, tast::Type::Error) => true,
-        (tast::Type::Tuple(templates), tast::Type::Tuple(actuals)) => {
+        (tast::Type::Tuple { items: templates }, tast::Type::Tuple { items: actuals }) => {
             unify_types(templates, actuals, bindings)
         },
-        (tast::Type::Con(template), tast::Type::Con(actual)) => template == actual,
-        (tast::Type::Dyn(template), tast::Type::Dyn(actual)) => template == actual,
+        (tast::Type::Con { name: template }, tast::Type::Con { name: actual }) => template == actual,
+        (tast::Type::Dyn { trait_name: template }, tast::Type::Dyn { trait_name: actual }) => template == actual,
         (
-            tast::Type::Projection(template_base, template_name, template_ref),
-            tast::Type::Projection(actual_base, actual_name, actual_ref),
+            tast::Type::Projection {
+                for_ty: template_base,
+                name: template_name,
+                trait_ref: template_ref,
+            },
+            tast::Type::Projection { for_ty: actual_base, name: actual_name, trait_ref: actual_ref },
         ) => {
             template_name == actual_name
                 && unify_type(template_base, actual_base, bindings)
                 && unify_optional_trait_refs(template_ref, actual_ref, bindings)
         },
-        (tast::Type::Projection(base, name, reference), actual) => {
+        (tast::Type::Projection { for_ty: base, name, trait_ref: reference }, actual) => {
             let base = substitute_type(base, bindings);
             let reference = substitute_optional_trait_ref(reference, bindings);
             if type_is_concrete(base) && type_is_concrete(actual) {
@@ -180,35 +184,35 @@ fn unify_type(
             }
         },
         (
-            tast::Type::App(template_base, template_args),
-            tast::Type::App(actual_base, actual_args),
+            tast::Type::App { ty: template_base, args: template_args },
+            tast::Type::App { ty: actual_base, args: actual_args },
         ) => {
             unify_type(template_base, actual_base, bindings)
                 && unify_types(template_args, actual_args, bindings)
         },
         (
-            tast::Type::Array(template_length, template_elem),
-            tast::Type::Array(actual_length, actual_elem),
+            tast::Type::Array { len: template_length, elem: template_elem },
+            tast::Type::Array { len: actual_length, elem: actual_elem },
         ) => {
             template_length == actual_length
                 && unify_type(template_elem, actual_elem, bindings)
         },
-        (tast::Type::Slice(template), tast::Type::Slice(actual))
-        | (tast::Type::VecType(template), tast::Type::VecType(actual))
-        | (tast::Type::RefType(template), tast::Type::RefType(actual))
-        | (tast::Type::Channel(template), tast::Type::Channel(actual)) => {
+        (tast::Type::Slice { elem: template }, tast::Type::Slice { elem: actual })
+        | (tast::Type::VecType { elem: template }, tast::Type::VecType { elem: actual })
+        | (tast::Type::RefType { elem: template }, tast::Type::RefType { elem: actual })
+        | (tast::Type::Channel { elem: template }, tast::Type::Channel { elem: actual }) => {
             unify_type(template, actual, bindings)
         },
         (
-            tast::Type::HashMap(template_key, template_value),
-            tast::Type::HashMap(actual_key, actual_value),
+            tast::Type::HashMap { key: template_key, value: template_value },
+            tast::Type::HashMap { key: actual_key, value: actual_value },
         ) => {
             unify_type(template_key, actual_key, bindings)
                 && unify_type(template_value, actual_value, bindings)
         },
         (
-            tast::Type::Func(template_params, template_ret),
-            tast::Type::Func(actual_params, actual_ret),
+            tast::Type::Func { params: template_params, ret_ty: template_ret },
+            tast::Type::Func { params: actual_params, ret_ty: actual_ret },
         ) => {
             unify_types(template_params, actual_params, bindings)
                 && unify_type(template_ret, actual_ret, bindings)
@@ -278,12 +282,12 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
         tast::Type::Float64 => tast::Type::Float64,
         tast::Type::String => tast::Type::String,
         tast::Type::Char => tast::Type::Char,
-        tast::Type::Tuple(items) => {
-            tast::Type::Tuple(substitute_types(items, bindings))
+        tast::Type::Tuple { items } => {
+            tast::Type::Tuple { items: substitute_types(items, bindings) }
         },
-        tast::Type::Con(name) => tast::Type::Con(name),
-        tast::Type::Dyn(name) => tast::Type::Dyn(name),
-        tast::Type::Projection(base, name, reference) => {
+        tast::Type::Con { name } => tast::Type::Con { name },
+        tast::Type::Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        tast::Type::Projection { for_ty: base, name, trait_ref: reference } => {
             let base = substitute_type(base, bindings);
             let reference = substitute_optional_trait_ref(reference, bindings);
             match find_binding(
@@ -293,41 +297,45 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
                 Option::Some(ty) => ty,
                 Option::None => match tast::builtin_projection(base, name, reference) {
                     Option::Some(ty) => substitute_type(ty, bindings),
-                    Option::None => tast::Type::Projection(base, name, reference),
+                    Option::None => tast::Type::Projection {
+                        for_ty: base,
+                        name,
+                        trait_ref: reference,
+                    },
                 },
             }
         },
-        tast::Type::App(base, args) => tast::Type::App(
-            substitute_type(base, bindings),
-            substitute_types(args, bindings),
-        ),
-        tast::Type::Array(length, elem) => {
-            tast::Type::Array(length, substitute_type(elem, bindings))
+        tast::Type::App { ty: base, args } => tast::Type::App {
+            ty: substitute_type(base, bindings),
+            args: substitute_types(args, bindings),
         },
-        tast::Type::Slice(elem) => {
-            tast::Type::Slice(substitute_type(elem, bindings))
+        tast::Type::Array { len: length, elem } => {
+            tast::Type::Array { len: length, elem: substitute_type(elem, bindings) }
         },
-        tast::Type::VecType(elem) => {
-            tast::Type::VecType(substitute_type(elem, bindings))
+        tast::Type::Slice { elem } => {
+            tast::Type::Slice { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::RefType(elem) => {
-            tast::Type::RefType(substitute_type(elem, bindings))
+        tast::Type::VecType { elem } => {
+            tast::Type::VecType { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::Channel(elem) => {
-            tast::Type::Channel(substitute_type(elem, bindings))
+        tast::Type::RefType { elem } => {
+            tast::Type::RefType { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::HashMap(key, value) => tast::Type::HashMap(
-            substitute_type(key, bindings),
-            substitute_type(value, bindings),
-        ),
-        tast::Type::Param(name) => match find_binding(bindings, name) {
+        tast::Type::Channel { elem } => {
+            tast::Type::Channel { elem: substitute_type(elem, bindings) }
+        },
+        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+            key: substitute_type(key, bindings),
+            value: substitute_type(value, bindings),
+        },
+        tast::Type::Param { name } => match find_binding(bindings, name) {
             Option::Some(ty) => ty,
-            Option::None => tast::Type::Param(name),
+            Option::None => tast::Type::Param { name },
         },
-        tast::Type::Func(params, ret_ty) => tast::Type::Func(
-            substitute_types(params, bindings),
-            substitute_type(ret_ty, bindings),
-        ),
+        tast::Type::Func { params, ret_ty } => tast::Type::Func {
+            params: substitute_types(params, bindings),
+            ret_ty: substitute_type(ret_ty, bindings),
+        },
         tast::Type::Error => tast::Type::Error,
     }
 }
@@ -337,7 +345,7 @@ fn function_type(value: core::Function) -> tast::Type {
     for param in value.params {
         params.push(param.1)
     };
-    tast::Type::Func(params, value.ret_ty)
+    tast::Type::Func { params, ret_ty: value.ret_ty }
 }
 
 fn function_is_generic(value: core::Function) -> bool {
@@ -651,7 +659,7 @@ fn mono_type_contains_proper_subterm(
     expected: tast::Type,
 ) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             let found = Ref::new(false);
             for value in values {
                 if mono_types_equal(value, expected)
@@ -664,7 +672,7 @@ fn mono_type_contains_proper_subterm(
             };
             found.get()
         },
-        tast::Type::App(base, args) => {
+        tast::Type::App { ty: base, args } => {
             let found = Ref::new(
                 mono_types_equal(base, expected)
                     || mono_type_contains_proper_subterm(base, expected),
@@ -680,21 +688,21 @@ fn mono_type_contains_proper_subterm(
             };
             found.get()
         },
-        tast::Type::Array(_, elem)
-        | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem)
-        | tast::Type::Channel(elem) => {
+        tast::Type::Array { len: _, elem }
+        | tast::Type::Slice { elem }
+        | tast::Type::VecType { elem }
+        | tast::Type::RefType { elem }
+        | tast::Type::Channel { elem } => {
             mono_types_equal(elem, expected)
                 || mono_type_contains_proper_subterm(elem, expected)
         },
-        tast::Type::HashMap(key, value) => {
+        tast::Type::HashMap { key, value } => {
             mono_types_equal(key, expected)
                 || mono_type_contains_proper_subterm(key, expected)
                 || mono_types_equal(value, expected)
                 || mono_type_contains_proper_subterm(value, expected)
         },
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             let found = Ref::new(
                 mono_types_equal(ret_ty, expected)
                     || mono_type_contains_proper_subterm(ret_ty, expected),
@@ -719,15 +727,15 @@ fn mono_type_outer_constructor_matches(
     right: tast::Type,
 ) -> bool {
     match (tast::resolve_type(left), tast::resolve_type(right)) {
-        (tast::Type::Tuple(_), tast::Type::Tuple(_))
-        | (tast::Type::Array(_, _), tast::Type::Array(_, _))
-        | (tast::Type::Slice(_), tast::Type::Slice(_))
-        | (tast::Type::VecType(_), tast::Type::VecType(_))
-        | (tast::Type::RefType(_), tast::Type::RefType(_))
-        | (tast::Type::Channel(_), tast::Type::Channel(_))
-        | (tast::Type::HashMap(_, _), tast::Type::HashMap(_, _))
-        | (tast::Type::Func(_, _), tast::Type::Func(_, _)) => true,
-        (tast::Type::App(left, _), tast::Type::App(right, _)) => {
+        (tast::Type::Tuple { items: _ }, tast::Type::Tuple { items: _ })
+        | (tast::Type::Array { len: _, elem: _ }, tast::Type::Array { len: _, elem: _ })
+        | (tast::Type::Slice { elem: _ }, tast::Type::Slice { elem: _ })
+        | (tast::Type::VecType { elem: _ }, tast::Type::VecType { elem: _ })
+        | (tast::Type::RefType { elem: _ }, tast::Type::RefType { elem: _ })
+        | (tast::Type::Channel { elem: _ }, tast::Type::Channel { elem: _ })
+        | (tast::Type::HashMap { key: _, value: _ }, tast::Type::HashMap { key: _, value: _ })
+        | (tast::Type::Func { params: _, ret_ty: _ }, tast::Type::Func { params: _, ret_ty: _ }) => true,
+        (tast::Type::App { ty: left, args: _ }, tast::Type::App { ty: right, args: _ }) => {
             mono_types_equal(left, right)
         },
         _ => false,
@@ -1066,7 +1074,7 @@ fn normalize_projection(
     reference: Option[tast::TraitRef],
     active: Vec[string],
 ) -> tast::Type {
-    let projection = tast::Type::Projection(base, name, reference);
+    let projection = tast::Type::Projection { for_ty: base, name, trait_ref: reference };
     let key = projection_binding_name(base, name, reference);
     if contains_string(active, key) {
         projection
@@ -1126,44 +1134,44 @@ fn normalize_type(
         tast::Type::Float64 => tast::Type::Float64,
         tast::Type::String => tast::Type::String,
         tast::Type::Char => tast::Type::Char,
-        tast::Type::Tuple(items) => {
-            tast::Type::Tuple(normalize_types(ctx, items, active))
+        tast::Type::Tuple { items } => {
+            tast::Type::Tuple { items: normalize_types(ctx, items, active) }
         },
-        tast::Type::Con(name) => tast::Type::Con(name),
-        tast::Type::Dyn(name) => tast::Type::Dyn(name),
-        tast::Type::Projection(base, name, reference) => {
+        tast::Type::Con { name } => tast::Type::Con { name },
+        tast::Type::Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        tast::Type::Projection { for_ty: base, name, trait_ref: reference } => {
             let base = normalize_type(ctx, base, active);
             let reference = normalize_optional_trait_ref(ctx, reference, active);
             normalize_projection(ctx, base, name, reference, active)
         },
-        tast::Type::App(base, args) => tast::Type::App(
-            normalize_type(ctx, base, active),
-            normalize_types(ctx, args, active),
-        ),
-        tast::Type::Array(length, elem) => {
-            tast::Type::Array(length, normalize_type(ctx, elem, active))
+        tast::Type::App { ty: base, args } => tast::Type::App {
+            ty: normalize_type(ctx, base, active),
+            args: normalize_types(ctx, args, active),
         },
-        tast::Type::Slice(elem) => {
-            tast::Type::Slice(normalize_type(ctx, elem, active))
+        tast::Type::Array { len: length, elem } => {
+            tast::Type::Array { len: length, elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::VecType(elem) => {
-            tast::Type::VecType(normalize_type(ctx, elem, active))
+        tast::Type::Slice { elem } => {
+            tast::Type::Slice { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::RefType(elem) => {
-            tast::Type::RefType(normalize_type(ctx, elem, active))
+        tast::Type::VecType { elem } => {
+            tast::Type::VecType { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::Channel(elem) => {
-            tast::Type::Channel(normalize_type(ctx, elem, active))
+        tast::Type::RefType { elem } => {
+            tast::Type::RefType { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::HashMap(key, value) => tast::Type::HashMap(
-            normalize_type(ctx, key, active),
-            normalize_type(ctx, value, active),
-        ),
-        tast::Type::Param(name) => tast::Type::Param(name),
-        tast::Type::Func(params, ret_ty) => tast::Type::Func(
-            normalize_types(ctx, params, active),
-            normalize_type(ctx, ret_ty, active),
-        ),
+        tast::Type::Channel { elem } => {
+            tast::Type::Channel { elem: normalize_type(ctx, elem, active) }
+        },
+        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+            key: normalize_type(ctx, key, active),
+            value: normalize_type(ctx, value, active),
+        },
+        tast::Type::Param { name } => tast::Type::Param { name },
+        tast::Type::Func { params, ret_ty } => tast::Type::Func {
+            params: normalize_types(ctx, params, active),
+            ret_ty: normalize_type(ctx, ret_ty, active),
+        },
         tast::Type::Error => tast::Type::Error,
     }
 }
@@ -1182,22 +1190,22 @@ fn types_contain_associated_projection(values: Vec[tast::Type]) -> bool {
 
 fn type_contains_associated_projection(value: tast::Type) -> bool {
     match value {
-        tast::Type::Projection(_, _, _) => true,
-        tast::Type::Tuple(items) => types_contain_associated_projection(items),
-        tast::Type::App(base, args) => {
+        tast::Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
+        tast::Type::Tuple { items } => types_contain_associated_projection(items),
+        tast::Type::App { ty: base, args } => {
             type_contains_associated_projection(base)
                 || types_contain_associated_projection(args)
         },
-        tast::Type::Array(_, elem)
-        | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem)
-        | tast::Type::Channel(elem) => type_contains_associated_projection(elem),
-        tast::Type::HashMap(key, value) => {
+        tast::Type::Array { len: _, elem }
+        | tast::Type::Slice { elem }
+        | tast::Type::VecType { elem }
+        | tast::Type::RefType { elem }
+        | tast::Type::Channel { elem } => type_contains_associated_projection(elem),
+        tast::Type::HashMap { key, value } => {
             type_contains_associated_projection(key)
                 || type_contains_associated_projection(value)
         },
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             types_contain_associated_projection(params)
                 || type_contains_associated_projection(ret_ty)
         },
@@ -1218,9 +1226,9 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
         | tast::Type::Float64
         | tast::Type::String
         | tast::Type::Char
-        | tast::Type::Con(_)
-        | tast::Type::Dyn(_)
-        | tast::Type::Param(_)
+        | tast::Type::Con { name: _ }
+        | tast::Type::Dyn { trait_name: _ }
+        | tast::Type::Param { name: _ }
         | tast::Type::Error => false,
     }
 }
@@ -1399,7 +1407,7 @@ fn builtin_scalar_type(value: tast::Type) -> bool {
 
 fn builtin_iterator_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::App(tast::Type::Con(name), args) => {
+        tast::Type::App { ty: tast::Type::Con { name }, args } => {
             (name == "FnIterator" && args.len() == 1)
                 || (name == "MapIterator" && args.len() == 3)
                 || (name == "FilterIterator" && args.len() == 2)
@@ -1414,7 +1422,7 @@ fn builtin_trait_satisfied(
     reference: tast::TraitRef,
 ) -> bool {
     reference.args.len() == 0 && match tast::resolve_type(for_ty) {
-        tast::Type::Dyn(name) => reference.name == name,
+        tast::Type::Dyn { trait_name: name } => reference.name == name,
         other => if reference.name == "ToString"
             || reference.name == "Eq"
             || reference.name == "Hash"
@@ -1424,7 +1432,7 @@ fn builtin_trait_satisfied(
             builtin_iterator_type(other)
         } else if reference.name == "IntoIterator" {
             match other {
-                tast::Type::VecType(_) | tast::Type::Slice(_) => true,
+                tast::Type::VecType { elem: _ } | tast::Type::Slice { elem: _ } => true,
                 value => builtin_iterator_type(value),
             }
         } else {
@@ -1462,20 +1470,28 @@ fn specialize_callable(
         tast::Callable::Function(name) => tast::Callable::Function(name),
         tast::Callable::Runtime(name) => tast::Callable::Runtime(name),
         tast::Callable::Intrinsic(name) => tast::Callable::Intrinsic(name),
-        tast::Callable::TraitMethod(reference, name) => {
-            tast::Callable::TraitMethod(
-                specialize_trait_ref(ctx, reference, bindings),
-                name,
-            )
+        tast::Callable::TraitMethod { trait_ref: reference, method_name: name } => {
+            tast::Callable::TraitMethod {
+                trait_ref: specialize_trait_ref(ctx, reference, bindings),
+                method_name: name,
+            }
         },
-        tast::Callable::DynTraitMethod(owner, dispatch, name) => {
-            tast::Callable::DynTraitMethod(owner, dispatch, name)
+        tast::Callable::DynTraitMethod {
+            trait_name: owner,
+            dispatch_name: dispatch,
+            method_name: name,
+        } => {
+            tast::Callable::DynTraitMethod {
+                trait_name: owner,
+                dispatch_name: dispatch,
+                method_name: name,
+            }
         },
-        tast::Callable::InherentMethod(owner, name) => {
-            tast::Callable::InherentMethod(
-                specialize_type(ctx, owner, bindings),
-                name,
-            )
+        tast::Callable::InherentMethod { receiver_ty: owner, method_name: name } => {
+            tast::Callable::InherentMethod {
+                receiver_ty: specialize_type(ctx, owner, bindings),
+                method_name: name,
+            }
         },
     }
 }
@@ -1960,8 +1976,8 @@ fn ensure_runtime_trait_impls_for_type(
     value: tast::Type,
 ) -> unit {
     match tast::resolve_type(value) {
-        tast::Type::Tuple(items) => ensure_runtime_trait_impls_for_types(ctx, items),
-        tast::Type::Projection(base, _, reference) => {
+        tast::Type::Tuple { items } => ensure_runtime_trait_impls_for_types(ctx, items),
+        tast::Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
             ensure_runtime_trait_impls_for_type(ctx, base);
             match reference {
                 Option::Some(reference) => {
@@ -1970,24 +1986,24 @@ fn ensure_runtime_trait_impls_for_type(
                 Option::None => (),
             }
         },
-        tast::Type::App(base, args) => {
+        tast::Type::App { ty: base, args } => {
             ensure_runtime_trait_impls_for_type(ctx, base);
             ensure_runtime_trait_impls_for_types(ctx, args)
         },
-        tast::Type::Array(_, elem)
-        | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::Channel(elem) => ensure_runtime_trait_impls_for_type(ctx, elem),
-        tast::Type::RefType(elem) => {
+        tast::Type::Array { len: _, elem }
+        | tast::Type::Slice { elem }
+        | tast::Type::VecType { elem }
+        | tast::Type::Channel { elem } => ensure_runtime_trait_impls_for_type(ctx, elem),
+        tast::Type::RefType { elem } => {
             ensure_eq_hash_impls(ctx, elem);
             ensure_runtime_trait_impls_for_type(ctx, elem)
         },
-        tast::Type::HashMap(key, value) => {
+        tast::Type::HashMap { key, value } => {
             ensure_eq_hash_impls(ctx, key);
             ensure_runtime_trait_impls_for_type(ctx, key);
             ensure_runtime_trait_impls_for_type(ctx, value)
         },
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             ensure_runtime_trait_impls_for_types(ctx, params);
             ensure_runtime_trait_impls_for_type(ctx, ret_ty)
         },

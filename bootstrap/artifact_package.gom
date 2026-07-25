@@ -511,7 +511,7 @@ fn artifact_entrypoint_diagnostics(
                 ()
             };
             match tast::resolve_type(function.ty) {
-                tast::Type::Func(params, _) => if params.len() > 0 {
+                tast::Type::Func { params, ret_ty: _ } => if params.len() > 0 {
                     diagnostics.push("main function must not have parameters")
                 } else {
                     ()

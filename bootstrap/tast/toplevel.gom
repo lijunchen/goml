@@ -437,19 +437,19 @@ fn validate_trait_impl(
             let projection_alias_count = ctx.projection_aliases.len();
             for associated in associated_types {
                 ctx.projection_aliases.push(ProjectionAlias {
-                    projection: Type::Projection(
-                        for_type,
-                        associated.0,
-                        Option::Some(reference),
-                    ),
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::Some(reference),
+                    },
                     ty: associated.1,
                 });
                 ctx.projection_aliases.push(ProjectionAlias {
-                    projection: Type::Projection(
-                        for_type,
-                        associated.0,
-                        Option::None,
-                    ),
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::None,
+                    },
                     ty: associated.1,
                 })
             };
@@ -527,8 +527,8 @@ fn copied_names(values: Vec[string]) -> Vec[string] {
 
 fn struct_application_parts(value: Type) -> Option[(string, Vec[Type])] {
     match prune(value) {
-        Type::Con(name) => Option::Some((name, Vec::new())),
-        Type::App(Type::Con(name), args) => Option::Some((name, args)),
+        Type::Con { name } => Option::Some((name, Vec::new())),
+        Type::App { ty: Type::Con { name }, args } => Option::Some((name, args)),
         _ => Option::None,
     }
 }
@@ -539,7 +539,7 @@ fn by_value_type_has_cycle(
     active: Vec[string],
 ) -> bool {
     match prune(normalize_type(ctx, value)) {
-        Type::Tuple(values) => {
+        Type::Tuple { items: values } => {
             let found = Ref::new(false);
             for value in values {
                 if by_value_type_has_cycle(ctx, value, active) {
@@ -550,7 +550,7 @@ fn by_value_type_has_cycle(
             };
             found.get()
         },
-        Type::Array(_, elem) => by_value_type_has_cycle(ctx, elem, active),
+        Type::Array { len: _, elem } => by_value_type_has_cycle(ctx, elem, active),
         value => match struct_application_parts(value) {
             Option::Some(parts) => match find_struct_by_name(ctx, parts.0) {
                 Option::Some(info) => if contains_name(active, info.name) {
@@ -672,7 +672,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
             .pushed(EnumVariantDef {
                 name: "Some",
                 fields: EnumVariantFields::Tuple(
-                    Vec::new().pushed(Type::Param("T")),
+                    Vec::new().pushed(Type::Param { name: "T" }),
                 ),
             }),
     });
@@ -683,13 +683,13 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
             .pushed(EnumVariantDef {
                 name: "Ok",
                 fields: EnumVariantFields::Tuple(
-                    Vec::new().pushed(Type::Param("T")),
+                    Vec::new().pushed(Type::Param { name: "T" }),
                 ),
             })
             .pushed(EnumVariantDef {
                 name: "Err",
                 fields: EnumVariantFields::Tuple(
-                    Vec::new().pushed(Type::Param("E")),
+                    Vec::new().pushed(Type::Param { name: "E" }),
                 ),
             }),
     });

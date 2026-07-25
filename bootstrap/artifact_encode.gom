@@ -90,7 +90,7 @@ fn artifact_json_type(
         tast::Type::Float64 => artifact_json_string(writer, "TFloat64"),
         tast::Type::String => artifact_json_string(writer, "TString"),
         tast::Type::Char => artifact_json_string(writer, "TChar"),
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TTuple");
             artifact_json_begin_object(writer);
@@ -99,18 +99,18 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::Con(name) => if public_names_contain(context.enum_names, name) {
+        tast::Type::Con { name } => if public_names_contain(context.enum_names, name) {
             artifact_json_named_type(writer, "TEnum", "name", name)
         } else {
             artifact_json_named_type(writer, "TStruct", "name", name)
         },
-        tast::Type::Dyn(name) => artifact_json_named_type(
+        tast::Type::Dyn { trait_name: name } => artifact_json_named_type(
             writer,
             "TDyn",
             "trait_name",
             name,
         ),
-        tast::Type::Projection(for_ty, name, trait_ref) => {
+        tast::Type::Projection { for_ty, name, trait_ref } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TProjection");
             artifact_json_begin_object(writer);
@@ -123,7 +123,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::App(base, args) => {
+        tast::Type::App { ty: base, args } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TApp");
             artifact_json_begin_object(writer);
@@ -134,7 +134,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::Array(length, element) => {
+        tast::Type::Array { len: length, elem: element } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TArray");
             artifact_json_begin_object(writer);
@@ -145,7 +145,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::Slice(element) => {
+        tast::Type::Slice { elem: element } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TSlice");
             artifact_json_begin_object(writer);
@@ -154,7 +154,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::VecType(element) => {
+        tast::Type::VecType { elem: element } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TVec");
             artifact_json_begin_object(writer);
@@ -163,7 +163,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::RefType(element) => {
+        tast::Type::RefType { elem: element } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TRef");
             artifact_json_begin_object(writer);
@@ -172,7 +172,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::Channel(element) => {
+        tast::Type::Channel { elem: element } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TChannel");
             artifact_json_begin_object(writer);
@@ -181,7 +181,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::HashMap(key, value) => {
+        tast::Type::HashMap { key, value } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "THashMap");
             artifact_json_begin_object(writer);
@@ -192,13 +192,13 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::Param(name) => artifact_json_named_type(
+        tast::Type::Param { name } => artifact_json_named_type(
             writer,
             "TParam",
             "name",
             name,
         ),
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TFunc");
             artifact_json_begin_object(writer);

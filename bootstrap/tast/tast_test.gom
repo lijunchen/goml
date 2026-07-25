@@ -207,11 +207,14 @@ fn resolves_generic_functions_from_package_interfaces() -> unit {
     );
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::Function(name), Type::Func(params, ret_ty)),
-                _,
-                Type::String,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::Function(name),
+                                    ty: Type::Func { params, ret_ty },
+                                },
+                args: _,
+                ty: Type::String,
+            }) => {
                 testing::assert_eq(name, "vendor::api::identity");
                 match resolve_type(params.get(0)) {
                     Type::String => (),
@@ -249,11 +252,11 @@ fn enforces_source_extern_capabilities() -> unit {
     match allowed.tast {
         Option::Some(file) => match file.items.get(0) {
             Item::Function(value) => match value.body.tail {
-                Option::Some(Expr::Call(
-                    Expr::Callable(Callable::Runtime(name), _),
-                    _,
-                    Type::Unit,
-                )) => testing::assert_eq(name, "std.io.println"),
+                Option::Some(Expr::Call {
+                    func: Expr::Callable { callable: Callable::Runtime(name), ty: _ },
+                    args: _,
+                    ty: Type::Unit,
+                }) => testing::assert_eq(name, "std.io.println"),
                 _ => testing::fail("expected allowed runtime call"),
             },
             _ => testing::fail("expected main function"),
@@ -295,11 +298,11 @@ fn resolves_runtime_externs_from_package_interfaces() -> unit {
     );
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::Runtime(name), _),
-                _,
-                Type::Unit,
-            )) => testing::assert_eq(name, "std.io.println"),
+            Option::Some(Expr::Call {
+                func: Expr::Callable { callable: Callable::Runtime(name), ty: _ },
+                args: _,
+                ty: Type::Unit,
+            }) => testing::assert_eq(name, "std.io.println"),
             _ => testing::fail("expected runtime package call"),
         },
         _ => testing::fail("expected main function"),
@@ -319,7 +322,7 @@ fn resolves_enum_patterns_from_package_interfaces() -> unit {
     );
     match file.items.get(0) {
         Item::Function(function) => match function.body.tail {
-            Option::Some(Expr::Match(_, arms, Type::Int32)) => {
+            Option::Some(Expr::Match { expr: _, arms, ty: Type::Int32 }) => {
                 testing::assert_eq(arms.len(), 2)
             },
             _ => testing::fail("expected external enum match"),
@@ -341,7 +344,7 @@ fn prefers_exact_struct_names_over_dependency_short_names() -> unit {
     );
     match file.items.get(0) {
         Item::Function(function) => match function.body.tail {
-            Option::Some(Expr::Field(_, "local", Type::Int32)) => (),
+            Option::Some(Expr::Field { expr: _, field_name: "local", ty: Type::Int32 }) => (),
             _ => testing::fail("expected local struct field"),
         },
         _ => testing::fail("expected local struct function"),
@@ -851,7 +854,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
     );
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Constr(constructor, values, Type::Con(name))) => {
+            Option::Some(Expr::Constr { constructor, args: values, ty: Type::Con { name } }) => {
                 testing::assert_eq(constructor.name, "vendor::api::Choice::None");
                 testing::assert_eq(values.len(), 0);
                 testing::assert_eq(name, "vendor::api::Choice")
@@ -862,7 +865,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
     };
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Constr(constructor, values, Type::Con(name))) => {
+            Option::Some(Expr::Constr { constructor, args: values, ty: Type::Con { name } }) => {
                 testing::assert_eq(constructor.name, "vendor::api::Choice::Some");
                 testing::assert_eq(values.len(), 1);
                 match resolve_type(expr_type(values.get(0))) {
@@ -894,11 +897,14 @@ fn filters_external_trait_methods_by_hir_scope() -> unit {
     );
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::TraitMethod(reference, name), _),
-                _,
-                Type::String,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::String,
+            }) => {
                 testing::assert_eq(reference.name, "vendor::traits::Render");
                 testing::assert_eq(name, "render")
             },
@@ -921,11 +927,14 @@ fn imports_external_supertrait_methods_with_child_scope() -> unit {
     );
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::TraitMethod(reference, name), _),
-                _,
-                Type::Int32,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::Int32,
+            }) => {
                 testing::assert_eq(reference.name, "vendor::api::Parent");
                 testing::assert_eq(name, "parent")
             },
@@ -946,7 +955,7 @@ fn erases_indexed_assignment_read_types() -> unit {
     let file = checked_file("fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.stmts.get(1) {
-            Stmt::Assign(Expr::Index(_, _, target_ty), value) => {
+            Stmt::Assign { target: Expr::Index { base: _, index: _, ty: target_ty }, value } => {
                 match resolve_type(target_ty) {
                     Type::Unit => (),
                     _ => testing::fail("expected unit assignment target read type"),
@@ -967,7 +976,13 @@ fn infers_shift_operands_independently() -> unit {
     let file = checked_file("fn shift(value: uint8) -> uint8 { value << 4 }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Binary(ast::BinaryOp::Shl, left, right, ty, _)) => {
+            Option::Some(Expr::Binary {
+                op: ast::BinaryOp::Shl,
+                lhs: left,
+                rhs: right,
+                ty,
+                resolution: _,
+            }) => {
                 match resolve_type(expr_type(left)) {
                     Type::Uint8 => (),
                     _ => testing::fail("expected uint8 left operand"),
@@ -994,14 +1009,17 @@ fn infers_generic_function_calls() -> unit {
     testing::assert_eq(file.items.len(), 2);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(function, args, ty)) => {
+            Option::Some(Expr::Call { func: function, args, ty }) => {
                 testing::assert_eq(args.len(), 1);
                 match resolve_type(ty) {
                     Type::String => (),
                     _ => testing::fail("expected string call result"),
                 };
                 match function {
-                    Expr::Callable(Callable::Function(name), Type::Func(params, ret_ty)) => {
+                    Expr::Callable {
+                        callable: Callable::Function(name),
+                        ty: Type::Func { params, ret_ty },
+                    } => {
                         testing::assert_eq(name, "id");
                         testing::assert_eq(params.len(), 1);
                         match resolve_type(params.get(0)) {
@@ -1028,9 +1046,9 @@ fn resolves_reordered_result_try_tags() -> unit {
     let file = checked_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.stmts.get(0) {
-            Stmt::Let(_, _, Expr::Match(_, arms, _)) => {
+            Stmt::Let { is_mut: _, pat: _, value: Expr::Match { expr: _, arms, ty: _ } } => {
                 match arms.get(0).pat {
-                    Pat::Constr(constructor, _, _) => {
+                    Pat::Constr { constructor, args: _, ty: _ } => {
                         match constructor.tag {
                             Option::Some(tag) => testing::assert_eq(tag, 1),
                             Option::None => testing::fail("expected success tag"),
@@ -1039,7 +1057,7 @@ fn resolves_reordered_result_try_tags() -> unit {
                     _ => testing::fail("expected success constructor pattern"),
                 };
                 match arms.get(1).pat {
-                    Pat::Constr(constructor, _, _) => {
+                    Pat::Constr { constructor, args: _, ty: _ } => {
                         match constructor.tag {
                             Option::Some(tag) => testing::assert_eq(tag, 0),
                             Option::None => testing::fail("expected residual tag"),
@@ -1048,7 +1066,10 @@ fn resolves_reordered_result_try_tags() -> unit {
                     _ => testing::fail("expected residual constructor pattern"),
                 };
                 match arms.get(1).body {
-                    Expr::Return(Option::Some(Expr::Constr(constructor, _, _)), _) => {
+                    Expr::Return {
+                        expr: Option::Some(Expr::Constr { constructor, args: _, ty: _ }),
+                        ty: _,
+                    } => {
                         match constructor.tag {
                             Option::Some(tag) => testing::assert_eq(tag, 0),
                             Option::None => testing::fail("expected return tag"),
@@ -1069,10 +1090,10 @@ fn checks_closures_with_call_context() -> unit {
     let file = checked_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(_, args, Type::String)) => match args.get(2) {
-                Expr::Closure(params, body, closure_ty) => {
+            Option::Some(Expr::Call { func: _, args, ty: Type::String }) => match args.get(2) {
+                Expr::Closure { params, body, ty: closure_ty } => {
                     match resolve_type(closure_ty) {
-                        Type::Func(_, Type::String) => (),
+                        Type::Func { params: _, ret_ty: Type::String } => (),
                         _ => testing::fail("expected contextual closure return"),
                     };
                     match (resolve_type(params.get(0).ty), resolve_type(params.get(1).ty)) {
@@ -1080,20 +1101,23 @@ fn checks_closures_with_call_context() -> unit {
                         _ => testing::fail("expected contextual closure parameters"),
                     };
                     match body {
-                        Expr::Binary(
-                            _,
-                            _,
-                            Expr::Call(
-                                Expr::Callable(
-                                    Callable::InherentMethod(owner, name),
-                                    _,
-                                ),
-                                _,
-                                call_ty,
-                            ),
-                            body_ty,
-                            _,
-                        ) => {
+                        Expr::Binary {
+                            op: _,
+                            lhs: _,
+                            rhs: Expr::Call {
+                                                            func: Expr::Callable {
+                                                                                                callable: Callable::InherentMethod {
+                                                                                                                                        receiver_ty: owner,
+                                                                                                                                        method_name: name,
+                                                                                                                                    },
+                                                                                                ty: _,
+                                                                                            },
+                                                            args: _,
+                                                            ty: call_ty,
+                                                        },
+                            ty: body_ty,
+                            resolution: _,
+                        } => {
                             testing::assert_eq(name, "to_string");
                             match (
                                 resolve_type(owner),
@@ -1122,26 +1146,36 @@ fn infers_trait_goals_from_function_calls() -> unit {
     match file.items.get(2) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Let(_, Pat::Var(_, pattern_ty), expression) => {
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: pattern_ty },
+                    value: expression,
+                } => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
-                        (Type::VecType(Type::Int), Type::VecType(Type::Int)) => (),
+                        (Type::VecType { elem: Type::Int }, Type::VecType { elem: Type::Int }) => (),
                         _ => testing::fail("expected inferred Vec[int] binding"),
                     }
                 },
                 _ => testing::fail("expected inferred vector binding"),
             };
             match value.body.tail {
-                Option::Some(Expr::Call(
-                    Expr::Callable(Callable::Function(name), Type::Func(params, Type::Int)),
+                Option::Some(Expr::Call {
+                    func: Expr::Callable {
+                                            callable: Callable::Function(name),
+                                            ty: Type::Func {
+                                                                    params,
+                                                                    ret_ty: Type::Int,
+                                                                },
+                                        },
                     args,
-                    Type::Int,
-                )) => {
+                    ty: Type::Int,
+                }) => {
                     testing::assert_eq(name, "read_measure");
                     match (
                         resolve_type(params.get(0)),
                         resolve_type(expr_type(args.get(0))),
                     ) {
-                        (Type::VecType(Type::Int), Type::VecType(Type::Int)) => (),
+                        (Type::VecType { elem: Type::Int }, Type::VecType { elem: Type::Int }) => (),
                         _ => testing::fail("expected inferred trait goal argument"),
                     }
                 },
@@ -1158,7 +1192,7 @@ fn checks_positional_struct_constructors() -> unit {
     let file = checked_file(source);
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Constr(constructor, values, Type::Con(owner))) => {
+            Option::Some(Expr::Constr { constructor, args: values, ty: Type::Con { name: owner } }) => {
                 testing::assert_eq(owner, "Point");
                 testing::assert_eq(constructor.name, "Point");
                 testing::assert_eq(constructor.fields.get(0), "x");
@@ -1174,11 +1208,11 @@ fn checks_positional_struct_constructors() -> unit {
     };
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Constr(
+            Option::Some(Expr::Constr {
                 constructor,
-                values,
-                Type::App(Type::Con(owner), args),
-            )) => {
+                args: values,
+                ty: Type::App { ty: Type::Con { name: owner }, args },
+            }) => {
                 testing::assert_eq(owner, "Wrapper");
                 testing::assert_eq(constructor.name, "Wrapper");
                 match (resolve_type(args.get(0)), resolve_type(expr_type(values.get(0)))) {
@@ -1199,14 +1233,14 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
     testing::assert_eq(file.items.len(), 1);
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Match(_, arms, ty)) => {
+            Option::Some(Expr::Match { expr: _, arms, ty }) => {
                 testing::assert_eq(arms.len(), 2);
                 match ty {
                     Type::Int32 => (),
                     _ => testing::fail("expected int32 match result"),
                 };
                 match arms.get(0).pat {
-                    Pat::Constr(constructor, args, Type::Con(name)) => {
+                    Pat::Constr { constructor, args, ty: Type::Con { name } } => {
                         testing::assert_eq(constructor.name, "Choice::Some");
                         testing::assert_eq(args.len(), 1);
                         testing::assert_eq(name, "Choice")
@@ -1214,7 +1248,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
                     _ => testing::fail("expected constructor pattern"),
                 };
                 match arms.get(1).body {
-                    Expr::Prim(Primitive::Int(value), literal_ty) => {
+                    Expr::Prim { value: Primitive::Int(value), ty: literal_ty } => {
                         testing::assert_eq(value, "0");
                         match resolve_type(literal_ty) {
                             Type::Int32 => (),
@@ -1237,11 +1271,18 @@ fn resolves_associated_types_and_bound_methods() -> unit {
     testing::assert_eq(file.items.len(), 3);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::TraitMethod(reference, name), _),
-                _,
-                Type::Projection(Type::Param(owner), associated, _),
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::Projection {
+                                    for_ty: Type::Param { name: owner },
+                                    name: associated,
+                                    trait_ref: _,
+                                },
+            }) => {
                 testing::assert_eq(reference.name, "Provider");
                 testing::assert_eq(name, "get");
                 testing::assert_eq(owner, "P");
@@ -1253,11 +1294,14 @@ fn resolves_associated_types_and_bound_methods() -> unit {
     };
     match file.items.get(2) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::Function(name), Type::Func(_, ret_ty)),
-                _,
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::Function(name),
+                                    ty: Type::Func { params: _, ret_ty },
+                                },
+                args: _,
                 ty,
-            )) => {
+            }) => {
                 testing::assert_eq(name, "read");
                 match (resolve_type(ret_ty), resolve_type(ty)) {
                     (Type::Int32, Type::Int32) => (),
@@ -1276,14 +1320,17 @@ fn preserves_projection_equality_owners() -> unit {
     let file = checked_file(source);
     match file.items.get(3) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::Function(name), Type::Func(params, Type::Unit)),
-                _,
-                Type::Unit,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::Function(name),
+                                    ty: Type::Func { params, ret_ty: Type::Unit },
+                                },
+                args: _,
+                ty: Type::Unit,
+            }) => {
                 testing::assert_eq(name, "combine");
                 match (resolve_type(params.get(0)), resolve_type(params.get(1))) {
-                    (Type::Con(left), Type::Con(right)) => {
+                    (Type::Con { name: left }, Type::Con { name: right }) => {
                         testing::assert_eq(left, "LeftSource");
                         testing::assert_eq(right, "RightSource")
                     },
@@ -1334,14 +1381,17 @@ fn prefers_builtin_inherent_methods() -> unit {
     let file = checked_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::InherentMethod(owner, name), _),
-                _,
-                Type::Bool,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::InherentMethod { receiver_ty: owner, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::Bool,
+            }) => {
                 testing::assert_eq(name, "is_empty");
                 match resolve_type(owner) {
-                    Type::VecType(Type::Int32) => (),
+                    Type::VecType { elem: Type::Int32 } => (),
                     _ => testing::fail("expected Vec[int32] inherent owner"),
                 }
             },
@@ -1357,31 +1407,39 @@ fn specializes_array_builtin_lengths() -> unit {
     match file.items.get(0) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Expr(Expr::Call(
-                    Expr::Callable(Callable::Intrinsic(name), Type::Func(params, Type::Unit)),
-                    _,
-                    Type::Unit,
-                )) => {
+                Stmt::Expr {
+                    expr: Expr::Call {
+                                        func: Expr::Callable {
+                                                                callable: Callable::Intrinsic(name),
+                                                                ty: Type::Func {
+                                                                                        params,
+                                                                                        ret_ty: Type::Unit,
+                                                                                    },
+                                                            },
+                                        args: _,
+                                        ty: Type::Unit,
+                                    },
+                } => {
                     testing::assert_eq(name, "array.set");
                     match resolve_type(params.get(0)) {
-                        Type::Array(2, Type::Int32) => (),
+                        Type::Array { len: 2, elem: Type::Int32 } => (),
                         _ => testing::fail("expected specialized array.set length"),
                     }
                 },
                 _ => testing::fail("expected array.set call"),
             };
             match value.body.tail {
-                Option::Some(Expr::Call(
-                    Expr::Callable(
-                        Callable::Intrinsic(name),
-                        Type::Func(params, Type::Int32),
-                    ),
-                    _,
-                    Type::Int32,
-                )) => {
+                Option::Some(Expr::Call {
+                    func: Expr::Callable {
+                                            callable: Callable::Intrinsic(name),
+                                            ty: Type::Func { params, ret_ty: Type::Int32 },
+                                        },
+                    args: _,
+                    ty: Type::Int32,
+                }) => {
                     testing::assert_eq(name, "array.get");
                     match resolve_type(params.get(0)) {
-                        Type::Array(2, Type::Int32) => (),
+                        Type::Array { len: 2, elem: Type::Int32 } => (),
                         _ => testing::fail("expected specialized array.get length"),
                     }
                 },
@@ -1397,11 +1455,11 @@ fn checks_char_from_uint32_builtin() -> unit {
     let file = checked_file("fn decode(value: uint32) -> Option[char] { char_from_uint32(value) }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::Function(name), _),
-                _,
-                Type::App(Type::Con(option), args),
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable { callable: Callable::Function(name), ty: _ },
+                args: _,
+                ty: Type::App { ty: Type::Con { name: option }, args },
+            }) => {
                 testing::assert_eq(name, "char_from_uint32");
                 testing::assert_eq(option, "Option");
                 match args.get(0) {
@@ -1455,18 +1513,18 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
     for index in range(0, 3) {
         match file.items.get(index) {
             Item::Function(value) => match value.body.stmts.get(0) {
-                Stmt::Let(_, Pat::Wild(pattern_ty), expression) => {
+                Stmt::Let { is_mut: _, pat: Pat::Wild { ty: pattern_ty }, value: expression } => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
                         (Type::Int32, Type::Unit) => (),
                         _ => testing::fail("expected unit control flow expression type"),
                     };
                     if index == 1 {
                         match expression {
-                            Expr::Index(
-                                _,
-                                Expr::Prim(Primitive::Int(value), Type::Int),
-                                Type::Unit,
-                            ) => testing::assert_eq(value, "0"),
+                            Expr::Index {
+                                base: _,
+                                index: Expr::Prim { value: Primitive::Int(value), ty: Type::Int },
+                                ty: Type::Unit,
+                            } => testing::assert_eq(value, "0"),
                             _ => testing::fail("expected preserved index expression"),
                         }
                     } else {
@@ -1513,11 +1571,17 @@ fn preserves_fn_iterator_static_owner() -> unit {
     let file = checked_file("fn iterator() -> FnIterator[int32] { FnIterator::from_fn(|| Option::None) }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::InherentMethod(Type::Con(owner), name), _),
-                _,
-                _,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::InherentMethod {
+                                                        receiver_ty: Type::Con { name: owner },
+                                                        method_name: name,
+                                                    },
+                                    ty: _,
+                                },
+                args: _,
+                ty: _,
+            }) => {
                 testing::assert_eq(owner, "FnIterator");
                 testing::assert_eq(name, "from_fn")
             },
@@ -1533,14 +1597,17 @@ fn preserves_bare_generic_static_owner() -> unit {
     let file = checked_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::InherentMethod(owner, name), _),
-                _,
-                _,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::InherentMethod { receiver_ty: owner, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: _,
+            }) => {
                 testing::assert_eq(name, "new");
                 match resolve_type(owner) {
-                    Type::Con(owner_name) => testing::assert_eq(owner_name, "Box"),
+                    Type::Con { name: owner_name } => testing::assert_eq(owner_name, "Box"),
                     _ => testing::fail("expected bare static owner"),
                 }
             },
@@ -1555,14 +1622,17 @@ fn specializes_constructor_only_static_owner() -> unit {
     let file = checked_file("fn make() -> Ref[int32] { Ref::new(1) }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::InherentMethod(owner, name), _),
-                _,
-                _,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::InherentMethod { receiver_ty: owner, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: _,
+            }) => {
                 testing::assert_eq(name, "new");
                 match resolve_type(owner) {
-                    Type::RefType(Type::Int32) => (),
+                    Type::RefType { elem: Type::Int32 } => (),
                     _ => testing::fail("expected specialized Ref owner"),
                 }
             },
@@ -1590,15 +1660,39 @@ fn resolves_generic_trait_associated_applications() -> unit {
     match file.items.get(3) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::String },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::String,
+                                    },
+                } => (),
                 _ => testing::fail("expected string associated output"),
             };
             match value.body.stmts.get(1) {
-                Stmt::Let(_, Pat::Var(_, Type::Int32), Expr::Call(_, _, Type::Int32)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::Int32 },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::Int32,
+                                    },
+                } => (),
                 _ => testing::fail("expected int32 associated output"),
             };
             match value.body.stmts.get(2) {
-                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::String },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::String,
+                                    },
+                } => (),
                 _ => testing::fail("expected generic associated output"),
             }
         },
@@ -1612,15 +1706,18 @@ fn resolves_trait_methods_from_call_context() -> unit {
     let file = checked_file(source);
     match file.items.get(7) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::TraitMethod(reference, name), _),
-                _,
-                Type::Param(result),
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::Param { name: result },
+            }) => {
                 testing::assert_eq(reference.name, "Select");
                 testing::assert_eq(name, "select");
                 match reference.args.get(0) {
-                    Type::Param(arg) => testing::assert_eq(arg, "T"),
+                    Type::Param { name: arg } => testing::assert_eq(arg, "T"),
                     _ => testing::fail("expected contextual trait argument"),
                 };
                 testing::assert_eq(result, "T")
@@ -1632,23 +1729,63 @@ fn resolves_trait_methods_from_call_context() -> unit {
     match file.items.get(8) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::String },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::String,
+                                    },
+                } => (),
                 _ => testing::fail("expected integer overload"),
             };
             match value.body.stmts.get(1) {
-                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::String },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::String,
+                                    },
+                } => (),
                 _ => testing::fail("expected string overload"),
             };
             match value.body.stmts.get(2) {
-                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::String },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::String,
+                                    },
+                } => (),
                 _ => testing::fail("expected string return overload"),
             };
             match value.body.stmts.get(3) {
-                Stmt::Let(_, Pat::Var(_, Type::Int32), Expr::Call(_, _, Type::Int32)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::Int32 },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::Int32,
+                                    },
+                } => (),
                 _ => testing::fail("expected int32 return overload"),
             };
             match value.body.stmts.get(4) {
-                Stmt::Let(_, Pat::Var(_, Type::Int32), Expr::Call(_, _, Type::Int32)) => (),
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat::Var { name: _, ty: Type::Int32 },
+                    value: Expr::Call {
+                                        func: _,
+                                        args: _,
+                                        ty: Type::Int32,
+                                    },
+                } => (),
                 _ => testing::fail("expected implied equality result"),
             }
         },
@@ -1668,7 +1805,7 @@ fn infers_iterator_adapter_builtins() -> unit {
             expected.push("TakeIterator");
             for index in range(0, 3) {
                 match value.body.stmts.get(index) {
-                    Stmt::Let(_, _, expression) => match type_constructor_name(
+                    Stmt::Let { is_mut: _, pat: _, value: expression } => match type_constructor_name(
                         resolve_type(expr_type(expression)),
                     ) {
                         Option::Some(name) => testing::assert_eq(name, expected.get(index)),
@@ -1678,11 +1815,21 @@ fn infers_iterator_adapter_builtins() -> unit {
                 }
             };
             match value.body.stmts.get(3) {
-                Stmt::Expr(Expr::For(Pat::Var(_, Type::Int), _, _, _, _, _, Type::Unit)) => (),
+                Stmt::Expr {
+                    expr: Expr::For {
+                                        pat: Pat::Var { name: _, ty: Type::Int },
+                                        iterator: _,
+                                        into_iter_trait_ref: _,
+                                        iterator_trait_ref: _,
+                                        iterator_ty: _,
+                                        body: _,
+                                        ty: Type::Unit,
+                                    },
+                } => (),
                 _ => testing::fail("expected int adapter iteration"),
             };
             match value.body.stmts.get(4) {
-                Stmt::Let(_, Pat::Wild(pattern_ty), expression) => {
+                Stmt::Let { is_mut: _, pat: Pat::Wild { ty: pattern_ty }, value: expression } => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
                         (Type::Int, Type::Int) => (),
                         _ => testing::fail("expected int iterator fold"),
@@ -1691,11 +1838,11 @@ fn infers_iterator_adapter_builtins() -> unit {
                 _ => testing::fail("expected iterator fold binding"),
             };
             match value.body.tail {
-                Option::Some(Expr::Call(
-                    Expr::Callable(Callable::Function(name), _),
-                    _,
-                    Type::VecType(Type::String),
-                )) => testing::assert_eq(name, "iterator_collect"),
+                Option::Some(Expr::Call {
+                    func: Expr::Callable { callable: Callable::Function(name), ty: _ },
+                    args: _,
+                    ty: Type::VecType { elem: Type::String },
+                }) => testing::assert_eq(name, "iterator_collect"),
                 _ => testing::fail("expected string iterator collection"),
             }
         },
@@ -1710,15 +1857,17 @@ fn resolves_builtin_for_iterator_types() -> unit {
     match file.items.get(0) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Expr(Expr::For(
-                    _,
-                    _,
-                    _,
-                    _,
-                    Type::App(Type::Con(owner), args),
-                    _,
-                    _,
-                )) => {
+                Stmt::Expr {
+                    expr: Expr::For {
+                                        pat: _,
+                                        iterator: _,
+                                        into_iter_trait_ref: _,
+                                        iterator_trait_ref: _,
+                                        iterator_ty: Type::App { ty: Type::Con { name: owner }, args },
+                                        body: _,
+                                        ty: _,
+                                    },
+                } => {
                     testing::assert_eq(owner, "FnIterator");
                     match args.get(0) {
                         Type::Int32 => (),
@@ -1728,15 +1877,17 @@ fn resolves_builtin_for_iterator_types() -> unit {
                 _ => testing::fail("expected vector for loop"),
             };
             match value.body.stmts.get(1) {
-                Stmt::Expr(Expr::For(
-                    _,
-                    _,
-                    _,
-                    _,
-                    Type::App(Type::Con(owner), args),
-                    _,
-                    _,
-                )) => {
+                Stmt::Expr {
+                    expr: Expr::For {
+                                        pat: _,
+                                        iterator: _,
+                                        into_iter_trait_ref: _,
+                                        iterator_trait_ref: _,
+                                        iterator_ty: Type::App { ty: Type::Con { name: owner }, args },
+                                        body: _,
+                                        ty: _,
+                                    },
+                } => {
                     testing::assert_eq(owner, "FnIterator");
                     match args.get(0) {
                         Type::String => (),
@@ -1755,25 +1906,29 @@ fn preserves_associated_into_iterator_item_projection() -> unit {
     let file = checked_file("trait Batch { type Items: IntoIterator; fn items(self: Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::For(
-                Pat::Wild(
-                    Type::Projection(
-                        Type::Projection(
-                            Type::Projection(Type::Param(owner), items, _),
-                            into_iter,
-                            _,
-                        ),
-                        item,
-                        _,
-                    ),
-                ),
-                _,
-                _,
-                _,
-                _,
-                _,
-                Type::Unit,
-            )) => {
+            Option::Some(Expr::For {
+                pat: Pat::Wild {
+                                    ty: Type::Projection {
+                                                            for_ty: Type::Projection {
+                                                                                        for_ty: Type::Projection {
+                                                                                                                        for_ty: Type::Param { name: owner },
+                                                                                                                        name: items,
+                                                                                                                        trait_ref: _,
+                                                                                                                    },
+                                                                                        name: into_iter,
+                                                                                        trait_ref: _,
+                                                                                    },
+                                                            name: item,
+                                                            trait_ref: _,
+                                                        },
+                                },
+                iterator: _,
+                into_iter_trait_ref: _,
+                iterator_trait_ref: _,
+                iterator_ty: _,
+                body: _,
+                ty: Type::Unit,
+            }) => {
                 testing::assert_eq(owner, "B");
                 testing::assert_eq(items, "Items");
                 testing::assert_eq(into_iter, "IntoIter");
@@ -1798,7 +1953,7 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
             Item::Function(value) => {
                 testing::assert_eq(value.predicates.len(), 4);
                 match value.predicates.get(0) {
-                    TypePredicate::Trait(Type::Param(param), reference) => {
+                    TypePredicate::Trait(Type::Param { name: param }, reference) => {
                         testing::assert_eq(param, "S");
                         testing::assert_eq(reference.name, "IntoIterator")
                     },
@@ -1806,11 +1961,11 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
                 };
                 match value.predicates.get(1) {
                     TypePredicate::Equality(
-                        Type::Projection(
-                            Type::Param(param),
+                        Type::Projection {
+                            for_ty: Type::Param { name: param },
                             name,
-                            Option::Some(reference),
-                        ),
+                            trait_ref: Option::Some(reference),
+                        },
                         Type::Int32,
                     ) => {
                         testing::assert_eq(param, "S");
@@ -1821,20 +1976,20 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
                 };
                 match value.predicates.get(2) {
                     TypePredicate::Equality(
-                        Type::Projection(
-                            Type::Param(item_param),
-                            item_name,
-                            Option::Some(into_iterator),
-                        ),
-                        Type::Projection(
-                            Type::Projection(
-                                Type::Param(iter_param),
-                                iter_name,
-                                Option::Some(iter_owner),
-                            ),
-                            iterator_item_name,
-                            Option::Some(iterator),
-                        ),
+                        Type::Projection {
+                            for_ty: Type::Param { name: item_param },
+                            name: item_name,
+                            trait_ref: Option::Some(into_iterator),
+                        },
+                        Type::Projection {
+                            for_ty: Type::Projection {
+                                                            for_ty: Type::Param { name: iter_param },
+                                                            name: iter_name,
+                                                            trait_ref: Option::Some(iter_owner),
+                                                        },
+                            name: iterator_item_name,
+                            trait_ref: Option::Some(iterator),
+                        },
                     ) => {
                         testing::assert_eq(item_param, "S");
                         testing::assert_eq(item_name, "Item");
@@ -1849,11 +2004,11 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
                 };
                 match value.predicates.get(3) {
                     TypePredicate::Trait(
-                        Type::Projection(
-                            Type::Param(param),
+                        Type::Projection {
+                            for_ty: Type::Param { name: param },
                             name,
-                            Option::Some(owner),
-                        ),
+                            trait_ref: Option::Some(owner),
+                        },
                         reference,
                     ) => {
                         testing::assert_eq(param, "S");
@@ -1876,15 +2031,18 @@ fn resolves_projected_trait_impls() -> unit {
     let file = checked_file(source);
     match file.items.get(2) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::TraitMethod(reference, name), _),
-                _,
-                Type::Int32,
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::Int32,
+            }) => {
                 testing::assert_eq(reference.name, "Pick");
                 testing::assert_eq(name, "pick");
                 match resolve_type(reference.args.get(0)) {
-                    Type::Projection(Type::Con(owner), item, _) => {
+                    Type::Projection { for_ty: Type::Con { name: owner }, name: item, trait_ref: _ } => {
                         testing::assert_eq(owner, "Value");
                         testing::assert_eq(item, "Item")
                     },
@@ -1914,18 +2072,18 @@ fn resolves_constrained_blanket_methods() -> unit {
     for index in range(3, 5) {
         match file.items.get(index) {
             Item::Function(value) => match value.body.tail {
-                Option::Some(Expr::Call(
-                    Expr::Callable(
-                        Callable::TraitMethod(reference, name),
-                        Type::Func(params, Type::String),
-                    ),
-                    _,
-                    Type::String,
-                )) => {
+                Option::Some(Expr::Call {
+                    func: Expr::Callable {
+                                            callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                            ty: Type::Func { params, ret_ty: Type::String },
+                                        },
+                    args: _,
+                    ty: Type::String,
+                }) => {
                     testing::assert_eq(reference.name, "Label");
                     testing::assert_eq(name, "label");
                     match resolve_type(params.get(0)) {
-                        Type::App(Type::Con(owner), args) => {
+                        Type::App { ty: Type::Con { name: owner }, args } => {
                             testing::assert_eq(owner, "Box");
                             if index == 3 {
                                 match resolve_type(args.get(0)) {
@@ -1954,8 +2112,8 @@ fn normalizes_float_pattern_literals() -> unit {
     let file = checked_file("fn signed_zero(value: float64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Match(_, arms, Type::String)) => match arms.get(0).pat {
-                Pat::Prim(Primitive::Float(literal), Type::Float64) => {
+            Option::Some(Expr::Match { expr: _, arms, ty: Type::String }) => match arms.get(0).pat {
+                Pat::Prim { value: Primitive::Float(literal), ty: Type::Float64 } => {
                     testing::assert_eq(literal, "-0")
                 },
                 _ => testing::fail("expected normalized float pattern"),
@@ -1983,7 +2141,7 @@ fn rounds_float32_literals() -> unit {
     let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14 }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Prim(Primitive::Float(literal), ty)) => {
+            Option::Some(Expr::Prim { value: Primitive::Float(literal), ty }) => {
                 testing::assert_eq(literal, "3.14");
                 match resolve_type(ty) {
                     Type::Float32 => (),
@@ -1996,7 +2154,7 @@ fn rounds_float32_literals() -> unit {
     };
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Prim(Primitive::Float(literal), Type::Float32)) => {
+            Option::Some(Expr::Prim { value: Primitive::Float(literal), ty: Type::Float32 }) => {
                 testing::assert_eq(literal, "3.14")
             },
             _ => testing::fail("expected rounded explicit float32 literal"),
@@ -2008,8 +2166,8 @@ fn rounds_float32_literals() -> unit {
     );
     match generic.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(_, args, Type::Float32)) => match args.get(0) {
-                Expr::Prim(Primitive::Float(literal), ty) => {
+            Option::Some(Expr::Call { func: _, args, ty: Type::Float32 }) => match args.get(0) {
+                Expr::Prim { value: Primitive::Float(literal), ty } => {
                     testing::assert_eq(literal, "3.14");
                     match resolve_type(ty) {
                         Type::Float32 => (),
@@ -2048,15 +2206,18 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
     testing::assert_eq(file.items.len(), 2);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Call(
-                Expr::Callable(Callable::TraitMethod(reference, name), _),
-                _,
-                Type::Param(result),
-            )) => {
+            Option::Some(Expr::Call {
+                func: Expr::Callable {
+                                    callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                                    ty: _,
+                                },
+                args: _,
+                ty: Type::Param { name: result },
+            }) => {
                 testing::assert_eq(reference.name, "Parent");
                 testing::assert_eq(reference.args.len(), 1);
                 match reference.args.get(0) {
-                    Type::Param(arg) => testing::assert_eq(arg, "T"),
+                    Type::Param { name: arg } => testing::assert_eq(arg, "T"),
                     _ => testing::fail("expected inherited trait argument"),
                 };
                 testing::assert_eq(name, "parent");

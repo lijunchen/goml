@@ -28,19 +28,22 @@ enum CompiledPlaceRoot {
 
 fn ref_get_argument(value: tast::Expr) -> Option[tast::Expr] {
     match value {
-        tast::Expr::Call(function, args, _) => if args.len() == 1 {
+        tast::Expr::Call { func: function, args, ty: _ } => if args.len() == 1 {
             match function {
-                tast::Expr::Callable(tast::Callable::Intrinsic(name), _) => {
+                tast::Expr::Callable { callable: tast::Callable::Intrinsic(name), ty: _ } => {
                     if name == "ref.get" {
                         Option::Some(args.get(0))
                     } else {
                         Option::None
                     }
                 },
-                tast::Expr::Callable(
-                    tast::Callable::InherentMethod(tast::Type::RefType(_), name),
-                    _,
-                ) => if name == "get" {
+                tast::Expr::Callable {
+                    callable: tast::Callable::InherentMethod {
+                                            receiver_ty: tast::Type::RefType { elem: _ },
+                                            method_name: name,
+                                        },
+                    ty: _,
+                } => if name == "get" {
                     Option::Some(args.get(0))
                 } else {
                     Option::None
@@ -56,22 +59,22 @@ fn ref_get_argument(value: tast::Expr) -> Option[tast::Expr] {
 
 fn decompose_place_from(value: tast::Expr, steps: Vec[PlaceStep]) -> Option[PlaceRoot] {
     match value {
-        tast::Expr::Var(name, ty) => Option::Some(PlaceRoot::Local(name, ty)),
-        tast::Expr::Proj(parent, index, ty) => match decompose_place_from(parent, steps) {
+        tast::Expr::Var { name, ty } => Option::Some(PlaceRoot::Local(name, ty)),
+        tast::Expr::Proj { tuple: parent, index, ty } => match decompose_place_from(parent, steps) {
             Option::Some(root) => {
                 steps.push(PlaceStep::Proj(tast::expr_type(parent), index, ty));
                 Option::Some(root)
             },
             Option::None => Option::None,
         },
-        tast::Expr::Field(parent, name, ty) => match decompose_place_from(parent, steps) {
+        tast::Expr::Field { expr: parent, field_name: name, ty } => match decompose_place_from(parent, steps) {
             Option::Some(root) => {
                 steps.push(PlaceStep::Field(tast::expr_type(parent), name, ty));
                 Option::Some(root)
             },
             Option::None => Option::None,
         },
-        tast::Expr::Index(parent, index, ty) => match decompose_place_from(parent, steps) {
+        tast::Expr::Index { base: parent, index, ty } => match decompose_place_from(parent, steps) {
             Option::Some(root) => {
                 steps.push(PlaceStep::Index(tast::expr_type(parent), index, ty));
                 Option::Some(root)
@@ -133,10 +136,10 @@ fn place_index_read(
     item_ty: tast::Type,
 ) -> Expr {
     let name = match tast::resolve_type(container_ty) {
-        tast::Type::Array(_, _) => "array.get",
-        tast::Type::VecType(_) => "vec.get",
-        tast::Type::Slice(_) => "slice.get",
-        tast::Type::HashMap(_, _) => "hashmap.get",
+        tast::Type::Array { len: _, elem: _ } => "array.get",
+        tast::Type::VecType { elem: _ } => "vec.get",
+        tast::Type::Slice { elem: _ } => "slice.get",
+        tast::Type::HashMap { key: _, value: _ } => "hashmap.get",
         _ => "compiler.missing",
     };
     let params: Vec[tast::Type] = Vec::new();
@@ -244,7 +247,7 @@ fn place_field_get(
 
 fn rebuild_tuple(parent: Expr, parent_ty: tast::Type, index: int, value: Expr) -> Expr {
     match tast::resolve_type(parent_ty) {
-        tast::Type::Tuple(types) => {
+        tast::Type::Tuple { items: types } => {
             let items: Vec[Expr] = Vec::new();
             for item_index in range(0, types.len()) {
                 if item_index == index {
@@ -458,12 +461,12 @@ fn lower_index_assignment(
                             index_name,
                             index_ty,
                         ) => match tast::resolve_type(parent_ty) {
-                            tast::Type::Array(_, _) => updated.set(place_array_set(
+                            tast::Type::Array { len: _, elem: _ } => updated.set(place_array_set(
                                 Expr::Var { name: parent_name, ty: parent_ty },
                                 Expr::Var { name: index_name, ty: index_ty },
                                 updated.get(),
                             )),
-                            tast::Type::VecType(_) => {
+                            tast::Type::VecType { elem: _ } => {
                                 final_action.set(Option::Some(place_vec_set(
                                     Expr::Var { name: parent_name, ty: parent_ty },
                                     Expr::Var { name: index_name, ty: index_ty },
@@ -471,7 +474,7 @@ fn lower_index_assignment(
                                 )));
                                 stopped.set(true)
                             },
-                            tast::Type::HashMap(_, _) => {
+                            tast::Type::HashMap { key: _, value: _ } => {
                                 final_action.set(Option::Some(place_hashmap_set(
                                     Expr::Var { name: parent_name, ty: parent_ty },
                                     Expr::Var { name: index_name, ty: index_ty },
@@ -520,13 +523,13 @@ fn lower_index_assignment(
 
 fn lower_assignment(ctx: Lowerer, target: tast::Expr, value: tast::Expr) -> Expr {
     match target {
-        tast::Expr::Var(name, target_ty) => Expr::Assign {
+        tast::Expr::Var { name, ty: target_ty } => Expr::Assign {
             name,
             value: lower_expr(ctx, value),
             target_ty,
             ty: tast::Type::Unit,
         },
-        tast::Expr::Index(_, _, _) => lower_index_assignment(ctx, target, value),
+        tast::Expr::Index { base: _, index: _, ty: _ } => lower_index_assignment(ctx, target, value),
         _ => missing_expr(tast::Type::Unit),
     }
 }

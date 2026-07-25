@@ -401,7 +401,7 @@ fn keeps_imports_used_by_reachable_types() -> unit {
 
 #[test]
 fn emits_complete_vec_runtime_helpers() -> unit {
-    let ty = tast::Type::VecType(tast::Type::Int32);
+    let ty = tast::Type::VecType { elem: tast::Type::Int32 };
     let output = encode(File { items: vec_runtime_items(ty) });
     testing::assert(string_contains(
         output,
@@ -469,7 +469,7 @@ fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
         "for _, h := range m.hashes {",
     ));
     let ref_output = encode(File {
-        items: ref_runtime_items(tast::Type::RefType(tast::Type::Int32)),
+        items: ref_runtime_items(tast::Type::RefType { elem: tast::Type::Int32 }),
     });
     testing::assert(string_contains(
         ref_output,

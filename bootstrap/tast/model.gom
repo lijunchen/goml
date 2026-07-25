@@ -9,7 +9,7 @@ pub enum VarKind {
 }
 
 pub enum TypeVar {
-    Unbound(int, VarKind),
+    Unbound { id: int, kind: VarKind },
     Link(Type),
 }
 
@@ -31,19 +31,19 @@ pub enum Type {
     Float64,
     String,
     Char,
-    Tuple(Vec[Type]),
-    Con(string),
-    Dyn(string),
-    Projection(Type, string, Option[TraitRef]),
-    App(Type, Vec[Type]),
-    Array(int, Type),
-    Slice(Type),
-    VecType(Type),
-    RefType(Type),
-    HashMap(Type, Type),
-    Channel(Type),
-    Param(string),
-    Func(Vec[Type], Type),
+    Tuple { items: Vec[Type] },
+    Con { name: string },
+    Dyn { trait_name: string },
+    Projection { for_ty: Type, name: string, trait_ref: Option[TraitRef] },
+    App { ty: Type, args: Vec[Type] },
+    Array { len: int, elem: Type },
+    Slice { elem: Type },
+    VecType { elem: Type },
+    RefType { elem: Type },
+    HashMap { key: Type, value: Type },
+    Channel { elem: Type },
+    Param { name: string },
+    Func { params: Vec[Type], ret_ty: Type },
     Error,
 }
 
@@ -82,9 +82,9 @@ pub enum Callable {
     Function(string),
     Runtime(string),
     Intrinsic(string),
-    TraitMethod(TraitRef, string),
-    DynTraitMethod(string, string, string),
-    InherentMethod(Type, string),
+    TraitMethod { trait_ref: TraitRef, method_name: string },
+    DynTraitMethod { trait_name: string, dispatch_name: string, method_name: string },
+    InherentMethod { receiver_ty: Type, method_name: string },
 }
 
 pub enum BinaryResolution {
@@ -98,30 +98,44 @@ pub struct ClosureParam {
 }
 
 pub enum Expr {
-    Var(string, Type),
-    Callable(Callable, Type),
-    Prim(Primitive, Type),
-    Constr(Constructor, Vec[Expr], Type),
-    Tuple(Vec[Expr], Type),
-    Array(Vec[Expr], Type),
-    Closure(Vec[ClosureParam], Expr, Type),
-    Block(Block, Type),
-    Match(Expr, Vec[Arm], Type),
-    If(Expr, Expr, Expr, Type),
-    While(Expr, Expr, Type),
-    For(Pat, Expr, TraitRef, TraitRef, Type, Expr, Type),
-    Break(Type),
-    Continue(Type),
-    Return(Option[Expr], Type),
-    Go(Expr, Type),
-    Call(Expr, Vec[Expr], Type),
-    Unary(ast::UnaryOp, Expr, Type),
-    Cast(Expr, Type),
-    Proj(Expr, int, Type),
-    Field(Expr, string, Type),
-    Index(Expr, Expr, Type),
-    Binary(ast::BinaryOp, Expr, Expr, Type, BinaryResolution),
-    ToDyn(string, Type, Expr, Type),
+    Var { name: string, ty: Type },
+    Callable { callable: Callable, ty: Type },
+    Prim { value: Primitive, ty: Type },
+    Constr { constructor: Constructor, args: Vec[Expr], ty: Type },
+    Tuple { items: Vec[Expr], ty: Type },
+    Array { items: Vec[Expr], ty: Type },
+    Closure { params: Vec[ClosureParam], body: Expr, ty: Type },
+    Block { block: Block, ty: Type },
+    Match { expr: Expr, arms: Vec[Arm], ty: Type },
+    If { cond: Expr, then_branch: Expr, else_branch: Expr, ty: Type },
+    While { cond: Expr, body: Expr, ty: Type },
+    For {
+        pat: Pat,
+        iterator: Expr,
+        into_iter_trait_ref: TraitRef,
+        iterator_trait_ref: TraitRef,
+        iterator_ty: Type,
+        body: Expr,
+        ty: Type,
+    },
+    Break { ty: Type },
+    Continue { ty: Type },
+    Return { expr: Option[Expr], ty: Type },
+    Go { expr: Expr, ty: Type },
+    Call { func: Expr, args: Vec[Expr], ty: Type },
+    Unary { op: ast::UnaryOp, expr: Expr, ty: Type },
+    Cast { expr: Expr, ty: Type },
+    Proj { tuple: Expr, index: int, ty: Type },
+    Field { expr: Expr, field_name: string, ty: Type },
+    Index { base: Expr, index: Expr, ty: Type },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: Expr,
+        rhs: Expr,
+        ty: Type,
+        resolution: BinaryResolution,
+    },
+    ToDyn { trait_name: string, for_ty: Type, expr: Expr, ty: Type },
 }
 
 pub struct Block {
@@ -130,9 +144,9 @@ pub struct Block {
 }
 
 pub enum Stmt {
-    Let(bool, Pat, Expr),
-    Assign(Expr, Expr),
-    Expr(Expr),
+    Let { is_mut: bool, pat: Pat, value: Expr },
+    Assign { target: Expr, value: Expr },
+    Expr { expr: Expr },
 }
 
 pub struct Arm {
@@ -147,15 +161,20 @@ pub struct ArrayPatRest {
 }
 
 pub enum Pat {
-    Var(string, Type),
-    Prim(Primitive, Type),
-    Constr(Constructor, Vec[Pat], Type),
-    Tuple(Vec[Pat], Type),
-    Array(Vec[Pat], Option[ArrayPatRest], Vec[Pat], Type),
-    Alias(string, Pat, Type),
-    Or(Vec[Pat], Type),
-    Range(Primitive, Primitive, bool, Type),
-    Wild(Type),
+    Var { name: string, ty: Type },
+    Prim { value: Primitive, ty: Type },
+    Constr { constructor: Constructor, args: Vec[Pat], ty: Type },
+    Tuple { items: Vec[Pat], ty: Type },
+    Array {
+        prefix: Vec[Pat],
+        rest: Option[ArrayPatRest],
+        suffix: Vec[Pat],
+        ty: Type,
+    },
+    Alias { name: string, pat: Pat, ty: Type },
+    Or { pats: Vec[Pat], ty: Type },
+    Range { start: Primitive, end: Primitive, inclusive: bool, ty: Type },
+    Wild { ty: Type },
 }
 
 pub struct Function {
@@ -245,43 +264,43 @@ pub fn diagnostic_message(value: Diagnostic) -> string {
 
 pub fn expr_type(value: Expr) -> Type {
     match value {
-        Expr::Var(_, ty) => ty,
-        Expr::Callable(_, ty) => ty,
-        Expr::Prim(_, ty) => ty,
-        Expr::Constr(_, _, ty) => ty,
-        Expr::Tuple(_, ty) => ty,
-        Expr::Array(_, ty) => ty,
-        Expr::Closure(_, _, ty) => ty,
-        Expr::Block(_, ty) => ty,
-        Expr::Match(_, _, ty) => ty,
-        Expr::If(_, _, _, ty) => ty,
-        Expr::While(_, _, ty) => ty,
-        Expr::For(_, _, _, _, _, _, ty) => ty,
-        Expr::Break(ty) => ty,
-        Expr::Continue(ty) => ty,
-        Expr::Return(_, ty) => ty,
-        Expr::Go(_, ty) => ty,
-        Expr::Call(_, _, ty) => ty,
-        Expr::Unary(_, _, ty) => ty,
-        Expr::Cast(_, ty) => ty,
-        Expr::Proj(_, _, ty) => ty,
-        Expr::Field(_, _, ty) => ty,
-        Expr::Index(_, _, ty) => ty,
-        Expr::Binary(_, _, _, ty, _) => ty,
-        Expr::ToDyn(_, _, _, ty) => ty,
+        Expr::Var { ty, .. }
+        | Expr::Callable { ty, .. }
+        | Expr::Prim { ty, .. }
+        | Expr::Constr { ty, .. }
+        | Expr::Tuple { ty, .. }
+        | Expr::Array { ty, .. }
+        | Expr::Closure { ty, .. }
+        | Expr::Block { ty, .. }
+        | Expr::Match { ty, .. }
+        | Expr::If { ty, .. }
+        | Expr::While { ty, .. }
+        | Expr::For { ty, .. }
+        | Expr::Break { ty }
+        | Expr::Continue { ty }
+        | Expr::Return { ty, .. }
+        | Expr::Go { ty, .. }
+        | Expr::Call { ty, .. }
+        | Expr::Unary { ty, .. }
+        | Expr::Cast { ty, .. }
+        | Expr::Proj { ty, .. }
+        | Expr::Field { ty, .. }
+        | Expr::Index { ty, .. }
+        | Expr::Binary { ty, .. }
+        | Expr::ToDyn { ty, .. } => ty,
     }
 }
 
 pub fn pat_type(value: Pat) -> Type {
     match value {
-        Pat::Var(_, ty) => ty,
-        Pat::Prim(_, ty) => ty,
-        Pat::Constr(_, _, ty) => ty,
-        Pat::Tuple(_, ty) => ty,
-        Pat::Array(_, _, _, ty) => ty,
-        Pat::Alias(_, _, ty) => ty,
-        Pat::Or(_, ty) => ty,
-        Pat::Range(_, _, _, ty) => ty,
-        Pat::Wild(ty) => ty,
+        Pat::Var { ty, .. }
+        | Pat::Prim { ty, .. }
+        | Pat::Constr { ty, .. }
+        | Pat::Tuple { ty, .. }
+        | Pat::Array { ty, .. }
+        | Pat::Alias { ty, .. }
+        | Pat::Or { ty, .. }
+        | Pat::Range { ty, .. }
+        | Pat::Wild { ty } => ty,
     }
 }

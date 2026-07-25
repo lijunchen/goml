@@ -331,14 +331,14 @@ fn collects_and_encodes_test_descriptors() -> unit {
         name: "alice::sample::zebra",
         type_params: Vec::new(),
         constraints: Vec::new(),
-        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
         body: tast::Callable::Function("alice::sample::zebra"),
     });
     exports.functions.push(ArtifactFnScheme {
         name: "alice::sample::alpha",
         type_params: Vec::new(),
         constraints: Vec::new(),
-        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
         body: tast::Callable::Function("alice::sample::alpha"),
     });
     let validated = validate_package_tests(
@@ -387,10 +387,10 @@ fn collects_all_invalid_test_signature_diagnostics() -> unit {
         name: "alice::bad::invalid",
         type_params: Vec::new().pushed("T"),
         constraints: Vec::new(),
-        ty: tast::Type::Func(
-            Vec::new().pushed(tast::Type::Param("T")),
-            tast::Type::Bool,
-        ),
+        ty: tast::Type::Func {
+            params: Vec::new().pushed(tast::Type::Param { name: "T" }),
+            ret_ty: tast::Type::Bool,
+        },
         body: tast::Callable::Function("alice::bad::invalid"),
     });
     let validated = validate_package_tests(
@@ -474,7 +474,7 @@ fn labels_duplicate_test_ids_across_files() -> unit {
         name: "example::tests::duplicate",
         type_params: Vec::new(),
         constraints: Vec::new(),
-        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
         body: tast::Callable::Function("example::tests::duplicate"),
     });
     let validated = validate_package_tests(
@@ -530,7 +530,7 @@ fn adds_canonical_entry_wrapper() -> unit {
     testing::assert_eq(wrapped.functions.get(1).name, "main");
     match wrapped.functions.get(1).body.tail {
         Option::Some(core::Expr::Call {
-            func: core::Expr::Var { name, ty: tast::Type::Func(params, tast::Type::Unit) },
+            func: core::Expr::Var { name, ty: tast::Type::Func { params, ret_ty: tast::Type::Unit } },
             args,
             ty: tast::Type::Unit,
         }) => {
@@ -822,22 +822,22 @@ fn writes_rust_artifact_type_shapes() -> unit {
         Vec::new().pushed("Option"),
         Vec::new().pushed("Box"),
     );
-    let option = tast::Type::App(
-        tast::Type::Con("Option"),
-        Vec::new().pushed(tast::Type::Int32),
-    );
-    let projection = tast::Type::Projection(
-        tast::Type::Param("I"),
-        "Item",
-        Option::Some(tast::TraitRef {
-            name: "Iterator",
-            args: Vec::new(),
-        }),
-    );
-    let value = tast::Type::Func(
-        Vec::new().pushed(option),
-        projection,
-    );
+    let option = tast::Type::App {
+        ty: tast::Type::Con { name: "Option" },
+        args: Vec::new().pushed(tast::Type::Int32),
+    };
+    let projection = tast::Type::Projection {
+        for_ty: tast::Type::Param { name: "I" },
+        name: "Item",
+        trait_ref: Option::Some(tast::TraitRef {
+                    name: "Iterator",
+                    args: Vec::new(),
+                }),
+    };
+    let value = tast::Type::Func {
+        params: Vec::new().pushed(option),
+        ret_ty: projection,
+    };
     let writer = new_artifact_json_writer(false);
     artifact_json_type(writer, context, value);
     testing::assert_eq(
@@ -849,7 +849,7 @@ fn writes_rust_artifact_type_shapes() -> unit {
         writer,
         context,
         tast::TypePredicate::Equality(
-            tast::Type::Con("Box"),
+            tast::Type::Con { name: "Box" },
             tast::Type::Int32,
         ),
     );
@@ -921,7 +921,7 @@ fn writes_rust_interface_unit_shape_and_hash() -> unit {
         name: "audit::value::value",
         type_params: Vec::new(),
         constraints: Vec::new(),
-        ty: tast::Type::Func(Vec::new(), tast::Type::Int32),
+        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Int32 },
         body: tast::Callable::Function("audit::value::value"),
     });
     let artifact_unit = new_artifact_interface_unit(
@@ -1274,7 +1274,7 @@ fn validates_artifact_main_entrypoints() -> unit {
         name: "example::app::main",
         type_params: Vec::new().pushed("T"),
         constraints: Vec::new(),
-        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
         body: tast::Callable::Function("example::app::main"),
     });
     match artifact_validate_entrypoint("example::app", "main", exports) {
@@ -1289,10 +1289,10 @@ fn validates_artifact_main_entrypoints() -> unit {
         name: "example::app::main",
         type_params: Vec::new(),
         constraints: Vec::new(),
-        ty: tast::Type::Func(
-            Vec::new().pushed(tast::Type::Int32),
-            tast::Type::Unit,
-        ),
+        ty: tast::Type::Func {
+            params: Vec::new().pushed(tast::Type::Int32),
+            ret_ty: tast::Type::Unit,
+        },
         body: tast::Callable::Function("example::app::main"),
     });
     match artifact_validate_entrypoint("example::app", "main", exports) {
@@ -1315,10 +1315,10 @@ fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
         name: "example::app::main",
         type_params: Vec::new().pushed("T"),
         constraints: Vec::new(),
-        ty: tast::Type::Func(
-            Vec::new().pushed(tast::Type::Int32),
-            tast::Type::Unit,
-        ),
+        ty: tast::Type::Func {
+            params: Vec::new().pushed(tast::Type::Int32),
+            ret_ty: tast::Type::Unit,
+        },
         body: tast::Callable::Function("example::app::main"),
     });
     let diagnostics = artifact_entrypoint_diagnostics(
@@ -1341,17 +1341,17 @@ fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
 fn restores_core_metadata_from_artifact_exports() -> unit {
     let exports = empty_artifact_package_exports();
     let function_constraint = tast::TypePredicate::Equality(
-        tast::Type::Param("T"),
+        tast::Type::Param { name: "T" },
         tast::Type::Int32,
     );
     exports.functions.push(ArtifactFnScheme {
         name: "audit::identity",
         type_params: Vec::new().pushed("T"),
         constraints: Vec::new().pushed(function_constraint),
-        ty: tast::Type::Func(
-            Vec::new().pushed(tast::Type::Param("T")),
-            tast::Type::Param("T"),
-        ),
+        ty: tast::Type::Func {
+            params: Vec::new().pushed(tast::Type::Param { name: "T" }),
+            ret_ty: tast::Type::Param { name: "T" },
+        },
         body: tast::Callable::Function("audit::identity"),
     });
     let empty_body = core::Block {
@@ -1365,8 +1365,8 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
             generics: Vec::new().pushed("T"),
             predicates: Vec::new(),
             trait_impl: Option::None,
-            params: Vec::new().pushed(("value", tast::Type::Param("T"))),
-            ret_ty: tast::Type::Param("T"),
+            params: Vec::new().pushed(("value", tast::Type::Param { name: "T" })),
+            ret_ty: tast::Type::Param { name: "T" },
             body: empty_body,
         },
         exports,
@@ -1377,7 +1377,7 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
         args: Vec::new(),
     };
     let impl_constraint = tast::TypePredicate::Trait(
-        tast::Type::Con("audit::Numbers"),
+        tast::Type::Con { name: "audit::Numbers" },
         tast::TraitRef {
             name: "ToString",
             args: Vec::new(),
@@ -1389,7 +1389,7 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
     );
     exports.trait_impls.push(ArtifactTraitImpl {
         trait_ref,
-        for_ty: tast::Type::Con("audit::Numbers"),
+        for_ty: tast::Type::Con { name: "audit::Numbers" },
         definition: ArtifactImplDef {
             params: Vec::new(),
             constraints: Vec::new().pushed(impl_constraint),
@@ -1398,11 +1398,11 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
                 name: "read",
                 type_params: Vec::new(),
                 constraints: Vec::new().pushed(method_constraint),
-                ty: tast::Type::Func(
-                    Vec::new().pushed(tast::Type::Con("audit::Numbers")),
-                    tast::Type::Int32,
-                ),
-                body: tast::Callable::TraitMethod(trait_ref, "read"),
+                ty: tast::Type::Func {
+                    params: Vec::new().pushed(tast::Type::Con { name: "audit::Numbers" }),
+                    ret_ty: tast::Type::Int32,
+                },
+                body: tast::Callable::TraitMethod { trait_ref, method_name: "read" },
             }),
             valid: true,
         },
@@ -1415,12 +1415,12 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
             predicates: Vec::new(),
             trait_impl: Option::Some(core::TraitImpl {
                 trait_ref,
-                for_ty: tast::Type::Con("audit::Numbers"),
+                for_ty: tast::Type::Con { name: "audit::Numbers" },
                 associated_types: Vec::new(),
             }),
             params: Vec::new().pushed((
                 "self",
-                tast::Type::Con("audit::Numbers"),
+                tast::Type::Con { name: "audit::Numbers" },
             )),
             ret_ty: tast::Type::Int32,
             body: empty_body,

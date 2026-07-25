@@ -436,12 +436,12 @@ fn resolve_named_field_constructor(
 
 fn nominal_arguments(value: Type) -> Vec[Type] {
     match prune(value) {
-        Type::App(_, args) => args,
-        Type::VecType(elem)
-        | Type::Slice(elem)
-        | Type::RefType(elem)
-        | Type::Channel(elem) => one_type(elem),
-        Type::HashMap(key, item) => two_types(key, item),
+        Type::App { ty: _, args } => args,
+        Type::VecType { elem }
+        | Type::Slice { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => one_type(elem),
+        Type::HashMap { key, value: item } => two_types(key, item),
         _ => Vec::new(),
     }
 }
@@ -515,7 +515,7 @@ fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[h
 
 fn receiver_matches(owner: Type, receiver: Type) -> bool {
     match prune(owner) {
-        Type::Param(_) | Type::Var(_) => true,
+        Type::Param { name: _ } | Type::Var(_) => true,
         owner => match (type_constructor_name(owner), type_constructor_name(receiver)) {
             (Option::Some(first), Option::Some(second)) => names_match(first, second),
             _ => false,
@@ -542,15 +542,15 @@ fn call_type_lists_compatible(left: Vec[Type], right: Vec[Type]) -> bool {
 fn variable_accepts_type(variable: Ref[TypeVar], value: Type) -> bool {
     match variable.get() {
         TypeVar::Link(inner) => call_types_compatible(inner, value),
-        TypeVar::Unbound(_, kind) => match prune(value) {
+        TypeVar::Unbound { id: _, kind } => match prune(value) {
             Type::Var(other) => match other.get() {
                 TypeVar::Link(inner) => variable_accepts_type(variable, inner),
-                TypeVar::Unbound(_, other_kind) => match merge_var_kind(kind, other_kind) {
+                TypeVar::Unbound { id: _, kind: other_kind } => match merge_var_kind(kind, other_kind) {
                     Option::Some(_) => true,
                     Option::None => false,
                 },
             },
-            Type::Param(_) | Type::Projection(_, _, _) => true,
+            Type::Param { name: _ } | Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
             other => kind_accepts(kind, other),
         },
     }
@@ -561,8 +561,8 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
         (Type::Error, _) | (_, Type::Error) => true,
         (Type::Var(variable), value) => variable_accepts_type(variable, value),
         (value, Type::Var(variable)) => variable_accepts_type(variable, value),
-        (Type::Param(_), _) | (_, Type::Param(_)) => true,
-        (Type::Projection(_, _, _), _) | (_, Type::Projection(_, _, _)) => true,
+        (Type::Param { name: _ }, _) | (_, Type::Param { name: _ }) => true,
+        (Type::Projection { for_ty: _, name: _, trait_ref: _ }, _) | (_, Type::Projection { for_ty: _, name: _, trait_ref: _ }) => true,
         (Type::Unit, Type::Unit)
         | (Type::Bool, Type::Bool)
         | (Type::Int, Type::Int)
@@ -578,34 +578,34 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
         | (Type::Float64, Type::Float64)
         | (Type::String, Type::String)
         | (Type::Char, Type::Char) => true,
-        (Type::Tuple(left), Type::Tuple(right)) => {
+        (Type::Tuple { items: left }, Type::Tuple { items: right }) => {
             call_type_lists_compatible(left, right)
         },
-        (Type::Con(left), Type::Con(right)) | (Type::Dyn(left), Type::Dyn(right)) => {
+        (Type::Con { name: left }, Type::Con { name: right }) | (Type::Dyn { trait_name: left }, Type::Dyn { trait_name: right }) => {
             names_match(left, right)
         },
-        (Type::App(left_base, left_args), Type::App(right_base, right_args)) => {
+        (Type::App { ty: left_base, args: left_args }, Type::App { ty: right_base, args: right_args }) => {
             call_types_compatible(left_base, right_base)
                 && call_type_lists_compatible(left_args, right_args)
         },
-        (Type::Array(left_len, left_elem), Type::Array(right_len, right_elem)) => {
+        (Type::Array { len: left_len, elem: left_elem }, Type::Array { len: right_len, elem: right_elem }) => {
             (left_len < 0 || right_len < 0 || left_len == right_len)
                 && call_types_compatible(left_elem, right_elem)
         },
-        (Type::Slice(left), Type::Slice(right))
-        | (Type::VecType(left), Type::VecType(right))
-        | (Type::RefType(left), Type::RefType(right))
-        | (Type::Channel(left), Type::Channel(right)) => {
+        (Type::Slice { elem: left }, Type::Slice { elem: right })
+        | (Type::VecType { elem: left }, Type::VecType { elem: right })
+        | (Type::RefType { elem: left }, Type::RefType { elem: right })
+        | (Type::Channel { elem: left }, Type::Channel { elem: right }) => {
             call_types_compatible(left, right)
         },
         (
-            Type::HashMap(left_key, left_value),
-            Type::HashMap(right_key, right_value),
+            Type::HashMap { key: left_key, value: left_value },
+            Type::HashMap { key: right_key, value: right_value },
         ) => {
             call_types_compatible(left_key, right_key)
                 && call_types_compatible(left_value, right_value)
         },
-        (Type::Func(left_params, left_ret), Type::Func(right_params, right_ret)) => {
+        (Type::Func { params: left_params, ret_ty: left_ret }, Type::Func { params: right_params, ret_ty: right_ret }) => {
             call_type_lists_compatible(left_params, right_params)
                 && call_types_compatible(left_ret, right_ret)
         },
@@ -629,10 +629,10 @@ fn instantiate_method_candidate(ctx: Checker, value: MethodInfo) -> MethodCandid
         owner,
         callable: ResolvedCallable {
             callable: substitute_callable(value.function.callable, substitutions),
-            ty: Type::Func(
+            ty: Type::Func {
                 params,
-                substitute_type(value.function.ret_ty, substitutions),
-            ),
+                ret_ty: substitute_type(value.function.ret_ty, substitutions),
+            },
         },
         predicates,
     }
@@ -666,7 +666,7 @@ fn resolve_user_method(
             if (allow_bare_owner
                 && value.generics.len() > 0
                 && match prune(receiver) {
-                    Type::Con(_) => true,
+                    Type::Con { name: _ } => true,
                     _ => false,
                 }) || unify(owner, receiver) {
                 result.set(Option::Some(callable));
@@ -689,7 +689,7 @@ fn method_matches_call(
     expected: Option[Type],
 ) -> bool {
     match prune(value.ty) {
-        Type::Func(params, ret_ty) => if params.len() == args.len() + 1 {
+        Type::Func { params, ret_ty } => if params.len() == args.len() + 1 {
             let matches = Ref::new(call_types_compatible(
                 normalize_type(ctx, params.get(0)),
                 normalize_type(ctx, receiver),
@@ -803,11 +803,11 @@ fn require_predicate(
 fn contains_unbound_any_variable(value: Type) -> bool {
     match prune(value) {
         Type::Var(variable) => match variable.get() {
-            TypeVar::Unbound(_, VarKind::Any) => true,
-            TypeVar::Unbound(_, _) => false,
+            TypeVar::Unbound { id: _, kind: VarKind::Any } => true,
+            TypeVar::Unbound { id: _, kind: _ } => false,
             TypeVar::Link(inner) => contains_unbound_any_variable(inner),
         },
-        Type::Tuple(values) => {
+        Type::Tuple { items: values } => {
             let found = Ref::new(false);
             for value in values {
                 if contains_unbound_any_variable(value) {
@@ -818,7 +818,7 @@ fn contains_unbound_any_variable(value: Type) -> bool {
             };
             found.get()
         },
-        Type::Projection(base, _, reference) => {
+        Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
             let found = Ref::new(contains_unbound_any_variable(base));
             match reference {
                 Option::Some(reference) => for value in reference.args {
@@ -832,7 +832,7 @@ fn contains_unbound_any_variable(value: Type) -> bool {
             };
             found.get()
         },
-        Type::App(base, args) => {
+        Type::App { ty: base, args } => {
             let found = Ref::new(contains_unbound_any_variable(base));
             for value in args {
                 if contains_unbound_any_variable(value) {
@@ -843,16 +843,16 @@ fn contains_unbound_any_variable(value: Type) -> bool {
             };
             found.get()
         },
-        Type::Array(_, elem)
-        | Type::Slice(elem)
-        | Type::VecType(elem)
-        | Type::RefType(elem)
-        | Type::Channel(elem) => contains_unbound_any_variable(elem),
-        Type::HashMap(key, value) => {
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => contains_unbound_any_variable(elem),
+        Type::HashMap { key, value } => {
             contains_unbound_any_variable(key)
                 || contains_unbound_any_variable(value)
         },
-        Type::Func(params, ret_ty) => {
+        Type::Func { params, ret_ty } => {
             let found = Ref::new(contains_unbound_any_variable(ret_ty));
             for value in params {
                 if contains_unbound_any_variable(value) {
@@ -913,7 +913,7 @@ fn predicate_requirement_message(
 fn type_contains_error(value: Type) -> bool {
     match prune(value) {
         Type::Error => true,
-        Type::Tuple(values) => {
+        Type::Tuple { items: values } => {
             let found = Ref::new(false);
             for value in values {
                 if type_contains_error(value) {
@@ -924,8 +924,8 @@ fn type_contains_error(value: Type) -> bool {
             };
             found.get()
         },
-        Type::Projection(base, _, _) => type_contains_error(base),
-        Type::App(base, args) => {
+        Type::Projection { for_ty: base, name: _, trait_ref: _ } => type_contains_error(base),
+        Type::App { ty: base, args } => {
             let found = Ref::new(type_contains_error(base));
             for value in args {
                 if type_contains_error(value) {
@@ -936,15 +936,15 @@ fn type_contains_error(value: Type) -> bool {
             };
             found.get()
         },
-        Type::Array(_, elem)
-        | Type::Slice(elem)
-        | Type::VecType(elem)
-        | Type::RefType(elem)
-        | Type::Channel(elem) => type_contains_error(elem),
-        Type::HashMap(key, value) => {
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => type_contains_error(elem),
+        Type::HashMap { key, value } => {
             type_contains_error(key) || type_contains_error(value)
         },
-        Type::Func(params, ret_ty) => {
+        Type::Func { params, ret_ty } => {
             let found = Ref::new(type_contains_error(ret_ty));
             for value in params {
                 if type_contains_error(value) {
@@ -1049,10 +1049,10 @@ fn builtin_value_trait_type(value: Type) -> bool {
         | Type::String
         | Type::Char => true,
         Type::Var(variable) => match variable.get() {
-            TypeVar::Unbound(_, VarKind::Integer)
-            | TypeVar::Unbound(_, VarKind::Float) => true,
+            TypeVar::Unbound { id: _, kind: VarKind::Integer }
+            | TypeVar::Unbound { id: _, kind: VarKind::Float } => true,
             TypeVar::Link(inner) => builtin_value_trait_type(inner),
-            TypeVar::Unbound(_, VarKind::Any) => false,
+            TypeVar::Unbound { id: _, kind: VarKind::Any } => false,
         },
         _ => false,
     }
@@ -1066,11 +1066,11 @@ fn iterator_trait_ref() -> TraitRef {
 }
 
 fn iterator_item_type(value: Type) -> Type {
-    Type::Projection(
-        value,
-        "Item",
-        Option::Some(iterator_trait_ref()),
-    )
+    Type::Projection {
+        for_ty: value,
+        name: "Item",
+        trait_ref: Option::Some(iterator_trait_ref()),
+    }
 }
 
 fn builtin_iterator_bound_satisfied(
@@ -1079,7 +1079,7 @@ fn builtin_iterator_bound_satisfied(
     depth: int,
 ) -> bool {
     match prune(normalize_type(ctx, bound_ty)) {
-        Type::App(Type::Con(name), args) => if name == "FnIterator" && args.len() == 1 {
+        Type::App { ty: Type::Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
             true
         } else if name == "MapIterator" && args.len() == 3 {
             let iterator = args.get(2);
@@ -1121,7 +1121,7 @@ fn builtin_trait_bound_satisfied(
         let trait_name = short_name(reference.name);
         let bound_ty = prune(normalize_type(ctx, bound_ty));
         match bound_ty {
-            Type::Dyn(name) => {
+            Type::Dyn { trait_name: name } => {
                 let found = Ref::new(false);
                 for application in trait_ref_closure(
                     ctx,
@@ -1143,7 +1143,7 @@ fn builtin_trait_bound_satisfied(
                     true
                 } else {
                     match bound_ty {
-                        Type::RefType(inner) => trait_bound_satisfied_at(
+                        Type::RefType { elem: inner } => trait_bound_satisfied_at(
                             ctx,
                             inner,
                             TraitRef {
@@ -1161,8 +1161,8 @@ fn builtin_trait_bound_satisfied(
                         true
                     } else {
                         match bound_ty {
-                            Type::RefType(_) => true,
-                            Type::Tuple(values) => {
+                            Type::RefType { elem: _ } => true,
+                            Type::Tuple { items: values } => {
                                 let satisfied = Ref::new(true);
                                 for value in values {
                                     if !trait_bound_satisfied_at(
@@ -1181,7 +1181,7 @@ fn builtin_trait_bound_satisfied(
                                 };
                                 satisfied.get()
                             },
-                            Type::Array(_, element) => trait_bound_satisfied_at(
+                            Type::Array { len: _, elem: element } => trait_bound_satisfied_at(
                                 ctx,
                                 element,
                                 TraitRef {
@@ -1195,7 +1195,7 @@ fn builtin_trait_bound_satisfied(
                     }
                 } else {
                     builtin_value_trait_type(bound_ty) || match bound_ty {
-                        Type::RefType(_) => true,
+                        Type::RefType { elem: _ } => true,
                         _ => false,
                     }
                 }
@@ -1203,7 +1203,7 @@ fn builtin_trait_bound_satisfied(
                 builtin_iterator_bound_satisfied(ctx, bound_ty, depth)
             } else if trait_name == "IntoIterator" {
                 match bound_ty {
-                    Type::VecType(_) | Type::Slice(_) => true,
+                    Type::VecType { elem: _ } | Type::Slice { elem: _ } => true,
                     _ => trait_bound_satisfied_at(
                         ctx,
                         bound_ty,
@@ -1375,7 +1375,7 @@ fn validate_builtin_impl_overlaps(ctx: Checker, value: hir::File) -> unit {
                             Option::None,
                         );
                         match (for_type, builtin_ref_impl_origin(reference.name)) {
-                            (Type::RefType(_), Option::Some(origin)) => push_diagnostic_at(
+                            (Type::RefType { elem: _ }, Option::Some(origin)) => push_diagnostic_at(
                                 ctx,
                                 "Trait "
                                     + short_name(reference.name)
@@ -1482,12 +1482,12 @@ fn resolve_user_method_for_call(
 }
 
 fn callable_type(params: Vec[Type], ret_ty: Type) -> Type {
-    Type::Func(params, ret_ty)
+    Type::Func { params, ret_ty }
 }
 
 fn inherent_callable(owner: Type, name: string, params: Vec[Type], ret_ty: Type) -> ResolvedCallable {
     ResolvedCallable {
-        callable: Callable::InherentMethod(owner, name),
+        callable: Callable::InherentMethod { receiver_ty: owner, method_name: name },
         ty: callable_type(params, ret_ty),
     }
 }
@@ -1500,13 +1500,13 @@ fn trait_callable(
     ret_ty: Type,
 ) -> ResolvedCallable {
     ResolvedCallable {
-        callable: Callable::TraitMethod(
-            TraitRef {
-                name: trait_name,
-                args,
-            },
-            name,
-        ),
+        callable: Callable::TraitMethod {
+            trait_ref: TraitRef {
+                            name: trait_name,
+                            args,
+                        },
+            method_name: name,
+        },
         ty: callable_type(params, ret_ty),
     }
 }
@@ -1581,11 +1581,11 @@ fn resolve_builtin_container_method(
     name: string,
 ) -> Option[ResolvedCallable] {
     match receiver {
-        Type::VecType(elem) => resolve_vec_method(receiver, elem, name),
-        Type::Slice(elem) => resolve_slice_method(receiver, elem, name),
-        Type::RefType(elem) => resolve_ref_method(receiver, elem, name),
-        Type::Channel(elem) => resolve_channel_method(receiver, elem, name),
-        Type::HashMap(key, value) => {
+        Type::VecType { elem } => resolve_vec_method(receiver, elem, name),
+        Type::Slice { elem } => resolve_slice_method(receiver, elem, name),
+        Type::RefType { elem } => resolve_ref_method(receiver, elem, name),
+        Type::Channel { elem } => resolve_channel_method(receiver, elem, name),
+        Type::HashMap { key, value } => {
             resolve_hashmap_method(ctx, receiver, key, value, name)
         },
         Type::String => resolve_string_method(receiver, name),
@@ -1664,7 +1664,7 @@ fn resolve_vec_method(
                 receiver,
                 name,
                 three_types(receiver, Type::Int, Type::Int),
-                Type::Slice(elem),
+                Type::Slice { elem },
             ))
         } else if name == "iter" {
             Option::Some(inherent_callable(
@@ -1790,7 +1790,7 @@ fn resolve_hashmap_method(
                 receiver,
                 name,
                 one_type(receiver),
-                Type::VecType(Type::Tuple(two_types(key, value))),
+                Type::VecType { elem: Type::Tuple { items: two_types(key, value) } },
             ))
         } else {
             Option::None
@@ -1820,7 +1820,7 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
                 two_types(receiver, Type::Int),
                 nominal_type(
                     "Option",
-                    one_type(Type::Tuple(two_types(Type::Char, Type::Int))),
+                    one_type(Type::Tuple { items: two_types(Type::Char, Type::Int) }),
                 ),
             ))
         } else if name == "to_bytes" {
@@ -1828,7 +1828,7 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
                 receiver,
                 name,
                 one_type(receiver),
-                Type::VecType(Type::Uint8),
+                Type::VecType { elem: Type::Uint8 },
             ))
         } else if name == "chars" {
             Option::Some(inherent_callable(
@@ -1844,7 +1844,7 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
                 one_type(receiver),
                 nominal_type(
                     "FnIterator",
-                    one_type(Type::Tuple(two_types(Type::Int, Type::Char))),
+                    one_type(Type::Tuple { items: two_types(Type::Int, Type::Char) }),
                 ),
             ))
         } else {
@@ -1858,11 +1858,15 @@ fn dyn_method_callable(
     value: ResolvedCallable,
 ) -> ResolvedCallable {
     let dispatch = match value.callable {
-        Callable::TraitMethod(reference, _) => reference.name,
+        Callable::TraitMethod { trait_ref: reference, method_name: _ } => reference.name,
         _ => owner,
     };
     ResolvedCallable {
-        callable: Callable::DynTraitMethod(owner, dispatch, name),
+        callable: Callable::DynTraitMethod {
+            trait_name: owner,
+            dispatch_name: dispatch,
+            method_name: name,
+        },
         ty: value.ty,
     }
 }
@@ -1931,7 +1935,7 @@ fn resolve_method(
 ) -> Option[ResolvedCallable] {
     let receiver = normalize_type(ctx, receiver);
     match receiver {
-        Type::Dyn(owner) => resolve_dyn_method(ctx, owner, receiver, name),
+        Type::Dyn { trait_name: owner } => resolve_dyn_method(ctx, owner, receiver, name),
         _ => match resolve_predicate_method(ctx, receiver, name) {
             Option::Some(value) => Option::Some(value),
             Option::None => match resolve_builtin_container_method(ctx, receiver, name) {
@@ -1963,7 +1967,7 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
                 } else if fields.len() == 1
                     && types_equal(
                         fields.get(0),
-                        Type::Param(info.generics.get(0)),
+                        Type::Param { name: info.generics.get(0) },
                     )
                 {
                     payload.set(payload.get() + 1)
@@ -1981,7 +1985,7 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
 
 fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
     match prune(normalize_type(ctx, value)) {
-        Type::HashMap(key, _) => {
+        Type::HashMap { key, value: _ } => {
             require_predicate(
                 ctx,
                 TypePredicate::Trait(
@@ -2059,18 +2063,18 @@ fn builtin_trait_method(
 }
 
 fn builtin_trait_info(name: string) -> Option[TraitInfo] {
-    let self_ty = Type::Param("Self");
+    let self_ty = Type::Param { name: "Self" };
     if name == "Iterator" {
         let associated_types = Vec::new();
         associated_types.push(builtin_associated_type("Item", Vec::new()));
-        let item = Type::Projection(
-            self_ty,
-            "Item",
-            Option::Some(TraitRef {
-                name: "Iterator",
-                args: Vec::new(),
-            }),
-        );
+        let item = Type::Projection {
+            for_ty: self_ty,
+            name: "Item",
+            trait_ref: Option::Some(TraitRef {
+                            name: "Iterator",
+                            args: Vec::new(),
+                        }),
+        };
         let methods = Vec::new();
         methods.push(builtin_trait_method(
             "next",
@@ -2090,25 +2094,25 @@ fn builtin_trait_info(name: string) -> Option[TraitInfo] {
             name: "IntoIterator",
             args: Vec::new(),
         };
-        let item = Type::Projection(
-            self_ty,
-            "Item",
-            Option::Some(into_iterator),
-        );
-        let into_iter = Type::Projection(
-            self_ty,
-            "IntoIter",
-            Option::Some(into_iterator),
-        );
+        let item = Type::Projection {
+            for_ty: self_ty,
+            name: "Item",
+            trait_ref: Option::Some(into_iterator),
+        };
+        let into_iter = Type::Projection {
+            for_ty: self_ty,
+            name: "IntoIter",
+            trait_ref: Option::Some(into_iterator),
+        };
         let iterator = TraitRef {
             name: "Iterator",
             args: Vec::new(),
         };
-        let iterator_item = Type::Projection(
-            into_iter,
-            "Item",
-            Option::Some(iterator),
-        );
+        let iterator_item = Type::Projection {
+            for_ty: into_iter,
+            name: "Item",
+            trait_ref: Option::Some(iterator),
+        };
         let predicates = Vec::new();
         predicates.push(TypePredicate::Equality(item, iterator_item));
         let into_iter_bounds = Vec::new();
@@ -2344,7 +2348,7 @@ fn resolve_projection_type(
     report: bool,
 ) -> Type {
     match resolve_type(value) {
-        Type::Projection(for_ty, name, trait_ref) => {
+        Type::Projection { for_ty, name, trait_ref } => {
             let for_ty = resolve_projection_type(ctx, for_ty, candidates, report);
             let trait_ref = match trait_ref {
                 Option::Some(value) => Option::Some(resolve_projection_trait_ref(
@@ -2391,54 +2395,64 @@ fn resolve_projection_type(
                     }
                 },
             };
-            Type::Projection(for_ty, name, trait_ref)
+            Type::Projection { for_ty, name, trait_ref }
         },
-        Type::Tuple(values) => Type::Tuple(resolve_projection_types(
-            ctx,
-            values,
-            candidates,
-            report,
-        )),
-        Type::App(base, args) => Type::App(
-            resolve_projection_type(ctx, base, candidates, report),
-            resolve_projection_types(ctx, args, candidates, report),
-        ),
-        Type::Array(length, elem) => Type::Array(
-            length,
-            resolve_projection_type(ctx, elem, candidates, report),
-        ),
-        Type::Slice(elem) => Type::Slice(resolve_projection_type(
-            ctx,
-            elem,
-            candidates,
-            report,
-        )),
-        Type::VecType(elem) => Type::VecType(resolve_projection_type(
-            ctx,
-            elem,
-            candidates,
-            report,
-        )),
-        Type::RefType(elem) => Type::RefType(resolve_projection_type(
-            ctx,
-            elem,
-            candidates,
-            report,
-        )),
-        Type::Channel(elem) => Type::Channel(resolve_projection_type(
-            ctx,
-            elem,
-            candidates,
-            report,
-        )),
-        Type::HashMap(key, value) => Type::HashMap(
-            resolve_projection_type(ctx, key, candidates, report),
-            resolve_projection_type(ctx, value, candidates, report),
-        ),
-        Type::Func(params, ret_ty) => Type::Func(
-            resolve_projection_types(ctx, params, candidates, report),
-            resolve_projection_type(ctx, ret_ty, candidates, report),
-        ),
+        Type::Tuple { items: values } => Type::Tuple {
+            items: resolve_projection_types(
+                        ctx,
+                        values,
+                        candidates,
+                        report,
+                    ),
+        },
+        Type::App { ty: base, args } => Type::App {
+            ty: resolve_projection_type(ctx, base, candidates, report),
+            args: resolve_projection_types(ctx, args, candidates, report),
+        },
+        Type::Array { len: length, elem } => Type::Array {
+            len: length,
+            elem: resolve_projection_type(ctx, elem, candidates, report),
+        },
+        Type::Slice { elem } => Type::Slice {
+            elem: resolve_projection_type(
+                        ctx,
+                        elem,
+                        candidates,
+                        report,
+                    ),
+        },
+        Type::VecType { elem } => Type::VecType {
+            elem: resolve_projection_type(
+                        ctx,
+                        elem,
+                        candidates,
+                        report,
+                    ),
+        },
+        Type::RefType { elem } => Type::RefType {
+            elem: resolve_projection_type(
+                        ctx,
+                        elem,
+                        candidates,
+                        report,
+                    ),
+        },
+        Type::Channel { elem } => Type::Channel {
+            elem: resolve_projection_type(
+                        ctx,
+                        elem,
+                        candidates,
+                        report,
+                    ),
+        },
+        Type::HashMap { key, value } => Type::HashMap {
+            key: resolve_projection_type(ctx, key, candidates, report),
+            value: resolve_projection_type(ctx, value, candidates, report),
+        },
+        Type::Func { params, ret_ty } => Type::Func {
+            params: resolve_projection_types(ctx, params, candidates, report),
+            ret_ty: resolve_projection_type(ctx, ret_ty, candidates, report),
+        },
         other => other,
     }
 }
@@ -2524,12 +2538,12 @@ fn nominal_arity(ctx: Checker, name: string) -> Option[int] {
 
 fn nominal_application_has_wrong_arity(ctx: Checker, value: Type) -> bool {
     match prune(value) {
-        Type::Con(name) => match nominal_arity(ctx, name) {
+        Type::Con { name } => match nominal_arity(ctx, name) {
             Option::Some(expected) => expected != 0,
             Option::None => false,
         },
-        Type::App(base, args) => match prune(base) {
-            Type::Con(name) => match nominal_arity(ctx, name) {
+        Type::App { ty: base, args } => match prune(base) {
+            Type::Con { name } => match nominal_arity(ctx, name) {
                 Option::Some(expected) => expected != args.len(),
                 Option::None => false,
             },
@@ -2619,8 +2633,8 @@ fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
 
 fn type_contains_parameter(value: Type, expected: string) -> bool {
     match prune(value) {
-        Type::Param(name) => name == expected,
-        Type::Tuple(values) => {
+        Type::Param { name } => name == expected,
+        Type::Tuple { items: values } => {
             let found = Ref::new(false);
             for value in values {
                 if type_contains_parameter(value, expected) {
@@ -2631,7 +2645,7 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
             };
             found.get()
         },
-        Type::Projection(base, _, qualifier) => {
+        Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             let found = Ref::new(type_contains_parameter(base, expected));
             match qualifier {
                 Option::Some(reference) => for arg in reference.args {
@@ -2645,7 +2659,7 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
             };
             found.get()
         },
-        Type::App(base, args) => {
+        Type::App { ty: base, args } => {
             let found = Ref::new(type_contains_parameter(base, expected));
             for arg in args {
                 if type_contains_parameter(arg, expected) {
@@ -2656,16 +2670,16 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
             };
             found.get()
         },
-        Type::Array(_, elem)
-        | Type::Slice(elem)
-        | Type::VecType(elem)
-        | Type::RefType(elem)
-        | Type::Channel(elem) => type_contains_parameter(elem, expected),
-        Type::HashMap(key, value) => {
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => type_contains_parameter(elem, expected),
+        Type::HashMap { key, value } => {
             type_contains_parameter(key, expected)
                 || type_contains_parameter(value, expected)
         },
-        Type::Func(params, ret_ty) => {
+        Type::Func { params, ret_ty } => {
             let found = Ref::new(type_contains_parameter(ret_ty, expected));
             for param in params {
                 if type_contains_parameter(param, expected) {
@@ -2701,7 +2715,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
                     Option::None,
                 )
             } else {
-                if !types_equal(method.params.get(0), Type::Param("Self")) {
+                if !types_equal(method.params.get(0), Type::Param { name: "Self" }) {
                     push_diagnostic_at(ctx,
                         "Trait "
                             + info.name
@@ -2752,9 +2766,9 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
 
 fn validate_signature_type(ctx: Checker, value: Type) -> unit {
     match prune(value) {
-        Type::Con(name) => validate_nominal_application(ctx, name, Vec::new()),
-        Type::App(base, args) => match prune(base) {
-            Type::Con(name) => validate_nominal_application(ctx, name, args),
+        Type::Con { name } => validate_nominal_application(ctx, name, Vec::new()),
+        Type::App { ty: base, args } => match prune(base) {
+            Type::Con { name } => validate_nominal_application(ctx, name, args),
             _ => {
                 push_diagnostic(
                     ctx,
@@ -2766,7 +2780,7 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
                 }
             },
         },
-        Type::Dyn(name) => match find_trait(ctx, name) {
+        Type::Dyn { trait_name: name } => match find_trait(ctx, name) {
             Option::Some(info) => if info.generics.len() > 0 {
                 push_diagnostic(ctx, "generic trait cannot be used as dyn " + name)
             } else {
@@ -2774,26 +2788,26 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
             },
             Option::None => push_diagnostic(ctx, "Unknown trait " + name),
         },
-        Type::Projection(base, _, qualifier) => {
+        Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             validate_signature_type(ctx, base);
             match qualifier {
                 Option::Some(reference) => validate_trait_reference(ctx, reference),
                 Option::None => (),
             }
         },
-        Type::Tuple(values) => for value in values {
+        Type::Tuple { items: values } => for value in values {
             validate_signature_type(ctx, value)
         },
-        Type::Array(_, element)
-        | Type::Slice(element)
-        | Type::VecType(element)
-        | Type::RefType(element)
-        | Type::Channel(element) => validate_signature_type(ctx, element),
-        Type::HashMap(key, value) => {
+        Type::Array { len: _, elem: element }
+        | Type::Slice { elem: element }
+        | Type::VecType { elem: element }
+        | Type::RefType { elem: element }
+        | Type::Channel { elem: element } => validate_signature_type(ctx, element),
+        Type::HashMap { key, value } => {
             validate_signature_type(ctx, key);
             validate_signature_type(ctx, value)
         },
-        Type::Func(params, ret_ty) => {
+        Type::Func { params, ret_ty } => {
             for param in params {
                 validate_signature_type(ctx, param)
             };
@@ -2898,11 +2912,11 @@ fn expand_implied_predicates(
                                 )
                             };
                             for associated in info.associated_types {
-                                let projection = Type::Projection(
+                                let projection = Type::Projection {
                                     for_ty,
-                                    associated.name,
-                                    Option::Some(application),
-                                );
+                                    name: associated.name,
+                                    trait_ref: Option::Some(application),
+                                };
                                 for bound in associated.bounds {
                                     push_predicate(
                                         result,
@@ -3125,8 +3139,11 @@ fn resolve_static_member(
                     Option::Some(value) => if bare_owner && nominal_type_is_defined(ctx, owner) {
                         Option::Some(ResolvedCallable {
                             callable: match value.callable {
-                                Callable::InherentMethod(_, name) => {
-                                    Callable::InherentMethod(owner_ty, name)
+                                Callable::InherentMethod { receiver_ty: _, method_name: name } => {
+                                    Callable::InherentMethod {
+                                        receiver_ty: owner_ty,
+                                        method_name: name,
+                                    }
                                 },
                                 other => other,
                             },
@@ -3148,43 +3165,43 @@ fn resolve_builtin_static(
     name: string,
 ) -> Option[ResolvedCallable] {
     let owner = match prune(owner) {
-        Type::Con(owner_name) => if owner_name == "Vec" {
-            Type::VecType(fresh_type(ctx.counter, VarKind::Any))
+        Type::Con { name: owner_name } => if owner_name == "Vec" {
+            Type::VecType { elem: fresh_type(ctx.counter, VarKind::Any) }
         } else if owner_name == "Ref" {
-            Type::RefType(fresh_type(ctx.counter, VarKind::Any))
+            Type::RefType { elem: fresh_type(ctx.counter, VarKind::Any) }
         } else if owner_name == "Slice" {
-            Type::Slice(fresh_type(ctx.counter, VarKind::Any))
+            Type::Slice { elem: fresh_type(ctx.counter, VarKind::Any) }
         } else if owner_name == "HashMap" {
-            Type::HashMap(
-                fresh_type(ctx.counter, VarKind::Any),
-                fresh_type(ctx.counter, VarKind::Any),
-            )
+            Type::HashMap {
+                key: fresh_type(ctx.counter, VarKind::Any),
+                value: fresh_type(ctx.counter, VarKind::Any),
+            }
         } else if owner_name == "Channel" {
-            Type::Channel(fresh_type(ctx.counter, VarKind::Any))
+            Type::Channel { elem: fresh_type(ctx.counter, VarKind::Any) }
         } else if owner_name == "FnIterator" {
             nominal_type(
                 owner_name,
                 one_type(fresh_type(ctx.counter, VarKind::Any)),
             )
         } else {
-            Type::Con(owner_name)
+            Type::Con { name: owner_name }
         },
         other => other,
     };
     match owner {
-        Type::VecType(elem) => if name == "new" {
+        Type::VecType { elem } => if name == "new" {
             Option::Some(inherent_callable(owner, name, Vec::new(), owner))
         } else if name == "with_capacity" {
             Option::Some(inherent_callable(owner, name, one_type(Type::Int), owner))
         } else {
             Option::None
         },
-        Type::RefType(elem) => if name == "new" {
+        Type::RefType { elem } => if name == "new" {
             Option::Some(inherent_callable(owner, name, one_type(elem), owner))
         } else {
             Option::None
         },
-        Type::Channel(_) => if name == "new" {
+        Type::Channel { elem: _ } => if name == "new" {
             Option::Some(inherent_callable(
                 owner,
                 name,
@@ -3194,23 +3211,26 @@ fn resolve_builtin_static(
         } else {
             Option::None
         },
-        Type::HashMap(_, _) => if name == "new" {
+        Type::HashMap { key: _, value: _ } => if name == "new" {
             Option::Some(inherent_callable(owner, name, Vec::new(), owner))
         } else {
             Option::None
         },
-        Type::App(base, args) => match type_constructor_name(base) {
+        Type::App { ty: base, args } => match type_constructor_name(base) {
             Option::Some(owner_name) => if owner_name == "FnIterator"
                 && args.len() == 1
                 && name == "from_fn" {
                 let item = args.get(0);
                 Option::Some(ResolvedCallable {
-                    callable: Callable::InherentMethod(Type::Con(owner_name), name),
+                    callable: Callable::InherentMethod {
+                        receiver_ty: Type::Con { name: owner_name },
+                        method_name: name,
+                    },
                     ty: callable_type(
-                        one_type(Type::Func(
-                            Vec::new(),
-                            nominal_type("Option", one_type(item)),
-                        )),
+                        one_type(Type::Func {
+                            params: Vec::new(),
+                            ret_ty: nominal_type("Option", one_type(item)),
+                        }),
                         owner,
                     ),
                 })

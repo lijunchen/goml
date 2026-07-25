@@ -50,14 +50,14 @@ pub fn encode_type(value: tast::Type) -> string {
         tast::Type::Float64 => "float64",
         tast::Type::String => "string",
         tast::Type::Char => "char",
-        tast::Type::Tuple(values) => "Tuple" + values.len().to_string() + "_" + join_type_parts(values),
-        tast::Type::Con(name) => name,
-        tast::Type::Dyn(name) => "Dyn_" + name,
-        tast::Type::Projection(base, name, _) => {
+        tast::Type::Tuple { items: values } => "Tuple" + values.len().to_string() + "_" + join_type_parts(values),
+        tast::Type::Con { name } => name,
+        tast::Type::Dyn { trait_name: name } => "Dyn_" + name,
+        tast::Type::Projection { for_ty: base, name, trait_ref: _ } => {
             let encoded = encode_type(base);
             "Projection_" + encoded.byte_len().to_string() + encoded + "_" + name
         },
-        tast::Type::App(base, args) => {
+        tast::Type::App { ty: base, args } => {
             let base_name = encode_type(base);
             if args.len() == 0 {
                 base_name
@@ -69,23 +69,23 @@ pub fn encode_type(value: tast::Type) -> string {
                     + join_type_parts(args)
             }
         },
-        tast::Type::Array(length, elem) => {
+        tast::Type::Array { len: length, elem } => {
             let encoded = encode_type(elem);
             "Array_" + length.to_string() + "_" + encoded.byte_len().to_string() + encoded
         },
-        tast::Type::Slice(elem) => {
+        tast::Type::Slice { elem } => {
             let encoded = encode_type(elem);
             "Slice_" + encoded.byte_len().to_string() + encoded
         },
-        tast::Type::VecType(elem) => {
+        tast::Type::VecType { elem } => {
             let encoded = encode_type(elem);
             "Vec_" + encoded.byte_len().to_string() + encoded
         },
-        tast::Type::RefType(elem) => {
+        tast::Type::RefType { elem } => {
             let encoded = encode_type(elem);
             "Ref_" + encoded.byte_len().to_string() + encoded
         },
-        tast::Type::HashMap(key, value) => {
+        tast::Type::HashMap { key, value } => {
             let key_name = encode_type(key);
             let value_name = encode_type(value);
             "HashMap_"
@@ -95,12 +95,12 @@ pub fn encode_type(value: tast::Type) -> string {
                 + value_name.byte_len().to_string()
                 + value_name
         },
-        tast::Type::Channel(elem) => {
+        tast::Type::Channel { elem } => {
             let encoded = encode_type(elem);
             "Channel_" + encoded.byte_len().to_string() + encoded
         },
-        tast::Type::Param(name) => "TParam_" + name,
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Param { name } => "TParam_" + name,
+        tast::Type::Func { params, ret_ty } => {
             let ret_name = encode_type(ret_ty);
             "Fn"
                 + params.len().to_string()
@@ -138,7 +138,7 @@ pub fn type_name(value: tast::Type) -> string {
         tast::Type::Float64 => "float64",
         tast::Type::String => "string",
         tast::Type::Char => "char",
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             let builder = text::StringBuilder::new();
             builder.write_string("Tuple");
             builder.write_string(values.len().to_string());
@@ -148,12 +148,12 @@ pub fn type_name(value: tast::Type) -> string {
             };
             go_generated_ident(builder.finish())
         },
-        tast::Type::Con(name) => go_user_type_name(name),
-        tast::Type::Dyn(name) => go_dyn_struct_name(name),
-        tast::Type::Projection(base, name, _) => {
+        tast::Type::Con { name } => go_user_type_name(name),
+        tast::Type::Dyn { trait_name: name } => go_dyn_struct_name(name),
+        tast::Type::Projection { for_ty: base, name, trait_ref: _ } => {
             go_generated_ident("Projection_" + type_name_part(base) + "_" + name)
         },
-        tast::Type::App(base, args) => {
+        tast::Type::App { ty: base, args } => {
             let builder = text::StringBuilder::new();
             builder.write_string(type_name(base));
             for value in args {
@@ -162,18 +162,18 @@ pub fn type_name(value: tast::Type) -> string {
             };
             go_generated_ident(builder.finish())
         },
-        tast::Type::Array(length, elem) => {
+        tast::Type::Array { len: length, elem } => {
             go_generated_ident("Array" + length.to_string() + "_" + type_name_part(elem))
         },
-        tast::Type::Slice(elem) => go_generated_ident("Slice_" + type_name_part(elem)),
-        tast::Type::VecType(elem) => go_generated_ident("Vec_" + type_name_part(elem)),
-        tast::Type::RefType(elem) => go_generated_ident("Ptr_" + type_name_part(elem)),
-        tast::Type::HashMap(key, value) => {
+        tast::Type::Slice { elem } => go_generated_ident("Slice_" + type_name_part(elem)),
+        tast::Type::VecType { elem } => go_generated_ident("Vec_" + type_name_part(elem)),
+        tast::Type::RefType { elem } => go_generated_ident("Ptr_" + type_name_part(elem)),
+        tast::Type::HashMap { key, value } => {
             go_generated_ident("HashMap_" + type_name_part(key) + "_" + type_name_part(value))
         },
-        tast::Type::Channel(elem) => go_generated_ident("Channel_" + type_name_part(elem)),
-        tast::Type::Param(name) => go_ident(name),
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Channel { elem } => go_generated_ident("Channel_" + type_name_part(elem)),
+        tast::Type::Param { name } => go_ident(name),
+        tast::Type::Func { params, ret_ty } => {
             let builder = text::StringBuilder::new();
             builder.write_string("TFunc");
             builder.write_string(params.len().to_string());
@@ -207,27 +207,27 @@ pub fn lower_type(value: tast::Type) -> Type {
         tast::Type::Float64 => Type::Float64,
         tast::Type::String => Type::String,
         tast::Type::Char => Type::Char,
-        tast::Type::Tuple(_) => Type::Named(type_name(value)),
-        tast::Type::Con(name) => Type::Named(go_user_type_name(name)),
-        tast::Type::Dyn(name) => Type::Named(go_dyn_struct_name(name)),
-        tast::Type::Projection(_, _, _) => Type::Named(type_name(value)),
-        tast::Type::App(_, _) => Type::Named(type_name(value)),
-        tast::Type::Array(length, elem) => Type::Array(length, lower_type(elem)),
-        tast::Type::Slice(elem) => Type::Slice(lower_type(elem)),
-        tast::Type::VecType(elem) => {
+        tast::Type::Tuple { items: _ } => Type::Named(type_name(value)),
+        tast::Type::Con { name } => Type::Named(go_user_type_name(name)),
+        tast::Type::Dyn { trait_name: name } => Type::Named(go_dyn_struct_name(name)),
+        tast::Type::Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named(type_name(value)),
+        tast::Type::App { ty: _, args: _ } => Type::Named(type_name(value)),
+        tast::Type::Array { len: length, elem } => Type::Array(length, lower_type(elem)),
+        tast::Type::Slice { elem } => Type::Slice(lower_type(elem)),
+        tast::Type::VecType { elem } => {
             Type::Pointer(Type::Named(go_generated_ident("_goml_vec_" + go_ident(encode_type(elem)))))
         },
-        tast::Type::RefType(elem) => {
+        tast::Type::RefType { elem } => {
             Type::Pointer(Type::Named(go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x")))
         },
-        tast::Type::HashMap(key, value) => {
+        tast::Type::HashMap { key, value } => {
             Type::Pointer(Type::Named(go_generated_ident(
                 "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
             )))
         },
-        tast::Type::Channel(elem) => Type::Chan(lower_type(elem)),
-        tast::Type::Param(name) => Type::Named(go_ident(name)),
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Channel { elem } => Type::Chan(lower_type(elem)),
+        tast::Type::Param { name } => Type::Named(go_ident(name)),
+        tast::Type::Func { params, ret_ty } => {
             let lowered: Vec[Type] = Vec::new();
             for value in params {
                 lowered.push(lower_type(value))

@@ -8,7 +8,7 @@ fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type)
     for param in params {
         types.push(param.1)
     };
-    tast::Type::Func(types, ret_ty)
+    tast::Type::Func { params: types, ret_ty }
 }
 
 fn artifact_fn_scheme(value: tast::FunctionScheme) -> ArtifactFnScheme {
@@ -16,7 +16,7 @@ fn artifact_fn_scheme(value: tast::FunctionScheme) -> ArtifactFnScheme {
         name: value.name,
         type_params: value.generics,
         constraints: value.predicates,
-        ty: tast::Type::Func(value.params, value.ret_ty),
+        ty: tast::Type::Func { params: value.params, ret_ty: value.ret_ty },
         body: value.callable,
     }
 }
@@ -60,69 +60,69 @@ fn artifact_trait_definition_type(
     trait_names: Vec[string],
 ) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Param(name) => if name == "Self" {
-            tast::Type::Con(name)
+        tast::Type::Param { name } => if name == "Self" {
+            tast::Type::Con { name }
         } else {
-            tast::Type::Param(name)
+            tast::Type::Param { name }
         },
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             let result = Vec::new();
             for value in values {
                 result.push(artifact_trait_definition_type(value, owner, trait_names))
             };
-            tast::Type::Tuple(result)
+            tast::Type::Tuple { items: result }
         },
-        tast::Type::Projection(for_ty, name, trait_ref) => tast::Type::Projection(
-            artifact_trait_definition_type(for_ty, owner, trait_names),
+        tast::Type::Projection { for_ty, name, trait_ref } => tast::Type::Projection {
+            for_ty: artifact_trait_definition_type(for_ty, owner, trait_names),
             name,
-            match trait_ref {
-                Option::Some(value) => Option::Some(artifact_trait_definition_ref(
-                    value,
-                    owner,
-                    trait_names,
-                )),
-                Option::None => Option::None,
-            },
-        ),
-        tast::Type::App(base, args) => {
+            trait_ref: match trait_ref {
+                            Option::Some(value) => Option::Some(artifact_trait_definition_ref(
+                                value,
+                                owner,
+                                trait_names,
+                            )),
+                            Option::None => Option::None,
+                        },
+        },
+        tast::Type::App { ty: base, args } => {
             let result = Vec::new();
             for arg in args {
                 result.push(artifact_trait_definition_type(arg, owner, trait_names))
             };
-            tast::Type::App(
-                artifact_trait_definition_type(base, owner, trait_names),
-                result,
-            )
+            tast::Type::App {
+                ty: artifact_trait_definition_type(base, owner, trait_names),
+                args: result,
+            }
         },
-        tast::Type::Array(length, element) => tast::Type::Array(
-            length,
-            artifact_trait_definition_type(element, owner, trait_names),
-        ),
-        tast::Type::Slice(element) => tast::Type::Slice(
-            artifact_trait_definition_type(element, owner, trait_names),
-        ),
-        tast::Type::VecType(element) => tast::Type::VecType(
-            artifact_trait_definition_type(element, owner, trait_names),
-        ),
-        tast::Type::RefType(element) => tast::Type::RefType(
-            artifact_trait_definition_type(element, owner, trait_names),
-        ),
-        tast::Type::Channel(element) => tast::Type::Channel(
-            artifact_trait_definition_type(element, owner, trait_names),
-        ),
-        tast::Type::HashMap(key, item) => tast::Type::HashMap(
-            artifact_trait_definition_type(key, owner, trait_names),
-            artifact_trait_definition_type(item, owner, trait_names),
-        ),
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Array { len: length, elem: element } => tast::Type::Array {
+            len: length,
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::Slice { elem: element } => tast::Type::Slice {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::VecType { elem: element } => tast::Type::VecType {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::RefType { elem: element } => tast::Type::RefType {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::Channel { elem: element } => tast::Type::Channel {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::HashMap { key, value: item } => tast::Type::HashMap {
+            key: artifact_trait_definition_type(key, owner, trait_names),
+            value: artifact_trait_definition_type(item, owner, trait_names),
+        },
+        tast::Type::Func { params, ret_ty } => {
             let result = Vec::new();
             for param in params {
                 result.push(artifact_trait_definition_type(param, owner, trait_names))
             };
-            tast::Type::Func(
-                result,
-                artifact_trait_definition_type(ret_ty, owner, trait_names),
-            )
+            tast::Type::Func {
+                params: result,
+                ret_ty: artifact_trait_definition_type(ret_ty, owner, trait_names),
+            }
         },
         other => other,
     }
@@ -171,7 +171,7 @@ fn artifact_trait_def(
             type_params: Vec::new(),
             constraints: Vec::new(),
             ty: artifact_trait_definition_type(
-                tast::Type::Func(method.params, method.ret_ty),
+                tast::Type::Func { params: method.params, ret_ty: method.ret_ty },
                 value.name,
                 trait_names,
             ),
@@ -277,13 +277,13 @@ fn artifact_trait_impl(value: tast::ImplBlock) -> ArtifactTraitImpl {
 
 fn artifact_inherent_constructor(value: tast::Type) -> string {
     match tast::resolve_type(value) {
-        tast::Type::Con(name) => name,
-        tast::Type::App(base, _) => artifact_inherent_constructor(base),
-        tast::Type::Slice(_) => "Slice",
-        tast::Type::VecType(_) => "Vec",
-        tast::Type::RefType(_) => "Ref",
-        tast::Type::Channel(_) => "Channel",
-        tast::Type::HashMap(_, _) => "HashMap",
+        tast::Type::Con { name } => name,
+        tast::Type::App { ty: base, args: _ } => artifact_inherent_constructor(base),
+        tast::Type::Slice { elem: _ } => "Slice",
+        tast::Type::VecType { elem: _ } => "Vec",
+        tast::Type::RefType { elem: _ } => "Ref",
+        tast::Type::Channel { elem: _ } => "Channel",
+        tast::Type::HashMap { key: _, value: _ } => "HashMap",
         _ => {
             fail("error[compile]: invalid inherent implementation in compiler artifact");
             "<error>"
@@ -345,9 +345,9 @@ fn artifact_type_has_public_names(
     public_names: Vec[string],
 ) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Con(name) => local_item_is_public(package_name, public_names, name),
-        tast::Type::Dyn(name) => local_item_is_public(package_name, public_names, name),
-        tast::Type::Tuple(values) => {
+        tast::Type::Con { name } => local_item_is_public(package_name, public_names, name),
+        tast::Type::Dyn { trait_name: name } => local_item_is_public(package_name, public_names, name),
+        tast::Type::Tuple { items: values } => {
             for value in values {
                 if !artifact_type_has_public_names(value, package_name, public_names) {
                     return false
@@ -357,7 +357,7 @@ fn artifact_type_has_public_names(
             };
             true
         },
-        tast::Type::Projection(for_ty, _, trait_ref) => {
+        tast::Type::Projection { for_ty, name: _, trait_ref } => {
             if !artifact_type_has_public_names(for_ty, package_name, public_names) {
                 false
             } else {
@@ -371,7 +371,7 @@ fn artifact_type_has_public_names(
                 }
             }
         },
-        tast::Type::App(base, args) => {
+        tast::Type::App { ty: base, args } => {
             if !artifact_type_has_public_names(base, package_name, public_names) {
                 false
             } else {
@@ -385,21 +385,21 @@ fn artifact_type_has_public_names(
                 true
             }
         },
-        tast::Type::Array(_, element)
-        | tast::Type::Slice(element)
-        | tast::Type::VecType(element)
-        | tast::Type::RefType(element)
-        | tast::Type::Channel(element) => artifact_type_has_public_names(
+        tast::Type::Array { len: _, elem: element }
+        | tast::Type::Slice { elem: element }
+        | tast::Type::VecType { elem: element }
+        | tast::Type::RefType { elem: element }
+        | tast::Type::Channel { elem: element } => artifact_type_has_public_names(
             element,
             package_name,
             public_names,
         ),
-        tast::Type::HashMap(key, value) => artifact_type_has_public_names(
+        tast::Type::HashMap { key, value } => artifact_type_has_public_names(
             key,
             package_name,
             public_names,
         ) && artifact_type_has_public_names(value, package_name, public_names),
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             for param in params {
                 if !artifact_type_has_public_names(param, package_name, public_names) {
                     return false
@@ -426,7 +426,7 @@ fn artifact_type_has_public_names(
         | tast::Type::Float64
         | tast::Type::String
         | tast::Type::Char
-        | tast::Type::Param(_)
+        | tast::Type::Param { name: _ }
         | tast::Type::Error => true,
     }
 }

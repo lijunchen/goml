@@ -64,7 +64,7 @@ fn find_closure(state: State, name: string) -> Option[ClosureInfo] {
 
 fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
     match tast::resolve_type(ty) {
-        tast::Type::Con(name) => find_closure(state, name),
+        tast::Type::Con { name } => find_closure(state, name),
         _ => Option::None,
     }
 }
@@ -91,29 +91,29 @@ fn record_used_type(values: Vec[string], name: string) -> unit {
 
 fn collect_used_types(values: Vec[string], ty: tast::Type) -> unit {
     match tast::resolve_type(ty) {
-        tast::Type::Con(name) => record_used_type(values, name),
-        tast::Type::Tuple(items) => {
+        tast::Type::Con { name } => record_used_type(values, name),
+        tast::Type::Tuple { items } => {
             for item in items {
                 collect_used_types(values, item)
             }
         },
-        tast::Type::Projection(base, _, _) => collect_used_types(values, base),
-        tast::Type::App(base, args) => {
+        tast::Type::Projection { for_ty: base, name: _, trait_ref: _ } => collect_used_types(values, base),
+        tast::Type::App { ty: base, args } => {
             collect_used_types(values, base);
             for arg in args {
                 collect_used_types(values, arg)
             }
         },
-        tast::Type::Array(_, elem)
-        | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem)
-        | tast::Type::Channel(elem) => collect_used_types(values, elem),
-        tast::Type::HashMap(key, value) => {
+        tast::Type::Array { len: _, elem }
+        | tast::Type::Slice { elem }
+        | tast::Type::VecType { elem }
+        | tast::Type::RefType { elem }
+        | tast::Type::Channel { elem } => collect_used_types(values, elem),
+        tast::Type::HashMap { key, value } => {
             collect_used_types(values, key);
             collect_used_types(values, value)
         },
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             for param in params {
                 collect_used_types(values, param)
             };
@@ -934,7 +934,7 @@ fn transform_closure(
     context: Option[string],
 ) -> core::Expr {
     let signature = match tast::resolve_type(ty) {
-        tast::Type::Func(param_tys, ret_ty) => Option::Some((param_tys, ret_ty)),
+        tast::Type::Func { params: param_tys, ret_ty } => Option::Some((param_tys, ret_ty)),
         _ => Option::None,
     };
     match signature {
@@ -967,7 +967,7 @@ fn transform_closure(
             let captures = Vec::new();
             collect_captured(body, bound, captures, outer_scope);
             let struct_name = fresh_struct_name(state, hint);
-            let env_ty = tast::Type::Con(struct_name);
+            let env_ty = tast::Type::Con { name: struct_name };
             let fields = Vec::new();
             let struct_fields: Vec[(string, tast::Type)] = Vec::new();
             let captured_args = Vec::new();
@@ -994,7 +994,7 @@ fn transform_closure(
                 fn_params.push(param);
                 apply_param_types.push(param.1)
             };
-            let apply_ty = tast::Type::Func(apply_param_types, signature.1);
+            let apply_ty = tast::Type::Func { params: apply_param_types, ret_ty: signature.1 };
             state.closures.push(ClosureInfo {
                 struct_name,
                 apply_name,

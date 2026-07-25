@@ -256,7 +256,7 @@ fn artifact_decode_named_type(
     } else {
         artifact_add_type_name(context.struct_names, name)
     };
-    Result::Ok(tast::Type::Con(name))
+    Result::Ok(tast::Type::Con { name })
 }
 
 fn artifact_decode_element_type(
@@ -316,7 +316,7 @@ fn artifact_decode_type(
                     Result::Err(error) => return Result::Err(error),
                 };
                 match artifact_json_field_string(object, "trait_name") {
-                    Result::Ok(value) => Result::Ok(tast::Type::Dyn(value)),
+                    Result::Ok(value) => Result::Ok(tast::Type::Dyn { trait_name: value }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TParam" {
@@ -325,7 +325,7 @@ fn artifact_decode_type(
                     Result::Err(error) => return Result::Err(error),
                 };
                 match artifact_json_field_string(object, "name") {
-                    Result::Ok(value) => Result::Ok(tast::Type::Param(value)),
+                    Result::Ok(value) => Result::Ok(tast::Type::Param { name: value }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TTuple" {
@@ -339,7 +339,7 @@ fn artifact_decode_type(
                         value,
                         "tuple elements",
                     ) {
-                        Result::Ok(value) => Result::Ok(tast::Type::Tuple(value)),
+                        Result::Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
                         Result::Err(error) => Result::Err(error),
                     },
                     Result::Err(error) => Result::Err(error),
@@ -364,11 +364,11 @@ fn artifact_decode_type(
                     Result::Err(error) => return Result::Err(error),
                 };
                 match artifact_json_field_string(object, "name") {
-                    Result::Ok(name) => Result::Ok(tast::Type::Projection(
+                    Result::Ok(name) => Result::Ok(tast::Type::Projection {
                         for_ty,
                         name,
                         trait_ref,
-                    )),
+                    }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TApp" {
@@ -389,7 +389,7 @@ fn artifact_decode_type(
                         value,
                         "type arguments",
                     ) {
-                        Result::Ok(value) => Result::Ok(tast::Type::App(base, value)),
+                        Result::Ok(value) => Result::Ok(tast::Type::App { ty: base, args: value }),
                         Result::Err(error) => Result::Err(error),
                     },
                     Result::Err(error) => Result::Err(error),
@@ -411,29 +411,32 @@ fn artifact_decode_type(
                 };
                 match artifact_json_required_field(object, "elem") {
                     Result::Ok(value) => match artifact_decode_type(context, value) {
-                        Result::Ok(value) => Result::Ok(tast::Type::Array(length, value)),
+                        Result::Ok(value) => Result::Ok(tast::Type::Array {
+                            len: length,
+                            elem: value,
+                        }),
                         Result::Err(error) => Result::Err(error),
                     },
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TSlice" {
                 match artifact_decode_element_type(context, payload, "slice type") {
-                    Result::Ok(value) => Result::Ok(tast::Type::Slice(value)),
+                    Result::Ok(value) => Result::Ok(tast::Type::Slice { elem: value }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TVec" {
                 match artifact_decode_element_type(context, payload, "vector type") {
-                    Result::Ok(value) => Result::Ok(tast::Type::VecType(value)),
+                    Result::Ok(value) => Result::Ok(tast::Type::VecType { elem: value }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TRef" {
                 match artifact_decode_element_type(context, payload, "reference type") {
-                    Result::Ok(value) => Result::Ok(tast::Type::RefType(value)),
+                    Result::Ok(value) => Result::Ok(tast::Type::RefType { elem: value }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "TChannel" {
                 match artifact_decode_element_type(context, payload, "channel type") {
-                    Result::Ok(value) => Result::Ok(tast::Type::Channel(value)),
+                    Result::Ok(value) => Result::Ok(tast::Type::Channel { elem: value }),
                     Result::Err(error) => Result::Err(error),
                 }
             } else if kind == "THashMap" {
@@ -450,7 +453,7 @@ fn artifact_decode_type(
                 };
                 match artifact_json_required_field(object, "value") {
                     Result::Ok(value) => match artifact_decode_type(context, value) {
-                        Result::Ok(value) => Result::Ok(tast::Type::HashMap(key, value)),
+                        Result::Ok(value) => Result::Ok(tast::Type::HashMap { key, value }),
                         Result::Err(error) => Result::Err(error),
                     },
                     Result::Err(error) => Result::Err(error),
@@ -473,7 +476,7 @@ fn artifact_decode_type(
                 };
                 match artifact_json_required_field(object, "ret_ty") {
                     Result::Ok(value) => match artifact_decode_type(context, value) {
-                        Result::Ok(value) => Result::Ok(tast::Type::Func(params, value)),
+                        Result::Ok(value) => Result::Ok(tast::Type::Func { params, ret_ty: value }),
                         Result::Err(error) => Result::Err(error),
                     },
                     Result::Err(error) => Result::Err(error),

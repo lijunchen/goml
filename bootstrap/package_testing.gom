@@ -523,7 +523,7 @@ fn validate_package_tests(
             ()
         };
         match tast::resolve_type(scheme.ty) {
-            tast::Type::Func(params, ret_ty) => {
+            tast::Type::Func { params, ret_ty } => {
                 if params.len() > 0 {
                     diagnostics.push(package_test_diagnostic(
                         "typer",

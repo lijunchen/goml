@@ -25,7 +25,7 @@ fn std_method_call(value: Expr, name: string, args: Vec[Expr]) -> Expr {
 }
 
 fn std_tuple_type(values: Vec[tast::Type]) -> Type {
-    lower_type(tast::Type::Tuple(values))
+    lower_type(tast::Type::Tuple { items: values })
 }
 
 fn std_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
@@ -37,7 +37,7 @@ fn std_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
 }
 
 fn std_vec_type(elem: tast::Type) -> tast::Type {
-    tast::Type::VecType(elem)
+    tast::Type::VecType { elem }
 }
 
 fn std_vec_expr(elem: tast::Type, items: Expr) -> Expr {
@@ -960,9 +960,11 @@ fn std_testing_fail_item() -> Item {
 }
 
 fn std_process_environment_type() -> tast::Type {
-    tast::Type::VecType(tast::Type::Tuple(
-        Vec::new().pushed(tast::Type::String).pushed(tast::Type::String),
-    ))
+    tast::Type::VecType {
+        elem: tast::Type::Tuple {
+                items: Vec::new().pushed(tast::Type::String).pushed(tast::Type::String),
+            },
+    }
 }
 
 fn std_process_params() -> Vec[(string, Type)] {

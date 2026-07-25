@@ -70,7 +70,7 @@ fn builtin_struct_instance(
     } else if value.base_name == "TakeIterator" && value.args.len() == 1 {
         let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("iterator", lower_type(value.args.get(0))));
-        fields.push(("remaining", lower_type(tast::Type::RefType(tast::Type::Int))));
+        fields.push(("remaining", lower_type(tast::Type::RefType { elem: tast::Type::Int })));
         Option::Some(StructDef {
             name: go_user_type_name(value.name),
             fields,
@@ -148,88 +148,88 @@ fn instantiate_type(
     instances: Vec[core::TypeInstance],
 ) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Param(name) => match lookup_binding(generics, args, name) {
+        tast::Type::Param { name } => match lookup_binding(generics, args, name) {
             Option::Some(value) => value,
-            Option::None => tast::Type::Param(name),
+            Option::None => tast::Type::Param { name },
         },
-        tast::Type::Tuple(values) => {
-            tast::Type::Tuple(instantiate_types(values, generics, args, instances))
+        tast::Type::Tuple { items: values } => {
+            tast::Type::Tuple { items: instantiate_types(values, generics, args, instances) }
         },
-        tast::Type::Projection(base, name, reference) => tast::Type::Projection(
-            instantiate_type(base, generics, args, instances),
+        tast::Type::Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
+            for_ty: instantiate_type(base, generics, args, instances),
             name,
-            reference,
-        ),
-        tast::Type::App(base, values) => {
+            trait_ref: reference,
+        },
+        tast::Type::App { ty: base, args: values } => {
             let base = instantiate_type(base, generics, args, instances);
             let values = instantiate_types(values, generics, args, instances);
             match base {
-                tast::Type::Con(name) => match find_instance(instances, name, values) {
-                    Option::Some(instance) => tast::Type::Con(instance.name),
-                    Option::None => tast::Type::App(tast::Type::Con(name), values),
+                tast::Type::Con { name } => match find_instance(instances, name, values) {
+                    Option::Some(instance) => tast::Type::Con { name: instance.name },
+                    Option::None => tast::Type::App { ty: tast::Type::Con { name }, args: values },
                 },
-                _ => tast::Type::App(base, values),
+                _ => tast::Type::App { ty: base, args: values },
             }
         },
-        tast::Type::Array(length, elem) => tast::Type::Array(
-            length,
-            instantiate_type(elem, generics, args, instances),
-        ),
-        tast::Type::Slice(elem) => {
-            tast::Type::Slice(instantiate_type(elem, generics, args, instances))
+        tast::Type::Array { len: length, elem } => tast::Type::Array {
+            len: length,
+            elem: instantiate_type(elem, generics, args, instances),
         },
-        tast::Type::VecType(elem) => {
-            tast::Type::VecType(instantiate_type(elem, generics, args, instances))
+        tast::Type::Slice { elem } => {
+            tast::Type::Slice { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::RefType(elem) => {
-            tast::Type::RefType(instantiate_type(elem, generics, args, instances))
+        tast::Type::VecType { elem } => {
+            tast::Type::VecType { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::Channel(elem) => {
-            tast::Type::Channel(instantiate_type(elem, generics, args, instances))
+        tast::Type::RefType { elem } => {
+            tast::Type::RefType { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::HashMap(key, value) => tast::Type::HashMap(
-            instantiate_type(key, generics, args, instances),
-            instantiate_type(value, generics, args, instances),
-        ),
-        tast::Type::Func(params, ret_ty) => tast::Type::Func(
-            instantiate_types(params, generics, args, instances),
-            instantiate_type(ret_ty, generics, args, instances),
-        ),
+        tast::Type::Channel { elem } => {
+            tast::Type::Channel { elem: instantiate_type(elem, generics, args, instances) }
+        },
+        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+            key: instantiate_type(key, generics, args, instances),
+            value: instantiate_type(value, generics, args, instances),
+        },
+        tast::Type::Func { params, ret_ty } => tast::Type::Func {
+            params: instantiate_types(params, generics, args, instances),
+            ret_ty: instantiate_type(ret_ty, generics, args, instances),
+        },
         _ => value,
     }
 }
 
 fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
     match tast::resolve_type(value) {
-        tast::Type::Con(name) => {
+        tast::Type::Con { name } => {
             if contains_text(result, name) == false {
                 result.push(name)
             } else {
                 ()
             }
         },
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             for value in values {
                 collect_con_names(result, value)
             }
         },
-        tast::Type::Projection(base, _, _) => collect_con_names(result, base),
-        tast::Type::App(base, args) => {
+        tast::Type::Projection { for_ty: base, name: _, trait_ref: _ } => collect_con_names(result, base),
+        tast::Type::App { ty: base, args } => {
             collect_con_names(result, base);
             for value in args {
                 collect_con_names(result, value)
             }
         },
-        tast::Type::Array(_, elem)
-        | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem)
-        | tast::Type::Channel(elem) => collect_con_names(result, elem),
-        tast::Type::HashMap(key, value) => {
+        tast::Type::Array { len: _, elem }
+        | tast::Type::Slice { elem }
+        | tast::Type::VecType { elem }
+        | tast::Type::RefType { elem }
+        | tast::Type::Channel { elem } => collect_con_names(result, elem),
+        tast::Type::HashMap { key, value } => {
             collect_con_names(result, key);
             collect_con_names(result, value)
         },
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             for value in params {
                 collect_con_names(result, value)
             };
@@ -739,7 +739,7 @@ pub fn find_variant_info(
     tag: int,
 ) -> Option[VariantInfo] {
     match tast::resolve_type(owner_ty) {
-        tast::Type::Con(owner_name) => {
+        tast::Type::Con { name: owner_name } => {
             match variants.by_owner.get(owner_name) {
                 Option::Some(owner_variants) => {
                     if tag >= 0 && tag < owner_variants.len() {

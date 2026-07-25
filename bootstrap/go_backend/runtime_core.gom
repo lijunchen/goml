@@ -34,7 +34,7 @@ fn core_tuple_type2(first: tast::Type, second: tast::Type) -> Type {
     let values: Vec[tast::Type] = Vec::new();
     values.push(first);
     values.push(second);
-    lower_type(tast::Type::Tuple(values))
+    lower_type(tast::Type::Tuple { items: values })
 }
 
 fn core_tuple_type3(first: tast::Type, second: tast::Type, third: tast::Type) -> Type {
@@ -42,7 +42,7 @@ fn core_tuple_type3(first: tast::Type, second: tast::Type, third: tast::Type) ->
     values.push(first);
     values.push(second);
     values.push(third);
-    lower_type(tast::Type::Tuple(values))
+    lower_type(tast::Type::Tuple { items: values })
 }
 
 fn core_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
@@ -294,7 +294,7 @@ fn string_to_bytes_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
     let elem = tast::Type::Uint8;
-    let vec_ty = tast::Type::VecType(elem);
+    let vec_ty = tast::Type::VecType { elem };
     let fields: Vec[(string, Expr)] = Vec::new();
     fields.push((
         "items",

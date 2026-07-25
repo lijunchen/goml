@@ -267,13 +267,17 @@ fn callable_name(env: LowerEnv, value: tast::Callable) -> string {
         tast::Callable::Function(name) => env_function_name(env, name),
         tast::Callable::Runtime(name) => runtime_hook_name(name),
         tast::Callable::Intrinsic(name) => go_ident(name),
-        tast::Callable::TraitMethod(reference, name) => {
+        tast::Callable::TraitMethod { trait_ref: reference, method_name: name } => {
             go_ident(reference.name + "#" + name)
         },
-        tast::Callable::DynTraitMethod(owner, dispatch, name) => {
+        tast::Callable::DynTraitMethod {
+            trait_name: owner,
+            dispatch_name: dispatch,
+            method_name: name,
+        } => {
             go_ident("dyn#" + owner + "#" + dispatch + "#" + name)
         },
-        tast::Callable::InherentMethod(owner, name) => {
+        tast::Callable::InherentMethod { receiver_ty: owner, method_name: name } => {
             go_ident("inherent#" + encode_type(owner) + "#" + name)
         },
     }
@@ -378,7 +382,7 @@ fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
         && value.params.len() > 0
     {
         match tast::resolve_type(value.params.get(0).1) {
-            tast::Type::Con(name) => {
+            tast::Type::Con { name } => {
                 if name == segments.get(1) {
                     let params: Vec[tast::Type] = Vec::new();
                     for index in range(1, value.params.len()) {
@@ -414,7 +418,7 @@ fn collect_closure_infos(values: Vec[anf::Function]) -> Vec[ClosureInfo] {
 
 fn find_closure_info(values: Vec[ClosureInfo], ty: tast::Type) -> Option[ClosureInfo] {
     match tast::resolve_type(ty) {
-        tast::Type::Con(name) => {
+        tast::Type::Con { name } => {
             let result: Ref[Option[ClosureInfo]] = Ref::new(Option::None);
             for value in values {
                 if value.struct_name == name {
@@ -436,7 +440,7 @@ fn compile_closure_function(
     info: ClosureInfo,
 ) -> Expr {
     match tast::resolve_type(target_ty) {
-        tast::Type::Func(param_types, ret_ty) => {
+        tast::Type::Func { params: param_types, ret_ty } => {
             let params: Vec[(string, Type)] = Vec::new();
             let args: Vec[Expr] = Vec::new();
             args.push(compile_imm(env, value));
@@ -464,7 +468,7 @@ fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: tast::Type)
         },
         _ => match find_closure_info(env.closures, anf::imm_type(value)) {
             Option::Some(info) => match tast::resolve_type(expected_ty) {
-                tast::Type::Func(_, _) => compile_closure_function(env, value, expected_ty, info),
+                tast::Type::Func { params: _, ret_ty: _ } => compile_closure_function(env, value, expected_ty, info),
                 _ => compile_imm(env, value),
             },
             Option::None => compile_imm(env, value),
@@ -575,14 +579,14 @@ fn intrinsic_owner_type(
         || key == "hashmap.new" || key == "compiler.missing"
     {
         match tast::resolve_type(function_ty) {
-            tast::Type::Func(_, ret_ty) => Option::Some(ret_ty),
+            tast::Type::Func { params: _, ret_ty } => Option::Some(ret_ty),
             _ => Option::None,
         }
     } else if args.len() > 0 {
         Option::Some(anf::imm_type(args.get(0)))
     } else {
         match tast::resolve_type(function_ty) {
-            tast::Type::Func(params, _) => {
+            tast::Type::Func { params, ret_ty: _ } => {
                 if params.len() > 0 {
                     Option::Some(params.get(0))
                 } else {
@@ -638,7 +642,7 @@ fn intrinsic_helper_call_name(
 
 fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
     match tast::resolve_type(function_ty) {
-        tast::Type::Func(param_types, ret_ty) => {
+        tast::Type::Func { params: param_types, ret_ty } => {
             let params: Vec[(string, Type)] = Vec::new();
             let vars: Vec[Expr] = Vec::new();
             for index in range(0, param_types.len()) {
@@ -671,7 +675,7 @@ fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
 
 fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
     match tast::resolve_type(function_ty) {
-        tast::Type::Func(param_types, ret_ty) => {
+        tast::Type::Func { params: param_types, ret_ty } => {
             let params: Vec[(string, Type)] = Vec::new();
             let vars: Vec[Expr] = Vec::new();
             for index in range(0, param_types.len()) {
@@ -692,7 +696,7 @@ fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
                 stmts.push(Stmt::Return(Option::Some(Expr::Unit)))
             } else if key == "channel.recv" {
                 let elem = match tast::resolve_type(param_types.get(0)) {
-                    tast::Type::Channel(elem) => elem,
+                    tast::Type::Channel { elem } => elem,
                     _ => tast::Type::Error,
                 };
                 stmts.push(Stmt::Var("value", lower_type(elem), Option::None));
@@ -765,7 +769,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
         },
         Option::None => {
             let expected = match tast::resolve_type(anf::imm_type(func)) {
-                tast::Type::Func(params, _) => params,
+                tast::Type::Func { params, ret_ty: _ } => params,
                 _ => Vec::new(),
             };
             let compiled = compile_imms_expected(env, args, expected);
@@ -859,7 +863,7 @@ fn append_struct_field_types(
 fn struct_field_types(env: LowerEnv, value: tast::Type) -> Vec[tast::Type] {
     let result: Vec[tast::Type] = Vec::new();
     match tast::resolve_type(value) {
-        tast::Type::Con(name) => match find_struct(env.structs, name) {
+        tast::Type::Con { name } => match find_struct(env.structs, name) {
             Option::Some(definition) => append_struct_field_types(
                 result,
                 definition,
@@ -879,7 +883,7 @@ fn struct_field_types(env: LowerEnv, value: tast::Type) -> Vec[tast::Type] {
                 Option::None => (),
             },
         },
-        tast::Type::App(tast::Type::Con(name), args) => {
+        tast::Type::App { ty: tast::Type::Con { name }, args } => {
             match find_struct(env.structs, name) {
                 Option::Some(definition) => append_struct_field_types(
                     result,
@@ -960,7 +964,7 @@ fn compile_value(
         anf::Value::Tuple { items, ty } => {
             let fields: Vec[(string, Expr)] = Vec::new();
             match tast::resolve_type(ty) {
-                tast::Type::Tuple(item_types) => {
+                tast::Type::Tuple { items: item_types } => {
                     for index in range(0, items.len()) {
                         fields.push((
                             "_" + index.to_string(),
@@ -978,7 +982,7 @@ fn compile_value(
         },
         anf::Value::Array { items, ty } => {
             let expected = match tast::resolve_type(ty) {
-                tast::Type::Array(_, elem) => {
+                tast::Type::Array { len: _, elem } => {
                     let values: Vec[tast::Type] = Vec::new();
                     for _ in items {
                         values.push(elem)
@@ -2646,41 +2650,41 @@ fn add_collected_type(result: CollectedTypes, value: tast::Type) -> unit {
 
 fn collect_type(result: CollectedTypes, value: tast::Type) -> unit {
     match tast::resolve_type(value) {
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             add_collected_type(result, value);
             for inner in values {
                 collect_type(result, inner)
             }
         },
-        tast::Type::Con(_) => add_collected_type(result, value),
-        tast::Type::Dyn(_) => add_collected_type(result, value),
-        tast::Type::Projection(base, _, _) => collect_type(result, base),
-        tast::Type::App(base, args) => {
+        tast::Type::Con { name: _ } => add_collected_type(result, value),
+        tast::Type::Dyn { trait_name: _ } => add_collected_type(result, value),
+        tast::Type::Projection { for_ty: base, name: _, trait_ref: _ } => collect_type(result, base),
+        tast::Type::App { ty: base, args } => {
             collect_type(result, base);
             for arg in args {
                 collect_type(result, arg)
             }
         },
-        tast::Type::Array(_, elem) => {
+        tast::Type::Array { len: _, elem } => {
             add_collected_type(result, value);
             collect_type(result, elem);
         },
-        tast::Type::Slice(elem) => collect_type(result, elem),
-        tast::Type::VecType(elem) => {
+        tast::Type::Slice { elem } => collect_type(result, elem),
+        tast::Type::VecType { elem } => {
             add_collected_type(result, value);
             collect_type(result, elem);
         },
-        tast::Type::RefType(elem) => {
+        tast::Type::RefType { elem } => {
             add_collected_type(result, value);
             collect_type(result, elem);
         },
-        tast::Type::Channel(elem) => collect_type(result, elem),
-        tast::Type::HashMap(key, value) => {
-            add_collected_type(result, tast::Type::HashMap(key, value));
+        tast::Type::Channel { elem } => collect_type(result, elem),
+        tast::Type::HashMap { key, value } => {
+            add_collected_type(result, tast::Type::HashMap { key, value });
             collect_type(result, key);
             collect_type(result, value);
         },
-        tast::Type::Func(params, ret_ty) => {
+        tast::Type::Func { params, ret_ty } => {
             for param in params {
                 collect_type(result, param)
             };
@@ -2716,7 +2720,7 @@ fn collect_runtime_imm(
             };
             if key == "compiler.missing" {
                 match tast::resolve_type(function_ty) {
-                    tast::Type::Func(_, ret_ty) => add_collected_type(missing_types, ret_ty),
+                    tast::Type::Func { params: _, ret_ty } => add_collected_type(missing_types, ret_ty),
                     _ => (),
                 }
             } else {
@@ -2964,7 +2968,7 @@ fn collect_type_definition_fields(
     };
     for instance in instances {
         if instance.base_name == "TakeIterator" && instance.args.len() == 1 {
-            collect_type(result, tast::Type::RefType(tast::Type::Int))
+            collect_type(result, tast::Type::RefType { elem: tast::Type::Int })
         } else {
             ()
         };
@@ -3000,14 +3004,14 @@ fn collect_type_definition_fields(
 
 fn runtime_struct(value: tast::Type) -> StructDef {
     match tast::resolve_type(value) {
-        tast::Type::Tuple(values) => {
+        tast::Type::Tuple { items: values } => {
             let fields: Vec[(string, Type)] = Vec::new();
             for index in range(0, values.len()) {
                 fields.push(("_" + index.to_string(), lower_type(values.get(index))))
             };
             StructDef { name: type_name(value), fields }
         },
-        tast::Type::RefType(elem) => {
+        tast::Type::RefType { elem } => {
             let fields: Vec[(string, Type)] = Vec::new();
             fields.push(("value", lower_type(elem)));
             StructDef {
@@ -3015,7 +3019,7 @@ fn runtime_struct(value: tast::Type) -> StructDef {
                 fields,
             }
         },
-        tast::Type::VecType(elem) => {
+        tast::Type::VecType { elem } => {
             let fields: Vec[(string, Type)] = Vec::new();
             fields.push(("items", Type::Slice(lower_type(elem))));
             StructDef {
