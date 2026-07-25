@@ -33,16 +33,18 @@ fn builtin_struct_instance(
 ) -> Option[StructDef] {
     if value.base_name == "FnIterator" && value.args.len() == 1 {
         let result_ty = match find_instance(instances, "Option", value.args) {
-            Option::Some(instance) => Type::Named(go_user_type_name(instance.name)),
+            Option::Some(instance) => Type::Named { name: go_user_type_name(instance.name) },
             Option::None => {
-                Type::Named(go_user_type_name(
-                    "Option__" + compact_type(value.args.get(0)),
-                ))
+                Type::Named {
+                    name: go_user_type_name(
+                                        "Option__" + compact_type(value.args.get(0)),
+                                    ),
+                }
             },
         };
         let params: Vec[Type] = Vec::new();
         let fields: Vec[(string, Type)] = Vec::new();
-        fields.push(("next_fn", Type::Func(params, result_ty)));
+        fields.push(("next_fn", Type::Func { params, ret_ty: result_ty }));
         Option::Some(StructDef {
             name: go_user_type_name(value.name),
             fields,
@@ -52,7 +54,7 @@ fn builtin_struct_instance(
         params.push(lower_type(value.args.get(0)));
         let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("iterator", lower_type(value.args.get(2))));
-        fields.push(("map_fn", Type::Func(params, lower_type(value.args.get(1)))));
+        fields.push(("map_fn", Type::Func { params, ret_ty: lower_type(value.args.get(1)) }));
         Option::Some(StructDef {
             name: go_user_type_name(value.name),
             fields,
@@ -62,7 +64,7 @@ fn builtin_struct_instance(
         params.push(lower_type(value.args.get(0)));
         let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("iterator", lower_type(value.args.get(1))));
-        fields.push(("predicate", Type::Func(params, Type::Bool)));
+        fields.push(("predicate", Type::Func { params, ret_ty: Type::Bool }));
         Option::Some(StructDef {
             name: go_user_type_name(value.name),
             fields,
@@ -428,8 +430,8 @@ fn tag_only_const_specs(
         );
         specs.push(ConstSpec {
             name: variant_name,
-            ty: Type::Named(owner_go_name),
-            value: Expr::Int(index.to_string()),
+            ty: Type::Named { name: owner_go_name },
+            value: Expr::Int { value: index.to_string() },
         });
         add_variant_info(variants, VariantInfo {
             owner_name: instance.name,
@@ -539,7 +541,7 @@ fn emit_enum_instance(
                         );
                         items.push(Item::Struct(StructDef { name: variant_name, fields }));
                         items.push(Item::Method(Method {
-                            receiver: ("_", Type::Named(variant_name)),
+                            receiver: ("_", Type::Named { name: variant_name }),
                             name: marker,
                             params: Vec::new(),
                             ret_ty: Option::None,
@@ -726,7 +728,7 @@ pub fn variant_type(
             if value.tag_only {
                 Option::None
             } else {
-                Option::Some(Type::Named(value.variant_name))
+                Option::Some(Type::Named { name: value.variant_name })
             }
         },
         Option::None => Option::None,
@@ -774,11 +776,13 @@ fn last_separator(value: string) -> int {
 pub fn constructor_type(value: tast::Constructor) -> Type {
     let separator = last_separator(value.name);
     if value.is_struct || separator < 0 {
-        Type::Named(go_user_type_name(value.name))
+        Type::Named { name: go_user_type_name(value.name) }
     } else {
-        Type::Named(qualified_variant_go_name(
-            value.name.byte_slice(0, separator),
-            value.name.byte_slice(separator + 2, value.name.byte_len()),
-        ))
+        Type::Named {
+            name: qualified_variant_go_name(
+                        value.name.byte_slice(0, separator),
+                        value.name.byte_slice(separator + 2, value.name.byte_len()),
+                    ),
+        }
     }
 }

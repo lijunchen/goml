@@ -27,21 +27,23 @@ fn add_reachable(values: NameSet, value: string) -> unit {
 
 fn collect_type_names(result: NameSet, value: Type) -> unit {
     match value {
-        Type::Named(name) => add_reachable(result, name),
-        Type::Pointer(inner) | Type::Array(_, inner) | Type::Slice(inner) | Type::Chan(inner) => {
+        Type::Named { name } => add_reachable(result, name),
+        Type::Pointer { elem: inner } | Type::Array { len: _, elem: inner } | Type::Slice { elem: inner } | Type::Chan {
+            elem: inner,
+        } => {
             collect_type_names(result, inner)
         },
-        Type::Map(key, value) => {
+        Type::Map { key, value } => {
             collect_type_names(result, key);
             collect_type_names(result, value)
         },
-        Type::Func(params, ret_ty) => {
+        Type::Func { params, ret_ty } => {
             for param in params {
                 collect_type_names(result, param)
             };
             collect_type_names(result, ret_ty)
         },
-        Type::Multi(values) => {
+        Type::Multi { items: values } => {
             for value in values {
                 collect_type_names(result, value)
             }
@@ -68,56 +70,56 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
 
 fn collect_expr_names(result: NameSet, value: Expr) -> unit {
     match value {
-        Expr::Var(name) => add_reachable(result, name),
-        Expr::Call(func, args) => {
+        Expr::Var { name } => add_reachable(result, name),
+        Expr::Call { func, args } => {
             collect_expr_names(result, func);
             for arg in args {
                 collect_expr_names(result, arg)
             }
         },
-        Expr::Unary(_, expr) => collect_expr_names(result, expr),
-        Expr::Binary(_, lhs, rhs) => {
+        Expr::Unary { op: _, expr } => collect_expr_names(result, expr),
+        Expr::Binary { op: _, lhs, rhs } => {
             collect_expr_names(result, lhs);
             collect_expr_names(result, rhs)
         },
-        Expr::Field(expr, _) => collect_expr_names(result, expr),
-        Expr::Index(expr, index) => {
+        Expr::Field { expr, field_name: _ } => collect_expr_names(result, expr),
+        Expr::Index { base: expr, index } => {
             collect_expr_names(result, expr);
             collect_expr_names(result, index)
         },
-        Expr::Slice(expr, start, end) => {
+        Expr::Slice { base: expr, start, end } => {
             collect_expr_names(result, expr);
             collect_expr_names(result, start);
             collect_expr_names(result, end)
         },
-        Expr::Cast(expr, ty) | Expr::Convert(ty, expr) => {
+        Expr::Cast { expr, ty } | Expr::Convert { ty, expr } => {
             collect_expr_names(result, expr);
             collect_type_names(result, ty)
         },
-        Expr::Make(ty, args) => {
+        Expr::Make { ty, args } => {
             collect_type_names(result, ty);
             for arg in args {
                 collect_expr_names(result, arg)
             }
         },
-        Expr::Send(channel, value) => {
+        Expr::Send { channel, value } => {
             collect_expr_names(result, channel);
             collect_expr_names(result, value)
         },
-        Expr::Receive(channel) => collect_expr_names(result, channel),
-        Expr::StructLiteral(ty, fields) => {
+        Expr::Receive { channel } => collect_expr_names(result, channel),
+        Expr::StructLiteral { ty, fields } => {
             collect_type_names(result, ty);
             for field in fields {
                 collect_expr_names(result, field.1)
             }
         },
-        Expr::ArrayLiteral(ty, values) => {
+        Expr::ArrayLiteral { ty, items: values } => {
             collect_type_names(result, ty);
             for value in values {
                 collect_expr_names(result, value)
             }
         },
-        Expr::FuncLit(params, ret_ty, body) => {
+        Expr::FuncLit { params, ret_ty, body } => {
             for param in params {
                 collect_type_names(result, param.1)
             };
@@ -126,44 +128,44 @@ fn collect_expr_names(result: NameSet, value: Expr) -> unit {
         },
         Expr::Nil
         | Expr::Unit
-        | Expr::Bool(_)
-        | Expr::Int(_)
-        | Expr::Float(_)
-        | Expr::String(_) => (),
+        | Expr::Bool { value: _ }
+        | Expr::Int { value: _ }
+        | Expr::Float { value: _ }
+        | Expr::String { value: _ } => (),
     }
 }
 
 fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
     match value {
-        Stmt::Expr(expr) | Stmt::Go(expr) => collect_expr_names(result, expr),
-        Stmt::Var(_, ty, initial) => {
+        Stmt::Expr { expr } | Stmt::Go { call: expr } => collect_expr_names(result, expr),
+        Stmt::Var { name: _, ty, value: initial } => {
             collect_type_names(result, ty);
             match initial {
                 Option::Some(expr) => collect_expr_names(result, expr),
                 Option::None => (),
             }
         },
-        Stmt::Assign(_, expr) => collect_expr_names(result, expr),
-        Stmt::FieldAssign(target, _, expr) => {
+        Stmt::Assign { name: _, value: expr } => collect_expr_names(result, expr),
+        Stmt::FieldAssign { target, field_name: _, value: expr } => {
             collect_expr_names(result, target);
             collect_expr_names(result, expr)
         },
-        Stmt::IndexAssign(target, index, expr) => {
+        Stmt::IndexAssign { base: target, index, value: expr } => {
             collect_expr_names(result, target);
             collect_expr_names(result, index);
             collect_expr_names(result, expr)
         },
-        Stmt::MultiAssign(_, expr) => collect_expr_names(result, expr),
-        Stmt::Return(expr) => match expr {
+        Stmt::MultiAssign { names: _, value: expr } => collect_expr_names(result, expr),
+        Stmt::Return { expr } => match expr {
             Option::Some(expr) => collect_expr_names(result, expr),
             Option::None => (),
         },
-        Stmt::ReturnMulti(values) => {
+        Stmt::ReturnMulti { exprs: values } => {
             for value in values {
                 collect_expr_names(result, value)
             }
         },
-        Stmt::If(cond, then_, else_) => {
+        Stmt::If { cond, then_, else_ } => {
             collect_expr_names(result, cond);
             collect_block_names(result, then_);
             match else_ {
@@ -171,12 +173,12 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                 Option::None => (),
             }
         },
-        Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => collect_block_names(result, body),
-        Stmt::Range(_, expr, body) => {
+        Stmt::Loop { body } | Stmt::LabeledLoop { label: _, body } => collect_block_names(result, body),
+        Stmt::Range { names: _, expr, body } => {
             collect_expr_names(result, expr);
             collect_block_names(result, body)
         },
-        Stmt::Switch(expr, cases, default) => {
+        Stmt::Switch { expr, cases, default } => {
             collect_expr_names(result, expr);
             for case in cases {
                 collect_expr_names(result, case.value);
@@ -187,7 +189,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                 Option::None => (),
             }
         },
-        Stmt::TypeSwitch(_, expr, cases, default) => {
+        Stmt::TypeSwitch { binding: _, expr, cases, default } => {
             collect_expr_names(result, expr);
             for case in cases {
                 collect_type_names(result, case.ty);
@@ -199,9 +201,9 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
             }
         },
         Stmt::Break
-        | Stmt::BreakLabel(_)
+        | Stmt::BreakLabel { label: _ }
         | Stmt::Continue
-        | Stmt::Panic(_)
+        | Stmt::Panic { message: _ }
         | Stmt::Unreachable => (),
     }
 }

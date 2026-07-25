@@ -53,50 +53,50 @@ fn remove_name(values: DceNames, expected: string) -> unit {
 
 fn add_expr_uses(values: DceNames, value: Expr) -> unit {
     match value {
-        Expr::Var(name) => add_name(values, name),
-        Expr::Call(func, args) => {
+        Expr::Var { name } => add_name(values, name),
+        Expr::Call { func, args } => {
             add_expr_uses(values, func);
             for arg in args {
                 add_expr_uses(values, arg)
             }
         },
-        Expr::Unary(_, expr) => add_expr_uses(values, expr),
-        Expr::Binary(_, lhs, rhs) => {
+        Expr::Unary { op: _, expr } => add_expr_uses(values, expr),
+        Expr::Binary { op: _, lhs, rhs } => {
             add_expr_uses(values, lhs);
             add_expr_uses(values, rhs)
         },
-        Expr::Field(expr, _) => add_expr_uses(values, expr),
-        Expr::Index(expr, index) => {
+        Expr::Field { expr, field_name: _ } => add_expr_uses(values, expr),
+        Expr::Index { base: expr, index } => {
             add_expr_uses(values, expr);
             add_expr_uses(values, index)
         },
-        Expr::Slice(expr, start, end) => {
+        Expr::Slice { base: expr, start, end } => {
             add_expr_uses(values, expr);
             add_expr_uses(values, start);
             add_expr_uses(values, end)
         },
-        Expr::Cast(expr, _) | Expr::Convert(_, expr) => add_expr_uses(values, expr),
-        Expr::Make(_, args) => {
+        Expr::Cast { expr, ty: _ } | Expr::Convert { ty: _, expr } => add_expr_uses(values, expr),
+        Expr::Make { ty: _, args } => {
             for arg in args {
                 add_expr_uses(values, arg)
             }
         },
-        Expr::Send(channel, value) => {
+        Expr::Send { channel, value } => {
             add_expr_uses(values, channel);
             add_expr_uses(values, value)
         },
-        Expr::Receive(channel) => add_expr_uses(values, channel),
-        Expr::StructLiteral(_, fields) => {
+        Expr::Receive { channel } => add_expr_uses(values, channel),
+        Expr::StructLiteral { ty: _, fields } => {
             for field in fields {
                 add_expr_uses(values, field.1)
             }
         },
-        Expr::ArrayLiteral(_, items) => {
+        Expr::ArrayLiteral { ty: _, items } => {
             for item in items {
                 add_expr_uses(values, item)
             }
         },
-        Expr::FuncLit(params, _, body) => {
+        Expr::FuncLit { params, ret_ty: _, body } => {
             let uses = new_dce_names();
             add_block_uses(uses, body);
             for param in params {
@@ -106,41 +106,41 @@ fn add_expr_uses(values: DceNames, value: Expr) -> unit {
         },
         Expr::Nil
         | Expr::Unit
-        | Expr::Bool(_)
-        | Expr::Int(_)
-        | Expr::Float(_)
-        | Expr::String(_) => (),
+        | Expr::Bool { value: _ }
+        | Expr::Int { value: _ }
+        | Expr::Float { value: _ }
+        | Expr::String { value: _ } => (),
     }
 }
 
 fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
     match value {
-        Stmt::Expr(expr) | Stmt::Go(expr) => add_expr_uses(values, expr),
-        Stmt::Var(_, _, initial) => match initial {
+        Stmt::Expr { expr } | Stmt::Go { call: expr } => add_expr_uses(values, expr),
+        Stmt::Var { name: _, ty: _, value: initial } => match initial {
             Option::Some(expr) => add_expr_uses(values, expr),
             Option::None => (),
         },
-        Stmt::Assign(_, expr) => add_expr_uses(values, expr),
-        Stmt::FieldAssign(target, _, expr) => {
+        Stmt::Assign { name: _, value: expr } => add_expr_uses(values, expr),
+        Stmt::FieldAssign { target, field_name: _, value: expr } => {
             add_expr_uses(values, target);
             add_expr_uses(values, expr)
         },
-        Stmt::IndexAssign(target, index, expr) => {
+        Stmt::IndexAssign { base: target, index, value: expr } => {
             add_expr_uses(values, target);
             add_expr_uses(values, index);
             add_expr_uses(values, expr)
         },
-        Stmt::MultiAssign(_, expr) => add_expr_uses(values, expr),
-        Stmt::Return(expr) => match expr {
+        Stmt::MultiAssign { names: _, value: expr } => add_expr_uses(values, expr),
+        Stmt::Return { expr } => match expr {
             Option::Some(expr) => add_expr_uses(values, expr),
             Option::None => (),
         },
-        Stmt::ReturnMulti(exprs) => {
+        Stmt::ReturnMulti { exprs } => {
             for expr in exprs {
                 add_expr_uses(values, expr)
             }
         },
-        Stmt::If(cond, then_, else_) => {
+        Stmt::If { cond, then_, else_ } => {
             add_expr_uses(values, cond);
             add_block_uses(values, then_);
             match else_ {
@@ -148,8 +148,8 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
                 Option::None => (),
             }
         },
-        Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => add_block_uses(values, body),
-        Stmt::Range(names, expr, body) => {
+        Stmt::Loop { body } | Stmt::LabeledLoop { label: _, body } => add_block_uses(values, body),
+        Stmt::Range { names, expr, body } => {
             add_expr_uses(values, expr);
             let body_uses = new_dce_names();
             add_block_uses(body_uses, body);
@@ -158,7 +158,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             };
             add_names(values, body_uses)
         },
-        Stmt::Switch(expr, cases, default) => {
+        Stmt::Switch { expr, cases, default } => {
             add_expr_uses(values, expr);
             for case in cases {
                 add_expr_uses(values, case.value);
@@ -169,7 +169,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
                 Option::None => (),
             }
         },
-        Stmt::TypeSwitch(bind, expr, cases, default) => {
+        Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
             add_expr_uses(values, expr);
             let body_uses = new_dce_names();
             for case in cases {
@@ -186,9 +186,9 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             add_names(values, body_uses)
         },
         Stmt::Break
-        | Stmt::BreakLabel(_)
+        | Stmt::BreakLabel { label: _ }
         | Stmt::Continue
-        | Stmt::Panic(_)
+        | Stmt::Panic { message: _ }
         | Stmt::Unreachable => (),
     }
 }
@@ -204,35 +204,35 @@ fn free_vars_in_block(value: Block) -> DceNames {
     let declared = new_dce_names();
     for stmt in value.stmts {
         match stmt {
-            Stmt::Expr(expr) | Stmt::Go(expr) => add_expr_uses(used, expr),
-            Stmt::Var(name, _, initial) => {
+            Stmt::Expr { expr } | Stmt::Go { call: expr } => add_expr_uses(used, expr),
+            Stmt::Var { name, ty: _, value: initial } => {
                 add_name(declared, name);
                 match initial {
                     Option::Some(expr) => add_expr_uses(used, expr),
                     Option::None => (),
                 }
             },
-            Stmt::Assign(_, expr) => add_expr_uses(used, expr),
-            Stmt::FieldAssign(target, _, expr) => {
+            Stmt::Assign { name: _, value: expr } => add_expr_uses(used, expr),
+            Stmt::FieldAssign { target, field_name: _, value: expr } => {
                 add_expr_uses(used, target);
                 add_expr_uses(used, expr)
             },
-            Stmt::IndexAssign(target, index, expr) => {
+            Stmt::IndexAssign { base: target, index, value: expr } => {
                 add_expr_uses(used, target);
                 add_expr_uses(used, index);
                 add_expr_uses(used, expr)
             },
-            Stmt::MultiAssign(_, expr) => add_expr_uses(used, expr),
-            Stmt::Return(expr) => match expr {
+            Stmt::MultiAssign { names: _, value: expr } => add_expr_uses(used, expr),
+            Stmt::Return { expr } => match expr {
                 Option::Some(expr) => add_expr_uses(used, expr),
                 Option::None => (),
             },
-            Stmt::ReturnMulti(exprs) => {
+            Stmt::ReturnMulti { exprs } => {
                 for expr in exprs {
                     add_expr_uses(used, expr)
                 }
             },
-            Stmt::If(cond, then_, else_) => {
+            Stmt::If { cond, then_, else_ } => {
                 add_expr_uses(used, cond);
                 add_names(used, free_vars_in_block(then_));
                 match else_ {
@@ -240,10 +240,10 @@ fn free_vars_in_block(value: Block) -> DceNames {
                     Option::None => (),
                 }
             },
-            Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => {
+            Stmt::Loop { body } | Stmt::LabeledLoop { label: _, body } => {
                 add_names(used, free_vars_in_block(body))
             },
-            Stmt::Range(names, expr, body) => {
+            Stmt::Range { names, expr, body } => {
                 add_expr_uses(used, expr);
                 let body_uses = free_vars_in_block(body);
                 for name in names {
@@ -251,7 +251,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                 };
                 add_names(used, body_uses)
             },
-            Stmt::Switch(expr, cases, default) => {
+            Stmt::Switch { expr, cases, default } => {
                 add_expr_uses(used, expr);
                 for case in cases {
                     add_expr_uses(used, case.value);
@@ -262,7 +262,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                     Option::None => (),
                 }
             },
-            Stmt::TypeSwitch(bind, expr, cases, default) => {
+            Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
                 add_expr_uses(used, expr);
                 for case in cases {
                     let case_uses = free_vars_in_block(case.body);
@@ -285,9 +285,9 @@ fn free_vars_in_block(value: Block) -> DceNames {
                 }
             },
             Stmt::Break
-            | Stmt::BreakLabel(_)
+            | Stmt::BreakLabel { label: _ }
             | Stmt::Continue
-            | Stmt::Panic(_)
+            | Stmt::Panic { message: _ }
             | Stmt::Unreachable => (),
         }
     };
@@ -299,7 +299,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
 
 fn call_result_must_be_used(value: Expr) -> bool {
     match value {
-        Expr::Var(name) => {
+        Expr::Var { name } => {
             name == "append"
                 || name == "cap"
                 || name == "complex"
@@ -336,7 +336,7 @@ fn call_result_must_be_used(value: Expr) -> bool {
 
 fn append_call(value: Expr) -> bool {
     match value {
-        Expr::Var(name) => name == "append",
+        Expr::Var { name } => name == "append",
         _ => false,
     }
 }
@@ -344,7 +344,7 @@ fn append_call(value: Expr) -> bool {
 fn append_target(values: Vec[Expr]) -> Option[string] {
     if values.len() > 0 {
         match values.get(0) {
-            Expr::Var(name) => Option::Some(name),
+            Expr::Var { name } => Option::Some(name),
             _ => Option::None,
         }
     } else {
@@ -354,22 +354,22 @@ fn append_target(values: Vec[Expr]) -> Option[string] {
 
 fn emit_side_effect(value: Expr) -> Stmt {
     match value {
-        Expr::Call(func, args) => if append_call(func) {
-            let call = Expr::Call(func, args);
+        Expr::Call { func, args } => if append_call(func) {
+            let call = Expr::Call { func, args };
             match append_target(args) {
-                Option::Some(name) => Stmt::Assign(name, call),
-                Option::None => Stmt::Assign("_", call),
+                Option::Some(name) => Stmt::Assign { name, value: call },
+                Option::None => Stmt::Assign { name: "_", value: call },
             }
         } else {
-            Stmt::Expr(Expr::Call(func, args))
+            Stmt::Expr { expr: Expr::Call { func, args } }
         },
-        _ => Stmt::Assign("_", value),
+        _ => Stmt::Assign { name: "_", value },
     }
 }
 
 fn expr_has_side_effects(value: Expr) -> bool {
     match value {
-        Expr::Call(func, args) => {
+        Expr::Call { func, args } => {
             let nested = Ref::new(false);
             for arg in args {
                 if expr_has_side_effects(arg) {
@@ -380,17 +380,17 @@ fn expr_has_side_effects(value: Expr) -> bool {
             };
             append_call(func) || !call_result_must_be_used(func) || nested.get()
         },
-        Expr::Unary(_, expr) => expr_has_side_effects(expr),
-        Expr::Binary(_, lhs, rhs) => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
-        Expr::Field(expr, _) => expr_has_side_effects(expr),
-        Expr::Index(expr, index) => expr_has_side_effects(expr) || expr_has_side_effects(index),
-        Expr::Slice(expr, start, end) => {
+        Expr::Unary { op: _, expr } => expr_has_side_effects(expr),
+        Expr::Binary { op: _, lhs, rhs } => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
+        Expr::Field { expr, field_name: _ } => expr_has_side_effects(expr),
+        Expr::Index { base: expr, index } => expr_has_side_effects(expr) || expr_has_side_effects(index),
+        Expr::Slice { base: expr, start, end } => {
             expr_has_side_effects(expr)
                 || expr_has_side_effects(start)
                 || expr_has_side_effects(end)
         },
-        Expr::Cast(expr, _) | Expr::Convert(_, expr) => expr_has_side_effects(expr),
-        Expr::Make(_, args) => {
+        Expr::Cast { expr, ty: _ } | Expr::Convert { ty: _, expr } => expr_has_side_effects(expr),
+        Expr::Make { ty: _, args } => {
             let found = Ref::new(false);
             for arg in args {
                 if expr_has_side_effects(arg) {
@@ -401,8 +401,8 @@ fn expr_has_side_effects(value: Expr) -> bool {
             };
             found.get()
         },
-        Expr::Send(_, _) | Expr::Receive(_) => true,
-        Expr::StructLiteral(_, fields) => {
+        Expr::Send { channel: _, value: _ } | Expr::Receive { channel: _ } => true,
+        Expr::StructLiteral { ty: _, fields } => {
             let found = Ref::new(false);
             for field in fields {
                 if expr_has_side_effects(field.1) {
@@ -413,7 +413,7 @@ fn expr_has_side_effects(value: Expr) -> bool {
             };
             found.get()
         },
-        Expr::ArrayLiteral(_, items) => {
+        Expr::ArrayLiteral { ty: _, items } => {
             let found = Ref::new(false);
             for item in items {
                 if expr_has_side_effects(item) {
@@ -424,14 +424,14 @@ fn expr_has_side_effects(value: Expr) -> bool {
             };
             found.get()
         },
-        Expr::FuncLit(_, _, _) => false,
+        Expr::FuncLit { params: _, ret_ty: _, body: _ } => false,
         Expr::Nil
         | Expr::Unit
-        | Expr::Var(_)
-        | Expr::Bool(_)
-        | Expr::Int(_)
-        | Expr::Float(_)
-        | Expr::String(_) => false,
+        | Expr::Var { name: _ }
+        | Expr::Bool { value: _ }
+        | Expr::Int { value: _ }
+        | Expr::Float { value: _ }
+        | Expr::String { value: _ } => false,
     }
 }
 
@@ -451,19 +451,19 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
     while index.get() > 0 {
         index.set(index.get() - 1);
         match value.stmts.get(index.get()) {
-            Stmt::Expr(expr) => {
+            Stmt::Expr { expr } => {
                 if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);
-                    output.push(Stmt::Expr(expr))
+                    output.push(Stmt::Expr { expr })
                 } else {
                     ()
                 }
             },
-            Stmt::Go(expr) => {
+            Stmt::Go { call: expr } => {
                 add_expr_uses(live, expr);
-                output.push(Stmt::Go(expr))
+                output.push(Stmt::Go { call: expr })
             },
-            Stmt::Var(name, ty, initial) => {
+            Stmt::Var { name, ty, value: initial } => {
                 if contains_name(live, name) {
                     remove_name(live, name);
                     remove_name(needs_decl, name);
@@ -471,7 +471,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                         Option::Some(expr) => add_expr_uses(live, expr),
                         Option::None => (),
                     };
-                    output.push(Stmt::Var(name, ty, initial))
+                    output.push(Stmt::Var { name, ty, value: initial })
                 } else if contains_name(needs_decl, name) {
                     remove_name(needs_decl, name);
                     match initial {
@@ -482,9 +482,9 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                             } else {
                                 ()
                             };
-                            output.push(Stmt::Var(name, ty, Option::None))
+                            output.push(Stmt::Var { name, ty, value: Option::None })
                         },
-                        Option::None => output.push(Stmt::Var(name, ty, Option::None)),
+                        Option::None => output.push(Stmt::Var { name, ty, value: Option::None }),
                     }
                 } else {
                     match initial {
@@ -500,12 +500,12 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     }
                 }
             },
-            Stmt::Assign(name, expr) => {
+            Stmt::Assign { name, value: expr } => {
                 if name == "_" || contains_name(live, name) {
                     remove_name(live, name);
                     add_expr_uses(live, expr);
                     add_name(needs_decl, name);
-                    output.push(Stmt::Assign(name, expr))
+                    output.push(Stmt::Assign { name, value: expr })
                 } else if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);
                     output.push(emit_side_effect(expr))
@@ -513,39 +513,39 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     ()
                 }
             },
-            Stmt::FieldAssign(target, field, expr) => {
+            Stmt::FieldAssign { target, field_name: field, value: expr } => {
                 add_expr_uses(live, target);
                 add_expr_uses(live, expr);
-                output.push(Stmt::FieldAssign(target, field, expr))
+                output.push(Stmt::FieldAssign { target, field_name: field, value: expr })
             },
-            Stmt::IndexAssign(target, target_index, expr) => {
+            Stmt::IndexAssign { base: target, index: target_index, value: expr } => {
                 add_expr_uses(live, target);
                 add_expr_uses(live, target_index);
                 add_expr_uses(live, expr);
-                output.push(Stmt::IndexAssign(target, target_index, expr))
+                output.push(Stmt::IndexAssign { base: target, index: target_index, value: expr })
             },
-            Stmt::MultiAssign(names, expr) => {
+            Stmt::MultiAssign { names, value: expr } => {
                 for name in names {
                     remove_name(live, name);
                     add_name(needs_decl, name)
                 };
                 add_expr_uses(live, expr);
-                output.push(Stmt::MultiAssign(names, expr))
+                output.push(Stmt::MultiAssign { names, value: expr })
             },
-            Stmt::Return(expr) => {
+            Stmt::Return { expr } => {
                 match expr {
                     Option::Some(value) => add_expr_uses(live, value),
                     Option::None => (),
                 };
-                output.push(Stmt::Return(expr))
+                output.push(Stmt::Return { expr })
             },
-            Stmt::ReturnMulti(exprs) => {
+            Stmt::ReturnMulti { exprs } => {
                 for expr in exprs {
                     add_expr_uses(live, expr)
                 };
-                output.push(Stmt::ReturnMulti(exprs))
+                output.push(Stmt::ReturnMulti { exprs })
             },
-            Stmt::If(cond, then_, else_) => {
+            Stmt::If { cond, then_, else_ } => {
                 let then_result = dce_block_with_live(then_, live);
                 let lowered_else = match else_ {
                     Option::Some(body) => {
@@ -559,25 +559,25 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 add_names(live, then_result.live);
                 add_names(needs_decl, then_result.needs_decl);
                 add_expr_uses(live, cond);
-                output.push(Stmt::If(cond, then_result.block, lowered_else))
+                output.push(Stmt::If { cond, then_: then_result.block, else_: lowered_else })
             },
-            Stmt::Loop(body) => {
+            Stmt::Loop { body } => {
                 let loop_live = copy_names(live);
                 add_names(loop_live, free_vars_in_block(body));
                 let result = dce_block_with_live(body, loop_live);
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
-                output.push(Stmt::Loop(result.block))
+                output.push(Stmt::Loop { body: result.block })
             },
-            Stmt::LabeledLoop(label, body) => {
+            Stmt::LabeledLoop { label, body } => {
                 let loop_live = copy_names(live);
                 add_names(loop_live, free_vars_in_block(body));
                 let result = dce_block_with_live(body, loop_live);
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
-                output.push(Stmt::LabeledLoop(label, result.block))
+                output.push(Stmt::LabeledLoop { label, body: result.block })
             },
-            Stmt::Range(names, expr, body) => {
+            Stmt::Range { names, expr, body } => {
                 let loop_live = copy_names(live);
                 let body_uses = free_vars_in_block(body);
                 for name in names {
@@ -592,12 +592,12 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
                 add_expr_uses(live, expr);
-                output.push(Stmt::Range(names, expr, result.block))
+                output.push(Stmt::Range { names, expr, body: result.block })
             },
             Stmt::Break => output.push(Stmt::Break),
-            Stmt::BreakLabel(label) => output.push(Stmt::BreakLabel(label)),
+            Stmt::BreakLabel { label } => output.push(Stmt::BreakLabel { label }),
             Stmt::Continue => output.push(Stmt::Continue),
-            Stmt::Switch(expr, cases, default) => {
+            Stmt::Switch { expr, cases, default } => {
                 let lowered_cases: Vec[SwitchCase] = Vec::new();
                 for case in cases {
                     let result = dce_block_with_live(case.body, live);
@@ -616,9 +616,9 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     Option::None => Option::None,
                 };
                 add_expr_uses(live, expr);
-                output.push(Stmt::Switch(expr, lowered_cases, lowered_default))
+                output.push(Stmt::Switch { expr, cases: lowered_cases, default: lowered_default })
             },
-            Stmt::TypeSwitch(bind, expr, cases, default) => {
+            Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
                 let lowered_cases: Vec[TypeSwitchCase] = Vec::new();
                 for case in cases {
                     let result = dce_block_with_live(case.body, live);
@@ -650,9 +650,14 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     Option::None => Option::None,
                 };
                 add_expr_uses(live, expr);
-                output.push(Stmt::TypeSwitch(bind, expr, lowered_cases, lowered_default))
+                output.push(Stmt::TypeSwitch {
+                    binding: bind,
+                    expr,
+                    cases: lowered_cases,
+                    default: lowered_default,
+                })
             },
-            Stmt::Panic(message) => output.push(Stmt::Panic(message)),
+            Stmt::Panic { message } => output.push(Stmt::Panic { message }),
             Stmt::Unreachable => output.push(Stmt::Unreachable),
         }
     };

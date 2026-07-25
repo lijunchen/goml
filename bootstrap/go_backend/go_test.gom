@@ -382,11 +382,11 @@ fn keeps_imports_used_by_reachable_types() -> unit {
     let imports: Vec[(string, string)] = Vec::new();
     imports.push(("_goml_bytes", "bytes"));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Var(
-        "buffer",
-        Type::Named("_goml_bytes.Buffer"),
-        Option::None,
-    ));
+    stmts.push(Stmt::Var {
+        name: "buffer",
+        ty: Type::Named { name: "_goml_bytes.Buffer" },
+        value: Option::None,
+    });
     let items: Vec[Item] = Vec::new();
     items.push(Item::ImportGroup(imports));
     items.push(Item::Function(Function {

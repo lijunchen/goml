@@ -207,33 +207,50 @@ pub fn lower_type(value: tast::Type) -> Type {
         tast::Type::Float64 => Type::Float64,
         tast::Type::String => Type::String,
         tast::Type::Char => Type::Char,
-        tast::Type::Tuple { items: _ } => Type::Named(type_name(value)),
-        tast::Type::Con { name } => Type::Named(go_user_type_name(name)),
-        tast::Type::Dyn { trait_name: name } => Type::Named(go_dyn_struct_name(name)),
-        tast::Type::Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named(type_name(value)),
-        tast::Type::App { ty: _, args: _ } => Type::Named(type_name(value)),
-        tast::Type::Array { len: length, elem } => Type::Array(length, lower_type(elem)),
-        tast::Type::Slice { elem } => Type::Slice(lower_type(elem)),
+        tast::Type::Tuple { items: _ } => Type::Named { name: type_name(value) },
+        tast::Type::Con { name } => Type::Named { name: go_user_type_name(name) },
+        tast::Type::Dyn { trait_name: name } => Type::Named { name: go_dyn_struct_name(name) },
+        tast::Type::Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named {
+            name: type_name(value),
+        },
+        tast::Type::App { ty: _, args: _ } => Type::Named { name: type_name(value) },
+        tast::Type::Array { len: length, elem } => Type::Array {
+            len: length,
+            elem: lower_type(elem),
+        },
+        tast::Type::Slice { elem } => Type::Slice { elem: lower_type(elem) },
         tast::Type::VecType { elem } => {
-            Type::Pointer(Type::Named(go_generated_ident("_goml_vec_" + go_ident(encode_type(elem)))))
+            Type::Pointer {
+                elem: Type::Named {
+                                name: go_generated_ident("_goml_vec_" + go_ident(encode_type(elem))),
+                            },
+            }
         },
         tast::Type::RefType { elem } => {
-            Type::Pointer(Type::Named(go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x")))
+            Type::Pointer {
+                elem: Type::Named {
+                                name: go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x"),
+                            },
+            }
         },
         tast::Type::HashMap { key, value } => {
-            Type::Pointer(Type::Named(go_generated_ident(
-                "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
-            )))
+            Type::Pointer {
+                elem: Type::Named {
+                                name: go_generated_ident(
+                                                "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
+                                            ),
+                            },
+            }
         },
-        tast::Type::Channel { elem } => Type::Chan(lower_type(elem)),
-        tast::Type::Param { name } => Type::Named(go_ident(name)),
+        tast::Type::Channel { elem } => Type::Chan { elem: lower_type(elem) },
+        tast::Type::Param { name } => Type::Named { name: go_ident(name) },
         tast::Type::Func { params, ret_ty } => {
             let lowered: Vec[Type] = Vec::new();
             for value in params {
                 lowered.push(lower_type(value))
             };
-            Type::Func(lowered, lower_type(ret_ty))
+            Type::Func { params: lowered, ret_ty: lower_type(ret_ty) }
         },
-        tast::Type::Var(_) | tast::Type::Error => Type::Named(type_name(value)),
+        tast::Type::Var(_) | tast::Type::Error => Type::Named { name: type_name(value) },
     }
 }
