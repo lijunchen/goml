@@ -632,11 +632,11 @@ fn validate_local_definitions(
         let info = ctx.traits.get(index);
         for predicate in info.predicates {
             match predicate {
-                TypePredicate::Trait(for_ty, reference) => {
+                TypePredicate::Trait { for_ty, trait_ref: reference } => {
                     validate_signature_type(ctx, for_ty);
                     validate_trait_reference(ctx, reference)
                 },
-                TypePredicate::Equality(left, right) => {
+                TypePredicate::Equality { lhs: left, rhs: right } => {
                     validate_signature_type(ctx, left);
                     validate_signature_type(ctx, right)
                 },

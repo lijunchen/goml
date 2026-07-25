@@ -153,7 +153,7 @@ fn bool_expr(value: bool) -> Expr {
     Expr::Prim { value: tast::Primitive::Bool(value), ty: tast::Type::Bool }
 }
 
-fn trait_eq_call(left: Expr, right: Expr) -> Expr {
+fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
     let ty = expr_type(left);
     let params: Vec[tast::Type] = Vec::new();
     params.push(ty);
@@ -165,7 +165,7 @@ fn trait_eq_call(left: Expr, right: Expr) -> Expr {
         func: Expr::Var {
                     name: trait_impl_method_name(
                                     tast::TraitRef {
-                                        name: "Eq",
+                                        name: trait_name,
                                         args: Vec::new(),
                                     },
                                     ty,
@@ -197,13 +197,19 @@ fn eq_conjunction(values: Vec[Expr]) -> Expr {
     }
 }
 
-fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
+fn structural_eq(
+    trait_name: string,
+    left: Expr,
+    right: Expr,
+    ty: tast::Type,
+) -> Expr {
     match tast::resolve_type(ty) {
         tast::Type::Tuple { items: types } => {
             let values: Vec[Expr] = Vec::new();
             for index in range(0, types.len()) {
                 let item_ty = types.get(index);
                 values.push(structural_eq(
+                    trait_name,
                     Expr::Proj { tuple: left, index, ty: item_ty },
                     Expr::Proj { tuple: right, index, ty: item_ty },
                     item_ty,
@@ -229,6 +235,7 @@ fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
                 right_args.push(right);
                 right_args.push(index_expr);
                 values.push(structural_eq(
+                    trait_name,
                     Expr::Call {
                         func: Expr::Callable {
                                                     callable: tast::Callable::Intrinsic("array.get"),
@@ -250,12 +257,13 @@ fn structural_eq(left: Expr, right: Expr, ty: tast::Type) -> Expr {
             };
             eq_conjunction(values)
         },
-        _ => trait_eq_call(left, right),
+        _ => trait_eq_call(trait_name, left, right),
     }
 }
 
 fn lower_eq_expr(
     ctx: Lowerer,
+    trait_name: string,
     op: ast::BinaryOp,
     left: tast::Expr,
     right: tast::Expr,
@@ -282,6 +290,7 @@ fn lower_eq_expr(
                 block: Block {
                                     stmts,
                                     tail: Option::Some(structural_eq(
+                                        trait_name,
                                         Expr::Var { name: left_name, ty: operand_ty },
                                         Expr::Var { name: right_name, ty: operand_ty },
                                         operand_ty,
@@ -290,7 +299,7 @@ fn lower_eq_expr(
                 ty: tast::Type::Bool,
             }
         },
-        _ => trait_eq_call(left_value, right_value),
+        _ => trait_eq_call(trait_name, left_value, right_value),
     };
     if match op {
         ast::BinaryOp::NotEq => true,
@@ -1163,9 +1172,9 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             lhs: left,
             rhs: right,
             ty: _,
-            resolution: tast::BinaryResolution::EqTrait,
+            resolution: tast::BinaryResolution::Overloaded { trait_name },
         } => {
-            lower_eq_expr(ctx, op, left, right)
+            lower_eq_expr(ctx, trait_name, op, left, right)
         },
         tast::Expr::Binary { op, lhs: left, rhs: right, ty, resolution: _ } => {
             Expr::Binary { op, lhs: lower_expr(ctx, left), rhs: lower_expr(ctx, right), ty }

@@ -1953,21 +1953,24 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
             Item::Function(value) => {
                 testing::assert_eq(value.predicates.len(), 4);
                 match value.predicates.get(0) {
-                    TypePredicate::Trait(Type::Param { name: param }, reference) => {
+                    TypePredicate::Trait {
+                        for_ty: Type::Param { name: param },
+                        trait_ref: reference,
+                    } => {
                         testing::assert_eq(param, "S");
                         testing::assert_eq(reference.name, "IntoIterator")
                     },
                     _ => testing::fail("expected IntoIterator predicate"),
                 };
                 match value.predicates.get(1) {
-                    TypePredicate::Equality(
-                        Type::Projection {
-                            for_ty: Type::Param { name: param },
-                            name,
-                            trait_ref: Option::Some(reference),
-                        },
-                        Type::Int32,
-                    ) => {
+                    TypePredicate::Equality {
+                        lhs: Type::Projection {
+                                                    for_ty: Type::Param { name: param },
+                                                    name,
+                                                    trait_ref: Option::Some(reference),
+                                                },
+                        rhs: Type::Int32,
+                    } => {
                         testing::assert_eq(param, "S");
                         testing::assert_eq(name, "Item");
                         testing::assert_eq(reference.name, "IntoIterator")
@@ -1975,22 +1978,22 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
                     _ => testing::fail("expected explicit Item equality"),
                 };
                 match value.predicates.get(2) {
-                    TypePredicate::Equality(
-                        Type::Projection {
-                            for_ty: Type::Param { name: item_param },
-                            name: item_name,
-                            trait_ref: Option::Some(into_iterator),
-                        },
-                        Type::Projection {
-                            for_ty: Type::Projection {
-                                                            for_ty: Type::Param { name: iter_param },
-                                                            name: iter_name,
-                                                            trait_ref: Option::Some(iter_owner),
-                                                        },
-                            name: iterator_item_name,
-                            trait_ref: Option::Some(iterator),
-                        },
-                    ) => {
+                    TypePredicate::Equality {
+                        lhs: Type::Projection {
+                                                    for_ty: Type::Param { name: item_param },
+                                                    name: item_name,
+                                                    trait_ref: Option::Some(into_iterator),
+                                                },
+                        rhs: Type::Projection {
+                                                    for_ty: Type::Projection {
+                                                                                    for_ty: Type::Param { name: iter_param },
+                                                                                    name: iter_name,
+                                                                                    trait_ref: Option::Some(iter_owner),
+                                                                                },
+                                                    name: iterator_item_name,
+                                                    trait_ref: Option::Some(iterator),
+                                                },
+                    } => {
                         testing::assert_eq(item_param, "S");
                         testing::assert_eq(item_name, "Item");
                         testing::assert_eq(into_iterator.name, "IntoIterator");
@@ -2003,14 +2006,14 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
                     _ => testing::fail("expected implied Item equality"),
                 };
                 match value.predicates.get(3) {
-                    TypePredicate::Trait(
-                        Type::Projection {
-                            for_ty: Type::Param { name: param },
-                            name,
-                            trait_ref: Option::Some(owner),
-                        },
-                        reference,
-                    ) => {
+                    TypePredicate::Trait {
+                        for_ty: Type::Projection {
+                                                    for_ty: Type::Param { name: param },
+                                                    name,
+                                                    trait_ref: Option::Some(owner),
+                                                },
+                        trait_ref: reference,
+                    } => {
                         testing::assert_eq(param, "S");
                         testing::assert_eq(name, "IntoIter");
                         testing::assert_eq(owner.name, "IntoIterator");

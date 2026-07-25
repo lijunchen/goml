@@ -134,14 +134,14 @@ fn artifact_trait_definition_predicate(
     trait_names: Vec[string],
 ) -> tast::TypePredicate {
     match value {
-        tast::TypePredicate::Trait(for_ty, trait_ref) => tast::TypePredicate::Trait(
-            artifact_trait_definition_type(for_ty, owner, trait_names),
-            artifact_trait_definition_ref(trait_ref, owner, trait_names),
-        ),
-        tast::TypePredicate::Equality(left, right) => tast::TypePredicate::Equality(
-            artifact_trait_definition_type(left, owner, trait_names),
-            artifact_trait_definition_type(right, owner, trait_names),
-        ),
+        tast::TypePredicate::Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
+            for_ty: artifact_trait_definition_type(for_ty, owner, trait_names),
+            trait_ref: artifact_trait_definition_ref(trait_ref, owner, trait_names),
+        },
+        tast::TypePredicate::Equality { lhs: left, rhs: right } => tast::TypePredicate::Equality {
+            lhs: artifact_trait_definition_type(left, owner, trait_names),
+            rhs: artifact_trait_definition_type(right, owner, trait_names),
+        },
     }
 }
 

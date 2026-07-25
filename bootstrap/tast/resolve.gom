@@ -733,7 +733,7 @@ fn context_trait_bound_satisfied(
     let reference = normalize_trait_ref(ctx, reference);
     for predicate in ctx.predicates {
         match predicate {
-            TypePredicate::Trait(candidate_ty, candidate_ref) => {
+            TypePredicate::Trait { for_ty: candidate_ty, trait_ref: candidate_ref } => {
                 if types_equal(normalize_type(ctx, candidate_ty), bound_ty)
                     && trait_ref_equal(normalize_trait_ref(ctx, candidate_ref), reference) {
                     found.set(true)
@@ -741,7 +741,7 @@ fn context_trait_bound_satisfied(
                     ()
                 }
             },
-            TypePredicate::Equality(_, _) => (),
+            TypePredicate::Equality { lhs: _, rhs: _ } => (),
         }
     };
     found.get()
@@ -756,14 +756,14 @@ fn predicates_satisfied_at(
     for predicate in predicates {
         if satisfied.get() {
             match predicate {
-                TypePredicate::Trait(bound_ty, reference) => {
+                TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
                     if !trait_bound_satisfied_at(ctx, bound_ty, reference, depth) {
                         satisfied.set(false)
                     } else {
                         ()
                     }
                 },
-                TypePredicate::Equality(left, right) => {
+                TypePredicate::Equality { lhs: left, rhs: right } => {
                     if !unify(normalize_type(ctx, left), normalize_type(ctx, right)) {
                         satisfied.set(false)
                     } else {
@@ -874,7 +874,7 @@ fn predicate_requirement_message(
 ) -> string {
     if fallback == "type predicate not satisfied" {
         match value {
-            TypePredicate::Trait(for_ty, reference) => {
+            TypePredicate::Trait { for_ty, trait_ref: reference } => {
                 let unresolved = Ref::new(contains_unbound_type_variable(for_ty));
                 let ambiguous = Ref::new(contains_unbound_any_variable(for_ty));
                 for value in reference.args {
@@ -903,7 +903,7 @@ fn predicate_requirement_message(
                         + ">"
                 }
             },
-            TypePredicate::Equality(_, _) => fallback,
+            TypePredicate::Equality { lhs: _, rhs: _ } => fallback,
         }
     } else {
         fallback
@@ -961,7 +961,7 @@ fn type_contains_error(value: Type) -> bool {
 
 fn predicate_contains_error(value: TypePredicate) -> bool {
     match value {
-        TypePredicate::Trait(for_ty, reference) => {
+        TypePredicate::Trait { for_ty, trait_ref: reference } => {
             let found = Ref::new(type_contains_error(for_ty));
             for value in reference.args {
                 if type_contains_error(value) {
@@ -972,7 +972,7 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
             };
             found.get()
         },
-        TypePredicate::Equality(left, right) => {
+        TypePredicate::Equality { lhs: left, rhs: right } => {
             type_contains_error(left) || type_contains_error(right)
         },
     }
@@ -983,7 +983,7 @@ fn resolve_required_predicates(ctx: Checker) -> unit {
     let spans: Vec[Option[ast::Span]] = Vec::new();
     for requirement in ctx.required_predicates {
         match requirement.predicate {
-            TypePredicate::Trait(for_ty, _) => {
+            TypePredicate::Trait { for_ty, trait_ref: _ } => {
                 if contains_unbound_type_variable(for_ty)
                     && is_numeric_type(for_ty)
                 {
@@ -992,7 +992,7 @@ fn resolve_required_predicates(ctx: Checker) -> unit {
                     ()
                 }
             },
-            TypePredicate::Equality(_, _) => (),
+            TypePredicate::Equality { lhs: _, rhs: _ } => (),
         };
         if predicate_contains_error(requirement.predicate)
             || predicates_satisfied_at(
@@ -1988,24 +1988,24 @@ fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
         Type::HashMap { key, value: _ } => {
             require_predicate(
                 ctx,
-                TypePredicate::Trait(
-                    key,
-                    TraitRef {
-                        name: "Eq",
-                        args: Vec::new(),
-                    },
-                ),
+                TypePredicate::Trait {
+                    for_ty: key,
+                    trait_ref: TraitRef {
+                                            name: "Eq",
+                                            args: Vec::new(),
+                                        },
+                },
                 "type predicate not satisfied",
             );
             require_predicate(
                 ctx,
-                TypePredicate::Trait(
-                    key,
-                    TraitRef {
-                        name: "Hash",
-                        args: Vec::new(),
-                    },
-                ),
+                TypePredicate::Trait {
+                    for_ty: key,
+                    trait_ref: TraitRef {
+                                            name: "Hash",
+                                            args: Vec::new(),
+                                        },
+                },
                 "type predicate not satisfied",
             )
         },
@@ -2114,7 +2114,7 @@ fn builtin_trait_info(name: string) -> Option[TraitInfo] {
             trait_ref: Option::Some(iterator),
         };
         let predicates = Vec::new();
-        predicates.push(TypePredicate::Equality(item, iterator_item));
+        predicates.push(TypePredicate::Equality { lhs: item, rhs: iterator_item });
         let into_iter_bounds = Vec::new();
         into_iter_bounds.push(iterator);
         let associated_types = Vec::new();
@@ -2200,12 +2200,12 @@ fn contains_trait_ref(values: Vec[TraitRef], expected: TraitRef) -> bool {
 fn predicate_equal(left: TypePredicate, right: TypePredicate) -> bool {
     match (left, right) {
         (
-            TypePredicate::Trait(left_ty, left_ref),
-            TypePredicate::Trait(right_ty, right_ref),
+            TypePredicate::Trait { for_ty: left_ty, trait_ref: left_ref },
+            TypePredicate::Trait { for_ty: right_ty, trait_ref: right_ref },
         ) => types_equal(left_ty, right_ty) && trait_ref_equal(left_ref, right_ref),
         (
-            TypePredicate::Equality(left_lhs, left_rhs),
-            TypePredicate::Equality(right_lhs, right_rhs),
+            TypePredicate::Equality { lhs: left_lhs, rhs: left_rhs },
+            TypePredicate::Equality { lhs: right_lhs, rhs: right_rhs },
         ) => types_equal(left_lhs, right_lhs) && types_equal(left_rhs, right_rhs),
         _ => false,
     }
@@ -2289,7 +2289,7 @@ fn projection_candidates_from_predicates(
     let result = Vec::new();
     for predicate in predicates {
         match predicate {
-            TypePredicate::Trait(for_ty, trait_ref) => match find_trait(
+            TypePredicate::Trait { for_ty, trait_ref } => match find_trait(
                 ctx,
                 trait_ref.name,
             ) {
@@ -2306,7 +2306,7 @@ fn projection_candidates_from_predicates(
                 },
                 Option::None => (),
             },
-            TypePredicate::Equality(_, _) => (),
+            TypePredicate::Equality { lhs: _, rhs: _ } => (),
         }
     };
     result
@@ -2466,14 +2466,14 @@ fn resolve_projection_predicates(
     let result = Vec::new();
     for predicate in predicates {
         result.push(match predicate {
-            TypePredicate::Trait(for_ty, trait_ref) => TypePredicate::Trait(
-                resolve_projection_type(ctx, for_ty, candidates, report),
-                resolve_projection_trait_ref(ctx, trait_ref, candidates, report),
-            ),
-            TypePredicate::Equality(left, right) => TypePredicate::Equality(
-                resolve_projection_type(ctx, left, candidates, report),
-                resolve_projection_type(ctx, right, candidates, report),
-            ),
+            TypePredicate::Trait { for_ty, trait_ref } => TypePredicate::Trait {
+                for_ty: resolve_projection_type(ctx, for_ty, candidates, report),
+                trait_ref: resolve_projection_trait_ref(ctx, trait_ref, candidates, report),
+            },
+            TypePredicate::Equality { lhs: left, rhs: right } => TypePredicate::Equality {
+                lhs: resolve_projection_type(ctx, left, candidates, report),
+                rhs: resolve_projection_type(ctx, right, candidates, report),
+            },
         })
     };
     result
@@ -2487,11 +2487,11 @@ fn resolve_signature_predicates(
     if report {
         for predicate in predicates {
             match predicate {
-                TypePredicate::Trait(for_ty, reference) => {
+                TypePredicate::Trait { for_ty, trait_ref: reference } => {
                     validate_signature_type(ctx, for_ty);
                     validate_trait_reference(ctx, reference)
                 },
-                TypePredicate::Equality(left, right) => {
+                TypePredicate::Equality { lhs: left, rhs: right } => {
                     validate_signature_type(ctx, left);
                     validate_signature_type(ctx, right)
                 },
@@ -2894,9 +2894,9 @@ fn expand_implied_predicates(
         let predicate = result.get(index.get());
         index.set(index.get() + 1);
         match predicate {
-            TypePredicate::Trait(for_ty, reference) => {
+            TypePredicate::Trait { for_ty, trait_ref: reference } => {
                 for application in trait_ref_closure(ctx, reference) {
-                    push_predicate(result, TypePredicate::Trait(for_ty, application));
+                    push_predicate(result, TypePredicate::Trait { for_ty, trait_ref: application });
                     match find_trait(ctx, application.name) {
                         Option::Some(info) => if info.generics.len() == application.args.len() {
                             let substitutions = trait_substitutions(
@@ -2920,10 +2920,10 @@ fn expand_implied_predicates(
                                 for bound in associated.bounds {
                                     push_predicate(
                                         result,
-                                        TypePredicate::Trait(
-                                            projection,
-                                            substitute_trait_ref(bound, substitutions),
-                                        ),
+                                        TypePredicate::Trait {
+                                            for_ty: projection,
+                                            trait_ref: substitute_trait_ref(bound, substitutions),
+                                        },
                                     )
                                 }
                             }
@@ -2934,7 +2934,7 @@ fn expand_implied_predicates(
                     }
                 }
             },
-            TypePredicate::Equality(_, _) => (),
+            TypePredicate::Equality { lhs: _, rhs: _ } => (),
         }
     };
     result
@@ -2950,7 +2950,7 @@ fn resolve_predicate_method(
     let candidates = Ref::new("");
     for predicate in ctx.predicates {
         match predicate {
-            TypePredicate::Trait(bound_ty, reference) => {
+            TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
                 if types_equal(normalize_type(ctx, bound_ty), receiver) {
                     match resolve_trait_reference_method(
                         ctx,
@@ -2976,7 +2976,7 @@ fn resolve_predicate_method(
                     ()
                 }
             },
-            TypePredicate::Equality(_, _) => (),
+            TypePredicate::Equality { lhs: _, rhs: _ } => (),
         }
     };
     if matches.get() == 1 {

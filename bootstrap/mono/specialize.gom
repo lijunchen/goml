@@ -1279,7 +1279,7 @@ fn complete_function_bindings(
         let previous_len = bindings.len();
         for predicate in value.predicates {
             match predicate {
-                tast::TypePredicate::Trait(for_ty, reference) => {
+                tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
                     let for_ty = substitute_type(for_ty, bindings);
                     if type_is_concrete(for_ty) {
                         let reference = substitute_trait_ref(reference, bindings);
@@ -1325,7 +1325,7 @@ fn complete_function_bindings(
                         ()
                     }
                 },
-                tast::TypePredicate::Equality(lhs, rhs) => {
+                tast::TypePredicate::Equality { lhs, rhs } => {
                     let lhs = substitute_type(lhs, bindings);
                     let rhs = substitute_type(rhs, bindings);
                     if unify_type(lhs, rhs, bindings) {
@@ -1353,7 +1353,7 @@ fn predicates_are_satisfied(
     let satisfied = Ref::new(true);
     for predicate in value.predicates {
         match predicate {
-            tast::TypePredicate::Trait(for_ty, reference) => {
+            tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
                 let for_ty = substitute_type(for_ty, bindings);
                 let reference = substitute_trait_ref(reference, bindings);
                 if type_is_concrete(for_ty)
@@ -1370,7 +1370,7 @@ fn predicates_are_satisfied(
                     satisfied.set(false)
                 }
             },
-            tast::TypePredicate::Equality(lhs, rhs) => {
+            tast::TypePredicate::Equality { lhs, rhs } => {
                 let lhs = substitute_type(lhs, bindings);
                 let rhs = substitute_type(rhs, bindings);
                 if compact_type(lhs) == compact_type(rhs) {

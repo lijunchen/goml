@@ -848,10 +848,10 @@ fn writes_rust_artifact_type_shapes() -> unit {
     artifact_json_type_predicate(
         writer,
         context,
-        tast::TypePredicate::Equality(
-            tast::Type::Con { name: "Box" },
-            tast::Type::Int32,
-        ),
+        tast::TypePredicate::Equality {
+            lhs: tast::Type::Con { name: "Box" },
+            rhs: tast::Type::Int32,
+        },
     );
     testing::assert_eq(
         artifact_json_finish(writer),
@@ -1340,10 +1340,10 @@ fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
 #[test]
 fn restores_core_metadata_from_artifact_exports() -> unit {
     let exports = empty_artifact_package_exports();
-    let function_constraint = tast::TypePredicate::Equality(
-        tast::Type::Param { name: "T" },
-        tast::Type::Int32,
-    );
+    let function_constraint = tast::TypePredicate::Equality {
+        lhs: tast::Type::Param { name: "T" },
+        rhs: tast::Type::Int32,
+    };
     exports.functions.push(ArtifactFnScheme {
         name: "audit::identity",
         type_params: Vec::new().pushed("T"),
@@ -1376,17 +1376,17 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
         name: "audit::Source",
         args: Vec::new(),
     };
-    let impl_constraint = tast::TypePredicate::Trait(
-        tast::Type::Con { name: "audit::Numbers" },
-        tast::TraitRef {
-            name: "ToString",
-            args: Vec::new(),
-        },
-    );
-    let method_constraint = tast::TypePredicate::Equality(
-        tast::Type::Int32,
-        tast::Type::Int32,
-    );
+    let impl_constraint = tast::TypePredicate::Trait {
+        for_ty: tast::Type::Con { name: "audit::Numbers" },
+        trait_ref: tast::TraitRef {
+                    name: "ToString",
+                    args: Vec::new(),
+                },
+    };
+    let method_constraint = tast::TypePredicate::Equality {
+        lhs: tast::Type::Int32,
+        rhs: tast::Type::Int32,
+    };
     exports.trait_impls.push(ArtifactTraitImpl {
         trait_ref,
         for_ty: tast::Type::Con { name: "audit::Numbers" },
@@ -1529,12 +1529,12 @@ fn decodes_rust_artifact_type_shapes() -> unit {
             Result::Ok(value) => value,
             Result::Err(error) => {
                 testing::fail(error);
-                tast::TypePredicate::Equality(tast::Type::Error, tast::Type::Error)
+                tast::TypePredicate::Equality { lhs: tast::Type::Error, rhs: tast::Type::Error }
             },
         },
         Result::Err(error) => {
             testing::fail(error);
-            tast::TypePredicate::Equality(tast::Type::Error, tast::Type::Error)
+            tast::TypePredicate::Equality { lhs: tast::Type::Error, rhs: tast::Type::Error }
         },
     };
     let writer = new_artifact_json_writer(false);

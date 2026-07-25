@@ -104,14 +104,14 @@ fn artifact_dependency_trait_predicate(
     value: tast::TypePredicate,
 ) -> tast::TypePredicate {
     match value {
-        tast::TypePredicate::Trait(for_ty, trait_ref) => tast::TypePredicate::Trait(
-            artifact_dependency_trait_type(for_ty),
-            artifact_dependency_trait_ref(trait_ref),
-        ),
-        tast::TypePredicate::Equality(left, right) => tast::TypePredicate::Equality(
-            artifact_dependency_trait_type(left),
-            artifact_dependency_trait_type(right),
-        ),
+        tast::TypePredicate::Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
+            for_ty: artifact_dependency_trait_type(for_ty),
+            trait_ref: artifact_dependency_trait_ref(trait_ref),
+        },
+        tast::TypePredicate::Equality { lhs: left, rhs: right } => tast::TypePredicate::Equality {
+            lhs: artifact_dependency_trait_type(left),
+            rhs: artifact_dependency_trait_type(right),
+        },
     }
 }
 

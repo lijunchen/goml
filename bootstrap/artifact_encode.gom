@@ -222,7 +222,7 @@ fn artifact_json_type_predicate(
 ) -> unit {
     artifact_json_begin_object(writer);
     match value {
-        tast::TypePredicate::Trait(for_ty, trait_ref) => {
+        tast::TypePredicate::Trait { for_ty, trait_ref } => {
             artifact_json_name(writer, "Trait");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "for_ty");
@@ -231,7 +231,7 @@ fn artifact_json_type_predicate(
             artifact_json_trait_ref(writer, context, trait_ref);
             artifact_json_end_object(writer)
         },
-        tast::TypePredicate::Equality(left, right) => {
+        tast::TypePredicate::Equality { lhs: left, rhs: right } => {
             artifact_json_name(writer, "Equality");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "lhs");

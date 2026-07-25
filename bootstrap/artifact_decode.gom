@@ -513,7 +513,10 @@ fn artifact_decode_predicate(
         };
         match artifact_json_required_field(payload, "trait_ref") {
             Result::Ok(value) => match artifact_decode_trait_ref(context, value) {
-                Result::Ok(value) => Result::Ok(tast::TypePredicate::Trait(for_ty, value)),
+                Result::Ok(value) => Result::Ok(tast::TypePredicate::Trait {
+                    for_ty,
+                    trait_ref: value,
+                }),
                 Result::Err(error) => Result::Err(error),
             },
             Result::Err(error) => Result::Err(error),
@@ -532,7 +535,10 @@ fn artifact_decode_predicate(
         };
         match artifact_json_required_field(payload, "rhs") {
             Result::Ok(value) => match artifact_decode_type(context, value) {
-                Result::Ok(value) => Result::Ok(tast::TypePredicate::Equality(left, value)),
+                Result::Ok(value) => Result::Ok(tast::TypePredicate::Equality {
+                    lhs: left,
+                    rhs: value,
+                }),
                 Result::Err(error) => Result::Err(error),
             },
             Result::Err(error) => Result::Err(error),

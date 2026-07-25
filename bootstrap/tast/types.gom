@@ -754,7 +754,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
     let substitutions: Vec[TypeSubst] = Vec::new();
     for predicate in predicates {
         match predicate {
-            TypePredicate::Equality(left, right) => match (prune(left), prune(right)) {
+            TypePredicate::Equality { lhs: left, rhs: right } => match (prune(left), prune(right)) {
                 (Type::Projection { for_ty: _, name: _, trait_ref: _ }, _) | (_, Type::Projection {
                     for_ty: _,
                     name: _,
@@ -764,7 +764,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
                     let _ = unify_parameter_aliases(left, right, substitutions);
                 },
             },
-            TypePredicate::Trait(_, _) => (),
+            TypePredicate::Trait { for_ty: _, trait_ref: _ } => (),
         }
     };
     substitutions
@@ -844,7 +844,7 @@ fn predicate_projection_aliases(
     let equalities: Vec[(Type, Type)] = Vec::new();
     for predicate in predicates {
         match predicate {
-            TypePredicate::Equality(left, right) => match (left, right) {
+            TypePredicate::Equality { lhs: left, rhs: right } => match (left, right) {
                 (
                     left @ Type::Projection { for_ty: _, name: _, trait_ref: _ },
                     right @ Type::Projection { for_ty: _, name: _, trait_ref: _ },
@@ -871,7 +871,7 @@ fn predicate_projection_aliases(
                 },
                 _ => (),
             },
-            TypePredicate::Trait(_, _) => (),
+            TypePredicate::Trait { for_ty: _, trait_ref: _ } => (),
         }
     };
     let changed = Ref::new(true);

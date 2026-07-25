@@ -614,13 +614,13 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                             } else {
                                 require_predicate(
                                     ctx,
-                                    TypePredicate::Trait(
-                                        actual,
-                                        TraitRef {
-                                            name: trait_name,
-                                            args: Vec::new(),
-                                        },
-                                    ),
+                                    TypePredicate::Trait {
+                                        for_ty: actual,
+                                        trait_ref: TraitRef {
+                                                                                    name: trait_name,
+                                                                                    args: Vec::new(),
+                                                                                },
+                                    },
                                     "Type "
                                         + type_text(actual)
                                         + " does not implement trait "
@@ -1744,13 +1744,13 @@ fn apply_typed_call(
             {
                 require_predicate(
                     ctx,
-                    TypePredicate::Trait(receiver_ty, reference),
+                    TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
                     "type predicate not satisfied",
                 )
             } else if arity_mismatch || trait_argument_mismatch.get() {
                 require_predicate(
                     ctx,
-                    TypePredicate::Trait(receiver_ty, reference),
+                    TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
                     "type predicate not satisfied",
                 )
             } else if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
@@ -1758,7 +1758,7 @@ fn apply_typed_call(
                     ctx,
                     predicate_requirement_message(
                         ctx,
-                        TypePredicate::Trait(receiver_ty, reference),
+                        TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
                         "type predicate not satisfied",
                     ),
                 )
@@ -2395,13 +2395,13 @@ fn check_binary_expr(
                 ctx,
                 predicate_requirement_message(
                     ctx,
-                    TypePredicate::Trait(
-                        expr_type(left),
-                        TraitRef {
-                            name: "Eq",
-                            args: Vec::new(),
-                        },
-                    ),
+                    TypePredicate::Trait {
+                        for_ty: expr_type(left),
+                        trait_ref: TraitRef {
+                                                    name: "Eq",
+                                                    args: Vec::new(),
+                                                },
+                    },
                     "type predicate not satisfied",
                 ),
                 Option::Some(left_source.span),
@@ -2430,9 +2430,9 @@ fn check_binary_expr(
                             Type::Bool
                         } else {
                             expr_type(left)
-                        },
+            },
             resolution: if is_equality_op(op) {
-                            BinaryResolution::EqTrait
+                            BinaryResolution::Overloaded { trait_name: "Eq" }
                         } else {
                             BinaryResolution::Builtin
                         },
