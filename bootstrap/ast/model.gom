@@ -114,6 +114,7 @@ pub struct EnumDef {
 pub struct EnumVariant {
     pub name: string,
     pub fields: EnumVariantFields,
+    pub field_type_spans: Vec[Span],
 }
 
 pub enum EnumVariantFields {
@@ -229,6 +230,7 @@ pub enum Expr {
     Float { value: float64, span: Span },
     String { value: string, span: Span },
     Char { value: string, span: Span },
+    ConstructorValue { constructor: Path, span: Span },
     Constr { constructor: Path, args: Vec[Expr], span: Span },
     StructLiteral { name: Path, fields: Vec[(string, Expr)], span: Span },
     Tuple { items: Vec[Expr], span: Span },
@@ -306,6 +308,7 @@ pub fn expr_span(value: Expr) -> Span {
         | Expr::Float { span, .. }
         | Expr::String { span, .. }
         | Expr::Char { span, .. }
+        | Expr::ConstructorValue { span, .. }
         | Expr::Constr { span, .. }
         | Expr::StructLiteral { span, .. }
         | Expr::Tuple { span, .. }

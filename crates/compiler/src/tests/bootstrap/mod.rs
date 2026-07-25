@@ -579,6 +579,13 @@ fn compare_crashers(repository: &Repository, temporary: &TempDir) -> usize {
     for source in sources {
         let text = fs::read_to_string(&source).unwrap();
         let expected = oracle::encode_diagnostics(&source, &text);
+        if env::var_os("UPDATE_EXPECT").is_some() && !expected.is_empty() {
+            fs::write(
+                PathBuf::from(format!("{}.diag", source.display())),
+                &expected,
+            )
+            .unwrap();
+        }
         let actual = bootstrap_diagnostics(repository, &source);
         assert_bytes(
             &format!("crasher diagnostics mismatch for {}", source.display()),

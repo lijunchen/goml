@@ -1023,6 +1023,66 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
     }
 }
 
+fn resolved_constructor_value_expr(
+    ctx: Checker,
+    info: ResolvedConstructor,
+) -> Expr {
+    if info.fields.len() == 0 {
+        check_resolved_constructor_expr(ctx, info, Vec::new(), Option::None)
+    } else if !(info.named) {
+        let params: Vec[ClosureParam] = Vec::new();
+        let args: Vec[Expr] = Vec::new();
+        for index in range(0, info.fields.len()) {
+            let name = "ctor_arg_" + index.to_string();
+            let ty = info.fields.get(index);
+            params.push(ClosureParam { name, ty });
+            args.push(Expr::Var { name, ty })
+        };
+        Expr::Closure {
+            params,
+            body: Expr::Constr {
+                constructor: info.constructor,
+                args,
+                ty: info.ty,
+            },
+            ty: Type::Func {
+                params: info.fields,
+                ret_ty: info.ty,
+            },
+        }
+    } else {
+        push_diagnostic(
+            ctx,
+            "Constructor "
+                + info.constructor.name
+                + " is a struct-like enum variant and requires named fields",
+        );
+        Expr::Constr {
+            constructor: info.constructor,
+            args: Vec::new(),
+            ty: Type::Error,
+        }
+    }
+}
+
+fn check_constructor_value_expr(
+    ctx: Checker,
+    constructor: hir::ConstructorRef,
+) -> Expr {
+    match resolve_constructor(ctx, constructor) {
+        Option::Some(info) => resolved_constructor_value_expr(ctx, info),
+        Option::None => missing_constructor_expr(
+            ctx,
+            match constructor {
+                hir::ConstructorRef::Unresolved(name) => name,
+                hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
+                    "<error>"
+                },
+            },
+        ),
+    }
+}
+
 fn check_static_member(
     ctx: Checker,
     owner: string,
@@ -1030,12 +1090,7 @@ fn check_static_member(
     type_args: Vec[hir::TypeExpr],
 ) -> Expr {
     match resolve_named_constructor(ctx, owner, member) {
-        Option::Some(info) => if info.fields.len() == 0 {
-            check_resolved_constructor_expr(ctx, info, Vec::new(), Option::None)
-        } else {
-            push_diagnostic(ctx, "constructor arity mismatch");
-            Expr::Constr { constructor: info.constructor, args: Vec::new(), ty: Type::Error }
-        },
+        Option::Some(info) => resolved_constructor_value_expr(ctx, info),
         Option::None => match resolve_static_member(ctx, owner, member, type_args) {
             Option::Some(value) => match value.callable {
                 Callable::InherentMethod { receiver_ty: _, method_name: _ } => {
@@ -2043,7 +2098,10 @@ fn check_call_expr(
             Option::None => match reference {
                 hir::NameRef::Other(name) => {
                     push_diagnostic(ctx, "Unresolved callee " + name);
-                    push_diagnostic(ctx, "Could not infer type");
+                    match expected {
+                        Option::Some(_) => (),
+                        Option::None => push_diagnostic(ctx, "Could not infer type"),
+                    };
                     let values: Vec[Expr] = Vec::new();
                     for value in args {
                         values.push(check_expr(ctx, value, Option::None))
@@ -2051,7 +2109,7 @@ fn check_call_expr(
                     Expr::Call {
                         func: Expr::Callable { callable: Callable::Function(name), ty: Type::Error },
                         args: values,
-                        ty: fresh_unresolved_inference(ctx),
+                        ty: Type::Error,
                     }
                 },
                 _ => apply_call(
@@ -3485,6 +3543,9 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             } => {
                 check_static_member(ctx, owner, member, args)
             },
+            hir::ExprKind::ConstructorValue { constructor } => {
+                check_constructor_value_expr(ctx, constructor)
+            },
             hir::ExprKind::Constr { constructor, args } => {
                 check_constructor_expr(ctx, constructor, args, Option::None)
             },
@@ -3743,6 +3804,13 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         hir::ExprKind::Call { func: function, args } => {
             let result = check_call_expr(ctx, function, args, expected);
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+        hir::ExprKind::ConstructorValue { constructor } => {
+            coerce_expr(
+                ctx,
+                check_constructor_value_expr(ctx, constructor),
+                expected,
+            )
         },
         hir::ExprKind::Constr { constructor, args } => {
             check_constructor_expr(ctx, constructor, args, expected)
@@ -4388,6 +4456,7 @@ fn hir_match_bodies_all_exit_loop_control(arms: Vec[hir::Arm]) -> bool {
 fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
     match value.kind {
         hir::ExprKind::Break | hir::ExprKind::Continue | hir::ExprKind::Return { expr: _ } => true,
+        hir::ExprKind::ConstructorValue { constructor: _ } => false,
         hir::ExprKind::Constr { constructor: _, args } => hir_exprs_any_exit_loop_control(args),
         hir::ExprKind::StructLiteral { name: _, fields } => {
             hir_fields_any_exit_loop_control(fields)

@@ -135,6 +135,13 @@ fn apply_trailing_args(
                 };
                 Option::Some(result.get())
             },
+            Expr::ConstructorValue { constructor: path, span: expr_span } => {
+                Option::Some(Expr::Constr {
+                    constructor: path,
+                    args: trailing_args,
+                    span: expr_span,
+                })
+            },
             Expr::Constr { constructor: path, args, span: expr_span } => {
                 for arg in trailing_args {
                     args.push(arg)

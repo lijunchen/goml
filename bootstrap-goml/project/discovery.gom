@@ -136,7 +136,12 @@ fn directory_for_package(
                 package_name.byte_len(),
             );
             for segment in util::split(suffix, "::") {
-                result.set(path::join(result.get(), segment))
+                result.set(path::join(result.get(), segment));
+                if fs::is_file(path::join(result.get(), "goml.toml")) {
+                    return Option::None
+                } else {
+                    ()
+                }
             };
             Option::Some(result.get())
         }

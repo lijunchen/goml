@@ -101,9 +101,18 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                             } else {
                                 ()
                             };
+                            let field_type_spans: Vec[Span] = Vec::new();
                             let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
                                 Option::Some(type_list) => {
-                                    EnumVariantFields::Tuple(lower_type_list(ctx, type_list))
+                                    let lowered: Vec[TypeExpr] = Vec::new();
+                                    for ty in type_children(type_list) {
+                                        field_type_spans.push(type_head_span(ty));
+                                        match lower_ty(ctx, ty) {
+                                            Option::Some(value) => lowered.push(value),
+                                            Option::None => (),
+                                        }
+                                    };
+                                    EnumVariantFields::Tuple(lowered)
                                 },
                                 Option::None => match first_child(
                                     variant,
@@ -131,10 +140,15 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                             match field_name {
                                                 Option::Some(name) => if types.len() > 0 {
                                                     match lower_ty(ctx, types.get(0)) {
-                                                        Option::Some(ty) => named.push((
-                                                            name.token.text,
-                                                            ty,
-                                                        )),
+                                                        Option::Some(ty) => {
+                                                            field_type_spans.push(type_head_span(
+                                                                types.get(0),
+                                                            ));
+                                                            named.push((
+                                                                name.token.text,
+                                                                ty,
+                                                            ))
+                                                        },
                                                         Option::None => (),
                                                     }
                                                 } else {
@@ -159,6 +173,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                             variants.push(EnumVariant {
                                 name: variant_name.token.text,
                                 fields,
+                                field_type_spans,
                             })
                         },
                         Option::None => push_error(ctx, node_span(variant), "Enum variant is missing a name"),

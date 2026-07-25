@@ -18,6 +18,7 @@ struct AliasEntry {
 struct ResolvedUses {
     aliases: Vec[AliasEntry],
     traits: Vec[string],
+    diagnostics: Vec[string],
 }
 
 struct LowerCtx {
@@ -161,6 +162,16 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
 fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     let aliases: Vec[AliasEntry] = Vec::new();
     let traits: Vec[string] = Vec::new();
+    let diagnostics: Vec[string] = Vec::new();
+    for use_decl in file.uses {
+        match use_decl.alias {
+            Option::Some(alias) => aliases.push(AliasEntry {
+                alias,
+                target: path_segments(use_decl.path),
+            }),
+            Option::None => (),
+        }
+    };
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
         match expand_use_alias(aliases, target) {
@@ -168,19 +179,40 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                 Option::Some(_) => (),
                 Option::None => traits.push(join_segments(expanded)),
             },
-            Option::None => match last_string(target) {
-                Option::Some(default_alias) => aliases.push(AliasEntry {
-                    alias: match use_decl.alias {
-                        Option::Some(alias) => alias,
-                        Option::None => default_alias,
-                    },
-                    target,
-                }),
-                Option::None => (),
+            Option::None => match use_decl.alias {
+                Option::Some(_) => (),
+                Option::None => match last_string(target) {
+                    Option::Some(default_alias) => aliases.push(AliasEntry {
+                        alias: default_alias,
+                        target,
+                    }),
+                    Option::None => (),
+                },
             },
         }
     };
-    ResolvedUses { aliases, traits }
+    for index in range(0, aliases.len()) {
+        let current = aliases.get(index);
+        for previous_index in range(0, index) {
+            let previous = aliases.get(previous_index);
+            if join_segments(previous.target) == join_segments(current.target) {
+                diagnostics.push(
+                    "Duplicate package use " + join_segments(current.target),
+                )
+            } else if previous.alias == current.alias {
+                diagnostics.push(
+                    "Ambiguous package use alias " + current.alias,
+                )
+            } else {
+                ()
+            }
+        }
+    };
+    ResolvedUses {
+        aliases,
+        traits,
+        diagnostics,
+    }
 }
 
 fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
@@ -884,7 +916,7 @@ fn lower_expr_value(
                 static_member(qualified_segments(ctx, path), args, arg_spans)
             } else {
                 match constructor_ref(ctx, path) {
-                    Option::Some(constructor) => ExprKind::Constr { constructor, args: Vec::new() },
+                    Option::Some(constructor) => ExprKind::ConstructorValue { constructor },
                     Option::None => {
                         let parts = qualified_segments(ctx, path);
                         if parts.len() == 1 {
@@ -924,6 +956,11 @@ fn lower_expr_value(
         ast::Expr::Float { value, span: _ } => ExprKind::Float { value },
         ast::Expr::String { value, span: _ } => ExprKind::String { value },
         ast::Expr::Char { value, span: _ } => ExprKind::Char { value },
+        ast::Expr::ConstructorValue { constructor: path, span: _ } => {
+            ExprKind::ConstructorValue {
+                constructor: unresolved_constructor(ctx, path),
+            }
+        },
         ast::Expr::Constr { constructor: path, args, span: _ } => {
             let result: Vec[Expr] = Vec::new();
             for arg in args {
@@ -1208,6 +1245,7 @@ fn lower_enum(ctx: LowerCtx, value: ast::EnumDef, def_id: DefId) -> EnumDef {
         variants.push(EnumVariant {
             name: variant.name,
             fields,
+            field_type_spans: variant.field_type_spans,
         })
     };
     EnumDef {
@@ -1398,6 +1436,12 @@ fn file_context(
     file: ast::File,
     diagnostics: Vec[Diagnostic],
 ) -> LowerCtx {
+    for message in resolved_uses_from_file(file).diagnostics {
+        diagnostics.push(Diagnostic {
+            message,
+            span: Option::None,
+        })
+    };
     LowerCtx {
         package_name: base.package_name,
         package_id: base.package_id,

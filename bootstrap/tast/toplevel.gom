@@ -312,6 +312,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
             },
             Option::None => (),
         },
+        hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
         | hir::ExprKind::Tuple { items: args }
         | hir::ExprKind::Array { items: args } => {
@@ -2023,6 +2024,55 @@ fn validate_extern_declarations(ctx: Checker) -> unit {
     }
 }
 
+fn validate_lang_item_attributes(
+    ctx: Checker,
+    attrs: Vec[ast::Attribute],
+    allow_lang_items: bool,
+) -> unit {
+    if allow_lang_items {
+        ()
+    } else {
+        for attribute in attrs {
+            match extern_attribute_payload(attribute, "lang") {
+                Option::Some(name) => ctx.diagnostics.push(new_diagnostic(
+                    "typer",
+                    "lang item " + name + " is not permitted in this source",
+                    ctx.source_path,
+                    Option::None,
+                )),
+                Option::None => (),
+            }
+        }
+    }
+}
+
+fn validate_lang_item_declarations(
+    ctx: Checker,
+    value: hir::File,
+    allow_lang_items: bool,
+) -> unit {
+    for item in value.items {
+        match item {
+            hir::Item::EnumDef(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::StructDef(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::TraitDef(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::Function(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::ExternFunction(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::ImplBlock(_) => (),
+        }
+    }
+}
+
 fn move_diagnostics_before(
     values: Vec[Diagnostic],
     message: string,
@@ -2130,6 +2180,40 @@ fn attach_type_diagnostic_span(
             "Unknown type constructor " + name,
             span,
         ),
+        hir::TypeExpr::App { ty, args } => {
+            match ty {
+                hir::TypeExpr::Con { name } => match nominal_arity(ctx, name) {
+                    Option::Some(expected) => if expected != args.len() {
+                        let category = if expected == 0 && args.len() > 0 {
+                            match find_struct_by_name(ctx, name) {
+                                Option::Some(_) => "Struct",
+                                Option::None => "Type",
+                            }
+                        } else {
+                            "Type"
+                        };
+                        attach_diagnostic_span(
+                            ctx,
+                            category
+                                + " "
+                                + short_name(name)
+                                + " expects "
+                                + expected.to_string()
+                                + " type arguments, but got "
+                                + args.len().to_string(),
+                            span,
+                        )
+                    } else {
+                        ()
+                    },
+                    Option::None => attach_type_diagnostic_span(ctx, ty, span),
+                },
+                _ => attach_type_diagnostic_span(ctx, ty, span),
+            };
+            for arg in args {
+                attach_type_diagnostic_span(ctx, arg, span)
+            }
+        },
         _ => (),
     }
 }
@@ -2197,6 +2281,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
                 },
             )
         },
+        hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
         | hir::ExprKind::Tuple { items: args }
         | hir::ExprKind::Array { items: args } => {
@@ -2259,6 +2344,37 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
 fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
     for item in value.items {
         match item {
+            hir::Item::EnumDef(value) => for variant in value.variants {
+                match variant.fields {
+                    hir::EnumVariantFields::Unit => (),
+                    hir::EnumVariantFields::Tuple(types) => {
+                        for index in range(0, types.len()) {
+                            attach_type_diagnostic_span(
+                                ctx,
+                                types.get(index),
+                                if index < variant.field_type_spans.len() {
+                                    Option::Some(variant.field_type_spans.get(index))
+                                } else {
+                                    Option::None
+                                },
+                            )
+                        }
+                    },
+                    hir::EnumVariantFields::Struct(values) => {
+                        for index in range(0, values.len()) {
+                            attach_type_diagnostic_span(
+                                ctx,
+                                values.get(index).1,
+                                if index < variant.field_type_spans.len() {
+                                    Option::Some(variant.field_type_spans.get(index))
+                                } else {
+                                    Option::None
+                                },
+                            )
+                        }
+                    },
+                }
+            },
             hir::Item::TraitDef(value) => {
                 for bound in value.generic_bounds {
                     for reference in bound.1 {
@@ -2306,6 +2422,7 @@ fn check_file_with_package(
         )
     };
     validate_extern_declarations(ctx);
+    validate_lang_item_declarations(ctx, value, allow_externs);
     validate_file_declaration_names(ctx, value);
     if validate_function_names {
         validate_cross_file_declaration_names(ctx, value, package_files)

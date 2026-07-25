@@ -460,6 +460,9 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             builder.write_string(value);
             builder.write_char('\'')
         },
+        ExprKind::ConstructorValue { constructor } => {
+            write_constructor(builder, constructor)
+        },
         ExprKind::Constr { constructor, args } => {
             write_constructor(builder, constructor);
             if args.len() > 0 {

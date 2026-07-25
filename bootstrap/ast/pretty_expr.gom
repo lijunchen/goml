@@ -128,6 +128,9 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_string(value);
             builder.write_char('\'')
         },
+        Expr::ConstructorValue { constructor: path, span: _ } => {
+            pretty_write_path(builder, path)
+        },
         Expr::Constr { constructor: path, args, span: _ } => {
             pretty_write_path(builder, path);
             if args.len() > 0 {

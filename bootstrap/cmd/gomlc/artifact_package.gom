@@ -799,6 +799,14 @@ fn compile_artifact_package(
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err("error[typer]: " + error),
     };
+    match validate_public_fields_and_inherent_methods(
+        hir_file,
+        command.package_name,
+        public_names,
+    ) {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err("error[typer]: " + error),
+    };
     let deps = match artifact_direct_dependency_hashes(
         world,
         dependency_names,

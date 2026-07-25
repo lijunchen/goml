@@ -89,6 +89,12 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
         },
         Expr::String { value, span: value_span } => encode_literal_expr(builder, "String", value, value_span),
         Expr::Char { value, span: value_span } => encode_literal_expr(builder, "Char", value, value_span),
+        Expr::ConstructorValue { constructor: path, span: value_span } => {
+            encode_open(builder, "Expr.Constr");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_exprs(builder, Vec::new())
+        },
         Expr::Constr { constructor: path, args, span: value_span } => {
             encode_open(builder, "Expr.Constr");
             encode_span(builder, value_span);

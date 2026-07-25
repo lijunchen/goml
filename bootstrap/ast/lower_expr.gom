@@ -593,7 +593,10 @@ fn lower_ident_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         Option::Some((path, type_args)) => match path_last(path) {
             Option::Some(last) => {
                 let base = if type_args.len() == 0 && ident_starts_upper(last) {
-                    Expr::Constr { constructor: path, args: Vec::new(), span: node_span(node) }
+                    Expr::ConstructorValue {
+                        constructor: path,
+                        span: node_span(node),
+                    }
                 } else {
                     Expr::Path { path, type_args, span: node_span(node) }
                 };
