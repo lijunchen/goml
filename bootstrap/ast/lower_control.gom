@@ -9,7 +9,7 @@ fn lower_wrapped_branch(
 ) -> Option[Expr] {
     match first_child(node, cst::NodeKind::BLOCK) {
         Option::Some(block_node) => match lower_block(ctx, block_node) {
-            Option::Some(block) => Option::Some(Expr::Block(block, node_span(block_node))),
+            Option::Some(block) => Option::Some(Expr::Block { block, span: node_span(block_node) }),
             Option::None => Option::None,
         },
         Option::None => {
@@ -48,7 +48,10 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                 } else {
                     match first_child(node, cst::NodeKind::BLOCK) {
                         Option::Some(block_node) => match lower_block(ctx, block_node) {
-                            Option::Some(block) => Option::Some(Expr::Block(block, node_span(block_node))),
+                            Option::Some(block) => Option::Some(Expr::Block {
+                                block,
+                                span: node_span(block_node),
+                            }),
                             Option::None => Option::None,
                         },
                         Option::None => {
@@ -90,7 +93,7 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                                 Option::None => (),
                             }
                         };
-                        Option::Some(Expr::Match(scrutinee, arms, node_span(node)))
+                        Option::Some(Expr::Match { expr: scrutinee, arms, span: node_span(node) })
                     },
                     Option::None => {
                         push_error(ctx, node_span(node), "MatchExpr has no arms");
@@ -134,7 +137,9 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                             else_node,
                                             "If expression else-branch missing body",
                                         ),
-                                        Option::None => Option::Some(Expr::Unit(node_span(node))),
+                                        Option::None => Option::Some(Expr::Unit {
+                                            span: node_span(node),
+                                        }),
                                     };
                                     match else_branch {
                                         Option::Some(else_value) => match let_pat {
@@ -146,18 +151,22 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                                     body: then_branch,
                                                 });
                                                 arms.push(Arm {
-                                                    pat: Pat::Wild(node_span(node)),
+                                                    pat: Pat::Wild { span: node_span(node) },
                                                     guard: Option::None,
                                                     body: else_value,
                                                 });
-                                                Option::Some(Expr::Match(cond, arms, node_span(node)))
+                                                Option::Some(Expr::Match {
+                                                    expr: cond,
+                                                    arms,
+                                                    span: node_span(node),
+                                                })
                                             },
-                                            Option::None => Option::Some(Expr::If(
+                                            Option::None => Option::Some(Expr::If {
                                                 cond,
                                                 then_branch,
-                                                else_value,
-                                                node_span(node),
-                                            )),
+                                                else_branch: else_value,
+                                                span: node_span(node),
+                                            }),
                                         },
                                         Option::None => Option::None,
                                     }
@@ -214,17 +223,21 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                                             body,
                                         });
                                         arms.push(Arm {
-                                            pat: Pat::Wild(node_span(node)),
+                                            pat: Pat::Wild { span: node_span(node) },
                                             guard: Option::None,
-                                            body: Expr::Break(node_span(node)),
+                                            body: Expr::Break { span: node_span(node) },
                                         });
-                                        Option::Some(Expr::While(
-                                            Expr::Bool(true, node_span(node)),
-                                            Expr::Match(cond, arms, node_span(node)),
-                                            node_span(node),
-                                        ))
+                                        Option::Some(Expr::While {
+                                            cond: Expr::Bool { value: true, span: node_span(node) },
+                                            body: Expr::Match { expr: cond, arms, span: node_span(node) },
+                                            span: node_span(node),
+                                        })
                                     },
-                                    Option::None => Option::Some(Expr::While(cond, body, node_span(node))),
+                                    Option::None => Option::Some(Expr::While {
+                                        cond,
+                                        body,
+                                        span: node_span(node),
+                                    }),
                                 },
                                 Option::None => Option::None,
                             },
@@ -262,12 +275,12 @@ fn lower_for_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
                 Option::Some(pat) => match lower_expr(ctx, values.get(0)) {
                     Option::Some(iterator) => match first_child(node, cst::NodeKind::BLOCK) {
                         Option::Some(block_node) => match lower_block(ctx, block_node) {
-                            Option::Some(block) => Option::Some(Expr::For(
+                            Option::Some(block) => Option::Some(Expr::For {
                                 pat,
                                 iterator,
-                                Expr::Block(block, node_span(block_node)),
-                                node_span(node),
-                            )),
+                                body: Expr::Block { block, span: node_span(block_node) },
+                                span: node_span(node),
+                            }),
                             Option::None => Option::None,
                         },
                         Option::None => {
@@ -293,7 +306,7 @@ fn lower_return_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         } else {
             Option::None
         };
-        Option::Some(Expr::Return(value, node_span(node)))
+        Option::Some(Expr::Return { expr: value, span: node_span(node) })
     }
 }
 
@@ -307,7 +320,7 @@ fn lower_go_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
             Option::None
         } else {
             match lower_expr(ctx, values.get(0)) {
-                Option::Some(value) => Option::Some(Expr::Go(value, node_span(node))),
+                Option::Some(value) => Option::Some(Expr::Go { expr: value, span: node_span(node) }),
                 Option::None => Option::None,
             }
         }

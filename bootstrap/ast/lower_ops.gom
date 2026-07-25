@@ -112,61 +112,78 @@ fn apply_trailing_args(
         Option::Some(expression)
     } else {
         match expression {
-            Expr::Path(path, type_args, expr_span) => Option::Some(Expr::Call(
-                Expr::Path(path, type_args, expr_span),
-                trailing_args,
-                expr_span,
-            )),
-            Expr::Call(func, args, expr_span) => {
-                let result = Ref::new(Expr::Call(func, args, expr_span));
+            Expr::Path { path, type_args, span: expr_span } => Option::Some(Expr::Call {
+                func: Expr::Path { path, type_args, span: expr_span },
+                args: trailing_args,
+                span: expr_span,
+            }),
+            Expr::Call { func, args, span: expr_span } => {
+                let result = Ref::new(Expr::Call { func, args, span: expr_span });
                 for arg in trailing_args {
-                    result.set(Expr::Call(result.get(), Vec::new(), expr_span));
+                    result.set(Expr::Call { func: result.get(), args: Vec::new(), span: expr_span });
                     match result.get() {
-                        Expr::Call(next_func, next_args, next_span) => {
+                        Expr::Call { func: next_func, args: next_args, span: next_span } => {
                             next_args.push(arg);
-                            result.set(Expr::Call(next_func, next_args, next_span))
+                            result.set(Expr::Call {
+                                func: next_func,
+                                args: next_args,
+                                span: next_span,
+                            })
                         },
                         _ => (),
                     }
                 };
                 Option::Some(result.get())
             },
-            Expr::Constr(path, args, expr_span) => {
+            Expr::Constr { constructor: path, args, span: expr_span } => {
                 for arg in trailing_args {
                     args.push(arg)
                 };
-                Option::Some(Expr::Constr(path, args, expr_span))
+                Option::Some(Expr::Constr { constructor: path, args, span: expr_span })
             },
-            Expr::Field(base, field, expr_span) => Option::Some(Expr::Call(
-                Expr::Field(base, field, expr_span),
-                trailing_args,
-                expr_span,
-            )),
-            Expr::Index(base, index, expr_span) => match apply_trailing_args(
+            Expr::Field { expr: base, field_name: field, span: expr_span } => Option::Some(Expr::Call {
+                func: Expr::Field { expr: base, field_name: field, span: expr_span },
+                args: trailing_args,
+                span: expr_span,
+            }),
+            Expr::Index { base, index, span: expr_span } => match apply_trailing_args(
                 ctx,
                 index,
                 trailing_args,
                 value_span,
             ) {
-                Option::Some(next_index) => Option::Some(Expr::Index(base, next_index, expr_span)),
+                Option::Some(next_index) => Option::Some(Expr::Index {
+                    base,
+                    index: next_index,
+                    span: expr_span,
+                }),
                 Option::None => Option::None,
             },
-            Expr::Binary(op, lhs, rhs, expr_span) => match apply_trailing_args(
+            Expr::Binary { op, lhs, rhs, span: expr_span } => match apply_trailing_args(
                 ctx,
                 rhs,
                 trailing_args,
                 value_span,
             ) {
-                Option::Some(next_rhs) => Option::Some(Expr::Binary(op, lhs, next_rhs, expr_span)),
+                Option::Some(next_rhs) => Option::Some(Expr::Binary {
+                    op,
+                    lhs,
+                    rhs: next_rhs,
+                    span: expr_span,
+                }),
                 Option::None => Option::None,
             },
-            Expr::Unary(op, inner, expr_span) => match apply_trailing_args(
+            Expr::Unary { op, expr: inner, span: expr_span } => match apply_trailing_args(
                 ctx,
                 inner,
                 trailing_args,
                 value_span,
             ) {
-                Option::Some(next_inner) => Option::Some(Expr::Unary(op, next_inner, expr_span)),
+                Option::Some(next_inner) => Option::Some(Expr::Unary {
+                    op,
+                    expr: next_inner,
+                    span: expr_span,
+                }),
                 Option::None => Option::None,
             },
             _ => {
@@ -225,13 +242,13 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
                 Option::Some((path, type_args)) => match path_last(path) {
                     Option::Some(last) => {
                         let call = if type_args.len() == 0 && ident_starts_upper(last) {
-                            Expr::Constr(path, args, node_span(node))
+                            Expr::Constr { constructor: path, args, span: node_span(node) }
                         } else {
-                            Expr::Call(
-                                Expr::Path(path, type_args, node_span(callee)),
+                            Expr::Call {
+                                func: Expr::Path { path, type_args, span: node_span(callee) },
                                 args,
-                                node_span(node),
-                            )
+                                span: node_span(node),
+                            }
                         };
                         apply_trailing_args(ctx, call, trailing_args, node_span(node))
                     },
@@ -246,7 +263,7 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
             match lower_expr(ctx, callee) {
                 Option::Some(func) => apply_trailing_args(
                     ctx,
-                    Expr::Call(func, args, node_span(node)),
+                    Expr::Call { func, args, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
@@ -281,7 +298,7 @@ fn lower_prefix_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
                 match op {
                     Option::Some(value) => apply_trailing_args(
                         ctx,
-                        Expr::Unary(value, inner, node_span(node)),
+                        Expr::Unary { op: value, expr: inner, span: node_span(node) },
                         trailing_args,
                         node_span(node),
                     ),
@@ -306,7 +323,7 @@ fn lower_cast_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
             Option::Some(value) => match lower_ty(ctx, types.get(0)) {
                 Option::Some(ty) => apply_trailing_args(
                     ctx,
-                    Expr::Cast(value, ty, node_span(node)),
+                    Expr::Cast { expr: value, ty, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
@@ -330,7 +347,7 @@ fn lower_index_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             Option::Some(base) => match lower_expr(ctx, values.get(1)) {
                 Option::Some(index) => apply_trailing_args(
                     ctx,
-                    Expr::Index(base, index, node_span(node)),
+                    Expr::Index { base, index, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
@@ -350,7 +367,7 @@ fn lower_try_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
         match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
             Option::Some(value) => apply_trailing_args(
                 ctx,
-                Expr::Try(value, node_span(node)),
+                Expr::Try { expr: value, span: node_span(node) },
                 trailing_args,
                 node_span(node),
             ),
@@ -372,7 +389,7 @@ fn lower_range_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             Option::Some(start) => match lower_expr(ctx, values.get(1)) {
                 Option::Some(end) => apply_trailing_args(
                     ctx,
-                    Expr::Range(start, end, node_span(node)),
+                    Expr::Range { start, end, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
@@ -399,7 +416,12 @@ fn lower_binary_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
                 } else {
                     match binary_operator(operator.token.kind) {
                         Option::Some(op) => match lower_expr_with_args(ctx, values.get(1), trailing_args) {
-                            Option::Some(rhs) => Option::Some(Expr::Binary(op, lhs, rhs, node_span(node))),
+                            Option::Some(rhs) => Option::Some(Expr::Binary {
+                                op,
+                                lhs,
+                                rhs,
+                                span: node_span(node),
+                            }),
                             Option::None => Option::None,
                         },
                         Option::None => {
@@ -430,7 +452,11 @@ fn lower_dot_expr(
             Option::Some(token) => match parse_decimal_int32(
                 strip_suffix(token.token.text, ""),
             ) {
-                Option::Some(index) => Option::Some(Expr::Proj(lhs, index, node_span(node))),
+                Option::Some(index) => Option::Some(Expr::Proj {
+                    tuple: lhs,
+                    index,
+                    span: node_span(node),
+                }),
                 Option::None => {
                     push_error(ctx, token_span(token), "Invalid tuple index: " + token.token.text);
                     Option::None
@@ -449,15 +475,19 @@ fn lower_dot_expr(
                     push_error(ctx, node_span(rhs), "Field access missing name");
                     Option::None
                 } else {
-                    let field = Expr::Field(
-                        lhs,
-                        names.get(names.len() - 1).token.text,
-                        node_span(node),
-                    );
+                    let field = Expr::Field {
+                        expr: lhs,
+                        field_name: names.get(names.len() - 1).token.text,
+                        span: node_span(node),
+                    };
                     if trailing_args.len() == 0 {
                         Option::Some(field)
                     } else {
-                        Option::Some(Expr::Call(field, trailing_args, node_span(node)))
+                        Option::Some(Expr::Call {
+                            func: field,
+                            args: trailing_args,
+                            span: node_span(node),
+                        })
                     }
                 }
             },

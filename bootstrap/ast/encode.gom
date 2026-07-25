@@ -80,22 +80,22 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
         TypeExpr::Float64 => encode_open(builder, "Type.Float64"),
         TypeExpr::String => encode_open(builder, "Type.String"),
         TypeExpr::Char => encode_open(builder, "Type.Char"),
-        TypeExpr::Tuple(types) => {
+        TypeExpr::Tuple { items: types } => {
             encode_open(builder, "Type.Tuple");
             encode_list(builder, types.len());
             for ty in types {
                 encode_type(builder, ty)
             }
         },
-        TypeExpr::Con(path) => {
+        TypeExpr::Con { path } => {
             encode_open(builder, "Type.Con");
             encode_path(builder, path)
         },
-        TypeExpr::Dyn(path) => {
+        TypeExpr::Dyn { trait_path: path } => {
             encode_open(builder, "Type.Dyn");
             encode_path(builder, path)
         },
-        TypeExpr::App(ty, args) => {
+        TypeExpr::App { ty, args } => {
             encode_open(builder, "Type.App");
             encode_type(builder, ty);
             encode_list(builder, args.len());
@@ -103,12 +103,12 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
                 encode_type(builder, arg)
             }
         },
-        TypeExpr::Array(length, element) => {
+        TypeExpr::Array { len: length, elem: element } => {
             encode_open(builder, "Type.Array");
             encode_string_value(builder, length);
             encode_type(builder, element)
         },
-        TypeExpr::Func(params, ret_ty) => {
+        TypeExpr::Func { params, ret_ty } => {
             encode_open(builder, "Type.Func");
             encode_list(builder, params.len());
             for param in params {
@@ -183,12 +183,12 @@ fn encode_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> un
     encode_list(builder, values.len());
     for value in values {
         match value {
-            Predicate::Trait(ty, trait_ref) => {
+            Predicate::Trait { ty, trait_ref } => {
                 encode_open(builder, "Predicate.Trait");
                 encode_type(builder, ty);
                 encode_trait_ref(builder, trait_ref)
             },
-            Predicate::Equality(lhs, rhs) => {
+            Predicate::Equality { lhs, rhs } => {
                 encode_open(builder, "Predicate.Equality");
                 encode_type(builder, lhs);
                 encode_type(builder, rhs)
@@ -397,7 +397,7 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
 
 fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
     match value {
-        Stmt::Let(is_mut, pat, annotation, expr, value_span) => {
+        Stmt::Let { is_mut, pat, annotation, value: expr, span: value_span } => {
             encode_open(builder, "Stmt.Let");
             encode_span(builder, value_span);
             encode_bool_value(builder, is_mut);
@@ -405,13 +405,13 @@ fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
             encode_optional_type(builder, annotation);
             encode_expr(builder, expr)
         },
-        Stmt::Assign(target, expr, value_span) => {
+        Stmt::Assign { target, value: expr, span: value_span } => {
             encode_open(builder, "Stmt.Assign");
             encode_span(builder, value_span);
             encode_expr(builder, target);
             encode_expr(builder, expr)
         },
-        Stmt::Expr(expr, value_span) => {
+        Stmt::Expr { expr, span: value_span } => {
             encode_open(builder, "Stmt.Expr");
             encode_span(builder, value_span);
             encode_expr(builder, expr)

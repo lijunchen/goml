@@ -32,12 +32,12 @@ pub enum TypeExpr {
     Float64,
     String,
     Char,
-    Tuple(Vec[TypeExpr]),
-    Con(Path),
-    Dyn(Path),
-    App(TypeExpr, Vec[TypeExpr]),
-    Array(string, TypeExpr),
-    Func(Vec[TypeExpr], TypeExpr),
+    Tuple { items: Vec[TypeExpr] },
+    Con { path: Path },
+    Dyn { trait_path: Path },
+    App { ty: TypeExpr, args: Vec[TypeExpr] },
+    Array { len: string, elem: TypeExpr },
+    Func { params: Vec[TypeExpr], ret_ty: TypeExpr },
 }
 
 pub struct ClosureParam {
@@ -154,8 +154,8 @@ pub struct TraitRef {
 }
 
 pub enum Predicate {
-    Trait(TypeExpr, TraitRef),
-    Equality(TypeExpr, TypeExpr),
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
 }
 
 pub struct TraitMethodSignature {
@@ -183,9 +183,15 @@ pub struct Block {
 }
 
 pub enum Stmt {
-    Let(bool, Pat, Option[TypeExpr], Expr, Span),
-    Assign(Expr, Expr, Span),
-    Expr(Expr, Span),
+    Let {
+        is_mut: bool,
+        pat: Pat,
+        annotation: Option[TypeExpr],
+        value: Expr,
+        span: Span,
+    },
+    Assign { target: Expr, value: Expr, span: Span },
+    Expr { expr: Expr, span: Span },
 }
 
 pub enum UnaryOp {
@@ -216,36 +222,36 @@ pub enum BinaryOp {
 }
 
 pub enum Expr {
-    Path(Path, Vec[TypeExpr], Span),
-    Unit(Span),
-    Bool(bool, Span),
-    Int(string, Span),
-    Float(float64, Span),
-    String(string, Span),
-    Char(string, Span),
-    Constr(Path, Vec[Expr], Span),
-    StructLiteral(Path, Vec[(string, Expr)], Span),
-    Tuple(Vec[Expr], Span),
-    Array(Vec[Expr], Span),
-    Closure(Vec[ClosureParam], Expr, Span),
-    Match(Expr, Vec[Arm], Span),
-    If(Expr, Expr, Expr, Span),
-    While(Expr, Expr, Span),
-    For(Pat, Expr, Expr, Span),
-    Break(Span),
-    Continue(Span),
-    Return(Option[Expr], Span),
-    Go(Expr, Span),
-    Call(Expr, Vec[Expr], Span),
-    Unary(UnaryOp, Expr, Span),
-    Cast(Expr, TypeExpr, Span),
-    Try(Expr, Span),
-    Range(Expr, Expr, Span),
-    Binary(BinaryOp, Expr, Expr, Span),
-    Proj(Expr, int, Span),
-    Field(Expr, string, Span),
-    Index(Expr, Expr, Span),
-    Block(Block, Span),
+    Path { path: Path, type_args: Vec[TypeExpr], span: Span },
+    Unit { span: Span },
+    Bool { value: bool, span: Span },
+    Int { value: string, span: Span },
+    Float { value: float64, span: Span },
+    String { value: string, span: Span },
+    Char { value: string, span: Span },
+    Constr { constructor: Path, args: Vec[Expr], span: Span },
+    StructLiteral { name: Path, fields: Vec[(string, Expr)], span: Span },
+    Tuple { items: Vec[Expr], span: Span },
+    Array { items: Vec[Expr], span: Span },
+    Closure { params: Vec[ClosureParam], body: Expr, span: Span },
+    Match { expr: Expr, arms: Vec[Arm], span: Span },
+    If { cond: Expr, then_branch: Expr, else_branch: Expr, span: Span },
+    While { cond: Expr, body: Expr, span: Span },
+    For { pat: Pat, iterator: Expr, body: Expr, span: Span },
+    Break { span: Span },
+    Continue { span: Span },
+    Return { expr: Option[Expr], span: Span },
+    Go { expr: Expr, span: Span },
+    Call { func: Expr, args: Vec[Expr], span: Span },
+    Unary { op: UnaryOp, expr: Expr, span: Span },
+    Cast { expr: Expr, ty: TypeExpr, span: Span },
+    Try { expr: Expr, span: Span },
+    Range { start: Expr, end: Expr, span: Span },
+    Binary { op: BinaryOp, lhs: Expr, rhs: Expr, span: Span },
+    Proj { tuple: Expr, index: int, span: Span },
+    Field { expr: Expr, field_name: string, span: Span },
+    Index { base: Expr, index: Expr, span: Span },
+    Block { block: Block, span: Span },
 }
 
 pub struct Arm {
@@ -260,21 +266,26 @@ pub struct ArrayPatRest {
 }
 
 pub enum Pat {
-    Var(string, Span),
-    Unit(Span),
-    Bool(bool, Span),
-    Int(string, Span),
-    Float(string, Span),
-    String(string, Span),
-    Char(string, Span),
-    Constr(Path, Vec[Pat], Span),
-    Struct(Path, Vec[(string, Pat)], bool, Span),
-    Tuple(Vec[Pat], Span),
-    Array(Vec[Pat], Option[ArrayPatRest], Vec[Pat], Span),
-    Alias(string, Pat, Span),
-    Or(Vec[Pat], Span),
-    Range(Pat, Pat, bool, Span),
-    Wild(Span),
+    Var { name: string, span: Span },
+    Unit { span: Span },
+    Bool { value: bool, span: Span },
+    Int { value: string, span: Span },
+    Float { value: string, span: Span },
+    String { value: string, span: Span },
+    Char { value: string, span: Span },
+    Constr { constructor: Path, args: Vec[Pat], span: Span },
+    Struct { name: Path, fields: Vec[(string, Pat)], has_rest: bool, span: Span },
+    Tuple { items: Vec[Pat], span: Span },
+    Array {
+        prefix: Vec[Pat],
+        rest: Option[ArrayPatRest],
+        suffix: Vec[Pat],
+        span: Span,
+    },
+    Alias { name: string, pat: Pat, span: Span },
+    Or { pats: Vec[Pat], span: Span },
+    Range { start: Pat, end: Pat, inclusive: bool, span: Span },
+    Wild { span: Span },
 }
 
 pub struct LowerResult {
@@ -288,52 +299,55 @@ pub fn span(start: int, end: int) -> Span {
 
 pub fn expr_span(value: Expr) -> Span {
     match value {
-        Expr::Unit(span) | Expr::Break(span) | Expr::Continue(span) => span,
-        Expr::Bool(_, span)
-        | Expr::Int(_, span)
-        | Expr::Float(_, span)
-        | Expr::String(_, span)
-        | Expr::Char(_, span)
-        | Expr::Tuple(_, span)
-        | Expr::Array(_, span)
-        | Expr::Return(_, span)
-        | Expr::Go(_, span)
-        | Expr::Try(_, span)
-        | Expr::Range(_, _, span)
-        | Expr::Block(_, span) => span,
-        Expr::Path(_, _, span)
-        | Expr::Constr(_, _, span)
-        | Expr::StructLiteral(_, _, span)
-        | Expr::Closure(_, _, span)
-        | Expr::Match(_, _, span)
-        | Expr::While(_, _, span)
-        | Expr::Call(_, _, span)
-        | Expr::Unary(_, _, span)
-        | Expr::Cast(_, _, span)
-        | Expr::Proj(_, _, span)
-        | Expr::Field(_, _, span)
-        | Expr::Index(_, _, span) => span,
-        Expr::If(_, _, _, span)
-        | Expr::For(_, _, _, span)
-        | Expr::Binary(_, _, _, span) => span,
+        Expr::Path { span, .. }
+        | Expr::Unit { span }
+        | Expr::Bool { span, .. }
+        | Expr::Int { span, .. }
+        | Expr::Float { span, .. }
+        | Expr::String { span, .. }
+        | Expr::Char { span, .. }
+        | Expr::Constr { span, .. }
+        | Expr::StructLiteral { span, .. }
+        | Expr::Tuple { span, .. }
+        | Expr::Array { span, .. }
+        | Expr::Closure { span, .. }
+        | Expr::Match { span, .. }
+        | Expr::If { span, .. }
+        | Expr::While { span, .. }
+        | Expr::For { span, .. }
+        | Expr::Break { span }
+        | Expr::Continue { span }
+        | Expr::Return { span, .. }
+        | Expr::Go { span, .. }
+        | Expr::Call { span, .. }
+        | Expr::Unary { span, .. }
+        | Expr::Cast { span, .. }
+        | Expr::Try { span, .. }
+        | Expr::Range { span, .. }
+        | Expr::Binary { span, .. }
+        | Expr::Proj { span, .. }
+        | Expr::Field { span, .. }
+        | Expr::Index { span, .. }
+        | Expr::Block { span, .. } => span,
     }
 }
 
 pub fn pat_span(value: Pat) -> Span {
     match value {
-        Pat::Unit(span) | Pat::Wild(span) => span,
-        Pat::Var(_, span)
-        | Pat::Bool(_, span)
-        | Pat::Int(_, span)
-        | Pat::Float(_, span)
-        | Pat::String(_, span)
-        | Pat::Char(_, span)
-        | Pat::Tuple(_, span)
-        | Pat::Alias(_, _, span)
-        | Pat::Or(_, span) => span,
-        Pat::Constr(_, _, span)
-        | Pat::Struct(_, _, _, span)
-        | Pat::Array(_, _, _, span)
-        | Pat::Range(_, _, _, span) => span,
+        Pat::Var { span, .. }
+        | Pat::Unit { span }
+        | Pat::Bool { span, .. }
+        | Pat::Int { span, .. }
+        | Pat::Float { span, .. }
+        | Pat::String { span, .. }
+        | Pat::Char { span, .. }
+        | Pat::Constr { span, .. }
+        | Pat::Struct { span, .. }
+        | Pat::Tuple { span, .. }
+        | Pat::Array { span, .. }
+        | Pat::Alias { span, .. }
+        | Pat::Or { span, .. }
+        | Pat::Range { span, .. }
+        | Pat::Wild { span } => span,
     }
 }

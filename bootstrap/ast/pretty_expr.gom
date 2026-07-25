@@ -53,7 +53,7 @@ fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int) -
 
 fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
-        Stmt::Let(is_mut, pat, annotation, expr, _) => {
+        Stmt::Let { is_mut, pat, annotation, value: expr, span: _ } => {
             builder.write_string("let ");
             if is_mut {
                 builder.write_string("mut ")
@@ -71,12 +71,12 @@ fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> 
             builder.write_string(" = ");
             pretty_write_expr(builder, expr, indent)
         },
-        Stmt::Assign(target, expr, _) => {
+        Stmt::Assign { target, value: expr, span: _ } => {
             pretty_write_expr(builder, target, indent);
             builder.write_string(" = ");
             pretty_write_expr(builder, expr, indent)
         },
-        Stmt::Expr(expr, _) => pretty_write_expr(builder, expr, indent),
+        Stmt::Expr { expr, span: _ } => pretty_write_expr(builder, expr, indent),
     }
 }
 
@@ -117,18 +117,18 @@ fn pretty_write_path_expr(
 
 fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
-        Expr::Path(path, type_args, _) => pretty_write_path_expr(builder, path, type_args),
-        Expr::Unit(_) => builder.write_string("()"),
-        Expr::Bool(value, _) => builder.write_string(if value { "true" } else { "false" }),
-        Expr::Int(value, _) => builder.write_string(value),
-        Expr::Float(value, _) => builder.write_string(value.to_string()),
-        Expr::String(value, _) => pretty_write_quoted_string(builder, value),
-        Expr::Char(value, _) => {
+        Expr::Path { path, type_args, span: _ } => pretty_write_path_expr(builder, path, type_args),
+        Expr::Unit { span: _ } => builder.write_string("()"),
+        Expr::Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
+        Expr::Int { value, span: _ } => builder.write_string(value),
+        Expr::Float { value, span: _ } => builder.write_string(value.to_string()),
+        Expr::String { value, span: _ } => pretty_write_quoted_string(builder, value),
+        Expr::Char { value, span: _ } => {
             builder.write_char('\'');
             builder.write_string(value);
             builder.write_char('\'')
         },
-        Expr::Constr(path, args, _) => {
+        Expr::Constr { constructor: path, args, span: _ } => {
             pretty_write_path(builder, path);
             if args.len() > 0 {
                 builder.write_char('(');
@@ -138,7 +138,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                 ()
             }
         },
-        Expr::StructLiteral(path, fields, _) => {
+        Expr::StructLiteral { name: path, fields, span: _ } => {
             pretty_write_path(builder, path);
             builder.write_string(" {");
             if fields.len() == 0 {
@@ -161,17 +161,17 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                 builder.write_char('}')
             }
         },
-        Expr::Tuple(values, _) => {
+        Expr::Tuple { items: values, span: _ } => {
             builder.write_char('(');
             pretty_write_exprs(builder, values, ", ", indent);
             builder.write_char(')')
         },
-        Expr::Array(values, _) => {
+        Expr::Array { items: values, span: _ } => {
             builder.write_char('[');
             pretty_write_exprs(builder, values, ", ", indent);
             builder.write_char(']')
         },
-        Expr::Closure(params, body, _) => {
+        Expr::Closure { params, body, span: _ } => {
             builder.write_char('|');
             let index = Ref::new(0);
             for param in params {
@@ -193,7 +193,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_string("| ");
             pretty_write_expr(builder, body, indent)
         },
-        Expr::Match(expr, arms, _) => {
+        Expr::Match { expr, arms, span: _ } => {
             builder.write_string("match ");
             pretty_write_expr(builder, expr, indent);
             builder.write_string(" {");
@@ -204,7 +204,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             pretty_newline(builder, indent);
             builder.write_char('}')
         },
-        Expr::If(cond, then_branch, else_branch, _) => {
+        Expr::If { cond, then_branch, else_branch, span: _ } => {
             builder.write_string("if ");
             pretty_write_expr(builder, cond, indent);
             builder.write_string(" {");
@@ -217,7 +217,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             pretty_newline(builder, indent);
             builder.write_char('}')
         },
-        Expr::While(cond, body, _) => {
+        Expr::While { cond, body, span: _ } => {
             builder.write_string("while ");
             pretty_write_expr(builder, cond, indent);
             builder.write_string(" {");
@@ -226,7 +226,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             pretty_newline(builder, indent);
             builder.write_char('}')
         },
-        Expr::For(pat, iterator, body, _) => {
+        Expr::For { pat, iterator, body, span: _ } => {
             builder.write_string("for ");
             pretty_write_pat(builder, pat, indent);
             builder.write_string(" in ");
@@ -234,9 +234,9 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char(' ');
             pretty_write_expr(builder, body, indent)
         },
-        Expr::Break(_) => builder.write_string("break"),
-        Expr::Continue(_) => builder.write_string("continue"),
-        Expr::Return(expr, _) => {
+        Expr::Break { span: _ } => builder.write_string("break"),
+        Expr::Continue { span: _ } => builder.write_string("continue"),
+        Expr::Return { expr, span: _ } => {
             builder.write_string("return");
             match expr {
                 Option::Some(value) => {
@@ -246,58 +246,58 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                 Option::None => (),
             }
         },
-        Expr::Go(expr, _) => {
+        Expr::Go { expr, span: _ } => {
             builder.write_string("go ");
             pretty_write_expr(builder, expr, indent)
         },
-        Expr::Call(func, args, _) => {
+        Expr::Call { func, args, span: _ } => {
             pretty_write_expr(builder, func, indent);
             builder.write_char('(');
             pretty_write_exprs(builder, args, ", ", indent + 2);
             builder.write_char(')')
         },
-        Expr::Unary(op, expr, _) => {
+        Expr::Unary { op, expr, span: _ } => {
             builder.write_string(pretty_unary_symbol(op));
             pretty_write_expr(builder, expr, indent)
         },
-        Expr::Cast(expr, ty, _) => {
+        Expr::Cast { expr, ty, span: _ } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_string(" as ");
             pretty_write_type(builder, ty)
         },
-        Expr::Try(expr, _) => {
+        Expr::Try { expr, span: _ } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('?')
         },
-        Expr::Range(start, end, _) => {
+        Expr::Range { start, end, span: _ } => {
             pretty_write_expr(builder, start, indent);
             builder.write_string("..");
             pretty_write_expr(builder, end, indent)
         },
-        Expr::Binary(op, lhs, rhs, _) => {
+        Expr::Binary { op, lhs, rhs, span: _ } => {
             pretty_write_expr(builder, lhs, indent);
             builder.write_char(' ');
             builder.write_string(pretty_binary_symbol(op));
             builder.write_char(' ');
             pretty_write_expr(builder, rhs, indent)
         },
-        Expr::Proj(expr, index, _) => {
+        Expr::Proj { tuple: expr, index, span: _ } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('.');
             builder.write_string(index.to_string())
         },
-        Expr::Field(expr, field, _) => {
+        Expr::Field { expr, field_name: field, span: _ } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('.');
             builder.write_string(field)
         },
-        Expr::Index(base, index, _) => {
+        Expr::Index { base, index, span: _ } => {
             pretty_write_expr(builder, base, indent);
             builder.write_char('[');
             pretty_write_expr(builder, index, indent);
             builder.write_char(']')
         },
-        Expr::Block(block, _) => pretty_write_block(builder, block, indent),
+        Expr::Block { block, span: _ } => pretty_write_block(builder, block, indent),
     }
 }
 
@@ -317,7 +317,7 @@ fn pretty_write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> un
 
 fn pretty_pat_is_or(value: Pat) -> bool {
     match value {
-        Pat::Or(_, _) => true,
+        Pat::Or { pats: _, span: _ } => true,
         _ => false,
     }
 }
@@ -342,18 +342,18 @@ fn pretty_write_pats(
 
 fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
     match value {
-        Pat::Var(name, _) => builder.write_string(name),
-        Pat::Unit(_) => builder.write_string("()"),
-        Pat::Bool(value, _) => builder.write_string(if value { "true" } else { "false" }),
-        Pat::Int(value, _) => builder.write_string(value),
-        Pat::Float(value, _) => builder.write_string(value),
-        Pat::String(value, _) => pretty_write_quoted_string(builder, value),
-        Pat::Char(value, _) => {
+        Pat::Var { name, span: _ } => builder.write_string(name),
+        Pat::Unit { span: _ } => builder.write_string("()"),
+        Pat::Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
+        Pat::Int { value, span: _ } => builder.write_string(value),
+        Pat::Float { value, span: _ } => builder.write_string(value),
+        Pat::String { value, span: _ } => pretty_write_quoted_string(builder, value),
+        Pat::Char { value, span: _ } => {
             builder.write_char('\'');
             builder.write_string(value);
             builder.write_char('\'')
         },
-        Pat::Constr(path, args, _) => {
+        Pat::Constr { constructor: path, args, span: _ } => {
             pretty_write_path(builder, path);
             if args.len() > 0 {
                 builder.write_char('(');
@@ -363,7 +363,7 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
                 ()
             }
         },
-        Pat::Struct(path, fields, has_rest, _) => {
+        Pat::Struct { name: path, fields, has_rest, span: _ } => {
             pretty_write_path(builder, path);
             if fields.len() == 0 && !has_rest {
                 builder.write_string(" {}")
@@ -394,12 +394,12 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
                 builder.write_string(" }")
             }
         },
-        Pat::Tuple(values, _) => {
+        Pat::Tuple { items: values, span: _ } => {
             builder.write_char('(');
             pretty_write_pats(builder, values, ", ", indent);
             builder.write_char(')')
         },
-        Pat::Array(prefix, rest, suffix, _) => {
+        Pat::Array { prefix, rest, suffix, span: _ } => {
             builder.write_char('[');
             let count = Ref::new(0);
             for value in prefix {
@@ -440,7 +440,7 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
             };
             builder.write_char(']')
         },
-        Pat::Alias(name, pat, _) => {
+        Pat::Alias { name, pat, span: _ } => {
             builder.write_string(name);
             builder.write_string(" @ ");
             if pretty_pat_is_or(pat) {
@@ -451,12 +451,12 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
                 pretty_write_pat(builder, pat, indent)
             }
         },
-        Pat::Or(values, _) => pretty_write_pats(builder, values, " | ", indent),
-        Pat::Range(start, end, inclusive, _) => {
+        Pat::Or { pats: values, span: _ } => pretty_write_pats(builder, values, " | ", indent),
+        Pat::Range { start, end, inclusive, span: _ } => {
             pretty_write_pat(builder, start, indent);
             builder.write_string(if inclusive { "..=" } else { ".." });
             pretty_write_pat(builder, end, indent)
         },
-        Pat::Wild(_) => builder.write_char('_'),
+        Pat::Wild { span: _ } => builder.write_char('_'),
     }
 }

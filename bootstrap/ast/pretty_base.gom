@@ -77,17 +77,17 @@ fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
         TypeExpr::Float64 => builder.write_string("float64"),
         TypeExpr::String => builder.write_string("string"),
         TypeExpr::Char => builder.write_string("char"),
-        TypeExpr::Tuple(values) => {
+        TypeExpr::Tuple { items: values } => {
             builder.write_char('(');
             pretty_write_types(builder, values, ", ");
             builder.write_char(')')
         },
-        TypeExpr::Con(path) => pretty_write_path(builder, path),
-        TypeExpr::Dyn(path) => {
+        TypeExpr::Con { path } => pretty_write_path(builder, path),
+        TypeExpr::Dyn { trait_path: path } => {
             builder.write_string("dyn ");
             pretty_write_path(builder, path)
         },
-        TypeExpr::App(base, args) => {
+        TypeExpr::App { ty: base, args } => {
             pretty_write_type(builder, base);
             if args.len() > 0 {
                 builder.write_char('[');
@@ -97,14 +97,14 @@ fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
                 ()
             }
         },
-        TypeExpr::Array(length, element) => {
+        TypeExpr::Array { len: length, elem: element } => {
             builder.write_char('[');
             pretty_write_type(builder, element);
             builder.write_string("; ");
             builder.write_string(length);
             builder.write_char(']')
         },
-        TypeExpr::Func(params, ret_ty) => {
+        TypeExpr::Func { params, ret_ty } => {
             builder.write_char('(');
             pretty_write_types(builder, params, ", ");
             builder.write_string(") -> ");

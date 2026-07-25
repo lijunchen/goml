@@ -147,7 +147,7 @@ fn parse_ignore_reason(value: string) -> Option[string] {
             Option::Some(file) => if file.items.len() == 1 {
                 match file.items.get(0) {
                     ast::Item::Function(function) => match function.body.tail {
-                        Option::Some(ast::Expr::String(reason, _)) => Option::Some(reason),
+                        Option::Some(ast::Expr::String { value: reason, span: _ }) => Option::Some(reason),
                         _ => Option::None,
                     },
                     _ => Option::None,

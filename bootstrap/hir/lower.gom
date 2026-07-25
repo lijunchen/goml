@@ -441,14 +441,14 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         ast::TypeExpr::Float64 => TypeExpr::Float64,
         ast::TypeExpr::String => TypeExpr::String,
         ast::TypeExpr::Char => TypeExpr::Char,
-        ast::TypeExpr::Tuple(values) => {
+        ast::TypeExpr::Tuple { items: values } => {
             let result: Vec[TypeExpr] = Vec::new();
             for item in values {
                 result.push(lower_type(ctx, item, type_params))
             };
             TypeExpr::Tuple(result)
         },
-        ast::TypeExpr::Con(path) => {
+        ast::TypeExpr::Con { path } => {
             let parts = qualified_segments(ctx, path);
             if parts.len() == 2
                 && (parts.get(0) == "Self" || contains_string(type_params, parts.get(0))) {
@@ -457,18 +457,18 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
                 TypeExpr::Con(join_segments(parts))
             }
         },
-        ast::TypeExpr::Dyn(path) => TypeExpr::Dyn(path_text(ctx, path)),
-        ast::TypeExpr::App(base, args) => {
+        ast::TypeExpr::Dyn { trait_path: path } => TypeExpr::Dyn(path_text(ctx, path)),
+        ast::TypeExpr::App { ty: base, args } => {
             let result: Vec[TypeExpr] = Vec::new();
             for arg in args {
                 result.push(lower_type(ctx, arg, type_params))
             };
             TypeExpr::App(lower_type(ctx, base, type_params), result)
         },
-        ast::TypeExpr::Array(length, element) => {
+        ast::TypeExpr::Array { len: length, elem: element } => {
             TypeExpr::Array(length, lower_type(ctx, element, type_params))
         },
-        ast::TypeExpr::Func(params, ret_ty) => {
+        ast::TypeExpr::Func { params, ret_ty } => {
             let result: Vec[TypeExpr] = Vec::new();
             for param in params {
                 result.push(lower_type(ctx, param, type_params))
@@ -518,7 +518,7 @@ fn lower_predicate(
     resolve_trait: bool,
 ) -> Predicate {
     match value {
-        ast::Predicate::Trait(ty, trait_ref) => Predicate::Trait(
+        ast::Predicate::Trait { ty, trait_ref } => Predicate::Trait(
             lower_type(ctx, ty, type_params),
             if resolve_trait {
                 lower_impl_trait_ref(ctx, trait_ref, type_params)
@@ -526,7 +526,7 @@ fn lower_predicate(
                 lower_plain_trait_ref(ctx, trait_ref, type_params)
             },
         ),
-        ast::Predicate::Equality(lhs, rhs) => Predicate::Equality(
+        ast::Predicate::Equality { lhs, rhs } => Predicate::Equality(
             lower_type(ctx, lhs, type_params),
             lower_type(ctx, rhs, type_params),
         ),
@@ -674,38 +674,38 @@ fn lower_pattern_inner(
     let previous_span = ctx.current_pattern_span.get();
     ctx.current_pattern_span.set(Option::Some(span));
     let kind = match value {
-        ast::Pat::Var(name, _) => match constructor_ref(ctx, single_path(name)) {
+        ast::Pat::Var { name, span: _ } => match constructor_ref(ctx, single_path(name)) {
             Option::Some(constructor) => PatKind::Constr(constructor, Vec::new()),
             Option::None => PatKind::Var(bind_pattern_name(ctx, env, state, name)),
         },
-        ast::Pat::Unit(_) => PatKind::Unit,
-        ast::Pat::Bool(value, _) => PatKind::Bool(value),
-        ast::Pat::Int(value, _) => PatKind::Int(value),
-        ast::Pat::Float(value, _) => PatKind::Float(value),
-        ast::Pat::String(value, _) => PatKind::String(value),
-        ast::Pat::Char(value, _) => PatKind::Char(value),
-        ast::Pat::Constr(path, args, _) => {
+        ast::Pat::Unit { span: _ } => PatKind::Unit,
+        ast::Pat::Bool { value, span: _ } => PatKind::Bool(value),
+        ast::Pat::Int { value, span: _ } => PatKind::Int(value),
+        ast::Pat::Float { value, span: _ } => PatKind::Float(value),
+        ast::Pat::String { value, span: _ } => PatKind::String(value),
+        ast::Pat::Char { value, span: _ } => PatKind::Char(value),
+        ast::Pat::Constr { constructor: path, args, span: _ } => {
             let result: Vec[Pat] = Vec::new();
             for arg in args {
                 result.push(lower_pattern_inner(ctx, arg, env, state))
             };
             PatKind::Constr(unresolved_constructor(ctx, path), result)
         },
-        ast::Pat::Struct(path, fields, has_rest, _) => {
+        ast::Pat::Struct { name: path, fields, has_rest, span: _ } => {
             let result: Vec[(string, Pat)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_pattern_inner(ctx, field.1, env, state)))
             };
             PatKind::Struct(path_text(ctx, path), result, has_rest)
         },
-        ast::Pat::Tuple(values, _) => {
+        ast::Pat::Tuple { items: values, span: _ } => {
             let result: Vec[Pat] = Vec::new();
             for item in values {
                 result.push(lower_pattern_inner(ctx, item, env, state))
             };
             PatKind::Tuple(result)
         },
-        ast::Pat::Array(prefix, rest, suffix, _) => {
+        ast::Pat::Array { prefix, rest, suffix, span: _ } => {
             let lowered_prefix: Vec[Pat] = Vec::new();
             for item in prefix {
                 lowered_prefix.push(lower_pattern_inner(ctx, item, env, state))
@@ -725,11 +725,11 @@ fn lower_pattern_inner(
             };
             PatKind::Array(lowered_prefix, lowered_rest, lowered_suffix)
         },
-        ast::Pat::Alias(name, pat, _) => PatKind::Alias(
+        ast::Pat::Alias { name, pat, span: _ } => PatKind::Alias(
             bind_pattern_name(ctx, env, state, name),
             lower_pattern_inner(ctx, pat, env, state),
         ),
-        ast::Pat::Or(values, _) => {
+        ast::Pat::Or { pats: values, span: _ } => {
             let result: Vec[Pat] = Vec::new();
             if values.len() == 0 {
                 PatKind::Or(result)
@@ -771,12 +771,12 @@ fn lower_pattern_inner(
                 PatKind::Or(result)
             }
         },
-        ast::Pat::Range(start, end, inclusive, _) => PatKind::Range(
+        ast::Pat::Range { start, end, inclusive, span: _ } => PatKind::Range(
             lower_pattern_inner(ctx, start, env, state),
             lower_pattern_inner(ctx, end, env, state),
             inclusive,
         ),
-        ast::Pat::Wild(_) => PatKind::Wild,
+        ast::Pat::Wild { span: _ } => PatKind::Wild,
     };
     ctx.current_pattern_span.set(previous_span);
     Pat { kind, span }
@@ -803,7 +803,7 @@ fn lower_block(
     let stmts: Vec[Stmt] = Vec::new();
     for stmt in value.stmts {
         match stmt {
-            ast::Stmt::Let(is_mut, pat, annotation, expr, _) => {
+            ast::Stmt::Let { is_mut, pat, annotation, value: expr, span: _ } => {
                 let lowered_expr = lower_expr(ctx, expr, env, type_params);
                 let lowered_pat = lower_pattern(ctx, pat, env);
                 stmts.push(Stmt::Let(
@@ -816,11 +816,11 @@ fn lower_block(
                     lowered_expr,
                 ))
             },
-            ast::Stmt::Assign(target, expr, _) => stmts.push(Stmt::Assign(
+            ast::Stmt::Assign { target, value: expr, span: _ } => stmts.push(Stmt::Assign(
                 lower_expr(ctx, target, env, type_params),
                 lower_expr(ctx, expr, env, type_params),
             )),
-            ast::Stmt::Expr(expr, _) => {
+            ast::Stmt::Expr { expr, span: _ } => {
                 stmts.push(Stmt::Expr(lower_expr(ctx, expr, env, type_params)))
             },
         }
@@ -841,7 +841,7 @@ fn lower_expr_value(
     type_params: Vec[string],
 ) -> ExprKind {
     match value {
-        ast::Expr::Path(path, type_args, _) => {
+        ast::Expr::Path { path, type_args, span: _ } => {
             if type_args.len() > 0 {
                 let args: Vec[TypeExpr] = Vec::new();
                 for arg in type_args {
@@ -876,41 +876,41 @@ fn lower_expr_value(
                 }
             }
         },
-        ast::Expr::Unit(_) => ExprKind::Unit,
-        ast::Expr::Bool(value, _) => ExprKind::Bool(value),
-        ast::Expr::Int(value, _) => ExprKind::Int(value),
-        ast::Expr::Float(value, _) => ExprKind::Float(value),
-        ast::Expr::String(value, _) => ExprKind::String(value),
-        ast::Expr::Char(value, _) => ExprKind::Char(value),
-        ast::Expr::Constr(path, args, _) => {
+        ast::Expr::Unit { span: _ } => ExprKind::Unit,
+        ast::Expr::Bool { value, span: _ } => ExprKind::Bool(value),
+        ast::Expr::Int { value, span: _ } => ExprKind::Int(value),
+        ast::Expr::Float { value, span: _ } => ExprKind::Float(value),
+        ast::Expr::String { value, span: _ } => ExprKind::String(value),
+        ast::Expr::Char { value, span: _ } => ExprKind::Char(value),
+        ast::Expr::Constr { constructor: path, args, span: _ } => {
             let result: Vec[Expr] = Vec::new();
             for arg in args {
                 result.push(lower_expr(ctx, arg, env, type_params))
             };
             ExprKind::Constr(unresolved_constructor(ctx, path), result)
         },
-        ast::Expr::StructLiteral(path, fields, _) => {
+        ast::Expr::StructLiteral { name: path, fields, span: _ } => {
             let result: Vec[(string, Expr)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_expr(ctx, field.1, env, type_params)))
             };
             ExprKind::StructLiteral(path_text(ctx, path), result)
         },
-        ast::Expr::Tuple(values, _) => {
+        ast::Expr::Tuple { items: values, span: _ } => {
             let result: Vec[Expr] = Vec::new();
             for item in values {
                 result.push(lower_expr(ctx, item, env, type_params))
             };
             ExprKind::Tuple(result)
         },
-        ast::Expr::Array(values, _) => {
+        ast::Expr::Array { items: values, span: _ } => {
             let result: Vec[Expr] = Vec::new();
             for item in values {
                 result.push(lower_expr(ctx, item, env, type_params))
             };
             ExprKind::Array(result)
         },
-        ast::Expr::Closure(params, body, _) => {
+        ast::Expr::Closure { params, body, span: _ } => {
             let closure_env = copy_bindings(env);
             let lowered_params: Vec[ClosureParam] = Vec::new();
             for param in params {
@@ -929,7 +929,7 @@ fn lower_expr_value(
                 lower_expr(ctx, body, closure_env, type_params),
             )
         },
-        ast::Expr::Match(expr, arms, _) => {
+        ast::Expr::Match { expr, arms, span: _ } => {
             let lowered_expr = lower_expr(ctx, expr, env, type_params);
             let lowered_arms: Vec[Arm] = Vec::new();
             for arm in arms {
@@ -948,16 +948,16 @@ fn lower_expr_value(
             };
             ExprKind::Match(lowered_expr, lowered_arms)
         },
-        ast::Expr::If(cond, then_branch, else_branch, _) => ExprKind::If(
+        ast::Expr::If { cond, then_branch, else_branch, span: _ } => ExprKind::If(
             lower_expr(ctx, cond, env, type_params),
             lower_expr(ctx, then_branch, copy_bindings(env), type_params),
             lower_expr(ctx, else_branch, copy_bindings(env), type_params),
         ),
-        ast::Expr::While(cond, body, _) => ExprKind::While(
+        ast::Expr::While { cond, body, span: _ } => ExprKind::While(
             lower_expr(ctx, cond, env, type_params),
             lower_expr(ctx, body, copy_bindings(env), type_params),
         ),
-        ast::Expr::For(pat, iterator, body, _) => {
+        ast::Expr::For { pat, iterator, body, span: _ } => {
             let body_env = copy_bindings(env);
             let lowered_iterator = lower_expr(ctx, iterator, env, type_params);
             let lowered_pat = lower_pattern(ctx, pat, body_env);
@@ -967,16 +967,16 @@ fn lower_expr_value(
                 lower_expr(ctx, body, body_env, type_params),
             )
         },
-        ast::Expr::Break(_) => ExprKind::Break,
-        ast::Expr::Continue(_) => ExprKind::Continue,
-        ast::Expr::Return(expr, _) => ExprKind::Return(match expr {
+        ast::Expr::Break { span: _ } => ExprKind::Break,
+        ast::Expr::Continue { span: _ } => ExprKind::Continue,
+        ast::Expr::Return { expr, span: _ } => ExprKind::Return(match expr {
             Option::Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
             Option::None => Option::None,
         }),
-        ast::Expr::Go(expr, _) => ExprKind::Go(lower_expr(ctx, expr, env, type_params)),
-        ast::Expr::Call(func, args, _) => {
+        ast::Expr::Go { expr, span: _ } => ExprKind::Go(lower_expr(ctx, expr, env, type_params)),
+        ast::Expr::Call { func, args, span: _ } => {
             match func {
-                ast::Expr::Path(path, _, _) => match constructor_ref(ctx, path) {
+                ast::Expr::Path { path, type_args: _, span: _ } => match constructor_ref(ctx, path) {
                     Option::Some(constructor) => {
                         let result: Vec[Expr] = Vec::new();
                         for arg in args {
@@ -1003,34 +1003,34 @@ fn lower_expr_value(
                 },
             }
         },
-        ast::Expr::Unary(op, expr, _) => {
+        ast::Expr::Unary { op, expr, span: _ } => {
             ExprKind::Unary(op, lower_expr(ctx, expr, env, type_params))
         },
-        ast::Expr::Cast(expr, ty, _) => ExprKind::Cast(
+        ast::Expr::Cast { expr, ty, span: _ } => ExprKind::Cast(
             lower_expr(ctx, expr, env, type_params),
             lower_type(ctx, ty, type_params),
         ),
-        ast::Expr::Try(expr, _) => ExprKind::Try(0, lower_expr(ctx, expr, env, type_params)),
-        ast::Expr::Range(start, end, _) => ExprKind::Range(
+        ast::Expr::Try { expr, span: _ } => ExprKind::Try(0, lower_expr(ctx, expr, env, type_params)),
+        ast::Expr::Range { start, end, span: _ } => ExprKind::Range(
             lower_expr(ctx, start, env, type_params),
             lower_expr(ctx, end, env, type_params),
         ),
-        ast::Expr::Binary(op, lhs, rhs, _) => ExprKind::Binary(
+        ast::Expr::Binary { op, lhs, rhs, span: _ } => ExprKind::Binary(
             op,
             lower_expr(ctx, lhs, env, type_params),
             lower_expr(ctx, rhs, env, type_params),
         ),
-        ast::Expr::Proj(expr, index, _) => {
+        ast::Expr::Proj { tuple: expr, index, span: _ } => {
             ExprKind::Proj(lower_expr(ctx, expr, env, type_params), index)
         },
-        ast::Expr::Field(expr, field, _) => {
+        ast::Expr::Field { expr, field_name: field, span: _ } => {
             ExprKind::Field(lower_expr(ctx, expr, env, type_params), field)
         },
-        ast::Expr::Index(base, index, _) => ExprKind::Index(
+        ast::Expr::Index { base, index, span: _ } => ExprKind::Index(
             lower_expr(ctx, base, env, type_params),
             lower_expr(ctx, index, env, type_params),
         ),
-        ast::Expr::Block(block, _) => ExprKind::Block(lower_block(ctx, block, env, type_params)),
+        ast::Expr::Block { block, span: _ } => ExprKind::Block(lower_block(ctx, block, env, type_params)),
     }
 }
 

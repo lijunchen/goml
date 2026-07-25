@@ -57,7 +57,7 @@ fn trait_ref(name: string) -> ast::TraitRef {
 }
 
 fn type_for_name(name: string) -> ast::TypeExpr {
-    ast::TypeExpr::Con(one_segment_path(name))
+    ast::TypeExpr::Con { path: one_segment_path(name) }
 }
 
 fn string_contains(value: string, expected: string) -> bool {
@@ -216,36 +216,36 @@ fn validate_file_derives(
 }
 
 fn var_expr(name: string) -> ast::Expr {
-    ast::Expr::Path(one_segment_path(name), Vec::new(), dummy_span())
+    ast::Expr::Path { path: one_segment_path(name), type_args: Vec::new(), span: dummy_span() }
 }
 
 fn string_expr(value: string) -> ast::Expr {
-    ast::Expr::String(value, dummy_span())
+    ast::Expr::String { value, span: dummy_span() }
 }
 
 fn bool_expr(value: bool) -> ast::Expr {
-    ast::Expr::Bool(value, dummy_span())
+    ast::Expr::Bool { value, span: dummy_span() }
 }
 
 fn uint64_expr(value: string) -> ast::Expr {
-    ast::Expr::Int(value, dummy_span())
+    ast::Expr::Int { value, span: dummy_span() }
 }
 
 fn field_expr(value: ast::Expr, field: string) -> ast::Expr {
-    ast::Expr::Field(value, field, dummy_span())
+    ast::Expr::Field { expr: value, field_name: field, span: dummy_span() }
 }
 
 fn call_expr(func: ast::Expr, args: Vec[ast::Expr]) -> ast::Expr {
-    ast::Expr::Call(func, args, dummy_span())
+    ast::Expr::Call { func, args, span: dummy_span() }
 }
 
 fn trait_call(trait_name: string, method_name: string, args: Vec[ast::Expr]) -> ast::Expr {
     call_expr(
-        ast::Expr::Path(
-            two_segment_path(trait_name, method_name),
-            Vec::new(),
-            dummy_span(),
-        ),
+        ast::Expr::Path {
+            path: two_segment_path(trait_name, method_name),
+            type_args: Vec::new(),
+            span: dummy_span(),
+        },
         args,
     )
 }
@@ -263,12 +263,12 @@ fn concat_parts(parts: Vec[ast::Expr]) -> ast::Expr {
     } else {
         let result = Ref::new(parts.get(0));
         for index in range(1, parts.len()) {
-            result.set(ast::Expr::Binary(
-                ast::BinaryOp::Add,
-                result.get(),
-                parts.get(index),
-                dummy_span(),
-            ))
+            result.set(ast::Expr::Binary {
+                op: ast::BinaryOp::Add,
+                lhs: result.get(),
+                rhs: parts.get(index),
+                span: dummy_span(),
+            })
         };
         result.get()
     }
@@ -279,23 +279,23 @@ fn let_stmt(
     annotation: Option[ast::TypeExpr],
     value: ast::Expr,
 ) -> ast::Stmt {
-    ast::Stmt::Let(false, pat, annotation, value, dummy_span())
+    ast::Stmt::Let { is_mut: false, pat, annotation, value, span: dummy_span() }
 }
 
 fn block_expr(stmts: Vec[ast::Stmt], tail: ast::Expr) -> ast::Expr {
-    ast::Expr::Block(
-        ast::Block {
-            stmts,
-            tail: Option::Some(tail),
-            span: dummy_span(),
-        },
-        dummy_span(),
-    )
+    ast::Expr::Block {
+        block: ast::Block {
+                    stmts,
+                    tail: Option::Some(tail),
+                    span: dummy_span(),
+                },
+        span: dummy_span(),
+    }
 }
 
 fn expr_body(value: ast::Expr) -> ast::Block {
     match value {
-        ast::Expr::Block(block, _) => block,
+        ast::Expr::Block { block, span: _ } => block,
         _ => ast::Block {
             stmts: Vec::new(),
             tail: Option::Some(value),
@@ -365,13 +365,18 @@ fn struct_to_string_body(value: ast::StructDef) -> ast::Expr {
             } else {
                 ()
             };
-            fields.push((field.0, ast::Pat::Var(field.0, dummy_span())));
+            fields.push((field.0, ast::Pat::Var { name: field.0, span: dummy_span() }));
             index.set(index.get() + 1)
         };
         parts.push(string_expr(" }"));
         let stmts: Vec[ast::Stmt] = Vec::new();
         stmts.push(let_stmt(
-            ast::Pat::Struct(one_segment_path(value.name), fields, false, dummy_span()),
+            ast::Pat::Struct {
+                name: one_segment_path(value.name),
+                fields,
+                has_rest: false,
+                span: dummy_span(),
+            },
             Option::None,
             var_expr("self"),
         ));
@@ -434,7 +439,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
             body: concat_parts(parts),
         })
     };
-    ast::Expr::Match(var_expr("self"), arms, dummy_span())
+    ast::Expr::Match { expr: var_expr("self"), arms, span: dummy_span() }
 }
 
 fn struct_eq_body(value: ast::StructDef) -> ast::Expr {
@@ -443,12 +448,12 @@ fn struct_eq_body(value: ast::StructDef) -> ast::Expr {
         let args: Vec[ast::Expr] = Vec::new();
         args.push(field_expr(var_expr("self"), field.0));
         args.push(field_expr(var_expr("other"), field.0));
-        result.set(ast::Expr::Binary(
-            ast::BinaryOp::And,
-            result.get(),
-            trait_call("Eq", "eq", args),
-            dummy_span(),
-        ))
+        result.set(ast::Expr::Binary {
+            op: ast::BinaryOp::And,
+            lhs: result.get(),
+            rhs: trait_call("Eq", "eq", args),
+            span: dummy_span(),
+        })
     };
     result.get()
 }
@@ -464,9 +469,9 @@ fn variant_bindings(prefix: string, variant: int, count: int) -> Vec[string] {
 fn constr_pat(path: ast::Path, bindings: Vec[string]) -> ast::Pat {
     let args: Vec[ast::Pat] = Vec::new();
     for binding in bindings {
-        args.push(ast::Pat::Var(binding, dummy_span()))
+        args.push(ast::Pat::Var { name: binding, span: dummy_span() })
     };
-    ast::Pat::Constr(path, args, dummy_span())
+    ast::Pat::Constr { constructor: path, args, span: dummy_span() }
 }
 
 fn enum_field_types(fields: ast::EnumVariantFields) -> Vec[ast::TypeExpr] {
@@ -494,10 +499,10 @@ fn enum_variant_pat(
             for index in range(0, fields.len()) {
                 patterns.push((
                     fields.get(index).0,
-                    ast::Pat::Var(bindings.get(index), dummy_span()),
+                    ast::Pat::Var { name: bindings.get(index), span: dummy_span() },
                 ))
             };
-            ast::Pat::Struct(path, patterns, false, dummy_span())
+            ast::Pat::Struct { name: path, fields: patterns, has_rest: false, span: dummy_span() }
         },
         _ => constr_pat(path, bindings),
     }
@@ -529,50 +534,50 @@ fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
             let args: Vec[ast::Expr] = Vec::new();
             args.push(var_expr(left.get(index)));
             args.push(var_expr(right.get(index)));
-            body.set(ast::Expr::Binary(
-                ast::BinaryOp::And,
-                body.get(),
-                trait_call("Eq", "eq", args),
-                dummy_span(),
-            ))
+            body.set(ast::Expr::Binary {
+                op: ast::BinaryOp::And,
+                lhs: body.get(),
+                rhs: trait_call("Eq", "eq", args),
+                span: dummy_span(),
+            })
         };
         arms.push(ast::Arm {
-            pat: ast::Pat::Tuple(tuple_pats, dummy_span()),
+            pat: ast::Pat::Tuple { items: tuple_pats, span: dummy_span() },
             guard: Option::None,
             body: body.get(),
         });
         variant_index.set(variant_index.get() + 1)
     };
     arms.push(ast::Arm {
-        pat: ast::Pat::Wild(dummy_span()),
+        pat: ast::Pat::Wild { span: dummy_span() },
         guard: Option::None,
         body: bool_expr(false),
     });
-    ast::Expr::Match(
-        ast::Expr::Tuple(tuple_items, dummy_span()),
+    ast::Expr::Match {
+        expr: ast::Expr::Tuple { items: tuple_items, span: dummy_span() },
         arms,
-        dummy_span(),
-    )
+        span: dummy_span(),
+    }
 }
 
 fn hash_step(value: ast::Expr) -> ast::Expr {
     let hash_args: Vec[ast::Expr] = Vec::new();
     hash_args.push(value);
-    ast::Expr::Binary(
-        ast::BinaryOp::Add,
-        ast::Expr::Binary(
-            ast::BinaryOp::Mul,
-            var_expr("h"),
-            uint64_expr("1099511628211"),
-            dummy_span(),
-        ),
-        trait_call("Hash", "hash", hash_args),
-        dummy_span(),
-    )
+    ast::Expr::Binary {
+        op: ast::BinaryOp::Add,
+        lhs: ast::Expr::Binary {
+                    op: ast::BinaryOp::Mul,
+                    lhs: var_expr("h"),
+                    rhs: uint64_expr("1099511628211"),
+                    span: dummy_span(),
+                },
+        rhs: trait_call("Hash", "hash", hash_args),
+        span: dummy_span(),
+    }
 }
 
 fn h_binding(annotation: Option[ast::TypeExpr], value: ast::Expr) -> ast::Stmt {
-    let_stmt(ast::Pat::Var("h", dummy_span()), annotation, value)
+    let_stmt(ast::Pat::Var { name: "h", span: dummy_span() }, annotation, value)
 }
 
 fn struct_hash_body(value: ast::StructDef) -> ast::Expr {
@@ -606,12 +611,12 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
         let stmts: Vec[ast::Stmt] = Vec::new();
         stmts.push(h_binding(
             Option::Some(ast::TypeExpr::Uint64),
-            ast::Expr::Binary(
-                ast::BinaryOp::Add,
-                uint64_expr("14695981039346656037"),
-                uint64_expr((variant_index.get() + 1).to_string()),
-                dummy_span(),
-            ),
+            ast::Expr::Binary {
+                op: ast::BinaryOp::Add,
+                lhs: uint64_expr("14695981039346656037"),
+                rhs: uint64_expr((variant_index.get() + 1).to_string()),
+                span: dummy_span(),
+            },
         ));
         for binding in bindings {
             stmts.push(h_binding(Option::None, hash_step(var_expr(binding))))
@@ -627,7 +632,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
         });
         variant_index.set(variant_index.get() + 1)
     };
-    ast::Expr::Match(var_expr("self"), arms, dummy_span())
+    ast::Expr::Match { expr: var_expr("self"), arms, span: dummy_span() }
 }
 
 fn one_param(name: string, ty: ast::TypeExpr) -> Vec[(string, ast::TypeExpr)] {
