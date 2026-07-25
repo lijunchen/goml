@@ -59,6 +59,10 @@ _bootstrap-build:
 _bootstrap-test:
     bootstrap-goml/_artifact/bin/cmd/goml/goml test bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 1
 
+test-bootstrap-pipeline:
+    cargo build -p goml -p gomlc
+    target/debug/goml test bootstrap/pipeline_test --compiler target/debug/gomlc --jobs 1
+
 install-lsp-suite:
     just install-lsp
     just install-vscode-ext

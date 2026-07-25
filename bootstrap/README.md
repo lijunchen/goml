@@ -98,6 +98,12 @@ target/debug/goml test bootstrap/stdlib
 
 The Rust differential tests live in `crates/compiler/src/tests/bootstrap`. They build the bootstrap compiler and compare it byte for byte with the Rust compiler across generated inputs, the repository corpus, compiler test suites, and pipeline snapshots.
 
+The GoML pipeline snapshot tests cover every non-empty fixture under `crates/compiler/src/tests/pipeline`:
+
+```sh
+just test-bootstrap-pipeline
+```
+
 Run only the bootstrap differential tests:
 
 ```sh
