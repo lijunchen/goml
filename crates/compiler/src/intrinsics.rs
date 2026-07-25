@@ -1151,6 +1151,8 @@ impl RuntimeHookId {
                         Ty::TBool,
                         Ty::TString,
                         env_ty,
+                        Ty::TBool,
+                        vec_ty(Ty::TUint8),
                     ],
                     tuple_ty(vec![
                         Ty::TBool,

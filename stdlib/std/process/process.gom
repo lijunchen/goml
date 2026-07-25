@@ -47,6 +47,8 @@ pub struct Command {
     pub has_directory: bool,
     pub directory: string,
     pub environment: Vec[(string, string)],
+    pub has_input: bool,
+    pub input_value: Vec[uint8],
 }
 
 impl Command {
@@ -57,6 +59,8 @@ impl Command {
             has_directory: false,
             directory: "",
             environment: Vec::new(),
+            has_input: false,
+            input_value: Vec::new(),
         }
     }
 
@@ -79,12 +83,26 @@ impl Command {
             has_directory: true,
             directory,
             environment: self.environment,
+            has_input: self.has_input,
+            input_value: self.input_value,
         }
     }
 
     pub fn env(self: Command, key: string, value: string) -> Command {
         self.environment.push((key, value));
         self
+    }
+
+    pub fn input(self: Command, value: bytes::Bytes) -> Command {
+        Command {
+            program: self.program,
+            arguments: self.arguments,
+            has_directory: self.has_directory,
+            directory: self.directory,
+            environment: self.environment,
+            has_input: true,
+            input_value: value.to_vec(),
+        }
     }
 
     pub fn output(self: Command) -> Result[Output, string] {
@@ -94,6 +112,8 @@ impl Command {
             self.has_directory,
             self.directory,
             self.environment,
+            self.has_input,
+            self.input_value,
         );
         if ok {
             Result::Ok(Output {

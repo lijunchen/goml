@@ -1105,6 +1105,13 @@ fn std_process_params() -> Vec[(string, Type)] {
     params
 }
 
+fn std_process_output_params() -> Vec[(string, Type)] {
+    let params = std_process_params();
+    params.push(("has_input", Type::Bool));
+    params.push(("input", lower_type(std_vec_type(tast::Type::Uint8))));
+    params
+}
+
 fn std_process_output_type() -> Type {
     let values: Vec[tast::Type] = Vec::new();
     values.push(tast::Type::Bool);
@@ -1234,6 +1241,22 @@ fn std_process_exit_item() -> Item {
 
 fn std_process_output_item() -> Item {
     let stmts = std_process_command_setup();
+    let set_input: Vec[Stmt] = Vec::new();
+    let reader_args: Vec[Expr] = Vec::new();
+    reader_args.push(Expr::Field {
+        expr: Expr::Var { name: "input" },
+        field_name: "items",
+    });
+    set_input.push(Stmt::FieldAssign {
+        target: Expr::Var { name: "cmd" },
+        field_name: "Stdin",
+        value: std_call("_goml_bytes.NewReader", reader_args),
+    });
+    stmts.push(Stmt::If {
+        cond: Expr::Var { name: "has_input" },
+        then_: Block { stmts: set_input },
+        else_: Option::None,
+    });
     stmts.push(Stmt::Var {
         name: "stdout",
         ty: Type::Named { name: "_goml_bytes.Buffer" },
@@ -1305,7 +1328,7 @@ fn std_process_output_item() -> Item {
     });
     std_function_item(
         "std.process.output",
-        std_process_params(),
+        std_process_output_params(),
         std_process_output_type(),
         stmts,
     )

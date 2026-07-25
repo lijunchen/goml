@@ -1414,6 +1414,16 @@ fn process_runtime_params() -> Vec<(String, goty::GoType)> {
     ]
 }
 
+fn process_output_runtime_params() -> Vec<(String, goty::GoType)> {
+    let mut params = process_runtime_params();
+    params.push(("has_input".to_string(), goty::GoType::TBool));
+    params.push((
+        "input".to_string(),
+        goast::tast_ty_to_go_type(&byte_vec_ty()),
+    ));
+    params
+}
+
 fn process_environment_items() -> goast::Expr {
     let env_ty = process_environment_ty();
     let tast::Ty::TVec { elem } = &env_ty else {
@@ -1722,6 +1732,31 @@ fn std_process_output_raw() -> goast::Fn {
         tast::Ty::TString,
     ]);
     let mut stmts = process_command_setup();
+    stmts.push(goast::Stmt::If {
+        cond: runtime_var("has_input", goty::GoType::TBool),
+        then: goast::Block {
+            stmts: vec![goast::Stmt::FieldAssign {
+                target: runtime_field(
+                    runtime_var("cmd", process_command_go_ty()),
+                    "Stdin",
+                    goty::GoType::TName {
+                        name: "any".to_string(),
+                    },
+                ),
+                value: runtime_call(
+                    "_goml_bytes.NewReader",
+                    vec![byte_slice_go_ty()],
+                    goty::GoType::TPointer {
+                        elem: Box::new(goty::GoType::TName {
+                            name: "_goml_bytes.Reader".to_string(),
+                        }),
+                    },
+                    vec![byte_vec_items("input")],
+                ),
+            }],
+        },
+        else_: None,
+    });
     stmts.extend([
         goast::Stmt::VarDecl {
             name: "stdout".to_string(),
@@ -1795,7 +1830,7 @@ fn std_process_output_raw() -> goast::Fn {
     });
     goast::Fn {
         name: runtime_hook_fn_name(RuntimeHookId::StdProcessOutput),
-        params: process_runtime_params(),
+        params: process_output_runtime_params(),
         ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
         body: goast::Block { stmts },
     }
