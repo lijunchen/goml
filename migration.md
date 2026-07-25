@@ -26,7 +26,7 @@ explicitly refers to fixture cases.
 | `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage |
 | `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 24 projects |
 | `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 100 fixtures |
-| `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 80 fixtures representing 72 Rust tests |
+| `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 84 fixtures representing 76 Rust tests |
 | `crates/compiler/src/tests/struct_type/` | `bootstrap/compiler_test/struct_type_test.gom` | migrated, 3 fixtures |
 | `crates/compiler/src/tests/bootstrap/` | no replacement | oracle; Rust/bootstrap differential infrastructure |
 
@@ -50,7 +50,7 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 
 | Rust module | Current count | GoML destination | Status |
 | --- | ---: | --- | --- |
-| `trait_impl_test.rs` | 6 | `bootstrap/compiler_test/trait_impl_test.gom` | partially migrated; 72 migrated, 4 diagnostic-fidelity cases retained, and 2 internal |
+| `trait_impl_test.rs` | 2 | `bootstrap/compiler_test/trait_impl_test.gom` | migrated; 76 observable tests migrated and 2 internal assertions retained |
 | `visibility_test.rs` | 2 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 18 migrated and 2 blocked |
 | `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 3 migrated and 8 blocked |
 | `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
@@ -102,6 +102,7 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 - `associated_type_cycles_are_rejected`
 - `associated_type_impl_requires_complete_known_unique_bindings`
 - `associated_type_projection_requires_one_defining_bound`
+- `ambiguous_trait_goal_does_not_commit_inference`
 - `ambiguous_trait_goal_is_retried_after_unique_inference`
 - `canonical_trait_cache_replays_unique_inference`
 - `coherence_is_rechecked_after_all_impls_are_collected`
@@ -112,12 +113,15 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 - `equality_operator_requires_eq_evidence`
 - `equality_predicate_transfers_trait_bound`
 - `expected_return_type_disambiguates_generic_trait_method`
+- `explicit_generic_trait_arguments_are_validated`
 - `for_loop_accepts_custom_into_iterator`
 - `for_loop_uses_iterator_associated_item_type`
 - `forward_and_diamond_supertraits_are_supported`
 - `generic_into_iterator_bound_implies_iterator_for_into_iter`
+- `generic_trait_arguments_are_validated`
 - `generic_trait_arity_is_checked`
 - `generic_trait_applications_are_distinct`
+- `generic_trait_parameters_and_signatures_are_validated`
 - `generic_traits_are_rejected_as_dyn_types`
 - `impl_equality_predicate_restricts_application`
 - `impl_for_generic_type_reports_missing_method_diagnostic`
@@ -176,17 +180,6 @@ original Rust variable, such as `accepted`, `rejected`, `missing`, or
 | `builtin_generic_constraints_are_checked_at_call_site` | `crashers/println_option_without_tostring/main.gom` |
 | `generic_constraints_reject_overlapping_trait_impls_at_definition` | `crashers/hashmap_ref_dyn_hash_overlapping_impl/main.gom` |
 | `recursive_blanket_trait_impl_bound_does_not_crash` | `crashers/recursive_blanket_trait_impl_bound/main.gom` |
-
-### Retained for diagnostic fidelity
-
-- `ambiguous_trait_goal_does_not_commit_inference`
-- `explicit_generic_trait_arguments_are_validated`
-- `generic_trait_arguments_are_validated`
-- `generic_trait_parameters_and_signatures_are_validated`
-
-The bootstrap implementation now matches the Rust core behavior covered by
-these tests. They stay in `trait_impl_test.rs` because source locations or
-secondary inference diagnostics do not yet exactly match the Rust output.
 
 ### Rust-only internal assertions
 
