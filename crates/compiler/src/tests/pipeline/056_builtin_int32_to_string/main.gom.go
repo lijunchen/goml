@@ -20,23 +20,23 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
-    var retv64 string
-    var t65 string = _goml_runtime_core_int32_to_string(self__5)
-    retv64 = t65
-    return retv64
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
+    var retv67 string
+    var t68 string = _goml_runtime_core_int32_to_string(self__6)
+    retv67 = t68
+    return retv67
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t67 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t67)
+    var t70 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t70)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv70 string
-    retv70 = self__37
-    return retv70
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv73 string
+    retv73 = self__38
+    return retv73
 }
 
 func main() {

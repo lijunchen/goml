@@ -39,70 +39,70 @@ const (
 
 func main0() struct{} {
     var running__0 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(true)
-    Loop_loop67:
+    Loop_loop70:
     for {
-        var t68 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(running__0)
-        if t68 {
+        var t71 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(running__0)
+        if t71 {
             var event__1 Event = Open
             switch event__1 {
             case Open:
                 var scanning__2 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
+                Loop_loop78:
+                for {
+                    var t79 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__2)
+                    if t79 {
+                        continue
+                    } else {
+                        break Loop_loop78
+                    }
+                }
+                var scanning__3 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
                 Loop_loop75:
                 for {
-                    var t76 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__2)
+                    var t76 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
                     if t76 {
                         continue
                     } else {
                         break Loop_loop75
                     }
                 }
-                var scanning__3 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
-                Loop_loop72:
-                for {
-                    var t73 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
-                    if t73 {
-                        continue
-                    } else {
-                        break Loop_loop72
-                    }
-                }
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(running__0, false)
                 continue
             case Close:
                 var scanning__3 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
-                Loop_loop72__2:
+                Loop_loop75__2:
                 for {
-                    var t73 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
-                    if t73 {
+                    var t76 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
+                    if t76 {
                         continue
                     } else {
-                        break Loop_loop72__2
+                        break Loop_loop75__2
                     }
                 }
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(running__0, false)
                 continue
             case Advance:
                 var scanning__3 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
-                Loop_loop72__3:
+                Loop_loop75__3:
                 for {
-                    var t73 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
-                    if t73 {
+                    var t76 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
+                    if t76 {
                         continue
                     } else {
-                        break Loop_loop72__3
+                        break Loop_loop75__3
                     }
                 }
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(running__0, false)
                 continue
             case Error:
                 var scanning__3 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
-                Loop_loop72__4:
+                Loop_loop75__4:
                 for {
-                    var t73 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
-                    if t73 {
+                    var t76 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(scanning__3)
+                    if t76 {
                         continue
                     } else {
-                        break Loop_loop72__4
+                        break Loop_loop75__4
                     }
                 }
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(running__0, false)
@@ -111,29 +111,29 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop67
+            break Loop_loop70
         }
     }
     _goml_runtime_core_string_println("ok")
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__204 bool) *ref_bool_x {
-    var retv78 *ref_bool_x
-    var t79 *ref_bool_x = ref__Ref_4bool(value__204)
-    retv78 = t79
-    return retv78
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__205 *ref_bool_x) bool {
-    var retv81 bool
-    var t82 bool = ref_get__Ref_4bool(self__205)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__209 bool) *ref_bool_x {
+    var retv81 *ref_bool_x
+    var t82 *ref_bool_x = ref__Ref_4bool(value__209)
     retv81 = t82
     return retv81
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__206 *ref_bool_x, value__207 bool) struct{} {
-    ref_set__Ref_4bool(self__206, value__207)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__210 *ref_bool_x) bool {
+    var retv84 bool
+    var t85 bool = ref_get__Ref_4bool(self__210)
+    retv84 = t85
+    return retv84
+}
+
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__211 *ref_bool_x, value__212 bool) struct{} {
+    ref_set__Ref_4bool(self__211, value__212)
     return struct{}{}
 }
 

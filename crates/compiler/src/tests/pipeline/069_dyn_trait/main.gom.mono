@@ -19,23 +19,23 @@ fn main() -> unit {
   let t/3 = Flag { value: true } in
   let dp/4 = to_dyn[Display]{Point}(p/2) in
   let dt/5 = to_dyn[Display]{Flag}(t/3) in
-  let mtmp61 = println__T_string(dyn_call[Display::show](dp/4)) in
+  let mtmp64 = println__T_string(dyn_call[Display::show](dp/4)) in
   {
-    let mtmp62 = println__T_string(dyn_call[Display::show](dt/5)) in
+    let mtmp65 = println__T_string(dyn_call[Display::show](dt/5)) in
     {
       ()
     }
   }
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  @runtime(core.int32_to_string)(self/5)
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

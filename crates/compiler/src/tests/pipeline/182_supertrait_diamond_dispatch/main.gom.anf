@@ -1,67 +1,67 @@
 fn trait_impl#Base#Value#base(self/0: Value) -> string {
-  join ret62(retv63: string) -> string {
-    retv63
+  join ret65(retv66: string) -> string {
+    retv66
   } in
-  jump ret62("B")
+  jump ret65("B")
 }
 
 fn trait_impl#Left#Value#left(self/1: Value) -> string {
-  join ret64(retv65: string) -> string {
-    retv65
+  join ret67(retv68: string) -> string {
+    retv68
   } in
-  jump ret64("L")
+  jump ret67("L")
 }
 
 fn trait_impl#Right#Value#right(self/2: Value) -> string {
-  join ret66(retv67: string) -> string {
-    retv67
+  join ret69(retv70: string) -> string {
+    retv70
   } in
-  jump ret66("R")
+  jump ret69("R")
 }
 
 fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
+  join ret71(retv72: string) -> string {
+    retv72
   } in
-  jump ret68("D")
+  jump ret71("D")
 }
 
 fn main() -> unit {
-  join ret70() -> unit {
-    ()
-  } in
-  let t71 = Value {} in
-  let t72 = describe__T_Value(t71) in
-  let _wild61 = println__T_string(t72) in
-  jump ret70()
-}
-
-fn println__T_string(value/1: string) -> unit {
   join ret73() -> unit {
     ()
   } in
-  let t74 = trait_impl#ToString#string#to_string(value/1) in
-  let t75 = @runtime(core.string_println)(t74) in
+  let t74 = Value {} in
+  let t75 = describe__T_Value(t74) in
+  let _wild64 = println__T_string(t75) in
   jump ret73()
 }
 
-fn describe__T_Value(value/4: Value) -> string {
-  join ret76(retv77: string) -> string {
-    retv77
+fn println__T_string(value/1: string) -> unit {
+  join ret76() -> unit {
+    ()
   } in
-  let t78 = trait_impl#Base#Value#base(value/4) in
-  let t79 = trait_impl#Left#Value#left(value/4) in
-  let t80 = (t78 + t79) in
-  let t81 = trait_impl#Right#Value#right(value/4) in
-  let t82 = (t80 + t81) in
-  let t83 = trait_impl#Diamond#Value#diamond(value/4) in
-  let t84 = (t82 + t83) in
-  jump ret76(t84)
+  let t77 = trait_impl#ToString#string#to_string(value/1) in
+  let t78 = @runtime(core.string_println)(t77) in
+  jump ret76()
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret85(retv86: string) -> string {
-    retv86
+fn describe__T_Value(value/4: Value) -> string {
+  join ret79(retv80: string) -> string {
+    retv80
   } in
-  jump ret85(self/37)
+  let t81 = trait_impl#Base#Value#base(value/4) in
+  let t82 = trait_impl#Left#Value#left(value/4) in
+  let t83 = (t81 + t82) in
+  let t84 = trait_impl#Right#Value#right(value/4) in
+  let t85 = (t83 + t84) in
+  let t86 = trait_impl#Diamond#Value#diamond(value/4) in
+  let t87 = (t85 + t86) in
+  jump ret79(t87)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret88(retv89: string) -> string {
+    retv89
+  } in
+  jump ret88(self/38)
 }

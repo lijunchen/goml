@@ -1,4 +1,4 @@
-FILE@0..803
+FILE@0..838
   TRAIT@0..55
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -483,7 +483,7 @@ FILE@0..803
             Whitespace@656..657 "\n"
       RBrace@657..658 "}"
       Whitespace@658..660 "\n\n"
-  FN@660..803
+  FN@660..838
     FnKeyword@660..662 "fn"
     Whitespace@662..663 " "
     Ident@663..667 "main"
@@ -496,7 +496,7 @@ FILE@0..803
     TYPE_UNIT@673..678
       UnitKeyword@673..677 "unit"
       Whitespace@677..678 " "
-    BLOCK@678..803
+    BLOCK@678..838
       LBrace@678..679 "{"
       Whitespace@679..684 "\n    "
       STMT_EXPR@684..732
@@ -533,56 +533,79 @@ FILE@0..803
             RParen@725..726 ")"
         Semi@726..727 ";"
         Whitespace@727..732 "\n    "
-      EXPR_CALL@732..801
-        EXPR_IDENT@732..746
-          PATH@732..746
-            Ident@732..746 "string_println"
-        ARG_LIST@746..801
-          LParen@746..747 "("
-          ARG@747..799
-            EXPR_CALL@747..799
-              EXPR_BINARY@747..797
-                EXPR_CALL@747..787
-                  EXPR_IDENT@747..769
-                    TYPE_TAPP@747..761
-                      PATH@747..752
-                        Ident@747..752 "Child"
-                      ColonColon@752..754 "::"
-                      TYPE_PARAM_LIST@754..761
-                        LBracket@754..755 "["
-                        TYPE_INT32@755..760
-                          Int32Keyword@755..760 "int32"
-                        RBracket@760..761 "]"
-                    ColonColon@761..763 "::"
-                    PATH@763..769
-                      Ident@763..769 "parent"
-                  ARG_LIST@769..787
-                    LParen@769..770 "("
-                    ARG@770..786
-                      EXPR_STRUCT_LITERAL@770..786
-                        PATH@770..774
-                          Ident@770..773 "Box"
-                          Whitespace@773..774 " "
-                        STRUCT_LITERAL_FIELD_LIST@774..786
-                          LBrace@774..775 "{"
-                          Whitespace@775..776 " "
-                          STRUCT_LITERAL_FIELD@776..785
-                            Ident@776..781 "value"
-                            Colon@781..782 ":"
-                            Whitespace@782..783 " "
-                            EXPR_INT@783..785
-                              Int@783..784 "6"
-                              Whitespace@784..785 " "
-                          RBrace@785..786 "}"
-                    RParen@786..787 ")"
-                Dot@787..788 "."
-                EXPR_IDENT@788..797
-                  PATH@788..797
-                    Ident@788..797 "to_string"
-              ARG_LIST@797..799
-                LParen@797..798 "("
-                RParen@798..799 ")"
-          RParen@799..800 ")"
-          Whitespace@800..801 "\n"
-      RBrace@801..802 "}"
-      Whitespace@802..803 "\n"
+      STMT_LET@732..778
+        LetKeyword@732..735 "let"
+        Whitespace@735..736 " "
+        PATTERN_VARIABLE@736..741
+          Ident@736..741 "value"
+        Colon@741..742 ":"
+        Whitespace@742..743 " "
+        TYPE_TAPP@743..754
+          PATH@743..746
+            Ident@743..746 "Box"
+          TYPE_PARAM_LIST@746..754
+            LBracket@746..747 "["
+            TYPE_INT32@747..752
+              Int32Keyword@747..752 "int32"
+            RBracket@752..753 "]"
+            Whitespace@753..754 " "
+        Eq@754..755 "="
+        Whitespace@755..756 " "
+        EXPR_STRUCT_LITERAL@756..772
+          PATH@756..760
+            Ident@756..759 "Box"
+            Whitespace@759..760 " "
+          STRUCT_LITERAL_FIELD_LIST@760..772
+            LBrace@760..761 "{"
+            Whitespace@761..762 " "
+            STRUCT_LITERAL_FIELD@762..771
+              Ident@762..767 "value"
+              Colon@767..768 ":"
+              Whitespace@768..769 " "
+              EXPR_INT@769..771
+                Int@769..770 "6"
+                Whitespace@770..771 " "
+            RBrace@771..772 "}"
+        Semi@772..773 ";"
+        Whitespace@773..778 "\n    "
+      EXPR_CALL@778..836
+        EXPR_IDENT@778..792
+          PATH@778..792
+            Ident@778..792 "string_println"
+        ARG_LIST@792..836
+          LParen@792..793 "("
+          ARG@793..834
+            EXPR_CALL@793..834
+              EXPR_BINARY@793..832
+                EXPR_CALL@793..822
+                  EXPR_IDENT@793..815
+                    TYPE_TAPP@793..807
+                      PATH@793..798
+                        Ident@793..798 "Child"
+                      ColonColon@798..800 "::"
+                      TYPE_PARAM_LIST@800..807
+                        LBracket@800..801 "["
+                        TYPE_INT32@801..806
+                          Int32Keyword@801..806 "int32"
+                        RBracket@806..807 "]"
+                    ColonColon@807..809 "::"
+                    PATH@809..815
+                      Ident@809..815 "parent"
+                  ARG_LIST@815..822
+                    LParen@815..816 "("
+                    ARG@816..821
+                      EXPR_IDENT@816..821
+                        PATH@816..821
+                          Ident@816..821 "value"
+                    RParen@821..822 ")"
+                Dot@822..823 "."
+                EXPR_IDENT@823..832
+                  PATH@823..832
+                    Ident@823..832 "to_string"
+              ARG_LIST@832..834
+                LParen@832..833 "("
+                RParen@833..834 ")"
+          RParen@834..835 ")"
+          Whitespace@835..836 "\n"
+      RBrace@836..837 "}"
+      Whitespace@837..838 "\n"

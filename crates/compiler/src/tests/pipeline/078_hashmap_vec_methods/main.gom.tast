@@ -32,21 +32,21 @@ fn print_opt_int(x/9: Option[int32]) -> unit {
 }
 
 fn main() -> unit {
-    let v/11: Vec[int32] = (Vec[int32]::new : () -> Vec[int32])();
-    (Vec[int32]::push : (Vec[int32], int32) -> unit)((v/11 : Vec[int32]), 10);
-    (Vec[int32]::push : (Vec[int32], int32) -> unit)((v/11 : Vec[int32]), 20);
-    (Vec[int32]::push : (Vec[int32], int32) -> unit)((v/11 : Vec[int32]), 30);
-    (println : (int32) -> unit)((Vec[int32]::get : (Vec[int32], int32) -> int32)((v/11 : Vec[int32]), 0));
-    (println : (int32) -> unit)((Vec[int32]::get : (Vec[int32], int32) -> int32)((v/11 : Vec[int32]), 1));
-    (println : (int32) -> unit)((Vec[int32]::get : (Vec[int32], int32) -> int32)((v/11 : Vec[int32]), 2));
-    (println : (int32) -> unit)((Vec[int32]::len : (Vec[int32]) -> int32)((v/11 : Vec[int32])));
+    let v/11: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+    (Vec[int]::push : (Vec[int], int) -> unit)((v/11 : Vec[int]), 10);
+    (Vec[int]::push : (Vec[int], int) -> unit)((v/11 : Vec[int]), 20);
+    (Vec[int]::push : (Vec[int], int) -> unit)((v/11 : Vec[int]), 30);
+    (println : (int) -> unit)((Vec[int]::get : (Vec[int], int) -> int)((v/11 : Vec[int]), 0));
+    (println : (int) -> unit)((Vec[int]::get : (Vec[int], int) -> int)((v/11 : Vec[int]), 1));
+    (println : (int) -> unit)((Vec[int]::get : (Vec[int], int) -> int)((v/11 : Vec[int]), 2));
+    (println : (int) -> unit)((Vec[int]::len : (Vec[int]) -> int)((v/11 : Vec[int])));
     let m/12: HashMap[Key, int32] = (HashMap[Key, int32]::new : () -> HashMap[Key, int32])();
     (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)((m/12 : HashMap[Key, int32]), Key::A, 10);
     (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)((m/12 : HashMap[Key, int32]), Key::B(1), 20);
-    (println : (int32) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int32)((m/12 : HashMap[Key, int32])));
+    (println : (int) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m/12 : HashMap[Key, int32])));
     (print_opt_int : (Option[int32]) -> unit)((HashMap[Key, int32]::get : (HashMap[Key, int32], Key) -> Option[int32])((m/12 : HashMap[Key, int32]), Key::A));
     (println : (bool) -> unit)((HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)((m/12 : HashMap[Key, int32]), Key::B(1)));
     (HashMap[Key, int32]::remove : (HashMap[Key, int32], Key) -> unit)((m/12 : HashMap[Key, int32]), Key::B(1));
     (println : (bool) -> unit)((HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)((m/12 : HashMap[Key, int32]), Key::B(1)));
-    (println : (int32) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int32)((m/12 : HashMap[Key, int32])));
+    (println : (int) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m/12 : HashMap[Key, int32])));
 }

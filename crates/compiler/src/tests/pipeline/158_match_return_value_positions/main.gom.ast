@@ -1,26 +1,26 @@
 package main;
 fn add_after_match(flag: bool) -> int32 {
     let value = match flag {
-        true => return 5i32,
-        false => 7i32,
+        true => return 5,
+        false => 7,
     };
-    value + 1i32
+    value + 1
 }
 
 fn receiver_after_match(flag: bool) -> string {
     match flag {
         true => return "early",
-        false => 7i32,
+        false => 7,
     }.to_string()
 }
 
 fn closure_after_match(flag: bool) -> int32 {
     let f = |inner: bool| {
         let value = match inner {
-            true => return 2i32,
-            false => 4i32,
+            true => return 2,
+            false => 4,
         };
-        value + 3i32
+        value + 3
     };
     f(flag)
 }

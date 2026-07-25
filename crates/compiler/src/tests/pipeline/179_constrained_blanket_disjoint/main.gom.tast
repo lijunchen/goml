@@ -18,5 +18,6 @@ impl Label for Box[string]{
 
 fn main() -> unit {
     (println : (string) -> unit)((Label::label : (Box[string]) -> string)(Box { value: "text" }));
-    (println : (string) -> unit)((Label::label : (Box[int32]) -> string)(Box { value: 7 }));
+    let value/3: Box[int32] = Box { value: 7 };
+    (println : (string) -> unit)((Label::label : (Box[int32]) -> string)((value/3 : Box[int32])));
 }

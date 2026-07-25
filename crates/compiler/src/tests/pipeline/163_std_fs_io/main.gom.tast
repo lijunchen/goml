@@ -7,7 +7,7 @@ fn show_read(res/0: Result[string, string]) -> string {
 
 fn show_dir(res/3: Result[Vec[string], string]) -> string {
     match (res/3 : Result[Vec[string], string]) {
-        Result::Ok(names/4: Vec[string]) => (ToString::to_string : (bool) -> string)((Vec[string]::len : (Vec[string]) -> int32)((names/4 : Vec[string])) > 0),
+        Result::Ok(names/4: Vec[string]) => (ToString::to_string : (bool) -> string)((Vec[string]::len : (Vec[string]) -> int)((names/4 : Vec[string])) > 0),
         Result::Err(err/5: string) => "err " + (err/5 : string),
     }
 }

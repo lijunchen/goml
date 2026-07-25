@@ -6,18 +6,18 @@ import (
     _goml_utf8 "unicode/utf8"
 )
 
-func _goml_runtime_core_string_byte_slice(s string, start int32, end int32) string {
+func _goml_runtime_core_string_byte_slice(s string, start int, end int) string {
     if !_goml_runtime_core_string_is_char_boundary(s, start) && _goml_runtime_core_string_is_char_boundary(s, end) {
         panic("invalid string byte slice")
     }
     return s[start:end]
 }
 
-func _goml_runtime_core_string_is_char_boundary(s string, i int32) bool {
-    if i < 0 || i > int32(len(s)) {
+func _goml_runtime_core_string_is_char_boundary(s string, i int) bool {
+    if i < 0 || i > int(len(s)) {
         return false
     }
-    if i == int32(len(s)) {
+    if i == int(len(s)) {
         return true
     }
     return _goml_utf8.RuneStart(s[i])
@@ -216,89 +216,89 @@ type _goml_m_Result____Vec_l_string_r_____string_Err struct {
 func (_ _goml_m_Result____Vec_l_string_r_____string_Err) is_goml_m_Result____Vec_l_string_r_____string() {}
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(values__1 *_goml_vec_uint8) _goml_m_std_p_bytes_p_Bytes {
-    var retv79 _goml_m_std_p_bytes_p_Bytes
-    var t80 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
+    var retv82 _goml_m_std_p_bytes_p_Bytes
+    var t83 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
         values: values__1,
     }
-    retv79 = t80
-    return retv79
-}
-
-func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(value__2 string) _goml_m_std_p_bytes_p_Bytes {
-    var retv82 _goml_m_std_p_bytes_p_Bytes
-    var t83 *_goml_vec_uint8 = _goml_m_inherent_i_string_i_string_i_to__bytes(value__2)
-    var t84 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
-        values: t83,
-    }
-    retv82 = t84
+    retv82 = t83
     return retv82
 }
 
+func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(value__2 string) _goml_m_std_p_bytes_p_Bytes {
+    var retv85 _goml_m_std_p_bytes_p_Bytes
+    var t86 *_goml_vec_uint8 = _goml_m_inherent_i_string_i_string_i_to__bytes(value__2)
+    var t87 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
+        values: t86,
+    }
+    retv85 = t87
+    return retv85
+}
+
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(self__22 _goml_m_std_p_bytes_p_Bytes) *_goml_vec_uint8 {
-    var retv125 *_goml_vec_uint8
-    var t126 *_goml_vec_uint8 = self__22.values
-    retv125 = t126
-    return retv125
+    var retv128 *_goml_vec_uint8
+    var t129 *_goml_vec_uint8 = self__22.values
+    retv128 = t129
+    return retv128
 }
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(self__23 _goml_m_std_p_bytes_p_Bytes) Result__string__string {
-    var retv128 Result__string__string
-    var t129 *_goml_vec_uint8 = self__23.values
-    var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(t129)
+    var retv131 Result__string__string
+    var t132 *_goml_vec_uint8 = self__23.values
+    var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(t132)
     var x1 bool = mtmp0._0
     var x2 string = mtmp0._1
     var value__25 string = x2
     var valid__24 bool = x1
-    var jp131 Result__string__string
+    var jp134 Result__string__string
     if valid__24 {
-        var t132 Result__string__string = Result__string__string_Ok{
+        var t135 Result__string__string = Result__string__string_Ok{
             _0: value__25,
         }
-        jp131 = t132
+        jp134 = t135
     } else {
-        var t133 Result__string__string = Result__string__string_Err{
+        var t136 Result__string__string = Result__string__string_Err{
             _0: "invalid UTF-8",
         }
-        jp131 = t133
+        jp134 = t136
     }
-    retv128 = jp131
-    return retv128
+    retv131 = jp134
+    return retv131
 }
 
 func _goml_m_std_p_fs_p_read__file(path__0 string) Result__string__string {
-    var retv135 Result__string__string
+    var retv138 Result__string__string
     var mtmp0 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_std_p_fs_p_read__bytes(path__0)
-    var jp137 Result__string__string
+    var jp140 Result__string__string
     switch mtmp0.(type) {
     case _goml_m_Result____std_p_bytes_p_Bytes____string_Ok:
         var x1 _goml_m_std_p_bytes_p_Bytes = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____string_Ok)._0
         var data__1 _goml_m_std_p_bytes_p_Bytes = x1
-        var t138 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(data__1)
-        jp137 = t138
+        var t141 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(data__1)
+        jp140 = t141
     case _goml_m_Result____std_p_bytes_p_Bytes____string_Err:
         var x2 string = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____string_Err)._0
         var error__2 string = x2
-        var t139 Result__string__string = Result__string__string_Err{
+        var t142 Result__string__string = Result__string__string_Err{
             _0: error__2,
         }
-        jp137 = t139
+        jp140 = t142
     default:
         panic("non-exhaustive match")
     }
-    retv135 = jp137
-    return retv135
+    retv138 = jp140
+    return retv138
 }
 
 func _goml_m_std_p_fs_p_write__file(path__3 string, content__4 string) Result__unit__string {
-    var retv141 Result__unit__string
-    var t142 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(content__4)
-    var t143 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(path__3, t142)
-    retv141 = t143
-    return retv141
+    var retv144 Result__unit__string
+    var t145 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(content__4)
+    var t146 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(path__3, t145)
+    retv144 = t146
+    return retv144
 }
 
 func _goml_m_std_p_fs_p_read__bytes(path__5 string) _goml_m_Result____std_p_bytes_p_Bytes____string {
-    var retv145 _goml_m_Result____std_p_bytes_p_Bytes____string
+    var retv148 _goml_m_Result____std_p_bytes_p_Bytes____string
     var mtmp3 Tuple3_4bool_10Vec_5uint8_6string = _goml_runtime_std_fs_read_bytes(path__5)
     var x4 bool = mtmp3._0
     var x5 *_goml_vec_uint8 = mtmp3._1
@@ -306,155 +306,155 @@ func _goml_m_std_p_fs_p_read__bytes(path__5 string) _goml_m_Result____std_p_byte
     var err__8 string = x6
     var data__7 *_goml_vec_uint8 = x5
     var ok__6 bool = x4
-    var jp147 _goml_m_Result____std_p_bytes_p_Bytes____string
+    var jp150 _goml_m_Result____std_p_bytes_p_Bytes____string
     if ok__6 {
-        var t148 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(data__7)
-        var t149 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Ok{
-            _0: t148,
+        var t151 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(data__7)
+        var t152 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Ok{
+            _0: t151,
         }
-        jp147 = t149
+        jp150 = t152
     } else {
-        var t150 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Err{
+        var t153 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Err{
             _0: err__8,
         }
-        jp147 = t150
+        jp150 = t153
     }
-    retv145 = jp147
-    return retv145
+    retv148 = jp150
+    return retv148
 }
 
 func _goml_m_std_p_fs_p_write__bytes(path__9 string, data__10 _goml_m_std_p_bytes_p_Bytes) Result__unit__string {
-    var retv152 Result__unit__string
-    var t153 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(data__10)
-    var mtmp7 Tuple2_4bool_6string = _goml_runtime_std_fs_write_bytes(path__9, t153)
+    var retv155 Result__unit__string
+    var t156 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(data__10)
+    var mtmp7 Tuple2_4bool_6string = _goml_runtime_std_fs_write_bytes(path__9, t156)
     var x8 bool = mtmp7._0
     var x9 string = mtmp7._1
     var err__12 string = x9
     var ok__11 bool = x8
-    var jp155 Result__unit__string
+    var jp158 Result__unit__string
     if ok__11 {
-        var t156 Result__unit__string = Result__unit__string_Ok{
+        var t159 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp155 = t156
+        jp158 = t159
     } else {
-        var t157 Result__unit__string = Result__unit__string_Err{
+        var t160 Result__unit__string = Result__unit__string_Err{
             _0: err__12,
         }
-        jp155 = t157
+        jp158 = t160
     }
-    retv152 = jp155
-    return retv152
+    retv155 = jp158
+    return retv155
 }
 
 func _goml_m_std_p_fs_p_create__dir__all(path__13 string) Result__unit__string {
-    var retv159 Result__unit__string
+    var retv162 Result__unit__string
     var mtmp10 Tuple2_4bool_6string = _goml_runtime_std_fs_create_dir_all(path__13)
     var x11 bool = mtmp10._0
     var x12 string = mtmp10._1
     var err__15 string = x12
     var ok__14 bool = x11
-    var jp161 Result__unit__string
+    var jp164 Result__unit__string
     if ok__14 {
-        var t162 Result__unit__string = Result__unit__string_Ok{
+        var t165 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp161 = t162
+        jp164 = t165
     } else {
-        var t163 Result__unit__string = Result__unit__string_Err{
+        var t166 Result__unit__string = Result__unit__string_Err{
             _0: err__15,
         }
-        jp161 = t163
+        jp164 = t166
     }
-    retv159 = jp161
-    return retv159
+    retv162 = jp164
+    return retv162
 }
 
 func show_unit(result__0 Result__unit__string) string {
-    var retv207 string
-    var jp209 string
+    var retv210 string
+    var jp212 string
     switch result__0.(type) {
     case Result__unit__string_Ok:
-        jp209 = "ok"
+        jp212 = "ok"
     case Result__unit__string_Err:
-        var x62 string = result__0.(Result__unit__string_Err)._0
-        var err__1 string = x62
-        var t210 string = "err " + err__1
-        jp209 = t210
+        var x65 string = result__0.(Result__unit__string_Err)._0
+        var err__1 string = x65
+        var t213 string = "err " + err__1
+        jp212 = t213
     default:
         panic("non-exhaustive match")
     }
-    retv207 = jp209
-    return retv207
+    retv210 = jp212
+    return retv210
 }
 
 func show_string(result__2 Result__string__string) string {
-    var retv212 string
-    var jp214 string
+    var retv215 string
+    var jp217 string
     switch result__2.(type) {
     case Result__string__string_Ok:
-        var x63 string = result__2.(Result__string__string_Ok)._0
-        var value__3 string = x63
-        jp214 = value__3
+        var x66 string = result__2.(Result__string__string_Ok)._0
+        var value__3 string = x66
+        jp217 = value__3
     case Result__string__string_Err:
-        var x64 string = result__2.(Result__string__string_Err)._0
-        var err__4 string = x64
-        var t215 string = "err " + err__4
-        jp214 = t215
+        var x67 string = result__2.(Result__string__string_Err)._0
+        var err__4 string = x67
+        var t218 string = "err " + err__4
+        jp217 = t218
     default:
         panic("non-exhaustive match")
     }
-    retv212 = jp214
-    return retv212
+    retv215 = jp217
+    return retv215
 }
 
 func main0() struct{} {
-    var t217 string = _goml_runtime_core_string_byte_slice("a你好z", 1, 7)
-    _goml_m_std_p_io_p_println____T__string(t217)
+    var t220 string = _goml_runtime_core_string_byte_slice("a你好z", 1, 7)
+    _goml_m_std_p_io_p_println____T__string(t220)
     _goml_m_std_p_io_p_eprint____T__string("")
     _goml_m_std_p_io_p_eprintln____T__string("")
-    var t218 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
-    var t219 string = show_unit(t218)
-    _goml_m_std_p_io_p_println____T__string(t219)
-    var t220 Result__unit__string = _goml_m_std_p_fs_p_write__file("goml-self-host/nested/output.txt", "boot")
-    var t221 string = show_unit(t220)
-    _goml_m_std_p_io_p_println____T__string(t221)
-    var t222 Result__string__string = _goml_m_std_p_fs_p_read__file("goml-self-host/nested/output.txt")
-    var t223 string = show_string(t222)
-    _goml_m_std_p_io_p_println____T__string(t223)
+    var t221 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
+    var t222 string = show_unit(t221)
+    _goml_m_std_p_io_p_println____T__string(t222)
+    var t223 Result__unit__string = _goml_m_std_p_fs_p_write__file("goml-self-host/nested/output.txt", "boot")
+    var t224 string = show_unit(t223)
+    _goml_m_std_p_io_p_println____T__string(t224)
+    var t225 Result__string__string = _goml_m_std_p_fs_p_read__file("goml-self-host/nested/output.txt")
+    var t226 string = show_string(t225)
+    _goml_m_std_p_io_p_println____T__string(t226)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_string_i_string_i_to__bytes(self__23 string) *_goml_vec_uint8 {
-    var retv232 *_goml_vec_uint8
-    var t233 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(self__23)
-    retv232 = t233
-    return retv232
+func _goml_m_inherent_i_string_i_string_i_to__bytes(self__24 string) *_goml_vec_uint8 {
+    var retv235 *_goml_vec_uint8
+    var t236 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(self__24)
+    retv235 = t236
+    return retv235
 }
 
 func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
-    var t269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_std_io_println(t269)
+    var t272 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_std_io_println(t272)
     return struct{}{}
 }
 
 func _goml_m_std_p_io_p_eprint____T__string(value__2 string) struct{} {
-    var t272 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__2)
-    _goml_runtime_std_io_eprint(t272)
+    var t275 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__2)
+    _goml_runtime_std_io_eprint(t275)
     return struct{}{}
 }
 
 func _goml_m_std_p_io_p_eprintln____T__string(value__3 string) struct{} {
-    var t275 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__3)
-    var t276 string = t275 + "\n"
-    _goml_runtime_std_io_eprint(t276)
+    var t278 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__3)
+    var t279 string = t278 + "\n"
+    _goml_runtime_std_io_eprint(t279)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv282 string
-    retv282 = self__37
-    return retv282
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv285 string
+    retv285 = self__38
+    return retv285
 }
 
 func main() {

@@ -5,8 +5,8 @@ impl Size for Wrap[T]{
 }
 
 fn main() -> unit {
-    let a/1: Wrap[int32] = Wrap { value: 1 };
+    let a/1: Wrap[int] = Wrap { value: 1 };
     let b/2: Wrap[string] = Wrap { value: "x" };
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((Size::size : (Wrap[int32]) -> int32)((a/1 : Wrap[int32]))));
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((Size::size : (Wrap[int]) -> int32)((a/1 : Wrap[int]))));
     (println : (string) -> unit)((int32::to_string : (int32) -> string)((Size::size : (Wrap[string]) -> int32)((b/2 : Wrap[string]))));
 }

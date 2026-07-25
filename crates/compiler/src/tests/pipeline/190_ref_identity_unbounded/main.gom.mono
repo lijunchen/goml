@@ -1,15 +1,15 @@
 fn print_lookup(map/0: HashMap[Ref[Node], string], key/1: Ref[Node]) -> unit {
   {
-    let mtmp61 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/0, key/1) in
-    match mtmp61 {
+    let mtmp64 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/0, key/1) in
+    match mtmp64 {
       Option__string::None => {
         println__T_string("missing")
       },
-      Option__string::Some(x62) => {
+      Option__string::Some(x65) => {
         {
-          let x62 = Option__string::Some._0(mtmp61) in
+          let x65 = Option__string::Some._0(mtmp64) in
           {
-            let value/2 = x62 in
+            let value/2 = x65 in
             println__T_string(value/2)
           }
         }
@@ -22,77 +22,77 @@ fn main() -> unit {
   let first/3 = inherent#Ref#Ref[T]#new__T_Node(Node { value: 1 }) in
   let alias/4 = first/3 in
   let distinct/5 = inherent#Ref#Ref[T]#new__T_Node(Node { value: 1 }) in
-  let _wild63 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, alias/4)) in
-  let _wild64 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5)) in
-  let _wild65 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[Node]#hash(first/3), trait_impl#Hash#Ref[Node]#hash(alias/4))) in
+  let _wild66 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, alias/4)) in
+  let _wild67 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5)) in
+  let _wild68 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[Node]#hash(first/3), trait_impl#Hash#Ref[Node]#hash(alias/4))) in
   let map/6 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() in
-  let _wild66 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, first/3, "first") in
-  let _wild67 = print_lookup(map/6, alias/4) in
-  let _wild68 = print_lookup(map/6, distinct/5) in
-  let _wild69 = inherent#Ref#Ref[T]#set__T_Node(first/3, Node { value: 2 }) in
-  let _wild70 = print_lookup(map/6, first/3) in
-  let _wild71 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, distinct/5, "distinct") in
-  let _wild72 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6)) in
+  let _wild69 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, first/3, "first") in
+  let _wild70 = print_lookup(map/6, alias/4) in
+  let _wild71 = print_lookup(map/6, distinct/5) in
+  let _wild72 = inherent#Ref#Ref[T]#set__T_Node(first/3, Node { value: 2 }) in
   let _wild73 = print_lookup(map/6, first/3) in
+  let _wild74 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, distinct/5, "distinct") in
+  let _wild75 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6)) in
+  let _wild76 = print_lookup(map/6, first/3) in
   print_lookup(map/6, distinct/5)
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(self/193: HashMap[Ref[Node], string], key/194: Ref[Node]) -> Option__string {
-  @intrinsic(hashmap.get)(self/193, key/194)
+fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(self/198: HashMap[Ref[Node], string], key/199: Ref[Node]) -> Option__string {
+  @intrinsic(hashmap.get)(self/198, key/199)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_Node(value/204: Node) -> Ref[Node] {
-  @intrinsic(ref.new)(value/204)
+fn inherent#Ref#Ref[T]#new__T_Node(value/209: Node) -> Ref[Node] {
+  @intrinsic(ref.new)(value/209)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn trait_impl#Eq#Ref[Node]#eq(self/91: Ref[Node], other/92: Ref[Node]) -> bool {
-  @intrinsic(ref.ptr_eq)(self/91, other/92)
+fn trait_impl#Eq#Ref[Node]#eq(self/96: Ref[Node], other/97: Ref[Node]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/96, other/97)
 }
 
-fn trait_impl#Hash#Ref[Node]#hash(self/93: Ref[Node]) -> uint64 {
-  @intrinsic(ref.ptr_hash)(self/93)
+fn trait_impl#Hash#Ref[Node]#hash(self/98: Ref[Node]) -> uint64 {
+  @intrinsic(ref.ptr_hash)(self/98)
 }
 
-fn trait_impl#Eq#uint64#eq(self/71: uint64, other/72: uint64) -> bool {
-  @intrinsic(eq.primitive)(self/71, other/72)
+fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
+  @intrinsic(eq.primitive)(self/75, other/76)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() -> HashMap[Ref[Node], string] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(self/195: HashMap[Ref[Node], string], key/196: Ref[Node], value/197: string) -> unit {
-  @intrinsic(hashmap.set)(self/195, key/196, value/197)
+fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(self/200: HashMap[Ref[Node], string], key/201: Ref[Node], value/202: string) -> unit {
+  @intrinsic(hashmap.set)(self/200, key/201, value/202)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Node(self/206: Ref[Node], value/207: Node) -> unit {
-  @intrinsic(ref.set)(self/206, value/207)
+fn inherent#Ref#Ref[T]#set__T_Node(self/211: Ref[Node], value/212: Node) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(self/200: HashMap[Ref[Node], string]) -> int32 {
-  @intrinsic(hashmap.len)(self/200)
+fn inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(self/205: HashMap[Ref[Node], string]) -> int {
+  @intrinsic(hashmap.len)(self/205)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
-fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  @runtime(core.bool_to_string)(self/36)
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  @runtime(core.int32_to_string)(self/41)
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
 }

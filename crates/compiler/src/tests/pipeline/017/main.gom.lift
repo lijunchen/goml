@@ -1,14 +1,14 @@
-fn trait_impl#ToString#(int32,int32)#to_string(self/0: (int32, int32)) -> string {
+fn trait_impl#ToString#(int,int)#to_string(self/0: (int, int)) -> string {
   "(?, ?)"
 }
 
 fn main() -> unit {
   let x/1 = 123 in
-  let mtmp61 = println__T_string(trait_impl#ToString#int32#to_string(x/1)) in
+  let mtmp64 = println__T_string(trait_impl#ToString#int#to_string(x/1)) in
   let x/2 = true in
-  let mtmp62 = println__T_string(trait_impl#ToString#bool#to_string(x/2)) in
+  let mtmp65 = println__T_string(trait_impl#ToString#bool#to_string(x/2)) in
   let x/3 = (3, 4) in
-  let mtmp63 = println__T_string(trait_impl#ToString#(int32,int32)#to_string(x/3)) in
+  let mtmp66 = println__T_string(trait_impl#ToString#(int,int)#to_string(x/3)) in
   ()
 }
 
@@ -16,14 +16,14 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  @runtime(core.int32_to_string)(self/41)
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
 }
 
-fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  @runtime(core.bool_to_string)(self/36)
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

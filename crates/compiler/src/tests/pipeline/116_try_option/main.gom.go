@@ -28,96 +28,96 @@ type Some struct {
 func (_ Some) isOption__int32() {}
 
 func maybe_value(flag__0 bool) Option__int32 {
-    var retv67 Option__int32
-    var jp69 Option__int32
+    var retv70 Option__int32
+    var jp72 Option__int32
     if flag__0 {
-        var t70 Option__int32 = Some{
+        var t73 Option__int32 = Some{
             _0: 4,
         }
-        jp69 = t70
+        jp72 = t73
     } else {
-        jp69 = None{}
+        jp72 = None{}
     }
-    retv67 = jp69
-    return retv67
+    retv70 = jp72
+    return retv70
 }
 
 func add(a__1 int32, b__2 int32) int32 {
-    var retv72 int32
-    var t73 int32 = a__1 + b__2
-    retv72 = t73
-    return retv72
+    var retv75 int32
+    var t76 int32 = a__1 + b__2
+    retv75 = t76
+    return retv75
 }
 
 func plus_two(flag__3 bool) Option__int32 {
-    var retv75 Option__int32
-    var mtmp61 Option__int32 = maybe_value(flag__3)
-    var jp77 int32
-    switch mtmp61.(type) {
+    var retv78 Option__int32
+    var mtmp64 Option__int32 = maybe_value(flag__3)
+    var jp80 int32
+    switch mtmp64.(type) {
     case None:
-        retv75 = None{}
-        return retv75
+        retv78 = None{}
+        return retv78
     case Some:
-        var x62 int32 = mtmp61.(Some)._0
-        var try_value__15 int32 = x62
-        jp77 = try_value__15
-        var t78 int32 = add(jp77, 2)
-        var t79 Option__int32 = Some{
-            _0: t78,
+        var x65 int32 = mtmp64.(Some)._0
+        var try_value__15 int32 = x65
+        jp80 = try_value__15
+        var t81 int32 = add(jp80, 2)
+        var t82 Option__int32 = Some{
+            _0: t81,
         }
-        retv75 = t79
-        return retv75
+        retv78 = t82
+        return retv78
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(opt__4 Option__int32) string {
-    var retv81 string
-    var jp83 string
+    var retv84 string
+    var jp86 string
     switch opt__4.(type) {
     case None:
-        jp83 = "none"
+        jp86 = "none"
     case Some:
-        var x63 int32 = opt__4.(Some)._0
-        var value__5 int32 = x63
-        var t84 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__5)
-        var t85 string = "some=" + t84
-        jp83 = t85
+        var x66 int32 = opt__4.(Some)._0
+        var value__5 int32 = x66
+        var t87 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__5)
+        var t88 string = "some=" + t87
+        jp86 = t88
     default:
         panic("non-exhaustive match")
     }
-    retv81 = jp83
-    return retv81
+    retv84 = jp86
+    return retv84
 }
 
 func main0() struct{} {
-    var t87 Option__int32 = plus_two(true)
-    var t88 string = show(t87)
-    println__T_string(t88)
-    var t89 Option__int32 = plus_two(false)
-    var t90 string = show(t89)
-    println__T_string(t90)
+    var t90 Option__int32 = plus_two(true)
+    var t91 string = show(t90)
+    println__T_string(t91)
+    var t92 Option__int32 = plus_two(false)
+    var t93 string = show(t92)
+    println__T_string(t93)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
-    var retv92 string
-    var t93 string = _goml_runtime_core_int32_to_string(self__5)
-    retv92 = t93
-    return retv92
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
+    var retv95 string
+    var t96 string = _goml_runtime_core_int32_to_string(self__6)
+    retv95 = t96
+    return retv95
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t95 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t95)
+    var t98 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t98)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv98 string
-    retv98 = self__37
-    return retv98
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv101 string
+    retv101 = self__38
+    return retv101
 }
 
 func main() {

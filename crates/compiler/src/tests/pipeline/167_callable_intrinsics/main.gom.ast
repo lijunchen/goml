@@ -2,14 +2,14 @@ package main;
 fn main() -> unit {
     let to_text: (int32) -> string = int32_to_string;
     println(to_text(7));
-    let get: (Vec[int32], int32) -> int32 = vec_get;
+    let get: (Vec[int32], int) -> int32 = vec_get;
     let push: (Vec[int32], int32) -> unit = vec_push;
     let values: Vec[int32] = Vec::new();
     push(values, 11);
     push(values, 22);
     println(get(values, 1));
-    let make_slice: (Vec[int32], int32, int32) -> Slice[int32] = slice;
-    let slice_get_value: (Slice[int32], int32) -> int32 = slice_get;
+    let make_slice: (Vec[int32], int, int) -> Slice[int32] = slice;
+    let slice_get_value: (Slice[int32], int) -> int32 = slice_get;
     let view = make_slice(values, 0, 2);
     println(slice_get_value(view, 0));
     let alias = values;

@@ -12,11 +12,11 @@ fn choose(flag/0: bool) -> int32 {
 }
 
 fn continue_branch() -> unit {
-    let count/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    while (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) < 2 {
+    let count/2: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while (Ref[int]::get : (Ref[int]) -> int)((count/2 : Ref[int])) < 2 {
         {
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)((count/2 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) + 1);
-            let value/3: int32 = if (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) == 1 {
+            (Ref[int]::set : (Ref[int], int) -> unit)((count/2 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((count/2 : Ref[int])) + 1);
+            let value/3: int = if (Ref[int]::get : (Ref[int]) -> int)((count/2 : Ref[int])) == 1 {
                 {
                     continue
                 }
@@ -25,7 +25,7 @@ fn continue_branch() -> unit {
                     7
                 }
             };
-            (println : (int32) -> unit)((value/3 : int32))
+            (println : (int) -> unit)((value/3 : int))
         }
     }
 }
@@ -33,7 +33,7 @@ fn continue_branch() -> unit {
 fn break_branch(stop/4: bool) -> unit {
     while true {
         {
-            let value/5: int32 = if (stop/4 : bool) {
+            let value/5: int = if (stop/4 : bool) {
                 {
                     break
                 }
@@ -42,7 +42,7 @@ fn break_branch(stop/4: bool) -> unit {
                     9
                 }
             };
-            (println : (int32) -> unit)((value/5 : int32));
+            (println : (int) -> unit)((value/5 : int));
             break
         }
     }

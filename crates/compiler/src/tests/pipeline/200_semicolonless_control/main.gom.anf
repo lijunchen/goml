@@ -1,221 +1,221 @@
 fn main() -> unit {
-  join ret72() -> unit {
+  join ret75() -> unit {
     ()
   } in
-  join k73() -> unit {
-    let _wild61 = () in
-    let mtmp62 = 1 in
-    join k74() -> unit {
-      let _wild63 = () in
-      let index/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
-      join exit75() -> unit {
-        let _wild65 = () in
+  join k76() -> unit {
+    let _wild64 = () in
+    let mtmp65 = 1 in
+    join k77() -> unit {
+      let _wild66 = () in
+      let index/0 = inherent#Ref#Ref[T]#new__T_int(0) in
+      join exit78() -> unit {
+        let _wild68 = () in
         let values/1 = inherent#Vec#Vec[T]#new__T_string() in
-        let _wild66 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
-        let for_iter67 = trait_impl#IntoIterator#Vec[string]#into_iter(values/1) in
-        join exit76() -> unit {
-          let _wild70 = () in
-          let t77 = @runtime(core.string_println)("done") in
-          jump ret72()
+        let _wild69 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
+        let for_iter70 = trait_impl#IntoIterator#Vec[string]#into_iter(values/1) in
+        join exit79() -> unit {
+          let _wild73 = () in
+          let t80 = @runtime(core.string_println)("done") in
+          jump ret75()
         } in
         joinrec {
-          join loop78() -> unit {
+          join loop81() -> unit {
             if true {
-              let for_next68 = trait_impl#Iterator#FnIterator__string#next(for_iter67) in
-              join k79() -> unit {
-                jump loop78()
+              let for_next71 = trait_impl#Iterator#FnIterator__string#next(for_iter70) in
+              join k82() -> unit {
+                jump loop81()
               } in
-              match for_next68 {
+              match for_next71 {
                 Tag_0 => {
-                  jump exit76()
+                  jump exit79()
                 },
                 Tag_1 => {
-                  let x69 = Option__string::Some._0(for_next68) in
-                  let value/2 = x69 in
-                  let t80 = @runtime(core.string_println)(value/2) in
-                  jump k79()
+                  let x72 = Option__string::Some._0(for_next71) in
+                  let value/2 = x72 in
+                  let t83 = @runtime(core.string_println)(value/2) in
+                  jump k82()
                 },
               }
             } else {
-              jump exit76()
+              jump exit79()
             }
           } in
         } in
-        jump loop78()
+        jump loop81()
       } in
       joinrec {
-        join loop81() -> unit {
-          let t82 = inherent#Ref#Ref[T]#get__T_int32(index/0) in
-          let t83 = (t82 < 2) in
-          if t83 {
-            let t84 = inherent#Ref#Ref[T]#get__T_int32(index/0) in
-            let t85 = inherent#int32#int32#to_string(t84) in
-            let _wild64 = @runtime(core.string_println)(t85) in
-            let t86 = inherent#Ref#Ref[T]#get__T_int32(index/0) in
-            let t87 = (t86 + 1) in
-            let t88 = inherent#Ref#Ref[T]#set__T_int32(index/0, t87) in
-            jump loop81()
+        join loop84() -> unit {
+          let t85 = inherent#Ref#Ref[T]#get__T_int(index/0) in
+          let t86 = (t85 < 2) in
+          if t86 {
+            let t87 = inherent#Ref#Ref[T]#get__T_int(index/0) in
+            let t88 = inherent#int#int#to_string(t87) in
+            let _wild67 = @runtime(core.string_println)(t88) in
+            let t89 = inherent#Ref#Ref[T]#get__T_int(index/0) in
+            let t90 = (t89 + 1) in
+            let t91 = inherent#Ref#Ref[T]#set__T_int(index/0, t90) in
+            jump loop84()
           } else {
-            jump exit75()
+            jump exit78()
           }
         } in
       } in
-      jump loop81()
+      jump loop84()
     } in
-    match mtmp62 {
+    match mtmp65 {
       1 => {
-        let t89 = @runtime(core.string_println)("match") in
-        jump k74()
+        let t92 = @runtime(core.string_println)("match") in
+        jump k77()
       },
       _ => {
-        jump k74()
+        jump k77()
       },
     }
   } in
   if true {
-    let t90 = @runtime(core.string_println)("if") in
-    jump k73()
+    let t93 = @runtime(core.string_println)("if") in
+    jump k76()
   } else {
-    let t91 = @runtime(core.string_println)("else") in
-    jump k73()
+    let t94 = @runtime(core.string_println)("else") in
+    jump k76()
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
-  join ret92(retv93: Ref[int32]) -> Ref[int32] {
-    retv93
-  } in
-  let t94 = @intrinsic(ref.new)(value/204) in
-  jump ret92(t94)
-}
-
-fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
-  join ret95(retv96: int32) -> int32 {
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  join ret95(retv96: Ref[int]) -> Ref[int] {
     retv96
   } in
-  let t97 = @intrinsic(ref.get)(self/205) in
+  let t97 = @intrinsic(ref.new)(value/209) in
   jump ret95(t97)
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret98(retv99: string) -> string {
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  join ret98(retv99: int) -> int {
     retv99
   } in
-  let t100 = @runtime(core.int32_to_string)(self/5) in
+  let t100 = @intrinsic(ref.get)(self/210) in
   jump ret98(t100)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
-  join ret101() -> unit {
+fn inherent#int#int#to_string(self/5: int) -> string {
+  join ret101(retv102: string) -> string {
+    retv102
+  } in
+  let t103 = @runtime(core.int_to_string)(self/5) in
+  jump ret101(t103)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  join ret104() -> unit {
     ()
   } in
-  let t102 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret101()
+  let t105 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret104()
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  join ret103(retv104: Vec[string]) -> Vec[string] {
-    retv104
+  join ret106(retv107: Vec[string]) -> Vec[string] {
+    retv107
   } in
-  let t105 = @intrinsic(vec.new)() in
-  jump ret103(t105)
+  let t108 = @intrinsic(vec.new)() in
+  jump ret106(t108)
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/123: Vec[string], elem/124: string) -> unit {
-  join ret106() -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/128: Vec[string], elem/129: string) -> unit {
+  join ret109() -> unit {
     ()
   } in
-  let t107 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret106()
+  let t110 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret109()
 }
 
-fn trait_impl#IntoIterator#Vec[string]#into_iter(self/180: Vec[string]) -> FnIterator__string {
-  join ret108(retv109: FnIterator__string) -> FnIterator__string {
-    retv109
-  } in
-  let t110 = inherent#Vec#Vec[T]#iter__T_string(self/180) in
-  jump ret108(t110)
-}
-
-fn trait_impl#Iterator#FnIterator__string#next(self/97: FnIterator__string) -> Option__string {
-  join ret111(retv112: Option__string) -> Option__string {
+fn trait_impl#IntoIterator#Vec[string]#into_iter(self/185: Vec[string]) -> FnIterator__string {
+  join ret111(retv112: FnIterator__string) -> FnIterator__string {
     retv112
   } in
-  let t113 = FnIterator__string.next_fn(self/97) in
-  let t114 = t113() in
-  jump ret111(t114)
+  let t113 = inherent#Vec#Vec[T]#iter__T_string(self/185) in
+  jump ret111(t113)
 }
 
-fn inherent#Vec#Vec[T]#iter__T_string(self/175: Vec[string]) -> FnIterator__string {
-  join ret115(retv116: FnIterator__string) -> FnIterator__string {
-    retv116
+fn trait_impl#Iterator#FnIterator__string#next(self/102: FnIterator__string) -> Option__string {
+  join ret114(retv115: Option__string) -> Option__string {
+    retv115
   } in
-  let index/176 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let len/177 = inherent#Vec#Vec[T]#len__T_string(self/175) in
-  let t117 = closure_env_inherent_Vec_Vec_T_iter_T_string_0 { index_0: index/176, len_1: len/177, self_2: self/175 } in
-  let t118 = inherent#FnIterator#FnIterator[T]#from_fn__T_string(t117) in
-  jump ret115(t118)
+  let t116 = FnIterator__string.next_fn(self/102) in
+  let t117 = t116() in
+  jump ret114(t117)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/134: Vec[string]) -> int32 {
-  join ret119(retv120: int32) -> int32 {
-    retv120
+fn inherent#Vec#Vec[T]#iter__T_string(self/180: Vec[string]) -> FnIterator__string {
+  join ret118(retv119: FnIterator__string) -> FnIterator__string {
+    retv119
   } in
-  let t121 = @intrinsic(vec.len)(self/134) in
-  jump ret119(t121)
+  let index/181 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let len/182 = inherent#Vec#Vec[T]#len__T_string(self/180) in
+  let t120 = closure_env_inherent_Vec_Vec_T_iter_T_string_0 { index_0: index/181, len_1: len/182, self_2: self/180 } in
+  let t121 = inherent#FnIterator#FnIterator[T]#from_fn__T_string(t120) in
+  jump ret118(t121)
 }
 
-fn inherent#Vec#Vec[T]#get__T_string(self/129: Vec[string], index/130: int32) -> string {
-  join ret122(retv123: string) -> string {
+fn inherent#Vec#Vec[T]#len__T_string(self/139: Vec[string]) -> int {
+  join ret122(retv123: int) -> int {
     retv123
   } in
-  let t124 = @intrinsic(vec.get)(self/129, index/130) in
+  let t124 = @intrinsic(vec.len)(self/139) in
   jump ret122(t124)
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(next_fn/96: () -> Option__string) -> FnIterator__string {
-  join ret125(retv126: FnIterator__string) -> FnIterator__string {
+fn inherent#Vec#Vec[T]#get__T_string(self/134: Vec[string], index/135: int) -> string {
+  join ret125(retv126: string) -> string {
     retv126
   } in
-  let t127 = FnIterator__string { next_fn: next_fn/96 } in
+  let t127 = @intrinsic(vec.get)(self/134, index/135) in
   jump ret125(t127)
 }
 
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  join ret128(retv129: bool) -> bool {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(next_fn/101: () -> Option__string) -> FnIterator__string {
+  join ret128(retv129: FnIterator__string) -> FnIterator__string {
     retv129
   } in
-  let t130 = @intrinsic(eq.primitive)(self/61, other/62) in
+  let t130 = FnIterator__string { next_fn: next_fn/101 } in
   jump ret128(t130)
 }
 
-fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
-  join ret131(retv132: uint64) -> uint64 {
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  join ret131(retv132: bool) -> bool {
     retv132
   } in
-  let t133 = @runtime(core.int32_hash)(self/83) in
+  let t133 = @intrinsic(eq.primitive)(self/59, other/60) in
   jump ret131(t133)
 }
 
-fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_string_0#closure_env_inherent_Vec_Vec_T_iter_T_string_0#apply(env71: closure_env_inherent_Vec_Vec_T_iter_T_string_0) -> Option__string {
-  join ret134(retv135: Option__string) -> Option__string {
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  join ret134(retv135: uint64) -> uint64 {
     retv135
   } in
-  let index/176 = closure_env_inherent_Vec_Vec_T_iter_T_string_0.index_0(env71) in
-  let len/177 = closure_env_inherent_Vec_Vec_T_iter_T_string_0.len_1(env71) in
-  let self/175 = closure_env_inherent_Vec_Vec_T_iter_T_string_0.self_2(env71) in
-  let current/178 = inherent#Ref#Ref[T]#get__T_int32(index/176) in
-  let t138 = (current/178 < len/177) in
-  join k136(jp137: Option__string) -> Option__string {
-    jump ret134(jp137)
+  let t136 = @runtime(core.int_hash)(self/85) in
+  jump ret134(t136)
+}
+
+fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_string_0#closure_env_inherent_Vec_Vec_T_iter_T_string_0#apply(env74: closure_env_inherent_Vec_Vec_T_iter_T_string_0) -> Option__string {
+  join ret137(retv138: Option__string) -> Option__string {
+    retv138
   } in
-  if t138 {
-    let value/179 = inherent#Vec#Vec[T]#get__T_string(self/175, current/178) in
-    let t139 = (current/178 + 1) in
-    let _wild58 = inherent#Ref#Ref[T]#set__T_int32(index/176, t139) in
-    let t140 = Option__string::Some(value/179) in
-    jump k136(t140)
+  let index/181 = closure_env_inherent_Vec_Vec_T_iter_T_string_0.index_0(env74) in
+  let len/182 = closure_env_inherent_Vec_Vec_T_iter_T_string_0.len_1(env74) in
+  let self/180 = closure_env_inherent_Vec_Vec_T_iter_T_string_0.self_2(env74) in
+  let current/183 = inherent#Ref#Ref[T]#get__T_int(index/181) in
+  let t141 = (current/183 < len/182) in
+  join k139(jp140: Option__string) -> Option__string {
+    jump ret137(jp140)
+  } in
+  if t141 {
+    let value/184 = inherent#Vec#Vec[T]#get__T_string(self/180, current/183) in
+    let t142 = (current/183 + 1) in
+    let _wild58 = inherent#Ref#Ref[T]#set__T_int(index/181, t142) in
+    let t143 = Option__string::Some(value/184) in
+    jump k139(t143)
   } else {
-    jump k136(Tag_0)
+    jump k139(Tag_0)
   }
 }

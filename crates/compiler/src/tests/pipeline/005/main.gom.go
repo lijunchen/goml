@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func _goml_runtime_core_int32_to_string(x int32) string {
+func _goml_runtime_core_int_to_string(x int) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
@@ -31,29 +31,29 @@ func main0() struct{} {
         _0: Blue,
         _1: Red,
     }
-    var x61 Color = a__0._0
-    var x62 Color = a__0._1
-    switch x62 {
+    var x64 Color = a__0._0
+    var x65 Color = a__0._1
+    switch x65 {
     case Red:
-        switch x61 {
+        switch x64 {
         case Red:
-            print__T_int32(1)
+            print__T_int(1)
         default:
-            print__T_int32(3)
+            print__T_int(3)
         }
     case Green:
-        switch x61 {
+        switch x64 {
         case Red:
-            print__T_int32(0)
+            print__T_int(0)
         default:
-            print__T_int32(3)
+            print__T_int(3)
         }
     case Blue:
-        switch x61 {
+        switch x64 {
         case Blue:
-            print__T_int32(2)
+            print__T_int(2)
         default:
-            print__T_int32(3)
+            print__T_int(3)
         }
     default:
         panic("non-exhaustive match")
@@ -61,17 +61,17 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func print__T_int32(value__0 int32) struct{} {
-    var t75 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
-    _goml_runtime_core_string_print(t75)
+func print__T_int(value__0 int) struct{} {
+    var t78 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
+    _goml_runtime_core_string_print(t78)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv78 string
-    var t79 string = _goml_runtime_core_int32_to_string(self__41)
-    retv78 = t79
-    return retv78
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
+    var retv81 string
+    var t82 string = _goml_runtime_core_int_to_string(self__40)
+    retv81 = t82
+    return retv81
 }
 
 func main() {

@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func _goml_runtime_core_int32_to_string(x int32) string {
+func _goml_runtime_core_int_to_string(x int) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
@@ -42,74 +42,74 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var t97 Expr = Add{
+    var t100 Expr = Add{
         _0: Zero{},
         _1: Zero{},
     }
     var a__0 Expr = Mul{
-        _0: t97,
+        _0: t100,
         _1: Zero{},
     }
     switch a__0.(type) {
     case Add:
-        var x62 Expr = a__0.(Add)._0
-        var x63 Expr = a__0.(Add)._1
-        switch x63.(type) {
+        var x65 Expr = a__0.(Add)._0
+        var x66 Expr = a__0.(Add)._1
+        switch x66.(type) {
         case Zero:
-            switch x62.(type) {
+            switch x65.(type) {
             case Zero:
-                print__T_int32(0)
+                print__T_int(0)
             case Succ:
-                print__T_int32(2)
+                print__T_int(2)
             default:
-                print__T_int32(5)
+                print__T_int(5)
             }
         default:
-            switch x62.(type) {
+            switch x65.(type) {
             case Succ:
-                print__T_int32(2)
+                print__T_int(2)
             default:
-                print__T_int32(6)
+                print__T_int(6)
             }
         }
     case Mul:
-        var x64 Expr = a__0.(Mul)._0
-        var x65 Expr = a__0.(Mul)._1
-        switch x64.(type) {
+        var x67 Expr = a__0.(Mul)._0
+        var x68 Expr = a__0.(Mul)._1
+        switch x67.(type) {
         case Zero:
-            print__T_int32(1)
+            print__T_int(1)
         case Add:
-            switch x65.(type) {
+            switch x68.(type) {
             case Zero:
-                print__T_int32(3)
+                print__T_int(3)
             default:
-                print__T_int32(4)
+                print__T_int(4)
             }
         default:
-            switch x65.(type) {
+            switch x68.(type) {
             case Zero:
-                print__T_int32(3)
+                print__T_int(3)
             default:
-                print__T_int32(6)
+                print__T_int(6)
             }
         }
     default:
-        print__T_int32(6)
+        print__T_int(6)
     }
     return struct{}{}
 }
 
-func print__T_int32(value__0 int32) struct{} {
-    var t117 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
-    _goml_runtime_core_string_print(t117)
+func print__T_int(value__0 int) struct{} {
+    var t120 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
+    _goml_runtime_core_string_print(t120)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv120 string
-    var t121 string = _goml_runtime_core_int32_to_string(self__41)
-    retv120 = t121
-    return retv120
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
+    var retv123 string
+    var t124 string = _goml_runtime_core_int_to_string(self__40)
+    retv123 = t124
+    return retv123
 }
 
 func main() {

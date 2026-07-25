@@ -13,9 +13,9 @@ impl Eq for Point {
 
 impl Hash for Point {
   fn hash(self: Point) -> uint64 {
-      let h: uint64 = 14695981039346656037u64;
-      let h = h * 1099511628211u64 + Hash::hash(self.x);
-      let h = h * 1099511628211u64 + Hash::hash(self.y);
+      let h: uint64 = 14695981039346656037;
+      let h = h * 1099511628211 + Hash::hash(self.x);
+      let h = h * 1099511628211 + Hash::hash(self.y);
       h
   }
 }
@@ -42,17 +42,17 @@ impl Hash for Key {
   fn hash(self: Key) -> uint64 {
       match self {
           Key::A => {
-                let h: uint64 = 14695981039346656037u64 + 1u64;
+                let h: uint64 = 14695981039346656037 + 1;
                 h
             },
           Key::B(__field1_0) => {
-                let h: uint64 = 14695981039346656037u64 + 2u64;
-                let h = h * 1099511628211u64 + Hash::hash(__field1_0);
+                let h: uint64 = 14695981039346656037 + 2;
+                let h = h * 1099511628211 + Hash::hash(__field1_0);
                 h
             },
           Key::P(__field2_0) => {
-                let h: uint64 = 14695981039346656037u64 + 3u64;
-                let h = h * 1099511628211u64 + Hash::hash(__field2_0);
+                let h: uint64 = 14695981039346656037 + 3;
+                let h = h * 1099511628211 + Hash::hash(__field2_0);
                 h
             },
       }

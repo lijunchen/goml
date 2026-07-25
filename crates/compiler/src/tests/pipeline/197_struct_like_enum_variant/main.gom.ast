@@ -34,13 +34,13 @@ impl Hash for Key {
   fn hash(self: Key) -> uint64 {
       match self {
           Key::Empty => {
-                let h: uint64 = 14695981039346656037u64 + 1u64;
+                let h: uint64 = 14695981039346656037 + 1;
                 h
             },
           Key::Point { x: __field1_0, y: __field1_1 } => {
-                let h: uint64 = 14695981039346656037u64 + 2u64;
-                let h = h * 1099511628211u64 + Hash::hash(__field1_0);
-                let h = h * 1099511628211u64 + Hash::hash(__field1_1);
+                let h: uint64 = 14695981039346656037 + 2;
+                let h = h * 1099511628211 + Hash::hash(__field1_0);
+                let h = h * 1099511628211 + Hash::hash(__field1_1);
                 h
             },
       }

@@ -49,136 +49,136 @@ type Err struct {
 func (_ Err) isResult__int32__string() {}
 
 func bump(counter__0 *ref_int32_x, ok__1 bool) Result__int32__string {
-    var retv70 Result__int32__string
-    var t71 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__0)
-    var t72 int32 = t71 + 1
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(counter__0, t72)
-    var jp74 Result__int32__string
+    var retv73 Result__int32__string
+    var t74 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__0)
+    var t75 int32 = t74 + 1
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(counter__0, t75)
+    var jp77 Result__int32__string
     if ok__1 {
-        var t75 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__0)
-        var t76 Result__int32__string = Ok{
-            _0: t75,
+        var t78 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__0)
+        var t79 Result__int32__string = Ok{
+            _0: t78,
         }
-        jp74 = t76
+        jp77 = t79
     } else {
-        var t77 Result__int32__string = Err{
+        var t80 Result__int32__string = Err{
             _0: "bump failed",
         }
-        jp74 = t77
+        jp77 = t80
     }
-    retv70 = jp74
-    return retv70
+    retv73 = jp77
+    return retv73
 }
 
 func use_try(counter__2 *ref_int32_x, ok__3 bool) Result__int32__string {
-    var retv79 Result__int32__string
-    var mtmp62 Result__int32__string = bump(counter__2, ok__3)
-    var jp81 int32
-    switch mtmp62.(type) {
+    var retv82 Result__int32__string
+    var mtmp65 Result__int32__string = bump(counter__2, ok__3)
+    var jp84 int32
+    switch mtmp65.(type) {
     case Ok:
-        var x63 int32 = mtmp62.(Ok)._0
-        var try_value__23 int32 = x63
-        jp81 = try_value__23
-        var value__4 int32 = jp81
-        var t82 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__2)
-        var t83 int32 = value__4 + t82
-        var t84 Result__int32__string = Ok{
-            _0: t83,
+        var x66 int32 = mtmp65.(Ok)._0
+        var try_value__23 int32 = x66
+        jp84 = try_value__23
+        var value__4 int32 = jp84
+        var t85 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__2)
+        var t86 int32 = value__4 + t85
+        var t87 Result__int32__string = Ok{
+            _0: t86,
         }
-        retv79 = t84
-        return retv79
+        retv82 = t87
+        return retv82
     case Err:
-        var x64 string = mtmp62.(Err)._0
-        var try_residual__23 string = x64
-        var t85 Result__int32__string = Err{
+        var x67 string = mtmp65.(Err)._0
+        var try_residual__23 string = x67
+        var t88 Result__int32__string = Err{
             _0: try_residual__23,
         }
-        retv79 = t85
-        return retv79
+        retv82 = t88
+        return retv82
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__5 Result__int32__string) string {
-    var retv87 string
-    var jp89 string
+    var retv90 string
+    var jp92 string
     switch res__5.(type) {
     case Ok:
-        var x65 int32 = res__5.(Ok)._0
-        var value__6 int32 = x65
-        var t90 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__6)
-        var t91 string = "ok " + t90
-        jp89 = t91
+        var x68 int32 = res__5.(Ok)._0
+        var value__6 int32 = x68
+        var t93 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__6)
+        var t94 string = "ok " + t93
+        jp92 = t94
     case Err:
-        var x66 string = res__5.(Err)._0
-        var err__7 string = x66
-        var t92 string = "err " + err__7
-        jp89 = t92
+        var x69 string = res__5.(Err)._0
+        var err__7 string = x69
+        var t95 string = "err " + err__7
+        jp92 = t95
     default:
         panic("non-exhaustive match")
     }
-    retv87 = jp89
-    return retv87
+    retv90 = jp92
+    return retv90
 }
 
 func run(ok__8 bool) string {
-    var retv94 string
+    var retv97 string
     var counter__9 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     var result__10 Result__int32__string = use_try(counter__9, ok__8)
-    var t95 string = show(result__10)
-    var t96 string = t95 + " count="
-    var t97 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__9)
-    var t98 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t97)
-    var t99 string = t96 + t98
-    retv94 = t99
-    return retv94
+    var t98 string = show(result__10)
+    var t99 string = t98 + " count="
+    var t100 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__9)
+    var t101 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t100)
+    var t102 string = t99 + t101
+    retv97 = t102
+    return retv97
 }
 
 func main0() struct{} {
-    var t101 string = run(true)
-    println__T_string(t101)
-    var t102 string = run(false)
-    println__T_string(t102)
+    var t104 string = run(true)
+    println__T_string(t104)
+    var t105 string = run(false)
+    println__T_string(t105)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__205 *ref_int32_x) int32 {
-    var retv104 int32
-    var t105 int32 = ref_get__Ref_5int32(self__205)
-    retv104 = t105
-    return retv104
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__210 *ref_int32_x) int32 {
+    var retv107 int32
+    var t108 int32 = ref_get__Ref_5int32(self__210)
+    retv107 = t108
+    return retv107
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__206 *ref_int32_x, value__207 int32) struct{} {
-    ref_set__Ref_5int32(self__206, value__207)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__211 *ref_int32_x, value__212 int32) struct{} {
+    ref_set__Ref_5int32(self__211, value__212)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
-    var retv109 string
-    var t110 string = _goml_runtime_core_int32_to_string(self__5)
-    retv109 = t110
-    return retv109
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__204 int32) *ref_int32_x {
-    var retv112 *ref_int32_x
-    var t113 *ref_int32_x = ref__Ref_5int32(value__204)
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
+    var retv112 string
+    var t113 string = _goml_runtime_core_int32_to_string(self__6)
     retv112 = t113
     return retv112
 }
 
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__209 int32) *ref_int32_x {
+    var retv115 *ref_int32_x
+    var t116 *ref_int32_x = ref__Ref_5int32(value__209)
+    retv115 = t116
+    return retv115
+}
+
 func println__T_string(value__1 string) struct{} {
-    var t115 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t115)
+    var t118 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t118)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv118 string
-    retv118 = self__37
-    return retv118
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv121 string
+    retv121 = self__38
+    return retv121
 }
 
 func main() {

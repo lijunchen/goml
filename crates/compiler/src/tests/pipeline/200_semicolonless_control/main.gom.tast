@@ -10,13 +10,13 @@ fn main() -> unit {
     };
     match 1 {
         1 => (@runtime(core.string_println) : (string) -> unit)("match"),
-        _ : int32 => (),
+        _ : int => (),
     };
-    let index/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    while (Ref[int32]::get : (Ref[int32]) -> int32)((index/0 : Ref[int32])) < 2 {
+    let index/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) < 2 {
         {
-            (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((Ref[int32]::get : (Ref[int32]) -> int32)((index/0 : Ref[int32]))));
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)((index/0 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((index/0 : Ref[int32])) + 1)
+            (@runtime(core.string_println) : (string) -> unit)((int::to_string : (int) -> string)((Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int]))));
+            (Ref[int]::set : (Ref[int], int) -> unit)((index/0 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) + 1)
         }
     };
     let values/1: Vec[string] = (Vec[string]::new : () -> Vec[string])();

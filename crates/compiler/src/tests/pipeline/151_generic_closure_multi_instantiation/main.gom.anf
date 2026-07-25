@@ -1,74 +1,74 @@
 fn main() -> unit {
-  join ret65() -> unit {
+  join ret68() -> unit {
     ()
   } in
-  let int_pairer/2 = make_pairer__T_int32(7) in
+  let int_pairer/2 = make_pairer__T_int(7) in
   let string_pairer/3 = make_pairer__T_string("ok") in
-  let t66 = int_pairer/2("a") in
-  let _wild61 = println__T_string(t66) in
-  let t67 = string_pairer/3("b") in
-  let _wild62 = println__T_string(t67) in
-  jump ret65()
+  let t69 = int_pairer/2("a") in
+  let _wild64 = println__T_string(t69) in
+  let t70 = string_pairer/3("b") in
+  let _wild65 = println__T_string(t70) in
+  jump ret68()
 }
 
-fn make_pairer__T_int32(x/0: int32) -> (string) -> string {
-  join ret68(retv69: (string) -> string) -> (string) -> string {
-    retv69
-  } in
-  let t70 = closure_env_make_pairer_T_int32_0 { x_0: x/0 } in
-  jump ret68(t70)
-}
-
-fn make_pairer__T_string(x/0: string) -> (string) -> string {
+fn make_pairer__T_int(x/0: int) -> (string) -> string {
   join ret71(retv72: (string) -> string) -> (string) -> string {
     retv72
   } in
-  let t73 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  let t73 = closure_env_make_pairer_T_int_0 { x_0: x/0 } in
   jump ret71(t73)
 }
 
+fn make_pairer__T_string(x/0: string) -> (string) -> string {
+  join ret74(retv75: (string) -> string) -> (string) -> string {
+    retv75
+  } in
+  let t76 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  jump ret74(t76)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret74() -> unit {
+  join ret77() -> unit {
     ()
   } in
-  let t75 = trait_impl#ToString#string#to_string(value/1) in
-  let t76 = @runtime(core.string_println)(t75) in
-  jump ret74()
+  let t78 = trait_impl#ToString#string#to_string(value/1) in
+  let t79 = @runtime(core.string_println)(t78) in
+  jump ret77()
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  join ret77(retv78: string) -> string {
-    retv78
-  } in
-  let t79 = @runtime(core.int32_to_string)(self/41) in
-  jump ret77(t79)
-}
-
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
   join ret80(retv81: string) -> string {
     retv81
   } in
-  jump ret80(self/37)
+  let t82 = @runtime(core.int_to_string)(self/40) in
+  jump ret80(t82)
 }
 
-fn inherent#closure_env_make_pairer_T_int32_0#closure_env_make_pairer_T_int32_0#apply(env63: closure_env_make_pairer_T_int32_0, tag/1: string) -> string {
-  join ret82(retv83: string) -> string {
-    retv83
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret83(retv84: string) -> string {
+    retv84
   } in
-  let x/0 = closure_env_make_pairer_T_int32_0.x_0(env63) in
-  let t84 = (tag/1 + ":") in
-  let t85 = trait_impl#ToString#int32#to_string(x/0) in
-  let t86 = (t84 + t85) in
-  jump ret82(t86)
+  jump ret83(self/38)
 }
 
-fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env64: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
-  join ret87(retv88: string) -> string {
-    retv88
+fn inherent#closure_env_make_pairer_T_int_0#closure_env_make_pairer_T_int_0#apply(env66: closure_env_make_pairer_T_int_0, tag/1: string) -> string {
+  join ret85(retv86: string) -> string {
+    retv86
   } in
-  let x/0 = closure_env_make_pairer_T_string_1.x_0(env64) in
-  let t89 = (tag/1 + ":") in
-  let t90 = trait_impl#ToString#string#to_string(x/0) in
-  let t91 = (t89 + t90) in
-  jump ret87(t91)
+  let x/0 = closure_env_make_pairer_T_int_0.x_0(env66) in
+  let t87 = (tag/1 + ":") in
+  let t88 = trait_impl#ToString#int#to_string(x/0) in
+  let t89 = (t87 + t88) in
+  jump ret85(t89)
+}
+
+fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env67: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
+  join ret90(retv91: string) -> string {
+    retv91
+  } in
+  let x/0 = closure_env_make_pairer_T_string_1.x_0(env67) in
+  let t92 = (tag/1 + ":") in
+  let t93 = trait_impl#ToString#string#to_string(x/0) in
+  let t94 = (t92 + t93) in
+  jump ret90(t94)
 }

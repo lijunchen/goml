@@ -1,4 +1,4 @@
-FILE@0..317
+FILE@0..347
   TRAIT@0..54
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -166,7 +166,7 @@ FILE@0..317
               Whitespace@252..253 "\n"
       RBrace@253..254 "}"
       Whitespace@254..256 "\n\n"
-  FN@256..317
+  FN@256..347
     FnKeyword@256..258 "fn"
     Whitespace@258..259 " "
     Ident@259..263 "main"
@@ -174,46 +174,63 @@ FILE@0..317
       LParen@263..264 "("
       RParen@264..265 ")"
       Whitespace@265..266 " "
-    BLOCK@266..317
+    BLOCK@266..347
       LBrace@266..267 "{"
       Whitespace@267..272 "\n    "
-      STMT_LET@272..301
+      STMT_LET@272..299
         LetKeyword@272..275 "let"
         Whitespace@275..276 " "
-        PATTERN_VARIABLE@276..278
-          Ident@276..277 "f"
-          Whitespace@277..278 " "
-        Eq@278..279 "="
-        Whitespace@279..280 " "
-        EXPR_CALL@280..295
-          EXPR_IDENT@280..291
-            PATH@280..291
-              Ident@280..291 "mk_renderer"
-          ARG_LIST@291..295
-            LParen@291..292 "("
-            ARG@292..294
-              EXPR_INT@292..294
-                Int@292..294 "42"
-            RParen@294..295 ")"
-        Semi@295..296 ";"
-        Whitespace@296..301 "\n    "
-      STMT_EXPR@301..315
-        EXPR_CALL@301..313
-          EXPR_IDENT@301..308
-            PATH@301..308
-              Ident@301..308 "println"
-          ARG_LIST@308..313
-            LParen@308..309 "("
-            ARG@309..312
-              EXPR_CALL@309..312
-                EXPR_IDENT@309..310
-                  PATH@309..310
-                    Ident@309..310 "f"
-                ARG_LIST@310..312
-                  LParen@310..311 "("
-                  RParen@311..312 ")"
-            RParen@312..313 ")"
-        Semi@313..314 ";"
-        Whitespace@314..315 "\n"
-      RBrace@315..316 "}"
-      Whitespace@316..317 "\n"
+        PATTERN_VARIABLE@276..281
+          Ident@276..281 "value"
+        Colon@281..282 ":"
+        Whitespace@282..283 " "
+        TYPE_INT32@283..289
+          Int32Keyword@283..288 "int32"
+          Whitespace@288..289 " "
+        Eq@289..290 "="
+        Whitespace@290..291 " "
+        EXPR_INT@291..293
+          Int@291..293 "42"
+        Semi@293..294 ";"
+        Whitespace@294..299 "\n    "
+      STMT_LET@299..331
+        LetKeyword@299..302 "let"
+        Whitespace@302..303 " "
+        PATTERN_VARIABLE@303..305
+          Ident@303..304 "f"
+          Whitespace@304..305 " "
+        Eq@305..306 "="
+        Whitespace@306..307 " "
+        EXPR_CALL@307..325
+          EXPR_IDENT@307..318
+            PATH@307..318
+              Ident@307..318 "mk_renderer"
+          ARG_LIST@318..325
+            LParen@318..319 "("
+            ARG@319..324
+              EXPR_IDENT@319..324
+                PATH@319..324
+                  Ident@319..324 "value"
+            RParen@324..325 ")"
+        Semi@325..326 ";"
+        Whitespace@326..331 "\n    "
+      STMT_EXPR@331..345
+        EXPR_CALL@331..343
+          EXPR_IDENT@331..338
+            PATH@331..338
+              Ident@331..338 "println"
+          ARG_LIST@338..343
+            LParen@338..339 "("
+            ARG@339..342
+              EXPR_CALL@339..342
+                EXPR_IDENT@339..340
+                  PATH@339..340
+                    Ident@339..340 "f"
+                ARG_LIST@340..342
+                  LParen@340..341 "("
+                  RParen@341..342 ")"
+            RParen@342..343 ")"
+        Semi@343..344 ";"
+        Whitespace@344..345 "\n"
+      RBrace@345..346 "}"
+      Whitespace@346..347 "\n"

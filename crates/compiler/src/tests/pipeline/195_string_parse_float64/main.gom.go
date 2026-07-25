@@ -55,48 +55,48 @@ type Tuple2_4bool_7float64 struct {
 }
 
 func main0() struct{} {
-    var mtmp61 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("3.125")
-    var x62 bool = mtmp61._0
-    var x63 float64 = mtmp61._1
-    var value__1 float64 = x63
-    var valid__0 bool = x62
-    var t76 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(valid__0)
-    _goml_runtime_core_string_println(t76)
-    var t77 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__1)
-    _goml_runtime_core_string_println(t77)
-    var mtmp66 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float32("3.14")
-    var x67 bool = mtmp66._0
-    var x68 float64 = mtmp66._1
-    var rounded__3 float64 = x68
-    var rounded_valid__2 bool = x67
-    var t78 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(rounded_valid__2)
-    _goml_runtime_core_string_println(t78)
-    var t79 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(rounded__3)
+    var mtmp64 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("3.125")
+    var x65 bool = mtmp64._0
+    var x66 float64 = mtmp64._1
+    var value__1 float64 = x66
+    var valid__0 bool = x65
+    var t79 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(valid__0)
     _goml_runtime_core_string_println(t79)
-    var mtmp71 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("not-a-number")
-    var x72 bool = mtmp71._0
-    var x73 float64 = mtmp71._1
-    var fallback__5 float64 = x73
-    var invalid__4 bool = x72
-    var t80 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(invalid__4)
+    var t80 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__1)
     _goml_runtime_core_string_println(t80)
-    var t81 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(fallback__5)
+    var mtmp69 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float32("3.14")
+    var x70 bool = mtmp69._0
+    var x71 float64 = mtmp69._1
+    var rounded__3 float64 = x71
+    var rounded_valid__2 bool = x70
+    var t81 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(rounded_valid__2)
     _goml_runtime_core_string_println(t81)
+    var t82 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(rounded__3)
+    _goml_runtime_core_string_println(t82)
+    var mtmp74 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("not-a-number")
+    var x75 bool = mtmp74._0
+    var x76 float64 = mtmp74._1
+    var fallback__5 float64 = x76
+    var invalid__4 bool = x75
+    var t83 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(invalid__4)
+    _goml_runtime_core_string_println(t83)
+    var t84 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(fallback__5)
+    _goml_runtime_core_string_println(t84)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__36 bool) string {
-    var retv84 string
-    var t85 string = _goml_runtime_core_bool_to_string(self__36)
-    retv84 = t85
-    return retv84
-}
-
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__48 float64) string {
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
     var retv87 string
-    var t88 string = _goml_runtime_core_float64_to_string(self__48)
+    var t88 string = _goml_runtime_core_bool_to_string(self__37)
     retv87 = t88
     return retv87
+}
+
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
+    var retv90 string
+    var t91 string = _goml_runtime_core_float64_to_string(self__50)
+    retv90 = t91
+    return retv90
 }
 
 func main() {

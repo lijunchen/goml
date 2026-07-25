@@ -1,6 +1,6 @@
 impl Render for Vec[int32]{
   fn render(self/0: Vec[int32]) -> string {
-      "items=" + (int32::to_string : (int32) -> string)((Vec[int32]::len : (Vec[int32]) -> int32)((self/0 : Vec[int32])))
+      "items=" + (int::to_string : (int) -> string)((Vec[int32]::len : (Vec[int32]) -> int)((self/0 : Vec[int32])))
   }
 }
 
@@ -29,5 +29,6 @@ fn main() -> unit {
     (println : (string) -> unit)((render_all : (Vec[int32]) -> string)((values/5 : Vec[int32])));
     let text/6: string = (same : (string) -> string)("equal");
     (println : (string) -> unit)((text/6 : string));
-    (println : (string) -> unit)((require : (Wrap[int32]) -> string)(Wrap { value: 7 }));
+    let selected/7: Wrap[int32] = Wrap { value: 7 };
+    (println : (string) -> unit)((require : (Wrap[int32]) -> string)((selected/7 : Wrap[int32])));
 }

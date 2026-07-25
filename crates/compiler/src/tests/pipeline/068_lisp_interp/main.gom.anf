@@ -1,2043 +1,2083 @@
 fn is_digit(ch/0: char) -> bool {
-  join ret197(retv198: bool) -> bool {
-    retv198
+  join ret200(retv201: bool) -> bool {
+    retv201
   } in
-  let t201 = (ch/0 >= '0') in
-  join k199(jp200: bool) -> bool {
-    jump ret197(jp200)
+  let t204 = (ch/0 >= '0') in
+  join k202(jp203: bool) -> bool {
+    jump ret200(jp203)
   } in
-  if t201 {
-    let t202 = (ch/0 <= '9') in
-    jump k199(t202)
+  if t204 {
+    let t205 = (ch/0 <= '9') in
+    jump k202(t205)
   } else {
-    jump k199(false)
+    jump k202(false)
   }
 }
 
 fn digit_value(ch/1: char) -> int32 {
-  join ret203(retv204: int32) -> int32 {
-    retv204
+  join ret206(retv207: int32) -> int32 {
+    retv207
   } in
-  join k205(jp206: int32) -> int32 {
-    jump ret203(jp206)
+  join k208(jp209: int32) -> int32 {
+    jump ret206(jp209)
   } in
   match ch/1 {
     '0' => {
-      jump k205(0)
+      jump k208(0)
     },
     '1' => {
-      jump k205(1)
+      jump k208(1)
     },
     '2' => {
-      jump k205(2)
+      jump k208(2)
     },
     '3' => {
-      jump k205(3)
+      jump k208(3)
     },
     '4' => {
-      jump k205(4)
+      jump k208(4)
     },
     '5' => {
-      jump k205(5)
+      jump k208(5)
     },
     '6' => {
-      jump k205(6)
+      jump k208(6)
     },
     '7' => {
-      jump k205(7)
+      jump k208(7)
     },
     '8' => {
-      jump k205(8)
+      jump k208(8)
     },
     '9' => {
-      jump k205(9)
+      jump k208(9)
     },
     _ => {
-      jump k205(0)
+      jump k208(0)
     },
   }
 }
 
 fn is_int_text(text/2: string) -> bool {
-  join ret207(retv208: bool) -> bool {
-    retv208
+  join ret210(retv211: bool) -> bool {
+    retv211
   } in
   let len/3 = inherent#string#string#len(text/2) in
-  let t211 = trait_impl#Eq#int32#eq(len/3, 0) in
-  join k209(jp210: bool) -> bool {
-    jump ret207(jp210)
+  let t214 = trait_impl#Eq#int#eq(len/3, 0) in
+  join k212(jp213: bool) -> bool {
+    jump ret210(jp213)
   } in
-  if t211 {
-    jump k209(false)
+  if t214 {
+    jump k212(false)
   } else {
-    let i/4 = inherent#Ref#Ref[T]#new__T_int32(0) in
+    let i/4 = inherent#Ref#Ref[T]#new__T_int(0) in
     let saw_digit/5 = inherent#Ref#Ref[T]#new__T_bool(false) in
     let ok/6 = inherent#Ref#Ref[T]#new__T_bool(true) in
     let started/7 = inherent#Ref#Ref[T]#new__T_bool(false) in
-    join exit212() -> bool {
-      let mtmp64 = () in
-      let t215 = inherent#Ref#Ref[T]#get__T_bool(ok/6) in
-      join k213(jp214: bool) -> bool {
-        jump k209(jp214)
+    join exit215() -> bool {
+      let mtmp67 = () in
+      let t218 = inherent#Ref#Ref[T]#get__T_bool(ok/6) in
+      join k216(jp217: bool) -> bool {
+        jump k212(jp217)
       } in
-      if t215 {
-        let t216 = inherent#Ref#Ref[T]#get__T_bool(saw_digit/5) in
-        jump k213(t216)
+      if t218 {
+        let t219 = inherent#Ref#Ref[T]#get__T_bool(saw_digit/5) in
+        jump k216(t219)
       } else {
-        jump k213(false)
+        jump k216(false)
       }
     } in
     joinrec {
-      join loop217() -> bool {
-        let t236 = inherent#Ref#Ref[T]#get__T_bool(ok/6) in
-        join k218(jp219: bool) -> bool {
-          if jp219 {
-            let t220 = inherent#Ref#Ref[T]#get__T_int32(i/4) in
-            let ch/8 = inherent#string#string#get(text/2, t220) in
-            let t233 = inherent#Ref#Ref[T]#get__T_bool(started/7) in
-            let t234 = (!t233) in
-            join k222(jp223: bool) -> bool {
-              join k221() -> bool {
-                jump loop217()
+      join loop220() -> bool {
+        let t239 = inherent#Ref#Ref[T]#get__T_bool(ok/6) in
+        join k221(jp222: bool) -> bool {
+          if jp222 {
+            let t223 = inherent#Ref#Ref[T]#get__T_int(i/4) in
+            let ch/8 = inherent#string#string#get(text/2, t223) in
+            let t236 = inherent#Ref#Ref[T]#get__T_bool(started/7) in
+            let t237 = (!t236) in
+            join k225(jp226: bool) -> bool {
+              join k224() -> bool {
+                jump loop220()
               } in
-              if jp223 {
-                let mtmp61 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
-                let t224 = inherent#Ref#Ref[T]#get__T_int32(i/4) in
-                let t225 = (t224 + 1) in
-                let t226 = inherent#Ref#Ref[T]#set__T_int32(i/4, t225) in
-                jump k221()
+              if jp226 {
+                let mtmp64 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
+                let t227 = inherent#Ref#Ref[T]#get__T_int(i/4) in
+                let t228 = (t227 + 1) in
+                let t229 = inherent#Ref#Ref[T]#set__T_int(i/4, t228) in
+                jump k224()
               } else {
-                let t228 = is_digit(ch/8) in
-                join k227() -> bool {
-                  jump k221()
+                let t231 = is_digit(ch/8) in
+                join k230() -> bool {
+                  jump k224()
                 } in
-                if t228 {
-                  let mtmp62 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
-                  let mtmp63 = inherent#Ref#Ref[T]#set__T_bool(saw_digit/5, true) in
-                  let t229 = inherent#Ref#Ref[T]#get__T_int32(i/4) in
-                  let t230 = (t229 + 1) in
-                  let t231 = inherent#Ref#Ref[T]#set__T_int32(i/4, t230) in
-                  jump k227()
+                if t231 {
+                  let mtmp65 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
+                  let mtmp66 = inherent#Ref#Ref[T]#set__T_bool(saw_digit/5, true) in
+                  let t232 = inherent#Ref#Ref[T]#get__T_int(i/4) in
+                  let t233 = (t232 + 1) in
+                  let t234 = inherent#Ref#Ref[T]#set__T_int(i/4, t233) in
+                  jump k230()
                 } else {
-                  let t232 = inherent#Ref#Ref[T]#set__T_bool(ok/6, false) in
-                  jump k227()
+                  let t235 = inherent#Ref#Ref[T]#set__T_bool(ok/6, false) in
+                  jump k230()
                 }
               }
             } in
-            if t234 {
-              let t235 = trait_impl#Eq#char#eq(ch/8, '-') in
-              jump k222(t235)
+            if t237 {
+              let t238 = trait_impl#Eq#char#eq(ch/8, '-') in
+              jump k225(t238)
             } else {
-              jump k222(false)
+              jump k225(false)
             }
           } else {
-            jump exit212()
+            jump exit215()
           }
         } in
-        if t236 {
-          let t237 = inherent#Ref#Ref[T]#get__T_int32(i/4) in
-          let t238 = (t237 < len/3) in
-          jump k218(t238)
+        if t239 {
+          let t240 = inherent#Ref#Ref[T]#get__T_int(i/4) in
+          let t241 = (t240 < len/3) in
+          jump k221(t241)
         } else {
-          jump k218(false)
+          jump k221(false)
         }
       } in
     } in
-    jump loop217()
+    jump loop220()
   }
 }
 
 fn parse_int32(text/9: string) -> int32 {
-  join ret239(retv240: int32) -> int32 {
-    retv240
+  join ret242(retv243: int32) -> int32 {
+    retv243
   } in
   let len/10 = inherent#string#string#len(text/9) in
-  let i/11 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/11 = inherent#Ref#Ref[T]#new__T_int(0) in
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let acc/14 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit241() -> int32 {
-    let mtmp69 = () in
-    let t244 = inherent#Ref#Ref[T]#get__T_bool(negative/12) in
-    join k242(jp243: int32) -> int32 {
-      jump ret239(jp243)
+  join exit244() -> int32 {
+    let mtmp72 = () in
+    let t247 = inherent#Ref#Ref[T]#get__T_bool(negative/12) in
+    join k245(jp246: int32) -> int32 {
+      jump ret242(jp246)
     } in
-    if t244 {
-      let t245 = inherent#Ref#Ref[T]#get__T_int32(acc/14) in
-      let t246 = (0 - t245) in
-      jump k242(t246)
+    if t247 {
+      let t248 = inherent#Ref#Ref[T]#get__T_int32(acc/14) in
+      let t249 = (0 - t248) in
+      jump k245(t249)
     } else {
-      let t247 = inherent#Ref#Ref[T]#get__T_int32(acc/14) in
-      jump k242(t247)
+      let t250 = inherent#Ref#Ref[T]#get__T_int32(acc/14) in
+      jump k245(t250)
     }
   } in
   joinrec {
-    join loop248() -> int32 {
-      let t249 = inherent#Ref#Ref[T]#get__T_int32(i/11) in
-      let t250 = (t249 < len/10) in
-      if t250 {
-        let t251 = inherent#Ref#Ref[T]#get__T_int32(i/11) in
-        let ch/15 = inherent#string#string#get(text/9, t251) in
-        let t264 = inherent#Ref#Ref[T]#get__T_bool(started/13) in
-        let t265 = (!t264) in
-        join k253(jp254: bool) -> int32 {
-          join k252() -> int32 {
-            jump loop248()
+    join loop251() -> int32 {
+      let t252 = inherent#Ref#Ref[T]#get__T_int(i/11) in
+      let t253 = (t252 < len/10) in
+      if t253 {
+        let t254 = inherent#Ref#Ref[T]#get__T_int(i/11) in
+        let ch/15 = inherent#string#string#get(text/9, t254) in
+        let t267 = inherent#Ref#Ref[T]#get__T_bool(started/13) in
+        let t268 = (!t267) in
+        join k256(jp257: bool) -> int32 {
+          join k255() -> int32 {
+            jump loop251()
           } in
-          if jp254 {
-            let mtmp65 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
-            let mtmp66 = inherent#Ref#Ref[T]#set__T_bool(negative/12, true) in
-            let t255 = inherent#Ref#Ref[T]#get__T_int32(i/11) in
-            let t256 = (t255 + 1) in
-            let t257 = inherent#Ref#Ref[T]#set__T_int32(i/11, t256) in
-            jump k252()
+          if jp257 {
+            let mtmp68 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
+            let mtmp69 = inherent#Ref#Ref[T]#set__T_bool(negative/12, true) in
+            let t258 = inherent#Ref#Ref[T]#get__T_int(i/11) in
+            let t259 = (t258 + 1) in
+            let t260 = inherent#Ref#Ref[T]#set__T_int(i/11, t259) in
+            jump k255()
           } else {
-            let mtmp67 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
+            let mtmp70 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
             let d/16 = digit_value(ch/15) in
-            let t258 = inherent#Ref#Ref[T]#get__T_int32(acc/14) in
-            let t259 = (t258 * 10) in
-            let t260 = (t259 + d/16) in
-            let mtmp68 = inherent#Ref#Ref[T]#set__T_int32(acc/14, t260) in
-            let t261 = inherent#Ref#Ref[T]#get__T_int32(i/11) in
-            let t262 = (t261 + 1) in
-            let t263 = inherent#Ref#Ref[T]#set__T_int32(i/11, t262) in
-            jump k252()
+            let t261 = inherent#Ref#Ref[T]#get__T_int32(acc/14) in
+            let t262 = (t261 * 10) in
+            let t263 = (t262 + d/16) in
+            let mtmp71 = inherent#Ref#Ref[T]#set__T_int32(acc/14, t263) in
+            let t264 = inherent#Ref#Ref[T]#get__T_int(i/11) in
+            let t265 = (t264 + 1) in
+            let t266 = inherent#Ref#Ref[T]#set__T_int(i/11, t265) in
+            jump k255()
           }
         } in
-        if t265 {
-          let t266 = trait_impl#Eq#char#eq(ch/15, '-') in
-          jump k253(t266)
+        if t268 {
+          let t269 = trait_impl#Eq#char#eq(ch/15, '-') in
+          jump k256(t269)
         } else {
-          jump k253(false)
+          jump k256(false)
         }
       } else {
-        jump exit241()
+        jump exit244()
       }
     } in
   } in
-  jump loop248()
+  jump loop251()
 }
 
 fn is_delim(ch/17: char) -> bool {
-  join ret267(retv268: bool) -> bool {
-    retv268
+  join ret270(retv271: bool) -> bool {
+    retv271
   } in
-  let t274 = trait_impl#Eq#char#eq(ch/17, '(') in
-  join k271(jp272: bool) -> bool {
-    join k269(jp270: bool) -> bool {
-      jump ret267(jp270)
+  let t277 = trait_impl#Eq#char#eq(ch/17, '(') in
+  join k274(jp275: bool) -> bool {
+    join k272(jp273: bool) -> bool {
+      jump ret270(jp273)
     } in
-    if jp272 {
-      jump k269(true)
+    if jp275 {
+      jump k272(true)
     } else {
-      let t273 = trait_impl#Eq#char#eq(ch/17, ' ') in
-      jump k269(t273)
+      let t276 = trait_impl#Eq#char#eq(ch/17, ' ') in
+      jump k272(t276)
     }
   } in
-  if t274 {
-    jump k271(true)
+  if t277 {
+    jump k274(true)
   } else {
-    let t275 = trait_impl#Eq#char#eq(ch/17, ')') in
-    jump k271(t275)
+    let t278 = trait_impl#Eq#char#eq(ch/17, ')') in
+    jump k274(t278)
   }
 }
 
-fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
-  join ret276(retv277: (Token, int32)) -> (Token, int32) {
-    retv277
+fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
+  join ret279(retv280: (Token, int)) -> (Token, int) {
+    retv280
   } in
   let len/20 = inherent#string#string#len(source/18) in
   let text/21 = inherent#Ref#Ref[T]#new__T_string("") in
-  let i/22 = inherent#Ref#Ref[T]#new__T_int32(start/19) in
+  let i/22 = inherent#Ref#Ref[T]#new__T_int(start/19) in
   let done/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join exit278() -> (Token, int32) {
-    let mtmp71 = () in
+  join exit281() -> (Token, int) {
+    let mtmp74 = () in
     let atom/25 = inherent#Ref#Ref[T]#get__T_string(text/21) in
-    join k279(jp280: Token) -> (Token, int32) {
-      let token/26 = jp280 in
-      let t281 = inherent#Ref#Ref[T]#get__T_int32(i/22) in
-      let t282 = (token/26, t281) in
-      jump ret276(t282)
+    join k282(jp283: Token) -> (Token, int) {
+      let token/26 = jp283 in
+      let t284 = inherent#Ref#Ref[T]#get__T_int(i/22) in
+      let t285 = (token/26, t284) in
+      jump ret279(t285)
     } in
     match atom/25 {
       "true" => {
-        let t283 = Token::Bool(true) in
-        jump k279(t283)
+        let t286 = Token::Bool(true) in
+        jump k282(t286)
       },
       "false" => {
-        let t284 = Token::Bool(false) in
-        jump k279(t284)
+        let t287 = Token::Bool(false) in
+        jump k282(t287)
       },
       _ => {
-        let t287 = is_int_text(atom/25) in
-        join k285(jp286: Token) -> (Token, int32) {
-          jump k279(jp286)
+        let t290 = is_int_text(atom/25) in
+        join k288(jp289: Token) -> (Token, int) {
+          jump k282(jp289)
         } in
-        if t287 {
-          let t288 = parse_int32(atom/25) in
-          let t289 = Token::Int(t288) in
-          jump k285(t289)
+        if t290 {
+          let t291 = parse_int32(atom/25) in
+          let t292 = Token::Int(t291) in
+          jump k288(t292)
         } else {
-          let t290 = Token::Sym(atom/25) in
-          jump k285(t290)
+          let t293 = Token::Sym(atom/25) in
+          jump k288(t293)
         }
       },
     }
   } in
   joinrec {
-    join loop291() -> (Token, int32) {
-      let t304 = inherent#Ref#Ref[T]#get__T_bool(done/23) in
-      let t305 = (!t304) in
-      join k292(jp293: bool) -> (Token, int32) {
-        if jp293 {
-          let t294 = inherent#Ref#Ref[T]#get__T_int32(i/22) in
-          let ch/24 = inherent#string#string#get(source/18, t294) in
-          let t296 = is_delim(ch/24) in
-          join k295() -> (Token, int32) {
-            jump loop291()
+    join loop294() -> (Token, int) {
+      let t307 = inherent#Ref#Ref[T]#get__T_bool(done/23) in
+      let t308 = (!t307) in
+      join k295(jp296: bool) -> (Token, int) {
+        if jp296 {
+          let t297 = inherent#Ref#Ref[T]#get__T_int(i/22) in
+          let ch/24 = inherent#string#string#get(source/18, t297) in
+          let t299 = is_delim(ch/24) in
+          join k298() -> (Token, int) {
+            jump loop294()
           } in
-          if t296 {
-            let t297 = inherent#Ref#Ref[T]#set__T_bool(done/23, true) in
-            jump k295()
+          if t299 {
+            let t300 = inherent#Ref#Ref[T]#set__T_bool(done/23, true) in
+            jump k298()
           } else {
-            let t298 = inherent#Ref#Ref[T]#get__T_string(text/21) in
-            let t299 = inherent#char#char#to_string(ch/24) in
-            let t300 = (t298 + t299) in
-            let mtmp70 = inherent#Ref#Ref[T]#set__T_string(text/21, t300) in
-            let t301 = inherent#Ref#Ref[T]#get__T_int32(i/22) in
-            let t302 = (t301 + 1) in
-            let t303 = inherent#Ref#Ref[T]#set__T_int32(i/22, t302) in
-            jump k295()
+            let t301 = inherent#Ref#Ref[T]#get__T_string(text/21) in
+            let t302 = inherent#char#char#to_string(ch/24) in
+            let t303 = (t301 + t302) in
+            let mtmp73 = inherent#Ref#Ref[T]#set__T_string(text/21, t303) in
+            let t304 = inherent#Ref#Ref[T]#get__T_int(i/22) in
+            let t305 = (t304 + 1) in
+            let t306 = inherent#Ref#Ref[T]#set__T_int(i/22, t305) in
+            jump k298()
           }
         } else {
-          jump exit278()
+          jump exit281()
         }
       } in
-      if t305 {
-        let t306 = inherent#Ref#Ref[T]#get__T_int32(i/22) in
-        let t307 = (t306 < len/20) in
-        jump k292(t307)
+      if t308 {
+        let t309 = inherent#Ref#Ref[T]#get__T_int(i/22) in
+        let t310 = (t309 < len/20) in
+        jump k295(t310)
       } else {
-        jump k292(false)
+        jump k295(false)
       }
     } in
   } in
-  jump loop291()
+  jump loop294()
 }
 
 fn lex(source/27: string) -> Vec[Token] {
-  join ret308(retv309: Vec[Token]) -> Vec[Token] {
-    retv309
+  join ret311(retv312: Vec[Token]) -> Vec[Token] {
+    retv312
   } in
   let len/28 = inherent#string#string#len(source/27) in
   let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
   let toks/30 = inherent#Ref#Ref[T]#new__T_Vec[Token](toks0/29) in
-  let i/31 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit310() -> Vec[Token] {
-    let mtmp78 = () in
-    let t311 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
-    jump ret308(t311)
+  let i/31 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit313() -> Vec[Token] {
+    let mtmp81 = () in
+    let t314 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
+    jump ret311(t314)
   } in
   joinrec {
-    join loop312() -> Vec[Token] {
-      let t313 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-      let t314 = (t313 < len/28) in
-      if t314 {
-        let t315 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-        let ch/32 = inherent#string#string#get(source/27, t315) in
-        let t317 = trait_impl#Eq#char#eq(ch/32, '(') in
-        join k316() -> Vec[Token] {
-          jump loop312()
+    join loop315() -> Vec[Token] {
+      let t316 = inherent#Ref#Ref[T]#get__T_int(i/31) in
+      let t317 = (t316 < len/28) in
+      if t317 {
+        let t318 = inherent#Ref#Ref[T]#get__T_int(i/31) in
+        let ch/32 = inherent#string#string#get(source/27, t318) in
+        let t320 = trait_impl#Eq#char#eq(ch/32, '(') in
+        join k319() -> Vec[Token] {
+          jump loop315()
         } in
-        if t317 {
-          let t318 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
-          let t319 = inherent#Vec#Vec[T]#pushed__T_Token(t318, Tag_0) in
-          let mtmp72 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, t319) in
-          let t320 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-          let t321 = (t320 + 1) in
-          let t322 = inherent#Ref#Ref[T]#set__T_int32(i/31, t321) in
-          jump k316()
+        if t320 {
+          let t321 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
+          let t322 = inherent#Vec#Vec[T]#pushed__T_Token(t321, Tag_0) in
+          let mtmp75 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, t322) in
+          let t323 = inherent#Ref#Ref[T]#get__T_int(i/31) in
+          let t324 = (t323 + 1) in
+          let t325 = inherent#Ref#Ref[T]#set__T_int(i/31, t324) in
+          jump k319()
         } else {
-          let t324 = trait_impl#Eq#char#eq(ch/32, ')') in
-          join k323() -> Vec[Token] {
-            jump k316()
+          let t327 = trait_impl#Eq#char#eq(ch/32, ')') in
+          join k326() -> Vec[Token] {
+            jump k319()
           } in
-          if t324 {
-            let t325 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
-            let t326 = inherent#Vec#Vec[T]#pushed__T_Token(t325, Tag_1) in
-            let mtmp73 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, t326) in
-            let t327 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-            let t328 = (t327 + 1) in
-            let t329 = inherent#Ref#Ref[T]#set__T_int32(i/31, t328) in
-            jump k323()
+          if t327 {
+            let t328 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
+            let t329 = inherent#Vec#Vec[T]#pushed__T_Token(t328, Tag_1) in
+            let mtmp76 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, t329) in
+            let t330 = inherent#Ref#Ref[T]#get__T_int(i/31) in
+            let t331 = (t330 + 1) in
+            let t332 = inherent#Ref#Ref[T]#set__T_int(i/31, t331) in
+            jump k326()
           } else {
-            let t331 = trait_impl#Eq#char#eq(ch/32, ' ') in
-            join k330() -> Vec[Token] {
-              jump k323()
+            let t334 = trait_impl#Eq#char#eq(ch/32, ' ') in
+            join k333() -> Vec[Token] {
+              jump k326()
             } in
-            if t331 {
-              let t332 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-              let t333 = (t332 + 1) in
-              let t334 = inherent#Ref#Ref[T]#set__T_int32(i/31, t333) in
-              jump k330()
+            if t334 {
+              let t335 = inherent#Ref#Ref[T]#get__T_int(i/31) in
+              let t336 = (t335 + 1) in
+              let t337 = inherent#Ref#Ref[T]#set__T_int(i/31, t336) in
+              jump k333()
             } else {
-              let t335 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-              let mtmp74 = lex_atom(source/27, t335) in
-              let x75 = mtmp74.0 in
-              let x76 = mtmp74.1 in
-              let next/34 = x76 in
-              let tok/33 = x75 in
-              let t336 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
-              let t337 = inherent#Vec#Vec[T]#pushed__T_Token(t336, tok/33) in
-              let mtmp77 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, t337) in
-              let t338 = inherent#Ref#Ref[T]#set__T_int32(i/31, next/34) in
-              jump k330()
+              let t338 = inherent#Ref#Ref[T]#get__T_int(i/31) in
+              let mtmp77 = lex_atom(source/27, t338) in
+              let x78 = mtmp77.0 in
+              let x79 = mtmp77.1 in
+              let next/34 = x79 in
+              let tok/33 = x78 in
+              let t339 = inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30) in
+              let t340 = inherent#Vec#Vec[T]#pushed__T_Token(t339, tok/33) in
+              let mtmp80 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, t340) in
+              let t341 = inherent#Ref#Ref[T]#set__T_int(i/31, next/34) in
+              jump k333()
             }
           }
         }
       } else {
-        jump exit310()
+        jump exit313()
       }
     } in
   } in
-  jump loop312()
+  jump loop315()
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  join ret339(retv340: Value) -> Value {
-    retv340
+  join ret342(retv343: Value) -> Value {
+    retv343
   } in
-  let t341 = inherent#Vec#Vec[T]#len__T_Binding(env/35) in
-  let t342 = (t341 - 1) in
-  let i/37 = inherent#Ref#Ref[T]#new__T_int32(t342) in
+  let t344 = inherent#Vec#Vec[T]#len__T_Binding(env/35) in
+  let t345 = (t344 - 1) in
+  let i/37 = inherent#Ref#Ref[T]#new__T_int(t345) in
   let result/38 = inherent#Ref#Ref[T]#new__T_Value(Tag_3) in
   let done/39 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join exit343() -> Value {
-    let mtmp80 = () in
-    let t344 = inherent#Ref#Ref[T]#get__T_Value(result/38) in
-    jump ret339(t344)
+  join exit346() -> Value {
+    let mtmp83 = () in
+    let t347 = inherent#Ref#Ref[T]#get__T_Value(result/38) in
+    jump ret342(t347)
   } in
   joinrec {
-    join loop345() -> Value {
-      let t357 = inherent#Ref#Ref[T]#get__T_bool(done/39) in
-      let t358 = (!t357) in
-      join k346(jp347: bool) -> Value {
-        if jp347 {
-          let t348 = inherent#Ref#Ref[T]#get__T_int32(i/37) in
-          let binding/40 = @intrinsic(vec.get)(env/35, t348) in
-          let t350 = Binding.name(binding/40) in
-          let t351 = trait_impl#Eq#string#eq(t350, name/36) in
-          join k349() -> Value {
-            jump loop345()
+    join loop348() -> Value {
+      let t360 = inherent#Ref#Ref[T]#get__T_bool(done/39) in
+      let t361 = (!t360) in
+      join k349(jp350: bool) -> Value {
+        if jp350 {
+          let t351 = inherent#Ref#Ref[T]#get__T_int(i/37) in
+          let binding/40 = @intrinsic(vec.get)(env/35, t351) in
+          let t353 = Binding.name(binding/40) in
+          let t354 = trait_impl#Eq#string#eq(t353, name/36) in
+          join k352() -> Value {
+            jump loop348()
           } in
-          if t351 {
-            let t352 = Binding.value(binding/40) in
-            let mtmp79 = inherent#Ref#Ref[T]#set__T_Value(result/38, t352) in
-            let t353 = inherent#Ref#Ref[T]#set__T_bool(done/39, true) in
-            jump k349()
+          if t354 {
+            let t355 = Binding.value(binding/40) in
+            let mtmp82 = inherent#Ref#Ref[T]#set__T_Value(result/38, t355) in
+            let t356 = inherent#Ref#Ref[T]#set__T_bool(done/39, true) in
+            jump k352()
           } else {
-            let t354 = inherent#Ref#Ref[T]#get__T_int32(i/37) in
-            let t355 = (t354 - 1) in
-            let t356 = inherent#Ref#Ref[T]#set__T_int32(i/37, t355) in
-            jump k349()
+            let t357 = inherent#Ref#Ref[T]#get__T_int(i/37) in
+            let t358 = (t357 - 1) in
+            let t359 = inherent#Ref#Ref[T]#set__T_int(i/37, t358) in
+            jump k352()
           }
         } else {
-          jump exit343()
+          jump exit346()
         }
       } in
-      if t358 {
-        let t359 = inherent#Ref#Ref[T]#get__T_int32(i/37) in
-        let t360 = (t359 >= 0) in
-        jump k346(t360)
+      if t361 {
+        let t362 = inherent#Ref#Ref[T]#get__T_int(i/37) in
+        let t363 = (t362 >= 0) in
+        jump k349(t363)
       } else {
-        jump k346(false)
+        jump k349(false)
       }
     } in
   } in
-  jump loop345()
+  jump loop348()
 }
 
 fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> Value {
-  join ret361(retv362: Value) -> Value {
-    retv362
+  join ret364(retv365: Value) -> Value {
+    retv365
   } in
-  let mtmp81 = env_lookup(local/41, name/43) in
-  join k363(jp364: Value) -> Value {
-    jump ret361(jp364)
+  let mtmp84 = env_lookup(local/41, name/43) in
+  join k366(jp367: Value) -> Value {
+    jump ret364(jp367)
   } in
-  match mtmp81 {
+  match mtmp84 {
     Tag_3 => {
-      let t365 = env_lookup(global/42, name/43) in
-      jump k363(t365)
+      let t368 = env_lookup(global/42, name/43) in
+      jump k366(t368)
     },
     _ => {
-      let other/44 = mtmp81 in
-      jump k363(other/44)
+      let other/44 = mtmp84 in
+      jump k366(other/44)
     },
   }
 }
 
-fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
-  join ret366(retv367: (Vec[SExpr], int32)) -> (Vec[SExpr], int32) {
-    retv367
+fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
+  join ret369(retv370: (Vec[SExpr], int)) -> (Vec[SExpr], int) {
+    retv370
   } in
   let acc/47 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/48 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/47) in
-  let i/49 = inherent#Ref#Ref[T]#new__T_int32(start/46) in
+  let i/49 = inherent#Ref#Ref[T]#new__T_int(start/46) in
   let done/50 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join exit368() -> (Vec[SExpr], int32) {
-    let mtmp94 = () in
-    let t369 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48) in
-    let t370 = inherent#Ref#Ref[T]#get__T_int32(i/49) in
-    let t371 = (t369, t370) in
-    jump ret366(t371)
+  join exit371() -> (Vec[SExpr], int) {
+    let mtmp97 = () in
+    let t372 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48) in
+    let t373 = inherent#Ref#Ref[T]#get__T_int(i/49) in
+    let t374 = (t372, t373) in
+    jump ret369(t374)
   } in
   joinrec {
-    join loop372() -> (Vec[SExpr], int32) {
-      let t384 = inherent#Ref#Ref[T]#get__T_bool(done/50) in
-      let t385 = (!t384) in
-      join k373(jp374: bool) -> (Vec[SExpr], int32) {
-        if jp374 {
-          let t375 = inherent#Ref#Ref[T]#get__T_int32(i/49) in
-          let mtmp85 = @intrinsic(vec.get)(tokens/45, t375) in
-          join k376() -> (Vec[SExpr], int32) {
-            jump loop372()
+    join loop375() -> (Vec[SExpr], int) {
+      let t387 = inherent#Ref#Ref[T]#get__T_bool(done/50) in
+      let t388 = (!t387) in
+      join k376(jp377: bool) -> (Vec[SExpr], int) {
+        if jp377 {
+          let t378 = inherent#Ref#Ref[T]#get__T_int(i/49) in
+          let mtmp88 = @intrinsic(vec.get)(tokens/45, t378) in
+          join k379() -> (Vec[SExpr], int) {
+            jump loop375()
           } in
-          match mtmp85 {
+          match mtmp88 {
             Tag_1 => {
-              let mtmp89 = inherent#Ref#Ref[T]#set__T_bool(done/50, true) in
-              let t377 = inherent#Ref#Ref[T]#get__T_int32(i/49) in
-              let t378 = (t377 + 1) in
-              let t379 = inherent#Ref#Ref[T]#set__T_int32(i/49, t378) in
-              jump k376()
+              let mtmp92 = inherent#Ref#Ref[T]#set__T_bool(done/50, true) in
+              let t380 = inherent#Ref#Ref[T]#get__T_int(i/49) in
+              let t381 = (t380 + 1) in
+              let t382 = inherent#Ref#Ref[T]#set__T_int(i/49, t381) in
+              jump k379()
             },
             _ => {
-              let t380 = inherent#Ref#Ref[T]#get__T_int32(i/49) in
-              let mtmp90 = parse_expr(tokens/45, t380) in
-              let x91 = mtmp90.0 in
-              let x92 = mtmp90.1 in
-              let next/52 = x92 in
-              let expr/51 = x91 in
-              let t381 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48) in
-              let t382 = inherent#Vec#Vec[T]#pushed__T_SExpr(t381, expr/51) in
-              let mtmp93 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/48, t382) in
-              let t383 = inherent#Ref#Ref[T]#set__T_int32(i/49, next/52) in
-              jump k376()
+              let t383 = inherent#Ref#Ref[T]#get__T_int(i/49) in
+              let mtmp93 = parse_expr(tokens/45, t383) in
+              let x94 = mtmp93.0 in
+              let x95 = mtmp93.1 in
+              let next/52 = x95 in
+              let expr/51 = x94 in
+              let t384 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48) in
+              let t385 = inherent#Vec#Vec[T]#pushed__T_SExpr(t384, expr/51) in
+              let mtmp96 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/48, t385) in
+              let t386 = inherent#Ref#Ref[T]#set__T_int(i/49, next/52) in
+              jump k379()
             },
           }
         } else {
-          jump exit368()
+          jump exit371()
         }
       } in
-      if t385 {
-        let t386 = inherent#Ref#Ref[T]#get__T_int32(i/49) in
-        let t387 = inherent#Vec#Vec[T]#len__T_Token(tokens/45) in
-        let t388 = (t386 < t387) in
-        jump k373(t388)
+      if t388 {
+        let t389 = inherent#Ref#Ref[T]#get__T_int(i/49) in
+        let t390 = inherent#Vec#Vec[T]#len__T_Token(tokens/45) in
+        let t391 = (t389 < t390) in
+        jump k376(t391)
       } else {
-        jump k373(false)
+        jump k376(false)
       }
     } in
   } in
-  jump loop372()
+  jump loop375()
 }
 
-fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
-  join ret389(retv390: (SExpr, int32)) -> (SExpr, int32) {
-    retv390
+fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
+  join ret392(retv393: (SExpr, int)) -> (SExpr, int) {
+    retv393
   } in
-  let mtmp95 = @intrinsic(vec.get)(tokens/53, start/54) in
-  join k391(jp392: (SExpr, int32)) -> (SExpr, int32) {
-    jump ret389(jp392)
+  let mtmp98 = @intrinsic(vec.get)(tokens/53, start/54) in
+  join k394(jp395: (SExpr, int)) -> (SExpr, int) {
+    jump ret392(jp395)
   } in
-  match mtmp95 {
+  match mtmp98 {
     Tag_0 => {
-      let t393 = (start/54 + 1) in
-      let mtmp99 = parse_list(tokens/53, t393) in
-      let x100 = mtmp99.0 in
-      let x101 = mtmp99.1 in
-      let next/56 = x101 in
-      let items/55 = x100 in
-      let t394 = SExpr::List(items/55) in
-      let t395 = (t394, next/56) in
-      jump k391(t395)
+      let t396 = (start/54 + 1) in
+      let mtmp102 = parse_list(tokens/53, t396) in
+      let x103 = mtmp102.0 in
+      let x104 = mtmp102.1 in
+      let next/56 = x104 in
+      let items/55 = x103 in
+      let t397 = SExpr::List(items/55) in
+      let t398 = (t397, next/56) in
+      jump k394(t398)
     },
     Tag_1 => {
-      let t396 = SExpr::Sym(")") in
-      let t397 = (start/54 + 1) in
-      let t398 = (t396, t397) in
-      jump k391(t398)
-    },
-    Tag_2 => {
-      let x96 = Token::Sym._0(mtmp95) in
-      let name/59 = x96 in
-      let t399 = SExpr::Sym(name/59) in
+      let t399 = SExpr::Sym(")") in
       let t400 = (start/54 + 1) in
       let t401 = (t399, t400) in
-      jump k391(t401)
+      jump k394(t401)
     },
-    Tag_3 => {
-      let x97 = Token::Int._0(mtmp95) in
-      let n/58 = x97 in
-      let t402 = SExpr::Int(n/58) in
+    Tag_2 => {
+      let x99 = Token::Sym._0(mtmp98) in
+      let name/59 = x99 in
+      let t402 = SExpr::Sym(name/59) in
       let t403 = (start/54 + 1) in
       let t404 = (t402, t403) in
-      jump k391(t404)
+      jump k394(t404)
     },
-    Tag_4 => {
-      let x98 = Token::Bool._0(mtmp95) in
-      let b/57 = x98 in
-      let t405 = SExpr::Bool(b/57) in
+    Tag_3 => {
+      let x100 = Token::Int._0(mtmp98) in
+      let n/58 = x100 in
+      let t405 = SExpr::Int(n/58) in
       let t406 = (start/54 + 1) in
       let t407 = (t405, t406) in
-      jump k391(t407)
+      jump k394(t407)
+    },
+    Tag_4 => {
+      let x101 = Token::Bool._0(mtmp98) in
+      let b/57 = x101 in
+      let t408 = SExpr::Bool(b/57) in
+      let t409 = (start/54 + 1) in
+      let t410 = (t408, t409) in
+      jump k394(t410)
     },
   }
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
-  join ret408(retv409: Vec[SExpr]) -> Vec[SExpr] {
-    retv409
+  join ret411(retv412: Vec[SExpr]) -> Vec[SExpr] {
+    retv412
   } in
-  let i/61 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/61 = inherent#Ref#Ref[T]#new__T_int(0) in
   let acc/62 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/63 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/62) in
-  join exit410() -> Vec[SExpr] {
-    let mtmp106 = () in
-    let t411 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63) in
-    jump ret408(t411)
+  join exit413() -> Vec[SExpr] {
+    let mtmp109 = () in
+    let t414 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63) in
+    jump ret411(t414)
   } in
   joinrec {
-    join loop412() -> Vec[SExpr] {
-      let t413 = inherent#Ref#Ref[T]#get__T_int32(i/61) in
-      let t414 = inherent#Vec#Vec[T]#len__T_Token(tokens/60) in
-      let t415 = (t413 < t414) in
-      if t415 {
-        let t416 = inherent#Ref#Ref[T]#get__T_int32(i/61) in
-        let mtmp102 = parse_expr(tokens/60, t416) in
-        let x103 = mtmp102.0 in
-        let x104 = mtmp102.1 in
-        let next/65 = x104 in
-        let expr/64 = x103 in
-        let t417 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63) in
-        let t418 = inherent#Vec#Vec[T]#pushed__T_SExpr(t417, expr/64) in
-        let mtmp105 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/63, t418) in
-        let t419 = inherent#Ref#Ref[T]#set__T_int32(i/61, next/65) in
-        jump loop412()
+    join loop415() -> Vec[SExpr] {
+      let t416 = inherent#Ref#Ref[T]#get__T_int(i/61) in
+      let t417 = inherent#Vec#Vec[T]#len__T_Token(tokens/60) in
+      let t418 = (t416 < t417) in
+      if t418 {
+        let t419 = inherent#Ref#Ref[T]#get__T_int(i/61) in
+        let mtmp105 = parse_expr(tokens/60, t419) in
+        let x106 = mtmp105.0 in
+        let x107 = mtmp105.1 in
+        let next/65 = x107 in
+        let expr/64 = x106 in
+        let t420 = inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63) in
+        let t421 = inherent#Vec#Vec[T]#pushed__T_SExpr(t420, expr/64) in
+        let mtmp108 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/63, t421) in
+        let t422 = inherent#Ref#Ref[T]#set__T_int(i/61, next/65) in
+        jump loop415()
       } else {
-        jump exit410()
+        jump exit413()
       }
     } in
   } in
-  jump loop412()
+  jump loop415()
 }
 
 fn value_to_string(value/66: Value) -> string {
-  join ret420(retv421: string) -> string {
-    retv421
+  join ret423(retv424: string) -> string {
+    retv424
   } in
-  join k422(jp423: string) -> string {
-    jump ret420(jp423)
+  join k425(jp426: string) -> string {
+    jump ret423(jp426)
   } in
   match value/66 {
     Tag_0 => {
-      let x107 = Value::Int._0(value/66) in
-      let n/67 = x107 in
-      let t424 = inherent#int32#int32#to_string(n/67) in
-      jump k422(t424)
+      let x110 = Value::Int._0(value/66) in
+      let n/67 = x110 in
+      let t427 = inherent#int32#int32#to_string(n/67) in
+      jump k425(t427)
     },
     Tag_1 => {
-      let x108 = Value::Bool._0(value/66) in
-      let b/68 = x108 in
-      let t425 = trait_impl#ToString#bool#to_string(b/68) in
-      jump k422(t425)
+      let x111 = Value::Bool._0(value/66) in
+      let b/68 = x111 in
+      let t428 = trait_impl#ToString#bool#to_string(b/68) in
+      jump k425(t428)
     },
     Tag_2 => {
-      let x109 = Value::Func._0(value/66) in
-      jump k422("<lambda>")
+      let x112 = Value::Func._0(value/66) in
+      jump k425("<lambda>")
     },
     Tag_3 => {
-      jump k422("nil")
+      jump k425("nil")
     },
   }
 }
 
 fn truthy(value/69: Value) -> bool {
-  join ret426(retv427: bool) -> bool {
-    retv427
+  join ret429(retv430: bool) -> bool {
+    retv430
   } in
-  join k428(jp429: bool) -> bool {
-    jump ret426(jp429)
+  join k431(jp432: bool) -> bool {
+    jump ret429(jp432)
   } in
   match value/69 {
     Tag_0 => {
-      let x110 = Value::Int._0(value/69) in
-      let n/71 = x110 in
-      let t430 = trait_impl#Eq#int32#eq(n/71, 0) in
-      let t431 = (!t430) in
-      jump k428(t431)
+      let x113 = Value::Int._0(value/69) in
+      let n/71 = x113 in
+      let t433 = trait_impl#Eq#int32#eq(n/71, 0) in
+      let t434 = (!t433) in
+      jump k431(t434)
     },
     Tag_1 => {
-      let x111 = Value::Bool._0(value/69) in
-      let b/70 = x111 in
-      jump k428(b/70)
+      let x114 = Value::Bool._0(value/69) in
+      let b/70 = x114 in
+      jump k431(b/70)
     },
     Tag_2 => {
-      let x112 = Value::Func._0(value/69) in
-      jump k428(true)
+      let x115 = Value::Func._0(value/69) in
+      jump k431(true)
     },
     Tag_3 => {
-      jump k428(false)
+      jump k431(false)
     },
   }
 }
 
 fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) -> Value {
-  join ret432(retv433: Value) -> Value {
-    retv433
+  join ret435(retv436: Value) -> Value {
+    retv436
   } in
-  join k434(jp435: Value) -> Value {
-    jump ret432(jp435)
+  join k437(jp438: Value) -> Value {
+    jump ret435(jp438)
   } in
   match expr/72 {
     Tag_0 => {
-      let x113 = SExpr::Int._0(expr/72) in
-      let n/75 = x113 in
-      let t436 = Value::Int(n/75) in
-      jump k434(t436)
+      let x116 = SExpr::Int._0(expr/72) in
+      let n/75 = x116 in
+      let t439 = Value::Int(n/75) in
+      jump k437(t439)
     },
     Tag_1 => {
-      let x114 = SExpr::Bool._0(expr/72) in
-      let b/76 = x114 in
-      let t437 = Value::Bool(b/76) in
-      jump k434(t437)
+      let x117 = SExpr::Bool._0(expr/72) in
+      let b/76 = x117 in
+      let t440 = Value::Bool(b/76) in
+      jump k437(t440)
     },
     Tag_2 => {
-      let x115 = SExpr::Sym._0(expr/72) in
-      let name/77 = x115 in
-      let t438 = inherent#Ref#Ref[T]#get__T_Vec[Binding](global/74) in
-      let t439 = lookup(local/73, t438, name/77) in
-      jump k434(t439)
+      let x118 = SExpr::Sym._0(expr/72) in
+      let name/77 = x118 in
+      let t441 = inherent#Ref#Ref[T]#get__T_Vec[Binding](global/74) in
+      let t442 = lookup(local/73, t441, name/77) in
+      jump k437(t442)
     },
     Tag_3 => {
-      let x116 = SExpr::List._0(expr/72) in
-      let items/78 = x116 in
-      let t440 = eval_list(items/78, local/73, global/74) in
-      jump k434(t440)
+      let x119 = SExpr::List._0(expr/72) in
+      let items/78 = x119 in
+      let t443 = eval_list(items/78, local/73, global/74) in
+      jump k437(t443)
     },
   }
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  join ret441(retv442: Value) -> Value {
-    retv442
+  join ret444(retv445: Value) -> Value {
+    retv445
   } in
-  let t445 = inherent#Vec#Vec[T]#len__T_SExpr(items/79) in
-  let t446 = trait_impl#Eq#int32#eq(t445, 0) in
-  join k443(jp444: Value) -> Value {
-    jump ret441(jp444)
+  let t448 = inherent#Vec#Vec[T]#len__T_SExpr(items/79) in
+  let t449 = trait_impl#Eq#int#eq(t448, 0) in
+  join k446(jp447: Value) -> Value {
+    jump ret444(jp447)
   } in
-  if t446 {
-    jump k443(Tag_3)
+  if t449 {
+    jump k446(Tag_3)
   } else {
     let head/82 = @intrinsic(vec.get)(items/79, 0) in
-    join k447(jp448: Value) -> Value {
-      jump k443(jp448)
+    join k450(jp451: Value) -> Value {
+      jump k446(jp451)
     } in
     match head/82 {
       Tag_2 => {
-        let x119 = SExpr::Sym._0(head/82) in
-        let name/83 = x119 in
-        let t449 = eval_list_sym(name/83, items/79, local/80, global/81) in
-        jump k447(t449)
+        let x122 = SExpr::Sym._0(head/82) in
+        let name/83 = x122 in
+        let t452 = eval_list_sym(name/83, items/79, local/80, global/81) in
+        jump k450(t452)
       },
       _ => {
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
-        let t450 = apply(f/84, args/85, global/81) in
-        jump k447(t450)
+        let t453 = apply(f/84, args/85, global/81) in
+        jump k450(t453)
       },
     }
   }
 }
 
 fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], global/89: Ref[Vec[Binding]]) -> Value {
-  join ret451(retv452: Value) -> Value {
-    retv452
+  join ret454(retv455: Value) -> Value {
+    retv455
   } in
-  join k453(jp454: Value) -> Value {
-    jump ret451(jp454)
+  join k456(jp457: Value) -> Value {
+    jump ret454(jp457)
   } in
   match name/86 {
     "begin" => {
-      let t455 = eval_begin(items/87, 1, local/88, global/89) in
-      jump k453(t455)
+      let t458 = eval_begin(items/87, 1, local/88, global/89) in
+      jump k456(t458)
     },
     "define" => {
-      let t458 = inherent#Vec#Vec[T]#len__T_SExpr(items/87) in
-      let t459 = trait_impl#Eq#int32#eq(t458, 3) in
-      join k456(jp457: Value) -> Value {
-        jump k453(jp457)
+      let t461 = inherent#Vec#Vec[T]#len__T_SExpr(items/87) in
+      let t462 = trait_impl#Eq#int#eq(t461, 3) in
+      join k459(jp460: Value) -> Value {
+        jump k456(jp460)
       } in
-      if t459 {
-        let mtmp121 = @intrinsic(vec.get)(items/87, 1) in
-        join k460(jp461: Value) -> Value {
-          jump k456(jp461)
+      if t462 {
+        let mtmp124 = @intrinsic(vec.get)(items/87, 1) in
+        join k463(jp464: Value) -> Value {
+          jump k459(jp464)
         } in
-        match mtmp121 {
+        match mtmp124 {
           Tag_2 => {
-            let x124 = SExpr::Sym._0(mtmp121) in
-            let var/90 = x124 in
-            let t462 = @intrinsic(vec.get)(items/87, 2) in
-            let value/91 = eval(t462, local/88, global/89) in
+            let x127 = SExpr::Sym._0(mtmp124) in
+            let var/90 = x127 in
+            let t465 = @intrinsic(vec.get)(items/87, 2) in
+            let value/91 = eval(t465, local/88, global/89) in
             let env/92 = inherent#Ref#Ref[T]#get__T_Vec[Binding](global/89) in
-            let t463 = Binding { name: var/90, value: value/91 } in
-            let updated/93 = inherent#Vec#Vec[T]#pushed__T_Binding(env/92, t463) in
-            let mtmp126 = inherent#Ref#Ref[T]#set__T_Vec[Binding](global/89, updated/93) in
-            jump k460(value/91)
+            let t466 = Binding { name: var/90, value: value/91 } in
+            let updated/93 = inherent#Vec#Vec[T]#pushed__T_Binding(env/92, t466) in
+            let mtmp129 = inherent#Ref#Ref[T]#set__T_Vec[Binding](global/89, updated/93) in
+            jump k463(value/91)
           },
           _ => {
-            jump k460(Tag_3)
+            jump k463(Tag_3)
           },
         }
       } else {
-        jump k456(Tag_3)
+        jump k459(Tag_3)
       }
     },
     "if" => {
-      let t466 = inherent#Vec#Vec[T]#len__T_SExpr(items/87) in
-      let t467 = trait_impl#Eq#int32#eq(t466, 4) in
-      join k464(jp465: Value) -> Value {
-        jump k453(jp465)
+      let t469 = inherent#Vec#Vec[T]#len__T_SExpr(items/87) in
+      let t470 = trait_impl#Eq#int#eq(t469, 4) in
+      join k467(jp468: Value) -> Value {
+        jump k456(jp468)
       } in
-      if t467 {
-        let t468 = @intrinsic(vec.get)(items/87, 1) in
-        let cond/94 = eval(t468, local/88, global/89) in
-        let t471 = truthy(cond/94) in
-        join k469(jp470: Value) -> Value {
-          jump k464(jp470)
+      if t470 {
+        let t471 = @intrinsic(vec.get)(items/87, 1) in
+        let cond/94 = eval(t471, local/88, global/89) in
+        let t474 = truthy(cond/94) in
+        join k472(jp473: Value) -> Value {
+          jump k467(jp473)
         } in
-        if t471 {
-          let t472 = @intrinsic(vec.get)(items/87, 2) in
-          let t473 = eval(t472, local/88, global/89) in
-          jump k469(t473)
+        if t474 {
+          let t475 = @intrinsic(vec.get)(items/87, 2) in
+          let t476 = eval(t475, local/88, global/89) in
+          jump k472(t476)
         } else {
-          let t474 = @intrinsic(vec.get)(items/87, 3) in
-          let t475 = eval(t474, local/88, global/89) in
-          jump k469(t475)
+          let t477 = @intrinsic(vec.get)(items/87, 3) in
+          let t478 = eval(t477, local/88, global/89) in
+          jump k472(t478)
         }
       } else {
-        jump k464(Tag_3)
+        jump k467(Tag_3)
       }
     },
     "lambda" => {
-      let t478 = inherent#Vec#Vec[T]#len__T_SExpr(items/87) in
-      let t479 = trait_impl#Eq#int32#eq(t478, 3) in
-      join k476(jp477: Value) -> Value {
-        jump k453(jp477)
+      let t481 = inherent#Vec#Vec[T]#len__T_SExpr(items/87) in
+      let t482 = trait_impl#Eq#int#eq(t481, 3) in
+      join k479(jp480: Value) -> Value {
+        jump k456(jp480)
       } in
-      if t479 {
-        let mtmp127 = @intrinsic(vec.get)(items/87, 1) in
-        join k480(jp481: Value) -> Value {
-          jump k476(jp481)
+      if t482 {
+        let mtmp130 = @intrinsic(vec.get)(items/87, 1) in
+        join k483(jp484: Value) -> Value {
+          jump k479(jp484)
         } in
-        match mtmp127 {
+        match mtmp130 {
           Tag_3 => {
-            let x131 = SExpr::List._0(mtmp127) in
-            let params_exprs/95 = x131 in
+            let x134 = SExpr::List._0(mtmp130) in
+            let params_exprs/95 = x134 in
             let params/96 = params_from_sexprs(params_exprs/95) in
             let body/97 = @intrinsic(vec.get)(items/87, 2) in
-            let t482 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
-            let t483 = Value::Func(t482) in
-            jump k480(t483)
+            let t485 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
+            let t486 = Value::Func(t485) in
+            jump k483(t486)
           },
           _ => {
-            jump k480(Tag_3)
+            jump k483(Tag_3)
           },
         }
       } else {
-        jump k476(Tag_3)
+        jump k479(Tag_3)
       }
     },
     "+" => {
-      let t484 = eval_args(items/87, 1, local/88, global/89) in
-      let t485 = apply_builtin("+", t484) in
-      jump k453(t485)
+      let t487 = eval_args(items/87, 1, local/88, global/89) in
+      let t488 = apply_builtin("+", t487) in
+      jump k456(t488)
     },
     "-" => {
-      let t486 = eval_args(items/87, 1, local/88, global/89) in
-      let t487 = apply_builtin("-", t486) in
-      jump k453(t487)
+      let t489 = eval_args(items/87, 1, local/88, global/89) in
+      let t490 = apply_builtin("-", t489) in
+      jump k456(t490)
     },
     "*" => {
-      let t488 = eval_args(items/87, 1, local/88, global/89) in
-      let t489 = apply_builtin("*", t488) in
-      jump k453(t489)
+      let t491 = eval_args(items/87, 1, local/88, global/89) in
+      let t492 = apply_builtin("*", t491) in
+      jump k456(t492)
     },
     "/" => {
-      let t490 = eval_args(items/87, 1, local/88, global/89) in
-      let t491 = apply_builtin("/", t490) in
-      jump k453(t491)
+      let t493 = eval_args(items/87, 1, local/88, global/89) in
+      let t494 = apply_builtin("/", t493) in
+      jump k456(t494)
     },
     "=" => {
-      let t492 = eval_args(items/87, 1, local/88, global/89) in
-      let t493 = apply_builtin("=", t492) in
-      jump k453(t493)
+      let t495 = eval_args(items/87, 1, local/88, global/89) in
+      let t496 = apply_builtin("=", t495) in
+      jump k456(t496)
     },
     _ => {
-      let t494 = SExpr::Sym(name/86) in
-      let f/98 = eval(t494, local/88, global/89) in
+      let t497 = SExpr::Sym(name/86) in
+      let f/98 = eval(t497, local/88, global/89) in
       let args/99 = eval_args(items/87, 1, local/88, global/89) in
-      let t495 = apply(f/98, args/99, global/89) in
-      jump k453(t495)
+      let t498 = apply(f/98, args/99, global/89) in
+      jump k456(t498)
     },
   }
 }
 
-fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
-  join ret496(retv497: Value) -> Value {
-    retv497
+fn eval_begin(items/100: Vec[SExpr], start/101: int, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
+  join ret499(retv500: Value) -> Value {
+    retv500
   } in
-  let i/104 = inherent#Ref#Ref[T]#new__T_int32(start/101) in
+  let i/104 = inherent#Ref#Ref[T]#new__T_int(start/101) in
   let last/105 = inherent#Ref#Ref[T]#new__T_Value(Tag_3) in
-  join exit498() -> Value {
-    let mtmp133 = () in
-    let t499 = inherent#Ref#Ref[T]#get__T_Value(last/105) in
-    jump ret496(t499)
+  join exit501() -> Value {
+    let mtmp136 = () in
+    let t502 = inherent#Ref#Ref[T]#get__T_Value(last/105) in
+    jump ret499(t502)
   } in
   joinrec {
-    join loop500() -> Value {
-      let t501 = inherent#Ref#Ref[T]#get__T_int32(i/104) in
-      let t502 = inherent#Vec#Vec[T]#len__T_SExpr(items/100) in
-      let t503 = (t501 < t502) in
-      if t503 {
-        let t504 = inherent#Ref#Ref[T]#get__T_int32(i/104) in
-        let t505 = @intrinsic(vec.get)(items/100, t504) in
-        let v/106 = eval(t505, local/102, global/103) in
-        let mtmp132 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
-        let t506 = inherent#Ref#Ref[T]#get__T_int32(i/104) in
-        let t507 = (t506 + 1) in
-        let t508 = inherent#Ref#Ref[T]#set__T_int32(i/104, t507) in
-        jump loop500()
+    join loop503() -> Value {
+      let t504 = inherent#Ref#Ref[T]#get__T_int(i/104) in
+      let t505 = inherent#Vec#Vec[T]#len__T_SExpr(items/100) in
+      let t506 = (t504 < t505) in
+      if t506 {
+        let t507 = inherent#Ref#Ref[T]#get__T_int(i/104) in
+        let t508 = @intrinsic(vec.get)(items/100, t507) in
+        let v/106 = eval(t508, local/102, global/103) in
+        let mtmp135 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
+        let t509 = inherent#Ref#Ref[T]#get__T_int(i/104) in
+        let t510 = (t509 + 1) in
+        let t511 = inherent#Ref#Ref[T]#set__T_int(i/104, t510) in
+        jump loop503()
       } else {
-        jump exit498()
+        jump exit501()
       }
     } in
   } in
-  jump loop500()
+  jump loop503()
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
-  join ret509(retv510: Vec[string]) -> Vec[string] {
-    retv510
+  join ret512(retv513: Vec[string]) -> Vec[string] {
+    retv513
   } in
-  let i/108 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/108 = inherent#Ref#Ref[T]#new__T_int(0) in
   let acc/109 = inherent#Vec#Vec[T]#new__T_string() in
   let params/110 = inherent#Ref#Ref[T]#new__T_Vec[string](acc/109) in
-  join exit511() -> Vec[string] {
-    let mtmp140 = () in
-    let t512 = inherent#Ref#Ref[T]#get__T_Vec[string](params/110) in
-    jump ret509(t512)
+  join exit514() -> Vec[string] {
+    let mtmp143 = () in
+    let t515 = inherent#Ref#Ref[T]#get__T_Vec[string](params/110) in
+    jump ret512(t515)
   } in
   joinrec {
-    join loop513() -> Vec[string] {
-      let t514 = inherent#Ref#Ref[T]#get__T_int32(i/108) in
-      let t515 = inherent#Vec#Vec[T]#len__T_SExpr(items/107) in
-      let t516 = (t514 < t515) in
-      if t516 {
-        let t517 = inherent#Ref#Ref[T]#get__T_int32(i/108) in
-        let mtmp134 = @intrinsic(vec.get)(items/107, t517) in
-        join k518() -> Vec[string] {
-          jump loop513()
+    join loop516() -> Vec[string] {
+      let t517 = inherent#Ref#Ref[T]#get__T_int(i/108) in
+      let t518 = inherent#Vec#Vec[T]#len__T_SExpr(items/107) in
+      let t519 = (t517 < t518) in
+      if t519 {
+        let t520 = inherent#Ref#Ref[T]#get__T_int(i/108) in
+        let mtmp137 = @intrinsic(vec.get)(items/107, t520) in
+        join k521() -> Vec[string] {
+          jump loop516()
         } in
-        match mtmp134 {
+        match mtmp137 {
           Tag_2 => {
-            let x137 = SExpr::Sym._0(mtmp134) in
-            let name/111 = x137 in
-            let t519 = inherent#Ref#Ref[T]#get__T_Vec[string](params/110) in
-            let t520 = inherent#Vec#Vec[T]#pushed__T_string(t519, name/111) in
-            let mtmp139 = inherent#Ref#Ref[T]#set__T_Vec[string](params/110, t520) in
-            let t521 = inherent#Ref#Ref[T]#get__T_int32(i/108) in
-            let t522 = (t521 + 1) in
-            let t523 = inherent#Ref#Ref[T]#set__T_int32(i/108, t522) in
-            jump k518()
+            let x140 = SExpr::Sym._0(mtmp137) in
+            let name/111 = x140 in
+            let t522 = inherent#Ref#Ref[T]#get__T_Vec[string](params/110) in
+            let t523 = inherent#Vec#Vec[T]#pushed__T_string(t522, name/111) in
+            let mtmp142 = inherent#Ref#Ref[T]#set__T_Vec[string](params/110, t523) in
+            let t524 = inherent#Ref#Ref[T]#get__T_int(i/108) in
+            let t525 = (t524 + 1) in
+            let t526 = inherent#Ref#Ref[T]#set__T_int(i/108, t525) in
+            jump k521()
           },
           _ => {
-            let t524 = inherent#Ref#Ref[T]#get__T_int32(i/108) in
-            let t525 = (t524 + 1) in
-            let t526 = inherent#Ref#Ref[T]#set__T_int32(i/108, t525) in
-            jump k518()
+            let t527 = inherent#Ref#Ref[T]#get__T_int(i/108) in
+            let t528 = (t527 + 1) in
+            let t529 = inherent#Ref#Ref[T]#set__T_int(i/108, t528) in
+            jump k521()
           },
         }
       } else {
-        jump exit511()
+        jump exit514()
       }
     } in
   } in
-  jump loop513()
+  jump loop516()
 }
 
-fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
-  join ret527(retv528: Vec[Value]) -> Vec[Value] {
-    retv528
+fn eval_args(items/112: Vec[SExpr], start/113: int, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
+  join ret530(retv531: Vec[Value]) -> Vec[Value] {
+    retv531
   } in
-  let i/116 = inherent#Ref#Ref[T]#new__T_int32(start/113) in
+  let i/116 = inherent#Ref#Ref[T]#new__T_int(start/113) in
   let acc/117 = inherent#Vec#Vec[T]#new__T_Value() in
   let args/118 = inherent#Ref#Ref[T]#new__T_Vec[Value](acc/117) in
-  join exit529() -> Vec[Value] {
-    let mtmp142 = () in
-    let t530 = inherent#Ref#Ref[T]#get__T_Vec[Value](args/118) in
-    jump ret527(t530)
+  join exit532() -> Vec[Value] {
+    let mtmp145 = () in
+    let t533 = inherent#Ref#Ref[T]#get__T_Vec[Value](args/118) in
+    jump ret530(t533)
   } in
   joinrec {
-    join loop531() -> Vec[Value] {
-      let t532 = inherent#Ref#Ref[T]#get__T_int32(i/116) in
-      let t533 = inherent#Vec#Vec[T]#len__T_SExpr(items/112) in
-      let t534 = (t532 < t533) in
-      if t534 {
-        let t535 = inherent#Ref#Ref[T]#get__T_int32(i/116) in
-        let t536 = @intrinsic(vec.get)(items/112, t535) in
-        let v/119 = eval(t536, local/114, global/115) in
-        let t537 = inherent#Ref#Ref[T]#get__T_Vec[Value](args/118) in
-        let t538 = inherent#Vec#Vec[T]#pushed__T_Value(t537, v/119) in
-        let mtmp141 = inherent#Ref#Ref[T]#set__T_Vec[Value](args/118, t538) in
-        let t539 = inherent#Ref#Ref[T]#get__T_int32(i/116) in
-        let t540 = (t539 + 1) in
-        let t541 = inherent#Ref#Ref[T]#set__T_int32(i/116, t540) in
-        jump loop531()
+    join loop534() -> Vec[Value] {
+      let t535 = inherent#Ref#Ref[T]#get__T_int(i/116) in
+      let t536 = inherent#Vec#Vec[T]#len__T_SExpr(items/112) in
+      let t537 = (t535 < t536) in
+      if t537 {
+        let t538 = inherent#Ref#Ref[T]#get__T_int(i/116) in
+        let t539 = @intrinsic(vec.get)(items/112, t538) in
+        let v/119 = eval(t539, local/114, global/115) in
+        let t540 = inherent#Ref#Ref[T]#get__T_Vec[Value](args/118) in
+        let t541 = inherent#Vec#Vec[T]#pushed__T_Value(t540, v/119) in
+        let mtmp144 = inherent#Ref#Ref[T]#set__T_Vec[Value](args/118, t541) in
+        let t542 = inherent#Ref#Ref[T]#get__T_int(i/116) in
+        let t543 = (t542 + 1) in
+        let t544 = inherent#Ref#Ref[T]#set__T_int(i/116, t543) in
+        jump loop534()
       } else {
-        jump exit529()
+        jump exit532()
       }
     } in
   } in
-  jump loop531()
+  jump loop534()
 }
 
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
-  join ret542(retv543: Value) -> Value {
-    retv543
+  join ret545(retv546: Value) -> Value {
+    retv546
   } in
-  join k544(jp545: Value) -> Value {
-    jump ret542(jp545)
+  join k547(jp548: Value) -> Value {
+    jump ret545(jp548)
   } in
   match name/120 {
     "=" => {
-      let t548 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-      let t549 = trait_impl#Eq#int32#eq(t548, 2) in
-      join k546(jp547: Value) -> Value {
-        jump k544(jp547)
+      let t551 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+      let t552 = trait_impl#Eq#int#eq(t551, 2) in
+      join k549(jp550: Value) -> Value {
+        jump k547(jp550)
       } in
-      if t549 {
-        let t550 = @intrinsic(vec.get)(args/121, 0) in
-        let t551 = @intrinsic(vec.get)(args/121, 1) in
-        let mtmp143 = (t550, t551) in
-        let x144 = mtmp143.0 in
-        let x145 = mtmp143.1 in
-        join k552(jp553: Value) -> Value {
-          jump k546(jp553)
+      if t552 {
+        let t553 = @intrinsic(vec.get)(args/121, 0) in
+        let t554 = @intrinsic(vec.get)(args/121, 1) in
+        let mtmp146 = (t553, t554) in
+        let x147 = mtmp146.0 in
+        let x148 = mtmp146.1 in
+        join k555(jp556: Value) -> Value {
+          jump k549(jp556)
         } in
-        match x145 {
+        match x148 {
           Tag_0 => {
-            let x146 = Value::Int._0(x145) in
-            join k554(jp555: Value) -> Value {
-              jump k552(jp555)
+            let x149 = Value::Int._0(x148) in
+            join k557(jp558: Value) -> Value {
+              jump k555(jp558)
             } in
-            match x144 {
+            match x147 {
               Tag_0 => {
-                let x149 = Value::Int._0(x144) in
-                let a/122 = x149 in
-                let b/123 = x146 in
-                let t556 = trait_impl#Eq#int32#eq(a/122, b/123) in
-                let t557 = Value::Bool(t556) in
-                jump k554(t557)
+                let x152 = Value::Int._0(x147) in
+                let a/122 = x152 in
+                let b/123 = x149 in
+                let t559 = trait_impl#Eq#int32#eq(a/122, b/123) in
+                let t560 = Value::Bool(t559) in
+                jump k557(t560)
               },
               _ => {
-                let t558 = Value::Bool(false) in
-                jump k554(t558)
+                let t561 = Value::Bool(false) in
+                jump k557(t561)
               },
             }
           },
           Tag_1 => {
-            let x147 = Value::Bool._0(x145) in
-            join k559(jp560: Value) -> Value {
-              jump k552(jp560)
+            let x150 = Value::Bool._0(x148) in
+            join k562(jp563: Value) -> Value {
+              jump k555(jp563)
             } in
-            match x144 {
+            match x147 {
               Tag_1 => {
-                let x153 = Value::Bool._0(x144) in
-                let a/124 = x153 in
-                let b/125 = x147 in
-                let t561 = trait_impl#Eq#bool#eq(a/124, b/125) in
-                let t562 = Value::Bool(t561) in
-                jump k559(t562)
+                let x156 = Value::Bool._0(x147) in
+                let a/124 = x156 in
+                let b/125 = x150 in
+                let t564 = trait_impl#Eq#bool#eq(a/124, b/125) in
+                let t565 = Value::Bool(t564) in
+                jump k562(t565)
               },
               _ => {
-                let t563 = Value::Bool(false) in
-                jump k559(t563)
+                let t566 = Value::Bool(false) in
+                jump k562(t566)
               },
             }
           },
           _ => {
-            let t564 = Value::Bool(false) in
-            jump k552(t564)
+            let t567 = Value::Bool(false) in
+            jump k555(t567)
           },
         }
       } else {
-        let t565 = Value::Bool(false) in
-        jump k546(t565)
+        let t568 = Value::Bool(false) in
+        jump k549(t568)
       }
     },
     "+" => {
-      let i/126 = inherent#Ref#Ref[T]#new__T_int32(0) in
+      let i/126 = inherent#Ref#Ref[T]#new__T_int(0) in
       let acc/127 = inherent#Ref#Ref[T]#new__T_int32(0) in
-      join exit566() -> Value {
-        let mtmp160 = () in
-        let t567 = inherent#Ref#Ref[T]#get__T_int32(acc/127) in
-        let t568 = Value::Int(t567) in
-        jump k544(t568)
+      join exit569() -> Value {
+        let mtmp163 = () in
+        let t570 = inherent#Ref#Ref[T]#get__T_int32(acc/127) in
+        let t571 = Value::Int(t570) in
+        jump k547(t571)
       } in
       joinrec {
-        join loop569() -> Value {
-          let t570 = inherent#Ref#Ref[T]#get__T_int32(i/126) in
-          let t571 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-          let t572 = (t570 < t571) in
-          if t572 {
-            let t573 = inherent#Ref#Ref[T]#get__T_int32(i/126) in
-            let mtmp155 = @intrinsic(vec.get)(args/121, t573) in
-            join k574() -> Value {
-              jump loop569()
+        join loop572() -> Value {
+          let t573 = inherent#Ref#Ref[T]#get__T_int(i/126) in
+          let t574 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+          let t575 = (t573 < t574) in
+          if t575 {
+            let t576 = inherent#Ref#Ref[T]#get__T_int(i/126) in
+            let mtmp158 = @intrinsic(vec.get)(args/121, t576) in
+            join k577() -> Value {
+              jump loop572()
             } in
-            match mtmp155 {
+            match mtmp158 {
               Tag_0 => {
-                let x156 = Value::Int._0(mtmp155) in
-                let n/128 = x156 in
-                let t575 = inherent#Ref#Ref[T]#get__T_int32(acc/127) in
-                let t576 = (t575 + n/128) in
-                let mtmp159 = inherent#Ref#Ref[T]#set__T_int32(acc/127, t576) in
-                let t577 = inherent#Ref#Ref[T]#get__T_int32(i/126) in
-                let t578 = (t577 + 1) in
-                let t579 = inherent#Ref#Ref[T]#set__T_int32(i/126, t578) in
-                jump k574()
+                let x159 = Value::Int._0(mtmp158) in
+                let n/128 = x159 in
+                let t578 = inherent#Ref#Ref[T]#get__T_int32(acc/127) in
+                let t579 = (t578 + n/128) in
+                let mtmp162 = inherent#Ref#Ref[T]#set__T_int32(acc/127, t579) in
+                let t580 = inherent#Ref#Ref[T]#get__T_int(i/126) in
+                let t581 = (t580 + 1) in
+                let t582 = inherent#Ref#Ref[T]#set__T_int(i/126, t581) in
+                jump k577()
               },
               _ => {
-                let t580 = inherent#Ref#Ref[T]#get__T_int32(i/126) in
-                let t581 = (t580 + 1) in
-                let t582 = inherent#Ref#Ref[T]#set__T_int32(i/126, t581) in
-                jump k574()
+                let t583 = inherent#Ref#Ref[T]#get__T_int(i/126) in
+                let t584 = (t583 + 1) in
+                let t585 = inherent#Ref#Ref[T]#set__T_int(i/126, t584) in
+                jump k577()
               },
             }
           } else {
-            jump exit566()
+            jump exit569()
           }
         } in
       } in
-      jump loop569()
+      jump loop572()
     },
     "*" => {
-      let i/129 = inherent#Ref#Ref[T]#new__T_int32(0) in
+      let i/129 = inherent#Ref#Ref[T]#new__T_int(0) in
       let acc/130 = inherent#Ref#Ref[T]#new__T_int32(1) in
-      join exit583() -> Value {
-        let mtmp166 = () in
-        let t584 = inherent#Ref#Ref[T]#get__T_int32(acc/130) in
-        let t585 = Value::Int(t584) in
-        jump k544(t585)
+      join exit586() -> Value {
+        let mtmp169 = () in
+        let t587 = inherent#Ref#Ref[T]#get__T_int32(acc/130) in
+        let t588 = Value::Int(t587) in
+        jump k547(t588)
       } in
       joinrec {
-        join loop586() -> Value {
-          let t587 = inherent#Ref#Ref[T]#get__T_int32(i/129) in
-          let t588 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-          let t589 = (t587 < t588) in
-          if t589 {
-            let t590 = inherent#Ref#Ref[T]#get__T_int32(i/129) in
-            let mtmp161 = @intrinsic(vec.get)(args/121, t590) in
-            join k591() -> Value {
-              jump loop586()
+        join loop589() -> Value {
+          let t590 = inherent#Ref#Ref[T]#get__T_int(i/129) in
+          let t591 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+          let t592 = (t590 < t591) in
+          if t592 {
+            let t593 = inherent#Ref#Ref[T]#get__T_int(i/129) in
+            let mtmp164 = @intrinsic(vec.get)(args/121, t593) in
+            join k594() -> Value {
+              jump loop589()
             } in
-            match mtmp161 {
+            match mtmp164 {
               Tag_0 => {
-                let x162 = Value::Int._0(mtmp161) in
-                let n/131 = x162 in
-                let t592 = inherent#Ref#Ref[T]#get__T_int32(acc/130) in
-                let t593 = (t592 * n/131) in
-                let mtmp165 = inherent#Ref#Ref[T]#set__T_int32(acc/130, t593) in
-                let t594 = inherent#Ref#Ref[T]#get__T_int32(i/129) in
-                let t595 = (t594 + 1) in
-                let t596 = inherent#Ref#Ref[T]#set__T_int32(i/129, t595) in
-                jump k591()
+                let x165 = Value::Int._0(mtmp164) in
+                let n/131 = x165 in
+                let t595 = inherent#Ref#Ref[T]#get__T_int32(acc/130) in
+                let t596 = (t595 * n/131) in
+                let mtmp168 = inherent#Ref#Ref[T]#set__T_int32(acc/130, t596) in
+                let t597 = inherent#Ref#Ref[T]#get__T_int(i/129) in
+                let t598 = (t597 + 1) in
+                let t599 = inherent#Ref#Ref[T]#set__T_int(i/129, t598) in
+                jump k594()
               },
               _ => {
-                let t597 = inherent#Ref#Ref[T]#get__T_int32(i/129) in
-                let t598 = (t597 + 1) in
-                let t599 = inherent#Ref#Ref[T]#set__T_int32(i/129, t598) in
-                jump k591()
+                let t600 = inherent#Ref#Ref[T]#get__T_int(i/129) in
+                let t601 = (t600 + 1) in
+                let t602 = inherent#Ref#Ref[T]#set__T_int(i/129, t601) in
+                jump k594()
               },
             }
           } else {
-            jump exit583()
+            jump exit586()
           }
         } in
       } in
-      jump loop586()
+      jump loop589()
     },
     "-" => {
-      let mtmp167 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-      join k600(jp601: Value) -> Value {
-        jump k544(jp601)
+      let mtmp170 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+      join k603(jp604: Value) -> Value {
+        jump k547(jp604)
       } in
-      match mtmp167 {
+      match mtmp170 {
         1 => {
-          let mtmp168 = @intrinsic(vec.get)(args/121, 0) in
-          join k602(jp603: Value) -> Value {
-            jump k600(jp603)
+          let mtmp171 = @intrinsic(vec.get)(args/121, 0) in
+          join k605(jp606: Value) -> Value {
+            jump k603(jp606)
           } in
-          match mtmp168 {
+          match mtmp171 {
             Tag_0 => {
-              let x169 = Value::Int._0(mtmp168) in
-              let n/132 = x169 in
-              let t604 = (0 - n/132) in
-              let t605 = Value::Int(t604) in
-              jump k602(t605)
+              let x172 = Value::Int._0(mtmp171) in
+              let n/132 = x172 in
+              let t607 = (0 - n/132) in
+              let t608 = Value::Int(t607) in
+              jump k605(t608)
             },
             _ => {
-              jump k602(Tag_3)
+              jump k605(Tag_3)
             },
           }
         },
         2 => {
-          let t606 = @intrinsic(vec.get)(args/121, 0) in
-          let t607 = @intrinsic(vec.get)(args/121, 1) in
-          let mtmp172 = (t606, t607) in
-          let x173 = mtmp172.0 in
-          let x174 = mtmp172.1 in
-          join k608(jp609: Value) -> Value {
-            jump k600(jp609)
+          let t609 = @intrinsic(vec.get)(args/121, 0) in
+          let t610 = @intrinsic(vec.get)(args/121, 1) in
+          let mtmp175 = (t609, t610) in
+          let x176 = mtmp175.0 in
+          let x177 = mtmp175.1 in
+          join k611(jp612: Value) -> Value {
+            jump k603(jp612)
           } in
-          match x174 {
+          match x177 {
             Tag_0 => {
-              let x175 = Value::Int._0(x174) in
-              join k610(jp611: Value) -> Value {
-                jump k608(jp611)
+              let x178 = Value::Int._0(x177) in
+              join k613(jp614: Value) -> Value {
+                jump k611(jp614)
               } in
-              match x173 {
+              match x176 {
                 Tag_0 => {
-                  let x178 = Value::Int._0(x173) in
-                  let a/133 = x178 in
-                  let b/134 = x175 in
-                  let t612 = (a/133 - b/134) in
-                  let t613 = Value::Int(t612) in
-                  jump k610(t613)
+                  let x181 = Value::Int._0(x176) in
+                  let a/133 = x181 in
+                  let b/134 = x178 in
+                  let t615 = (a/133 - b/134) in
+                  let t616 = Value::Int(t615) in
+                  jump k613(t616)
                 },
                 _ => {
-                  jump k610(Tag_3)
+                  jump k613(Tag_3)
                 },
               }
             },
             _ => {
-              jump k608(Tag_3)
+              jump k611(Tag_3)
             },
           }
         },
         _ => {
-          jump k600(Tag_3)
+          jump k603(Tag_3)
         },
       }
     },
     "/" => {
-      let t616 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-      let t617 = trait_impl#Eq#int32#eq(t616, 2) in
-      join k614(jp615: Value) -> Value {
-        jump k544(jp615)
+      let t619 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+      let t620 = trait_impl#Eq#int#eq(t619, 2) in
+      join k617(jp618: Value) -> Value {
+        jump k547(jp618)
       } in
-      if t617 {
-        let t618 = @intrinsic(vec.get)(args/121, 0) in
-        let t619 = @intrinsic(vec.get)(args/121, 1) in
-        let mtmp181 = (t618, t619) in
-        let x182 = mtmp181.0 in
-        let x183 = mtmp181.1 in
-        join k620(jp621: Value) -> Value {
-          jump k614(jp621)
+      if t620 {
+        let t621 = @intrinsic(vec.get)(args/121, 0) in
+        let t622 = @intrinsic(vec.get)(args/121, 1) in
+        let mtmp184 = (t621, t622) in
+        let x185 = mtmp184.0 in
+        let x186 = mtmp184.1 in
+        join k623(jp624: Value) -> Value {
+          jump k617(jp624)
         } in
-        match x183 {
+        match x186 {
           Tag_0 => {
-            let x184 = Value::Int._0(x183) in
-            join k622(jp623: Value) -> Value {
-              jump k620(jp623)
+            let x187 = Value::Int._0(x186) in
+            join k625(jp626: Value) -> Value {
+              jump k623(jp626)
             } in
-            match x182 {
+            match x185 {
               Tag_0 => {
-                let x187 = Value::Int._0(x182) in
-                let a/135 = x187 in
-                let b/136 = x184 in
-                let t624 = (a/135 / b/136) in
-                let t625 = Value::Int(t624) in
-                jump k622(t625)
+                let x190 = Value::Int._0(x185) in
+                let a/135 = x190 in
+                let b/136 = x187 in
+                let t627 = (a/135 / b/136) in
+                let t628 = Value::Int(t627) in
+                jump k625(t628)
               },
               _ => {
-                jump k622(Tag_3)
+                jump k625(Tag_3)
               },
             }
           },
           _ => {
-            jump k620(Tag_3)
+            jump k623(Tag_3)
           },
         }
       } else {
-        jump k614(Tag_3)
+        jump k617(Tag_3)
       }
     },
     _ => {
-      jump k544(Tag_3)
+      jump k547(Tag_3)
     },
   }
 }
 
 fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -> Value {
-  join ret626(retv627: Value) -> Value {
-    retv627
+  join ret629(retv630: Value) -> Value {
+    retv630
   } in
-  join k628(jp629: Value) -> Value {
-    jump ret626(jp629)
+  join k631(jp632: Value) -> Value {
+    jump ret629(jp632)
   } in
   match func/137 {
     Tag_2 => {
-      let x192 = Value::Func._0(func/137) in
-      let fun/140 = x192 in
-      let t630 = apply_lambda(fun/140, args/138) in
-      jump k628(t630)
+      let x195 = Value::Func._0(func/137) in
+      let fun/140 = x195 in
+      let t633 = apply_lambda(fun/140, args/138) in
+      jump k631(t633)
     },
     _ => {
-      jump k628(Tag_3)
+      jump k631(Tag_3)
     },
   }
 }
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
-  join ret631(retv632: Value) -> Value {
-    retv632
+  join ret634(retv635: Value) -> Value {
+    retv635
   } in
-  let t633 = Lambda.env(lambda/141) in
-  let env/143 = inherent#Ref#Ref[T]#new__T_Vec[Binding](t633) in
-  let i/144 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit634() -> Value {
-    let mtmp194 = () in
-    let t635 = Lambda.body(lambda/141) in
-    let t636 = inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143) in
-    let t637 = Lambda.global(lambda/141) in
-    let t638 = eval(t635, t636, t637) in
-    jump ret631(t638)
+  let t636 = Lambda.env(lambda/141) in
+  let env/143 = inherent#Ref#Ref[T]#new__T_Vec[Binding](t636) in
+  let i/144 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit637() -> Value {
+    let mtmp197 = () in
+    let t638 = Lambda.body(lambda/141) in
+    let t639 = inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143) in
+    let t640 = Lambda.global(lambda/141) in
+    let t641 = eval(t638, t639, t640) in
+    jump ret634(t641)
   } in
   joinrec {
-    join loop639() -> Value {
-      let t650 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-      let t651 = Lambda.params(lambda/141) in
-      let t652 = inherent#Vec#Vec[T]#len__T_string(t651) in
-      let t653 = (t650 < t652) in
-      join k640(jp641: bool) -> Value {
-        if jp641 {
-          let t642 = Lambda.params(lambda/141) in
-          let t643 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-          let name/145 = @intrinsic(vec.get)(t642, t643) in
-          let t644 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-          let value/146 = @intrinsic(vec.get)(args/142, t644) in
-          let t645 = inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143) in
-          let t646 = Binding { name: name/145, value: value/146 } in
-          let updated/147 = inherent#Vec#Vec[T]#pushed__T_Binding(t645, t646) in
-          let mtmp193 = inherent#Ref#Ref[T]#set__T_Vec[Binding](env/143, updated/147) in
-          let t647 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-          let t648 = (t647 + 1) in
-          let t649 = inherent#Ref#Ref[T]#set__T_int32(i/144, t648) in
-          jump loop639()
+    join loop642() -> Value {
+      let t653 = inherent#Ref#Ref[T]#get__T_int(i/144) in
+      let t654 = Lambda.params(lambda/141) in
+      let t655 = inherent#Vec#Vec[T]#len__T_string(t654) in
+      let t656 = (t653 < t655) in
+      join k643(jp644: bool) -> Value {
+        if jp644 {
+          let t645 = Lambda.params(lambda/141) in
+          let t646 = inherent#Ref#Ref[T]#get__T_int(i/144) in
+          let name/145 = @intrinsic(vec.get)(t645, t646) in
+          let t647 = inherent#Ref#Ref[T]#get__T_int(i/144) in
+          let value/146 = @intrinsic(vec.get)(args/142, t647) in
+          let t648 = inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143) in
+          let t649 = Binding { name: name/145, value: value/146 } in
+          let updated/147 = inherent#Vec#Vec[T]#pushed__T_Binding(t648, t649) in
+          let mtmp196 = inherent#Ref#Ref[T]#set__T_Vec[Binding](env/143, updated/147) in
+          let t650 = inherent#Ref#Ref[T]#get__T_int(i/144) in
+          let t651 = (t650 + 1) in
+          let t652 = inherent#Ref#Ref[T]#set__T_int(i/144, t651) in
+          jump loop642()
         } else {
-          jump exit634()
+          jump exit637()
         }
       } in
-      if t653 {
-        let t654 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-        let t655 = inherent#Vec#Vec[T]#len__T_Value(args/142) in
-        let t656 = (t654 < t655) in
-        jump k640(t656)
+      if t656 {
+        let t657 = inherent#Ref#Ref[T]#get__T_int(i/144) in
+        let t658 = inherent#Vec#Vec[T]#len__T_Value(args/142) in
+        let t659 = (t657 < t658) in
+        jump k643(t659)
       } else {
-        jump k640(false)
+        jump k643(false)
       }
     } in
   } in
-  jump loop639()
+  jump loop642()
 }
 
 fn main() -> unit {
-  join ret657() -> unit {
+  join ret660() -> unit {
     ()
   } in
-  let t658 = inherent#Vec#Vec[T]#new__T_Binding() in
-  let global/148 = inherent#Ref#Ref[T]#new__T_Vec[Binding](t658) in
-  let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
-  let t659 = lex(program/149) in
-  let exprs/150 = parse_program(t659) in
-  let t660 = @intrinsic(vec.get)(exprs/150, 0) in
   let t661 = inherent#Vec#Vec[T]#new__T_Binding() in
-  let result/151 = eval(t660, t661, global/148) in
-  let t662 = value_to_string(result/151) in
-  let mtmp195 = println__T_string(t662) in
-  let t663 = lex("(add3 10 20 30)") in
-  let exprs2/152 = parse_program(t663) in
-  let t664 = @intrinsic(vec.get)(exprs2/152, 0) in
-  let t665 = inherent#Vec#Vec[T]#new__T_Binding() in
-  let result2/153 = eval(t664, t665, global/148) in
-  let t666 = value_to_string(result2/153) in
-  let mtmp196 = println__T_string(t666) in
-  jump ret657()
+  let global/148 = inherent#Ref#Ref[T]#new__T_Vec[Binding](t661) in
+  let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
+  let t662 = lex(program/149) in
+  let exprs/150 = parse_program(t662) in
+  let t663 = @intrinsic(vec.get)(exprs/150, 0) in
+  let t664 = inherent#Vec#Vec[T]#new__T_Binding() in
+  let result/151 = eval(t663, t664, global/148) in
+  let t665 = value_to_string(result/151) in
+  let mtmp198 = println__T_string(t665) in
+  let t666 = lex("(add3 10 20 30)") in
+  let exprs2/152 = parse_program(t666) in
+  let t667 = @intrinsic(vec.get)(exprs2/152, 0) in
+  let t668 = inherent#Vec#Vec[T]#new__T_Binding() in
+  let result2/153 = eval(t667, t668, global/148) in
+  let t669 = value_to_string(result2/153) in
+  let mtmp199 = println__T_string(t669) in
+  jump ret660()
 }
 
-fn inherent#string#string#len(self/7: string) -> int32 {
-  join ret667(retv668: int32) -> int32 {
-    retv668
-  } in
-  let t669 = @runtime(core.string_len)(self/7) in
-  jump ret667(t669)
-}
-
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  join ret670(retv671: bool) -> bool {
+fn inherent#string#string#len(self/8: string) -> int {
+  join ret670(retv671: int) -> int {
     retv671
   } in
-  let t672 = @intrinsic(eq.primitive)(self/61, other/62) in
+  let t672 = @runtime(core.string_len)(self/8) in
   jump ret670(t672)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
-  join ret673(retv674: Ref[int32]) -> Ref[int32] {
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  join ret673(retv674: bool) -> bool {
     retv674
   } in
-  let t675 = @intrinsic(ref.new)(value/204) in
+  let t675 = @intrinsic(eq.primitive)(self/59, other/60) in
   jump ret673(t675)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/204: bool) -> Ref[bool] {
-  join ret676(retv677: Ref[bool]) -> Ref[bool] {
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  join ret676(retv677: Ref[int]) -> Ref[int] {
     retv677
   } in
-  let t678 = @intrinsic(ref.new)(value/204) in
+  let t678 = @intrinsic(ref.new)(value/209) in
   jump ret676(t678)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/205: Ref[bool]) -> bool {
-  join ret679(retv680: bool) -> bool {
+fn inherent#Ref#Ref[T]#new__T_bool(value/209: bool) -> Ref[bool] {
+  join ret679(retv680: Ref[bool]) -> Ref[bool] {
     retv680
   } in
-  let t681 = @intrinsic(ref.get)(self/205) in
+  let t681 = @intrinsic(ref.new)(value/209) in
   jump ret679(t681)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
-  join ret682(retv683: int32) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_bool(self/210: Ref[bool]) -> bool {
+  join ret682(retv683: bool) -> bool {
     retv683
   } in
-  let t684 = @intrinsic(ref.get)(self/205) in
+  let t684 = @intrinsic(ref.get)(self/210) in
   jump ret682(t684)
 }
 
-fn inherent#string#string#get(self/9: string, index/10: int32) -> char {
-  join ret685(retv686: char) -> char {
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  join ret685(retv686: int) -> int {
     retv686
   } in
-  let t687 = @runtime(core.string_get)(self/9, index/10) in
+  let t687 = @intrinsic(ref.get)(self/210) in
   jump ret685(t687)
 }
 
-fn trait_impl#Eq#char#eq(self/55: char, other/56: char) -> bool {
-  join ret688(retv689: bool) -> bool {
+fn inherent#string#string#get(self/10: string, index/11: int) -> char {
+  join ret688(retv689: char) -> char {
     retv689
   } in
-  let t690 = @intrinsic(eq.primitive)(self/55, other/56) in
+  let t690 = @runtime(core.string_get)(self/10, index/11) in
   jump ret688(t690)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/206: Ref[bool], value/207: bool) -> unit {
-  join ret691() -> unit {
+fn trait_impl#Eq#char#eq(self/57: char, other/58: char) -> bool {
+  join ret691(retv692: bool) -> bool {
+    retv692
+  } in
+  let t693 = @intrinsic(eq.primitive)(self/57, other/58) in
+  jump ret691(t693)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/211: Ref[bool], value/212: bool) -> unit {
+  join ret694() -> unit {
     ()
   } in
-  let t692 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret691()
+  let t695 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret694()
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
-  join ret693() -> unit {
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  join ret696() -> unit {
     ()
   } in
-  let t694 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret693()
+  let t697 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret696()
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/204: string) -> Ref[string] {
-  join ret695(retv696: Ref[string]) -> Ref[string] {
-    retv696
-  } in
-  let t697 = @intrinsic(ref.new)(value/204) in
-  jump ret695(t697)
-}
-
-fn inherent#Ref#Ref[T]#get__T_string(self/205: Ref[string]) -> string {
-  join ret698(retv699: string) -> string {
+fn inherent#Ref#Ref[T]#new__T_int32(value/209: int32) -> Ref[int32] {
+  join ret698(retv699: Ref[int32]) -> Ref[int32] {
     retv699
   } in
-  let t700 = @intrinsic(ref.get)(self/205) in
+  let t700 = @intrinsic(ref.new)(value/209) in
   jump ret698(t700)
 }
 
-fn inherent#char#char#to_string(self/6: char) -> string {
-  join ret701(retv702: string) -> string {
+fn inherent#Ref#Ref[T]#get__T_int32(self/210: Ref[int32]) -> int32 {
+  join ret701(retv702: int32) -> int32 {
     retv702
   } in
-  let t703 = @runtime(core.char_to_string)(self/6) in
+  let t703 = @intrinsic(ref.get)(self/210) in
   jump ret701(t703)
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/206: Ref[string], value/207: string) -> unit {
+fn inherent#Ref#Ref[T]#set__T_int32(self/211: Ref[int32], value/212: int32) -> unit {
   join ret704() -> unit {
     ()
   } in
-  let t705 = @intrinsic(ref.set)(self/206, value/207) in
+  let t705 = @intrinsic(ref.set)(self/211, value/212) in
   jump ret704()
 }
 
-fn inherent#Vec#Vec[T]#new__T_Token() -> Vec[Token] {
-  join ret706(retv707: Vec[Token]) -> Vec[Token] {
+fn inherent#Ref#Ref[T]#new__T_string(value/209: string) -> Ref[string] {
+  join ret706(retv707: Ref[string]) -> Ref[string] {
     retv707
   } in
-  let t708 = @intrinsic(vec.new)() in
+  let t708 = @intrinsic(ref.new)(value/209) in
   jump ret706(t708)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[Token](value/204: Vec[Token]) -> Ref[Vec[Token]] {
-  join ret709(retv710: Ref[Vec[Token]]) -> Ref[Vec[Token]] {
+fn inherent#Ref#Ref[T]#get__T_string(self/210: Ref[string]) -> string {
+  join ret709(retv710: string) -> string {
     retv710
   } in
-  let t711 = @intrinsic(ref.new)(value/204) in
+  let t711 = @intrinsic(ref.get)(self/210) in
   jump ret709(t711)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/205: Ref[Vec[Token]]) -> Vec[Token] {
-  join ret712(retv713: Vec[Token]) -> Vec[Token] {
+fn inherent#char#char#to_string(self/7: char) -> string {
+  join ret712(retv713: string) -> string {
     retv713
   } in
-  let t714 = @intrinsic(ref.get)(self/205) in
+  let t714 = @runtime(core.char_to_string)(self/7) in
   jump ret712(t714)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_Token(self/125: Vec[Token], elem/126: Token) -> Vec[Token] {
-  join ret715(retv716: Vec[Token]) -> Vec[Token] {
-    retv716
+fn inherent#Ref#Ref[T]#set__T_string(self/211: Ref[string], value/212: string) -> unit {
+  join ret715() -> unit {
+    ()
   } in
-  let result/127 = inherent#Vec#Vec[T]#new__T_Token() in
-  let index/128 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit717() -> Vec[Token] {
+  let t716 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret715()
+}
+
+fn inherent#Vec#Vec[T]#new__T_Token() -> Vec[Token] {
+  join ret717(retv718: Vec[Token]) -> Vec[Token] {
+    retv718
+  } in
+  let t719 = @intrinsic(vec.new)() in
+  jump ret717(t719)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Vec[Token](value/209: Vec[Token]) -> Ref[Vec[Token]] {
+  join ret720(retv721: Ref[Vec[Token]]) -> Ref[Vec[Token]] {
+    retv721
+  } in
+  let t722 = @intrinsic(ref.new)(value/209) in
+  jump ret720(t722)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/210: Ref[Vec[Token]]) -> Vec[Token] {
+  join ret723(retv724: Vec[Token]) -> Vec[Token] {
+    retv724
+  } in
+  let t725 = @intrinsic(ref.get)(self/210) in
+  jump ret723(t725)
+}
+
+fn inherent#Vec#Vec[T]#pushed__T_Token(self/130: Vec[Token], elem/131: Token) -> Vec[Token] {
+  join ret726(retv727: Vec[Token]) -> Vec[Token] {
+    retv727
+  } in
+  let result/132 = inherent#Vec#Vec[T]#new__T_Token() in
+  let index/133 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit728() -> Vec[Token] {
     let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_Token(result/127, elem/126) in
-    jump ret715(result/127)
+    let _wild37 = inherent#Vec#Vec[T]#push__T_Token(result/132, elem/131) in
+    jump ret726(result/132)
   } in
   joinrec {
-    join loop718() -> Vec[Token] {
-      let t719 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-      let t720 = inherent#Vec#Vec[T]#len__T_Token(self/125) in
-      let t721 = (t719 < t720) in
-      if t721 {
-        let t722 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t723 = inherent#Vec#Vec[T]#get__T_Token(self/125, t722) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_Token(result/127, t723) in
-        let t724 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t725 = (t724 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int32(index/128, t725) in
-        jump loop718()
+    join loop729() -> Vec[Token] {
+      let t730 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+      let t731 = inherent#Vec#Vec[T]#len__T_Token(self/130) in
+      let t732 = (t730 < t731) in
+      if t732 {
+        let t733 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t734 = inherent#Vec#Vec[T]#get__T_Token(self/130, t733) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_Token(result/132, t734) in
+        let t735 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t736 = (t735 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/133, t736) in
+        jump loop729()
       } else {
-        jump exit717()
+        jump exit728()
       }
     } in
   } in
-  jump loop718()
+  jump loop729()
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/206: Ref[Vec[Token]], value/207: Vec[Token]) -> unit {
-  join ret726() -> unit {
-    ()
-  } in
-  let t727 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret726()
-}
-
-fn inherent#Vec#Vec[T]#len__T_Binding(self/134: Vec[Binding]) -> int32 {
-  join ret728(retv729: int32) -> int32 {
-    retv729
-  } in
-  let t730 = @intrinsic(vec.len)(self/134) in
-  jump ret728(t730)
-}
-
-fn inherent#Ref#Ref[T]#new__T_Value(value/204: Value) -> Ref[Value] {
-  join ret731(retv732: Ref[Value]) -> Ref[Value] {
-    retv732
-  } in
-  let t733 = @intrinsic(ref.new)(value/204) in
-  jump ret731(t733)
-}
-
-fn trait_impl#Eq#string#eq(self/53: string, other/54: string) -> bool {
-  join ret734(retv735: bool) -> bool {
-    retv735
-  } in
-  let t736 = @intrinsic(eq.primitive)(self/53, other/54) in
-  jump ret734(t736)
-}
-
-fn inherent#Ref#Ref[T]#set__T_Value(self/206: Ref[Value], value/207: Value) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/211: Ref[Vec[Token]], value/212: Vec[Token]) -> unit {
   join ret737() -> unit {
     ()
   } in
-  let t738 = @intrinsic(ref.set)(self/206, value/207) in
+  let t738 = @intrinsic(ref.set)(self/211, value/212) in
   jump ret737()
 }
 
-fn inherent#Ref#Ref[T]#get__T_Value(self/205: Ref[Value]) -> Value {
-  join ret739(retv740: Value) -> Value {
+fn inherent#Vec#Vec[T]#len__T_Binding(self/139: Vec[Binding]) -> int {
+  join ret739(retv740: int) -> int {
     retv740
   } in
-  let t741 = @intrinsic(ref.get)(self/205) in
+  let t741 = @intrinsic(vec.len)(self/139) in
   jump ret739(t741)
 }
 
-fn inherent#Vec#Vec[T]#new__T_SExpr() -> Vec[SExpr] {
-  join ret742(retv743: Vec[SExpr]) -> Vec[SExpr] {
+fn inherent#Ref#Ref[T]#new__T_Value(value/209: Value) -> Ref[Value] {
+  join ret742(retv743: Ref[Value]) -> Ref[Value] {
     retv743
   } in
-  let t744 = @intrinsic(vec.new)() in
+  let t744 = @intrinsic(ref.new)(value/209) in
   jump ret742(t744)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/204: Vec[SExpr]) -> Ref[Vec[SExpr]] {
-  join ret745(retv746: Ref[Vec[SExpr]]) -> Ref[Vec[SExpr]] {
+fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
+  join ret745(retv746: bool) -> bool {
     retv746
   } in
-  let t747 = @intrinsic(ref.new)(value/204) in
+  let t747 = @intrinsic(eq.primitive)(self/55, other/56) in
   jump ret745(t747)
 }
 
-fn inherent#Vec#Vec[T]#len__T_Token(self/134: Vec[Token]) -> int32 {
-  join ret748(retv749: int32) -> int32 {
-    retv749
+fn inherent#Ref#Ref[T]#set__T_Value(self/211: Ref[Value], value/212: Value) -> unit {
+  join ret748() -> unit {
+    ()
   } in
-  let t750 = @intrinsic(vec.len)(self/134) in
-  jump ret748(t750)
+  let t749 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret748()
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/205: Ref[Vec[SExpr]]) -> Vec[SExpr] {
-  join ret751(retv752: Vec[SExpr]) -> Vec[SExpr] {
-    retv752
+fn inherent#Ref#Ref[T]#get__T_Value(self/210: Ref[Value]) -> Value {
+  join ret750(retv751: Value) -> Value {
+    retv751
   } in
-  let t753 = @intrinsic(ref.get)(self/205) in
-  jump ret751(t753)
+  let t752 = @intrinsic(ref.get)(self/210) in
+  jump ret750(t752)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/125: Vec[SExpr], elem/126: SExpr) -> Vec[SExpr] {
-  join ret754(retv755: Vec[SExpr]) -> Vec[SExpr] {
-    retv755
+fn inherent#Vec#Vec[T]#new__T_SExpr() -> Vec[SExpr] {
+  join ret753(retv754: Vec[SExpr]) -> Vec[SExpr] {
+    retv754
   } in
-  let result/127 = inherent#Vec#Vec[T]#new__T_SExpr() in
-  let index/128 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit756() -> Vec[SExpr] {
+  let t755 = @intrinsic(vec.new)() in
+  jump ret753(t755)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/209: Vec[SExpr]) -> Ref[Vec[SExpr]] {
+  join ret756(retv757: Ref[Vec[SExpr]]) -> Ref[Vec[SExpr]] {
+    retv757
+  } in
+  let t758 = @intrinsic(ref.new)(value/209) in
+  jump ret756(t758)
+}
+
+fn inherent#Vec#Vec[T]#len__T_Token(self/139: Vec[Token]) -> int {
+  join ret759(retv760: int) -> int {
+    retv760
+  } in
+  let t761 = @intrinsic(vec.len)(self/139) in
+  jump ret759(t761)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/210: Ref[Vec[SExpr]]) -> Vec[SExpr] {
+  join ret762(retv763: Vec[SExpr]) -> Vec[SExpr] {
+    retv763
+  } in
+  let t764 = @intrinsic(ref.get)(self/210) in
+  jump ret762(t764)
+}
+
+fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/130: Vec[SExpr], elem/131: SExpr) -> Vec[SExpr] {
+  join ret765(retv766: Vec[SExpr]) -> Vec[SExpr] {
+    retv766
+  } in
+  let result/132 = inherent#Vec#Vec[T]#new__T_SExpr() in
+  let index/133 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit767() -> Vec[SExpr] {
     let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_SExpr(result/127, elem/126) in
-    jump ret754(result/127)
+    let _wild37 = inherent#Vec#Vec[T]#push__T_SExpr(result/132, elem/131) in
+    jump ret765(result/132)
   } in
   joinrec {
-    join loop757() -> Vec[SExpr] {
-      let t758 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-      let t759 = inherent#Vec#Vec[T]#len__T_SExpr(self/125) in
-      let t760 = (t758 < t759) in
-      if t760 {
-        let t761 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t762 = inherent#Vec#Vec[T]#get__T_SExpr(self/125, t761) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_SExpr(result/127, t762) in
-        let t763 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t764 = (t763 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int32(index/128, t764) in
-        jump loop757()
+    join loop768() -> Vec[SExpr] {
+      let t769 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+      let t770 = inherent#Vec#Vec[T]#len__T_SExpr(self/130) in
+      let t771 = (t769 < t770) in
+      if t771 {
+        let t772 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t773 = inherent#Vec#Vec[T]#get__T_SExpr(self/130, t772) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_SExpr(result/132, t773) in
+        let t774 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t775 = (t774 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/133, t775) in
+        jump loop768()
       } else {
-        jump exit756()
+        jump exit767()
       }
     } in
   } in
-  jump loop757()
+  jump loop768()
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/206: Ref[Vec[SExpr]], value/207: Vec[SExpr]) -> unit {
-  join ret765() -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/211: Ref[Vec[SExpr]], value/212: Vec[SExpr]) -> unit {
+  join ret776() -> unit {
     ()
   } in
-  let t766 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret765()
+  let t777 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret776()
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret767(retv768: string) -> string {
-    retv768
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret778(retv779: string) -> string {
+    retv779
   } in
-  let t769 = @runtime(core.int32_to_string)(self/5) in
-  jump ret767(t769)
+  let t780 = @runtime(core.int32_to_string)(self/6) in
+  jump ret778(t780)
 }
 
-fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  join ret770(retv771: string) -> string {
-    retv771
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  join ret781(retv782: string) -> string {
+    retv782
   } in
-  let t772 = @runtime(core.bool_to_string)(self/36) in
-  jump ret770(t772)
+  let t783 = @runtime(core.bool_to_string)(self/37) in
+  jump ret781(t783)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/205: Ref[Vec[Binding]]) -> Vec[Binding] {
-  join ret773(retv774: Vec[Binding]) -> Vec[Binding] {
-    retv774
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  join ret784(retv785: bool) -> bool {
+    retv785
   } in
-  let t775 = @intrinsic(ref.get)(self/205) in
-  jump ret773(t775)
+  let t786 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret784(t786)
 }
 
-fn inherent#Vec#Vec[T]#len__T_SExpr(self/134: Vec[SExpr]) -> int32 {
-  join ret776(retv777: int32) -> int32 {
-    retv777
+fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/210: Ref[Vec[Binding]]) -> Vec[Binding] {
+  join ret787(retv788: Vec[Binding]) -> Vec[Binding] {
+    retv788
   } in
-  let t778 = @intrinsic(vec.len)(self/134) in
-  jump ret776(t778)
+  let t789 = @intrinsic(ref.get)(self/210) in
+  jump ret787(t789)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_Binding(self/125: Vec[Binding], elem/126: Binding) -> Vec[Binding] {
-  join ret779(retv780: Vec[Binding]) -> Vec[Binding] {
-    retv780
+fn inherent#Vec#Vec[T]#len__T_SExpr(self/139: Vec[SExpr]) -> int {
+  join ret790(retv791: int) -> int {
+    retv791
   } in
-  let result/127 = inherent#Vec#Vec[T]#new__T_Binding() in
-  let index/128 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit781() -> Vec[Binding] {
+  let t792 = @intrinsic(vec.len)(self/139) in
+  jump ret790(t792)
+}
+
+fn inherent#Vec#Vec[T]#pushed__T_Binding(self/130: Vec[Binding], elem/131: Binding) -> Vec[Binding] {
+  join ret793(retv794: Vec[Binding]) -> Vec[Binding] {
+    retv794
+  } in
+  let result/132 = inherent#Vec#Vec[T]#new__T_Binding() in
+  let index/133 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit795() -> Vec[Binding] {
     let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_Binding(result/127, elem/126) in
-    jump ret779(result/127)
+    let _wild37 = inherent#Vec#Vec[T]#push__T_Binding(result/132, elem/131) in
+    jump ret793(result/132)
   } in
   joinrec {
-    join loop782() -> Vec[Binding] {
-      let t783 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-      let t784 = inherent#Vec#Vec[T]#len__T_Binding(self/125) in
-      let t785 = (t783 < t784) in
-      if t785 {
-        let t786 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t787 = inherent#Vec#Vec[T]#get__T_Binding(self/125, t786) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_Binding(result/127, t787) in
-        let t788 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t789 = (t788 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int32(index/128, t789) in
-        jump loop782()
+    join loop796() -> Vec[Binding] {
+      let t797 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+      let t798 = inherent#Vec#Vec[T]#len__T_Binding(self/130) in
+      let t799 = (t797 < t798) in
+      if t799 {
+        let t800 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t801 = inherent#Vec#Vec[T]#get__T_Binding(self/130, t800) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_Binding(result/132, t801) in
+        let t802 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t803 = (t802 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/133, t803) in
+        jump loop796()
       } else {
-        jump exit781()
+        jump exit795()
       }
     } in
   } in
-  jump loop782()
+  jump loop796()
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Binding](self/206: Ref[Vec[Binding]], value/207: Vec[Binding]) -> unit {
-  join ret790() -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Binding](self/211: Ref[Vec[Binding]], value/212: Vec[Binding]) -> unit {
+  join ret804() -> unit {
     ()
   } in
-  let t791 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret790()
+  let t805 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret804()
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  join ret792(retv793: Vec[string]) -> Vec[string] {
-    retv793
+  join ret806(retv807: Vec[string]) -> Vec[string] {
+    retv807
   } in
-  let t794 = @intrinsic(vec.new)() in
-  jump ret792(t794)
+  let t808 = @intrinsic(vec.new)() in
+  jump ret806(t808)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[string](value/204: Vec[string]) -> Ref[Vec[string]] {
-  join ret795(retv796: Ref[Vec[string]]) -> Ref[Vec[string]] {
-    retv796
+fn inherent#Ref#Ref[T]#new__T_Vec[string](value/209: Vec[string]) -> Ref[Vec[string]] {
+  join ret809(retv810: Ref[Vec[string]]) -> Ref[Vec[string]] {
+    retv810
   } in
-  let t797 = @intrinsic(ref.new)(value/204) in
-  jump ret795(t797)
+  let t811 = @intrinsic(ref.new)(value/209) in
+  jump ret809(t811)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[string](self/205: Ref[Vec[string]]) -> Vec[string] {
-  join ret798(retv799: Vec[string]) -> Vec[string] {
-    retv799
+fn inherent#Ref#Ref[T]#get__T_Vec[string](self/210: Ref[Vec[string]]) -> Vec[string] {
+  join ret812(retv813: Vec[string]) -> Vec[string] {
+    retv813
   } in
-  let t800 = @intrinsic(ref.get)(self/205) in
-  jump ret798(t800)
+  let t814 = @intrinsic(ref.get)(self/210) in
+  jump ret812(t814)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_string(self/125: Vec[string], elem/126: string) -> Vec[string] {
-  join ret801(retv802: Vec[string]) -> Vec[string] {
-    retv802
+fn inherent#Vec#Vec[T]#pushed__T_string(self/130: Vec[string], elem/131: string) -> Vec[string] {
+  join ret815(retv816: Vec[string]) -> Vec[string] {
+    retv816
   } in
-  let result/127 = inherent#Vec#Vec[T]#new__T_string() in
-  let index/128 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit803() -> Vec[string] {
+  let result/132 = inherent#Vec#Vec[T]#new__T_string() in
+  let index/133 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit817() -> Vec[string] {
     let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_string(result/127, elem/126) in
-    jump ret801(result/127)
+    let _wild37 = inherent#Vec#Vec[T]#push__T_string(result/132, elem/131) in
+    jump ret815(result/132)
   } in
   joinrec {
-    join loop804() -> Vec[string] {
-      let t805 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-      let t806 = inherent#Vec#Vec[T]#len__T_string(self/125) in
-      let t807 = (t805 < t806) in
-      if t807 {
-        let t808 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t809 = inherent#Vec#Vec[T]#get__T_string(self/125, t808) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_string(result/127, t809) in
-        let t810 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t811 = (t810 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int32(index/128, t811) in
-        jump loop804()
+    join loop818() -> Vec[string] {
+      let t819 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+      let t820 = inherent#Vec#Vec[T]#len__T_string(self/130) in
+      let t821 = (t819 < t820) in
+      if t821 {
+        let t822 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t823 = inherent#Vec#Vec[T]#get__T_string(self/130, t822) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_string(result/132, t823) in
+        let t824 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t825 = (t824 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/133, t825) in
+        jump loop818()
       } else {
-        jump exit803()
+        jump exit817()
       }
     } in
   } in
-  jump loop804()
+  jump loop818()
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[string](self/206: Ref[Vec[string]], value/207: Vec[string]) -> unit {
-  join ret812() -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[string](self/211: Ref[Vec[string]], value/212: Vec[string]) -> unit {
+  join ret826() -> unit {
     ()
   } in
-  let t813 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret812()
+  let t827 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret826()
 }
 
 fn inherent#Vec#Vec[T]#new__T_Value() -> Vec[Value] {
-  join ret814(retv815: Vec[Value]) -> Vec[Value] {
-    retv815
+  join ret828(retv829: Vec[Value]) -> Vec[Value] {
+    retv829
   } in
-  let t816 = @intrinsic(vec.new)() in
-  jump ret814(t816)
+  let t830 = @intrinsic(vec.new)() in
+  jump ret828(t830)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[Value](value/204: Vec[Value]) -> Ref[Vec[Value]] {
-  join ret817(retv818: Ref[Vec[Value]]) -> Ref[Vec[Value]] {
-    retv818
+fn inherent#Ref#Ref[T]#new__T_Vec[Value](value/209: Vec[Value]) -> Ref[Vec[Value]] {
+  join ret831(retv832: Ref[Vec[Value]]) -> Ref[Vec[Value]] {
+    retv832
   } in
-  let t819 = @intrinsic(ref.new)(value/204) in
-  jump ret817(t819)
+  let t833 = @intrinsic(ref.new)(value/209) in
+  jump ret831(t833)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/205: Ref[Vec[Value]]) -> Vec[Value] {
-  join ret820(retv821: Vec[Value]) -> Vec[Value] {
-    retv821
+fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/210: Ref[Vec[Value]]) -> Vec[Value] {
+  join ret834(retv835: Vec[Value]) -> Vec[Value] {
+    retv835
   } in
-  let t822 = @intrinsic(ref.get)(self/205) in
-  jump ret820(t822)
+  let t836 = @intrinsic(ref.get)(self/210) in
+  jump ret834(t836)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_Value(self/125: Vec[Value], elem/126: Value) -> Vec[Value] {
-  join ret823(retv824: Vec[Value]) -> Vec[Value] {
-    retv824
+fn inherent#Vec#Vec[T]#pushed__T_Value(self/130: Vec[Value], elem/131: Value) -> Vec[Value] {
+  join ret837(retv838: Vec[Value]) -> Vec[Value] {
+    retv838
   } in
-  let result/127 = inherent#Vec#Vec[T]#new__T_Value() in
-  let index/128 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit825() -> Vec[Value] {
+  let result/132 = inherent#Vec#Vec[T]#new__T_Value() in
+  let index/133 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit839() -> Vec[Value] {
     let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_Value(result/127, elem/126) in
-    jump ret823(result/127)
+    let _wild37 = inherent#Vec#Vec[T]#push__T_Value(result/132, elem/131) in
+    jump ret837(result/132)
   } in
   joinrec {
-    join loop826() -> Vec[Value] {
-      let t827 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-      let t828 = inherent#Vec#Vec[T]#len__T_Value(self/125) in
-      let t829 = (t827 < t828) in
-      if t829 {
-        let t830 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t831 = inherent#Vec#Vec[T]#get__T_Value(self/125, t830) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_Value(result/127, t831) in
-        let t832 = inherent#Ref#Ref[T]#get__T_int32(index/128) in
-        let t833 = (t832 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int32(index/128, t833) in
-        jump loop826()
+    join loop840() -> Vec[Value] {
+      let t841 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+      let t842 = inherent#Vec#Vec[T]#len__T_Value(self/130) in
+      let t843 = (t841 < t842) in
+      if t843 {
+        let t844 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t845 = inherent#Vec#Vec[T]#get__T_Value(self/130, t844) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_Value(result/132, t845) in
+        let t846 = inherent#Ref#Ref[T]#get__T_int(index/133) in
+        let t847 = (t846 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/133, t847) in
+        jump loop840()
       } else {
-        jump exit825()
+        jump exit839()
       }
     } in
   } in
-  jump loop826()
+  jump loop840()
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/206: Ref[Vec[Value]], value/207: Vec[Value]) -> unit {
-  join ret834() -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/211: Ref[Vec[Value]], value/212: Vec[Value]) -> unit {
+  join ret848() -> unit {
     ()
   } in
-  let t835 = @intrinsic(ref.set)(self/206, value/207) in
-  jump ret834()
+  let t849 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret848()
 }
 
-fn inherent#Vec#Vec[T]#len__T_Value(self/134: Vec[Value]) -> int32 {
-  join ret836(retv837: int32) -> int32 {
-    retv837
+fn inherent#Vec#Vec[T]#len__T_Value(self/139: Vec[Value]) -> int {
+  join ret850(retv851: int) -> int {
+    retv851
   } in
-  let t838 = @intrinsic(vec.len)(self/134) in
-  jump ret836(t838)
+  let t852 = @intrinsic(vec.len)(self/139) in
+  jump ret850(t852)
 }
 
-fn trait_impl#Eq#bool#eq(self/51: bool, other/52: bool) -> bool {
-  join ret839(retv840: bool) -> bool {
-    retv840
+fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
+  join ret853(retv854: bool) -> bool {
+    retv854
   } in
-  let t841 = @intrinsic(eq.primitive)(self/51, other/52) in
-  jump ret839(t841)
+  let t855 = @intrinsic(eq.primitive)(self/53, other/54) in
+  jump ret853(t855)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/204: Vec[Binding]) -> Ref[Vec[Binding]] {
-  join ret842(retv843: Ref[Vec[Binding]]) -> Ref[Vec[Binding]] {
-    retv843
-  } in
-  let t844 = @intrinsic(ref.new)(value/204) in
-  jump ret842(t844)
-}
-
-fn inherent#Vec#Vec[T]#len__T_string(self/134: Vec[string]) -> int32 {
-  join ret845(retv846: int32) -> int32 {
-    retv846
-  } in
-  let t847 = @intrinsic(vec.len)(self/134) in
-  jump ret845(t847)
-}
-
-fn inherent#Vec#Vec[T]#new__T_Binding() -> Vec[Binding] {
-  join ret848(retv849: Vec[Binding]) -> Vec[Binding] {
-    retv849
-  } in
-  let t850 = @intrinsic(vec.new)() in
-  jump ret848(t850)
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret851() -> unit {
-    ()
-  } in
-  let t852 = trait_impl#ToString#string#to_string(value/1) in
-  let t853 = @runtime(core.string_println)(t852) in
-  jump ret851()
-}
-
-fn inherent#Vec#Vec[T]#push__T_Token(self/123: Vec[Token], elem/124: Token) -> unit {
-  join ret854() -> unit {
-    ()
-  } in
-  let t855 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret854()
-}
-
-fn inherent#Vec#Vec[T]#get__T_Token(self/129: Vec[Token], index/130: int32) -> Token {
-  join ret856(retv857: Token) -> Token {
+fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/209: Vec[Binding]) -> Ref[Vec[Binding]] {
+  join ret856(retv857: Ref[Vec[Binding]]) -> Ref[Vec[Binding]] {
     retv857
   } in
-  let t858 = @intrinsic(vec.get)(self/129, index/130) in
+  let t858 = @intrinsic(ref.new)(value/209) in
   jump ret856(t858)
 }
 
-fn inherent#Vec#Vec[T]#push__T_SExpr(self/123: Vec[SExpr], elem/124: SExpr) -> unit {
-  join ret859() -> unit {
+fn inherent#Vec#Vec[T]#len__T_string(self/139: Vec[string]) -> int {
+  join ret859(retv860: int) -> int {
+    retv860
+  } in
+  let t861 = @intrinsic(vec.len)(self/139) in
+  jump ret859(t861)
+}
+
+fn inherent#Vec#Vec[T]#new__T_Binding() -> Vec[Binding] {
+  join ret862(retv863: Vec[Binding]) -> Vec[Binding] {
+    retv863
+  } in
+  let t864 = @intrinsic(vec.new)() in
+  jump ret862(t864)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret865() -> unit {
     ()
   } in
-  let t860 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret859()
+  let t866 = trait_impl#ToString#string#to_string(value/1) in
+  let t867 = @runtime(core.string_println)(t866) in
+  jump ret865()
 }
 
-fn inherent#Vec#Vec[T]#get__T_SExpr(self/129: Vec[SExpr], index/130: int32) -> SExpr {
-  join ret861(retv862: SExpr) -> SExpr {
-    retv862
-  } in
-  let t863 = @intrinsic(vec.get)(self/129, index/130) in
-  jump ret861(t863)
-}
-
-fn inherent#Vec#Vec[T]#push__T_Binding(self/123: Vec[Binding], elem/124: Binding) -> unit {
-  join ret864() -> unit {
+fn inherent#Vec#Vec[T]#push__T_Token(self/128: Vec[Token], elem/129: Token) -> unit {
+  join ret868() -> unit {
     ()
   } in
-  let t865 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret864()
+  let t869 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret868()
 }
 
-fn inherent#Vec#Vec[T]#get__T_Binding(self/129: Vec[Binding], index/130: int32) -> Binding {
-  join ret866(retv867: Binding) -> Binding {
-    retv867
+fn inherent#Vec#Vec[T]#get__T_Token(self/134: Vec[Token], index/135: int) -> Token {
+  join ret870(retv871: Token) -> Token {
+    retv871
   } in
-  let t868 = @intrinsic(vec.get)(self/129, index/130) in
-  jump ret866(t868)
+  let t872 = @intrinsic(vec.get)(self/134, index/135) in
+  jump ret870(t872)
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/123: Vec[string], elem/124: string) -> unit {
-  join ret869() -> unit {
+fn inherent#Vec#Vec[T]#push__T_SExpr(self/128: Vec[SExpr], elem/129: SExpr) -> unit {
+  join ret873() -> unit {
     ()
   } in
-  let t870 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret869()
+  let t874 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret873()
 }
 
-fn inherent#Vec#Vec[T]#get__T_string(self/129: Vec[string], index/130: int32) -> string {
-  join ret871(retv872: string) -> string {
-    retv872
+fn inherent#Vec#Vec[T]#get__T_SExpr(self/134: Vec[SExpr], index/135: int) -> SExpr {
+  join ret875(retv876: SExpr) -> SExpr {
+    retv876
   } in
-  let t873 = @intrinsic(vec.get)(self/129, index/130) in
-  jump ret871(t873)
+  let t877 = @intrinsic(vec.get)(self/134, index/135) in
+  jump ret875(t877)
 }
 
-fn inherent#Vec#Vec[T]#push__T_Value(self/123: Vec[Value], elem/124: Value) -> unit {
-  join ret874() -> unit {
+fn inherent#Vec#Vec[T]#push__T_Binding(self/128: Vec[Binding], elem/129: Binding) -> unit {
+  join ret878() -> unit {
     ()
   } in
-  let t875 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret874()
+  let t879 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret878()
 }
 
-fn inherent#Vec#Vec[T]#get__T_Value(self/129: Vec[Value], index/130: int32) -> Value {
-  join ret876(retv877: Value) -> Value {
-    retv877
+fn inherent#Vec#Vec[T]#get__T_Binding(self/134: Vec[Binding], index/135: int) -> Binding {
+  join ret880(retv881: Binding) -> Binding {
+    retv881
   } in
-  let t878 = @intrinsic(vec.get)(self/129, index/130) in
-  jump ret876(t878)
+  let t882 = @intrinsic(vec.get)(self/134, index/135) in
+  jump ret880(t882)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret879(retv880: string) -> string {
-    retv880
+fn inherent#Vec#Vec[T]#push__T_string(self/128: Vec[string], elem/129: string) -> unit {
+  join ret883() -> unit {
+    ()
   } in
-  jump ret879(self/37)
+  let t884 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret883()
 }
 
-fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
-  join ret881(retv882: uint64) -> uint64 {
-    retv882
+fn inherent#Vec#Vec[T]#get__T_string(self/134: Vec[string], index/135: int) -> string {
+  join ret885(retv886: string) -> string {
+    retv886
   } in
-  let t883 = @runtime(core.int32_hash)(self/83) in
-  jump ret881(t883)
+  let t887 = @intrinsic(vec.get)(self/134, index/135) in
+  jump ret885(t887)
 }
 
-fn trait_impl#Hash#bool#hash(self/78: bool) -> uint64 {
-  join ret884(retv885: uint64) -> uint64 {
-    retv885
+fn inherent#Vec#Vec[T]#push__T_Value(self/128: Vec[Value], elem/129: Value) -> unit {
+  join ret888() -> unit {
+    ()
   } in
-  join k886(jp887: uint64) -> uint64 {
-    jump ret884(jp887)
+  let t889 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret888()
+}
+
+fn inherent#Vec#Vec[T]#get__T_Value(self/134: Vec[Value], index/135: int) -> Value {
+  join ret890(retv891: Value) -> Value {
+    retv891
   } in
-  if self/78 {
-    jump k886(1)
+  let t892 = @intrinsic(vec.get)(self/134, index/135) in
+  jump ret890(t892)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret893(retv894: string) -> string {
+    retv894
+  } in
+  jump ret893(self/38)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  join ret895(retv896: uint64) -> uint64 {
+    retv896
+  } in
+  let t897 = @runtime(core.int_hash)(self/85) in
+  jump ret895(t897)
+}
+
+fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
+  join ret898(retv899: uint64) -> uint64 {
+    retv899
+  } in
+  join k900(jp901: uint64) -> uint64 {
+    jump ret898(jp901)
+  } in
+  if self/82 {
+    jump k900(1)
   } else {
-    jump k886(0)
+    jump k900(0)
   }
 }
 
-fn trait_impl#Hash#string#hash(self/79: string) -> uint64 {
-  join ret888(retv889: uint64) -> uint64 {
-    retv889
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  join ret902(retv903: uint64) -> uint64 {
+    retv903
   } in
-  let t890 = @runtime(core.string_hash)(self/79) in
-  jump ret888(t890)
+  let t904 = @runtime(core.int32_hash)(self/88) in
+  jump ret902(t904)
+}
+
+fn trait_impl#Hash#string#hash(self/83: string) -> uint64 {
+  join ret905(retv906: uint64) -> uint64 {
+    retv906
+  } in
+  let t907 = @runtime(core.string_hash)(self/83) in
+  jump ret905(t907)
 }

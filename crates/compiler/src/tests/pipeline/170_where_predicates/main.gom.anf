@@ -1,96 +1,96 @@
 fn trait_impl#Render#Vec[int32]#render(self/0: Vec[int32]) -> string {
-  join ret66(retv67: string) -> string {
-    retv67
+  join ret69(retv70: string) -> string {
+    retv70
   } in
-  let t68 = inherent#Vec#Vec[T]#len__T_int32(self/0) in
-  let t69 = inherent#int32#int32#to_string(t68) in
-  let t70 = ("items=" + t69) in
-  jump ret66(t70)
+  let t71 = inherent#Vec#Vec[T]#len__T_int32(self/0) in
+  let t72 = inherent#int#int#to_string(t71) in
+  let t73 = ("items=" + t72) in
+  jump ret69(t73)
 }
 
 fn main() -> unit {
-  join ret71() -> unit {
+  join ret74() -> unit {
     ()
   } in
   let values/5 = @intrinsic(vec.new)() in
-  let _wild61 = inherent#Vec#Vec[T]#push__T_int32(values/5, 1) in
-  let _wild62 = inherent#Vec#Vec[T]#push__T_int32(values/5, 2) in
-  let t72 = render_all__T_int32(values/5) in
-  let _wild63 = println__T_string(t72) in
+  let _wild64 = inherent#Vec#Vec[T]#push__T_int32(values/5, 1) in
+  let _wild65 = inherent#Vec#Vec[T]#push__T_int32(values/5, 2) in
+  let t75 = render_all__T_int32(values/5) in
+  let _wild66 = println__T_string(t75) in
   let text/6 = same__T_string__U_string("equal") in
-  let _wild64 = println__T_string(text/6) in
-  let t73 = Wrap__int32 { value: 7 } in
-  let t74 = require__T_Wrap[int32](t73) in
-  let _wild65 = println__T_string(t74) in
-  jump ret71()
+  let _wild67 = println__T_string(text/6) in
+  let selected/7 = Wrap__int32 { value: 7 } in
+  let t76 = require__T_Wrap[int32](selected/7) in
+  let _wild68 = println__T_string(t76) in
+  jump ret74()
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/134: Vec[int32]) -> int32 {
-  join ret75(retv76: int32) -> int32 {
-    retv76
+fn inherent#Vec#Vec[T]#len__T_int32(self/139: Vec[int32]) -> int {
+  join ret77(retv78: int) -> int {
+    retv78
   } in
-  let t77 = @intrinsic(vec.len)(self/134) in
-  jump ret75(t77)
+  let t79 = @intrinsic(vec.len)(self/139) in
+  jump ret77(t79)
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret78(retv79: string) -> string {
-    retv79
+fn inherent#int#int#to_string(self/5: int) -> string {
+  join ret80(retv81: string) -> string {
+    retv81
   } in
-  let t80 = @runtime(core.int32_to_string)(self/5) in
-  jump ret78(t80)
+  let t82 = @runtime(core.int_to_string)(self/5) in
+  jump ret80(t82)
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/123: Vec[int32], elem/124: int32) -> unit {
-  join ret81() -> unit {
-    ()
-  } in
-  let t82 = @intrinsic(vec.push)(self/123, elem/124) in
-  jump ret81()
-}
-
-fn println__T_string(value/1: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_int32(self/128: Vec[int32], elem/129: int32) -> unit {
   join ret83() -> unit {
     ()
   } in
-  let t84 = trait_impl#ToString#string#to_string(value/1) in
-  let t85 = @runtime(core.string_println)(t84) in
+  let t84 = @intrinsic(vec.push)(self/128, elem/129) in
   jump ret83()
 }
 
-fn render_all__T_int32(values/2: Vec[int32]) -> string {
-  join ret86(retv87: string) -> string {
-    retv87
+fn println__T_string(value/1: string) -> unit {
+  join ret85() -> unit {
+    ()
   } in
-  let t88 = trait_impl#Render#Vec[int32]#render(values/2) in
-  jump ret86(t88)
+  let t86 = trait_impl#ToString#string#to_string(value/1) in
+  let t87 = @runtime(core.string_println)(t86) in
+  jump ret85()
+}
+
+fn render_all__T_int32(values/2: Vec[int32]) -> string {
+  join ret88(retv89: string) -> string {
+    retv89
+  } in
+  let t90 = trait_impl#Render#Vec[int32]#render(values/2) in
+  jump ret88(t90)
 }
 
 fn same__T_string__U_string(value/3: string) -> string {
-  join ret89(retv90: string) -> string {
-    retv90
-  } in
-  jump ret89(value/3)
-}
-
-fn require__T_Wrap[int32](value/4: Wrap__int32) -> string {
   join ret91(retv92: string) -> string {
     retv92
   } in
-  let t93 = trait_impl#Selected#Wrap__int32#selected(value/4) in
-  jump ret91(t93)
+  jump ret91(value/3)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret94(retv95: string) -> string {
-    retv95
+fn require__T_Wrap[int32](value/4: Wrap__int32) -> string {
+  join ret93(retv94: string) -> string {
+    retv94
   } in
-  jump ret94(self/37)
+  let t95 = trait_impl#Selected#Wrap__int32#selected(value/4) in
+  jump ret93(t95)
 }
 
-fn trait_impl#Selected#Wrap__int32#selected(self/1: Wrap__int32) -> string {
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
   join ret96(retv97: string) -> string {
     retv97
   } in
-  jump ret96("selected")
+  jump ret96(self/38)
+}
+
+fn trait_impl#Selected#Wrap__int32#selected(self/1: Wrap__int32) -> string {
+  join ret98(retv99: string) -> string {
+    retv99
+  } in
+  jump ret98("selected")
 }

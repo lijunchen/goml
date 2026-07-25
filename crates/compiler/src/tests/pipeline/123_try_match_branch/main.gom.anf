@@ -1,167 +1,167 @@
 fn read_left(ok/0: bool) -> Result__int32__string {
-  join ret77(retv78: Result__int32__string) -> Result__int32__string {
-    retv78
+  join ret80(retv81: Result__int32__string) -> Result__int32__string {
+    retv81
   } in
-  join k79(jp80: Result__int32__string) -> Result__int32__string {
-    jump ret77(jp80)
+  join k82(jp83: Result__int32__string) -> Result__int32__string {
+    jump ret80(jp83)
   } in
   if ok/0 {
-    let t81 = Result__int32__string::Ok(10) in
-    jump k79(t81)
+    let t84 = Result__int32__string::Ok(10) in
+    jump k82(t84)
   } else {
-    let t82 = Result__int32__string::Err("left failed") in
-    jump k79(t82)
+    let t85 = Result__int32__string::Err("left failed") in
+    jump k82(t85)
   }
 }
 
 fn read_right(ok/1: bool) -> Result__int32__string {
-  join ret83(retv84: Result__int32__string) -> Result__int32__string {
-    retv84
+  join ret86(retv87: Result__int32__string) -> Result__int32__string {
+    retv87
   } in
-  join k85(jp86: Result__int32__string) -> Result__int32__string {
-    jump ret83(jp86)
+  join k88(jp89: Result__int32__string) -> Result__int32__string {
+    jump ret86(jp89)
   } in
   if ok/1 {
-    let t87 = Result__int32__string::Ok(20) in
-    jump k85(t87)
+    let t90 = Result__int32__string::Ok(20) in
+    jump k88(t90)
   } else {
-    let t88 = Result__int32__string::Err("right failed") in
-    jump k85(t88)
+    let t91 = Result__int32__string::Err("right failed") in
+    jump k88(t91)
   }
 }
 
 fn choose(choice/2: Choice) -> Result__int32__string {
-  join ret89(retv90: Result__int32__string) -> Result__int32__string {
-    retv90
+  join ret92(retv93: Result__int32__string) -> Result__int32__string {
+    retv93
   } in
-  join k91(jp92: int32) -> Result__int32__string {
-    let value/6 = jp92 in
-    let t93 = Result__int32__string::Ok(value/6) in
-    jump ret89(t93)
+  join k94(jp95: int32) -> Result__int32__string {
+    let value/6 = jp95 in
+    let t96 = Result__int32__string::Ok(value/6) in
+    jump ret92(t96)
   } in
   match choice/2 {
     Tag_0 => {
-      let x61 = Choice::Left._0(choice/2) in
-      let ok/3 = x61 in
-      let mtmp64 = read_left(ok/3) in
-      join k94(jp95: int32) -> Result__int32__string {
-        jump k91(jp95)
-      } in
-      match mtmp64 {
-        Tag_0 => {
-          let x65 = Result__int32__string::Ok._0(mtmp64) in
-          let try_value/21 = x65 in
-          jump k94(try_value/21)
-        },
-        Tag_1 => {
-          let x66 = Result__int32__string::Err._0(mtmp64) in
-          let try_residual/21 = x66 in
-          let t96 = Result__int32__string::Err(try_residual/21) in
-          jump ret89(t96)
-        },
-      }
-    },
-    Tag_1 => {
-      let x62 = Choice::Right._0(choice/2) in
-      let ok/4 = x62 in
-      let mtmp67 = read_right(ok/4) in
+      let x64 = Choice::Left._0(choice/2) in
+      let ok/3 = x64 in
+      let mtmp67 = read_left(ok/3) in
       join k97(jp98: int32) -> Result__int32__string {
-        let t99 = (jp98 + 1) in
-        jump k91(t99)
+        jump k94(jp98)
       } in
       match mtmp67 {
         Tag_0 => {
           let x68 = Result__int32__string::Ok._0(mtmp67) in
-          let try_value/25 = x68 in
-          jump k97(try_value/25)
+          let try_value/21 = x68 in
+          jump k97(try_value/21)
         },
         Tag_1 => {
           let x69 = Result__int32__string::Err._0(mtmp67) in
-          let try_residual/25 = x69 in
-          let t100 = Result__int32__string::Err(try_residual/25) in
-          jump ret89(t100)
+          let try_residual/21 = x69 in
+          let t99 = Result__int32__string::Err(try_residual/21) in
+          jump ret92(t99)
+        },
+      }
+    },
+    Tag_1 => {
+      let x65 = Choice::Right._0(choice/2) in
+      let ok/4 = x65 in
+      let mtmp70 = read_right(ok/4) in
+      join k100(jp101: int32) -> Result__int32__string {
+        let t102 = (jp101 + 1) in
+        jump k94(t102)
+      } in
+      match mtmp70 {
+        Tag_0 => {
+          let x71 = Result__int32__string::Ok._0(mtmp70) in
+          let try_value/25 = x71 in
+          jump k100(try_value/25)
+        },
+        Tag_1 => {
+          let x72 = Result__int32__string::Err._0(mtmp70) in
+          let try_residual/25 = x72 in
+          let t103 = Result__int32__string::Err(try_residual/25) in
+          jump ret92(t103)
         },
       }
     },
     Tag_2 => {
-      let x63 = Choice::Keep._0(choice/2) in
-      let value/5 = x63 in
-      jump k91(value/5)
+      let x66 = Choice::Keep._0(choice/2) in
+      let value/5 = x66 in
+      jump k94(value/5)
     },
   }
 }
 
 fn show(res/7: Result__int32__string) -> string {
-  join ret101(retv102: string) -> string {
-    retv102
+  join ret104(retv105: string) -> string {
+    retv105
   } in
-  join k103(jp104: string) -> string {
-    jump ret101(jp104)
+  join k106(jp107: string) -> string {
+    jump ret104(jp107)
   } in
   match res/7 {
     Tag_0 => {
-      let x70 = Result__int32__string::Ok._0(res/7) in
-      let value/8 = x70 in
-      let t105 = inherent#int32#int32#to_string(value/8) in
-      let t106 = ("ok " + t105) in
-      jump k103(t106)
+      let x73 = Result__int32__string::Ok._0(res/7) in
+      let value/8 = x73 in
+      let t108 = inherent#int32#int32#to_string(value/8) in
+      let t109 = ("ok " + t108) in
+      jump k106(t109)
     },
     Tag_1 => {
-      let x71 = Result__int32__string::Err._0(res/7) in
-      let err/9 = x71 in
-      let t107 = ("err " + err/9) in
-      jump k103(t107)
+      let x74 = Result__int32__string::Err._0(res/7) in
+      let err/9 = x74 in
+      let t110 = ("err " + err/9) in
+      jump k106(t110)
     },
   }
 }
 
 fn main() -> unit {
-  join ret108() -> unit {
+  join ret111() -> unit {
     ()
   } in
-  let t109 = Choice::Left(true) in
-  let t110 = choose(t109) in
-  let t111 = show(t110) in
-  let _wild72 = println__T_string(t111) in
-  let t112 = Choice::Right(true) in
+  let t112 = Choice::Left(true) in
   let t113 = choose(t112) in
   let t114 = show(t113) in
-  let _wild73 = println__T_string(t114) in
-  let t115 = Choice::Keep(5) in
+  let _wild75 = println__T_string(t114) in
+  let t115 = Choice::Right(true) in
   let t116 = choose(t115) in
   let t117 = show(t116) in
-  let _wild74 = println__T_string(t117) in
-  let t118 = Choice::Left(false) in
+  let _wild76 = println__T_string(t117) in
+  let t118 = Choice::Keep(5) in
   let t119 = choose(t118) in
   let t120 = show(t119) in
-  let _wild75 = println__T_string(t120) in
-  let t121 = Choice::Right(false) in
+  let _wild77 = println__T_string(t120) in
+  let t121 = Choice::Left(false) in
   let t122 = choose(t121) in
   let t123 = show(t122) in
-  let _wild76 = println__T_string(t123) in
-  jump ret108()
+  let _wild78 = println__T_string(t123) in
+  let t124 = Choice::Right(false) in
+  let t125 = choose(t124) in
+  let t126 = show(t125) in
+  let _wild79 = println__T_string(t126) in
+  jump ret111()
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret124(retv125: string) -> string {
-    retv125
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret127(retv128: string) -> string {
+    retv128
   } in
-  let t126 = @runtime(core.int32_to_string)(self/5) in
-  jump ret124(t126)
+  let t129 = @runtime(core.int32_to_string)(self/6) in
+  jump ret127(t129)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret127() -> unit {
+  join ret130() -> unit {
     ()
   } in
-  let t128 = trait_impl#ToString#string#to_string(value/1) in
-  let t129 = @runtime(core.string_println)(t128) in
-  jump ret127()
+  let t131 = trait_impl#ToString#string#to_string(value/1) in
+  let t132 = @runtime(core.string_println)(t131) in
+  jump ret130()
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret130(retv131: string) -> string {
-    retv131
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret133(retv134: string) -> string {
+    retv134
   } in
-  jump ret130(self/37)
+  jump ret133(self/38)
 }

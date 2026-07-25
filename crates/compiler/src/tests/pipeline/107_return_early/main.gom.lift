@@ -1,10 +1,10 @@
 fn early(x/0: int32) -> int32 {
-  let _wild61 = if (x/0 < 0) {
+  let _wild64 = if (x/0 < 0) {
       return 0
   } else {
       ()
   } in
-  let _wild62 = if trait_impl#Eq#int32#eq(x/0, 0) {
+  let _wild65 = if trait_impl#Eq#int32#eq(x/0, 0) {
       return 1
   } else {
       ()
@@ -18,33 +18,33 @@ fn closure_early(x/1: int32) -> int32 {
 }
 
 fn unit_ret(flag/4: bool) -> unit {
-  let _wild64 = if flag/4 {
+  let _wild67 = if flag/4 {
       return
   } else {
       ()
   } in
-  let mtmp65 = println__T_string("after") in
+  let mtmp68 = println__T_string("after") in
   ()
 }
 
 fn main() -> unit {
-  let mtmp66 = print__T_string("e-1: ") in
-  let mtmp67 = println__T_int32(early((-1))) in
-  let mtmp68 = print__T_string("e0: ") in
-  let mtmp69 = println__T_int32(early(0)) in
-  let mtmp70 = print__T_string("e3: ") in
-  let mtmp71 = println__T_int32(early(3)) in
-  let mtmp72 = print__T_string("c7: ") in
-  let mtmp73 = println__T_int32(closure_early(7)) in
-  let mtmp74 = print__T_string("c2: ") in
-  let mtmp75 = println__T_int32(closure_early(2)) in
-  let _wild76 = unit_ret(true) in
-  let _wild77 = unit_ret(false) in
+  let mtmp69 = print__T_string("e-1: ") in
+  let mtmp70 = println__T_int32(early(-1)) in
+  let mtmp71 = print__T_string("e0: ") in
+  let mtmp72 = println__T_int32(early(0)) in
+  let mtmp73 = print__T_string("e3: ") in
+  let mtmp74 = println__T_int32(early(3)) in
+  let mtmp75 = print__T_string("c7: ") in
+  let mtmp76 = println__T_int32(closure_early(7)) in
+  let mtmp77 = print__T_string("c2: ") in
+  let mtmp78 = println__T_int32(closure_early(2)) in
+  let _wild79 = unit_ret(true) in
+  let _wild80 = unit_ret(false) in
   ()
 }
 
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  @intrinsic(eq.primitive)(self/61, other/62)
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  @intrinsic(eq.primitive)(self/65, other/66)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -59,16 +59,16 @@ fn println__T_int32(value/1: int32) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  @runtime(core.int32_to_string)(self/41)
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  @runtime(core.int32_to_string)(self/43)
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env78: closure_env_f_0, y/2: int32) -> int32 {
-  let _wild63 = if (y/2 > 5) {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env81: closure_env_f_0, y/2: int32) -> int32 {
+  let _wild66 = if (y/2 > 5) {
       return y/2
   } else {
       ()

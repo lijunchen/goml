@@ -29,72 +29,72 @@ const (
 )
 
 func light_code(light__0 Light) int32 {
-    var retv65 int32
-    var jp67 int32
+    var retv68 int32
+    var jp70 int32
     switch light__0 {
     case Light_Red:
-        jp67 = 10
+        jp70 = 10
     case Yellow:
-        jp67 = 20
+        jp70 = 20
     case Green:
-        jp67 = 30
+        jp70 = 30
     default:
         panic("non-exhaustive match")
     }
-    retv65 = jp67
-    return retv65
+    retv68 = jp70
+    return retv68
 }
 
 func paint_code(paint__1 Paint) int32 {
-    var retv69 int32
-    var jp71 int32
+    var retv72 int32
+    var jp74 int32
     switch paint__1 {
     case Paint_Red:
-        jp71 = 1
+        jp74 = 1
     case Blue:
-        jp71 = 2
+        jp74 = 2
     default:
         panic("non-exhaustive match")
     }
-    retv69 = jp71
-    return retv69
+    retv72 = jp74
+    return retv72
 }
 
 func main0() struct{} {
     var light__2 Light = Light_Red
     var paint__3 Paint = Paint_Red
-    var t73 int32 = light_code(light__2)
-    var t74 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t73)
-    println__T_string(t74)
-    var t75 int32 = paint_code(paint__3)
-    var t76 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t75)
-    println__T_string(t76)
-    var t77 int32 = light_code(Green)
-    var t78 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t77)
-    println__T_string(t78)
-    var t79 int32 = paint_code(Blue)
-    var t80 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t79)
-    println__T_string(t80)
+    var t76 int32 = light_code(light__2)
+    var t77 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t76)
+    println__T_string(t77)
+    var t78 int32 = paint_code(paint__3)
+    var t79 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t78)
+    println__T_string(t79)
+    var t80 int32 = light_code(Green)
+    var t81 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t80)
+    println__T_string(t81)
+    var t82 int32 = paint_code(Blue)
+    var t83 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t82)
+    println__T_string(t83)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t83 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t83)
+    var t86 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t86)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
-    var retv86 string
-    var t87 string = _goml_runtime_core_int32_to_string(self__5)
-    retv86 = t87
-    return retv86
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
+    var retv89 string
+    var t90 string = _goml_runtime_core_int32_to_string(self__6)
+    retv89 = t90
+    return retv89
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv89 string
-    retv89 = self__37
-    return retv89
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv92 string
+    retv92 = self__38
+    return retv92
 }
 
 func main() {

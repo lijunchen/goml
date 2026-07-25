@@ -114,7 +114,7 @@ file main.gom
         ch/17 == '(' || ch/17 == ')' || ch/17 == ' '
     }
     
-    fn lex_atom(local/1/18: string, local/1/19: int32) -> (Token, int32) {
+    fn lex_atom(local/1/18: string, local/1/19: int) -> (Token, int) {
         let local/1/20 = source/18.len();
         let local/1/21 = Ref::new("");
         let local/1/22 = Ref::new(start/19);
@@ -194,7 +194,7 @@ file main.gom
         }
     }
     
-    fn parse_list(local/1/45: Vec[Token], local/1/46: int32) -> (Vec[SExpr], int32) {
+    fn parse_list(local/1/45: Vec[Token], local/1/46: int) -> (Vec[SExpr], int) {
         let local/1/47: Vec[SExpr] = Vec::new();
         let local/1/48 = Ref::new(acc/47);
         let local/1/49 = Ref::new(start/46);
@@ -217,7 +217,7 @@ file main.gom
         (exprs/48.get(), i/49.get())
     }
     
-    fn parse_expr(local/1/53: Vec[Token], local/1/54: int32) -> (SExpr, int32) {
+    fn parse_expr(local/1/53: Vec[Token], local/1/54: int) -> (SExpr, int) {
         match tokens/53[start/54] {
             ctor(def/1/0::v0) => {
                   let (local/1/55, local/1/56) = def/1/14(tokens/53, start/54 + 1);
@@ -353,7 +353,7 @@ file main.gom
         }
     }
     
-    fn eval_begin(local/1/100: Vec[SExpr], local/1/101: int32, local/1/102: Vec[Binding], local/1/103: Ref[Vec[Binding]]) -> Value {
+    fn eval_begin(local/1/100: Vec[SExpr], local/1/101: int, local/1/102: Vec[Binding], local/1/103: Ref[Vec[Binding]]) -> Value {
         let local/1/104 = Ref::new(start/101);
         let local/1/105 = Ref::new(ctor(def/1/3::v3));
         let _ = while i/104.get() < items/100.len() {
@@ -384,7 +384,7 @@ file main.gom
         params/110.get()
     }
     
-    fn eval_args(local/1/112: Vec[SExpr], local/1/113: int32, local/1/114: Vec[Binding], local/1/115: Ref[Vec[Binding]]) -> Vec[Value] {
+    fn eval_args(local/1/112: Vec[SExpr], local/1/113: int, local/1/114: Vec[Binding], local/1/115: Ref[Vec[Binding]]) -> Vec[Value] {
         let local/1/116 = Ref::new(start/113);
         let local/1/117: Vec[Value] = Vec::new();
         let local/1/118 = Ref::new(acc/117);

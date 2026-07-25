@@ -52,30 +52,30 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var retv64 string
-    var t65 int32 = self__0.x
-    var t66 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t65)
-    var t67 string = "Point(" + t66
-    var t68 string = t67 + ","
-    var t69 int32 = self__0.y
-    var t70 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t69)
-    var t71 string = t68 + t70
-    var t72 string = t71 + ")"
-    retv64 = t72
-    return retv64
+    var retv67 string
+    var t68 int32 = self__0.x
+    var t69 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t68)
+    var t70 string = "Point(" + t69
+    var t71 string = t70 + ","
+    var t72 int32 = self__0.y
+    var t73 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t72)
+    var t74 string = t71 + t73
+    var t75 string = t74 + ")"
+    retv67 = t75
+    return retv67
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_show(self__1 Flag) string {
-    var retv74 string
-    var t77 bool = self__1.value
-    var jp76 string
-    if t77 {
-        jp76 = "Flag(true)"
+    var retv77 string
+    var t80 bool = self__1.value
+    var jp79 string
+    if t80 {
+        jp79 = "Flag(true)"
     } else {
-        jp76 = "Flag(false)"
+        jp79 = "Flag(false)"
     }
-    retv74 = jp76
-    return retv74
+    retv77 = jp79
+    return retv77
 }
 
 func main0() struct{} {
@@ -94,30 +94,30 @@ func main0() struct{} {
         data: t__3,
         vtable: dyn__Display__vtable__Flag(),
     }
-    var t79 string = dp__4.vtable.show(dp__4.data)
-    println__T_string(t79)
-    var t80 string = dt__5.vtable.show(dt__5.data)
-    println__T_string(t80)
+    var t82 string = dp__4.vtable.show(dp__4.data)
+    println__T_string(t82)
+    var t83 string = dt__5.vtable.show(dt__5.data)
+    println__T_string(t83)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
-    var retv82 string
-    var t83 string = _goml_runtime_core_int32_to_string(self__5)
-    retv82 = t83
-    return retv82
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
+    var retv85 string
+    var t86 string = _goml_runtime_core_int32_to_string(self__6)
+    retv85 = t86
+    return retv85
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t85 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t85)
+    var t88 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t88)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv88 string
-    retv88 = self__37
-    return retv88
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv91 string
+    retv91 = self__38
+    return retv91
 }
 
 func main() {

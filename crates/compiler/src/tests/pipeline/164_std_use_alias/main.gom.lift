@@ -2,7 +2,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_uint8() }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int32) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
   std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
 }
 
@@ -14,11 +14,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> 
   std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int32 {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
   inherent#Vec#Vec[T]#len__T_uint8(std::bytes::Bytes.values(self/3))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int32 {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
   inherent#Vec#Vec[T]#capacity__T_uint8(std::bytes::Bytes.values(self/4))
 }
 
@@ -26,11 +26,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Byt
   inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int32) -> uint8 {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
   inherent#Vec#Vec[T]#get__T_uint8(std::bytes::Bytes.values(self/6), index/7)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int32, value/10: uint8) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
   inherent#Vec#Vec[T]#set__T_uint8(std::bytes::Bytes.values(self/8), index/9, value/10)
 }
 
@@ -42,11 +42,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) 
   inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int32) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
   inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int32) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
   inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
 }
 
@@ -54,7 +54,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes
   inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int32, end/21: int32) -> Slice[uint8] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
   inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
 }
 
@@ -171,81 +171,81 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/122: int32) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/122)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/127: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/127)
 }
 
-fn inherent#string#string#to_bytes(self/23: string) -> Vec[uint8] {
-  @runtime(core.string_to_bytes)(self/23)
+fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/24)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/134: Vec[uint8]) -> int32 {
-  @intrinsic(vec.len)(self/134)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/139: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/139)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/135: Vec[uint8]) -> int32 {
-  @intrinsic(vec.capacity)(self/135)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/140: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/140)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/136: Vec[uint8]) -> bool {
-  trait_impl#Eq#int32#eq(inherent#Vec#Vec[T]#len__T_uint8(self/136), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/141: Vec[uint8]) -> bool {
+  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/141), 0)
 }
 
-fn inherent#Vec#Vec[T]#get__T_uint8(self/129: Vec[uint8], index/130: int32) -> uint8 {
-  @intrinsic(vec.get)(self/129, index/130)
+fn inherent#Vec#Vec[T]#get__T_uint8(self/134: Vec[uint8], index/135: int) -> uint8 {
+  @intrinsic(vec.get)(self/134, index/135)
 }
 
-fn inherent#Vec#Vec[T]#set__T_uint8(self/131: Vec[uint8], index/132: int32, elem/133: uint8) -> unit {
-  @intrinsic(vec.set)(self/131, index/132, elem/133)
+fn inherent#Vec#Vec[T]#set__T_uint8(self/136: Vec[uint8], index/137: int, elem/138: uint8) -> unit {
+  @intrinsic(vec.set)(self/136, index/137, elem/138)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/123: Vec[uint8], elem/124: uint8) -> unit {
-  @intrinsic(vec.push)(self/123, elem/124)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/128: Vec[uint8], elem/129: uint8) -> unit {
+  @intrinsic(vec.push)(self/128, elem/129)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/144: Vec[uint8]) -> Option__uint8 {
-  let len/145 = inherent#Vec#Vec[T]#len__T_uint8(self/144) in
-  if trait_impl#Eq#int32#eq(len/145, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/149: Vec[uint8]) -> Option__uint8 {
+  let len/150 = inherent#Vec#Vec[T]#len__T_uint8(self/149) in
+  if trait_impl#Eq#int#eq(len/150, 0) {
       Option__uint8::None
   } else {
-      let value/146 = inherent#Vec#Vec[T]#get__T_uint8(self/144, (len/145 - 1)) in
-      let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/144, (len/145 - 1)) in
-      Option__uint8::Some(value/146)
+      let value/151 = inherent#Vec#Vec[T]#get__T_uint8(self/149, (len/150 - 1)) in
+      let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/149, (len/150 - 1)) in
+      Option__uint8::Some(value/151)
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/137: Vec[uint8], additional/138: int32) -> unit {
-  @intrinsic(vec.reserve)(self/137, additional/138)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/142: Vec[uint8], additional/143: int) -> unit {
+  @intrinsic(vec.reserve)(self/142, additional/143)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/139: Vec[uint8], len/140: int32) -> unit {
-  @intrinsic(vec.truncate)(self/139, len/140)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/144: Vec[uint8], len/145: int) -> unit {
+  @intrinsic(vec.truncate)(self/144, len/145)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/141: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/141, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/146: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/146, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/172: Vec[uint8], start/173: int32, end/174: int32) -> Slice[uint8] {
-  @intrinsic(slice.new)(self/172, start/173, end/174)
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/177: Vec[uint8], start/178: int, end/179: int) -> Slice[uint8] {
+  @intrinsic(slice.new)(self/177, start/178, end/179)
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
   @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/134: Vec[string]) -> int32 {
-  @intrinsic(vec.len)(self/134)
+fn inherent#Vec#Vec[T]#len__T_string(self/139: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/139)
 }
 
-fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  @runtime(core.bool_to_string)(self/36)
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
 }
 
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  @intrinsic(eq.primitive)(self/61, other/62)
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  @intrinsic(eq.primitive)(self/59, other/60)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

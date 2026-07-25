@@ -1,14 +1,14 @@
 package main;
 fn main() -> unit {
-    let i = Ref::new(0i32);
-    let total = Ref::new(0i32);
-    while if i.get() == 0i32 {
+    let i = Ref::new(0);
+    let total = Ref::new(0);
+    while if i.get() == 0 {
         {
-            i.set(1i32);
+            i.set(1);
             true
         }
     } else {
-        if i.get() < 4i32 {
+        if i.get() < 4 {
             {
                 true
             }
@@ -20,9 +20,9 @@ fn main() -> unit {
     } {
         {
             total.set(total.get() + i.get());
-            if i.get() == 1i32 {
+            if i.get() == 1 {
                 {
-                    i.set(2i32);
+                    i.set(2);
                     continue
                 }
             } else {
@@ -30,27 +30,27 @@ fn main() -> unit {
                     ()
                 }
             };
-            i.set(i.get() + 1i32);
+            i.set(i.get() + 1);
         }
     };
     println(total.get());
-    let j = Ref::new(0i32);
-    let total2 = Ref::new(0i32);
+    let j = Ref::new(0);
+    let total2 = Ref::new(0);
     while match j.get() {
-        0i32 => {
-              j.set(1i32);
+        0 => {
+              j.set(1);
               true
           },
-        1i32 => {
-              j.set(2i32);
+        1 => {
+              j.set(2);
               true
           },
-        2i32 => true,
+        2 => true,
         _ => false,
     } {
         {
             total2.set(total2.get() + j.get());
-            if j.get() == 2i32 {
+            if j.get() == 2 {
                 {
                     break;
                 }

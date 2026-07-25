@@ -12,6 +12,9 @@ fn render(value/1: Boxed) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((render : (Boxed) -> string)(Boxed::One(to_dyn[Display]{int32}(42))));
-    (println : (string) -> unit)((render : (Boxed) -> string)(Boxed::Pair(to_dyn[Display]{int32}(7), to_dyn[Display]{int32}(9))));
+    let one/5: int32 = 42;
+    let left/6: int32 = 7;
+    let right/7: int32 = 9;
+    (println : (string) -> unit)((render : (Boxed) -> string)(Boxed::One(to_dyn[Display]{int32}((one/5 : int32)))));
+    (println : (string) -> unit)((render : (Boxed) -> string)(Boxed::Pair(to_dyn[Display]{int32}((left/6 : int32)), to_dyn[Display]{int32}((right/7 : int32)))));
 }

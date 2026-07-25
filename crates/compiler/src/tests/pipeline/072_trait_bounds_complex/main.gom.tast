@@ -127,9 +127,16 @@ fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
 }
 
 fn main() -> unit {
-    let _ : unit = (println : (string) -> unit)((full_report : (int32, int32, int32) -> string)(7, 10, 32));
+    let tag/45: int32 = 7;
+    let left/46: int32 = 10;
+    let right/47: int32 = 32;
+    let sum_tag/48: int32 = 0;
+    let first/49: int32 = 1;
+    let second/50: int32 = 2;
+    let third/51: int32 = 3;
+    let _ : unit = (println : (string) -> unit)((full_report : (int32, int32, int32) -> string)((tag/45 : int32), (left/46 : int32), (right/47 : int32)));
     let _ : unit = (println : (string) -> unit)((full_report : (Boxed, Boxed, Boxed) -> string)(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 }));
-    let _ : unit = (println : (string) -> unit)((sum_and_tag : (int32, int32, int32, int32) -> string)(0, 1, 2, 3));
+    let _ : unit = (println : (string) -> unit)((sum_and_tag : (int32, int32, int32, int32) -> string)((sum_tag/48 : int32), (first/49 : int32), (second/50 : int32), (third/51 : int32)));
     let _ : unit = (println : (string) -> unit)((sum_and_tag : (Boxed, Boxed, Boxed, Boxed) -> string)(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
     ()
 }

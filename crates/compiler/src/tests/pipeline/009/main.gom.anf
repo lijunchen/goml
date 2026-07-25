@@ -1,54 +1,54 @@
 fn test(t/0: T) -> unit {
-  join ret67() -> unit {
+  join ret70() -> unit {
     ()
   } in
-  join k68() -> unit {
-    jump ret67()
+  join k71() -> unit {
+    jump ret70()
   } in
   match t/0 {
     Tag_0 => {
-      let t69 = inherent#int32#int32#to_string(1) in
-      let t70 = println__T_string(t69) in
-      jump k68()
+      let t72 = inherent#int#int#to_string(1) in
+      let t73 = println__T_string(t72) in
+      jump k71()
     },
     Tag_1 => {
-      let x61 = T::B._0(t/0) in
-      let x62 = T::B._1(t/0) in
-      join k71() -> unit {
-        jump k68()
+      let x64 = T::B._0(t/0) in
+      let x65 = T::B._1(t/0) in
+      join k74() -> unit {
+        jump k71()
       } in
-      match x62 {
+      match x65 {
         true => {
-          join k72() -> unit {
-            jump k71()
+          join k75() -> unit {
+            jump k74()
           } in
-          match x61 {
+          match x64 {
             true => {
-              let t73 = inherent#int32#int32#to_string(4) in
-              let t74 = println__T_string(t73) in
-              jump k72()
+              let t76 = inherent#int#int#to_string(4) in
+              let t77 = println__T_string(t76) in
+              jump k75()
             },
             false => {
-              let t75 = inherent#int32#int32#to_string(3) in
-              let t76 = println__T_string(t75) in
-              jump k72()
+              let t78 = inherent#int#int#to_string(3) in
+              let t79 = println__T_string(t78) in
+              jump k75()
             },
           }
         },
         false => {
-          join k77() -> unit {
-            jump k71()
+          join k80() -> unit {
+            jump k74()
           } in
-          match x61 {
+          match x64 {
             true => {
-              let t78 = inherent#int32#int32#to_string(4) in
-              let t79 = println__T_string(t78) in
-              jump k77()
+              let t81 = inherent#int#int#to_string(4) in
+              let t82 = println__T_string(t81) in
+              jump k80()
             },
             false => {
-              let t80 = inherent#int32#int32#to_string(2) in
-              let t81 = println__T_string(t80) in
-              jump k77()
+              let t83 = inherent#int#int#to_string(2) in
+              let t84 = println__T_string(t83) in
+              jump k80()
             },
           }
         },
@@ -58,39 +58,39 @@ fn test(t/0: T) -> unit {
 }
 
 fn main() -> unit {
-  join ret82() -> unit {
+  join ret85() -> unit {
     ()
   } in
-  let t83 = T::B(true, true) in
-  let mtmp63 = test(t83) in
-  let t84 = T::B(false, true) in
-  let mtmp64 = test(t84) in
-  let t85 = T::B(false, false) in
-  let mtmp65 = test(t85) in
-  let mtmp66 = test(Tag_0) in
-  jump ret82()
+  let t86 = T::B(true, true) in
+  let mtmp66 = test(t86) in
+  let t87 = T::B(false, true) in
+  let mtmp67 = test(t87) in
+  let t88 = T::B(false, false) in
+  let mtmp68 = test(t88) in
+  let mtmp69 = test(Tag_0) in
+  jump ret85()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret86() -> unit {
+  join ret89() -> unit {
     ()
   } in
-  let t87 = trait_impl#ToString#string#to_string(value/1) in
-  let t88 = @runtime(core.string_println)(t87) in
-  jump ret86()
+  let t90 = trait_impl#ToString#string#to_string(value/1) in
+  let t91 = @runtime(core.string_println)(t90) in
+  jump ret89()
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret89(retv90: string) -> string {
-    retv90
-  } in
-  let t91 = @runtime(core.int32_to_string)(self/5) in
-  jump ret89(t91)
-}
-
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+fn inherent#int#int#to_string(self/5: int) -> string {
   join ret92(retv93: string) -> string {
     retv93
   } in
-  jump ret92(self/37)
+  let t94 = @runtime(core.int_to_string)(self/5) in
+  jump ret92(t94)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret95(retv96: string) -> string {
+    retv96
+  } in
+  jump ret95(self/38)
 }

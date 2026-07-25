@@ -52,13 +52,13 @@ fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suf
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
   let next/19 = (inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/18)) + 1) in
-  let mtmp61 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/18), next/19) in
+  let mtmp64 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/18), next/19) in
   ()
 }
 
 fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
   let next/22 = (inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/20)) + delta/21) in
-  let mtmp62 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/20), next/22) in
+  let mtmp65 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/20), next/22) in
   next/22
 }
 
@@ -76,7 +76,7 @@ fn make_renderer(tag/29: string) -> (dyn Display) -> string {
 }
 
 fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
-  let mtmp63 = dyn_call[Display::tick](x/31) in
+  let mtmp66 = dyn_call[Display::tick](x/31) in
   ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + inherent#int32#int32#to_string(dyn_call[Display::bump](x/31, delta/32)))
 }
 
@@ -97,9 +97,9 @@ fn main() -> unit {
   let s1/46 = call_via_closure(df2/41, "*") in
   let s2/47 = ((render_star/43(dp1/38) + "|") + render_angle/44(df1/40)) in
   let v/48 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
-  let _wild64 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dp1/38) in
-  let _wild65 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, df1/40) in
-  let _wild66 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dc/42) in
+  let _wild67 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dp1/38) in
+  let _wild68 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, df1/40) in
+  let _wild69 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dc/42) in
   let vlen/49 = inherent#Vec#Vec[T]#len__T_dynDisplay(v/48) in
   let delta/50 = match vlen/49 {
     2 => {
@@ -107,70 +107,74 @@ fn main() -> unit {
     },
     _ => 5,
   } in
-  let mtmp67 = println__T_string(s0/45) in
-  let mtmp68 = println__T_string(s1/46) in
-  let mtmp69 = println__T_string(s2/47) in
+  let mtmp70 = println__T_string(s0/45) in
+  let mtmp71 = println__T_string(s1/46) in
+  let mtmp72 = println__T_string(s2/47) in
   let i/51 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let mtmp72 = while (inherent#Ref#Ref[T]#get__T_int32(i/51) < 3) {
+  let mtmp75 = while (inherent#Ref#Ref[T]#get__T_int32(i/51) < 3) {
       let line/52 = bump_and_show(dc/42, delta/50) in
-      let _wild70 = println__T_string(line/52) in
-      let mtmp71 = inherent#Ref#Ref[T]#set__T_int32(i/51, (inherent#Ref#Ref[T]#get__T_int32(i/51) + 1)) in
+      let _wild73 = println__T_string(line/52) in
+      let mtmp74 = inherent#Ref#Ref[T]#set__T_int32(i/51, (inherent#Ref#Ref[T]#get__T_int32(i/51) + 1)) in
       ()
   } in
-  let mtmp73 = println__T_string(("len:" + inherent#int32#int32#to_string(vlen/49))) in
-  let mtmp74 = println__T_string(("delta:" + inherent#int32#int32#to_string(delta/50))) in
+  let mtmp76 = println__T_string(("len:" + inherent#int#int#to_string(vlen/49))) in
+  let mtmp77 = println__T_string(("delta:" + inherent#int32#int32#to_string(delta/50))) in
   ()
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  @runtime(core.int32_to_string)(self/5)
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/205)
+fn inherent#Ref#Ref[T]#get__T_int32(self/210: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/210)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
-  @intrinsic(ref.set)(self/206, value/207)
+fn inherent#Ref#Ref[T]#set__T_int32(self/211: Ref[int32], value/212: int32) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/204)
+fn inherent#Ref#Ref[T]#new__T_int32(value/209: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/209)
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/123: Vec[dyn Display], elem/124: dyn Display) -> unit {
-  @intrinsic(vec.push)(self/123, elem/124)
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/128: Vec[dyn Display], elem/129: dyn Display) -> unit {
+  @intrinsic(vec.push)(self/128, elem/129)
 }
 
-fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/134: Vec[dyn Display]) -> int32 {
-  @intrinsic(vec.len)(self/134)
+fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/139: Vec[dyn Display]) -> int {
+  @intrinsic(vec.len)(self/139)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn inherent#int#int#to_string(self/5: int) -> string {
+  @runtime(core.int_to_string)(self/5)
 }
 
-fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
-  @intrinsic(eq.primitive)(self/61, other/62)
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
-fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
-  @runtime(core.int32_hash)(self/83)
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  @intrinsic(eq.primitive)(self/65, other/66)
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env75: closure_env_f_0, v/26: dyn Display, t/27: string) -> string {
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/88)
+}
+
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env78: closure_env_f_0, v/26: dyn Display, t/27: string) -> string {
   dyn_call[Display::show_with](v/26, t/27, t/27)
 }
 
-fn inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(env76: closure_env_make_renderer_1, x/30: dyn Display) -> string {
-  let tag/29 = closure_env_make_renderer_1.tag_0(env76) in
+fn inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(env79: closure_env_make_renderer_1, x/30: dyn Display) -> string {
+  let tag/29 = closure_env_make_renderer_1.tag_0(env79) in
   dyn_call[Display::show_with](x/30, tag/29, tag/29)
 }

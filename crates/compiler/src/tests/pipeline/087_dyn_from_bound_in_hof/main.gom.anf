@@ -1,59 +1,60 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret63(retv64: string) -> string {
-    retv64
+  join ret66(retv67: string) -> string {
+    retv67
   } in
-  let t65 = inherent#int32#int32#to_string(self/0) in
-  jump ret63(t65)
+  let t68 = inherent#int32#int32#to_string(self/0) in
+  jump ret66(t68)
 }
 
 fn main() -> unit {
-  join ret66() -> unit {
+  join ret69() -> unit {
     ()
   } in
-  let f/3 = mk_renderer__T_int32(42) in
-  let t67 = f/3() in
-  let _wild61 = println__T_string(t67) in
-  jump ret66()
+  let value/3 = 42 in
+  let f/4 = mk_renderer__T_int32(value/3) in
+  let t70 = f/4() in
+  let _wild64 = println__T_string(t70) in
+  jump ret69()
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
-  } in
-  let t70 = @runtime(core.int32_to_string)(self/5) in
-  jump ret68(t70)
-}
-
-fn mk_renderer__T_int32(x/1: int32) -> () -> string {
-  join ret71(retv72: () -> string) -> () -> string {
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret71(retv72: string) -> string {
     retv72
   } in
-  let d/2 = to_dyn[Display]{int32}(x/1) in
-  let t73 = closure_env_mk_renderer_T_int32_0 { d_0: d/2 } in
+  let t73 = @runtime(core.int32_to_string)(self/6) in
   jump ret71(t73)
 }
 
+fn mk_renderer__T_int32(x/1: int32) -> () -> string {
+  join ret74(retv75: () -> string) -> () -> string {
+    retv75
+  } in
+  let d/2 = to_dyn[Display]{int32}(x/1) in
+  let t76 = closure_env_mk_renderer_T_int32_0 { d_0: d/2 } in
+  jump ret74(t76)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret74() -> unit {
+  join ret77() -> unit {
     ()
   } in
-  let t75 = trait_impl#ToString#string#to_string(value/1) in
-  let t76 = @runtime(core.string_println)(t75) in
-  jump ret74()
+  let t78 = trait_impl#ToString#string#to_string(value/1) in
+  let t79 = @runtime(core.string_println)(t78) in
+  jump ret77()
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret77(retv78: string) -> string {
-    retv78
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret80(retv81: string) -> string {
+    retv81
   } in
-  jump ret77(self/37)
+  jump ret80(self/38)
 }
 
-fn inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(env62: closure_env_mk_renderer_T_int32_0) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+fn inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(env65: closure_env_mk_renderer_T_int32_0) -> string {
+  join ret82(retv83: string) -> string {
+    retv83
   } in
-  let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env62) in
-  let t81 = dyn_call[Display::show](d/2) in
-  jump ret79(t81)
+  let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env65) in
+  let t84 = dyn_call[Display::show](d/2) in
+  jump ret82(t84)
 }

@@ -24,85 +24,85 @@ const (
 )
 
 func show_int(x__1 Light__int32) string {
-    var retv64 string
-    var jp66 string
+    var retv67 string
+    var jp69 string
     switch x__1 {
     case Light__int32_Red:
-        jp66 = "ri"
+        jp69 = "ri"
     case Light__int32_Green:
-        jp66 = "gi"
+        jp69 = "gi"
     default:
         panic("non-exhaustive match")
     }
-    retv64 = jp66
-    return retv64
+    retv67 = jp69
+    return retv67
 }
 
 func show_string(x__2 Light__string) string {
-    var retv68 string
-    var jp70 string
+    var retv71 string
+    var jp73 string
     switch x__2 {
     case Light__string_Red:
-        jp70 = "rs"
+        jp73 = "rs"
     case Light__string_Green:
-        jp70 = "gs"
+        jp73 = "gs"
     default:
         panic("non-exhaustive match")
     }
-    retv68 = jp70
-    return retv68
+    retv71 = jp73
+    return retv71
 }
 
 func main0() struct{} {
-    var t72 Light__int32 = flip__T_int32(Light__int32_Red)
-    var t73 string = show_int(t72)
-    println__T_string(t73)
-    var t74 Light__string = flip__T_string(Light__string_Green)
-    var t75 string = show_string(t74)
-    println__T_string(t75)
+    var t75 Light__int32 = flip__T_int32(Light__int32_Red)
+    var t76 string = show_int(t75)
+    println__T_string(t76)
+    var t77 Light__string = flip__T_string(Light__string_Green)
+    var t78 string = show_string(t77)
+    println__T_string(t78)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t77 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t77)
+    var t80 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t80)
     return struct{}{}
 }
 
 func flip__T_int32(x__0 Light__int32) Light__int32 {
-    var retv80 Light__int32
-    var jp82 Light__int32
+    var retv83 Light__int32
+    var jp85 Light__int32
     switch x__0 {
     case Light__int32_Red:
-        jp82 = Light__int32_Green
+        jp85 = Light__int32_Green
     case Light__int32_Green:
-        jp82 = Light__int32_Red
+        jp85 = Light__int32_Red
     default:
         panic("non-exhaustive match")
     }
-    retv80 = jp82
-    return retv80
+    retv83 = jp85
+    return retv83
 }
 
 func flip__T_string(x__0 Light__string) Light__string {
-    var retv84 Light__string
-    var jp86 Light__string
+    var retv87 Light__string
+    var jp89 Light__string
     switch x__0 {
     case Light__string_Red:
-        jp86 = Light__string_Green
+        jp89 = Light__string_Green
     case Light__string_Green:
-        jp86 = Light__string_Red
+        jp89 = Light__string_Red
     default:
         panic("non-exhaustive match")
     }
-    retv84 = jp86
-    return retv84
+    retv87 = jp89
+    return retv87
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv88 string
-    retv88 = self__37
-    return retv88
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv91 string
+    retv91 = self__38
+    return retv91
 }
 
 func main() {

@@ -41,8 +41,9 @@ fn main() -> unit {
     string_println(describe(Box {
             value: 5
         }));
-    string_println(Child::[int32]::parent(Box {
-            value: 6
-        }).to_string())
+    let value: Box[int32] = Box {
+        value: 6
+    };
+    string_println(Child::[int32]::parent(value).to_string())
 }
 

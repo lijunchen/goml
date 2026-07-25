@@ -1,118 +1,118 @@
 fn match_int(n/0: int32) -> int32 {
-  join ret68(retv69: int32) -> int32 {
-    retv69
+  join ret71(retv72: int32) -> int32 {
+    retv72
   } in
-  join k70(jp71: int32) -> int32 {
-    jump ret68(jp71)
+  join k73(jp74: int32) -> int32 {
+    jump ret71(jp74)
   } in
   match n/0 {
     0 => {
-      jump k70(10)
+      jump k73(10)
     },
     1 => {
-      jump k70(20)
+      jump k73(20)
     },
     _ => {
-      jump k70(30)
+      jump k73(30)
     },
   }
 }
 
 fn wildcard_first(n/1: int32) -> int32 {
-  join ret72(retv73: int32) -> int32 {
-    retv73
+  join ret75(retv76: int32) -> int32 {
+    retv76
   } in
-  jump ret72(40)
+  jump ret75(40)
 }
 
 fn wildcard_middle(n/2: int32) -> int32 {
-  join ret74(retv75: int32) -> int32 {
-    retv75
+  join ret77(retv78: int32) -> int32 {
+    retv78
   } in
-  join k76(jp77: int32) -> int32 {
-    jump ret74(jp77)
+  join k79(jp80: int32) -> int32 {
+    jump ret77(jp80)
   } in
   match n/2 {
     2 => {
-      jump k76(90)
+      jump k79(90)
     },
     3 => {
-      jump k76(100)
+      jump k79(100)
     },
     _ => {
-      jump k76(100)
+      jump k79(100)
     },
   }
 }
 
 fn repeated(n/3: int32) -> int32 {
-  join ret78(retv79: int32) -> int32 {
-    retv79
+  join ret81(retv82: int32) -> int32 {
+    retv82
   } in
-  join k80(jp81: int32) -> int32 {
-    jump ret78(jp81)
+  join k83(jp84: int32) -> int32 {
+    jump ret81(jp84)
   } in
   match n/3 {
     1 => {
-      jump k80(60)
+      jump k83(60)
     },
     _ => {
-      jump k80(80)
+      jump k83(80)
     },
   }
 }
 
 fn main() -> unit {
-  join ret82() -> unit {
+  join ret85() -> unit {
     ()
   } in
-  let t83 = match_int(0) in
-  let t84 = inherent#int32#int32#to_string(t83) in
-  let mtmp61 = println__T_string(t84) in
-  let t85 = match_int(5) in
-  let t86 = inherent#int32#int32#to_string(t85) in
-  let mtmp62 = println__T_string(t86) in
-  let t87 = wildcard_first(0) in
-  let t88 = inherent#int32#int32#to_string(t87) in
-  let mtmp63 = println__T_string(t88) in
-  let t89 = wildcard_first(2) in
-  let t90 = inherent#int32#int32#to_string(t89) in
-  let mtmp64 = println__T_string(t90) in
-  let t91 = wildcard_middle(2) in
-  let t92 = inherent#int32#int32#to_string(t91) in
-  let mtmp65 = println__T_string(t92) in
-  let t93 = wildcard_middle(3) in
-  let t94 = inherent#int32#int32#to_string(t93) in
-  let mtmp66 = println__T_string(t94) in
-  let t95 = repeated(1) in
-  let t96 = inherent#int32#int32#to_string(t95) in
-  let mtmp67 = println__T_string(t96) in
-  let t97 = repeated(3) in
-  let t98 = inherent#int32#int32#to_string(t97) in
-  let t99 = println__T_string(t98) in
-  jump ret82()
+  let t86 = match_int(0) in
+  let t87 = inherent#int32#int32#to_string(t86) in
+  let mtmp64 = println__T_string(t87) in
+  let t88 = match_int(5) in
+  let t89 = inherent#int32#int32#to_string(t88) in
+  let mtmp65 = println__T_string(t89) in
+  let t90 = wildcard_first(0) in
+  let t91 = inherent#int32#int32#to_string(t90) in
+  let mtmp66 = println__T_string(t91) in
+  let t92 = wildcard_first(2) in
+  let t93 = inherent#int32#int32#to_string(t92) in
+  let mtmp67 = println__T_string(t93) in
+  let t94 = wildcard_middle(2) in
+  let t95 = inherent#int32#int32#to_string(t94) in
+  let mtmp68 = println__T_string(t95) in
+  let t96 = wildcard_middle(3) in
+  let t97 = inherent#int32#int32#to_string(t96) in
+  let mtmp69 = println__T_string(t97) in
+  let t98 = repeated(1) in
+  let t99 = inherent#int32#int32#to_string(t98) in
+  let mtmp70 = println__T_string(t99) in
+  let t100 = repeated(3) in
+  let t101 = inherent#int32#int32#to_string(t100) in
+  let t102 = println__T_string(t101) in
+  jump ret85()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret100() -> unit {
+  join ret103() -> unit {
     ()
   } in
-  let t101 = trait_impl#ToString#string#to_string(value/1) in
-  let t102 = @runtime(core.string_println)(t101) in
-  jump ret100()
+  let t104 = trait_impl#ToString#string#to_string(value/1) in
+  let t105 = @runtime(core.string_println)(t104) in
+  jump ret103()
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  join ret103(retv104: string) -> string {
-    retv104
-  } in
-  let t105 = @runtime(core.int32_to_string)(self/5) in
-  jump ret103(t105)
-}
-
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
   join ret106(retv107: string) -> string {
     retv107
   } in
-  jump ret106(self/37)
+  let t108 = @runtime(core.int32_to_string)(self/6) in
+  jump ret106(t108)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret109(retv110: string) -> string {
+    retv110
+  } in
+  jump ret109(self/38)
 }

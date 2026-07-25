@@ -18,50 +18,50 @@ type Station struct {
 }
 
 func _goml_m_trait__impl_i_Ready_i_Worker_i_state(self__0 Worker) string {
-    var retv63 string
-    var t64 string = self__0.name
-    var t65 string = t64 + ":ready"
-    retv63 = t65
-    return retv63
+    var retv66 string
+    var t67 string = self__0.name
+    var t68 string = t67 + ":ready"
+    retv66 = t68
+    return retv66
 }
 
 func _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(self__1 Station) Worker {
-    var retv67 Worker
-    var t68 Worker = self__1.worker
-    retv67 = t68
-    return retv67
+    var retv70 Worker
+    var t71 Worker = self__1.worker
+    retv70 = t71
+    return retv70
 }
 
 func main0() struct{} {
-    var t70 Worker = Worker{
+    var t73 Worker = Worker{
         name: "build",
     }
-    var t71 Station = Station{
-        worker: t70,
+    var t74 Station = Station{
+        worker: t73,
     }
-    var t72 string = describe__S_Station__T_Worker(t71)
-    println__T_string(t72)
+    var t75 string = describe__S_Station__T_Worker(t74)
+    println__T_string(t75)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t74 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t74)
+    var t77 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t77)
     return struct{}{}
 }
 
 func describe__S_Station__T_Worker(service__2 Station) string {
-    var retv77 string
-    var t78 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(service__2)
-    var t79 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(t78)
-    retv77 = t79
-    return retv77
+    var retv80 string
+    var t81 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(service__2)
+    var t82 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(t81)
+    retv80 = t82
+    return retv80
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv81 string
-    retv81 = self__37
-    return retv81
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv84 string
+    retv84 = self__38
+    return retv84
 }
 
 func main() {

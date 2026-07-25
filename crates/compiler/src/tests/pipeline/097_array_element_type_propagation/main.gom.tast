@@ -1,10 +1,10 @@
 fn main() -> unit {
     let arr/0: [uint8; 3] = [10, 20, 30];
-    let i/1: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    while (Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) < 3 {
+    let i/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) < 3 {
         {
-            (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((arr/0 : [uint8; 3])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32]))]));
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/1 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) + 1);
+            (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((arr/0 : [uint8; 3])[(Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int]))]));
+            (Ref[int]::set : (Ref[int], int) -> unit)((i/1 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) + 1);
         }
     };
     let floats/2: [float32; 2] = [1.5, 2.5];

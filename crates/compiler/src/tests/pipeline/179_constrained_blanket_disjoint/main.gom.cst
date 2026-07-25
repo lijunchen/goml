@@ -1,4 +1,4 @@
-FILE@0..572
+FILE@0..605
   TRAIT@0..51
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -294,7 +294,7 @@ FILE@0..572
         Whitespace@459..460 "\n"
     RBrace@460..461 "}"
     Whitespace@461..463 "\n\n"
-  FN@463..572
+  FN@463..605
     FnKeyword@463..465 "fn"
     Whitespace@465..466 " "
     Ident@466..470 "main"
@@ -307,7 +307,7 @@ FILE@0..572
     TYPE_UNIT@476..481
       UnitKeyword@476..480 "unit"
       Whitespace@480..481 " "
-    BLOCK@481..572
+    BLOCK@481..605
       LBrace@481..482 "{"
       Whitespace@482..487 "\n    "
       STMT_EXPR@487..533
@@ -348,43 +348,63 @@ FILE@0..572
             RParen@526..527 ")"
         Semi@527..528 ";"
         Whitespace@528..533 "\n    "
-      STMT_EXPR@533..570
-        EXPR_CALL@533..568
-          EXPR_IDENT@533..540
-            PATH@533..540
-              Ident@533..540 "println"
-          ARG_LIST@540..568
-            LParen@540..541 "("
-            ARG@541..567
-              EXPR_CALL@541..567
-                EXPR_BINARY@541..565
-                  EXPR_PAREN@541..559
-                    LParen@541..542 "("
-                    EXPR_STRUCT_LITERAL@542..558
-                      PATH@542..546
-                        Ident@542..545 "Box"
-                        Whitespace@545..546 " "
-                      STRUCT_LITERAL_FIELD_LIST@546..558
-                        LBrace@546..547 "{"
-                        Whitespace@547..548 " "
-                        STRUCT_LITERAL_FIELD@548..557
-                          Ident@548..553 "value"
-                          Colon@553..554 ":"
-                          Whitespace@554..555 " "
-                          EXPR_INT@555..557
-                            Int@555..556 "7"
-                            Whitespace@556..557 " "
-                        RBrace@557..558 "}"
-                    RParen@558..559 ")"
-                  Dot@559..560 "."
-                  EXPR_IDENT@560..565
-                    PATH@560..565
-                      Ident@560..565 "label"
-                ARG_LIST@565..567
-                  LParen@565..566 "("
-                  RParen@566..567 ")"
-            RParen@567..568 ")"
-        Semi@568..569 ";"
-        Whitespace@569..570 "\n"
-      RBrace@570..571 "}"
-      Whitespace@571..572 "\n"
+      STMT_LET@533..579
+        LetKeyword@533..536 "let"
+        Whitespace@536..537 " "
+        PATTERN_VARIABLE@537..542
+          Ident@537..542 "value"
+        Colon@542..543 ":"
+        Whitespace@543..544 " "
+        TYPE_TAPP@544..555
+          PATH@544..547
+            Ident@544..547 "Box"
+          TYPE_PARAM_LIST@547..555
+            LBracket@547..548 "["
+            TYPE_INT32@548..553
+              Int32Keyword@548..553 "int32"
+            RBracket@553..554 "]"
+            Whitespace@554..555 " "
+        Eq@555..556 "="
+        Whitespace@556..557 " "
+        EXPR_STRUCT_LITERAL@557..573
+          PATH@557..561
+            Ident@557..560 "Box"
+            Whitespace@560..561 " "
+          STRUCT_LITERAL_FIELD_LIST@561..573
+            LBrace@561..562 "{"
+            Whitespace@562..563 " "
+            STRUCT_LITERAL_FIELD@563..572
+              Ident@563..568 "value"
+              Colon@568..569 ":"
+              Whitespace@569..570 " "
+              EXPR_INT@570..572
+                Int@570..571 "7"
+                Whitespace@571..572 " "
+            RBrace@572..573 "}"
+        Semi@573..574 ";"
+        Whitespace@574..579 "\n    "
+      STMT_EXPR@579..603
+        EXPR_CALL@579..601
+          EXPR_IDENT@579..586
+            PATH@579..586
+              Ident@579..586 "println"
+          ARG_LIST@586..601
+            LParen@586..587 "("
+            ARG@587..600
+              EXPR_CALL@587..600
+                EXPR_BINARY@587..598
+                  EXPR_IDENT@587..592
+                    PATH@587..592
+                      Ident@587..592 "value"
+                  Dot@592..593 "."
+                  EXPR_IDENT@593..598
+                    PATH@593..598
+                      Ident@593..598 "label"
+                ARG_LIST@598..600
+                  LParen@598..599 "("
+                  RParen@599..600 ")"
+            RParen@600..601 ")"
+        Semi@601..602 ";"
+        Whitespace@602..603 "\n"
+      RBrace@603..604 "}"
+      Whitespace@604..605 "\n"

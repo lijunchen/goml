@@ -109,10 +109,10 @@ fn main() -> unit {
     (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> unit)((v/48 : Vec[dyn Display]), (dp1/38 : dyn Display));
     (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> unit)((v/48 : Vec[dyn Display]), (df1/40 : dyn Display));
     (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> unit)((v/48 : Vec[dyn Display]), (dc/42 : dyn Display));
-    let vlen/49: int32 = (Vec[dyn Display]::len : (Vec[dyn Display]) -> int32)((v/48 : Vec[dyn Display]));
-    let delta/50: int32 = match (vlen/49 : int32) {
+    let vlen/49: int = (Vec[dyn Display]::len : (Vec[dyn Display]) -> int)((v/48 : Vec[dyn Display]));
+    let delta/50: int32 = match (vlen/49 : int) {
         2 => 3,
-        _ : int32 => 5,
+        _ : int => 5,
     };
     let _ : unit = (println : (string) -> unit)((s0/45 : string));
     let _ : unit = (println : (string) -> unit)((s1/46 : string));
@@ -125,7 +125,7 @@ fn main() -> unit {
             let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/51 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/51 : Ref[int32])) + 1);
         }
     };
-    let _ : unit = (println : (string) -> unit)("len:" + (int32::to_string : (int32) -> string)((vlen/49 : int32)));
+    let _ : unit = (println : (string) -> unit)("len:" + (int::to_string : (int) -> string)((vlen/49 : int)));
     let _ : unit = (println : (string) -> unit)("delta:" + (int32::to_string : (int32) -> string)((delta/50 : int32)));
     ()
 }

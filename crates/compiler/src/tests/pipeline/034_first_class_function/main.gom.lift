@@ -25,10 +25,10 @@ fn main() -> unit {
   let composer_closure/18 = closure_env_composer_closure_2 {} in
   let composed_by_closure/19 = inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(composer_closure/18, 5) in
   let printer/20 = println__T_string in
-  let mtmp61 = printer/20(inherent#int32#int32#to_string(composed/9)) in
-  let mtmp62 = printer/20(inherent#int32#int32#to_string(closure_result/12)) in
-  let mtmp63 = printer/20(inherent#int32#int32#to_string(invoked_with_global/16)) in
-  let mtmp64 = printer/20(inherent#int32#int32#to_string(composed_by_closure/19)) in
+  let mtmp64 = printer/20(inherent#int32#int32#to_string(composed/9)) in
+  let mtmp65 = printer/20(inherent#int32#int32#to_string(closure_result/12)) in
+  let mtmp66 = printer/20(inherent#int32#int32#to_string(invoked_with_global/16)) in
+  let mtmp67 = printer/20(inherent#int32#int32#to_string(composed_by_closure/19)) in
   ()
 }
 
@@ -36,22 +36,22 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/5: int32) -> string {
-  @runtime(core.int32_to_string)(self/5)
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
-fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env65: closure_env_closure_apply_0, value/10: int32) -> int32 {
+fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env68: closure_env_closure_apply_0, value/10: int32) -> int32 {
   apply_once(increment, value/10)
 }
 
-fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env66: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
+fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env69: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
   apply_once(func_to_call/13, value/14)
 }
 
-fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env67: closure_env_composer_closure_2, value/17: int32) -> int32 {
+fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env70: closure_env_composer_closure_2, value/17: int32) -> int32 {
   compose(double, increment, value/17)
 }

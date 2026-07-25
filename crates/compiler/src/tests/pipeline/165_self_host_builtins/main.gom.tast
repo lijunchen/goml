@@ -13,7 +13,7 @@ fn show_string(result/2: Result[string, string]) -> string {
 }
 
 fn main() -> unit {
-    (std::io::println : (string) -> unit)((@runtime(core.string_byte_slice) : (string, int32, int32) -> string)("a你好z", 1, 7));
+    (std::io::println : (string) -> unit)((@runtime(core.string_byte_slice) : (string, int, int) -> string)("a你好z", 1, 7));
     (std::io::eprint : (string) -> unit)("");
     (std::io::eprintln : (string) -> unit)("");
     (std::io::println : (string) -> unit)((show_unit : (Result[unit, string]) -> string)((std::fs::create_dir_all : (string) -> Result[unit, string])("goml-self-host/nested")));

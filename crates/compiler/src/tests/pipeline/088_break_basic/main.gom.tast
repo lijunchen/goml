@@ -1,8 +1,8 @@
 fn main() -> unit {
-    let i/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    while (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 10 {
+    let i/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) < 10 {
         {
-            if (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 5 {
+            if (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) == 5 {
                 {
                     break
                 }
@@ -11,8 +11,8 @@ fn main() -> unit {
                     ()
                 }
             };
-            let _ : unit = (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])));
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
+            let _ : unit = (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])));
+            (Ref[int]::set : (Ref[int], int) -> unit)((i/0 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) + 1);
         }
     };
     let _ : unit = (println : (string) -> unit)("done");

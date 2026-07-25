@@ -56,12 +56,12 @@ fn main() -> unit {
     let m1/22: HashMap[Key, int32] = (HashMap[Key, int32]::new : () -> HashMap[Key, int32])();
     (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)((m1/22 : HashMap[Key, int32]), Key::A, 10);
     (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)((m1/22 : HashMap[Key, int32]), Key::B(1), 20);
-    (println : (int32) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int32)((m1/22 : HashMap[Key, int32])));
+    (println : (int) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m1/22 : HashMap[Key, int32])));
     (print_opt_int : (Option[int32]) -> unit)((HashMap[Key, int32]::get : (HashMap[Key, int32], Key) -> Option[int32])((m1/22 : HashMap[Key, int32]), Key::A));
     (println : (bool) -> unit)((HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)((m1/22 : HashMap[Key, int32]), Key::B(1)));
     (HashMap[Key, int32]::remove : (HashMap[Key, int32], Key) -> unit)((m1/22 : HashMap[Key, int32]), Key::B(1));
     (println : (bool) -> unit)((HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)((m1/22 : HashMap[Key, int32]), Key::B(1)));
-    (println : (int32) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int32)((m1/22 : HashMap[Key, int32])));
+    (println : (int) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m1/22 : HashMap[Key, int32])));
     let m2/23: HashMap[Ref[Point], int32] = (HashMap[Ref[Point], int32]::new : () -> HashMap[Ref[Point], int32])();
     let p1/24: Ref[Point] = (Ref[Point]::new : (Point) -> Ref[Point])(Point { x: 1, y: 2 });
     let p2/25: Ref[Point] = (Ref[Point]::new : (Point) -> Ref[Point])(Point { x: 1, y: 2 });

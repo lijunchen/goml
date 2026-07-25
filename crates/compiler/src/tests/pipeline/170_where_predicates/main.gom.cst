@@ -1,4 +1,4 @@
-FILE@0..843
+FILE@0..885
   TRAIT@0..55
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -418,7 +418,7 @@ FILE@0..843
           Whitespace@606..607 "\n"
       RBrace@607..608 "}"
       Whitespace@608..610 "\n\n"
-  FN@610..843
+  FN@610..885
     FnKeyword@610..612 "fn"
     Whitespace@612..613 " "
     Ident@613..617 "main"
@@ -431,7 +431,7 @@ FILE@0..843
     TYPE_UNIT@623..628
       UnitKeyword@623..627 "unit"
       Whitespace@627..628 " "
-    BLOCK@628..843
+    BLOCK@628..885
       LBrace@628..629 "{"
       Whitespace@629..634 "\n    "
       STMT_LET@634..674
@@ -557,39 +557,62 @@ FILE@0..843
             RParen@797..798 ")"
         Semi@798..799 ";"
         Whitespace@799..804 "\n    "
-      STMT_EXPR@804..841
-        EXPR_CALL@804..839
-          EXPR_IDENT@804..811
-            PATH@804..811
-              Ident@804..811 "println"
-          ARG_LIST@811..839
-            LParen@811..812 "("
-            ARG@812..838
-              EXPR_CALL@812..838
-                EXPR_IDENT@812..819
-                  PATH@812..819
-                    Ident@812..819 "require"
-                ARG_LIST@819..838
-                  LParen@819..820 "("
-                  ARG@820..837
-                    EXPR_STRUCT_LITERAL@820..837
-                      PATH@820..825
-                        Ident@820..824 "Wrap"
-                        Whitespace@824..825 " "
-                      STRUCT_LITERAL_FIELD_LIST@825..837
-                        LBrace@825..826 "{"
-                        Whitespace@826..827 " "
-                        STRUCT_LITERAL_FIELD@827..836
-                          Ident@827..832 "value"
-                          Colon@832..833 ":"
-                          Whitespace@833..834 " "
-                          EXPR_INT@834..836
-                            Int@834..835 "7"
-                            Whitespace@835..836 " "
-                        RBrace@836..837 "}"
-                  RParen@837..838 ")"
-            RParen@838..839 ")"
-        Semi@839..840 ";"
-        Whitespace@840..841 "\n"
-      RBrace@841..842 "}"
-      Whitespace@842..843 "\n"
+      STMT_LET@804..855
+        LetKeyword@804..807 "let"
+        Whitespace@807..808 " "
+        PATTERN_VARIABLE@808..816
+          Ident@808..816 "selected"
+        Colon@816..817 ":"
+        Whitespace@817..818 " "
+        TYPE_TAPP@818..830
+          PATH@818..822
+            Ident@818..822 "Wrap"
+          TYPE_PARAM_LIST@822..830
+            LBracket@822..823 "["
+            TYPE_INT32@823..828
+              Int32Keyword@823..828 "int32"
+            RBracket@828..829 "]"
+            Whitespace@829..830 " "
+        Eq@830..831 "="
+        Whitespace@831..832 " "
+        EXPR_STRUCT_LITERAL@832..849
+          PATH@832..837
+            Ident@832..836 "Wrap"
+            Whitespace@836..837 " "
+          STRUCT_LITERAL_FIELD_LIST@837..849
+            LBrace@837..838 "{"
+            Whitespace@838..839 " "
+            STRUCT_LITERAL_FIELD@839..848
+              Ident@839..844 "value"
+              Colon@844..845 ":"
+              Whitespace@845..846 " "
+              EXPR_INT@846..848
+                Int@846..847 "7"
+                Whitespace@847..848 " "
+            RBrace@848..849 "}"
+        Semi@849..850 ";"
+        Whitespace@850..855 "\n    "
+      STMT_EXPR@855..883
+        EXPR_CALL@855..881
+          EXPR_IDENT@855..862
+            PATH@855..862
+              Ident@855..862 "println"
+          ARG_LIST@862..881
+            LParen@862..863 "("
+            ARG@863..880
+              EXPR_CALL@863..880
+                EXPR_IDENT@863..870
+                  PATH@863..870
+                    Ident@863..870 "require"
+                ARG_LIST@870..880
+                  LParen@870..871 "("
+                  ARG@871..879
+                    EXPR_IDENT@871..879
+                      PATH@871..879
+                        Ident@871..879 "selected"
+                  RParen@879..880 ")"
+            RParen@880..881 ")"
+        Semi@881..882 ";"
+        Whitespace@882..883 "\n"
+      RBrace@883..884 "}"
+      Whitespace@884..885 "\n"

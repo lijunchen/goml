@@ -1,52 +1,52 @@
 fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
-  join ret62(retv63: string) -> string {
-    retv63
+  join ret65(retv66: string) -> string {
+    retv66
   } in
-  let t64 = Worker.name(self/0) in
-  let t65 = (t64 + ":ready") in
-  jump ret62(t65)
+  let t67 = Worker.name(self/0) in
+  let t68 = (t67 + ":ready") in
+  jump ret65(t68)
 }
 
 fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
-  join ret66(retv67: Worker) -> Worker {
-    retv67
+  join ret69(retv70: Worker) -> Worker {
+    retv70
   } in
-  let t68 = Station.worker(self/1) in
-  jump ret66(t68)
+  let t71 = Station.worker(self/1) in
+  jump ret69(t71)
 }
 
 fn main() -> unit {
-  join ret69() -> unit {
+  join ret72() -> unit {
     ()
   } in
-  let t70 = Worker { name: "build" } in
-  let t71 = Station { worker: t70 } in
-  let t72 = describe__S_Station__T_Worker(t71) in
-  let _wild61 = println__T_string(t72) in
-  jump ret69()
+  let t73 = Worker { name: "build" } in
+  let t74 = Station { worker: t73 } in
+  let t75 = describe__S_Station__T_Worker(t74) in
+  let _wild64 = println__T_string(t75) in
+  jump ret72()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret73() -> unit {
+  join ret76() -> unit {
     ()
   } in
-  let t74 = trait_impl#ToString#string#to_string(value/1) in
-  let t75 = @runtime(core.string_println)(t74) in
-  jump ret73()
+  let t77 = trait_impl#ToString#string#to_string(value/1) in
+  let t78 = @runtime(core.string_println)(t77) in
+  jump ret76()
 }
 
 fn describe__S_Station__T_Worker(service/2: Station) -> string {
-  join ret76(retv77: string) -> string {
-    retv77
+  join ret79(retv80: string) -> string {
+    retv80
   } in
-  let t78 = trait_impl#Service#[Worker]@Station#get(service/2) in
-  let t79 = trait_impl#Ready#Worker#state(t78) in
-  jump ret76(t79)
+  let t81 = trait_impl#Service#[Worker]@Station#get(service/2) in
+  let t82 = trait_impl#Ready#Worker#state(t81) in
+  jump ret79(t82)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  join ret80(retv81: string) -> string {
-    retv81
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret83(retv84: string) -> string {
+    retv84
   } in
-  jump ret80(self/37)
+  jump ret83(self/38)
 }

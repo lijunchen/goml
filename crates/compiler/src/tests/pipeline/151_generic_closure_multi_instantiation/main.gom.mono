@@ -1,12 +1,12 @@
 fn main() -> unit {
-  let int_pairer/2 = make_pairer__T_int32(7) in
+  let int_pairer/2 = make_pairer__T_int(7) in
   let string_pairer/3 = make_pairer__T_string("ok") in
-  let _wild61 = println__T_string(int_pairer/2("a")) in
-  let _wild62 = println__T_string(string_pairer/3("b")) in
+  let _wild64 = println__T_string(int_pairer/2("a")) in
+  let _wild65 = println__T_string(string_pairer/3("b")) in
 }
 
-fn make_pairer__T_int32(x/0: int32) -> (string) -> string {
-  |tag/1| ((tag/1 + ":") + trait_impl#ToString#int32#to_string(x/0))
+fn make_pairer__T_int(x/0: int) -> (string) -> string {
+  |tag/1| ((tag/1 + ":") + trait_impl#ToString#int#to_string(x/0))
 }
 
 fn make_pairer__T_string(x/0: string) -> (string) -> string {
@@ -17,10 +17,10 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  @runtime(core.int32_to_string)(self/41)
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
 }
 
-fn trait_impl#ToString#string#to_string(self/37: string) -> string {
-  self/37
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

@@ -52,15 +52,15 @@ fn main() -> unit {
     (println : (string) -> unit)((Marker[Vec[int32]]::marker : (Any) -> string)(Any {}));
     let mapped/10: MapIterator[int32, int32, Counter] = (iterator_map : (Counter, (int32) -> int32) -> MapIterator[int32, int32, Counter])((Counter::new : (int32, int32) -> Counter)(0, 8), |value/9: int32| => (value/9 : int32) * 2);
     let filtered/12: FilterIterator[int32, MapIterator[int32, int32, Counter]] = (iterator_filter : (MapIterator[int32, int32, Counter], (int32) -> bool) -> FilterIterator[int32, MapIterator[int32, int32, Counter]])((mapped/10 : MapIterator[int32, int32, Counter]), |value/11: int32| => (value/11 : int32) > 4);
-    let limited/13: TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]] = (iterator_take : (FilterIterator[int32, MapIterator[int32, int32, Counter]], int32) -> TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]])((filtered/12 : FilterIterator[int32, MapIterator[int32, int32, Counter]]), 3);
+    let limited/13: TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]] = (iterator_take : (FilterIterator[int32, MapIterator[int32, int32, Counter]], int) -> TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]])((filtered/12 : FilterIterator[int32, MapIterator[int32, int32, Counter]]), 3);
     for value/14: int32 in (limited/13 : TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]]) {
         (println : (int32) -> unit)((value/14 : int32));
     };
-    let sum/17: int32 = (iterator_fold : (FnIterator[int32], int32, (int32, int32) -> int32) -> int32)((range : (int32, int32) -> FnIterator[int32])(1, 5), 0, |total/15: int32, value/16: int32| => {
-        (total/15 : int32) + (value/16 : int32)
+    let sum/17: int = (iterator_fold : (FnIterator[int], int, (int, int) -> int) -> int)((range : (int, int) -> FnIterator[int])(1, 5), 0, |total/15: int, value/16: int| => {
+        (total/15 : int) + (value/16 : int)
     });
-    (println : (int32) -> unit)((sum/17 : int32));
-    let texts/19: Vec[string] = (iterator_collect : (MapIterator[int32, string, FnIterator[int32]]) -> Vec[string])((iterator_map : (FnIterator[int32], (int32) -> string) -> MapIterator[int32, string, FnIterator[int32]])((range : (int32, int32) -> FnIterator[int32])(1, 4), |value/18: int32| => "v" + (int32::to_string : (int32) -> string)((value/18 : int32))));
+    (println : (int) -> unit)((sum/17 : int));
+    let texts/19: Vec[string] = (iterator_collect : (MapIterator[int, string, FnIterator[int]]) -> Vec[string])((iterator_map : (FnIterator[int], (int) -> string) -> MapIterator[int, string, FnIterator[int]])((range : (int, int) -> FnIterator[int])(1, 4), |value/18: int| => "v" + (int::to_string : (int) -> string)((value/18 : int))));
     for text/20: string in (texts/19 : Vec[string]) {
         (println : (string) -> unit)((text/20 : string));
     };

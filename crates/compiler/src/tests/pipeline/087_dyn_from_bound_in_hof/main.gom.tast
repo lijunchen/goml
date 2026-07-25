@@ -10,6 +10,7 @@ fn mk_renderer(x/1: T) -> () -> string {
 }
 
 fn main() -> unit {
-    let f/3: () -> string = (mk_renderer : (int32) -> () -> string)(42);
-    (println : (string) -> unit)((f/3 : () -> string)());
+    let value/3: int32 = 42;
+    let f/4: () -> string = (mk_renderer : (int32) -> () -> string)((value/3 : int32));
+    (println : (string) -> unit)((f/4 : () -> string)());
 }

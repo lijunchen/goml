@@ -1,49 +1,51 @@
 fn trait_impl#Mark#int32#mark(self/0: int32) -> unit {
-  join ret63() -> unit {
+  join ret66() -> unit {
     ()
   } in
-  jump ret63()
+  jump ret66()
 }
 
 fn main() -> unit {
-  join ret64() -> unit {
-    ()
-  } in
-  let t65 = apply__T_int32(1) in
-  let _wild61 = println__T_int32(t65) in
-  let t66 = trait_impl#Extra#int32#extra(2) in
-  let _wild62 = println__T_int32(t66) in
-  jump ret64()
-}
-
-fn println__T_int32(value/1: int32) -> unit {
   join ret67() -> unit {
     ()
   } in
-  let t68 = trait_impl#ToString#int32#to_string(value/1) in
-  let t69 = @runtime(core.string_println)(t68) in
+  let first/3 = 1 in
+  let second/4 = 2 in
+  let t68 = apply__T_int32(first/3) in
+  let _wild64 = println__T_int32(t68) in
+  let t69 = trait_impl#Extra#int32#extra(second/4) in
+  let _wild65 = println__T_int32(t69) in
   jump ret67()
 }
 
-fn apply__T_int32(value/2: int32) -> int32 {
-  join ret70(retv71: int32) -> int32 {
-    retv71
+fn println__T_int32(value/1: int32) -> unit {
+  join ret70() -> unit {
+    ()
   } in
-  let t72 = trait_impl#Extra#int32#extra(value/2) in
-  jump ret70(t72)
+  let t71 = trait_impl#ToString#int32#to_string(value/1) in
+  let t72 = @runtime(core.string_println)(t71) in
+  jump ret70()
 }
 
-fn trait_impl#Extra#int32#extra(self/1: int32) -> int32 {
+fn apply__T_int32(value/2: int32) -> int32 {
   join ret73(retv74: int32) -> int32 {
     retv74
   } in
-  jump ret73(42)
+  let t75 = trait_impl#Extra#int32#extra(value/2) in
+  jump ret73(t75)
 }
 
-fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+fn trait_impl#Extra#int32#extra(self/1: int32) -> int32 {
+  join ret76(retv77: int32) -> int32 {
+    retv77
   } in
-  let t77 = @runtime(core.int32_to_string)(self/41) in
-  jump ret75(t77)
+  jump ret76(42)
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  let t80 = @runtime(core.int32_to_string)(self/43) in
+  jump ret78(t80)
 }

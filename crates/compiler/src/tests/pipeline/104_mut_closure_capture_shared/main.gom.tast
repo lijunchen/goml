@@ -1,9 +1,9 @@
 fn main() -> unit {
-    let mut x/0: int32 = 0;
-    let inc/1: () -> int32 = || => {
-        (x/0 : int32) = (x/0 : int32) + 1;
-        (x/0 : int32)
+    let mut x/0: int = 0;
+    let inc/1: () -> int = || => {
+        (x/0 : int) = (x/0 : int) + 1;
+        (x/0 : int)
     };
-    let _ : int32 = (inc/1 : () -> int32)();
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((x/0 : int32)));
+    let _ : int = (inc/1 : () -> int)();
+    (println : (string) -> unit)((int::to_string : (int) -> string)((x/0 : int)));
 }

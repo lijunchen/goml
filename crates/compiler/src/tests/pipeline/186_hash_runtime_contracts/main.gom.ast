@@ -12,8 +12,8 @@ impl Eq for FloatKey {
 
 impl Hash for FloatKey {
   fn hash(self: FloatKey) -> uint64 {
-      let h: uint64 = 14695981039346656037u64;
-      let h = h * 1099511628211u64 + Hash::hash(self.value);
+      let h: uint64 = 14695981039346656037;
+      let h = h * 1099511628211 + Hash::hash(self.value);
       h
   }
 }
@@ -30,7 +30,7 @@ impl Eq for CollisionKey {
 
 impl Hash for CollisionKey {
   fn hash(self: CollisionKey) -> uint64 {
-      1u64
+      1
   }
 }
 
@@ -49,7 +49,7 @@ fn print_opt_int(value: Option[int32]) -> unit {
 }
 
 fn float_zero_contracts() -> unit {
-    let zero32: float32 = 0.0f32;
+    let zero32: float32 = 0;
     let negative_zero32 = -zero32;
     println(Hash::hash(zero32) == Hash::hash(negative_zero32).to_string());
     let values32: HashMap[float32, string] = HashMap::new();
@@ -60,7 +60,7 @@ fn float_zero_contracts() -> unit {
     print_opt_string(values32.get(zero32));
     values32.remove(negative_zero32);
     println(values32.len());
-    let zero64: float64 = 0.0f64;
+    let zero64: float64 = 0;
     let negative_zero64 = -zero64;
     println(Hash::hash(zero64) == Hash::hash(negative_zero64).to_string());
     let values64: HashMap[float64, string] = HashMap::new();
@@ -119,15 +119,15 @@ fn collision_contracts() -> unit {
           value: 99
       });
     println(values.len());
-    let index = Ref::new(0i32);
-    while index.get() < 2000i32 {
+    let index = Ref::new(0);
+    while index.get() < 2000 {
         {
             let key = CollisionKey {
-                value: 1000i32 + index.get()
+                value: 1000 + index.get()
             };
             values.set(key, index.get());
             values.remove(key);
-            index.set(index.get() + 1i32);
+            index.set(index.get() + 1);
         }
     };
     println(values.len());

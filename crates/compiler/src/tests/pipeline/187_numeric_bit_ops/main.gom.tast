@@ -91,28 +91,41 @@ fn precedence() -> unit {
 }
 
 fn casts() -> unit {
-    (show_u8 : (uint8) -> unit)(511 as uint8);
-    (show_u8 : (uint8) -> unit)(256 as uint8);
-    (show_u8 : (uint8) -> unit)(-1 as uint8);
-    (show_i8 : (int8) -> unit)(255 as int8);
-    (show_i8 : (int8) -> unit)(128 as int8);
-    (show_i8 : (int8) -> unit)(-129 as int8);
-    (show_i16 : (int16) -> unit)(65535 as int16);
-    (show_u16 : (uint16) -> unit)(-1 as uint16);
-    (show_u64 : (uint64) -> unit)(-1 as uint64);
-    (show_i32 : (int32) -> unit)(18446744073709551615 as int32);
-    (show_u32 : (uint32) -> unit)(65 as uint32);
-    (show_i64 : (int64) -> unit)(4294967295 as int64);
+    let five_eleven/8: uint16 = 511;
+    let two_fifty_six/9: uint16 = 256;
+    let negative_one_i16/10: int16 = -1;
+    let two_fifty_five/11: uint8 = 255;
+    let one_twenty_eight/12: uint8 = 128;
+    let negative_one_twenty_nine/13: int16 = -129;
+    let max_u16/14: uint16 = 65535;
+    let negative_one_i32/15: int32 = -1;
+    let negative_one_i8/16: int8 = -1;
+    let max_u64/17: uint64 = 18446744073709551615;
+    let sixty_five/18: uint8 = 65;
+    let max_u32/19: uint32 = 4294967295;
+    let three_hundred/20: uint16 = 300;
+    (show_u8 : (uint8) -> unit)((five_eleven/8 : uint16) as uint8);
+    (show_u8 : (uint8) -> unit)((two_fifty_six/9 : uint16) as uint8);
+    (show_u8 : (uint8) -> unit)((negative_one_i16/10 : int16) as uint8);
+    (show_i8 : (int8) -> unit)((two_fifty_five/11 : uint8) as int8);
+    (show_i8 : (int8) -> unit)((one_twenty_eight/12 : uint8) as int8);
+    (show_i8 : (int8) -> unit)((negative_one_twenty_nine/13 : int16) as int8);
+    (show_i16 : (int16) -> unit)((max_u16/14 : uint16) as int16);
+    (show_u16 : (uint16) -> unit)((negative_one_i32/15 : int32) as uint16);
+    (show_u64 : (uint64) -> unit)((negative_one_i8/16 : int8) as uint64);
+    (show_i32 : (int32) -> unit)((max_u64/17 : uint64) as int32);
+    (show_u32 : (uint32) -> unit)((sixty_five/18 : uint8) as uint32);
+    (show_i64 : (int64) -> unit)((max_u32/19 : uint32) as int64);
     (show_u32 : (uint32) -> unit)('A' as uint32);
     match (char_from_uint32 : (uint32) -> Option[char])(128512) {
-        Option::Some(value/8: char) => (println : (string) -> unit)((char::to_string : (char) -> string)((value/8 : char))),
+        Option::Some(value/21: char) => (println : (string) -> unit)((char::to_string : (char) -> string)((value/21 : char))),
         Option::None => (println : (string) -> unit)("invalid"),
     };
-    (show_u32 : (uint32) -> unit)(300 as uint8 as uint32)
+    (show_u32 : (uint32) -> unit)((three_hundred/20 : uint16) as uint8 as uint32)
 }
 
-fn contextual(value/9: uint8) -> uint8 {
-    ~(value/9 : uint8) & 15 | 1 << 4 % 31
+fn contextual(value/22: uint8) -> uint8 {
+    ~(value/22 : uint8) & 15 | 1 << 4 % 31
 }
 
 fn main() -> unit {
