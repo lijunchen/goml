@@ -54,7 +54,7 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 | `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | partially migrated; 3 migrated and 8 blocked |
 | `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
 | `toplevel_validation_test.rs` | 1 | crasher fixtures | partially migrated; 11 migrated and 1 blocked |
-| `dyn_coercion_test.rs` | 23 | future diagnostic/runtime fixtures | pending; retain Go AST assertions |
+| `dyn_coercion_test.rs` | 13 | crasher fixtures | partially migrated; retain Go AST assertions |
 | `while_expr_test.rs` | 0 | crasher fixtures | migrated |
 | `operator_semantics_test.rs` | 0 | e2e and crasher fixtures | migrated |
 | `struct_type_test.rs` | 11 | future diagnostic fixtures | pending; retain `GlobalTypeEnv` assertions |
@@ -288,6 +288,23 @@ Three runtime-only tests from `vec_effect_test.rs` map to the existing
 and `discarded_vec_len_pure_call` crasher fixtures. The remaining
 `vec_method_push_mutates_shared_storage_in_go_codegen` test stays in Rust
 because it asserts the generated Go representation directly.
+
+Ten runtime or diagnostic tests from `dyn_coercion_test.rs` map to same-named
+crasher fixtures:
+
+- `dyn_tostring_builtin_impl_executes`
+- `dyn_tostring_ref_dyn_impl_executes`
+- `dyn_hash_ref_dyn_impl_executes`
+- `direct_ref_dyn_show_hash_impl_is_rejected`
+- `hash_ref_dyn_trait_builtin_ref_impl_executes`
+- `hashmap_ref_dyn_hash_explicit_eq_is_rejected`
+- `hashmap_ref_dyn_hash_builtin_ref_impl_executes`
+- `hashmap_ref_dyn_show_explicit_eq_hash_is_rejected`
+- `hashmap_dyn_hash_explicit_eq_executes`
+- `dyn_trait_hashmap_method_set_if_return_subexpr_executes`
+
+The remaining dyn coercion tests inspect generated Go vtables and type
+declarations and therefore remain internal Rust tests.
 
 ## Verification commands
 
