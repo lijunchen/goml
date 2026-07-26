@@ -8,6 +8,8 @@ This extension provides language support for GoML (`.gom` files).
 - Hover type information
 - Autocompletion (dot, `::`, and value completions)
 - Go-to-definition
+- Signature help and inlay hints
+- Test code lenses and diagnostic quick fixes
 - Diagnostics (errors and warnings)
 
 ## Installation
@@ -34,9 +36,19 @@ This extension provides language support for GoML (`.gom` files).
 
 4. Open VS Code in the extension folder and press F5 to launch a new Extension Development Host.
 
+To build and install the bootstrap server alongside the Rust server:
+
+```bash
+just install-bootstrap-lsp
+```
+
+This also installs the standard-library and builtin sources used by
+go-to-definition.
+
 ### Configuration
 
-- `goml.serverPath`: Path to the goml-lsp executable. If empty, uses the bundled server or searches PATH.
+- `goml.serverImplementation`: Selects `rust` (`goml-lsp`) or `bootstrap` (`gomllsp`). The default remains `rust`.
+- `goml.serverPath`: Path to a language server executable. When set, this overrides `goml.serverImplementation`.
 - `goml.trace.server`: Traces communication between VS Code and the language server.
 
 ## Building for Distribution

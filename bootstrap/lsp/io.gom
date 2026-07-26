@@ -1,0 +1,67 @@
+package lsp;
+
+use std::bytes;
+use std::io;
+
+fn read_stdin_line() -> Result[bytes::Bytes, string] {
+    let data = bytes::Bytes::new();
+    while true {
+        match io::read_stdin_exact(1) {
+            Result::Ok(chunk) => {
+                let value = chunk.get(0);
+                data.push(value);
+                if value == 10 {
+                    return Result::Ok(data)
+                } else {
+                    ()
+                }
+            },
+            Result::Err(error) => if data.len() > 0 {
+                return Result::Ok(data)
+            } else {
+                return Result::Err(error)
+            },
+        }
+    };
+    Result::Err("unreachable")
+}
+
+pub fn read_rpc_payload() -> Result[string, string] {
+    let length = Ref::new(Option::None);
+    let done = Ref::new(false);
+    while !(done.get()) {
+        let line = match read_stdin_line() {
+            Result::Ok(line) => match line.to_string() {
+                Result::Ok(line) => line,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        if header_line_content(line) == "" {
+            done.set(true)
+        } else if is_content_length_header(line) {
+            match length.get() {
+                Option::Some(_) => {
+                    return Result::Err("duplicate Content-Length header")
+                },
+                Option::None => match content_length(line) {
+                    Result::Ok(value) => length.set(Option::Some(value)),
+                    Result::Err(error) => return Result::Err(error),
+                },
+            }
+        } else {
+            ()
+        }
+    };
+    match length.get() {
+        Option::Some(length) => match io::read_stdin_exact(length) {
+            Result::Ok(data) => data.to_string(),
+            Result::Err(error) => Result::Err(error),
+        },
+        Option::None => Result::Err("missing Content-Length header"),
+    }
+}
+
+pub fn write_rpc_message(value: JsonValue) -> Result[unit, string] {
+    io::write_stdout(bytes::Bytes::from_string(framed_json(value)))
+}

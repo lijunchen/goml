@@ -54,6 +54,9 @@ pub extern fn eprint(value: string) -> unit;
 #[runtime("std.io.read_stdin")]
 pub extern fn read_stdin() -> (bool, Vec[uint8], string);
 
+#[runtime("std.io.read_stdin_exact")]
+pub extern fn read_stdin_exact(length: int) -> (bool, Vec[uint8], string);
+
 #[runtime("std.io.write_stdout")]
 pub extern fn write_stdout(data: Vec[uint8]) -> (bool, string);
 

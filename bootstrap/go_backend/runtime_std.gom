@@ -664,6 +664,64 @@ fn std_io_read_stdin_item() -> Item {
     )
 }
 
+fn std_io_read_stdin_exact_item() -> Item {
+    let bytes = Type::Slice { elem: Type::Uint8 };
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("length", Type::Int));
+    let make_args = Vec::new();
+    make_args.push(Expr::Var { name: "length" });
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "data",
+        ty: bytes,
+        value: Option::Some(Expr::Make {
+            ty: bytes,
+            args: make_args,
+        }),
+    });
+    stmts.push(Stmt::Var {
+        name: "err",
+        ty: Type::Named { name: "error" },
+        value: Option::None,
+    });
+    let names: Vec[string] = Vec::new();
+    names.push("_");
+    names.push("err");
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var { name: "_goml_os.Stdin" });
+    args.push(Expr::Var { name: "data" });
+    stmts.push(Stmt::MultiAssign {
+        names,
+        value: std_call("_goml_io.ReadFull", args),
+    });
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return {
+        expr: Option::Some(std_bool_bytes_string_expr(
+            false,
+            std_vec_expr(tast::Type::Uint8, Expr::Nil),
+            std_error_string(),
+        )),
+    });
+    stmts.push(Stmt::If {
+        cond: std_error_condition(),
+        then_: Block { stmts: failed },
+        else_: Option::None,
+    });
+    stmts.push(Stmt::Return {
+        expr: Option::Some(std_bool_bytes_string_expr(
+            true,
+            std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+            Expr::String { value: "" },
+        )),
+    });
+    std_function_item(
+        "std.io.read_stdin_exact",
+        params,
+        std_bool_bytes_string_type(),
+        stmts,
+    )
+}
+
 fn std_io_write_item(key: string, stream: string) -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("data", lower_type(std_vec_type(tast::Type::Uint8))));
@@ -1445,6 +1503,8 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_io_output_item(key, "_goml_fmt.Fprint", true))
     } else if key == "std.io.read_stdin" {
         Option::Some(std_io_read_stdin_item())
+    } else if key == "std.io.read_stdin_exact" {
+        Option::Some(std_io_read_stdin_exact_item())
     } else if key == "std.io.write_stdout" {
         Option::Some(std_io_write_item(key, "_goml_os.Stdout"))
     } else if key == "std.io.write_stderr" {

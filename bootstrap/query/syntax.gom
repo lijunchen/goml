@@ -1,0 +1,125 @@
+package query;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+pub struct SyntaxNode {
+    pub id: int,
+    pub parent: Option[int],
+    pub kind: cst::NodeKind,
+    pub start: int,
+    pub end: int,
+}
+
+pub struct SyntaxToken {
+    pub parent: int,
+    pub kind: lexer::TokenKind,
+    pub text: string,
+    pub start: int,
+    pub end: int,
+}
+
+pub struct SyntaxIndex {
+    pub nodes: Vec[SyntaxNode],
+    pub tokens: Vec[SyntaxToken],
+}
+
+fn index_node(
+    value: cst::CstNode,
+    parent: Option[int],
+    start: int,
+    nodes: Vec[SyntaxNode],
+    tokens: Vec[SyntaxToken],
+) -> int {
+    let id = nodes.len();
+    let end = start + value.byte_len;
+    nodes.push(SyntaxNode {
+        id,
+        parent,
+        kind: value.kind,
+        start,
+        end,
+    });
+    let cursor = Ref::new(start);
+    for child in value.children {
+        match child {
+            cst::CstElement::Node(node) => {
+                cursor.set(index_node(
+                    node,
+                    Option::Some(id),
+                    cursor.get(),
+                    nodes,
+                    tokens,
+                ))
+            },
+            cst::CstElement::Token(token) => {
+                let token_end = cursor.get() + token.text.byte_len();
+                tokens.push(SyntaxToken {
+                    parent: id,
+                    kind: token.kind,
+                    text: token.text,
+                    start: cursor.get(),
+                    end: token_end,
+                });
+                cursor.set(token_end)
+            },
+        }
+    };
+    end
+}
+
+pub fn syntax_index(root: cst::CstNode) -> SyntaxIndex {
+    let nodes = Vec::new();
+    let tokens = Vec::new();
+    let _ = index_node(root, Option::None, 0, nodes, tokens);
+    SyntaxIndex { nodes, tokens }
+}
+
+fn contains_offset(start: int, end: int, offset: int) -> bool {
+    start <= offset && (offset < end || (start == end && offset == start))
+}
+
+pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
+    let result = Ref::new(Option::None);
+    for token in index.tokens {
+        if contains_offset(token.start, token.end, offset)
+            && !lexer::token_is_trivia(token.kind)
+        {
+            result.set(Option::Some(token))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
+    let result = Ref::new(Option::None);
+    let width = Ref::new(2147483647);
+    for node in index.nodes {
+        let node_width = node.end - node.start;
+        if contains_offset(node.start, node.end, offset)
+            && node_width <= width.get()
+        {
+            result.set(Option::Some(node));
+            width.set(node_width)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+pub fn parent_node(
+    index: SyntaxIndex,
+    node: SyntaxNode,
+) -> Option[SyntaxNode] {
+    match node.parent {
+        Option::Some(parent) => if parent >= 0 && parent < index.nodes.len() {
+            Option::Some(index.nodes.get(parent))
+        } else {
+            Option::None
+        },
+        Option::None => Option::None,
+    }
+}

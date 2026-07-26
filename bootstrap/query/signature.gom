@@ -1,0 +1,241 @@
+package query;
+
+use gomlc::ast;
+use gomlc::parser;
+use gomlc::tast;
+use std::text;
+
+pub struct SignatureResult {
+    pub label: string,
+    pub parameters: Vec[string],
+    pub active_parameter: int,
+    pub span: ast::Span,
+}
+
+fn call_target_name(
+    value: Analysis,
+    fact: tast::CallFact,
+) -> string {
+    match fact.target {
+        tast::ReferenceTarget::Local(local) => local.hint,
+        tast::ReferenceTarget::Definition(_) => match token_text(
+            value,
+            fact.callee_span.start,
+        ) {
+            Option::Some(name) => name,
+            Option::None => "<function>",
+        },
+        tast::ReferenceTarget::Callable(callable) => callable_name(callable),
+        tast::ReferenceTarget::Constructor(constructor) => constructor.name,
+        tast::ReferenceTarget::Unresolved(name) => name,
+    }
+}
+
+fn signature_label(
+    parameters: Vec[string],
+    return_type: string,
+) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_char('(');
+    let index = Ref::new(0);
+    for parameter in parameters {
+        if index.get() > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        builder.write_string(parameter);
+        index.set(index.get() + 1)
+    };
+    builder.write_string(") -> ");
+    builder.write_string(return_type);
+    builder.finish()
+}
+
+fn method_call_target(value: tast::ReferenceTarget) -> bool {
+    match value {
+        tast::ReferenceTarget::Callable(
+            tast::Callable::TraitMethod { .. },
+        )
+        | tast::ReferenceTarget::Callable(
+            tast::Callable::DynTraitMethod { .. },
+        )
+        | tast::ReferenceTarget::Callable(
+            tast::Callable::InherentMethod { .. },
+        ) => true,
+        _ => false,
+    }
+}
+
+fn function_parameter_names(value: ast::Function) -> Vec[string] {
+    let result = Vec::new();
+    for parameter in value.params {
+        result.push(parameter.0)
+    };
+    result
+}
+
+fn signature_parameter_names(
+    value: Analysis,
+    fact: tast::CallFact,
+) -> Option[Vec[string]] {
+    let expected = short_type_name(call_target_name(value, fact));
+    let result = Ref::new(Option::None);
+    for source in value.sources {
+        let lowered = ast::lower(parser::parse(source.source));
+        match lowered.ast {
+            Option::Some(file) => for item in file.items {
+                match item {
+                    ast::Item::Function(function) => {
+                        if function.name == expected {
+                            result.set(Option::Some(
+                                function_parameter_names(function),
+                            ))
+                        } else {
+                            ()
+                        }
+                    },
+                    ast::Item::ExternFunction(function) => {
+                        if function.name == expected {
+                            let names = Vec::new();
+                            for parameter in function.params {
+                                names.push(parameter.0)
+                            };
+                            result.set(Option::Some(names))
+                        } else {
+                            ()
+                        }
+                    },
+                    ast::Item::ImplBlock(block) => for method in block.methods {
+                        if method.name == expected {
+                            result.set(Option::Some(
+                                function_parameter_names(method),
+                            ))
+                        } else {
+                            ()
+                        }
+                    },
+                    ast::Item::TraitDef(definition) => for method in definition
+                        .method_sigs
+                    {
+                        if method.name == expected {
+                            let names = Vec::new();
+                            for parameter in method.params {
+                                names.push(parameter.0)
+                            };
+                            result.set(Option::Some(names))
+                        } else {
+                            ()
+                        }
+                    },
+                    _ => (),
+                }
+            },
+            Option::None => (),
+        }
+    };
+    result.get()
+}
+
+fn signature_parameters(
+    value: Analysis,
+    fact: tast::CallFact,
+    types: Vec[tast::Type],
+) -> Vec[string] {
+    let is_method = method_call_target(fact.target);
+    let type_start = if is_method
+        && types.len() > fact.argument_spans.len()
+    {
+        1
+    } else {
+        0
+    };
+    let names = signature_parameter_names(value, fact);
+    let name_start = match names {
+        Option::Some(values) => if is_method
+            && values.len() > fact.argument_spans.len()
+        {
+            1
+        } else {
+            0
+        },
+        Option::None => 0,
+    };
+    let result = Vec::new();
+    for index in range(type_start, types.len()) {
+        let type_text = tast::diagnostic_type_text(types.get(index));
+        let name = match names {
+            Option::Some(values) => {
+                let name_index = index - type_start + name_start;
+                if name_index < values.len() {
+                    values.get(name_index)
+                } else {
+                    ""
+                }
+            },
+            Option::None => "",
+        };
+        result.push(if name == "" {
+            type_text
+        } else {
+            name + ": " + type_text
+        })
+    };
+    result
+}
+
+fn active_parameter(fact: tast::CallFact, offset: int) -> int {
+    let active = Ref::new(0);
+    let index = Ref::new(0);
+    for span in fact.argument_spans {
+        if offset > span.end {
+            active.set(index.get() + 1)
+        } else if offset >= span.start {
+            active.set(index.get())
+        } else {
+            ()
+        };
+        index.set(index.get() + 1)
+    };
+    active.get()
+}
+
+pub fn signature_help(
+    value: Analysis,
+    offset: int,
+) -> Option[SignatureResult] {
+    let selected = Ref::new(Option::None);
+    let width = Ref::new(2147483647);
+    for fact in value.checked.typeck_results.calls {
+        let fact_width = fact.span.end - fact.span.start;
+        if fact.source_path == value.source_path
+            && fact.span.start <= offset
+            && offset < fact.span.end
+            && fact_width <= width.get()
+        {
+            selected.set(Option::Some(fact));
+            width.set(fact_width)
+        } else {
+            ()
+        }
+    };
+    match selected.get() {
+        Option::Some(fact) => match tast::resolve_type(fact.callee_ty) {
+            tast::Type::Func { params, ret_ty } => {
+                let parameters = signature_parameters(value, fact, params);
+                let return_type = tast::diagnostic_type_text(ret_ty);
+                Option::Some(SignatureResult {
+                    label: signature_label(
+                        parameters,
+                        return_type,
+                    ),
+                    parameters,
+                    active_parameter: active_parameter(fact, offset),
+                    span: fact.span,
+                })
+            },
+            _ => Option::None,
+        },
+        Option::None => Option::None,
+    }
+}

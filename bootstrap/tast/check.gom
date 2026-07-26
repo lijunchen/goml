@@ -2133,13 +2133,69 @@ fn is_inherent_callable(value: Expr) -> bool {
     }
 }
 
+fn call_reference_target(
+    reference: hir::NameRef,
+    result: Expr,
+) -> ReferenceTarget {
+    match reference {
+        hir::NameRef::Local(local) => ReferenceTarget::Local(local),
+        hir::NameRef::Def(definition) => {
+            ReferenceTarget::Definition(definition)
+        },
+        hir::NameRef::Other(name) => match result {
+            Expr::Call {
+                func: Expr::Callable { callable, ty },
+                args: _,
+                ty: _,
+            } => match resolve_type(ty) {
+                Type::Error => ReferenceTarget::Unresolved(name),
+                _ => ReferenceTarget::Callable(callable),
+            },
+            Expr::Constr { constructor, .. } => {
+                ReferenceTarget::Constructor(constructor)
+            },
+            _ => ReferenceTarget::Unresolved(name),
+        },
+    }
+}
+
+fn call_callee_type(result: Expr) -> Type {
+    match result {
+        Expr::Call { func, .. } => expr_type(func),
+        other => expr_type(other),
+    }
+}
+
+fn typed_call_target(result: Expr, fallback: string) -> ReferenceTarget {
+    match result {
+        Expr::Call {
+            func: Expr::Callable { callable, ty },
+            args: _,
+            ty: _,
+        } => match resolve_type(ty) {
+            Type::Error => ReferenceTarget::Unresolved(fallback),
+            _ => ReferenceTarget::Callable(callable),
+        },
+        Expr::Constr { constructor, .. } => {
+            ReferenceTarget::Constructor(constructor)
+        },
+        _ => ReferenceTarget::Unresolved(fallback),
+    }
+}
+
 fn check_call_expr(
     ctx: Checker,
+    call_span: ast::Span,
     function: hir::Expr,
     args: Vec[hir::Expr],
     expected: Option[Type],
 ) -> Expr {
     let function_span = function.span;
+    let function_source = function;
+    let argument_spans = Vec::new();
+    for argument in args {
+        argument_spans.push(argument.span)
+    };
     let result = match function.kind {
         hir::ExprKind::Field { expr: receiver, field_name: name } => {
             check_method_call(ctx, receiver, name, args, expected)
@@ -2290,6 +2346,33 @@ fn check_call_expr(
             args,
         ),
     };
+    let target = match function_source.kind {
+        hir::ExprKind::NameRef { name_ref: reference } => {
+            call_reference_target(reference, result)
+        },
+        hir::ExprKind::StaticMember { owner, member, .. } => {
+            typed_call_target(result, owner + "::" + member)
+        },
+        hir::ExprKind::Field { field_name, .. } => {
+            typed_call_target(result, field_name)
+        },
+        _ => typed_call_target(result, "<call>"),
+    };
+    ctx.typeck_results.references.push(ReferenceFact {
+        source_path: ctx.source_path,
+        span: function_span,
+        target,
+        ty: call_callee_type(result),
+    });
+    ctx.typeck_results.calls.push(CallFact {
+        source_path: ctx.source_path,
+        span: call_span,
+        callee_span: function_span,
+        argument_spans,
+        target,
+        callee_ty: call_callee_type(result),
+        result_ty: expr_type(result),
+    });
     result
 }
 
@@ -4089,7 +4172,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 Expr::Go { expr: value, ty: Type::Unit }
             },
             hir::ExprKind::Call { func: function, args } => {
-                check_call_expr(ctx, function, args, Option::None)
+                check_call_expr(ctx, value.span, function, args, Option::None)
             },
             hir::ExprKind::Unary { op, expr: value } => {
                 check_unary_expr(ctx, op, value, Option::None)
@@ -4307,7 +4390,13 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
         },
         hir::ExprKind::Call { func: function, args } => {
-            let result = check_call_expr(ctx, function, args, expected);
+            let result = check_call_expr(
+                ctx,
+                value.span,
+                function,
+                args,
+                expected,
+            );
             if always_exits { result } else { coerce_expr(ctx, result, expected) }
         },
         hir::ExprKind::ConstructorValue { constructor } => {
@@ -4350,6 +4439,35 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
     let previous = ctx.current_span.get();
     ctx.current_span.set(Option::Some(value.span));
     let result = check_expr_inner(ctx, value, expected);
+    let ty = expr_type(result);
+    ctx.typeck_results.exprs.push(ExprFact {
+        source_path: ctx.source_path,
+        span: value.span,
+        ty,
+    });
+    match value.kind {
+        hir::ExprKind::NameRef { name_ref: reference } => {
+            let target = match reference {
+                hir::NameRef::Local(local) => ReferenceTarget::Local(local),
+                hir::NameRef::Def(definition) => {
+                    ReferenceTarget::Definition(definition)
+                },
+                hir::NameRef::Other(name) => match result {
+                    Expr::Callable { callable, ty: _ } => {
+                        ReferenceTarget::Callable(callable)
+                    },
+                    _ => ReferenceTarget::Unresolved(name),
+                },
+            };
+            ctx.typeck_results.references.push(ReferenceFact {
+                source_path: ctx.source_path,
+                span: value.span,
+                target,
+                ty,
+            })
+        },
+        _ => (),
+    };
     ctx.current_span.set(previous);
     result
 }
@@ -4784,6 +4902,11 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     let previous = ctx.current_span.get();
     ctx.current_span.set(Option::Some(value.span));
     let result = check_pattern_inner(ctx, value, expected);
+    ctx.typeck_results.pats.push(PatFact {
+        source_path: ctx.source_path,
+        span: value.span,
+        ty: pat_type(result),
+    });
     ctx.current_span.set(previous);
     result
 }

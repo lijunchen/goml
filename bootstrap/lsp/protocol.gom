@@ -1,0 +1,225 @@
+package lsp;
+
+pub struct RpcMessage {
+    pub id: Option[JsonValue],
+    pub method: string,
+    pub params: JsonValue,
+}
+
+fn json_fields(values: Vec[(string, JsonValue)]) -> JsonValue {
+    JsonValue::Object(values)
+}
+
+fn push_json_field(
+    values: Vec[(string, JsonValue)],
+    name: string,
+    value: JsonValue,
+) -> unit {
+    values.push((name, value))
+}
+
+pub fn parse_rpc_message(value: JsonValue) -> Result[RpcMessage, string] {
+    match json_field(value, "jsonrpc") {
+        Option::Some(JsonValue::String(version)) => if version != "2.0" {
+            return Result::Err("JSON-RPC version must be 2.0")
+        } else {
+            ()
+        },
+        Option::Some(_) => return Result::Err(
+            "JSON-RPC version must be a string",
+        ),
+        Option::None => return Result::Err("JSON-RPC message has no version"),
+    };
+    let method = match json_field(value, "method") {
+        Option::Some(method) => match json_string(method) {
+            Option::Some(method) => method,
+            Option::None => return Result::Err("JSON-RPC method must be a string"),
+        },
+        Option::None => return Result::Err("JSON-RPC message has no method"),
+    };
+    let id = json_field(value, "id");
+    let params = match json_field(value, "params") {
+        Option::Some(params) => params,
+        Option::None => JsonValue::Null,
+    };
+    Result::Ok(RpcMessage { id, method, params })
+}
+
+pub fn rpc_success(id: JsonValue, result: JsonValue) -> JsonValue {
+    let fields = Vec::new();
+    push_json_field(fields, "jsonrpc", JsonValue::String("2.0"));
+    push_json_field(fields, "id", id);
+    push_json_field(fields, "result", result);
+    json_fields(fields)
+}
+
+pub fn rpc_error(
+    id: JsonValue,
+    code: int,
+    message: string,
+) -> JsonValue {
+    let error = Vec::new();
+    push_json_field(error, "code", JsonValue::Number(code.to_string()));
+    push_json_field(error, "message", JsonValue::String(message));
+    let fields = Vec::new();
+    push_json_field(fields, "jsonrpc", JsonValue::String("2.0"));
+    push_json_field(fields, "id", id);
+    push_json_field(fields, "error", json_fields(error));
+    json_fields(fields)
+}
+
+pub fn rpc_notification(method: string, params: JsonValue) -> JsonValue {
+    let fields = Vec::new();
+    push_json_field(fields, "jsonrpc", JsonValue::String("2.0"));
+    push_json_field(fields, "method", JsonValue::String(method));
+    push_json_field(fields, "params", params);
+    json_fields(fields)
+}
+
+pub fn framed_json(value: JsonValue) -> string {
+    let body = encode_json(value);
+    "Content-Length: "
+        + body.byte_len().to_string()
+        + "\r\n\r\n"
+        + body
+}
+
+fn ascii_lower(value: uint8) -> uint8 {
+    if value >= 65 && value <= 90 {
+        value + 32
+    } else {
+        value
+    }
+}
+
+fn ascii_prefix_equal_case_insensitive(
+    value: string,
+    expected: string,
+) -> bool {
+    if value.byte_len() < expected.byte_len() {
+        false
+    } else {
+        let equal = Ref::new(true);
+        for index in range(0, expected.byte_len()) {
+            if ascii_lower(value.byte_get(index))
+                != ascii_lower(expected.byte_get(index))
+            {
+                equal.set(false)
+            } else {
+                ()
+            }
+        };
+        equal.get()
+    }
+}
+
+fn header_line_content(value: string) -> string {
+    let end = Ref::new(value.byte_len());
+    while end.get() > 0
+        && (value.byte_get(end.get() - 1) == 10
+            || value.byte_get(end.get() - 1) == 13)
+    {
+        end.set(end.get() - 1)
+    };
+    value.byte_slice(0, end.get())
+}
+
+fn decimal_length(value: string) -> Result[int, string] {
+    let result = Ref::new(0);
+    if value.byte_len() == 0 {
+        return Result::Err("empty Content-Length")
+    } else {
+        ()
+    };
+    for index in range(0, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if byte < 48 || byte > 57 {
+            return Result::Err("invalid Content-Length")
+        } else {
+            result.set(result.get() * 10 + (byte - 48) as int)
+        }
+    };
+    Result::Ok(result.get())
+}
+
+pub fn content_length(value: string) -> Result[int, string] {
+    let line = header_line_content(value);
+    let prefix = "Content-Length:";
+    if !ascii_prefix_equal_case_insensitive(line, prefix) {
+        Result::Err("expected Content-Length header")
+    } else {
+        let start = Ref::new(prefix.byte_len());
+        while start.get() < line.byte_len()
+            && (line.byte_get(start.get()) == 32
+                || line.byte_get(start.get()) == 9)
+        {
+            start.set(start.get() + 1)
+        };
+        decimal_length(line.byte_slice(start.get(), line.byte_len()))
+    }
+}
+
+fn is_content_length_header(value: string) -> bool {
+    let line = header_line_content(value);
+    ascii_prefix_equal_case_insensitive(line, "Content-Length:")
+}
+
+pub fn position_json(value: Position) -> JsonValue {
+    let fields = Vec::new();
+    push_json_field(
+        fields,
+        "line",
+        JsonValue::Number(value.line.to_string()),
+    );
+    push_json_field(
+        fields,
+        "character",
+        JsonValue::Number(value.character.to_string()),
+    );
+    json_fields(fields)
+}
+
+pub fn range_json(value: Range) -> JsonValue {
+    let fields = Vec::new();
+    push_json_field(fields, "start", position_json(value.start));
+    push_json_field(fields, "end", position_json(value.end));
+    json_fields(fields)
+}
+
+pub fn parse_position(value: JsonValue) -> Result[Position, string] {
+    let line = match json_field(value, "line") {
+        Option::Some(line) => match json_int(line) {
+            Option::Some(line) => line,
+            Option::None => return Result::Err("position line must be an integer"),
+        },
+        Option::None => return Result::Err("position has no line"),
+    };
+    let character = match json_field(value, "character") {
+        Option::Some(character) => match json_int(character) {
+            Option::Some(character) => character,
+            Option::None => {
+                return Result::Err("position character must be an integer")
+            },
+        },
+        Option::None => return Result::Err("position has no character"),
+    };
+    Result::Ok(Position { line, character })
+}
+
+pub fn parse_range(value: JsonValue) -> Result[Range, string] {
+    let start = match json_field(value, "start") {
+        Option::Some(value) => match parse_position(value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Option::None => return Result::Err("range has no start"),
+    };
+    let end = match json_field(value, "end") {
+        Option::Some(value) => match parse_position(value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Option::None => return Result::Err("range has no end"),
+    };
+    Result::Ok(Range { start, end })
+}

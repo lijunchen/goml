@@ -1,0 +1,62 @@
+package query;
+
+use gomlc::core;
+use std::env;
+use std::fs;
+use std::path;
+
+fn builtin_source_candidates() -> Vec[string] {
+    let result = Vec::new();
+    result.push("crates/compiler/src/builtin_prelude.gom");
+    match env::current_exe() {
+        Result::Ok(executable) => match path::parent(executable) {
+            Option::Some(directory) => result.push(path::join(
+                directory,
+                "builtin_prelude.gom",
+            )),
+            Option::None => (),
+        },
+        Result::Err(_) => (),
+    };
+    match env::var("GOML_HOME") {
+        Option::Some(home) => result.push(path::join(
+            path::join(home, "lib"),
+            "builtin_prelude.gom",
+        )),
+        Option::None => (),
+    };
+    match env::var("HOME") {
+        Option::Some(home) => result.push(path::join(
+            path::join(path::join(home, ".goml"), "lib"),
+            "builtin_prelude.gom",
+        )),
+        Option::None => (),
+    };
+    result
+}
+
+fn builtin_navigation_source() -> SourceFile {
+    for candidate in builtin_source_candidates() {
+        if fs::is_file(candidate) {
+            match fs::read_file(candidate) {
+                Result::Ok(source) => return SourceFile {
+                    path: candidate,
+                    source,
+                    package_name: "builtin",
+                },
+                Result::Err(_) => (),
+            }
+        } else {
+            ()
+        }
+    };
+    SourceFile {
+        path: "builtin_prelude.gom",
+        source: core::builtin_source(),
+        package_name: "builtin",
+    }
+}
+
+fn append_builtin_navigation_source(values: Vec[SourceFile]) -> unit {
+    values.push(builtin_navigation_source())
+}

@@ -72,6 +72,9 @@ pub fn host_source() -> string {
         \\#[runtime("std.io.read_stdin")]
         \\pub extern fn read_stdin() -> (bool, Vec[uint8], string);
         \\
+        \\#[runtime("std.io.read_stdin_exact")]
+        \\pub extern fn read_stdin_exact(length: int) -> (bool, Vec[uint8], string);
+        \\
         \\#[runtime("std.io.write_stdout")]
         \\pub extern fn write_stdout(data: Vec[uint8]) -> (bool, string);
         \\
@@ -346,6 +349,19 @@ pub fn io_source() -> string {
         \\        Result::Ok(())
         \\    } else {
         \\        Result::Err(err)
+        \\    }
+        \\}
+        \\
+        \\pub fn read_stdin_exact(length: int) -> Result[bytes::Bytes, string] {
+        \\    if length < 0 {
+        \\        Result::Err("read length must be non-negative")
+        \\    } else {
+        \\        let (ok, data, err) = host::read_stdin_exact(length);
+        \\        if ok {
+        \\            Result::Ok(bytes::Bytes::from_vec(data))
+        \\        } else {
+        \\            Result::Err(err)
+        \\        }
         \\    }
         \\}
     ;

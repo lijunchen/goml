@@ -1,0 +1,219 @@
+package query;
+
+use gomlc::ast;
+use gomlc::tast;
+
+pub struct HoverResult {
+    pub contents: string,
+    pub span: ast::Span,
+}
+
+fn fact_contains(span: ast::Span, offset: int) -> bool {
+    span.start <= offset && offset < span.end
+}
+
+fn hover_text(value: tast::Type) -> Option[string] {
+    match tast::resolve_type(value) {
+        tast::Type::Error => Option::None,
+        ty => Option::Some(tast::diagnostic_type_text(ty)),
+    }
+}
+
+fn hover_span(value: Analysis, span: ast::Span, offset: int) -> ast::Span {
+    match token_at(value.syntax, offset) {
+        Option::Some(token) => if token.start >= span.start
+            && token.end <= span.end
+        {
+            ast::span(token.start, token.end)
+        } else {
+            span
+        },
+        Option::None => span,
+    }
+}
+
+fn symbol_owner(value: string) -> string {
+    let end = Ref::new(Option::None);
+    let index = Ref::new(0);
+    while index.get() + 1 < value.byte_len() {
+        if value.byte_get(index.get()) == 58
+            && value.byte_get(index.get() + 1) == 58
+        {
+            end.set(Option::Some(index.get()));
+            index.set(index.get() + 1)
+        } else {
+            ()
+        };
+        index.set(index.get() + 1)
+    };
+    match end.get() {
+        Option::Some(end) => value.byte_slice(0, end),
+        Option::None => "",
+    }
+}
+
+fn symbol_hover_type(
+    value: Analysis,
+    symbol: Symbol,
+) -> Option[string] {
+    match symbol.kind {
+        SymbolKind::Function => {
+            let result = Ref::new(Option::None);
+            for environment in value.environments {
+                for function in environment.functions {
+                    if function.name == symbol.qualified_name
+                        || short_type_name(function.name) == symbol.name
+                    {
+                        result.set(hover_text(tast::Type::Func {
+                            params: function.params,
+                            ret_ty: function.ret_ty,
+                        }))
+                    } else {
+                        ()
+                    }
+                }
+            };
+            result.get()
+        },
+        SymbolKind::Method => {
+            let result = Ref::new(Option::None);
+            for environment in value.environments {
+                for method in environment.methods {
+                    if method.function.name == symbol.qualified_name
+                        || short_type_name(method.function.name) == symbol.name
+                    {
+                        result.set(hover_text(tast::Type::Func {
+                            params: method.function.params,
+                            ret_ty: method.function.ret_ty,
+                        }))
+                    } else {
+                        ()
+                    }
+                }
+            };
+            result.get()
+        },
+        SymbolKind::Field => {
+            let owner = symbol_owner(symbol.qualified_name);
+            let result = Ref::new(Option::None);
+            for environment in value.environments {
+                for definition in environment.structs {
+                    if definition.name == owner
+                        || short_type_name(definition.name)
+                            == short_type_name(owner)
+                    {
+                        for field in definition.fields {
+                            if field.0 == symbol.name {
+                                result.set(hover_text(field.1))
+                            } else {
+                                ()
+                            }
+                        }
+                    } else {
+                        ()
+                    }
+                }
+            };
+            result.get()
+        },
+        SymbolKind::Variant => Option::Some(short_type_name(
+            symbol_owner(symbol.qualified_name),
+        )),
+        SymbolKind::Struct | SymbolKind::Enum | SymbolKind::Trait => {
+            Option::Some(short_type_name(symbol.qualified_name))
+        },
+    }
+}
+
+fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
+    let result = Ref::new(Option::None);
+    for symbol in build_symbol_index(value).symbols {
+        if symbol.source_path == value.source_path
+            && symbol.span.start <= offset
+            && offset < symbol.span.end
+        {
+            result.set(Option::Some(symbol))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
+    let result = Ref::new(Option::None);
+    let width = Ref::new(2147483647);
+    for fact in value.checked.typeck_results.references {
+        let fact_width = fact.span.end - fact.span.start;
+        if fact.source_path == value.source_path
+            && fact_contains(fact.span, offset)
+            && fact_width <= width.get()
+        {
+            match hover_text(fact.ty) {
+                Option::Some(contents) => {
+                    result.set(Option::Some(HoverResult {
+                        contents,
+                        span: hover_span(value, fact.span, offset),
+                    }));
+                    width.set(fact_width)
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    for fact in value.checked.typeck_results.exprs {
+        let fact_width = fact.span.end - fact.span.start;
+        if fact.source_path == value.source_path
+            && fact_contains(fact.span, offset)
+            && fact_width <= width.get()
+        {
+            match hover_text(fact.ty) {
+                Option::Some(contents) => {
+                    result.set(Option::Some(HoverResult {
+                        contents,
+                        span: hover_span(value, fact.span, offset),
+                    }));
+                    width.set(fact_width)
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    for fact in value.checked.typeck_results.pats {
+        let fact_width = fact.span.end - fact.span.start;
+        if fact.source_path == value.source_path
+            && fact_contains(fact.span, offset)
+            && fact_width < width.get()
+        {
+            match hover_text(fact.ty) {
+                Option::Some(contents) => {
+                    result.set(Option::Some(HoverResult {
+                        contents,
+                        span: hover_span(value, fact.span, offset),
+                    }));
+                    width.set(fact_width)
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    match result.get() {
+        Option::Some(result) => Option::Some(result),
+        Option::None => match symbol_at_offset(value, offset) {
+            Option::Some(symbol) => match symbol_hover_type(value, symbol) {
+                Option::Some(contents) => Option::Some(HoverResult {
+                    contents,
+                    span: symbol.span,
+                }),
+                Option::None => Option::None,
+            },
+            Option::None => Option::None,
+        },
+    }
+}

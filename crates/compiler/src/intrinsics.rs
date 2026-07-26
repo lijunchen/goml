@@ -219,6 +219,7 @@ pub enum RuntimeHookId {
     StdIoPrintln,
     StdIoEprint,
     StdIoReadStdin,
+    StdIoReadStdinExact,
     StdIoWriteStdout,
     StdIoWriteStderr,
     StdPathJoin,
@@ -237,7 +238,7 @@ pub enum RuntimeHookId {
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 73] = [
+    pub const ALL: [Self; 74] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -296,6 +297,7 @@ impl RuntimeHookId {
         Self::StdIoPrintln,
         Self::StdIoEprint,
         Self::StdIoReadStdin,
+        Self::StdIoReadStdinExact,
         Self::StdIoWriteStdout,
         Self::StdIoWriteStderr,
         Self::StdPathJoin,
@@ -373,6 +375,7 @@ impl RuntimeHookId {
             Self::StdIoPrintln => "std.io.println",
             Self::StdIoEprint => "std.io.eprint",
             Self::StdIoReadStdin => "std.io.read_stdin",
+            Self::StdIoReadStdinExact => "std.io.read_stdin_exact",
             Self::StdIoWriteStdout => "std.io.write_stdout",
             Self::StdIoWriteStderr => "std.io.write_stderr",
             Self::StdPathJoin => "std.path.join",
@@ -615,6 +618,7 @@ impl RuntimeHookId {
             | Self::StdIoPrintln
             | Self::StdIoEprint
             | Self::StdIoReadStdin
+            | Self::StdIoReadStdinExact
             | Self::StdIoWriteStdout
             | Self::StdIoWriteStderr
             | Self::StdPathAbsolute
@@ -1105,6 +1109,10 @@ impl RuntimeHookId {
             ),
             Self::StdIoReadStdin => signature(
                 vec![],
+                tuple_ty(vec![Ty::TBool, vec_ty(Ty::TUint8), Ty::TString]),
+            ),
+            Self::StdIoReadStdinExact => signature(
+                vec![Ty::TInt],
                 tuple_ty(vec![Ty::TBool, vec_ty(Ty::TUint8), Ty::TString]),
             ),
             Self::StdFsWriteBytes => signature(

@@ -16,6 +16,7 @@ fn function_context(
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        typeck_results: base.typeck_results,
         package_name: base.package_name,
         source_path: base.source_path,
         current_span: base.current_span,
@@ -58,6 +59,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        typeck_results: base.typeck_results,
         package_name: base.package_name,
         source_path: base.source_path,
         current_span: base.current_span,
@@ -2601,6 +2603,7 @@ fn check_file_with_package(
             structs,
         }),
         diagnostics: order_extern_diagnostics(ctx),
+        typeck_results: ctx.typeck_results,
     }
 }
 
@@ -2634,6 +2637,7 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
         },
     }
 }
@@ -2650,6 +2654,7 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
         },
     }
 }
@@ -2669,6 +2674,7 @@ pub fn check_for_link_with_dependencies(
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
         },
     }
 }
@@ -2688,6 +2694,7 @@ pub fn check_for_link_with_dependencies_allowing_externs(
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
         },
     }
 }
@@ -2710,6 +2717,7 @@ pub fn check_package_files_for_link_with_environments(
     let enums: Vec[EnumDef] = Vec::new();
     let structs: Vec[StructDef] = Vec::new();
     let diagnostics: Vec[Diagnostic] = Vec::new();
+    let typeck_results = empty_typeck_results();
     let valid = Ref::new(true);
     for index in range(0, values.len()) {
         let package_files: Vec[hir::File] = Vec::new();
@@ -2732,6 +2740,7 @@ pub fn check_package_files_for_link_with_environments(
         for diagnostic in checked.diagnostics {
             diagnostics.push(diagnostic)
         };
+        append_typeck_results(typeck_results, checked.typeck_results);
         match checked.tast {
             Option::Some(file) => {
                 for item in file.items {
@@ -2758,5 +2767,6 @@ pub fn check_package_files_for_link_with_environments(
             Option::None
         },
         diagnostics,
+        typeck_results,
     }
 }

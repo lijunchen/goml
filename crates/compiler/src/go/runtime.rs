@@ -156,6 +156,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(std_io_println_raw()),
         Item::Fn(std_io_eprint_raw()),
         Item::Fn(std_io_read_stdin_raw()),
+        Item::Fn(std_io_read_stdin_exact_raw()),
         Item::Fn(std_io_write_stdout_raw()),
         Item::Fn(std_io_write_stderr_raw()),
         Item::Fn(std_path_join_raw()),
@@ -2105,6 +2106,90 @@ fn std_io_read_stdin_raw() -> goast::Fn {
                                 name: "_goml_os.File".to_string(),
                             },
                         )],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    vec_from_slice_expr(
+                                        &tast::Ty::TUint8,
+                                        goast::Expr::Nil {
+                                            ty: data_ty.clone(),
+                                        },
+                                    ),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            vec_from_slice_expr(&tast::Ty::TUint8, runtime_var("data", data_ty)),
+                            runtime_string(""),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_io_read_stdin_exact_raw() -> goast::Fn {
+    let data_ty = byte_slice_go_ty();
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TInt, err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, byte_vec_ty(), tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdIoReadStdinExact),
+        params: vec![("length".to_string(), goty::GoType::TInt)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "data".to_string(),
+                    ty: data_ty.clone(),
+                    value: Some(goast::Expr::Make {
+                        ty: data_ty.clone(),
+                        args: vec![runtime_var("length", goty::GoType::TInt)],
+                    }),
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["_".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_io.ReadFull",
+                        vec![
+                            goty::GoType::TName {
+                                name: "_goml_io.Reader".to_string(),
+                            },
+                            data_ty.clone(),
+                        ],
+                        multi_ty,
+                        vec![
+                            runtime_var(
+                                "_goml_os.Stdin",
+                                goty::GoType::TName {
+                                    name: "_goml_os.File".to_string(),
+                                },
+                            ),
+                            runtime_var("data", data_ty.clone()),
+                        ],
                     ),
                 },
                 goast::Stmt::If {

@@ -1,0 +1,375 @@
+package query;
+
+use gomlc::ast;
+use gomlc::cst;
+use gomlc::hir;
+use gomlc::parser;
+use gomlc::tast;
+
+pub struct Analysis {
+    pub source_path: string,
+    pub source: string,
+    pub package_name: string,
+    pub overrides: Vec[SourceOverride],
+    pub sources: Vec[SourceFile],
+    pub environments: Vec[tast::DependencyEnvironment],
+    pub parse: cst::ParseResult,
+    pub syntax: SyntaxIndex,
+    pub checked: tast::CheckResult,
+}
+
+struct LoweredPackage {
+    name: string,
+    files: Vec[hir::File],
+    diagnostics: Vec[tast::Diagnostic],
+}
+
+struct ProjectCheck {
+    checked: tast::CheckResult,
+    sources: Vec[SourceFile],
+    environments: Vec[tast::DependencyEnvironment],
+}
+
+fn query_diagnostic(
+    source_path: string,
+    stage: string,
+    message: string,
+    span: Option[ast::Span],
+) -> tast::Diagnostic {
+    tast::Diagnostic {
+        severity: tast::DiagnosticSeverity::Error,
+        stage,
+        message,
+        source_path,
+        span,
+        primary_label: Option::None,
+        secondary_labels: Vec::new(),
+        sort_order: 0,
+    }
+}
+
+fn failed_check(
+    source_path: string,
+    stage: string,
+    message: string,
+) -> tast::CheckResult {
+    let diagnostics = Vec::new();
+    diagnostics.push(query_diagnostic(
+        source_path,
+        stage,
+        message,
+        Option::None,
+    ));
+    tast::CheckResult {
+        tast: Option::None,
+        diagnostics,
+        typeck_results: tast::empty_typeck_results(),
+    }
+}
+
+fn lower_package(value: Project) -> LoweredPackage {
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    for file in value.files {
+        inputs.push((ast::lower(parser::parse(file.source)), file.path))
+    };
+    let lowered = hir::lower_package_files(inputs, value.package_name);
+    let files = Vec::new();
+    let diagnostics = Vec::new();
+    for value in lowered {
+        for diagnostic in value.diagnostics {
+            diagnostics.push(query_diagnostic(
+                value.source_path,
+                "lower",
+                diagnostic.message,
+                diagnostic.span,
+            ))
+        };
+        match value.hir {
+            Option::Some(file) => files.push(file),
+            Option::None => (),
+        }
+    };
+    LoweredPackage {
+        name: value.package_name,
+        files,
+        diagnostics,
+    }
+}
+
+fn contains_package(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn is_local_package(module_path: string, package_name: string) -> bool {
+    package_name == module_path
+        || (package_name.byte_len() > module_path.byte_len() + 2
+            && package_name.byte_slice(0, module_path.byte_len())
+                == module_path
+            && package_name.byte_slice(
+                module_path.byte_len(),
+                module_path.byte_len() + 2,
+            ) == "::")
+}
+
+fn dependency_sources(
+    module_root: string,
+    module_path: string,
+    package_name: string,
+    overrides: Vec[SourceOverride],
+) -> Result[Vec[SourceFile], string] {
+    match standard_library_source(package_name) {
+        Option::Some(file) => {
+            let files = Vec::new();
+            files.push(file);
+            Result::Ok(files)
+        },
+        Option::None => if is_local_package(module_path, package_name) {
+            match dependency_project(
+                module_root,
+                module_path,
+                package_name,
+                overrides,
+            ) {
+                Result::Ok(project) => Result::Ok(project.files),
+                Result::Err(error) => Result::Err(error),
+            }
+        } else {
+            external_package_sources(
+                module_root,
+                package_name,
+                overrides,
+            )
+        },
+    }
+}
+
+fn collect_dependency(
+    module_root: string,
+    module_path: string,
+    package_name: string,
+    overrides: Vec[SourceOverride],
+    visited: Vec[string],
+    dependencies: Vec[hir::File],
+    diagnostics: Vec[tast::Diagnostic],
+    all_sources: Vec[SourceFile],
+    source_path: string,
+) -> unit {
+    if contains_package(visited, package_name) {
+        ()
+    } else {
+        visited.push(package_name);
+        match dependency_sources(
+            module_root,
+            module_path,
+            package_name,
+            overrides,
+        ) {
+            Result::Ok(sources) => {
+                for source in sources {
+                    all_sources.push(source)
+                };
+                let project = Project {
+                    module_root,
+                    module_path,
+                    package_dir: "",
+                    package_name,
+                    files: sources,
+                };
+                let lowered = lower_package(project);
+                for diagnostic in lowered.diagnostics {
+                    diagnostics.push(diagnostic)
+                };
+                for file in lowered.files {
+                    for import in file.import_aliases {
+                        collect_dependency(
+                            module_root,
+                            module_path,
+                            import.package_name,
+                            overrides,
+                            visited,
+                            dependencies,
+                            diagnostics,
+                            all_sources,
+                            source_path,
+                        )
+                    }
+                };
+                for file in lowered.files {
+                    dependencies.push(file)
+                }
+            },
+            Result::Err(error) => diagnostics.push(query_diagnostic(
+                source_path,
+                "project",
+                error,
+                Option::None,
+            )),
+        }
+    }
+}
+
+fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck {
+    let all_sources = value.files;
+    let entry = lower_package(value);
+    let dependencies = Vec::new();
+    let diagnostics = entry.diagnostics;
+    let visited = Vec::new();
+    visited.push(entry.name);
+    for file in entry.files {
+        for import in file.import_aliases {
+            collect_dependency(
+                value.module_root,
+                value.module_path,
+                import.package_name,
+                overrides,
+                visited,
+                dependencies,
+                diagnostics,
+                all_sources,
+                value.files.get(0).path,
+            )
+        }
+    };
+    let environment_files = Vec::new();
+    for file in entry.files {
+        environment_files.push(file)
+    };
+    for file in dependencies {
+        environment_files.push(file)
+    };
+    let environments = tast::dependency_environments(environment_files);
+    let dependency_environments = tast::dependency_environments(dependencies);
+    let checked = if entry.files.len() > 0 {
+        tast::check_package_files_for_link_with_environments(
+            entry.files,
+            dependency_environments,
+        )
+    } else {
+        tast::CheckResult {
+            tast: Option::None,
+            diagnostics: Vec::new(),
+            typeck_results: tast::empty_typeck_results(),
+        }
+    };
+    for diagnostic in diagnostics {
+        checked.diagnostics.push(diagnostic)
+    };
+    append_builtin_navigation_source(all_sources);
+    ProjectCheck {
+        checked,
+        sources: all_sources,
+        environments,
+    }
+}
+
+fn single_file_analysis(
+    source_path: string,
+    source: string,
+    parsed: cst::ParseResult,
+    syntax: SyntaxIndex,
+    overrides: Vec[SourceOverride],
+) -> Analysis {
+    let lowered = hir::lower(ast::lower(parsed), source_path);
+    let package_name = match lowered.hir {
+        Option::Some(file) => if file.package_name == "" {
+            "main"
+        } else {
+            file.package_name
+        },
+        Option::None => "main",
+    };
+    let files = Vec::new();
+    files.push(SourceFile {
+        path: source_path,
+        source,
+        package_name,
+    });
+    let directory = source_directory(source_path);
+    let result = check_project(
+        Project {
+            module_root: directory,
+            module_path: package_name,
+            package_dir: directory,
+            package_name,
+            files,
+        },
+        overrides,
+    );
+    Analysis {
+        source_path,
+        source,
+        package_name,
+        overrides,
+        sources: result.sources,
+        environments: result.environments,
+        parse: parsed,
+        syntax,
+        checked: result.checked,
+    }
+}
+
+pub fn analyze_with_overrides(
+    source_path: string,
+    source: string,
+    overrides: Vec[SourceOverride],
+) -> Analysis {
+    let parsed = parser::parse(source);
+    let syntax = syntax_index(parsed.root);
+    match discover_project(source_path, source, overrides) {
+        Result::Ok(Option::Some(project)) => {
+            let package_name = project.package_name;
+            let result = check_project(project, overrides);
+            Analysis {
+                source_path,
+                source,
+                package_name,
+                overrides,
+                sources: result.sources,
+                environments: result.environments,
+                parse: parsed,
+                syntax,
+                checked: result.checked,
+            }
+        },
+        Result::Ok(Option::None) => {
+            single_file_analysis(
+                source_path,
+                source,
+                parsed,
+                syntax,
+                overrides,
+            )
+        },
+        Result::Err(error) => Analysis {
+            source_path,
+            source,
+            package_name: "",
+            overrides,
+            sources: Vec::new().pushed(SourceFile {
+                path: source_path,
+                source,
+                package_name: "",
+            }),
+            environments: Vec::new(),
+            parse: parsed,
+            syntax,
+            checked: failed_check(source_path, "project", error),
+        },
+    }
+}
+
+pub fn analyze(source_path: string, source: string) -> Analysis {
+    analyze_with_overrides(source_path, source, Vec::new())
+}
+
+pub fn diagnostics(value: Analysis) -> Vec[tast::Diagnostic] {
+    value.checked.diagnostics
+}

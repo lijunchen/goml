@@ -1,0 +1,549 @@
+package query;
+
+use std::env;
+use std::fs;
+use std::path;
+
+struct DependencyRequirement {
+    name: string,
+    version: string,
+}
+
+struct SemVersion {
+    major: int,
+    minor: int,
+    patch: int,
+}
+
+struct ResolvedModule {
+    name: string,
+    version: string,
+    root: string,
+}
+
+fn quoted_values(value: string) -> Vec[string] {
+    let result = Vec::new();
+    let start = Ref::new(Option::None);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 34 {
+            match start.get() {
+                Option::Some(offset) => {
+                    result.push(value.byte_slice(offset, index));
+                    start.set(Option::None)
+                },
+                Option::None => start.set(Option::Some(index + 1)),
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
+    let result = Vec::new();
+    let cursor = Ref::new(0);
+    let in_dependencies = Ref::new(false);
+    while cursor.get() <= source.byte_len() {
+        let end = Ref::new(cursor.get());
+        while end.get() < source.byte_len()
+            && source.byte_get(end.get()) != 10
+        {
+            end.set(end.get() + 1)
+        };
+        let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
+        if string_starts_with(line, "[") {
+            in_dependencies.set(line == "[dependencies]")
+        } else if in_dependencies.get() {
+            let values = quoted_values(line);
+            if values.len() >= 2 {
+                result.push(DependencyRequirement {
+                    name: values.get(0),
+                    version: values.get(1),
+                })
+            } else {
+                ()
+            }
+        } else {
+            ()
+        };
+        if end.get() == source.byte_len() {
+            cursor.set(source.byte_len() + 1)
+        } else {
+            cursor.set(end.get() + 1)
+        }
+    };
+    result
+}
+
+fn decimal_number(value: string) -> Option[int] {
+    if value.byte_len() == 0 {
+        Option::None
+    } else {
+        let result = Ref::new(0);
+        for index in range(0, value.byte_len()) {
+            let byte = value.byte_get(index);
+            if byte < 48 || byte > 57 {
+                return Option::None
+            } else {
+                result.set(result.get() * 10 + (byte - 48) as int)
+            }
+        };
+        Option::Some(result.get())
+    }
+}
+
+fn parse_sem_version(value: string) -> Option[SemVersion] {
+    let parts = Vec::new();
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len() + 1) {
+        if index == value.byte_len() || value.byte_get(index) == 46 {
+            parts.push(value.byte_slice(start.get(), index));
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    if parts.len() != 3 {
+        Option::None
+    } else {
+        match decimal_number(parts.get(0)) {
+            Option::Some(major) => match decimal_number(parts.get(1)) {
+                Option::Some(minor) => match decimal_number(parts.get(2)) {
+                    Option::Some(patch) => Option::Some(SemVersion {
+                        major,
+                        minor,
+                        patch,
+                    }),
+                    Option::None => Option::None,
+                },
+                Option::None => Option::None,
+            },
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn sem_version_less(left: SemVersion, right: SemVersion) -> bool {
+    left.major < right.major
+        || (left.major == right.major
+            && (left.minor < right.minor
+                || (left.minor == right.minor
+                    && left.patch < right.patch)))
+}
+
+fn sem_version_at_least(left: SemVersion, right: SemVersion) -> bool {
+    !sem_version_less(left, right)
+}
+
+fn registry_home() -> Result[string, string] {
+    match env::var("GOML_HOME") {
+        Option::Some(value) => if value != "" {
+            Result::Ok(value)
+        } else {
+            Result::Err("GOML_HOME is empty")
+        },
+        Option::None => match env::var("HOME") {
+            Option::Some(value) => if value != "" {
+                Result::Ok(path::join(value, ".goml"))
+            } else {
+                Result::Err("HOME is empty")
+            },
+            Option::None => match env::var("USERPROFILE") {
+                Option::Some(value) => if value != "" {
+                    Result::Ok(path::join(value, ".goml"))
+                } else {
+                    Result::Err("USERPROFILE is empty")
+                },
+                Option::None => {
+                    Result::Err("failed to determine GoML home directory")
+                },
+            },
+        },
+    }
+}
+
+fn registry_root() -> Result[string, string] {
+    match registry_home() {
+        Result::Ok(home) => Result::Ok(path::join(
+            path::join(home, "cache"),
+            "registry",
+        )),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn registry_versions(
+    root: string,
+    module_name: string,
+) -> Result[Vec[string], string] {
+    let index_path = path::join(root, "index.toml");
+    let source = match fs::read_file(index_path) {
+        Result::Ok(source) => source,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    let cursor = Ref::new(0);
+    let selected = Ref::new(false);
+    while cursor.get() <= source.byte_len() {
+        let end = Ref::new(cursor.get());
+        while end.get() < source.byte_len()
+            && source.byte_get(end.get()) != 10
+        {
+            end.set(end.get() + 1)
+        };
+        let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
+        if string_starts_with(line, "[") {
+            let names = quoted_values(line);
+            selected.set(
+                string_starts_with(line, "[modules.")
+                    && names.len() > 0
+                    && names.get(0) == module_name,
+            )
+        } else if selected.get()
+            && string_starts_with(line, "versions")
+        {
+            for version in quoted_values(line) {
+                result.push(version)
+            }
+        } else {
+            ()
+        };
+        if end.get() == source.byte_len() {
+            cursor.set(source.byte_len() + 1)
+        } else {
+            cursor.set(end.get() + 1)
+        }
+    };
+    if result.len() == 0 {
+        Result::Err(
+            "module " + module_name + " not found in registry index",
+        )
+    } else {
+        Result::Ok(result)
+    }
+}
+
+fn select_registry_version(
+    root: string,
+    requirement: DependencyRequirement,
+) -> Result[string, string] {
+    let minimum = match parse_sem_version(requirement.version) {
+        Option::Some(value) => value,
+        Option::None => return Result::Err(
+            "invalid semver `" + requirement.version + "`",
+        ),
+    };
+    let versions = match registry_versions(root, requirement.name) {
+        Result::Ok(values) => values,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let selected = Ref::new(Option::None);
+    let selected_version = Ref::new(Option::None);
+    for version in versions {
+        match parse_sem_version(version) {
+            Option::Some(parsed) => if sem_version_at_least(
+                parsed,
+                minimum,
+            ) && match selected_version.get() {
+                Option::Some(current) => sem_version_less(parsed, current),
+                Option::None => true,
+            } {
+                selected.set(Option::Some(version));
+                selected_version.set(Option::Some(parsed))
+            } else {
+                ()
+            },
+            Option::None => return Result::Err(
+                "invalid registry semver `" + version + "`",
+            ),
+        }
+    };
+    match selected.get() {
+        Option::Some(version) => Result::Ok(version),
+        Option::None => Result::Err(
+            "registry has no version for "
+                + requirement.name
+                + " satisfying >= "
+                + requirement.version,
+        ),
+    }
+}
+
+fn module_segments(value: string) -> Option[(string, string)] {
+    let first = Ref::new(Option::None);
+    let index = Ref::new(0);
+    while index.get() + 1 < value.byte_len() {
+        if value.byte_get(index.get()) == 58
+            && value.byte_get(index.get() + 1) == 58
+        {
+            match first.get() {
+                Option::Some(_) => (),
+                Option::None => first.set(Option::Some(index.get())),
+            };
+            index.set(index.get() + 1)
+        } else {
+            ()
+        };
+        index.set(index.get() + 1)
+    };
+    match first.get() {
+        Option::Some(separator) => Option::Some((
+            value.byte_slice(0, separator),
+            value.byte_slice(separator + 2, value.byte_len()),
+        )),
+        Option::None => Option::None,
+    }
+}
+
+fn module_directory(
+    registry: string,
+    module_name: string,
+    version: string,
+) -> Result[string, string] {
+    match module_segments(module_name) {
+        Option::Some((owner, module)) => Result::Ok(path::join(
+            path::join(
+                path::join(registry, owner),
+                module,
+            ),
+            version,
+        )),
+        Option::None => Result::Err(
+            "invalid module coordinate `" + module_name + "`",
+        ),
+    }
+}
+
+fn selected_module_index(
+    values: Vec[ResolvedModule],
+    name: string,
+) -> Option[int] {
+    let result = Ref::new(Option::None);
+    for index in range(0, values.len()) {
+        if values.get(index).name == name {
+            result.set(Option::Some(index))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn resolve_external_modules_at(
+    module_root: string,
+    registry: string,
+) -> Result[Vec[ResolvedModule], string] {
+    let manifest = match fs::read_file(path::join(
+        module_root,
+        "goml.toml",
+    )) {
+        Result::Ok(source) => source,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let queue = manifest_dependencies(manifest);
+    let cursor = Ref::new(0);
+    let selected = Vec::new();
+    while cursor.get() < queue.len() {
+        let requirement = queue.get(cursor.get());
+        cursor.set(cursor.get() + 1);
+        let version = match select_registry_version(
+            registry,
+            requirement,
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let parsed = match parse_sem_version(version) {
+            Option::Some(value) => value,
+            Option::None => return Result::Err(
+                "invalid registry semver `" + version + "`",
+            ),
+        };
+        let update = match selected_module_index(
+            selected,
+            requirement.name,
+        ) {
+            Option::Some(index) => match parse_sem_version(
+                selected.get(index).version,
+            ) {
+                Option::Some(current) => sem_version_less(current, parsed),
+                Option::None => true,
+            },
+            Option::None => true,
+        };
+        if update {
+            let root = match module_directory(
+                registry,
+                requirement.name,
+                version,
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            };
+            let module_manifest = match fs::read_file(path::join(
+                root,
+                "goml.toml",
+            )) {
+                Result::Ok(source) => source,
+                Result::Err(error) => return Result::Err(error),
+            };
+            match manifest_module_path(module_manifest) {
+                Option::Some(name) => if name != requirement.name {
+                    return Result::Err(
+                        "registry module "
+                            + requirement.name
+                            + " declares module path "
+                            + name,
+                    )
+                } else {
+                    ()
+                },
+                Option::None => return Result::Err(
+                    "registry module "
+                        + requirement.name
+                        + " has no module path",
+                ),
+            };
+            match selected_module_index(selected, requirement.name) {
+                Option::Some(index) => selected.set(index, ResolvedModule {
+                    name: requirement.name,
+                    version,
+                    root,
+                }),
+                Option::None => selected.push(ResolvedModule {
+                    name: requirement.name,
+                    version,
+                    root,
+                }),
+            };
+            for dependency in manifest_dependencies(module_manifest) {
+                queue.push(dependency)
+            }
+        } else {
+            ()
+        }
+    };
+    Result::Ok(selected)
+}
+
+fn resolve_external_modules(
+    module_root: string,
+) -> Result[Vec[ResolvedModule], string] {
+    match registry_root() {
+        Result::Ok(registry) => resolve_external_modules_at(
+            module_root,
+            registry,
+        ),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn module_matches_package(module_name: string, package_name: string) -> bool {
+    package_name == module_name
+        || (package_name.byte_len() > module_name.byte_len() + 2
+            && package_name.byte_slice(0, module_name.byte_len())
+                == module_name
+            && package_name.byte_slice(
+                module_name.byte_len(),
+                module_name.byte_len() + 2,
+            ) == "::")
+}
+
+fn external_package_directory(
+    module: ResolvedModule,
+    package_name: string,
+) -> Option[string] {
+    if package_name == module.name {
+        Option::Some(module.root)
+    } else if module_matches_package(module.name, package_name) {
+        let suffix = package_name.byte_slice(
+            module.name.byte_len() + 2,
+            package_name.byte_len(),
+        );
+        let directory = Ref::new(module.root);
+        let start = Ref::new(0);
+        for index in range(0, suffix.byte_len() + 1) {
+            let separator = index == suffix.byte_len()
+                || (index + 1 < suffix.byte_len()
+                    && suffix.byte_get(index) == 58
+                    && suffix.byte_get(index + 1) == 58);
+            if separator {
+                directory.set(path::join(
+                    directory.get(),
+                    suffix.byte_slice(start.get(), index),
+                ));
+                start.set(index + 2)
+            } else {
+                ()
+            }
+        };
+        Option::Some(directory.get())
+    } else {
+        Option::None
+    }
+}
+
+fn external_package_sources(
+    module_root: string,
+    package_name: string,
+    overrides: Vec[SourceOverride],
+) -> Result[Vec[SourceFile], string] {
+    let modules = match resolve_external_modules(module_root) {
+        Result::Ok(values) => values,
+        Result::Err(error) => return Result::Err(error),
+    };
+    for module in modules {
+        match external_package_directory(module, package_name) {
+            Option::Some(directory) => match collect_dependency_files(
+                directory,
+                overrides,
+            ) {
+                Result::Ok(files) => return Result::Ok(
+                    source_files_with_package(files, package_name),
+                ),
+                Result::Err(error) => return Result::Err(error),
+            },
+            Option::None => (),
+        }
+    };
+    Result::Err(
+        "package "
+            + package_name
+            + " is not provided by a resolved dependency",
+    )
+}
+
+fn external_package_sources_at(
+    registry: string,
+    module_root: string,
+    package_name: string,
+    overrides: Vec[SourceOverride],
+) -> Result[Vec[SourceFile], string] {
+    let modules = match resolve_external_modules_at(
+        module_root,
+        registry,
+    ) {
+        Result::Ok(values) => values,
+        Result::Err(error) => return Result::Err(error),
+    };
+    for module in modules {
+        match external_package_directory(module, package_name) {
+            Option::Some(directory) => match collect_dependency_files(
+                directory,
+                overrides,
+            ) {
+                Result::Ok(files) => return Result::Ok(
+                    source_files_with_package(files, package_name),
+                ),
+                Result::Err(error) => return Result::Err(error),
+            },
+            Option::None => (),
+        }
+    };
+    Result::Err(
+        "package "
+            + package_name
+            + " is not provided by a resolved dependency",
+    )
+}

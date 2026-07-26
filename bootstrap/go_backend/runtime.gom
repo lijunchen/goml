@@ -362,7 +362,9 @@ pub fn emit_runtime_hook_items(
                 } else if hook == "std.io.eprint" {
                     uses_fmt.set(true);
                     uses_os.set(true)
-                } else if hook == "std.io.read_stdin" {
+                } else if hook == "std.io.read_stdin"
+                    || hook == "std.io.read_stdin_exact"
+                {
                     uses_io.set(true);
                     uses_os.set(true)
                 } else if hook == "std.io.write_stdout"
@@ -551,6 +553,7 @@ pub fn emit_runtime_hook_items(
     ordered.push("std.io.println");
     ordered.push("std.io.eprint");
     ordered.push("std.io.read_stdin");
+    ordered.push("std.io.read_stdin_exact");
     ordered.push("std.io.write_stdout");
     ordered.push("std.io.write_stderr");
     ordered.push("std.path.join");

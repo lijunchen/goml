@@ -1,0 +1,131 @@
+package query;
+
+use gomlc::ast;
+use gomlc::cst;
+use gomlc::lexer;
+use gomlc::tast;
+
+pub struct InlayHint {
+    pub position: int,
+    pub label: string,
+    pub span: ast::Span,
+}
+
+fn containing_let(
+    syntax: SyntaxIndex,
+    span: ast::Span,
+) -> Option[SyntaxNode] {
+    let result = Ref::new(Option::None);
+    let width = Ref::new(2147483647);
+    for node in syntax.nodes {
+        let node_width = node.end - node.start;
+        if cst::node_kind_equal(node.kind, cst::NodeKind::STMT_LET)
+            && node.start <= span.start
+            && node.end >= span.end
+            && node_width < width.get()
+        {
+            result.set(Option::Some(node));
+            width.set(node_width)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn containing_closure_parameter(
+    syntax: SyntaxIndex,
+    span: ast::Span,
+) -> Option[SyntaxNode] {
+    let result = Ref::new(Option::None);
+    let width = Ref::new(2147483647);
+    for node in syntax.nodes {
+        let node_width = node.end - node.start;
+        if cst::node_kind_equal(
+            node.kind,
+            cst::NodeKind::CLOSURE_PARAM,
+        ) && node.start <= span.start
+            && node.end >= span.end
+            && node_width < width.get()
+        {
+            result.set(Option::Some(node));
+            width.set(node_width)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn let_has_annotation(
+    syntax: SyntaxIndex,
+    statement: SyntaxNode,
+) -> bool {
+    let found = Ref::new(false);
+    for token in syntax.tokens {
+        if token.parent == statement.id
+            && lexer::token_kind_equal(token.kind, lexer::TokenKind::Colon)
+        {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
+    let hints = Vec::new();
+    for fact in value.checked.typeck_results.locals {
+        if fact.source_path == value.source_path {
+            match local_definition_span(value, fact.local) {
+                Option::Some(definition) => match containing_let(
+                    value.syntax,
+                    definition.span,
+                ) {
+                    Option::Some(statement) => if let_has_annotation(
+                        value.syntax,
+                        statement,
+                    ) {
+                        ()
+                    } else {
+                        match tast::resolve_type(fact.ty) {
+                            tast::Type::Error => (),
+                            ty => hints.push(InlayHint {
+                                position: definition.span.end,
+                                label: ": " + tast::diagnostic_type_text(ty),
+                                span: definition.span,
+                            }),
+                        }
+                    },
+                    Option::None => match containing_closure_parameter(
+                        value.syntax,
+                        definition.span,
+                    ) {
+                        Option::Some(parameter) => if let_has_annotation(
+                            value.syntax,
+                            parameter,
+                        ) {
+                            ()
+                        } else {
+                            match tast::resolve_type(fact.ty) {
+                                tast::Type::Error => (),
+                                ty => hints.push(InlayHint {
+                                    position: definition.span.end,
+                                    label: ": "
+                                        + tast::diagnostic_type_text(ty),
+                                    span: definition.span,
+                                }),
+                            }
+                        },
+                        Option::None => (),
+                    },
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    hints
+}

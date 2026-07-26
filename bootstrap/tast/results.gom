@@ -1,0 +1,87 @@
+package tast;
+
+use gomlc::ast;
+use gomlc::hir;
+
+pub struct ExprFact {
+    pub source_path: string,
+    pub span: ast::Span,
+    pub ty: Type,
+}
+
+pub struct PatFact {
+    pub source_path: string,
+    pub span: ast::Span,
+    pub ty: Type,
+}
+
+pub struct LocalFact {
+    pub source_path: string,
+    pub span: Option[ast::Span],
+    pub local: hir::LocalId,
+    pub ty: Type,
+}
+
+pub enum ReferenceTarget {
+    Local(hir::LocalId),
+    Definition(hir::DefId),
+    Callable(Callable),
+    Constructor(Constructor),
+    Unresolved(string),
+}
+
+pub struct ReferenceFact {
+    pub source_path: string,
+    pub span: ast::Span,
+    pub target: ReferenceTarget,
+    pub ty: Type,
+}
+
+pub struct CallFact {
+    pub source_path: string,
+    pub span: ast::Span,
+    pub callee_span: ast::Span,
+    pub argument_spans: Vec[ast::Span],
+    pub target: ReferenceTarget,
+    pub callee_ty: Type,
+    pub result_ty: Type,
+}
+
+pub struct TypeckResults {
+    pub exprs: Vec[ExprFact],
+    pub pats: Vec[PatFact],
+    pub locals: Vec[LocalFact],
+    pub references: Vec[ReferenceFact],
+    pub calls: Vec[CallFact],
+}
+
+pub fn empty_typeck_results() -> TypeckResults {
+    TypeckResults {
+        exprs: Vec::new(),
+        pats: Vec::new(),
+        locals: Vec::new(),
+        references: Vec::new(),
+        calls: Vec::new(),
+    }
+}
+
+pub fn append_typeck_results(
+    target: TypeckResults,
+    source: TypeckResults,
+) -> unit {
+    for value in source.exprs {
+        target.exprs.push(value)
+    };
+    for value in source.pats {
+        target.pats.push(value)
+    };
+    for value in source.locals {
+        target.locals.push(value)
+    };
+    for value in source.references {
+        target.references.push(value)
+    };
+    for value in source.calls {
+        target.calls.push(value)
+    }
+}
