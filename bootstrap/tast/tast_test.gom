@@ -832,6 +832,50 @@ fn validates_declared_types_and_tostring_requirements() -> unit {
 }
 
 #[test]
+fn reports_unimported_package_members_like_the_rust_compiler() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package dep; pub fn value() -> int32 { 1 }",
+        "package_model_test::dep",
+    ));
+    let result = check_for_link_with_dependencies(
+        hir::lower_package(
+            ast::lower(parser::parse(
+                "package main; fn main() -> unit { let _ = dep::value(); }",
+            )),
+            "main.gom",
+            "package_model_test",
+        ),
+        dependencies,
+    );
+    testing::assert_eq(result.diagnostics.len(), 2);
+    testing::assert_eq(result.diagnostics.get(0).message, "Could not infer type");
+    match result.diagnostics.get(0).span {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected spanless inference diagnostic"),
+    };
+    testing::assert_eq(result.diagnostics.get(0).source_path, "");
+    testing::assert_eq(
+        result.diagnostics.get(1).message,
+        "Type or trait package_model_test::dep not found for member access",
+    )
+}
+
+#[test]
+fn reports_missing_constructor_inference_like_the_rust_compiler() -> unit {
+    let diagnostics = checked_diagnostics(
+        "enum Direction { North } fn main() -> unit { let _ = Direction::Up; }",
+    );
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(diagnostics.get(0).message, "Could not infer type");
+    testing::assert_eq(diagnostics.get(0).source_path, "");
+    testing::assert_eq(
+        diagnostics.get(1).message,
+        "Constructor Direction::Up not found in environment",
+    )
+}
+
+#[test]
 fn accepts_blocks_terminated_by_return() -> unit {
     let source = "fn direct() -> int32 { return 1; } fn branch(flag: bool) -> int32 { if flag { return 1; } else { return 2; }; }";
     let result = check(hir::lower(
@@ -1938,6 +1982,16 @@ fn preserves_associated_into_iterator_item_projection() -> unit {
         },
         _ => testing::fail("expected iterate function"),
     }
+}
+
+#[test]
+fn resolves_iterator_item_for_for_loop_method_calls() -> unit {
+    let source = "struct Values {} impl Iterator for Values { type Item = int32; fn next(self: Values) -> Option[int32] { Option::None } } fn main() -> unit { for value in (Values {}) { string_println(value.to_string()); }; }";
+    let result = check_for_link(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]

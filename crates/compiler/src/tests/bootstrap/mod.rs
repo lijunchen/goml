@@ -293,6 +293,12 @@ fn compare_corpus_stage(stage: Stage) {
         repository.tests(),
         repository.root.join("crates/lexer"),
         repository.root.join("crates/parser"),
+        repository
+            .root
+            .join("crates/compiler/src/builtin_contract.gom"),
+        repository
+            .root
+            .join("crates/compiler/src/builtin_prelude.gom"),
         repository.root.join("stdlib"),
         repository.bootstrap.clone(),
     ];
@@ -336,6 +342,58 @@ fn generated_sources_match() {
             &temporary.path().join(format!("{stage}.gom")),
             stage,
             2048,
+        );
+    }
+    generated::compare_codegen(
+        &repository.bootstrap_gomlc,
+        &temporary.path().join("go.gom"),
+        72,
+    );
+}
+
+#[test]
+fn compiler_version_protocols_match() {
+    let _guard = serial();
+    let repository = prepare();
+    let mut rust = Command::new(&repository.rust_gomlc);
+    rust.args(["version", "--format", "json"]);
+    let rust = checked_output(&mut rust, "Rust compiler version");
+    let mut bootstrap = Command::new(&repository.bootstrap_gomlc);
+    bootstrap.args(["version", "--format", "json"]);
+    let bootstrap = checked_output(&mut bootstrap, "bootstrap compiler version");
+    let rust: serde_json::Value = serde_json::from_slice(&rust.stdout).unwrap();
+    let bootstrap: serde_json::Value = serde_json::from_slice(&bootstrap.stdout).unwrap();
+    for field in [
+        "tool",
+        "version",
+        "driver_protocol",
+        "artifact_format",
+        "compiler_abi",
+    ] {
+        assert_eq!(rust[field], bootstrap[field], "version field {field}");
+    }
+    assert!(bootstrap["git_hash"].is_null());
+    assert!(bootstrap["git_date"].is_null());
+}
+
+#[test]
+fn cli_subcommand_suggestions_match() {
+    let _guard = serial();
+    let repository = prepare();
+    for typo in ["chec", "buid", "versio", "run-singe", "lnik"] {
+        let rust = Command::new(&repository.rust_gomlc)
+            .arg(typo)
+            .output()
+            .unwrap();
+        let bootstrap = Command::new(&repository.bootstrap_gomlc)
+            .arg(typo)
+            .output()
+            .unwrap();
+        assert_eq!(rust.status.code(), bootstrap.status.code(), "{typo}");
+        assert_bytes(
+            &format!("subcommand suggestion mismatch for {typo}"),
+            &rust.stderr,
+            &bootstrap.stderr,
         );
     }
 }
@@ -567,6 +625,89 @@ fn compare_modules(repository: &Repository, temporary: &TempDir) -> usize {
     outputs.len()
 }
 
+fn compare_module_diagnostics(repository: &Repository, temporary: &TempDir) -> usize {
+    let root = repository.tests().join("module_diagnostics");
+    let mut projects: Vec<PathBuf> = fs::read_dir(&root)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| path.is_dir())
+        .filter(|path| {
+            path.join("main.gom.expect").is_file()
+                || path.join("main.gom.ok").is_file()
+                || path.join("main.gom.build").is_file()
+        })
+        .collect();
+    projects.sort();
+    assert!(!projects.is_empty());
+    let mut mismatches = Vec::new();
+    for (index, project) in projects.iter().enumerate() {
+        let command = if project.join("main.gom.build").is_file() {
+            "build"
+        } else {
+            "check"
+        };
+        let rust_target = temporary
+            .path()
+            .join(format!("module-diagnostic-rust-{index}"));
+        let bootstrap_target = temporary
+            .path()
+            .join(format!("module-diagnostic-bootstrap-{index}"));
+        let mut rust = Command::new(&repository.goml);
+        rust.current_dir(temporary.path())
+            .arg(command)
+            .arg("--compiler")
+            .arg(&repository.rust_gomlc)
+            .arg("--target-dir")
+            .arg(&rust_target)
+            .arg(project);
+        let rust = rust.output().unwrap();
+        let mut bootstrap = Command::new(&repository.goml);
+        bootstrap
+            .current_dir(temporary.path())
+            .arg(command)
+            .arg("--compiler")
+            .arg(&repository.bootstrap_gomlc)
+            .arg("--target-dir")
+            .arg(&bootstrap_target)
+            .arg(project);
+        let bootstrap = bootstrap.output().unwrap();
+        if rust.status.code() != bootstrap.status.code() {
+            mismatches.push(format!(
+                "module diagnostic status mismatch for {}\nRust: {:?}\nBootstrap: {:?}",
+                project.display(),
+                rust.status.code(),
+                bootstrap.status.code()
+            ));
+        }
+        let rust_stdout = String::from_utf8(rust.stdout)
+            .unwrap()
+            .replace(rust_target.to_str().unwrap(), "<TARGET>");
+        let bootstrap_stdout = String::from_utf8(bootstrap.stdout)
+            .unwrap()
+            .replace(bootstrap_target.to_str().unwrap(), "<TARGET>");
+        if rust_stdout != bootstrap_stdout {
+            mismatches.push(format!(
+                "module diagnostic stdout mismatch for {}\nRust:\n{rust_stdout}\nBootstrap:\n{bootstrap_stdout}",
+                project.display()
+            ));
+        }
+        let rust_stderr = String::from_utf8(rust.stderr)
+            .unwrap()
+            .replace(rust_target.to_str().unwrap(), "<TARGET>");
+        let bootstrap_stderr = String::from_utf8(bootstrap.stderr)
+            .unwrap()
+            .replace(bootstrap_target.to_str().unwrap(), "<TARGET>");
+        if rust_stderr != bootstrap_stderr {
+            mismatches.push(format!(
+                "module diagnostic stderr mismatch for {}\nRust:\n{rust_stderr}\nBootstrap:\n{bootstrap_stderr}",
+                project.display()
+            ));
+        }
+    }
+    assert!(mismatches.is_empty(), "{}", mismatches.join("\n\n"));
+    projects.len()
+}
+
 fn compare_crashers(repository: &Repository, temporary: &TempDir) -> usize {
     let mut sources: Vec<PathBuf> = gom_files(&[repository.tests().join("crashers")])
         .into_iter()
@@ -656,6 +797,7 @@ fn compiler_test_suites_match() {
     matched += compare_diagnostic_suite(&repository, "struct_type");
     matched += compare_e2e(&repository);
     matched += compare_modules(&repository, &temporary);
+    matched += compare_module_diagnostics(&repository, &temporary);
     matched += compare_crashers(&repository, &temporary);
     assert!(matched > 0);
 }

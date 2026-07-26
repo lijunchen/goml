@@ -181,6 +181,15 @@ fn reports_invalid_parameter_types() -> unit {
 }
 
 #[test]
+fn reports_trait_impl_method_visibility_on_the_impl() -> unit {
+    let source = "trait Render { fn render(self: Self) -> string; } struct Value {} impl Render for Value { pub fn render(self: Value) -> string { \"value\" } }";
+    let result = lower(parser::parse(source));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.get(0).start, 66);
+    testing::assert_eq(result.diagnostics.get(0).end, 140)
+}
+
+#[test]
 fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
     let inconsistent = lower(parser::parse(
         "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",

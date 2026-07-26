@@ -176,7 +176,7 @@ fn valid_source(state: &mut u64) -> String {
 
 fn typed_source(state: &mut u64) -> String {
     let value = next_noise(state) % 1000;
-    match next_noise(state) % 14 {
+    match next_noise(state) % 18 {
         0 => format!("fn generated() -> int32 {{ {value} }}\n"),
         1 => "fn id[T](value: T) -> T { value }\nfn generated() -> string { id(\"text\") }\n"
             .to_string(),
@@ -199,7 +199,15 @@ fn typed_source(state: &mut u64) -> String {
         11 => "fn generated() -> char { 'λ' }\n".to_string(),
         12 => "struct Point[T] { value: T }\nimpl[T] Point[T] { fn new(value: T) -> Point[T] { Point { value } } }\nfn generated() -> Point[int32] { Point::new(1) }\n"
             .to_string(),
-        _ => "fn generated(values: [int32; 3]) -> int32 { values[0] }\n".to_string(),
+        13 => "fn generated(values: [int32; 3]) -> int32 { values[0] }\n".to_string(),
+        14 => "struct Values {} impl Iterator for Values { type Item = int32; fn next(self: Values) -> Option[int32] { Option::None } } fn generated(values: Values) -> unit { for value in values { let _ = value.to_string(); } }\n"
+            .to_string(),
+        15 => "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn generated() -> int32 { (Value { value: 7 }).pick() }\n"
+            .to_string(),
+        16 => "struct Values { values: Vec[int32] } impl IntoIterator for Values { type Item = int32; type IntoIter = FnIterator[int32]; fn into_iter(self: Values) -> FnIterator[int32] { self.values.iter() } } fn generated(values: Values) -> unit { for value in values { let _: int32 = value; } }\n"
+            .to_string(),
+        _ => "fn generated[S: IntoIterator](source: S) -> int32 where S::Item = int32 { let total = Ref::new(0); for value in source { total.set(total.get() + value); }; total.get() }\n"
+            .to_string(),
     }
 }
 
@@ -245,6 +253,35 @@ pub fn compare_parser(parser: &Path, input_path: &Path, mode: &str, iterations: 
         assert_eq!(
             actual, expected,
             "{mode} mismatch at iteration {iteration} for {source:?}"
+        );
+    }
+}
+
+pub fn compare_codegen(parser: &Path, input_path: &Path, iterations: usize) {
+    let mut state = 0xbb67_ae85_84ca_a73bu64;
+    for iteration in 0..iterations {
+        let source = typed_source(&mut state);
+        fs::write(input_path, &source).unwrap();
+        let expected = oracle::encode_go(input_path, &source);
+        if expected.is_empty() {
+            panic!("Rust Go oracle rejected iteration {iteration} for {source:?}");
+        }
+        let output = Command::new(parser)
+            .arg("__canonical-stage")
+            .arg("go")
+            .arg(input_path)
+            .output()
+            .unwrap();
+        if !output.status.success() {
+            panic!(
+                "GoML compiler failed in Go iteration {iteration} for {source:?}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+        let actual = String::from_utf8(output.stdout).unwrap();
+        assert_eq!(
+            actual, expected,
+            "Go mismatch at iteration {iteration} for {source:?}"
         );
     }
 }
