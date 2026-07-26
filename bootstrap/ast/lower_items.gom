@@ -201,6 +201,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
         Option::Some(name_token) => {
             let (generics, _) = lower_generics(ctx, node);
             let fields: Vec[(string, TypeExpr)] = Vec::new();
+            let field_type_spans: Vec[Span] = Vec::new();
             let public_fields: Vec[string] = Vec::new();
             match first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
                 Option::Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
@@ -208,8 +209,10 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                     let types = type_children(field);
                     match field_name {
                         Option::Some(name) => if types.len() > 0 {
-                            match lower_ty(ctx, types.get(0)) {
+                            let type_node = types.get(0);
+                            match lower_ty(ctx, type_node) {
                                 Option::Some(ty) => {
+                                    field_type_spans.push(type_head_span(type_node));
                                     fields.push((name.token.text, ty));
                                     match lower_visibility(field) {
                                         Visibility::Public => public_fields.push(name.token.text),
@@ -232,6 +235,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                 name: name_token.token.text,
                 generics,
                 fields,
+                field_type_spans,
                 public_fields,
             })
         },

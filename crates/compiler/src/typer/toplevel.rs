@@ -2528,7 +2528,9 @@ fn validate_supertrait_cycles(env: &PackageTypeEnv, diagnostics: &mut Diagnostic
         .collect::<HashMap<_, _>>();
     let mut visited = HashSet::new();
     let mut reported = HashSet::new();
-    for name in graph.keys() {
+    let mut names = graph.keys().collect::<Vec<_>>();
+    names.sort();
+    for name in names {
         visit(
             name,
             &graph,

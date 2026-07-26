@@ -42,6 +42,7 @@ fn function_context(
         locals: Vec::new(),
         unresolved_locals: Vec::new(),
         unresolved_inference_vars: Vec::new(),
+        reported_inference_spans: Vec::new(),
         suppress_unresolved_ref_diagnostic: Ref::new(0),
         mutable_locals: Vec::new(),
         return_ty: ret_ty,
@@ -83,6 +84,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         locals: base.locals,
         unresolved_locals: base.unresolved_locals,
         unresolved_inference_vars: base.unresolved_inference_vars,
+        reported_inference_spans: base.reported_inference_spans,
         suppress_unresolved_ref_diagnostic: base.suppress_unresolved_ref_diagnostic,
         mutable_locals: base.mutable_locals,
         return_ty: ret_ty,
@@ -623,6 +625,51 @@ fn trait_reference_has_wrong_arity(
     }
 }
 
+fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
+    match value {
+        hir::TypeExpr::Projection { base: hir::TypeExpr::Con { name }, associated: _ } => {
+            name == "Self"
+        },
+        hir::TypeExpr::Projection { base, associated: _ }
+        | hir::TypeExpr::Array { len: _, elem: base } => hir_type_uses_self_projection(base),
+        hir::TypeExpr::Tuple { items } => {
+            for item in items {
+                if hir_type_uses_self_projection(item) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        hir::TypeExpr::App { ty, args } => {
+            if hir_type_uses_self_projection(ty) {
+                true
+            } else {
+                for arg in args {
+                    if hir_type_uses_self_projection(arg) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
+        },
+        hir::TypeExpr::Func { params, ret_ty } => {
+            for param in params {
+                if hir_type_uses_self_projection(param) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            hir_type_uses_self_projection(ret_ty)
+        },
+        _ => false,
+    }
+}
+
 fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     let invalid = Ref::new(false);
     let previous_span = base.current_span.get();
@@ -711,18 +758,22 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         },
         Option::None => (),
     };
-    let associated_predicates = match trait_ref {
-        Option::Some(reference) => append_predicates(
-            predicates,
-            Vec::new().pushed(TypePredicate::Trait {
-                for_ty: for_type,
-                trait_ref: reference,
-            }),
-        ),
-        Option::None => predicates,
-    };
     let associated_types: Vec[(string, Type)] = Vec::new();
     for associated in value.associated_types {
+        let associated_predicates = match trait_ref {
+            Option::Some(reference) => if hir_type_uses_self_projection(associated.1) {
+                append_predicates(
+                    predicates,
+                    Vec::new().pushed(TypePredicate::Trait {
+                        for_ty: for_type,
+                        trait_ref: reference,
+                    }),
+                )
+            } else {
+                predicates
+            },
+            Option::None => predicates,
+        };
         associated_types.push((
             associated.0,
             resolve_signature_type(
@@ -2177,11 +2228,26 @@ fn attach_type_diagnostic_span(
     span: Option[ast::Span],
 ) -> unit {
     match value {
-        hir::TypeExpr::Con { name } => attach_diagnostic_span(
-            ctx,
-            "Unknown type constructor " + name,
-            span,
-        ),
+        hir::TypeExpr::Con { name } => match nominal_arity(ctx, name) {
+            Option::Some(expected) => if expected != 0 {
+                attach_diagnostic_span(
+                    ctx,
+                    "Type "
+                        + short_name(name)
+                        + " expects "
+                        + expected.to_string()
+                        + " type arguments, but got 0",
+                    span,
+                )
+            } else {
+                ()
+            },
+            Option::None => attach_diagnostic_span(
+                ctx,
+                "Unknown type constructor " + name,
+                span,
+            ),
+        },
         hir::TypeExpr::App { ty, args } => {
             match ty {
                 hir::TypeExpr::Con { name } => match nominal_arity(ctx, name) {
@@ -2377,6 +2443,21 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                     },
                 }
             },
+            hir::Item::StructDef(value) => if value.generics.len() == 0 {
+                for index in range(0, value.fields.len()) {
+                    attach_type_diagnostic_span(
+                        ctx,
+                        value.fields.get(index).1,
+                        if index < value.field_type_spans.len() {
+                            Option::Some(value.field_type_spans.get(index))
+                        } else {
+                            Option::None
+                        },
+                    )
+                }
+            } else {
+                ()
+            },
             hir::Item::TraitDef(value) => {
                 for bound in value.generic_bounds {
                     for reference in bound.1 {
@@ -2411,11 +2492,15 @@ fn check_file_with_package(
     value: hir::File,
     package_files: Vec[hir::File],
     dependencies: Vec[DependencyEnvironment],
+    diagnostics: Vec[Diagnostic],
     include_builtin_types: bool,
     validate_function_names: bool,
     allow_externs: bool,
 ) -> CheckResult {
     let ctx = collect_environment(value, allow_externs);
+    for diagnostic in diagnostics {
+        ctx.diagnostics.push(diagnostic)
+    };
     for span in value.invalid_self_type_spans {
         push_diagnostic_at(
             ctx,
@@ -2522,6 +2607,7 @@ fn check_file_with_package(
 fn check_file(
     value: hir::File,
     dependencies: Vec[hir::File],
+    diagnostics: Vec[Diagnostic],
     include_builtin_types: bool,
     allow_externs: bool,
 ) -> CheckResult {
@@ -2529,6 +2615,7 @@ fn check_file(
         value,
         Vec::new(),
         dependency_environments(dependencies),
+        diagnostics,
         include_builtin_types,
         true,
         allow_externs,
@@ -2537,7 +2624,13 @@ fn check_file(
 
 pub fn check(value: hir::LowerResult) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file, Vec::new(), true, false),
+        Option::Some(file) => check_file(
+            file,
+            Vec::new(),
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            true,
+            false,
+        ),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
@@ -2547,7 +2640,13 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
 
 pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file, Vec::new(), false, false),
+        Option::Some(file) => check_file(
+            file,
+            Vec::new(),
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            false,
+        ),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
@@ -2560,7 +2659,13 @@ pub fn check_for_link_with_dependencies(
     dependencies: Vec[hir::File],
 ) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file, dependencies, false, false),
+        Option::Some(file) => check_file(
+            file,
+            dependencies,
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            false,
+        ),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
@@ -2573,7 +2678,13 @@ pub fn check_for_link_with_dependencies_allowing_externs(
     dependencies: Vec[hir::File],
 ) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file, dependencies, false, true),
+        Option::Some(file) => check_file(
+            file,
+            dependencies,
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            true,
+        ),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
@@ -2613,6 +2724,7 @@ pub fn check_package_files_for_link_with_environments(
             values.get(index),
             package_files,
             dependencies,
+            Vec::new(),
             false,
             index == 0,
             false,

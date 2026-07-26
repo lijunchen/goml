@@ -401,9 +401,13 @@ fn artifact_decode_type(
                 };
                 let length = match artifact_json_required_field(object, "len") {
                     Result::Ok(value) => match artifact_json_number_value(value, "array length") {
-                        Result::Ok(value) => match artifact_parse_nonnegative_int(value) {
-                            Result::Ok(value) => value,
-                            Result::Err(error) => return Result::Err(error),
+                        Result::Ok(value) => if value == "18446744073709551615" {
+                            -1
+                        } else {
+                            match artifact_parse_nonnegative_int(value) {
+                                Result::Ok(value) => value,
+                                Result::Err(error) => return Result::Err(error),
+                            }
                         },
                         Result::Err(error) => return Result::Err(error),
                     },

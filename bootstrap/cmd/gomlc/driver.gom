@@ -275,11 +275,167 @@ fn compile_standard_package(
     }
 }
 
-fn builtin_artifact_dependency() -> (string, string) {
-    (
+fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
+    let source = core::builtin_source();
+    let lowered = hir::lower(
+        ast::lower(parser::parse(source)),
+        "builtin_contract.gom",
+    );
+    let signatures = match lowered.hir {
+        Option::Some(file) => tast::package_signatures(file),
+        Option::None => {
+            fail("error[compile]: failed to lower builtin package");
+            tast::PackageSignatures {
+                traits: Vec::new(),
+                functions: Vec::new(),
+            }
+        },
+    };
+    let traits = Vec::new();
+    for value in signatures.traits {
+        if value.name == "Iterator" || value.name == "IntoIterator" {
+            ()
+        } else {
+            traits.push(value)
+        }
+    };
+    for name in Vec::new()
+        .pushed("Iterator")
+        .pushed("IntoIterator")
+        .pushed("Eq")
+        .pushed("Hash")
+        .pushed("ToString")
+    {
+        match tast::builtin_trait_info(name) {
+            Option::Some(value) => traits.push(value),
+            Option::None => fail("error[compile]: missing builtin trait " + name),
+        }
+    };
+    let signatures = tast::PackageSignatures {
+        traits,
+        functions: signatures.functions,
+    };
+    let contract_functions = Vec::new()
+        .pushed("array_get")
+        .pushed("array_set")
+        .pushed("unit_to_string")
+        .pushed("bool_to_string")
+        .pushed("string_len")
+        .pushed("string_get")
+        .pushed("string_byte_get")
+        .pushed("string_byte_slice")
+        .pushed("string_is_char_boundary")
+        .pushed("string_decode_utf8_at")
+        .pushed("string_to_bytes")
+        .pushed("string_from_utf8")
+        .pushed("string_concat")
+        .pushed("string_print")
+        .pushed("string_println")
+        .pushed("char_to_string")
+        .pushed("char_from_uint32_raw")
+        .pushed("int_to_string")
+        .pushed("int8_to_string")
+        .pushed("int16_to_string")
+        .pushed("int32_to_string")
+        .pushed("int64_to_string")
+        .pushed("uint8_to_string")
+        .pushed("uint16_to_string")
+        .pushed("uint32_to_string")
+        .pushed("uint64_to_string")
+        .pushed("float32_to_string")
+        .pushed("float64_to_string")
+        .pushed("string_parse_float32")
+        .pushed("string_parse_float64")
+        .pushed("int_hash")
+        .pushed("int8_hash")
+        .pushed("int16_hash")
+        .pushed("int32_hash")
+        .pushed("int64_hash")
+        .pushed("uint8_hash")
+        .pushed("uint16_hash")
+        .pushed("uint32_hash")
+        .pushed("float32_hash")
+        .pushed("float64_hash")
+        .pushed("string_hash")
+        .pushed("char_hash")
+        .pushed("vec_new")
+        .pushed("vec_with_capacity")
+        .pushed("vec_push")
+        .pushed("vec_get")
+        .pushed("vec_set")
+        .pushed("vec_len")
+        .pushed("vec_capacity")
+        .pushed("vec_reserve")
+        .pushed("vec_truncate")
+        .pushed("slice")
+        .pushed("slice_get")
+        .pushed("slice_len")
+        .pushed("slice_sub")
+        .pushed("__goml_primitive_eq")
+        .pushed("hashmap_new")
+        .pushed("hashmap_get")
+        .pushed("hashmap_set")
+        .pushed("hashmap_remove")
+        .pushed("hashmap_len")
+        .pushed("hashmap_contains")
+        .pushed("hashmap_entries")
+        .pushed("channel_new")
+        .pushed("channel_send")
+        .pushed("channel_recv")
+        .pushed("channel_close")
+        .pushed("ref")
+        .pushed("ref_get")
+        .pushed("ref_set")
+        .pushed("ptr_eq")
+        .pushed("ptr_hash");
+    let functions = Vec::new();
+    for name in contract_functions {
+        match tast::builtin_function_scheme(name) {
+            Option::Some(value) => functions.push(value),
+            Option::None => fail("error[compile]: missing builtin function " + name),
+        }
+    };
+    for value in signatures.functions {
+        functions.push(value)
+    };
+    let signatures = tast::PackageSignatures { traits: signatures.traits, functions };
+    let checked = tast::check(lowered);
+    let file = match checked.tast {
+        Option::Some(file) => file,
+        Option::None => {
+            fail("error[compile]: failed to typecheck builtin package");
+            tast::File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    };
+    let exports = artifact_package_exports(
+        file,
+        signatures,
         "builtin",
-        "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
+        Vec::new(),
+        false,
+        Vec::new(),
+        Vec::new(),
+    );
+    new_artifact_interface_unit(
+        "builtin",
+        exports,
+        artifact_package_interface("builtin", "builtin", exports),
+        Vec::new(),
     )
+}
+
+fn builtin_artifact_dependency() -> (string, string) {
+    ("builtin", builtin_artifact_interface_unit().interface_hash)
+}
+
+fn builtin_artifact_json() -> string {
+    let writer = new_artifact_json_writer(false);
+    artifact_json_interface_unit(writer, builtin_artifact_interface_unit());
+    artifact_json_finish(writer)
 }
 
 fn standard_artifact_deps(
@@ -633,22 +789,6 @@ fn hir_diagnostics(
     result
 }
 
-fn fail_on_compilation_diagnostics(
-    diagnostics: Vec[hir::Diagnostic],
-    source_path: string,
-    source: string,
-) -> unit {
-    if diagnostics.len() > 0 {
-        fail(render_typer_diagnostics(
-            hir_diagnostics(diagnostics, source_path),
-            source_path,
-            source,
-        ))
-    } else {
-        ()
-    }
-}
-
 fn diagnostic_span_start(value: tast::Diagnostic) -> int {
     match value.span {
         Option::Some(span) => span.start,
@@ -664,7 +804,13 @@ fn diagnostic_span_end(value: tast::Diagnostic) -> int {
 }
 
 fn diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool {
-    if left.source_path != right.source_path {
+    let left_inference = left.message == "Could not infer type";
+    let right_inference = right.message == "Could not infer type";
+    if left_inference != right_inference {
+        left_inference
+    } else if left_inference {
+        false
+    } else if left.source_path != right.source_path {
         left.source_path < right.source_path
     } else if diagnostic_span_start(left) != diagnostic_span_start(right) {
         diagnostic_span_start(left) < diagnostic_span_start(right)
@@ -885,7 +1031,8 @@ fn render_typer_diagnostic(
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
-    match value.span {
+    let inference = value.message == "Could not infer type";
+    match if inference { Option::None } else { value.span } {
         Option::Some(span) => render_diagnostic_label(
             builder,
             "primary",
@@ -895,7 +1042,7 @@ fn render_typer_diagnostic(
             fallback_path,
             fallback_source,
         ),
-        Option::None => if value.source_path != "" {
+        Option::None => if value.source_path != "" && !inference {
             builder.write_string("\nat: ");
             builder.write_string(value.source_path)
         } else {
@@ -953,12 +1100,6 @@ fn fail_on_typer_diagnostics(
     };
     if has_error.get() {
         fail(render_typer_diagnostics(
-            diagnostics,
-            fallback_path,
-            fallback_source,
-        ))
-    } else if diagnostics.len() > 0 {
-        io::eprintln(render_typer_diagnostics(
             diagnostics,
             fallback_path,
             fallback_source,
@@ -1346,7 +1487,6 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let ast_value = hir::expand_derives(ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
-    fail_on_compilation_diagnostics(hir_value.diagnostics, source_path, source);
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {

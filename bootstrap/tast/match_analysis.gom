@@ -279,7 +279,7 @@ fn coverage_number_decrement(value: CoverageNumber) -> CoverageNumber {
 }
 
 fn coverage_scalar_kind(ty: Type) -> Option[string] {
-    match prune(ty) {
+    match resolve_type(ty) {
         Type::Int => Option::Some("int"),
         Type::Int8 => Option::Some("int8"),
         Type::Int16 => Option::Some("int16"),
@@ -369,7 +369,7 @@ fn coverage_scalar_domain(
 
 fn coverage_scalar_domains(ty: Type) -> Option[Vec[CoverageScalar]] {
     let result = Vec::new();
-    match prune(ty) {
+    match resolve_type(ty) {
         Type::Int => result.push(coverage_scalar_domain(
             "int",
             "-9223372036854775808",
@@ -1733,6 +1733,12 @@ fn coverage_witness_text(ctx: Checker, value: CoverageWitness) -> string {
 }
 
 fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
+    if arms.len() == 0 && contains_unbound_type_variable(ty) {
+        return Vec::new().pushed("_")
+    } else {
+        ()
+    };
+    let witness_ty = if arms.len() > 0 { resolve_type(ty) } else { ty };
     let matrix = Vec::new();
     for arm in arms {
         if coverage_guard(arm.guard) {
@@ -1748,7 +1754,7 @@ fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
         match coverage_find_witness(
             ctx,
             matrix,
-            Vec::new().pushed(coverage_wild(ty)),
+            Vec::new().pushed(coverage_wild(witness_ty)),
         ) {
             Option::Some(values) => if values.len() > 0 {
                 let witness = values.get(0);
@@ -1771,10 +1777,17 @@ fn coverage_guard(value: Option[Expr]) -> bool {
     }
 }
 
+fn coverage_guard_may_match(value: Option[Expr]) -> bool {
+    match value {
+        Option::Some(Expr::Prim { value: Primitive::Bool { value }, ty: _ }) => value,
+        Option::None | Option::Some(_) => true,
+    }
+}
+
 fn match_is_exhaustive(ctx: Checker, ty: Type, arms: Vec[Arm]) -> bool {
     let matrix = Vec::new();
     for arm in arms {
-        if coverage_guard(arm.guard) {
+        if coverage_guard_may_match(arm.guard) {
             for pattern in coverage_patterns(arm.pat) {
                 matrix.push(Vec::new().pushed(pattern))
             }
@@ -1791,12 +1804,16 @@ fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
     for arm in arms {
         let patterns = coverage_patterns(arm.pat);
         let useful = Ref::new(false);
-        for pattern in patterns {
-            if coverage_useful(ctx, matrix, Vec::new().pushed(pattern)) {
-                useful.set(true)
-            } else {
-                ()
+        if coverage_guard(arm.guard) {
+            for pattern in patterns {
+                if coverage_useful(ctx, matrix, Vec::new().pushed(pattern)) {
+                    useful.set(true)
+                } else {
+                    ()
+                }
             }
+        } else {
+            ()
         };
         result.push(useful.get());
         if coverage_guard(arm.guard) {

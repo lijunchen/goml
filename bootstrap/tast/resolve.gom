@@ -1053,6 +1053,20 @@ fn mark_unresolved_inference_predicate(
 
 fn resolve_required_predicates(ctx: Checker) -> bool {
     let has_ambiguous_inference = Ref::new(false);
+    for requirement in ctx.required_predicates {
+        match requirement.predicate {
+            TypePredicate::Trait { for_ty, trait_ref } => {
+                let _ = default_numeric_type(for_ty);
+                for arg in trait_ref.args {
+                    let _ = default_numeric_type(arg);
+                };
+            },
+            TypePredicate::Equality { lhs, rhs } => {
+                let _ = default_numeric_type(lhs);
+                let _ = default_numeric_type(rhs);
+            },
+        }
+    };
     for _ in range(0, ctx.required_predicates.len() + 1) {
         for requirement in ctx.required_predicates {
             let _ = predicates_satisfied_at(
@@ -2302,7 +2316,7 @@ fn builtin_trait_method(
     }
 }
 
-fn builtin_trait_info(name: string) -> Option[TraitInfo] {
+pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
     let self_ty = Type::Param { name: "Self" };
     if name == "Iterator" {
         let associated_types = Vec::new();

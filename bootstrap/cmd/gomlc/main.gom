@@ -370,6 +370,12 @@ fn main() -> unit {
         run_package_info(args)
     } else if args.get(1) == "__canonical-stage" {
         run_canonical_stage(args)
+    } else if args.get(1) == "__builtin-interface" {
+        if args.len() == 2 {
+            io::print(builtin_artifact_json())
+        } else {
+            fail("usage: gomlc __builtin-interface")
+        }
     } else if args.get(1) == "__test-diagnostics" {
         run_test_diagnostics(args)
     } else if args.get(1) == "run-single" {

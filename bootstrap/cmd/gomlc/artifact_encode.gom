@@ -139,7 +139,14 @@ fn artifact_json_type(
             artifact_json_name(writer, "TArray");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "len");
-            artifact_json_number(writer, length.to_string());
+            artifact_json_number(
+                writer,
+                if length < 0 {
+                    "18446744073709551615"
+                } else {
+                    length.to_string()
+                },
+            );
             artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
             artifact_json_end_object(writer);

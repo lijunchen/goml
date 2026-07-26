@@ -941,19 +941,10 @@ fn function_scheme_for_name_ref(
     }
 }
 
-fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
+fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
     match value {
         hir::NameRef::Local(local) => match find_local(ctx, local) {
-            Option::Some(ty) => {
-                if contains_local(ctx.unresolved_locals, local)
-                    && ctx.suppress_unresolved_ref_diagnostic.get() == 0
-                {
-                    push_diagnostic(ctx, "Could not infer type")
-                } else {
-                    ()
-                };
-                Expr::Var { name: local_name(local), ty }
-            },
+            Option::Some(ty) => Expr::Var { name: local_name(local), ty },
             Option::None => {
                 push_diagnostic(ctx, "Unknown variable " + local_name(local));
                 Expr::Var {
@@ -1021,6 +1012,22 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
             }
         },
     }
+}
+
+fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
+    let result = check_name_ref_inner(ctx, value);
+    match value {
+        hir::NameRef::Local(local) => if contains_local(ctx.unresolved_locals, local)
+            && ctx.suppress_unresolved_ref_diagnostic.get() == 0
+            && contains_unresolved_inference(ctx, expr_type(result))
+        {
+            push_global_diagnostic(ctx, "Could not infer type")
+        } else {
+            ()
+        },
+        _ => (),
+    };
+    result
 }
 
 fn resolved_constructor_value_expr(
@@ -1586,7 +1593,7 @@ fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
             let numeric = is_numeric_type(Type::Var(variable));
             expect_type(ctx, Type::Var(variable), Type::Func { params, ret_ty });
             if numeric {
-                push_diagnostic(ctx, "Could not infer type")
+                push_global_diagnostic(ctx, "Could not infer type")
             } else {
                 ()
             };
@@ -1921,7 +1928,7 @@ fn apply_typed_call(
     if arity_mismatch {
         match function {
             Expr::Callable { callable: _, ty: _ } => (),
-            _ => push_diagnostic(ctx, "Could not infer type"),
+            _ => push_global_diagnostic(ctx, "Could not infer type"),
         }
     } else {
         ()
@@ -2058,7 +2065,7 @@ fn check_method_call(
             let field_ty = match resolve_field_type(ctx, expr_type(receiver), name) {
                 Option::Some(ty) => ty,
                 Option::None => {
-                    if contains_unbound_type_variable(expr_type(receiver)) {
+                    if contains_unbound_type_variable(receiver_ty) {
                         push_diagnostic(
                             ctx,
                             "Could not infer the receiver type for method " + name,
@@ -2069,15 +2076,15 @@ fn check_method_call(
                             "Method "
                                 + name
                                 + " not found for type "
-                                + type_text(expr_type(receiver)),
+                                + type_text(receiver_ty),
                         )
                     };
-                    if contains_unbound_type_variable(expr_type(receiver)) {
+                    if contains_unbound_type_variable(receiver_ty) {
                         fresh_unresolved_inference(ctx)
                     } else {
                         match expected {
                             Option::Some(_) => fresh_unresolved_inference(ctx),
-                            Option::None => if external_struct_type(
+                            Option::None => if struct_has_hidden_fields(
                                 ctx,
                                 expr_type(receiver),
                             ) {
@@ -2100,10 +2107,10 @@ fn check_method_call(
     }
 }
 
-fn external_struct_type(ctx: Checker, ty: Type) -> bool {
+fn struct_has_hidden_fields(ctx: Checker, ty: Type) -> bool {
     match type_constructor_name(ty) {
         Option::Some(name) => match find_struct_by_name(ctx, name) {
-            Option::Some(info) => info.def_id.pkg == -1,
+            Option::Some(info) => info.has_hidden_fields,
             Option::None => false,
         },
         Option::None => false,
@@ -2132,6 +2139,7 @@ fn check_call_expr(
     args: Vec[hir::Expr],
     expected: Option[Type],
 ) -> Expr {
+    let function_span = function.span;
     let result = match function.kind {
         hir::ExprKind::Field { expr: receiver, field_name: name } => {
             check_method_call(ctx, receiver, name, args, expected)
@@ -2154,7 +2162,7 @@ fn check_call_expr(
                     push_diagnostic(ctx, "Unresolved callee " + name);
                     match expected {
                         Option::Some(_) => (),
-                        Option::None => push_diagnostic(ctx, "Could not infer type"),
+                        Option::None => push_global_diagnostic(ctx, "Could not infer type"),
                     };
                     let values: Vec[Expr] = Vec::new();
                     for value in args {
@@ -2180,7 +2188,8 @@ fn check_call_expr(
             type_args,
             type_arg_spans: _,
         } => {
-            match resolve_named_constructor(ctx, owner, member) {
+            let previous_span = ctx.current_span.get();
+            let value = match resolve_named_constructor(ctx, owner, member) {
                 Option::Some(info) => {
                     check_resolved_constructor_expr(ctx, info, args, expected)
                 },
@@ -2202,12 +2211,15 @@ fn check_call_expr(
                         result
                     },
                     Option::None => {
-                        let function = match resolve_static_member(
+                        ctx.current_span.set(Option::Some(function_span));
+                        let resolved = resolve_static_member(
                             ctx,
                             owner,
                             member,
                             type_args,
-                        ) {
+                        );
+                        ctx.current_span.set(previous_span);
+                        let function = match resolved {
                             Option::Some(value) => {
                                 Expr::Callable { callable: value.callable, ty: value.ty }
                             },
@@ -2267,7 +2279,9 @@ fn check_call_expr(
                         result
                     },
                 },
-            }
+            };
+            ctx.current_span.set(previous_span);
+            value
         },
         _ => apply_call(
             ctx,
@@ -2499,11 +2513,7 @@ fn check_binary_expr(
                 if contains_local(ctx.unresolved_locals, local)
                     && contains_unbound_type_variable(expr_type(right))
                 {
-                    push_diagnostic_at(
-                        ctx,
-                        "Could not infer type",
-                        Option::Some(right_source.span),
-                    )
+                    push_inference_diagnostic_at(ctx, right_source.span, 0)
                 } else {
                     ()
                 }
@@ -2675,6 +2685,233 @@ fn check_unary_expr(
     }
 }
 
+fn checker_string_has_prefix(value: string, prefix: string) -> bool {
+    value.byte_len() >= prefix.byte_len()
+        && value.byte_slice(0, prefix.byte_len()) == prefix
+}
+
+fn checker_string_contains(value: string, needle: string) -> bool {
+    if needle.byte_len() == 0 {
+        return true
+    } else {
+        ()
+    };
+    let found = Ref::new(false);
+    if value.byte_len() >= needle.byte_len() {
+        for index in range(0, value.byte_len() - needle.byte_len() + 1) {
+            if value.byte_slice(index, index + needle.byte_len()) == needle {
+                found.set(true)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    found.get()
+}
+
+fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
+    let result = Vec::new();
+    match value.kind {
+        hir::PatKind::Var { name } => result.push(name),
+        hir::PatKind::Constr { constructor: _, args }
+        | hir::PatKind::Tuple { items: args }
+        | hir::PatKind::Or { pats: args } => for arg in args {
+            for local in hir_pattern_locals(arg) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+            for local in hir_pattern_locals(field.1) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        hir::PatKind::Array { prefix, rest, suffix } => {
+            for arg in prefix {
+                for local in hir_pattern_locals(arg) {
+                    if !contains_local(result, local) {
+                        result.push(local)
+                    } else {
+                        ()
+                    }
+                }
+            };
+            match rest {
+                Option::Some(value) => match value.binding {
+                    Option::Some(local) => result.push(local),
+                    Option::None => (),
+                },
+                Option::None => (),
+            };
+            for arg in suffix {
+                for local in hir_pattern_locals(arg) {
+                    if !contains_local(result, local) {
+                        result.push(local)
+                    } else {
+                        ()
+                    }
+                }
+            }
+        },
+        hir::PatKind::Alias { name, pat } => {
+            result.push(name);
+            for local in hir_pattern_locals(pat) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        hir::PatKind::Range { start, end, inclusive: _ } => {
+            for local in hir_pattern_locals(start) {
+                result.push(local)
+            };
+            for local in hir_pattern_locals(end) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        _ => (),
+    };
+    result
+}
+
+fn hir_local_sets_match(
+    left: Vec[hir::LocalId],
+    right: Vec[hir::LocalId],
+) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let matches = Ref::new(true);
+        for local in left {
+            if !contains_local(right, local) {
+                matches.set(false)
+            } else {
+                ()
+            }
+        };
+        matches.get()
+    }
+}
+
+fn hir_or_pattern_binding_mismatch(value: hir::Pat) -> bool {
+    match value.kind {
+        hir::PatKind::Or { pats } => {
+            let mismatch = Ref::new(false);
+            if pats.len() > 0 {
+                let expected = hir_pattern_locals(pats.get(0));
+                for index in range(1, pats.len()) {
+                    if !hir_local_sets_match(
+                        expected,
+                        hir_pattern_locals(pats.get(index)),
+                    ) {
+                        mismatch.set(true)
+                    } else {
+                        ()
+                    }
+                }
+            } else {
+                ()
+            };
+            mismatch.get()
+        },
+        _ => false,
+    }
+}
+
+fn pattern_has_or_binding_diagnostic(
+    ctx: Checker,
+    span: ast::Span,
+) -> bool {
+    let found = Ref::new(false);
+    for diagnostic in ctx.diagnostics {
+        if checker_string_has_prefix(
+            diagnostic.message,
+            "Or-pattern alternatives",
+        ) && match diagnostic.span {
+            Option::Some(value) => value.start == span.start && value.end == span.end,
+            Option::None => false,
+        } {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn tast_pattern_binding_count(value: Pat) -> int {
+    match value {
+        Pat::Var { name: _, ty: _ } => 1,
+        Pat::Constr { constructor: _, args, ty: _ }
+        | Pat::Tuple { items: args, ty: _ }
+        | Pat::Or { pats: args, ty: _ } => {
+            let count = Ref::new(0);
+            for arg in args {
+                count.set(count.get() + tast_pattern_binding_count(arg))
+            };
+            count.get()
+        },
+        Pat::Array { prefix, rest, suffix, ty: _ } => {
+            let count = Ref::new(0);
+            for arg in prefix {
+                count.set(count.get() + tast_pattern_binding_count(arg))
+            };
+            match rest {
+                Option::Some(value) => match value.binding {
+                    Option::Some(_) => count.set(count.get() + 1),
+                    Option::None => (),
+                },
+                Option::None => (),
+            };
+            for arg in suffix {
+                count.set(count.get() + tast_pattern_binding_count(arg))
+            };
+            count.get()
+        },
+        Pat::Alias { name: _, pat, ty: _ } => {
+            1 + tast_pattern_binding_count(pat)
+        },
+        _ => 0,
+    }
+}
+
+fn tast_or_pattern_binding_mismatch(value: Pat) -> bool {
+    match value {
+        Pat::Or { pats, ty: _ } => {
+            let mismatch = Ref::new(false);
+            if pats.len() > 0 {
+                let expected = tast_pattern_binding_count(pats.get(0));
+                for index in range(1, pats.len()) {
+                    if tast_pattern_binding_count(pats.get(index)) != expected {
+                        mismatch.set(true)
+                    } else {
+                        ()
+                    }
+                }
+            } else {
+                ()
+            };
+            mismatch.get()
+        },
+        _ => false,
+    }
+}
+
 fn check_match_expr(
     ctx: Checker,
     source: hir::Expr,
@@ -2694,12 +2931,40 @@ fn check_match_expr(
     };
     let typed_arms: Vec[Arm] = Vec::new();
     let pattern_spans: Vec[ast::Span] = Vec::new();
+    let invalid_pattern_arms: Vec[bool] = Vec::new();
+    let follows_invalid_coverage: Vec[bool] = Vec::new();
+    let complete_coverage_found = Ref::new(false);
     let invalid_patterns = Ref::new(false);
     for arm in arms {
+        follows_invalid_coverage.push(complete_coverage_found.get());
         pattern_spans.push(arm.pat.span);
+        let or_binding_mismatch = hir_or_pattern_binding_mismatch(arm.pat)
+            || pattern_has_or_binding_diagnostic(ctx, arm.pat.span);
         let diagnostic_count = ctx.diagnostics.len();
         let pat = check_pattern(ctx, arm.pat, expr_type(scrutinee));
-        if ctx.diagnostics.len() > diagnostic_count {
+        let invalid_pattern = ctx.diagnostics.len() > diagnostic_count;
+        let invalidates_coverage = Ref::new(false);
+        for diagnostic_index in range(diagnostic_count, ctx.diagnostics.len()) {
+            let message = ctx.diagnostics.get(diagnostic_index).message;
+            if checker_string_has_prefix(message, "Or-pattern alternatives")
+                || (checker_string_has_prefix(message, "Constructor ")
+                    && checker_string_contains(message, " expects "))
+            {
+                invalidates_coverage.set(true)
+            } else {
+                ()
+            }
+        };
+        let invalidates_coverage = invalidates_coverage.get()
+            || or_binding_mismatch
+            || tast_or_pattern_binding_mismatch(pat);
+        invalid_pattern_arms.push(invalidates_coverage);
+        if invalidates_coverage {
+            complete_coverage_found.set(true)
+        } else {
+            ()
+        };
+        if invalid_pattern {
             invalid_patterns.set(true)
         } else {
             ()
@@ -2712,6 +2977,11 @@ fn check_match_expr(
             )),
             Option::None => Option::None,
         };
+        if coverage_guard(guard) && pattern_is_irrefutable(ctx, pat) {
+            complete_coverage_found.set(true)
+        } else {
+            ()
+        };
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
     };
@@ -2723,14 +2993,36 @@ fn check_match_expr(
     } else {
         ()
     };
-    let useful_arms = match_useful_arms(ctx, typed_arms);
+    let analysis_arms: Vec[Arm] = Vec::new();
+    for index in range(0, typed_arms.len()) {
+        let arm = typed_arms.get(index);
+        analysis_arms.push(Arm {
+            pat: if invalid_pattern_arms.get(index) {
+                Pat::Wild { ty: expr_type(scrutinee) }
+            } else {
+                arm.pat
+            },
+            guard: arm.guard,
+            body: arm.body,
+        })
+    };
+    let useful_arms = match_useful_arms(ctx, analysis_arms);
+    let invalid_coverage_seen = Ref::new(false);
     for index in range(0, useful_arms.len()) {
-        if !(useful_arms.get(index)) {
+        if follows_invalid_coverage.get(index)
+            || invalid_coverage_seen.get()
+            || !(useful_arms.get(index))
+        {
             push_warning_at(
                 ctx,
                 "Unreachable match arm",
                 Option::Some(pattern_spans.get(index)),
             )
+        } else {
+            ()
+        };
+        if invalid_pattern_arms.get(index) {
+            invalid_coverage_seen.set(true)
         } else {
             ()
         }
@@ -3036,7 +3328,12 @@ fn check_result_try(
     Expr::Match { expr: inner, arms, ty: ok_ty }
 }
 
-fn check_try_expr(ctx: Checker, index: int, source: hir::Expr) -> Expr {
+fn check_try_expr(
+    ctx: Checker,
+    index: int,
+    source: hir::Expr,
+    span: ast::Span,
+) -> Expr {
     let expected = if is_numeric_literal_source(source) {
         match try_type_parts(ctx.return_ty) {
         Option::Some(parts) => if names_match(parts.0, "Option")
@@ -3062,7 +3359,52 @@ fn check_try_expr(ctx: Checker, index: int, source: hir::Expr) -> Expr {
     } else {
         Option::None
     };
-    let inner = check_expr(ctx, source, expected);
+    let constraint_start = ctx.numeric_literal_constraints.len();
+    let coercion_start = ctx.coercion_constraints.len();
+    let numeric_source = is_numeric_literal_source(source);
+    let inner = if numeric_source {
+        let previous_span = ctx.current_span.get();
+        ctx.current_span.set(Option::Some(span));
+        let value = check_expr_inner(ctx, source, expected);
+        ctx.current_span.set(previous_span);
+        value
+    } else {
+        check_expr(ctx, source, expected)
+    };
+    if numeric_source {
+        for constraint_index in range(
+            constraint_start,
+            ctx.numeric_literal_constraints.len(),
+        ) {
+            let constraint = ctx.numeric_literal_constraints.get(constraint_index);
+            ctx.numeric_literal_constraints.set(
+                constraint_index,
+                NumericLiteralConstraint {
+                    raw: constraint.raw,
+                    ty: constraint.ty,
+                    float: constraint.float,
+                    negative: constraint.negative,
+                    span: Option::Some(span),
+                },
+            )
+        };
+        for constraint_index in range(
+            coercion_start,
+            ctx.coercion_constraints.len(),
+        ) {
+            let constraint = ctx.coercion_constraints.get(constraint_index);
+            ctx.coercion_constraints.set(
+                constraint_index,
+                CoercionConstraint {
+                    actual: constraint.actual,
+                    expected: constraint.expected,
+                    span: Option::Some(span),
+                },
+            )
+        }
+    } else {
+        ()
+    };
     match try_type_parts(expr_type(inner)) {
         Option::Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
             if option_try_shape_is_valid(ctx, parts.0, parts.1) {
@@ -3260,22 +3602,21 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
                 Option::None => match type_constructor_name(expr_type(value)) {
                     Option::Some(owner) => match find_struct_by_name(ctx, owner) {
                         Option::Some(_) => {
-                            push_global_diagnostic(ctx, "Could not infer type");
-                            push_global_diagnostic(ctx, "Could not infer type");
                             push_diagnostic_at(
                                 ctx,
                                 "Struct " + owner + " has no field " + name,
                                 Option::None,
                             );
+                            push_global_diagnostic(ctx, "Could not infer type");
                             Expr::Field {
                                 expr: value,
                                 field_name: name,
-                                ty: Type::Error,
+                                ty: fresh_unresolved_inference(ctx),
                             }
                         },
                         Option::None => {
                             push_diagnostic(ctx, "field not found: " + name);
-                            push_diagnostic(ctx, "Could not infer type");
+                            push_global_diagnostic(ctx, "Could not infer type");
                             Expr::Field {
                                 expr: value,
                                 field_name: name,
@@ -3294,7 +3635,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
                             ),
                             _ => push_diagnostic(ctx, "field not found: " + name),
                         };
-                        push_diagnostic(ctx, "Could not infer type");
+                        push_global_diagnostic(ctx, "Could not infer type");
                         Expr::Field {
                             expr: value,
                             field_name: name,
@@ -3324,7 +3665,7 @@ fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int) -> Expr {
                         + " out of bounds for type "
                         + type_text(arity_diagnostic_type(expr_type(value))),
                 );
-                push_diagnostic(ctx, "Could not infer type");
+                push_global_diagnostic(ctx, "Could not infer type");
                 Expr::Proj { tuple: value, index, ty: fresh_unresolved_inference(ctx) }
             },
             _ => {
@@ -3652,10 +3993,27 @@ fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
 }
 
 fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
+    let value_span = value.span;
     match primitive_expr(ctx, value) {
         Option::Some(result) => result,
         Option::None => match value.kind {
-            hir::ExprKind::NameRef { name_ref: reference } => check_name_ref(ctx, reference),
+            hir::ExprKind::NameRef { name_ref: reference } => {
+                let result = check_name_ref_inner(ctx, reference);
+                match reference {
+                    hir::NameRef::Local(local) => if contains_local(
+                        ctx.unresolved_locals,
+                        local,
+                    ) && ctx.suppress_unresolved_ref_diagnostic.get() == 0
+                        && contains_unresolved_inference(ctx, expr_type(result))
+                    {
+                        push_inference_diagnostic_at(ctx, value_span, 0)
+                    } else {
+                        ()
+                    },
+                    _ => (),
+                };
+                result
+            },
             hir::ExprKind::StaticMember {
                 owner,
                 member,
@@ -3766,7 +4124,15 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 };
                 Expr::Cast { expr: source, ty: target }
             },
-            hir::ExprKind::Try { depth: index, expr: value } => check_try_expr(ctx, index, value),
+            hir::ExprKind::Try { depth: index, expr: value } => {
+                let source_span = value.span;
+                check_try_expr(
+                    ctx,
+                    index,
+                    value,
+                    ast::span(source_span.start, source_span.end + 1),
+                )
+            },
             hir::ExprKind::Range { start, end } => check_range_expr(ctx, start, end),
             hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
                 check_binary_expr(ctx, op, left, right, Option::None)
@@ -3788,20 +4154,38 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
 
 fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
     let always_exits = hir_expr_always_exits_loop_control(value);
+    let value_span = value.span;
     match value.kind {
         hir::ExprKind::NameRef { name_ref: reference } => {
             let unresolved_other = match reference {
                 hir::NameRef::Other(_) => true,
                 _ => false,
             };
-            let result = check_name_ref(ctx, reference);
+            let unresolved_local = match reference {
+                hir::NameRef::Local(local) => contains_local(ctx.unresolved_locals, local)
+                    && ctx.suppress_unresolved_ref_diagnostic.get() == 0,
+                _ => false,
+            };
+            let result = check_name_ref_inner(ctx, reference);
+            if unresolved_local && contains_unresolved_inference(ctx, expr_type(result)) {
+                push_inference_diagnostic_at(
+                    ctx,
+                    match ctx.current_span.get() {
+                        Option::Some(span) => span,
+                        Option::None => value_span,
+                    },
+                    0,
+                )
+            } else {
+                ()
+            };
             if unresolved_other
                 && ctx.suppress_unresolved_ref_diagnostic.get() == 0
                 && contains_unresolved_inference(ctx, expr_type(result))
             {
                 match expected {
                     Option::Some(_) => (),
-                    Option::None => push_diagnostic(ctx, "Could not infer type"),
+                    Option::None => push_global_diagnostic(ctx, "Could not infer type"),
                 }
             } else {
                 ()
@@ -4451,11 +4835,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 Option::None => {
                     let ty = expr_type(expression);
                     if contains_unresolved_inference(ctx, ty) && !closure_value {
-                        push_diagnostic_at(
-                            ctx,
-                            "Could not infer type",
-                            Option::Some(pat.span),
-                        );
+                        push_inference_diagnostic_at(ctx, pat.span, 0);
                         mark_unresolved_pattern_locals(ctx, pat)
                     } else {
                         ()
@@ -4468,7 +4848,9 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 _ => false,
             };
             let pattern = check_pattern(ctx, pat, pattern_ty);
-            if simple_pattern || pattern_is_irrefutable(ctx, pattern) {
+            if simple_pattern {
+                ()
+            } else if pattern_is_irrefutable(ctx, pattern) {
                 ()
             } else {
                 push_diagnostic_at(ctx,

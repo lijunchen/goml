@@ -1263,14 +1263,8 @@ pub fn resolve_type(value: Type) -> Type {
     match prune(value) {
         Type::Var(variable) => match variable.get() {
             TypeVar::Link(inner) => resolve_type(inner),
-            TypeVar::Unbound { id: _, kind: VarKind::Integer } => {
-                variable.set(TypeVar::Link(Type::Int));
-                Type::Int
-            },
-            TypeVar::Unbound { id: _, kind: VarKind::Float } => {
-                variable.set(TypeVar::Link(Type::Float64));
-                Type::Float64
-            },
+            TypeVar::Unbound { id: _, kind: VarKind::Integer } => Type::Int,
+            TypeVar::Unbound { id: _, kind: VarKind::Float } => Type::Float64,
             TypeVar::Unbound { id: _, kind: VarKind::Any } => Type::Error,
         },
         Type::Tuple { items: values } => {
@@ -1318,6 +1312,77 @@ pub fn resolve_type(value: Type) -> Type {
                 result.push(resolve_type(param))
             };
             Type::Func { params: result, ret_ty: resolve_type(ret_ty) }
+        },
+        other => other,
+    }
+}
+
+fn default_numeric_type(value: Type) -> Type {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: VarKind::Integer } => {
+                variable.set(TypeVar::Link(Type::Int));
+                Type::Int
+            },
+            TypeVar::Unbound { id: _, kind: VarKind::Float } => {
+                variable.set(TypeVar::Link(Type::Float64));
+                Type::Float64
+            },
+            TypeVar::Link(inner) => default_numeric_type(inner),
+            _ => Type::Var(variable),
+        },
+        Type::Tuple { items } => {
+            let result = Vec::new();
+            for item in items {
+                result.push(default_numeric_type(item))
+            };
+            Type::Tuple { items: result }
+        },
+        Type::Projection { for_ty, name, trait_ref } => {
+            let trait_ref = match trait_ref {
+                Option::Some(reference) => {
+                    let args = Vec::new();
+                    for arg in reference.args {
+                        args.push(default_numeric_type(arg))
+                    };
+                    Option::Some(TraitRef { name: reference.name, args })
+                },
+                Option::None => Option::None,
+            };
+            Type::Projection {
+                for_ty: default_numeric_type(for_ty),
+                name,
+                trait_ref,
+            }
+        },
+        Type::App { ty, args } => {
+            let result = Vec::new();
+            for arg in args {
+                result.push(default_numeric_type(arg))
+            };
+            Type::App { ty: default_numeric_type(ty), args: result }
+        },
+        Type::Array { len, elem } => Type::Array {
+            len,
+            elem: default_numeric_type(elem),
+        },
+        Type::Slice { elem } => Type::Slice { elem: default_numeric_type(elem) },
+        Type::VecType { elem } => Type::VecType { elem: default_numeric_type(elem) },
+        Type::RefType { elem } => Type::RefType { elem: default_numeric_type(elem) },
+        Type::HashMap { key, value } => Type::HashMap {
+            key: default_numeric_type(key),
+            value: default_numeric_type(value),
+        },
+        Type::Channel { elem } => Type::Channel { elem: default_numeric_type(elem) },
+        Type::Func { params, ret_ty } => {
+            let result = Vec::new();
+            for param in params {
+                result.push(default_numeric_type(param))
+            };
+            Type::Func {
+                params: result,
+                ret_ty: default_numeric_type(ret_ty),
+            }
         },
         other => other,
     }

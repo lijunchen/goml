@@ -1,6 +1,8 @@
 package main;
 
+use std::env;
 use std::io;
+use std::process;
 
 enum VersionFormat {
     Text,
@@ -135,11 +137,95 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
     }
 }
 
-fn version_output(format: VersionFormat) -> string {
-    match format {
-        VersionFormat::Text => "gomlc 0.0.0",
-        VersionFormat::Json => "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
+fn trim_version_value(value: string) -> string {
+    let end = Ref::new(value.byte_len());
+    while end.get() > 0
+        && (value.byte_get(end.get() - 1) == 10
+            || value.byte_get(end.get() - 1) == 13)
+    {
+        end.set(end.get() - 1)
+    };
+    value.byte_slice(0, end.get())
+}
+
+fn git_version_value(args: Vec[string]) -> Option[string] {
+    match process::Command::new("git").args(args).output() {
+        Result::Ok(output) => if output.status().success() {
+            match output.stdout().to_string() {
+                Result::Ok(value) => {
+                    let value = trim_version_value(value);
+                    if value == "" {
+                        Option::None
+                    } else {
+                        Option::Some(value)
+                    }
+                },
+                Result::Err(_) => Option::None,
+            }
+        } else {
+            Option::None
+        },
+        Result::Err(_) => Option::None,
     }
+}
+
+fn version_git_hash() -> Option[string] {
+    match env::var("GOML_GIT_HASH") {
+        Option::Some(value) => Option::Some(value),
+        Option::None => git_version_value(
+            Vec::new()
+                .pushed("rev-parse")
+                .pushed("--short=9")
+                .pushed("HEAD"),
+        ),
+    }
+}
+
+fn version_git_date() -> Option[string] {
+    match env::var("GOML_GIT_DATE") {
+        Option::Some(value) => Option::Some(value),
+        Option::None => git_version_value(
+            Vec::new()
+                .pushed("show")
+                .pushed("-s")
+                .pushed("--date=format:%Y-%m-%d")
+                .pushed("--format=%cd")
+                .pushed("HEAD"),
+        ),
+    }
+}
+
+fn version_json_option(value: Option[string]) -> string {
+    match value {
+        Option::Some(value) => "\"" + value + "\"",
+        Option::None => "null",
+    }
+}
+
+fn version_output_with(
+    format: VersionFormat,
+    hash: Option[string],
+    date: Option[string],
+) -> string {
+    match format {
+        VersionFormat::Text => match (hash, date) {
+            (Option::Some(hash), Option::Some(date)) => {
+                "gomlc 0.0.0 (" + hash + " " + date + ")"
+            },
+            _ => "gomlc 0.0.0",
+        },
+        VersionFormat::Json => {
+            "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":"
+                + version_json_option(date)
+                + ",\"git_hash\":"
+                + version_json_option(hash)
+                + ",\"tool\":\"gomlc\",\"version\":\"0.0.0\"}"
+        },
+    }
+}
+
+fn version_output(format: VersionFormat) -> string {
+    version_output_with(format, version_git_hash(), version_git_date())
 }
 
 fn run_version(args: Vec[string]) -> unit {
