@@ -4,7 +4,7 @@ This extension provides language support for GoML (`.gom` files).
 
 ## Features
 
-- Syntax highlighting
+- Syntax highlighting for current GoML syntax, including multiline strings, attributes, chars, and generic declarations
 - Hover type information
 - Autocompletion (dot, `::`, and value completions)
 - Go-to-definition
