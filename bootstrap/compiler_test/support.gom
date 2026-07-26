@@ -301,12 +301,11 @@ fn project_command(
 ) -> process::Output {
     match process::Command::new(bootstrap_goml_binary())
         .arg(command)
-        .arg(project)
         .arg("--compiler")
         .arg(bootstrap_gomlc_binary())
         .arg("--target-dir")
         .arg(target)
-        .current_dir(repository_root())
+        .current_dir(project)
         .output()
     {
         Result::Ok(value) => value,

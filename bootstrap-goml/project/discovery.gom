@@ -343,14 +343,25 @@ fn local_import(
     if import_path == "std" || util::starts_with(import_path, "std::") {
         Result::Ok(Option::None)
     } else {
-        for segment in util::split(import_path, "::") {
-            if segment == "tests" {
-                return Result::Err(
-                    "test-only package " + import_path + " cannot be imported",
-                )
-            } else {
-                ()
+        let prefix = module_path + "::";
+        if util::starts_with(import_path, prefix) {
+            let suffix = import_path.byte_slice(
+                prefix.byte_len(),
+                import_path.byte_len(),
+            );
+            for segment in util::split(suffix, "::") {
+                if segment == "tests" {
+                    return Result::Err(
+                        "test-only package "
+                            + import_path
+                            + " cannot be imported",
+                    )
+                } else {
+                    ()
+                }
             }
+        } else {
+            ()
         };
         match directory_for_package(module_dir, module_path, import_path) {
             Option::Some(directory) => if fs::is_dir(directory) {
