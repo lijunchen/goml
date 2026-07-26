@@ -26,6 +26,7 @@ mod build_cache;
 mod gomlc;
 
 const DEFAULT_LIB_PACKAGE: &str = "lib";
+const GENERATED_GO_FILE: &str = "goml_generated.go";
 
 #[derive(Parser, Debug)]
 #[command(name = "goml", arg_required_else_help = true)]
@@ -217,8 +218,11 @@ impl ArtifactLayout {
         Ok(output.join(format!("{name}{}", std::env::consts::EXE_SUFFIX)))
     }
 
-    fn package_go(&self, root: &Path, package: &str) -> PathBuf {
-        local_artifact_base(root, package).with_extension("go")
+    fn linked_go(&self, root: &Path, package: &str) -> PathBuf {
+        local_artifact_base(root, package)
+            .parent()
+            .expect("package artifact must have a parent")
+            .join(GENERATED_GO_FILE)
     }
 
     fn test_manifest(&self, root: &Path, package: &str) -> PathBuf {
@@ -996,7 +1000,7 @@ fn build_module_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectBu
     for entry_package in entries {
         let input = project
             .artifacts
-            .package_go(&project.artifacts.build_root(), &entry_package);
+            .linked_go(&project.artifacts.build_root(), &entry_package);
         compiler
             .commands
             .push(PlannedCompilerCommand::Link(LinkCompilerCommand {
@@ -1081,7 +1085,7 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectB
     let go = GoBuildCommand {
         input: project
             .artifacts
-            .package_go(&project.artifacts.build_root(), entry_package),
+            .linked_go(&project.artifacts.build_root(), entry_package),
         output: project
             .artifacts
             .binary(&project.module_path, entry_package)?,
@@ -1158,7 +1162,7 @@ fn build_external_test_graph_plan(
         packages: link_packages,
         output: project
             .artifacts
-            .package_go(&project.artifacts.test_external_root(), &entry_package),
+            .linked_go(&project.artifacts.test_external_root(), &entry_package),
         manifest: project
             .artifacts
             .test_manifest(&project.artifacts.test_external_root(), &entry_package),
@@ -1172,7 +1176,7 @@ fn build_external_test_graph_plan(
 fn internal_test_run_group(artifacts: &ArtifactLayout, package: &str) -> TestRunGroup {
     TestRunGroup {
         kind: TestKind::Internal,
-        go_output: artifacts.package_go(&artifacts.test_internal_root(), package),
+        go_output: artifacts.linked_go(&artifacts.test_internal_root(), package),
         manifest: artifacts.test_manifest(&artifacts.test_internal_root(), package),
         runner: artifacts.test_runner(&artifacts.test_internal_root(), package),
     }
@@ -1181,7 +1185,7 @@ fn internal_test_run_group(artifacts: &ArtifactLayout, package: &str) -> TestRun
 fn external_test_run_group(artifacts: &ArtifactLayout, package: &str) -> TestRunGroup {
     TestRunGroup {
         kind: TestKind::External,
-        go_output: artifacts.package_go(&artifacts.test_external_root(), package),
+        go_output: artifacts.linked_go(&artifacts.test_external_root(), package),
         manifest: artifacts.test_manifest(&artifacts.test_external_root(), package),
         runner: artifacts.test_runner(&artifacts.test_external_root(), package),
     }
@@ -1298,13 +1302,13 @@ fn build_graph_plan(
             entry_package: entry_package.clone(),
             output: project
                 .artifacts
-                .package_go(&project.artifacts.build_root(), &entry_package),
+                .linked_go(&project.artifacts.build_root(), &entry_package),
         }));
     } else if matches!(stage, ProjectStage::Test) {
         commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
             input_cores: core_outputs,
             packages: vec![graph.entry_package.clone()],
-            output: project.artifacts.package_go(
+            output: project.artifacts.linked_go(
                 &project.artifacts.test_internal_root(),
                 &graph.entry_package,
             ),

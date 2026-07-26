@@ -248,7 +248,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Root-package executables are written to `<target-dir>/bin/<module-name>`. Nested entry packages preserve their module-relative package path and add the executable name, for example package `alice::app::cmd::server` is written to `<target-dir>/bin/cmd/server/server`.
 - Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/<package-name>.*`.
 - External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/<package-name>.*`.
-- Linked Go sources are written beside the entry package Core artifact as `<package-name>.go`.
+- Linked Go sources are written beside the entry package Core artifact as `goml_generated.go`.
 - Interfaces and dependency environments expose only public top-level API; current-package codegen still uses the package's full internal environment so private helpers compile normally.
 - Go-to-definition, hover, completion, and other query features can resolve into cached third-party source files
 

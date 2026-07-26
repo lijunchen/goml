@@ -14,6 +14,13 @@ fn package_artifact_base(root: string, package_name: string) -> string {
     path::join(result.get(), last_segment(package_name))
 }
 
+fn linked_go_output(root: string, package_name: string) -> string {
+    match path::parent(package_artifact_base(root, package_name)) {
+        Option::Some(value) => path::join(value, "goml_generated.go"),
+        Option::None => path::join(root, "goml_generated.go"),
+    }
+}
+
 fn extension(value: string, suffix: string) -> string {
     path::with_extension(value, suffix)
 }
@@ -243,10 +250,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         }
     };
     for entry_package in util::sorted(entries) {
-        let main_go = extension(
-            package_artifact_base(output_root, entry_package),
-            "go",
-        );
+        let main_go = linked_go_output(output_root, entry_package);
         commands.push(Command::Link {
             input_cores: core_outputs(context, output_root),
             entry_package,
@@ -276,9 +280,9 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
-    let main_go = extension(
-        package_artifact_base(output_root, context.graph.entry_package),
-        "go",
+    let main_go = linked_go_output(
+        output_root,
+        context.graph.entry_package,
     );
     commands.push(Command::Link {
         input_cores: core_outputs(context, output_root),
@@ -330,7 +334,10 @@ fn append_test_graph(
         output_root,
         target.graph.entry_package,
     );
-    let main_go = extension(base, "go");
+    let main_go = linked_go_output(
+        output_root,
+        target.graph.entry_package,
+    );
     let directory = match path::parent(base) {
         Option::Some(value) => value,
         Option::None => output_root,
