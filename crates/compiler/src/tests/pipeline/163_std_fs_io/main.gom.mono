@@ -345,6 +345,43 @@ fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result__unit__string {
   }
 }
 
+fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__string {
+  if (length/13 < 0) {
+      {
+        Result__std::bytes::Bytes__string::Err("read length must be non-negative")
+      }
+  } else {
+      {
+        let mtmp10 = @runtime(std.io.read_stdin_exact)(length/13) in
+        {
+          let x11 = mtmp10.0 in
+          let x12 = mtmp10.1 in
+          let x13 = mtmp10.2 in
+          {
+            let err/16 = x13 in
+            {
+              let data/15 = x12 in
+              {
+                let ok/14 = x11 in
+                {
+                  if ok/14 {
+                      {
+                        Result__std::bytes::Bytes__string::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/15))
+                      }
+                  } else {
+                      {
+                        Result__std::bytes::Bytes__string::Err(err/16)
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+}
+
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
     Result__string__string::Ok(x64) => {
