@@ -863,6 +863,18 @@ fn range(start/224: int, end/225: int) -> FnIterator[int] {
   __goml_builtin_range(start/224, end/225)
 }
 
+fn trait_impl#ToString#uint#to_string(self/226: uint) -> string {
+  @runtime(core.uint_to_string)(self/226)
+}
+
+fn trait_impl#Eq#uint#eq(self/227: uint, other/228: uint) -> bool {
+  @intrinsic(eq.primitive)(self/227, other/228)
+}
+
+fn trait_impl#Hash#uint#hash(self/229: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/229)
+}
+
 fn countdown(start/0: int32) -> FnIterator[int32] {
   let current/1 = inherent#Ref#Ref[int32]#new(start/0) in
   inherent#FnIterator#FnIterator#from_fn(|| => {

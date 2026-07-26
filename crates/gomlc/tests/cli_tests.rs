@@ -1464,6 +1464,18 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           __goml_builtin_range(start/224, end/225)
         }
 
+        fn trait_impl#ToString#uint#to_string(self/226: uint) -> string {
+          @runtime(core.uint_to_string)(self/226)
+        }
+
+        fn trait_impl#Eq#uint#eq(self/227: uint, other/228: uint) -> bool {
+          @intrinsic(eq.primitive)(self/227, other/228)
+        }
+
+        fn trait_impl#Hash#uint#hash(self/229: uint) -> uint64 {
+          @runtime(core.uint_hash)(self/229)
+        }
+
         fn main() -> unit {
           println("hello")
         }

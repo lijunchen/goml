@@ -2676,7 +2676,7 @@ fn render(value: dyn Display) -> string {
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin_contract.gom:100:4"],
+            expect!["src/builtin_contract.gom:105:4"],
         );
     }
 

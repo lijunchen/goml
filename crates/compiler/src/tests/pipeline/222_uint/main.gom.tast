@@ -1,0 +1,28 @@
+fn combine(left/0: uint, right/1: uint) -> uint {
+    (left/0 : uint) + (right/1 : uint) * 2
+}
+
+fn classify(value/2: uint) -> string {
+    match (value/2 : uint) {
+        0 => "zero",
+        42 => "answer",
+        _ : uint => "other",
+    }
+}
+
+fn main() -> unit {
+    let left/3: uint = 19;
+    let right/4: uint = 2 as uint;
+    let result/5: uint = (combine : (uint, uint) -> uint)((left/3 : uint), (right/4 : uint));
+    (println : (uint) -> unit)((result/5 : uint));
+    (println : (string) -> unit)((ToString::to_string : (uint) -> string)((result/5 : uint)));
+    (println : (string) -> unit)((classify : (uint) -> string)((result/5 : uint)));
+    (println : (bool) -> unit)((result/5 : uint) > (left/3 : uint));
+    (println : (uint64) -> unit)((result/5 : uint) & 15 as uint64);
+    let values/6: HashMap[uint, string] = (HashMap[uint, string]::new : () -> HashMap[uint, string])();
+    (HashMap[uint, string]::set : (HashMap[uint, string], uint, string) -> unit)((values/6 : HashMap[uint, string]), (result/5 : uint), "stored");
+    match (HashMap[uint, string]::get : (HashMap[uint, string], uint) -> Option[string])((values/6 : HashMap[uint, string]), 42) {
+        Option::Some(value/7: string) => (println : (string) -> unit)((value/7 : string)),
+        Option::None => (println : (string) -> unit)("missing"),
+    }
+}
