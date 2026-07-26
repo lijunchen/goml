@@ -15,16 +15,19 @@ explicitly refers to fixture cases.
   user-visible coverage.
 - `pending`: the test has not been migrated yet.
 
+Migration is additive. All Rust tests and harnesses remain enabled after their
+GoML equivalents are added.
+
 ## Corpus suites
 
 | Rust source or fixture suite | GoML equivalent | Status |
 | --- | --- | --- |
 | `crates/compiler/src/tests/pipeline/` | `bootstrap/pipeline_test/pipeline_test.gom` | migrated; Rust `tests::test_cases` remains as snapshot oracle |
-| `crates/compiler/src/tests/e2e/good/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 558 fixtures |
-| `crates/compiler/src/tests/e2e/bad/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 71 fixtures |
+| `crates/compiler/src/tests/e2e/good/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 558 fixtures; Rust e2e harness retained |
+| `crates/compiler/src/tests/e2e/bad/` | `bootstrap/compiler_test/e2e_test.gom` | migrated, 71 fixtures; Rust e2e harness retained |
 | `crates/compiler/src/tests/diagnostics/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 4 fixtures |
 | `crates/compiler/src/tests/typer/` | `bootstrap/compiler_test/diagnostics_test.gom` | migrated, 84 fixtures |
-| `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage |
+| `crates/compiler/src/tests/module/` | `bootstrap/compiler_test/module_test.gom` | migrated, 34 projects plus binary stdio coverage; Rust module harness retained |
 | `crates/compiler/src/tests/module_diagnostics/` | `bootstrap/compiler_test/module_test.gom` | migrated, 35 projects |
 | `crates/compiler/src/tests/crashers/` | `bootstrap/compiler_test/crashers_test.gom` | migrated, 102 fixtures |
 | `crates/compiler/src/tests/trait_impl/` | `bootstrap/compiler_test/trait_impl_test.gom` | migrated, 84 fixtures representing 76 Rust tests |
@@ -51,30 +54,33 @@ crates/compiler/src/tests/<suite>/<case>/main.gom.out
 
 | Rust module | Current count | GoML destination | Status |
 | --- | ---: | --- | --- |
-| `trait_impl_test.rs` | 2 | `bootstrap/compiler_test/trait_impl_test.gom` | migrated; 76 observable tests migrated and 2 internal assertions retained |
-| `visibility_test.rs` | 2 | `bootstrap/compiler_test/module_test.gom` | migrated; Rust internal tests retained |
-| `package_model_test.rs` | 8 | `bootstrap/compiler_test/module_test.gom` | migrated; Rust internal tests retained |
-| `entrypoint_test.rs` | 0 | module diagnostics and crasher fixtures | migrated |
-| `toplevel_validation_test.rs` | 1 | crasher fixtures | migrated; Rust test retained |
-| `dyn_coercion_test.rs` | 13 | pipeline and crasher fixtures | additive coverage; Rust Go AST assertions retained |
-| `while_expr_test.rs` | 0 | crasher fixtures | migrated |
-| `operator_semantics_test.rs` | 0 | e2e and crasher fixtures | migrated |
-| `struct_type_test.rs` | 8 | pipeline and struct diagnostics | additive coverage; Rust environment assertions retained |
-| `assignment_target_test.rs` | 0 | e2e and crasher fixtures | migrated |
+| `trait_impl_test.rs` | 81 | `bootstrap/compiler_test/trait_impl_test.gom` | migrated; all Rust tests retained |
+| `visibility_test.rs` | 20 | `bootstrap/compiler_test/module_test.gom` | migrated; all Rust tests retained |
+| `package_model_test.rs` | 11 | `bootstrap/compiler_test/module_test.gom` | migrated; all Rust tests retained |
+| `entrypoint_test.rs` | 5 | module diagnostics and crasher fixtures | migrated; all Rust tests retained |
+| `toplevel_validation_test.rs` | 12 | crasher fixtures | migrated; all Rust tests retained |
+| `dyn_coercion_test.rs` | 23 | pipeline and crasher fixtures | additive coverage; all Rust tests retained |
+| `while_expr_test.rs` | 14 | crasher fixtures | migrated; all Rust tests retained |
+| `operator_semantics_test.rs` | 9 | e2e and crasher fixtures | migrated; all Rust tests retained |
+| `struct_type_test.rs` | 11 | pipeline and struct diagnostics | additive coverage; all Rust tests retained |
+| `assignment_target_test.rs` | 2 | e2e and crasher fixtures | migrated; all Rust tests retained |
 | `constructor_value_test.rs` | 1 | `pipeline/209_payload_enum_constructor_value/` | migrated; Rust test retained |
-| `multiline_string_test.rs` | 0 | e2e and crasher fixtures | migrated |
+| `multiline_string_test.rs` | 2 | e2e and crasher fixtures | migrated; all Rust tests retained |
 | `ref_type_test.rs` | 1 | `pipeline/208_ref_typecheck_and_collect/` | additive coverage; Rust AST/TAST assertion retained |
 | `try_expr_test.rs` | 3 | pipeline and crasher fixtures | migrated; Rust tests retained |
 | `tuple_projection_test.rs` | 2 | pipeline fixtures | migrated; Rust tests retained |
-| `vec_effect_test.rs` | 1 | `pipeline/215_builtin_environment_surface/` and crasher fixtures | additive coverage; Rust Go AST assertion retained |
-| `testing_test.rs` | 2 | bootstrap `gomlc` and `goml test` self-tests | additive coverage; Rust API assertions retained |
-| `separate_compile_test.rs` | 3 | module corpus and bootstrap linker self-tests | additive coverage; Rust artifact assertions retained |
+| `vec_effect_test.rs` | 4 | `pipeline/215_builtin_environment_surface/` and crasher fixtures | additive coverage; all Rust tests retained |
+| `testing_test.rs` | 14 | bootstrap `gomlc` and `goml test` self-tests | additive coverage; all Rust tests retained |
+| `separate_compile_test.rs` | 5 | module corpus and bootstrap linker self-tests | additive coverage; all Rust tests retained |
 | `query_test.rs` | 44 | no replacement by decision | retained in Rust; query tests are intentionally not migrated |
 | `builtin_functions_test.rs` | 11 | pipeline, crasher, and iterator fixtures | additive coverage; Rust environment catalog retained |
 | `intrinsics_test.rs` | 7 | bootstrap TAST and Go backend self-tests | additive coverage; Rust catalog invariants retained |
 | `anf_stack_test.rs` | 7 | bootstrap ANF self-tests and pipeline corpus | partial additive coverage; Rust scale tests retained |
 | `deep_pattern_test.rs` | 2 | `bootstrap/ast/ast_test.gom` | additive coverage; Rust stack tests retained |
 | `go_name_mangling_test.rs` | 1 | `pipeline/151_generic_closure_multi_instantiation/` | additive coverage; Rust length assertion retained |
+| `closure_return_test.rs` | 3 | crasher corpus | additive coverage; all Rust tests retained |
+| `monomorphization_test.rs` | 2 | crasher corpus | additive coverage; all Rust tests retained |
+| `name_collision_test.rs` | 29 | crasher corpus | additive coverage; all Rust tests retained |
 | `tests::reference_runtime_executes` | 1 | bootstrap pipeline execution | additive coverage; Rust executor smoke test retained |
 | `tests::go_run_failure_is_error` | 1 | bootstrap process and compiler command failure tests | additive coverage; Rust helper error path retained |
 | `compile_match::tests` | 5 | bootstrap ANF/Go backend tests and pattern fixtures | additive coverage; Rust IR unit tests retained |
