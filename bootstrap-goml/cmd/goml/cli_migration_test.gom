@@ -54,7 +54,7 @@ fn project_build_handles_deep_public_interface_type() -> unit {
     test_support::assert_success(output);
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/build/pkg/iface_deep/iface_deep.go",
+        "_artifact/build/pkg/iface_deep/goml_generated.go",
     )))
 }
 
@@ -133,7 +133,7 @@ fn project_build_writes_default_artifact_layout() -> unit {
     test_support::assert_success(migration_build(root));
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/build/pkg/demo/demo.go",
+        "_artifact/build/pkg/demo/goml_generated.go",
     )));
     testing::assert(fs::is_file(path::join(root, "_artifact/bin/demo")))
 }
@@ -152,7 +152,7 @@ fn project_uses_manifest_and_cli_target_directories() -> unit {
     test_support::assert_success(migration_build(root));
     testing::assert(fs::is_file(path::join(
         root,
-        "out/generated/build/pkg/demo/demo.go",
+        "out/generated/build/pkg/demo/goml_generated.go",
     )));
     testing::assert(fs::is_file(path::join(root, "out/generated/bin/demo")));
     let override_output = test_support::project_command(
@@ -183,7 +183,29 @@ fn project_check_and_build_support_std_imports() -> unit {
     test_support::assert_success(migration_build(root));
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/build/pkg/demo/demo.go",
+        "_artifact/build/pkg/demo/goml_generated.go",
+    )))
+}
+
+#[test]
+fn project_module_path_may_contain_tests_segment() -> unit {
+    let root = test_support::workspace("module_path_tests_segment");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"tests::demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "events/events.gom"),
+        "package events;\npub fn value() -> int32 { 42 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\nuse tests::demo::events;\nfn main() -> unit { println(events::value().to_string()) }\n",
+    );
+    test_support::assert_success(migration_build(root));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/tests/demo/goml_generated.go",
     )))
 }
 
@@ -224,11 +246,11 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> unit {
     );
     test_support::assert_contains(
         stdout,
-        "gomlc link --input _artifact/build/pkg/demo/demo.core --output _artifact/build/pkg/demo/demo.go --entry demo",
+        "gomlc link --input _artifact/build/pkg/demo/demo.core --output _artifact/build/pkg/demo/goml_generated.go --entry demo",
     );
     test_support::assert_contains(
         stdout,
-        "go build -o _artifact/bin/demo _artifact/build/pkg/demo/demo.go",
+        "go build -o _artifact/bin/demo _artifact/build/pkg/demo/goml_generated.go",
     )
 }
 
@@ -250,7 +272,7 @@ fn project_run_dry_run_prints_the_complete_plan_without_tools() -> unit {
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
         stdout,
-        "go build -o _artifact/bin/demo _artifact/build/pkg/demo/demo.go",
+        "go build -o _artifact/bin/demo _artifact/build/pkg/demo/goml_generated.go",
     );
     test_support::assert_contains(
         stdout,
@@ -410,11 +432,11 @@ fn project_build_links_every_main_package() -> unit {
     )));
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/build/pkg/alice/app/cmd/server/server.go",
+        "_artifact/build/pkg/alice/app/cmd/server/goml_generated.go",
     )));
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/build/pkg/alice/app/cmd/client/client.go",
+        "_artifact/build/pkg/alice/app/cmd/client/goml_generated.go",
     )));
     let rejected = test_support::run(
         Vec::new()
@@ -445,6 +467,43 @@ fn project_build_links_every_main_package() -> unit {
 }
 
 #[test]
+fn project_build_and_test_use_safe_generated_go_filename() -> unit {
+    let root = test_support::workspace("safe_generated_go_filename");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "compiler_test/main.gom"),
+        "package main;\nfn main() -> unit { println(\"ok\") }\n",
+    );
+    test_support::write_file(
+        path::join(root, "compiler_test/main_test.gom"),
+        "package main;\nuse std::testing;\n#[test]\nfn safe_name() -> unit { testing::assert(true) }\n",
+    );
+    test_support::assert_success(migration_build(root));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/demo/compiler_test/goml_generated.go",
+    )));
+    let tested = test_support::project_command(
+        "test",
+        "",
+        Vec::new(),
+        root,
+    );
+    test_support::assert_success(tested);
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/test/internal/pkg/demo/compiler_test/goml_generated.go",
+    )));
+    test_support::assert_contains(
+        test_support::stdout(tested),
+        "demo::compiler_test::safe_name ... ok",
+    )
+}
+
+#[test]
 fn project_build_accepts_modules_without_main_packages() -> unit {
     let root = test_support::workspace("module_without_main");
     test_support::write_file(
@@ -466,7 +525,7 @@ fn project_build_accepts_modules_without_main_packages() -> unit {
     )));
     testing::assert(!fs::exists(path::join(
         root,
-        "_artifact/build/pkg/demo/pkg/pkg.go",
+        "_artifact/build/pkg/demo/pkg/goml_generated.go",
     )))
 }
 
@@ -753,7 +812,7 @@ fn project_build_handles_very_wide_struct_pattern() -> unit {
     test_support::assert_success(output);
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/build/pkg/wideproj/wideproj.go",
+        "_artifact/build/pkg/wideproj/goml_generated.go",
     )))
 }
 
