@@ -248,7 +248,9 @@ struct ArtifactCallable {
 }
 
 fn artifact_intrinsic_source_name(value: string) -> string {
-    if value == "array.get" {
+    if value == "eq.primitive" {
+        "__goml_primitive_eq"
+    } else if value == "array.get" {
         "array_get"
     } else if value == "array.set" {
         "array_set"
@@ -379,7 +381,9 @@ fn artifact_runtime_source_name(value: string) -> string {
 
 fn artifact_callable_id(kind: string, value: string) -> string {
     if kind == "intrinsic" {
-        if value == "compiler.missing" {
+        if value == "eq.primitive" {
+            "primitive_eq"
+        } else if value == "compiler.missing" {
             "missing"
         } else {
             artifact_replace_dots(value)

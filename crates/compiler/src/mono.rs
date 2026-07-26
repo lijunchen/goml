@@ -12,7 +12,7 @@ use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::{HashSet, VecDeque};
 
-const MONO_INSTANCE_LIMIT: usize = 4096;
+const MONO_SPECIALIZATION_LIMIT: usize = 4096;
 
 fn map_enum_variant_fields(
     fields: EnumVariantFields,
@@ -878,6 +878,7 @@ struct Ctx {
     out: Vec<MonoFn>,
     work: VecDeque<(String, Subst, String)>,
     active_instances: Vec<(String, Subst)>,
+    specialization_count: usize,
     error: Option<String>,
     used_names: IndexSet<String>,
     // Index for inherent methods: (base_type, method_name) -> generic_func_name
@@ -949,6 +950,7 @@ impl Ctx {
             out: Vec::new(),
             work: VecDeque::new(),
             active_instances: Vec::new(),
+            specialization_count: 0,
             error: None,
             used_names,
             inherent_method_index,
@@ -1199,10 +1201,10 @@ impl Ctx {
         if self.error.is_none() {
             if let Some(message) = self.recursive_specialization_error(name, &s) {
                 self.error = Some(message);
-            } else if self.instances.len() >= MONO_INSTANCE_LIMIT {
+            } else if !s.is_empty() && self.specialization_count >= MONO_SPECIALIZATION_LIMIT {
                 self.error = Some(format!(
                     "Monomorphization generated more than {} specialized functions; possible infinite generic specialization involving {}",
-                    MONO_INSTANCE_LIMIT, name
+                    MONO_SPECIALIZATION_LIMIT, name
                 ));
             }
         }
@@ -1214,6 +1216,9 @@ impl Ctx {
         };
         self.instances
             .insert((name.to_string(), key.clone()), spec.clone());
+        if !s.is_empty() {
+            self.specialization_count += 1;
+        }
         self.instance_orig_names
             .insert(spec.clone(), name.to_string());
         self.instance_substs.insert(k.clone(), s.clone());

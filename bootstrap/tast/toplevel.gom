@@ -16,6 +16,7 @@ fn function_context(
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        package_name: base.package_name,
         source_path: base.source_path,
         current_span: base.current_span,
         coercion_constraints: Vec::new(),
@@ -56,6 +57,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        package_name: base.package_name,
         source_path: base.source_path,
         current_span: base.current_span,
         coercion_constraints: base.coercion_constraints,
@@ -2437,6 +2439,19 @@ fn check_file_with_package(
     };
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
+    };
+    for trait_name in value.use_traits {
+        match find_trait(ctx, trait_name) {
+            Option::Some(_) => (),
+            Option::None => {
+                push_global_diagnostic(ctx, "Could not infer type");
+                push_diagnostic_at(
+                    ctx,
+                    "Unknown trait " + trait_name,
+                    Option::None,
+                )
+            },
+        }
     };
     validate_local_definitions(
         ctx,

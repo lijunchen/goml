@@ -756,14 +756,18 @@ fn selected_standard_hir_for_needs(
 
 fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File {
     if value.diagnostics.len() > 0 {
-        fail("error[compile]: " + value.diagnostics.get(0).message)
+        fail(render_typer_diagnostics(
+            hir_diagnostics(value.diagnostics, value.source_path),
+            value.source_path,
+            read_source(value.source_path),
+        ))
     } else {
         ()
     };
     match value.hir {
         Option::Some(file) => file,
         Option::None => {
-            fail("error[compile]: failed to lower package " + package_name);
+            fail("error[typer]: failed to lower package " + package_name);
             hir::File {
                 package_name,
                 path: "<unknown>",
@@ -938,7 +942,11 @@ fn run_package_command(
     ) {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            fail("error[compile]: " + error);
+            if artifact_string_starts_with(error, "error[") {
+                fail(error)
+            } else {
+                fail("error[compile]: " + error)
+            };
             ArtifactCoreUnit {
                 package_name: command.package_name,
                 interface_unit: new_artifact_interface_unit(

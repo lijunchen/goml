@@ -984,6 +984,11 @@ fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> un
         newline(builder, indent + 2);
         write_function(builder, method, indent + 2)
     };
+    if value.associated_types.len() == 0 && value.methods.len() == 0 {
+        newline(builder, indent)
+    } else {
+        ()
+    };
     newline(builder, indent);
     builder.write_char('}')
 }

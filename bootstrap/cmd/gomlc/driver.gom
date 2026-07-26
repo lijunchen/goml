@@ -278,7 +278,7 @@ fn compile_standard_package(
 fn builtin_artifact_dependency() -> (string, string) {
     (
         "builtin",
-        "ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d",
+        "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
     )
 }
 
@@ -613,9 +613,37 @@ fn selected_standard_core(
     result
 }
 
-fn fail_on_compilation_diagnostics(diagnostics: Vec[hir::Diagnostic]) -> unit {
+fn hir_diagnostics(
+    diagnostics: Vec[hir::Diagnostic],
+    source_path: string,
+) -> Vec[tast::Diagnostic] {
+    let result = Vec::new();
+    for diagnostic in diagnostics {
+        result.push(tast::Diagnostic {
+            severity: tast::DiagnosticSeverity::Error,
+            stage: "typer",
+            message: diagnostic.message,
+            source_path,
+            span: diagnostic.span,
+            primary_label: Option::None,
+            secondary_labels: Vec::new(),
+            sort_order: 0,
+        })
+    };
+    result
+}
+
+fn fail_on_compilation_diagnostics(
+    diagnostics: Vec[hir::Diagnostic],
+    source_path: string,
+    source: string,
+) -> unit {
     if diagnostics.len() > 0 {
-        fail("error[compile]: " + diagnostics.get(0).message)
+        fail(render_typer_diagnostics(
+            hir_diagnostics(diagnostics, source_path),
+            source_path,
+            source,
+        ))
     } else {
         ()
     }
@@ -1318,7 +1346,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let ast_value = hir::expand_derives(ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
-    fail_on_compilation_diagnostics(hir_value.diagnostics);
+    fail_on_compilation_diagnostics(hir_value.diagnostics, source_path, source);
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {

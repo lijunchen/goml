@@ -552,7 +552,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                                 Option::Some(_) => match value.visibility {
                                     Visibility::Public => push_error(
                                         ctx,
-                                        node_span(method),
+                                        node_span(node),
                                         "Trait implementation method "
                                             + value.name
                                             + " must not use `pub`",

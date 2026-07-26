@@ -5,7 +5,7 @@ use clap::Parser;
 
 fn main() {
     if let Err(err) = commands::execute(cli::Cli::parse().command) {
-        eprintln!("{err}");
+        eprintln!("{err:#}");
         std::process::exit(1);
     }
 }

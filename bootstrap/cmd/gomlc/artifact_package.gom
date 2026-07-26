@@ -613,6 +613,81 @@ fn artifact_apply_declared_package_aliases(
     ()
 }
 
+fn standard_internal_import_allowed(package_name: string) -> bool {
+    package_name == "std" || artifact_string_starts_with(package_name, "std::")
+}
+
+fn disallowed_standard_internal_import(
+    package_name: string,
+    import_name: string,
+) -> bool {
+    artifact_string_starts_with(import_name, "std::internal::")
+        && !standard_internal_import_allowed(package_name)
+}
+
+fn standard_internal_import_diagnostics(
+    values: Vec[ast::LowerResult],
+    paths: Vec[string],
+    package_name: string,
+) -> Vec[tast::Diagnostic] {
+    let diagnostics = Vec::new();
+    for index in range(0, values.len()) {
+        match values.get(index).ast {
+            Option::Some(file) => for use_decl in file.uses {
+                let import_name = import_path_text(use_decl.path);
+                if disallowed_standard_internal_import(package_name, import_name) {
+                    diagnostics.push(tast::Diagnostic {
+                        severity: tast::DiagnosticSeverity::Error,
+                        stage: "typer",
+                        message: "package " + import_name + " is internal to std",
+                        source_path: paths.get(index),
+                        span: Option::None,
+                        primary_label: Option::None,
+                        secondary_labels: Vec::new(),
+                        sort_order: 0,
+                    })
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        }
+    };
+    diagnostics
+}
+
+fn without_disallowed_standard_internal_imports(
+    value: ast::LowerResult,
+    package_name: string,
+) -> ast::LowerResult {
+    ast::LowerResult {
+        ast: match value.ast {
+            Option::Some(file) => {
+                let uses = Vec::new();
+                for use_decl in file.uses {
+                    if disallowed_standard_internal_import(
+                        package_name,
+                        import_path_text(use_decl.path),
+                    ) {
+                        ()
+                    } else {
+                        uses.push(use_decl)
+                    }
+                };
+                Option::Some(ast::File {
+                    package_name: file.package_name,
+                    package_explicit: file.package_explicit,
+                    uses,
+                    items: file.items,
+                    invalid_self_type_spans: file.invalid_self_type_spans,
+                })
+            },
+            Option::None => Option::None,
+        },
+        diagnostics: value.diagnostics,
+    }
+}
+
 fn compile_artifact_package(
     world: PackageWorld,
     command: PackageCommandArgs,
@@ -645,6 +720,11 @@ fn compile_artifact_package(
         }
     };
     fail_on_typer_diagnostics(lower_diagnostics, "", "");
+    let internal_import_diagnostics = standard_internal_import_diagnostics(
+        ast_values,
+        command.inputs,
+        command.package_name,
+    );
     let declared_name = match artifact_declared_package_name(
         ast_values,
         command.inputs,
@@ -667,7 +747,12 @@ fn compile_artifact_package(
             source_needs.get(),
             source_standard_needs(ast_value),
         ));
-        let expanded = hir::expand_derives(ast_value);
+        let expanded = hir::expand_derives(
+            without_disallowed_standard_internal_imports(
+                ast_value,
+                command.package_name,
+            ),
+        );
         for diagnostic in ast_diagnostics(
             expanded.diagnostics,
             "derive",
@@ -723,6 +808,9 @@ fn compile_artifact_package(
         hir_files,
         environments,
     );
+    for diagnostic in internal_import_diagnostics {
+        checked.diagnostics.push(diagnostic)
+    };
     let hir_file = merge_hir_files(hir_files, command.package_name);
     let signatures = tast::package_signatures(hir_file);
     let tast_file = match checked.tast {

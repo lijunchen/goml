@@ -468,17 +468,57 @@ fn print_cli_help(message: string) -> unit {
     io::println(message)
 }
 
+fn similar_cli_subcommand(command: string) -> Option[string] {
+    let candidates = Vec::new();
+    candidates.push("check");
+    candidates.push("test-check");
+    candidates.push("build");
+    candidates.push("test-build");
+    candidates.push("link");
+    candidates.push("test-link");
+    candidates.push("package-info");
+    candidates.push("run-single");
+    candidates.push("version");
+    candidates.push("help");
+    let best: Ref[Option[string]] = Ref::new(Option::None);
+    let distance = Ref::new(2147483647);
+    for candidate in candidates {
+        let candidate_distance = cli_edit_distance(command, candidate);
+        if candidate_distance < distance.get() {
+            distance.set(candidate_distance);
+            best.set(Option::Some(candidate))
+        } else {
+            ()
+        }
+    };
+    if distance.get() <= 2 {
+        best.get()
+    } else {
+        Option::None
+    }
+}
+
+fn unknown_subcommand_error(command: string) -> string {
+    let tip = match similar_cli_subcommand(command) {
+        Option::Some(similar) => {
+            "\n\n  tip: a similar subcommand exists: '" + similar + "'"
+        },
+        Option::None => "",
+    };
+    "error: unrecognized subcommand '"
+        + command
+        + "'"
+        + tip
+        + "\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'."
+}
+
 fn fail_cli(message: string) -> unit {
     io::eprintln(message);
     process::exit(2)
 }
 
 fn fail_unknown_subcommand(command: string) -> unit {
-    fail_cli(
-        "error: unrecognized subcommand '"
-            + command
-            + "'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
-    )
+    fail_cli(unknown_subcommand_error(command))
 }
 
 fn handle_cli_parse_error(command: string, error: string) -> unit {

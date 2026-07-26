@@ -1068,6 +1068,7 @@ fn resolved_constructor_value_expr(
 fn check_constructor_value_expr(
     ctx: Checker,
     constructor: hir::ConstructorRef,
+    expected: Option[Type],
 ) -> Expr {
     match resolve_constructor(ctx, constructor) {
         Option::Some(info) => resolved_constructor_value_expr(ctx, info),
@@ -1079,6 +1080,7 @@ fn check_constructor_value_expr(
                     "<error>"
                 },
             },
+            expected,
         ),
     }
 }
@@ -1088,6 +1090,7 @@ fn check_static_member(
     owner: string,
     member: string,
     type_args: Vec[hir::TypeExpr],
+    report_inference: bool,
 ) -> Expr {
     match resolve_named_constructor(ctx, owner, member) {
         Option::Some(info) => resolved_constructor_value_expr(ctx, info),
@@ -1119,10 +1122,19 @@ fn check_static_member(
                                 );
                                 infer_result.set(true)
                             },
-                            Option::None => push_diagnostic(
-                                ctx,
-                                "static member not found: " + owner + "::" + member,
-                            ),
+                            Option::None => {
+                                if report_inference {
+                                    push_global_diagnostic(ctx, "Could not infer type")
+                                } else {
+                                    ()
+                                };
+                                push_diagnostic(
+                                    ctx,
+                                    "Type or trait "
+                                        + diagnostic_type_name(ctx, owner)
+                                        + " not found for member access",
+                                )
+                            },
                         },
                     }
                 };
@@ -1139,7 +1151,12 @@ fn check_static_member(
     }
 }
 
-fn missing_constructor_expr(ctx: Checker, name: string) -> Expr {
+fn missing_constructor_expr(
+    ctx: Checker,
+    name: string,
+    expected: Option[Type],
+) -> Expr {
+    report_error_inference(ctx, expected);
     push_diagnostic(ctx, "Constructor " + name + " not found in environment");
     Expr::Constr {
         constructor: Constructor {
@@ -1150,6 +1167,13 @@ fn missing_constructor_expr(ctx: Checker, name: string) -> Expr {
                 },
         args: Vec::new(),
         ty: Type::Error,
+    }
+}
+
+fn report_error_inference(ctx: Checker, expected: Option[Type]) -> unit {
+    match expected {
+        Option::Some(_) => (),
+        Option::None => push_global_diagnostic(ctx, "Could not infer type"),
     }
 }
 
@@ -1229,9 +1253,11 @@ fn check_constructor_expr(
                 Option::Some(info) => {
                     check_positional_struct_expr(ctx, info, args, expected)
                 },
-                Option::None => missing_constructor_expr(ctx, name),
+                Option::None => missing_constructor_expr(ctx, name, expected),
             },
-            hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => missing_constructor_expr(ctx, "<error>"),
+            hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
+                missing_constructor_expr(ctx, "<error>", expected)
+            },
         },
     }
 }
@@ -1254,10 +1280,11 @@ fn check_struct_expr(
                         + info.constructor.name
                         + " has private fields and cannot be constructed here",
                 );
+                report_error_inference(ctx, expected);
                 return Expr::Constr {
                     constructor: info.constructor,
                     args: Vec::new(),
-                    ty: fresh_unresolved_inference(ctx),
+                    ty: Type::Error,
                 }
             } else {
                 ()
@@ -1369,15 +1396,16 @@ fn check_struct_expr(
                 let _ = check_expr(ctx, field.1, Option::None);
             };
             push_diagnostic(ctx, "Constructor " + name + " not found in environment");
+            report_error_inference(ctx, expected);
             Expr::Constr {
                 constructor: Constructor {
                                     name,
                                     fields: Vec::new(),
                                     is_struct: false,
                                     tag: Option::None,
-                                },
+                },
                 args: Vec::new(),
-                ty: fresh_unresolved_inference(ctx),
+                ty: Type::Error,
             }
         },
     }
@@ -1399,10 +1427,11 @@ fn check_positional_struct_expr(
                 + info.constructor.name
                 + " has private fields and cannot be constructed here",
         );
+        report_error_inference(ctx, expected);
         return Expr::Constr {
             constructor: info.constructor,
             args: Vec::new(),
-            ty: fresh_unresolved_inference(ctx),
+            ty: Type::Error,
         }
     } else {
         ()
@@ -2043,7 +2072,22 @@ fn check_method_call(
                                 + type_text(expr_type(receiver)),
                         )
                     };
-                    fresh_unresolved_inference(ctx)
+                    if contains_unbound_type_variable(expr_type(receiver)) {
+                        fresh_unresolved_inference(ctx)
+                    } else {
+                        match expected {
+                            Option::Some(_) => fresh_unresolved_inference(ctx),
+                            Option::None => if external_struct_type(
+                                ctx,
+                                expr_type(receiver),
+                            ) {
+                                push_global_diagnostic(ctx, "Could not infer type");
+                                Type::Error
+                            } else {
+                                fresh_unresolved_inference(ctx)
+                            },
+                        }
+                    }
                 },
             };
             apply_call(
@@ -2053,6 +2097,16 @@ fn check_method_call(
                 args,
             )
         },
+    }
+}
+
+fn external_struct_type(ctx: Checker, ty: Type) -> bool {
+    match type_constructor_name(ty) {
+        Option::Some(name) => match find_struct_by_name(ctx, name) {
+            Option::Some(info) => info.def_id.pkg == -1,
+            Option::None => false,
+        },
+        Option::None => false,
     }
 }
 
@@ -2157,12 +2211,29 @@ fn check_call_expr(
                             Option::Some(value) => {
                                 Expr::Callable { callable: value.callable, ty: value.ty }
                             },
-                            Option::None => check_static_member(
-                                ctx,
-                                owner,
-                                member,
-                                type_args,
-                            ),
+                            Option::None => if is_package_alias(ctx, owner) {
+                                report_error_inference(ctx, expected);
+                                let name = canonical_imported_name(
+                                    ctx,
+                                    owner + "::" + member,
+                                );
+                                push_diagnostic(ctx, "Unresolved callee " + name);
+                                Expr::Callable {
+                                    callable: Callable::Function(name),
+                                    ty: Type::Error,
+                                }
+                            } else {
+                                check_static_member(
+                                    ctx,
+                                    owner,
+                                    member,
+                                    type_args,
+                                    match expected {
+                                        Option::Some(_) => false,
+                                        Option::None => true,
+                                    },
+                                )
+                            },
                         };
                         let defer_coercions = is_inherent_callable(function) && match expected {
                             Option::Some(ty) => !contains_unbound_type_variable(ty),
@@ -3186,23 +3257,50 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
             Option::Some(ty) => Expr::Field { expr: value, field_name: name, ty },
             Option::None => match defer_field_type(ctx, expr_type(value), name) {
                 Option::Some(ty) => Expr::Field { expr: value, field_name: name, ty },
-                Option::None => {
-                    match prune(expr_type(value)) {
-                        Type::Tuple { items: _ } => push_diagnostic(
-                            ctx,
-                            "Field "
-                                + name
-                                + " not found on type "
-                                + type_text(expr_type(value)),
-                        ),
-                        _ => push_diagnostic(ctx, "field not found: " + name),
-                    };
-                    push_diagnostic(ctx, "Could not infer type");
-                    Expr::Field {
-                        expr: value,
-                        field_name: name,
-                        ty: fresh_unresolved_inference(ctx),
-                    }
+                Option::None => match type_constructor_name(expr_type(value)) {
+                    Option::Some(owner) => match find_struct_by_name(ctx, owner) {
+                        Option::Some(_) => {
+                            push_global_diagnostic(ctx, "Could not infer type");
+                            push_global_diagnostic(ctx, "Could not infer type");
+                            push_diagnostic_at(
+                                ctx,
+                                "Struct " + owner + " has no field " + name,
+                                Option::None,
+                            );
+                            Expr::Field {
+                                expr: value,
+                                field_name: name,
+                                ty: Type::Error,
+                            }
+                        },
+                        Option::None => {
+                            push_diagnostic(ctx, "field not found: " + name);
+                            push_diagnostic(ctx, "Could not infer type");
+                            Expr::Field {
+                                expr: value,
+                                field_name: name,
+                                ty: fresh_unresolved_inference(ctx),
+                            }
+                        },
+                    },
+                    Option::None => {
+                        match prune(expr_type(value)) {
+                            Type::Tuple { items: _ } => push_diagnostic(
+                                ctx,
+                                "Field "
+                                    + name
+                                    + " not found on type "
+                                    + type_text(expr_type(value)),
+                            ),
+                            _ => push_diagnostic(ctx, "field not found: " + name),
+                        };
+                        push_diagnostic(ctx, "Could not infer type");
+                        Expr::Field {
+                            expr: value,
+                            field_name: name,
+                            ty: fresh_unresolved_inference(ctx),
+                        }
+                    },
                 },
             },
         }
@@ -3392,6 +3490,16 @@ fn projected_into_iterator_item(
     let normalized = normalize_type(ctx, direct);
     if !types_equal(normalized, direct) {
         normalized
+    } else if trait_bound_satisfied_at(
+        ctx,
+        iterator_ty,
+        TraitRef {
+            name: "Iterator",
+            args: Vec::new(),
+        },
+        0,
+    ) {
+        normalize_type(ctx, trait_projection(iterator_ty, "Item", "Iterator"))
     } else if preserve_projection {
         trait_projection(
             trait_projection(iterator_ty, "IntoIter", "IntoIterator"),
@@ -3457,10 +3565,23 @@ fn check_for_expr(
     let body = check_expr(ctx, body_source, Option::None);
     expect_type_at(ctx, Type::Unit, expr_type(body), Option::Some(body_span));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
-    let iterator_ty = normalize_type(
-        ctx,
-        trait_projection(source_ty, "IntoIter", "IntoIterator"),
-    );
+    let projected_iterator_ty = trait_projection(source_ty, "IntoIter", "IntoIterator");
+    let normalized_iterator_ty = normalize_type(ctx, projected_iterator_ty);
+    let iterator_ty = if types_equal(normalized_iterator_ty, projected_iterator_ty)
+        && trait_bound_satisfied_at(
+            ctx,
+            source_ty,
+            TraitRef {
+                name: "Iterator",
+                args: Vec::new(),
+            },
+            0,
+        )
+    {
+        source_ty
+    } else {
+        normalized_iterator_ty
+    };
     Expr::For {
         pat: typed_pat,
         iterator,
@@ -3541,10 +3662,10 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 type_args: args,
                 type_arg_spans: _,
             } => {
-                check_static_member(ctx, owner, member, args)
+                check_static_member(ctx, owner, member, args, true)
             },
             hir::ExprKind::ConstructorValue { constructor } => {
-                check_constructor_value_expr(ctx, constructor)
+                check_constructor_value_expr(ctx, constructor, Option::None)
             },
             hir::ExprKind::Constr { constructor, args } => {
                 check_constructor_expr(ctx, constructor, args, Option::None)
@@ -3808,7 +3929,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         hir::ExprKind::ConstructorValue { constructor } => {
             coerce_expr(
                 ctx,
-                check_constructor_value_expr(ctx, constructor),
+                check_constructor_value_expr(ctx, constructor, expected),
                 expected,
             )
         },
