@@ -210,6 +210,19 @@ fn main() -> unit {
         },
         Option::None => (),
     };
+    match io::read_stdin_exact(2) {
+        Result::Ok(data) => match io::write_stdout(data) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                io::eprintln(error);
+                process::exit(1)
+            },
+        },
+        Result::Err(error) => {
+            io::eprintln(error);
+            process::exit(1)
+        },
+    };
     match io::read_stdin() {
         Result::Ok(data) => {
             match io::write_stdout(data) {

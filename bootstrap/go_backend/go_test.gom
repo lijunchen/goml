@@ -231,6 +231,7 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.io.println");
     hooks.push("std.io.eprint");
     hooks.push("std.io.read_stdin");
+    hooks.push("std.io.read_stdin_exact");
     hooks.push("std.io.write_stdout");
     hooks.push("std.io.write_stderr");
     hooks.push("std.path.join");
@@ -300,6 +301,10 @@ fn emits_every_standard_runtime_hook() -> unit {
     testing::assert(string_contains(
         output,
         "data, err = _goml_io.ReadAll(_goml_os.Stdin)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "_, err = _goml_io.ReadFull(_goml_os.Stdin, data)",
     ));
     testing::assert(string_contains(
         output,

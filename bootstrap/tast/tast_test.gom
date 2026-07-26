@@ -112,6 +112,96 @@ fn checked_package_file_with_dependencies(
 }
 
 #[test]
+fn records_typecheck_query_facts() -> unit {
+    let result = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn identity(value: int32) -> int32 { value } fn main() -> int32 { let answer = identity(42); answer }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert(result.typeck_results.exprs.len() > 0);
+    testing::assert(result.typeck_results.pats.len() > 0);
+    testing::assert(result.typeck_results.locals.len() > 0);
+    testing::assert_eq(result.typeck_results.calls.len(), 1);
+    match resolve_type(result.typeck_results.calls.get(0).callee_ty) {
+        Type::Func { params, ret_ty } => {
+            testing::assert_eq(params.len(), 1);
+            match resolve_type(params.get(0)) {
+                Type::Int32 => (),
+                _ => testing::fail("expected call parameter type"),
+            };
+            match resolve_type(ret_ty) {
+                Type::Int32 => (),
+                _ => testing::fail("expected call return type"),
+            }
+        },
+        _ => testing::fail("expected callable type"),
+    };
+    let local_reference = Ref::new(false);
+    let callable_reference = Ref::new(false);
+    for reference in result.typeck_results.references {
+        testing::assert_eq(reference.source_path, "main.gom");
+        match reference.target {
+            ReferenceTarget::Local(_) => {
+                local_reference.set(true);
+                match resolve_type(reference.ty) {
+                    Type::Int32 => (),
+                    _ => testing::fail("expected local reference type"),
+                }
+            },
+            ReferenceTarget::Definition(_) | ReferenceTarget::Callable(_) => {
+                callable_reference.set(true)
+            },
+            ReferenceTarget::Constructor(_) => (),
+            ReferenceTarget::Unresolved(_) => (),
+        }
+    };
+    testing::assert(local_reference.get());
+    testing::assert(callable_reference.get())
+}
+
+#[test]
+fn merges_typecheck_query_facts_for_package_files() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse(
+        "package values; fn value() -> int32 { 42 }",
+    ));
+    parsed.push(parser::parse(
+        "package values; fn answer() -> int32 { value() }",
+    ));
+    let ast_files = ast::lower_package(parsed);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    inputs.push((ast_files.get(0), "value.gom"));
+    inputs.push((ast_files.get(1), "answer.gom"));
+    let hir_files: Vec[hir::File] = Vec::new();
+    for lowered in hir::lower_package_files(inputs, "example::values") {
+        match lowered.hir {
+            Option::Some(file) => hir_files.push(file),
+            Option::None => testing::fail("expected package HIR"),
+        }
+    };
+    let result = check_package_files_for_link_with_dependencies(
+        hir_files,
+        Vec::new(),
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let value_facts = Ref::new(0);
+    let answer_facts = Ref::new(0);
+    for fact in result.typeck_results.exprs {
+        if fact.source_path == "value.gom" {
+            value_facts.set(value_facts.get() + 1)
+        } else if fact.source_path == "answer.gom" {
+            answer_facts.set(answer_facts.get() + 1)
+        } else {
+            ()
+        }
+    };
+    testing::assert(value_facts.get() > 0);
+    testing::assert(answer_facts.get() > 0)
+}
+
+#[test]
 fn checks_cross_file_package_definitions() -> unit {
     let parsed = Vec::new();
     parsed.push(parser::parse(

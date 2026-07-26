@@ -1673,7 +1673,7 @@ fn main() -> unit {
                 character: 8,
             },
         );
-        expect!["eprint, eprintln, print, println, read_stdin, write_stderr, write_stdout"]
+        expect!["eprint, eprintln, print, println, read_stdin, read_stdin_exact, write_stderr, write_stdout"]
             .assert_eq(&format_completion(completion));
     }
 
