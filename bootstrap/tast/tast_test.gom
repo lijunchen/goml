@@ -1547,17 +1547,25 @@ fn specializes_array_builtin_lengths() -> unit {
                                                                 callable: Callable::Intrinsic(name),
                                                                 ty: Type::Func {
                                                                                         params,
-                                                                                        ret_ty: Type::Unit,
+                                                                                        ret_ty,
                                                                                     },
                                                             },
                                         args: _,
-                                        ty: Type::Unit,
+                                        ty,
                                     },
                 } => {
                     testing::assert_eq(name, "array.set");
                     match resolve_type(params.get(0)) {
                         Type::Array { len: 2, elem: Type::Int32 } => (),
                         _ => testing::fail("expected specialized array.set length"),
+                    };
+                    match resolve_type(ret_ty) {
+                        Type::Array { len: 2, elem: Type::Int32 } => (),
+                        _ => testing::fail("expected specialized array.set return length"),
+                    };
+                    match resolve_type(ty) {
+                        Type::Array { len: 2, elem: Type::Int32 } => (),
+                        _ => testing::fail("expected specialized array.set result length"),
                     }
                 },
                 _ => testing::fail("expected array.set call"),
