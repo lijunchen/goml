@@ -21,6 +21,7 @@ struct CliArgs {
     test_ignored: bool,
     test_include_ignored: bool,
     test_json: bool,
+    test_kind: string,
 }
 
 fn fail(message: string) -> unit {
@@ -34,13 +35,13 @@ fn top_help() -> string {
 
 fn command_help(command: string) -> string {
     if command == "check" {
-        "Usage: goml check [OPTIONS] [TARGET]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
+        "Usage: goml check [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
     } else if command == "build" {
-        "Usage: goml build [OPTIONS] [TARGET]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
+        "Usage: goml build [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "run" {
         "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "test" {
-        "Usage: goml test [OPTIONS] [TARGET] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --format <FORMAT>  [default: text] [possible values: text, json]\n      --jobs <JOBS>      [default: 1]\n  -h, --help"
+        "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --format <FORMAT>  [default: text] [possible values: text, json]\n      --jobs <JOBS>      [default: 1]\n      --kind <KIND>      [default: all] [possible values: internal, external, all]\n  -h, --help"
     } else {
         top_help()
     }
@@ -116,6 +117,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     let test_ignored = Ref::new(false);
     let test_include_ignored = Ref::new(false);
     let test_json = Ref::new(false);
+    let test_kind = Ref::new("all");
     let trailing = Ref::new(false);
     let index = Ref::new(2);
     while index.get() < args.len() {
@@ -215,7 +217,35 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             Result::Err(message) => return Result::Err(message),
                         }
                     } else {
-                        let parsed_format = match option_value(
+                        let parsed_kind = match option_value(
+                            args,
+                            index,
+                            argument,
+                            "--kind",
+                        ) {
+                            Result::Ok(value) => value,
+                            Result::Err(message) => return Result::Err(message),
+                        };
+                        if match parsed_kind {
+                            Option::Some(_) => true,
+                            Option::None => false,
+                        } {
+                            let value = match parsed_kind {
+                                Option::Some(value) => value,
+                                Option::None => "all",
+                            };
+                            if value == "internal"
+                                || value == "external"
+                                || value == "all"
+                            {
+                                test_kind.set(value)
+                            } else {
+                                return Result::Err(
+                                    "--kind must be internal, external, or all",
+                                )
+                            }
+                        } else {
+                            let parsed_format = match option_value(
                             args,
                             index,
                             argument,
@@ -224,7 +254,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             Result::Ok(value) => value,
                             Result::Err(message) => return Result::Err(message),
                         };
-                        match parsed_format {
+                            match parsed_format {
                             Option::Some(value) => if value == "json" {
                                 test_json.set(true)
                             } else if value == "text" {
@@ -236,10 +266,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             },
                             Option::None => if util::starts_with(argument, "-") {
                                 return Result::Err("unknown option " + argument)
-                            } else if !(target_set.get()) {
-                                target.set(argument);
-                                target_set.set(true);
-                                index.set(index.get() + 1)
                             } else if match test_filter.get() {
                                 Option::Some(_) => true,
                                 Option::None => false,
@@ -249,16 +275,17 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                 test_filter.set(Option::Some(argument));
                                 index.set(index.get() + 1)
                             },
+                            }
                         }
                     }
                 } else if util::starts_with(argument, "-") {
                     return Result::Err("unknown option " + argument)
-                } else if target_set.get() {
-                    return Result::Err("unexpected argument " + argument)
-                } else {
+                } else if command == "run" && !(target_set.get()) {
                     target.set(argument);
                     target_set.set(true);
                     index.set(index.get() + 1)
+                } else {
+                    return Result::Err("unexpected argument " + argument)
                 }
             }
         }
@@ -280,27 +307,33 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             test_ignored: test_ignored.get(),
             test_include_ignored: test_include_ignored.get(),
             test_json: test_json.get(),
+            test_kind: test_kind.get(),
         })
     }
 }
 
 fn run_command(args: CliArgs) -> Result[unit, string] {
-    let include_tests = args.command == "test" || args.include_tests;
-    let context = match project::load_context(
-        args.target,
-        args.target_dir,
-        args.compiler,
-        include_tests,
-    ) {
+    let context_result = if args.command == "run" {
+        project::load_target_context(
+            args.target,
+            args.target_dir,
+            args.compiler,
+        )
+    } else {
+        project::load_context(args.target_dir, args.compiler)
+    };
+    let context = match context_result {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
     let plan = if args.command == "check" {
         project::check_plan(context, args.include_tests)
-    } else if args.command == "build" || args.command == "run" {
+    } else if args.command == "build" {
         project::build_plan(context)
+    } else if args.command == "run" {
+        project::run_plan(context)
     } else {
-        project::test_plan(context)
+        project::test_plan(context, args.test_kind)
     };
     let plan = match plan {
         Result::Ok(value) => value,
@@ -321,18 +354,17 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
             Option::None => Result::Err("build plan omitted executable"),
         }
     } else if args.command == "test" && !args.dry_run {
-        let manifest = match plan.test_manifest {
-            Option::Some(value) => value,
-            Option::None => return Result::Err("test plan omitted manifest"),
-        };
-        let executable = match plan.test_runner {
-            Option::Some(value) => value,
-            Option::None => return Result::Err("test plan omitted runner"),
+        let groups = Vec::new();
+        for group in plan.test_groups {
+            groups.push(runner::Group {
+                kind: group.kind,
+                executable: group.runner,
+                manifest_path: group.manifest,
+            })
         };
         runner::run(
             context.graph.module_dir,
-            executable,
-            manifest,
+            groups,
             runner::Options {
                 filter: args.test_filter,
                 jobs: args.test_jobs,

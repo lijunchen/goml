@@ -72,8 +72,6 @@ struct RemoveArgs {
 
 #[derive(Args, Debug, Clone)]
 struct ProjectCommandArgs {
-    #[arg(default_value = ".")]
-    target: PathBuf,
     #[arg(long = "target-dir")]
     target_dir: Option<PathBuf>,
     #[arg(long = "dry-run")]
@@ -94,14 +92,14 @@ struct CheckCommandArgs {
 struct RunCommandArgs {
     #[command(flatten)]
     project: ProjectCommandArgs,
+    #[arg(default_value = ".")]
+    target: PathBuf,
     #[arg(last = true, allow_hyphen_values = true, value_name = "ARGS")]
     args: Vec<OsString>,
 }
 
 #[derive(Args, Debug, Clone)]
 struct TestCommandArgs {
-    #[arg(default_value = ".")]
-    target: PathBuf,
     #[arg(value_name = "FILTER")]
     filter: Option<String>,
     #[arg(long = "target-dir")]
@@ -158,10 +156,24 @@ struct CompilerCompatArgs {
 struct ProjectContext {
     module_dir: PathBuf,
     module_path: String,
-    entry_path: PathBuf,
-    target_role: ProjectTargetRole,
+    entry_path: Option<PathBuf>,
+    target_role: Option<ProjectTargetRole>,
     dependencies: BTreeMap<String, String>,
     artifacts: ArtifactLayout,
+}
+
+impl ProjectContext {
+    fn entry_path(&self) -> anyhow::Result<&Path> {
+        self.entry_path
+            .as_deref()
+            .ok_or_else(|| anyhow!("project command requires a package target"))
+    }
+
+    fn target_role(&self) -> anyhow::Result<&ProjectTargetRole> {
+        self.target_role
+            .as_ref()
+            .ok_or_else(|| anyhow!("project command requires a package target"))
+    }
 }
 
 #[derive(Clone)]
@@ -190,10 +202,6 @@ impl ArtifactLayout {
         self.root.join("test").join("external")
     }
 
-    fn main_go(&self) -> PathBuf {
-        self.root.join("main.go")
-    }
-
     fn binary(&self, module_path: &str, entry_package: &str) -> anyhow::Result<PathBuf> {
         let name = entry_package.rsplit("::").next().unwrap_or(entry_package);
         let mut output = self.root.join("bin");
@@ -209,29 +217,21 @@ impl ArtifactLayout {
         Ok(output.join(format!("{name}{}", std::env::consts::EXE_SUFFIX)))
     }
 
-    fn internal_test_go(&self) -> PathBuf {
-        self.test_internal_root().join("main.go")
+    fn package_go(&self, root: &Path, package: &str) -> PathBuf {
+        local_artifact_base(root, package).with_extension("go")
     }
 
-    fn external_test_go(&self) -> PathBuf {
-        self.test_external_root().join("main.go")
+    fn test_manifest(&self, root: &Path, package: &str) -> PathBuf {
+        local_artifact_base(root, package)
+            .parent()
+            .expect("package artifact must have a parent")
+            .join("tests.json")
     }
 
-    fn internal_test_manifest(&self) -> PathBuf {
-        self.test_internal_root().join("tests.json")
-    }
-
-    fn external_test_manifest(&self) -> PathBuf {
-        self.test_external_root().join("tests.json")
-    }
-
-    fn internal_test_runner(&self) -> PathBuf {
-        self.test_internal_root()
-            .join(format!("runner{}", std::env::consts::EXE_SUFFIX))
-    }
-
-    fn external_test_runner(&self) -> PathBuf {
-        self.test_external_root()
+    fn test_runner(&self, root: &Path, package: &str) -> PathBuf {
+        local_artifact_base(root, package)
+            .parent()
+            .expect("package artifact must have a parent")
             .join(format!("runner{}", std::env::consts::EXE_SUFFIX))
     }
 }
@@ -239,7 +239,7 @@ impl ArtifactLayout {
 enum ProjectTargetRole {
     Production,
     InternalTest,
-    ExternalTest { suite_dir: PathBuf },
+    ExternalTest,
 }
 
 struct PackageCompilerCommand {
@@ -268,7 +268,7 @@ struct ProjectCommandPlan {
 
 struct ProjectBuildCommandPlan {
     compiler: ProjectCommandPlan,
-    go: GoBuildCommand,
+    go: Vec<GoBuildCommand>,
 }
 
 struct GoBuildCommand {
@@ -838,8 +838,8 @@ fn execute_compiler_compat(args: CompilerCompatArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_check(args: CheckCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.project.target, args.project.target_dir.as_deref())?;
-    let plan = build_project_check_plan(&project, args.tests)?;
+    let project = load_current_project(args.project.target_dir.as_deref())?;
+    let plan = build_module_check_plan(&project, args.tests)?;
     execute_planned_commands(
         &project.module_dir,
         &plan.commands,
@@ -849,11 +849,8 @@ fn execute_project_check(args: CheckCommandArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.target, args.target_dir.as_deref())?;
-    if !matches!(&project.target_role, ProjectTargetRole::Production) {
-        bail!("test-only targets cannot be built directly; use `goml test`");
-    }
-    let plan = build_project_build_plan(&project)?;
+    let project = load_current_project(args.target_dir.as_deref())?;
+    let plan = build_module_build_plan(&project)?;
     execute_project_build_plan(
         &project.module_dir,
         &plan,
@@ -863,8 +860,8 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_run(args: RunCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.project.target, args.project.target_dir.as_deref())?;
-    if !matches!(&project.target_role, ProjectTargetRole::Production) {
+    let project = load_project(&args.target, args.project.target_dir.as_deref())?;
+    if !matches!(project.target_role()?, ProjectTargetRole::Production) {
         bail!("test-only targets cannot be run directly; use `goml test`");
     }
     let plan = build_project_build_plan(&project)?;
@@ -874,14 +871,18 @@ fn execute_project_run(args: RunCommandArgs) -> anyhow::Result<()> {
         args.project.compiler.as_deref(),
         args.project.dry_run,
     )?;
+    let executable = plan
+        .go
+        .first()
+        .ok_or_else(|| anyhow!("run build plan omitted executable"))?;
     if args.project.dry_run {
         println!(
             "{}",
-            display_command_path_and_args(&plan.go.output, &args.args)
+            display_command_path_and_args(&executable.output, &args.args)
         );
         return Ok(());
     }
-    let executable = absolute_from_module(&project.module_dir, &plan.go.output);
+    let executable = absolute_from_module(&project.module_dir, &executable.output);
     let status = Command::new(&executable)
         .args(&args.args)
         .status()
@@ -893,8 +894,8 @@ fn execute_project_run(args: RunCommandArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_test(args: TestCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.target, args.target_dir.as_deref())?;
-    let plan = build_project_test_plan(&project, args.kind)?;
+    let project = load_current_project(args.target_dir.as_deref())?;
+    let plan = build_module_test_plan(&project, args.kind)?;
     execute_planned_commands(
         &project.module_dir,
         &plan.commands,
@@ -907,60 +908,63 @@ fn execute_project_test(args: TestCommandArgs) -> anyhow::Result<()> {
     execute_test_runner(&project.module_dir, &plan.groups, &args)
 }
 
-fn build_project_check_plan(
+fn build_module_graph_plan(
+    project: &ProjectContext,
+    stage: ProjectStage,
+) -> anyhow::Result<(
+    ProjectCommandPlan,
+    goml_project::package_graph::PackageGraph,
+)> {
+    let output_root = stage.output_root(&project.artifacts);
+    let external = build_external_packages_plan(project, &output_root)?;
+    let external_imports =
+        goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
+    let graph = goml_project::package_graph::discover_all_project_packages(
+        &project.module_dir,
+        &external_imports,
+    )
+    .map_err(|err| anyhow!("{} failed: {}", stage.label(), err))?;
+    let plan = build_graph_plan(project, stage, external, graph.clone())?;
+    Ok((plan, graph))
+}
+
+fn build_module_check_plan(
     project: &ProjectContext,
     include_all_tests: bool,
 ) -> anyhow::Result<ProjectCommandPlan> {
-    let mut commands = build_project_plan(project, ProjectStage::Check)?.commands;
-    match &project.target_role {
-        ProjectTargetRole::Production if include_all_tests => {
-            commands.extend(build_all_test_check_commands(project)?);
-        }
-        ProjectTargetRole::InternalTest => {
-            commands.extend(build_project_plan(project, ProjectStage::TestCheck)?.commands);
-        }
-        ProjectTargetRole::ExternalTest { suite_dir } => {
-            commands.extend(build_external_test_check_plan(project, suite_dir)?.commands);
-        }
-        ProjectTargetRole::Production => {}
+    let (mut plan, _) = build_module_graph_plan(project, ProjectStage::Check)?;
+    if include_all_tests {
+        plan.commands
+            .extend(build_all_module_test_check_commands(project)?);
     }
-    Ok(ProjectCommandPlan { commands })
+    Ok(plan)
 }
 
-fn build_all_test_check_commands(
+fn build_all_module_test_check_commands(
     project: &ProjectContext,
 ) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
     let check_root = project.artifacts.check_root();
     let external = build_external_packages_plan(project, &check_root)?;
     let external_imports =
         goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
-    let test_plan = goml_project::package_graph::discover_project_test_plan(
+    let tests = goml_project::package_graph::discover_all_project_test_plan(
         &project.module_dir,
-        &project.entry_path,
         &external_imports,
     )
     .map_err(|err| anyhow!("project test check failed: {}", err))?;
     let mut commands = Vec::new();
-    let normal_files = &test_plan.normal.packages[&test_plan.normal.entry_package].files;
-    let internal_files = &test_plan.internal.packages[&test_plan.internal.entry_package].files;
-    if internal_files != normal_files {
+    for graph in tests.internal {
         commands.extend(
-            build_graph_plan(
-                project,
-                ProjectStage::TestCheck,
-                external.clone(),
-                test_plan.internal,
-            )?
-            .commands,
+            build_graph_plan(project, ProjectStage::TestCheck, external.clone(), graph)?.commands,
         );
     }
-    for external_test in test_plan.external {
+    for test in tests.external {
         commands.extend(
             build_graph_plan(
                 project,
                 ProjectStage::TestCheck,
                 external.clone(),
-                external_test.graph,
+                test.graph,
             )?
             .commands,
         );
@@ -968,27 +972,100 @@ fn build_all_test_check_commands(
     Ok(commands)
 }
 
-fn build_external_test_check_plan(
+fn build_module_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectBuildCommandPlan> {
+    let (mut compiler, graph) = build_module_graph_plan(project, ProjectStage::Build)?;
+    let link = compiler
+        .commands
+        .iter()
+        .find_map(|command| match command {
+            PlannedCompilerCommand::Link(command) => Some(command.input_cores.clone()),
+            _ => None,
+        })
+        .ok_or_else(|| anyhow!("project build plan is missing core outputs"))?;
+    compiler
+        .commands
+        .retain(|command| !matches!(command, PlannedCompilerCommand::Link(_)));
+    let mut entries = graph
+        .packages
+        .values()
+        .filter(|package| package.declared_name == "main")
+        .map(|package| package.name.clone())
+        .collect::<Vec<_>>();
+    entries.sort();
+    let mut go = Vec::new();
+    for entry_package in entries {
+        let input = project
+            .artifacts
+            .package_go(&project.artifacts.build_root(), &entry_package);
+        compiler
+            .commands
+            .push(PlannedCompilerCommand::Link(LinkCompilerCommand {
+                input_cores: link.clone(),
+                entry_package: entry_package.clone(),
+                output: input.clone(),
+            }));
+        go.push(GoBuildCommand {
+            input,
+            output: project
+                .artifacts
+                .binary(&project.module_path, &entry_package)?,
+        });
+    }
+    Ok(ProjectBuildCommandPlan { compiler, go })
+}
+
+fn build_module_test_plan(
     project: &ProjectContext,
-    suite_dir: &Path,
-) -> anyhow::Result<ProjectCommandPlan> {
-    let check_root = project.artifacts.check_root();
-    let external = build_external_packages_plan(project, &check_root)?;
-    let external_imports =
-        goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
-    let external_test = goml_project::package_graph::discover_project_external_test_package(
-        &project.module_dir,
-        &project.entry_path,
-        suite_dir,
-        &external_imports,
-    )
-    .map_err(|err| anyhow!("project test check failed: {}", err))?;
-    build_graph_plan(
-        project,
-        ProjectStage::TestCheck,
-        external,
-        external_test.graph,
-    )
+    requested_kind: TestKind,
+) -> anyhow::Result<ProjectTestCommandPlan> {
+    let mut commands = build_module_graph_plan(project, ProjectStage::Check)?
+        .0
+        .commands;
+    let mut groups = Vec::new();
+    if matches!(requested_kind, TestKind::Internal | TestKind::All) {
+        let root = project.artifacts.test_internal_root();
+        let external = build_external_packages_plan(project, &root)?;
+        let imports =
+            goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
+        let tests = goml_project::package_graph::discover_all_project_test_plan(
+            &project.module_dir,
+            &imports,
+        )
+        .map_err(|err| anyhow!("project test failed: {}", err))?;
+        for graph in tests.internal {
+            let package = graph.entry_package.clone();
+            commands.extend(
+                build_graph_plan(project, ProjectStage::Test, external.clone(), graph)?.commands,
+            );
+            groups.push(internal_test_run_group(&project.artifacts, &package));
+        }
+    }
+    if matches!(requested_kind, TestKind::External | TestKind::All) {
+        let root = project.artifacts.test_external_root();
+        let external = build_external_packages_plan(project, &root)?;
+        let imports =
+            goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
+        let tests = goml_project::package_graph::discover_all_project_test_plan(
+            &project.module_dir,
+            &imports,
+        )
+        .map_err(|err| anyhow!("project test failed: {}", err))?;
+        for test in tests.external {
+            let package = test.graph.entry_package.clone();
+            let test_packages = HashSet::from([package.clone()]);
+            let link_packages = vec![package.clone(), test.target_package];
+            let plan = build_external_test_graph_plan(
+                project,
+                external.clone(),
+                test.graph,
+                test_packages,
+                link_packages,
+            )?;
+            commands.extend(plan.commands);
+            groups.extend(plan.groups);
+        }
+    }
+    Ok(ProjectTestCommandPlan { commands, groups })
 }
 
 fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectBuildCommandPlan> {
@@ -1002,151 +1079,17 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectB
         })
         .ok_or_else(|| anyhow!("project build plan is missing a link command"))?;
     let go = GoBuildCommand {
-        input: project.artifacts.main_go(),
+        input: project
+            .artifacts
+            .package_go(&project.artifacts.build_root(), entry_package),
         output: project
             .artifacts
             .binary(&project.module_path, entry_package)?,
     };
-    Ok(ProjectBuildCommandPlan { compiler, go })
-}
-
-fn build_project_test_plan(
-    project: &ProjectContext,
-    requested_kind: TestKind,
-) -> anyhow::Result<ProjectTestCommandPlan> {
-    let (run_internal, run_external) = match &project.target_role {
-        ProjectTargetRole::Production => (
-            matches!(requested_kind, TestKind::Internal | TestKind::All),
-            matches!(requested_kind, TestKind::External | TestKind::All),
-        ),
-        ProjectTargetRole::InternalTest => (true, false),
-        ProjectTargetRole::ExternalTest { .. } => (false, true),
-    };
-    let mut commands = build_project_plan(project, ProjectStage::Check)?.commands;
-    let mut groups = Vec::new();
-    if run_internal && has_internal_test_sources(project)? {
-        commands.extend(build_project_plan(project, ProjectStage::Test)?.commands);
-        groups.push(internal_test_run_group(&project.artifacts));
-    }
-    if run_external {
-        let suite_dir = match &project.target_role {
-            ProjectTargetRole::ExternalTest { suite_dir } => Some(suite_dir.as_path()),
-            ProjectTargetRole::Production | ProjectTargetRole::InternalTest => None,
-        };
-        if let Some(plan) = build_external_tests_plan(project, suite_dir)? {
-            commands.extend(plan.commands);
-            groups.extend(plan.groups);
-        }
-    }
-    Ok(ProjectTestCommandPlan { commands, groups })
-}
-
-fn has_internal_test_sources(project: &ProjectContext) -> anyhow::Result<bool> {
-    let package_dir = project
-        .entry_path
-        .parent()
-        .unwrap_or_else(|| Path::new("."));
-    Ok(fs::read_dir(package_dir)
-        .with_context(|| format!("failed to read package directory {}", package_dir.display()))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .any(|path| goml_project::package_graph::is_internal_test_source(&path)))
-}
-
-fn build_external_tests_plan(
-    project: &ProjectContext,
-    suite_dir: Option<&Path>,
-) -> anyhow::Result<Option<ProjectTestCommandPlan>> {
-    let external_root = project.artifacts.test_external_root();
-    let external = build_external_packages_plan(project, &external_root)?;
-    let external_imports =
-        goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
-    let tests = if let Some(suite_dir) = suite_dir {
-        vec![
-            goml_project::package_graph::discover_project_external_test_package(
-                &project.module_dir,
-                &project.entry_path,
-                suite_dir,
-                &external_imports,
-            )
-            .map_err(|err| anyhow!("project test failed: {}", err))?,
-        ]
-    } else {
-        goml_project::package_graph::discover_project_external_test_packages(
-            &project.module_dir,
-            &project.entry_path,
-            &external_imports,
-        )
-        .map_err(|err| anyhow!("project test failed: {}", err))?
-    };
-    if tests.is_empty() {
-        return Ok(None);
-    }
-    let (graph, test_packages, link_packages) = merge_external_test_graphs(tests)?;
-    let plan =
-        build_external_test_graph_plan(project, external, graph, test_packages, link_packages)?;
-    Ok(Some(plan))
-}
-
-fn merge_external_test_graphs(
-    tests: Vec<goml_project::package_graph::ExternalTestGraph>,
-) -> anyhow::Result<(
-    goml_project::package_graph::PackageGraph,
-    HashSet<String>,
-    Vec<String>,
-)> {
-    let mut tests = tests.into_iter();
-    let first = tests
-        .next()
-        .ok_or_else(|| anyhow!("project test failed: no external test suites"))?;
-    let mut test_packages = HashSet::from([first.graph.entry_package.clone()]);
-    let mut target_packages = BTreeSet::from([first.target_package]);
-    let mut graph = first.graph;
-    for test in tests {
-        if test.graph.module_dir != graph.module_dir || test.graph.module_name != graph.module_name
-        {
-            bail!("project test failed: external test suites belong to different modules");
-        }
-        test_packages.insert(test.graph.entry_package.clone());
-        target_packages.insert(test.target_package);
-        graph
-            .external_root_packages
-            .extend(test.graph.external_root_packages);
-        for (package, dir) in test.graph.package_dirs {
-            if let Some(existing) = graph.package_dirs.get(&package)
-                && existing != &dir
-            {
-                bail!(
-                    "project test failed: package {} has multiple directories",
-                    package
-                );
-            }
-            graph.package_dirs.insert(package, dir);
-        }
-        for (package, unit) in test.graph.packages {
-            if let Some(existing) = graph.packages.get(&package) {
-                if existing.declared_name != unit.declared_name
-                    || existing.files != unit.files
-                    || existing.imports != unit.imports
-                {
-                    bail!(
-                        "project test failed: package {} has conflicting inputs",
-                        package
-                    );
-                }
-            } else {
-                graph.packages.insert(package, unit);
-            }
-        }
-    }
-    let mut link_packages = test_packages.iter().cloned().collect::<Vec<_>>();
-    link_packages.sort();
-    for package in target_packages {
-        if !test_packages.contains(&package) {
-            link_packages.push(package);
-        }
-    }
-    Ok((graph, test_packages, link_packages))
+    Ok(ProjectBuildCommandPlan {
+        compiler,
+        go: vec![go],
+    })
 }
 
 fn build_external_test_graph_plan(
@@ -1156,6 +1099,7 @@ fn build_external_test_graph_plan(
     test_packages: HashSet<String>,
     link_packages: Vec<String>,
 ) -> anyhow::Result<ProjectTestCommandPlan> {
+    let entry_package = graph.entry_package.clone();
     let output_root = project.artifacts.test_external_root();
     let order = goml_project::package_graph::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("project test failed: {}", err))?;
@@ -1212,30 +1156,34 @@ fn build_external_test_graph_plan(
     commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
         input_cores: core_outputs,
         packages: link_packages,
-        output: project.artifacts.external_test_go(),
-        manifest: project.artifacts.external_test_manifest(),
+        output: project
+            .artifacts
+            .package_go(&project.artifacts.test_external_root(), &entry_package),
+        manifest: project
+            .artifacts
+            .test_manifest(&project.artifacts.test_external_root(), &entry_package),
     }));
     Ok(ProjectTestCommandPlan {
         commands,
-        groups: vec![external_test_run_group(&project.artifacts)],
+        groups: vec![external_test_run_group(&project.artifacts, &entry_package)],
     })
 }
 
-fn internal_test_run_group(artifacts: &ArtifactLayout) -> TestRunGroup {
+fn internal_test_run_group(artifacts: &ArtifactLayout, package: &str) -> TestRunGroup {
     TestRunGroup {
         kind: TestKind::Internal,
-        go_output: artifacts.internal_test_go(),
-        manifest: artifacts.internal_test_manifest(),
-        runner: artifacts.internal_test_runner(),
+        go_output: artifacts.package_go(&artifacts.test_internal_root(), package),
+        manifest: artifacts.test_manifest(&artifacts.test_internal_root(), package),
+        runner: artifacts.test_runner(&artifacts.test_internal_root(), package),
     }
 }
 
-fn external_test_run_group(artifacts: &ArtifactLayout) -> TestRunGroup {
+fn external_test_run_group(artifacts: &ArtifactLayout, package: &str) -> TestRunGroup {
     TestRunGroup {
         kind: TestKind::External,
-        go_output: artifacts.external_test_go(),
-        manifest: artifacts.external_test_manifest(),
-        runner: artifacts.external_test_runner(),
+        go_output: artifacts.package_go(&artifacts.test_external_root(), package),
+        manifest: artifacts.test_manifest(&artifacts.test_external_root(), package),
+        runner: artifacts.test_runner(&artifacts.test_external_root(), package),
     }
 }
 
@@ -1250,18 +1198,18 @@ fn build_project_plan(
     let graph = match stage {
         ProjectStage::Test => goml_project::package_graph::discover_project_test_packages(
             &project.module_dir,
-            &project.entry_path,
+            project.entry_path()?,
             &external_imports,
         ),
         ProjectStage::TestCheck => goml_project::package_graph::discover_project_test_packages(
             &project.module_dir,
-            &project.entry_path,
+            project.entry_path()?,
             &external_imports,
         ),
         ProjectStage::Check | ProjectStage::Build => {
             goml_project::package_graph::discover_project_packages(
                 &project.module_dir,
-                &project.entry_path,
+                project.entry_path()?,
                 &external_imports,
             )
         }
@@ -1344,17 +1292,26 @@ fn build_graph_plan(
     }
 
     if matches!(stage, ProjectStage::Build) {
+        let entry_package = graph.entry_package;
         commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
             input_cores: core_outputs,
-            entry_package: graph.entry_package,
-            output: project.artifacts.main_go(),
+            entry_package: entry_package.clone(),
+            output: project
+                .artifacts
+                .package_go(&project.artifacts.build_root(), &entry_package),
         }));
     } else if matches!(stage, ProjectStage::Test) {
         commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
             input_cores: core_outputs,
-            packages: vec![graph.entry_package],
-            output: project.artifacts.internal_test_go(),
-            manifest: project.artifacts.internal_test_manifest(),
+            packages: vec![graph.entry_package.clone()],
+            output: project.artifacts.package_go(
+                &project.artifacts.test_internal_root(),
+                &graph.entry_package,
+            ),
+            manifest: project.artifacts.test_manifest(
+                &project.artifacts.test_internal_root(),
+                &graph.entry_package,
+            ),
         }));
     }
     Ok(ProjectCommandPlan { commands })
@@ -1443,7 +1400,7 @@ fn external_artifact_base(
     for segment in package.split("::") {
         path.push(segment);
     }
-    path.join("package")
+    path.join(package.rsplit("::").next().unwrap_or(package))
 }
 
 fn local_artifact_base(output_root: &Path, package: &str) -> PathBuf {
@@ -1451,7 +1408,7 @@ fn local_artifact_base(output_root: &Path, package: &str) -> PathBuf {
     for segment in package.split("::") {
         path.push(segment);
     }
-    path.join("package")
+    path.join(package.rsplit("::").next().unwrap_or(package))
 }
 
 fn package_interface_inputs(
@@ -1994,26 +1951,30 @@ fn execute_project_build_plan(
 ) -> anyhow::Result<()> {
     execute_planned_commands(module_dir, &plan.compiler.commands, dry_run, compiler)?;
     if dry_run {
-        println!("{}", plan.go.display());
+        for command in &plan.go {
+            println!("{}", command.display());
+        }
         return Ok(());
     }
-    let output = absolute_from_module(module_dir, &plan.go.output);
-    let output_dir = output
-        .parent()
-        .ok_or_else(|| anyhow!("binary output {} has no parent directory", output.display()))?;
-    fs::create_dir_all(output_dir)
-        .with_context(|| format!("failed to create {}", output_dir.display()))?;
-    let status = Command::new("go")
-        .args(["build", "-o"])
-        .arg(&plan.go.output)
-        .arg(&plan.go.input)
-        .current_dir(module_dir)
-        .env("GOWORK", "off")
-        .env("GO111MODULE", "off")
-        .status()
-        .context("failed to execute go build")?;
-    if !status.success() {
-        bail!("go build failed with status {status}");
+    for command in &plan.go {
+        let output = absolute_from_module(module_dir, &command.output);
+        let output_dir = output
+            .parent()
+            .ok_or_else(|| anyhow!("binary output {} has no parent directory", output.display()))?;
+        fs::create_dir_all(output_dir)
+            .with_context(|| format!("failed to create {}", output_dir.display()))?;
+        let status = Command::new("go")
+            .args(["build", "-o"])
+            .arg(&command.output)
+            .arg(&command.input)
+            .current_dir(module_dir)
+            .env("GOWORK", "off")
+            .env("GO111MODULE", "off")
+            .status()
+            .context("failed to execute go build")?;
+        if !status.success() {
+            bail!("go build failed with status {status}");
+        }
     }
     Ok(())
 }
@@ -2111,10 +2072,9 @@ fn load_project(
                     .to_path_buf(),
                 ProjectTargetRole::InternalTest,
             ),
-            goml_project::package_graph::ProjectPathRole::ExternalTest {
-                target_dir,
-                suite_dir,
-            } => (target_dir, ProjectTargetRole::ExternalTest { suite_dir }),
+            goml_project::package_graph::ProjectPathRole::ExternalTest { target_dir, .. } => {
+                (target_dir, ProjectTargetRole::ExternalTest)
+            }
         };
     let entry_path = if target.is_file()
         && matches!(&target_role, ProjectTargetRole::Production)
@@ -2127,8 +2087,32 @@ fn load_project(
     Ok(ProjectContext {
         module_dir,
         module_path: manifest.module.path,
-        entry_path,
-        target_role,
+        entry_path: Some(entry_path),
+        target_role: Some(target_role),
+        dependencies: manifest.dependencies,
+        artifacts: ArtifactLayout::new(artifact_root),
+    })
+}
+
+fn load_current_project(target_dir_override: Option<&Path>) -> anyhow::Result<ProjectContext> {
+    let cwd = std::env::current_dir().context("failed to read current directory")?;
+    let (module_dir, _) = find_module_root(&cwd)
+        .map_err(anyhow::Error::msg)?
+        .ok_or_else(|| {
+            anyhow!(
+                "no goml.toml with [module] section found in ancestors of {}",
+                cwd.display()
+            )
+        })?;
+    let manifest =
+        load_module_manifest(&module_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
+    let artifact_root =
+        resolve_artifact_root(&module_dir, &manifest.build.target_dir, target_dir_override)?;
+    Ok(ProjectContext {
+        module_dir,
+        module_path: manifest.module.path,
+        entry_path: None,
+        target_role: None,
         dependencies: manifest.dependencies,
         artifacts: ArtifactLayout::new(artifact_root),
     })

@@ -56,7 +56,7 @@ pub enum ProjectPathRole {
     InternalTest,
     ExternalTest {
         target_dir: PathBuf,
-        suite_dir: PathBuf,
+        tests_dir: PathBuf,
     },
 }
 
@@ -70,6 +70,13 @@ pub struct ExternalTestGraph {
 pub struct ProjectTestPlan {
     pub normal: PackageGraph,
     pub internal: PackageGraph,
+    pub external: Vec<ExternalTestGraph>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ModuleTestPlan {
+    pub normal: PackageGraph,
+    pub internal: Vec<PackageGraph>,
     pub external: Vec<ExternalTestGraph>,
 }
 
@@ -169,7 +176,7 @@ pub fn discover_project_test_plan(
 pub fn discover_project_external_test_package(
     module_dir: &Path,
     entry_path: &Path,
-    suite_dir: &Path,
+    tests_dir: &Path,
     external_imports: &ExternalImports,
 ) -> Result<ExternalTestGraph, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
@@ -177,35 +184,28 @@ pub fn discover_project_external_test_package(
     let artifact_dir = module_dir.join(&manifest.build.target_dir);
     let target_dir = normalized_parent(entry_path);
     reject_test_only_target(module_dir, target_dir)?;
-    let expected_parent = target_dir.join(TESTS_DIRECTORY);
-    if suite_dir.parent() != Some(expected_parent.as_path()) {
+    let expected = target_dir.join(TESTS_DIRECTORY);
+    if tests_dir != expected {
         return Err(format!(
-            "black-box test suite {} must be directly under {}",
-            suite_dir.display(),
-            expected_parent.display()
+            "black-box test package {} must be {}",
+            tests_dir.display(),
+            expected.display()
         ));
     }
     let target_package = package_import_path(&manifest.module.path, module_dir, target_dir)?;
-    let mut graph = discover_reachable_module_packages(
-        module_dir,
-        &manifest.module.path,
-        suite_dir,
-        &artifact_dir,
-        external_imports,
-        true,
-    )?;
-    let target_graph = discover_reachable_module_packages(
+    discover_black_box_test_graph(
         module_dir,
         &manifest.module.path,
         target_dir,
         &artifact_dir,
+        &target_package,
         external_imports,
-        false,
-    )?;
-    merge_reachable_graph(&mut graph, target_graph)?;
-    Ok(ExternalTestGraph {
-        target_package,
-        graph,
+    )?
+    .ok_or_else(|| {
+        format!(
+            "black-box test package {} has no .gom files",
+            tests_dir.display()
+        )
     })
 }
 
@@ -259,20 +259,14 @@ pub fn classify_project_path(module_dir: &Path, path: &Path) -> Result<ProjectPa
         .iter()
         .position(|component| component == TESTS_DIRECTORY)
     {
-        let Some(suite) = components.get(index + 1) else {
-            return Err(format!(
-                "test path {} must select a suite under a tests directory",
-                path.display()
-            ));
-        };
         let mut target_dir = module_dir.to_path_buf();
         for component in components.iter().take(index) {
             target_dir.push(component);
         }
-        let suite_dir = target_dir.join(TESTS_DIRECTORY).join(suite);
+        let tests_dir = target_dir.join(TESTS_DIRECTORY);
         return Ok(ProjectPathRole::ExternalTest {
             target_dir,
-            suite_dir,
+            tests_dir,
         });
     }
     if is_internal_test_source(path) {
@@ -294,6 +288,74 @@ pub fn discover_dependency_module_packages(
         &artifact_dir,
         external_imports,
     )
+}
+
+pub fn discover_all_project_packages(
+    module_dir: &Path,
+    external_imports: &ExternalImports,
+) -> Result<PackageGraph, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
+    discover_all_module_packages(
+        module_dir,
+        &manifest.module.path,
+        &artifact_dir,
+        external_imports,
+    )
+}
+
+pub fn discover_all_project_test_plan(
+    module_dir: &Path,
+    external_imports: &ExternalImports,
+) -> Result<ModuleTestPlan, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
+    let normal = discover_all_module_packages(
+        module_dir,
+        &manifest.module.path,
+        &artifact_dir,
+        external_imports,
+    )?;
+    let mut package_dirs = normal
+        .package_dirs
+        .iter()
+        .map(|(package, directory)| (package.clone(), directory.clone()))
+        .collect::<Vec<_>>();
+    package_dirs.sort_by(|left, right| left.0.cmp(&right.0));
+    let mut internal = Vec::new();
+    let mut external = Vec::new();
+    for (target_package, target_dir) in package_dirs {
+        if read_gom_sources(&target_dir, true)?
+            .iter()
+            .any(|path| is_internal_test_source(path))
+        {
+            internal.push(discover_reachable_module_packages(
+                module_dir,
+                &manifest.module.path,
+                &target_dir,
+                &artifact_dir,
+                external_imports,
+                true,
+            )?);
+        }
+        if let Some(graph) = discover_black_box_test_graph(
+            module_dir,
+            &manifest.module.path,
+            &target_dir,
+            &artifact_dir,
+            &target_package,
+            external_imports,
+        )? {
+            external.push(graph);
+        }
+    }
+    Ok(ModuleTestPlan {
+        normal,
+        internal,
+        external,
+    })
 }
 
 fn discover_reachable_module_packages(
@@ -386,9 +448,29 @@ fn discover_external_test_graphs(
     target_package: &str,
     external_imports: &ExternalImports,
 ) -> Result<Vec<ExternalTestGraph>, String> {
+    Ok(discover_black_box_test_graph(
+        module_dir,
+        module_path,
+        target_dir,
+        artifact_dir,
+        target_package,
+        external_imports,
+    )?
+    .into_iter()
+    .collect())
+}
+
+fn discover_black_box_test_graph(
+    module_dir: &Path,
+    module_path: &str,
+    target_dir: &Path,
+    artifact_dir: &Path,
+    target_package: &str,
+    external_imports: &ExternalImports,
+) -> Result<Option<ExternalTestGraph>, String> {
     let tests_dir = target_dir.join(TESTS_DIRECTORY);
     if !tests_dir.exists() {
-        return Ok(Vec::new());
+        return Ok(None);
     }
     if !tests_dir.is_dir() {
         return Err(format!(
@@ -396,53 +478,41 @@ fn discover_external_test_graphs(
             tests_dir.display()
         ));
     }
-    let mut suites = Vec::new();
-    for entry in fs::read_dir(&tests_dir)
-        .map_err(|err| format!("failed to read {}: {}", tests_dir.display(), err))?
-    {
-        let entry =
-            entry.map_err(|err| format!("failed to read {}: {}", tests_dir.display(), err))?;
-        let path = entry.path();
-        if path.is_file() && path.extension().is_some_and(|extension| extension == "gom") {
-            return Err(format!(
-                "black-box test source {} must be placed in a suite directory",
-                path.display()
-            ));
-        }
-        if !path.is_dir() || entry.file_name().to_string_lossy().starts_with('.') {
-            continue;
-        }
-        if read_gom_sources(&path, true)?.is_empty() {
-            continue;
-        }
-        suites.push(path);
+    let sources = black_box_test_sources(&tests_dir)?;
+    if sources.is_empty() {
+        return Ok(None);
     }
-    suites.sort();
-    let mut graphs = Vec::new();
-    for suite_dir in suites {
-        let mut graph = discover_reachable_module_packages(
-            module_dir,
-            module_path,
-            &suite_dir,
-            artifact_dir,
-            external_imports,
-            true,
-        )?;
-        let target_graph = discover_reachable_module_packages(
-            module_dir,
-            module_path,
-            target_dir,
-            artifact_dir,
-            external_imports,
-            false,
-        )?;
-        merge_reachable_graph(&mut graph, target_graph)?;
-        graphs.push(ExternalTestGraph {
-            target_package: target_package.to_string(),
-            graph,
-        });
+    let mut graph = discover_reachable_module_packages(
+        module_dir,
+        module_path,
+        &tests_dir,
+        artifact_dir,
+        external_imports,
+        true,
+    )?;
+    let test_package = graph
+        .packages
+        .get(&graph.entry_package)
+        .ok_or_else(|| format!("missing black-box test package {}", graph.entry_package))?;
+    if test_package.declared_name != TESTS_DIRECTORY {
+        return Err(format!(
+            "black-box test package {} must declare `package tests;`",
+            tests_dir.display()
+        ));
     }
-    Ok(graphs)
+    let target_graph = discover_reachable_module_packages(
+        module_dir,
+        module_path,
+        target_dir,
+        artifact_dir,
+        external_imports,
+        false,
+    )?;
+    merge_reachable_graph(&mut graph, target_graph)?;
+    Ok(Some(ExternalTestGraph {
+        target_package: target_package.to_string(),
+        graph,
+    }))
 }
 
 fn merge_reachable_graph(target: &mut PackageGraph, source: PackageGraph) -> Result<(), String> {
@@ -882,6 +952,7 @@ fn collect_package_dirs(
         .map_err(|err| format!("failed to read module directory {}: {}", dir.display(), err))?;
     let mut children = Vec::new();
     let mut has_source = false;
+    let mut tests_dir = None;
     for entry in entries {
         let entry = entry
             .map_err(|err| format!("failed to read module directory {}: {}", dir.display(), err))?;
@@ -894,9 +965,22 @@ fn collect_package_dirs(
         } else if path.is_dir() {
             let name = entry.file_name();
             let name = name.to_string_lossy();
-            if !name.starts_with('.') && path != artifact_dir && name != TESTS_DIRECTORY {
-                children.push(path);
+            if path != artifact_dir {
+                if name == TESTS_DIRECTORY {
+                    tests_dir = Some(path);
+                } else if !name.starts_with('.') {
+                    children.push(path);
+                }
             }
+        }
+    }
+    if let Some(tests_dir) = tests_dir {
+        let sources = black_box_test_sources(&tests_dir)?;
+        if !sources.is_empty() && !has_source {
+            return Err(format!(
+                "black-box test package {} has no parent production package",
+                tests_dir.display()
+            ));
         }
     }
     if has_source {
@@ -905,6 +989,30 @@ fn collect_package_dirs(
     children.sort();
     for child in children {
         collect_package_dirs(module_dir, &child, artifact_dir, packages)?;
+    }
+    Ok(())
+}
+
+fn black_box_test_sources(tests_dir: &Path) -> Result<Vec<PathBuf>, String> {
+    let sources = read_gom_sources(tests_dir, true)?;
+    reject_nested_black_box_test_sources(tests_dir, tests_dir)?;
+    Ok(sources)
+}
+
+fn reject_nested_black_box_test_sources(tests_dir: &Path, dir: &Path) -> Result<(), String> {
+    for entry in
+        fs::read_dir(dir).map_err(|err| format!("failed to read {}: {}", dir.display(), err))?
+    {
+        let entry = entry.map_err(|err| format!("failed to read {}: {}", dir.display(), err))?;
+        let path = entry.path();
+        if path.is_dir() {
+            reject_nested_black_box_test_sources(tests_dir, &path)?;
+        } else if dir != tests_dir && path.extension().is_some_and(|extension| extension == "gom") {
+            return Err(format!(
+                "black-box test sources must be placed directly in {}",
+                tests_dir.display()
+            ));
+        }
     }
     Ok(())
 }
@@ -1138,7 +1246,7 @@ mod tests {
     #[test]
     fn discovers_internal_and_external_test_targets() {
         let dir = tempfile::tempdir().unwrap();
-        fs::create_dir_all(dir.path().join("math/tests/api")).unwrap();
+        fs::create_dir_all(dir.path().join("math/tests")).unwrap();
         fs::write(dir.path().join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
         fs::write(
             dir.path().join("math/math.gom"),
@@ -1151,8 +1259,8 @@ mod tests {
         )
         .unwrap();
         fs::write(
-            dir.path().join("math/tests/api/api_test.gom"),
-            "package api;\nuse demo::math;\n#[test]\nfn external() -> unit { let _ = math::add(1, 2); () }\n",
+            dir.path().join("math/tests/api_test.gom"),
+            "package tests;\nuse demo::math;\n#[test]\nfn external() -> unit { let _ = math::add(1, 2); () }\n",
         )
         .unwrap();
 
@@ -1166,33 +1274,76 @@ mod tests {
         assert_eq!(plan.internal.packages["demo::math"].files.len(), 2);
         assert_eq!(plan.external.len(), 1);
         assert_eq!(plan.external[0].target_package, "demo::math");
-        assert_eq!(
-            plan.external[0].graph.entry_package,
-            "demo::math::tests::api"
-        );
+        assert_eq!(plan.external[0].graph.entry_package, "demo::math::tests");
         assert!(plan.external[0].graph.packages.contains_key("demo::math"));
         assert_eq!(
             classify_project_path(dir.path(), &dir.path().join("math/math_test.gom")).unwrap(),
             ProjectPathRole::InternalTest
         );
         assert_eq!(
-            classify_project_path(dir.path(), &dir.path().join("math/tests/api/api_test.gom"))
-                .unwrap(),
+            classify_project_path(dir.path(), &dir.path().join("math/tests/api_test.gom")).unwrap(),
             ProjectPathRole::ExternalTest {
                 target_dir: dir.path().join("math"),
-                suite_dir: dir.path().join("math/tests/api"),
+                tests_dir: dir.path().join("math/tests"),
             }
         );
     }
 
     #[test]
+    fn rejects_orphan_and_nested_black_box_test_packages() {
+        let orphan = tempfile::tempdir().unwrap();
+        fs::create_dir_all(orphan.path().join("pkg/tests")).unwrap();
+        fs::write(
+            orphan.path().join("goml.toml"),
+            "[module]\npath = \"demo\"\n",
+        )
+        .unwrap();
+        fs::write(
+            orphan.path().join("main.gom"),
+            "package main;\nfn main() -> unit { () }\n",
+        )
+        .unwrap();
+        fs::write(
+            orphan.path().join("pkg/tests/api_test.gom"),
+            "package tests;\n#[test]\nfn api() -> unit { () }\n",
+        )
+        .unwrap();
+
+        let error =
+            discover_all_project_packages(orphan.path(), &ExternalImports::default()).unwrap_err();
+        assert!(error.contains("has no parent production package"));
+
+        let nested = tempfile::tempdir().unwrap();
+        fs::create_dir_all(nested.path().join("pkg/tests/api")).unwrap();
+        fs::write(
+            nested.path().join("goml.toml"),
+            "[module]\npath = \"demo\"\n",
+        )
+        .unwrap();
+        fs::write(
+            nested.path().join("pkg/pkg.gom"),
+            "package pkg;\npub fn value() -> int32 { 1 }\n",
+        )
+        .unwrap();
+        fs::write(
+            nested.path().join("pkg/tests/api/api_test.gom"),
+            "package tests;\n#[test]\nfn api() -> unit { () }\n",
+        )
+        .unwrap();
+
+        let error =
+            discover_all_project_packages(nested.path(), &ExternalImports::default()).unwrap_err();
+        assert!(error.contains("must be placed directly"));
+    }
+
+    #[test]
     fn production_packages_cannot_import_black_box_test_packages() {
         let dir = tempfile::tempdir().unwrap();
-        fs::create_dir_all(dir.path().join("math/tests/api")).unwrap();
+        fs::create_dir_all(dir.path().join("math/tests")).unwrap();
         fs::write(dir.path().join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
         fs::write(
             dir.path().join("main.gom"),
-            "package main;\nuse demo::math::tests::api;\nfn main() -> unit { () }\n",
+            "package main;\nuse demo::math::tests;\nfn main() -> unit { () }\n",
         )
         .unwrap();
         fs::write(
@@ -1201,8 +1352,8 @@ mod tests {
         )
         .unwrap();
         fs::write(
-            dir.path().join("math/tests/api/api.gom"),
-            "package api;\npub fn value() -> int32 { 1 }\n",
+            dir.path().join("math/tests/api.gom"),
+            "package tests;\npub fn value() -> int32 { 1 }\n",
         )
         .unwrap();
 
@@ -1212,6 +1363,6 @@ mod tests {
             &ExternalImports::default(),
         )
         .unwrap_err();
-        assert!(error.contains("test-only package demo::math::tests::api cannot be imported"));
+        assert!(error.contains("test-only package demo::math::tests cannot be imported"));
     }
 }

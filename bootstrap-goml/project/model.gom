@@ -34,6 +34,11 @@ pub struct Context {
     pub artifact_root: string,
 }
 
+pub struct ExternalTest {
+    pub graph: Graph,
+    pub target_package: string,
+}
+
 pub enum Command {
     Compile {
         subcommand: string,
@@ -59,9 +64,14 @@ pub enum Command {
     },
 }
 
+pub struct TestGroup {
+    pub kind: string,
+    pub manifest: string,
+    pub runner: string,
+}
+
 pub struct Plan {
     pub commands: Vec[Command],
     pub executable: Option[string],
-    pub test_manifest: Option[string],
-    pub test_runner: Option[string],
+    pub test_groups: Vec[TestGroup],
 }

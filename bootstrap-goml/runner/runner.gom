@@ -16,11 +16,19 @@ pub struct Options {
     pub json: bool,
 }
 
+pub struct Group {
+    pub kind: string,
+    pub executable: string,
+    pub manifest_path: string,
+}
+
 struct Test {
     id: string,
     display_name: string,
     ignored: bool,
     ignore_reason: Option[string],
+    kind: string,
+    executable: string,
 }
 
 enum Status {
@@ -64,8 +72,8 @@ fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
     }
 }
 
-fn load_tests(manifest_path: string) -> Result[Vec[Test], string] {
-    let source = match fs::read_file(manifest_path) {
+fn load_tests(group: Group) -> Result[Vec[Test], string] {
+    let source = match fs::read_file(group.manifest_path) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
@@ -100,6 +108,8 @@ fn load_tests(manifest_path: string) -> Result[Vec[Test], string] {
             display_name,
             ignored,
             ignore_reason,
+            kind: group.kind,
+            executable: group.executable,
         })
     };
     Result::Ok(result)
@@ -167,7 +177,9 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
             io::println(
                 "{\"event\":\"test\",\"ignored\":"
                     + test.ignored.to_string()
-                    + ",\"kind\":\"internal\",\"name\":\""
+                    + ",\"kind\":\""
+                    + escape_json(test.kind)
+                    + "\",\"name\":\""
                     + escape_json(test.display_name)
                     + "\",\"reason\":"
                     + reason
@@ -183,7 +195,6 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
 
 fn run_one(
     module_dir: string,
-    executable: string,
     index: int,
     test: Test,
     options: Options,
@@ -197,7 +208,7 @@ fn run_one(
             stderr: "",
         }
     } else {
-        match process::Command::new(executable)
+        match process::Command::new(test.executable)
             .arg(test.id)
             .current_dir(module_dir)
             .env("TZ", "UTC")
@@ -234,7 +245,6 @@ fn run_one(
 
 fn worker(
     module_dir: string,
-    executable: string,
     options: Options,
     work: Channel[(int, Test)],
     results: Channel[Execution],
@@ -244,7 +254,6 @@ fn worker(
         match work.recv() {
             Option::Some(item) => results.send(run_one(
                 module_dir,
-                executable,
                 item.0,
                 item.1,
                 options,
@@ -343,13 +352,18 @@ fn report_json(values: Vec[Execution]) -> int {
 
 pub fn run(
     module_dir: string,
-    executable: string,
-    manifest_path: string,
+    groups: Vec[Group],
     options: Options,
 ) -> Result[unit, string] {
-    let loaded = match load_tests(manifest_path) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+    let loaded = Vec::new();
+    for group in groups {
+        let values = match load_tests(group) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        for value in values {
+            loaded.push(value)
+        }
     };
     let selected_tests = Vec::new();
     for test in sorted_tests(loaded) {
@@ -391,7 +405,7 @@ pub fn run(
         selected_tests.len()
     };
     for _ in range(0, worker_count) {
-        go || worker(module_dir, executable, options, work, results)
+        go || worker(module_dir, options, work, results)
     };
     let executions = Vec::new();
     for _ in range(0, selected_tests.len()) {
