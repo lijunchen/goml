@@ -91,6 +91,7 @@ impl Encoder {
             TypeExpr::TInt16 => self.open("Type.Int16"),
             TypeExpr::TInt32 => self.open("Type.Int32"),
             TypeExpr::TInt64 => self.open("Type.Int64"),
+            TypeExpr::TUint => self.open("Type.Uint"),
             TypeExpr::TUint8 => self.open("Type.Uint8"),
             TypeExpr::TUint16 => self.open("Type.Uint16"),
             TypeExpr::TUint32 => self.open("Type.Uint32"),

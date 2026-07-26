@@ -71,6 +71,24 @@ fn main() -> unit {
 }
 
 #[test]
+fn uint_literal_rejects_overflow() {
+    let path = PathBuf::from("uint_literal_rejects_overflow.gom");
+    let src = "fn main() -> unit { let value: uint = 18446744073709551616; }";
+    let err = compile_single_file(&path, src).expect_err("expected typer error");
+    let diagnostics = match err {
+        CompilationError::Typer { diagnostics } => format_typer_diagnostics(&diagnostics, src),
+        other => panic!("expected typer error, got {other:?}"),
+    };
+
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("does not fit in uint")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
 fn remainder_rejects_float_operands() {
     let diagnostics = typer_errors("numeric_bit_float_operand");
 

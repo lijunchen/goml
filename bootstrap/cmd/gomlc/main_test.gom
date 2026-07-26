@@ -975,13 +975,13 @@ fn writes_rust_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "4f343a8fdd02e7b59e88448feb9bf7137e7cd31c09fe2c31a30a4f8e2992114d",
+        "ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":15,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
-        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"4f343a8fdd02e7b59e88448feb9bf7137e7cd31c09fe2c31a30a4f8e2992114d\"}",
+        "{\"format_version\":16,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
+        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29\"}",
     );
     match decode_artifact_interface_unit(encoded) {
         Result::Ok(value) => testing::assert_eq(

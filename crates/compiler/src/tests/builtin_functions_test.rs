@@ -21,6 +21,7 @@ fn env_registers_builtin_function_signatures() {
             "string_byte_slice",
             "int_to_string",
             "int8_to_string",
+            "uint_to_string",
             "uint8_to_string",
             "ref",
             "ref_get",
@@ -43,6 +44,7 @@ fn env_registers_builtin_function_signatures() {
             string_byte_slice: Some(TFunc([TString, TInt, TInt], TString))
             int_to_string: Some(TFunc([TInt], TString))
             int8_to_string: Some(TFunc([TInt8], TString))
+            uint_to_string: Some(TFunc([TUint], TString))
             uint8_to_string: Some(TFunc([TUint8], TString))
             ref: Some(TFunc([TParam(T)], TRef(TParam(T))))
             ref_get: Some(TFunc([TRef(TParam(T))], TParam(T)))

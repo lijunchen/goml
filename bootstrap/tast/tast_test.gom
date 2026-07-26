@@ -623,6 +623,17 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     testing::assert_eq(
         negative_unsigned.diagnostics.get(0).message,
         "Integer literal -1 does not fit in uint8",
+    );
+    let uint_overflow = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let value: uint = 18446744073709551616; }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(uint_overflow.diagnostics.len(), 1);
+    testing::assert_eq(
+        uint_overflow.diagnostics.get(0).message,
+        "Integer literal 18446744073709551616 does not fit in uint",
     )
 }
 

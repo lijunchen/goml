@@ -140,6 +140,7 @@ fn all_core_runtime_hooks() -> Vec[string] {
     hooks.push("core.int16_to_string");
     hooks.push("core.int32_to_string");
     hooks.push("core.int64_to_string");
+    hooks.push("core.uint_to_string");
     hooks.push("core.uint8_to_string");
     hooks.push("core.uint16_to_string");
     hooks.push("core.uint32_to_string");
@@ -153,6 +154,7 @@ fn all_core_runtime_hooks() -> Vec[string] {
     hooks.push("core.int16_hash");
     hooks.push("core.int32_hash");
     hooks.push("core.int64_hash");
+    hooks.push("core.uint_hash");
     hooks.push("core.uint8_hash");
     hooks.push("core.uint16_hash");
     hooks.push("core.uint32_hash");
@@ -963,6 +965,16 @@ fn materializes_numeric_runtime_operands() -> unit {
         encode(lower_source(source)),
         "package main\n\nfunc main0() struct{} {\n    var a__0_lhs uint8 = 13\n    var a__0_rhs uint8 = 5\n    var a__0 uint8 = a__0_lhs % a__0_rhs\n    var b__1_lhs uint8 = 1\n    var b__1_rhs int = 7\n    var b__1 uint8 = b__1_lhs << b__1_rhs\n    var c__2_operand uint8 = 0\n    var c__2 uint8 = ^c__2_operand\n    var d__3_source int = 511\n    var d__3 uint8 = uint8(int(d__3_source))\n    _goml_m_println(a__0)\n    _goml_m_println(b__1)\n    _goml_m_println(c__2)\n    _goml_m_println(d__3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
+}
+
+#[test]
+fn lowers_uint_and_runtime_traits() -> unit {
+    let output = encode(lower_linked_source(
+        "fn main() -> unit { let value: uint = 40 + 2; println(value.to_string()); let values: HashMap[uint, string] = HashMap::new(); values.set(value, \"stored\"); match values.get(42) { Option::Some(item) => println(item), Option::None => println(\"missing\"), }; }",
+    ));
+    testing::assert(string_contains(output, "var value__0 uint"));
+    testing::assert(string_contains(output, "core_uint_to_string"));
+    testing::assert(string_contains(output, "key uint"))
 }
 
 #[test]

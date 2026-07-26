@@ -107,6 +107,7 @@ fn valid_source(state: &mut u64) -> String {
         "int16",
         "int32",
         "int64",
+        "uint",
         "uint8",
         "uint16",
         "uint32",
