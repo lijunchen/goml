@@ -47,6 +47,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TInt16 => "int16".to_string(),
         GoType::TInt32 => "int32".to_string(),
         GoType::TInt64 => "int64".to_string(),
+        GoType::TUint => "uint".to_string(),
         GoType::TUint8 => "uint8".to_string(),
         GoType::TUint16 => "uint16".to_string(),
         GoType::TUint32 => "uint32".to_string(),

@@ -899,6 +899,7 @@ fn compare_range_prims(start: &Prim, end: &Prim) -> Option<std::cmp::Ordering> {
         (Prim::Int16 { value: left }, Prim::Int16 { value: right }) => left.partial_cmp(right),
         (Prim::Int32 { value: left }, Prim::Int32 { value: right }) => left.partial_cmp(right),
         (Prim::Int64 { value: left }, Prim::Int64 { value: right }) => left.partial_cmp(right),
+        (Prim::UInt { value: left }, Prim::UInt { value: right }) => left.partial_cmp(right),
         (Prim::UInt8 { value: left }, Prim::UInt8 { value: right }) => left.partial_cmp(right),
         (Prim::UInt16 { value: left }, Prim::UInt16 { value: right }) => left.partial_cmp(right),
         (Prim::UInt32 { value: left }, Prim::UInt32 { value: right }) => left.partial_cmp(right),

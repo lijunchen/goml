@@ -763,6 +763,7 @@ fn explicit_type_name(value: ast::TypeExpr) -> Option[string] {
         ast::TypeExpr::Int16 => Option::Some("int16"),
         ast::TypeExpr::Int32 => Option::Some("int32"),
         ast::TypeExpr::Int64 => Option::Some("int64"),
+        ast::TypeExpr::Uint => Option::Some("uint"),
         ast::TypeExpr::Uint8 => Option::Some("uint8"),
         ast::TypeExpr::Uint16 => Option::Some("uint16"),
         ast::TypeExpr::Uint32 => Option::Some("uint32"),
@@ -1264,6 +1265,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         .pushed("trait")
         .pushed("true")
         .pushed("type")
+        .pushed("uint")
         .pushed("uint8")
         .pushed("uint16")
         .pushed("uint32")

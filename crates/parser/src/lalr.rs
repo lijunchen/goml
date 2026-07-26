@@ -106,6 +106,7 @@ parser_tokens!(
     Int16Keyword,
     Int32Keyword,
     Int64Keyword,
+    UintKeyword,
     Uint8Keyword,
     Uint16Keyword,
     Uint32Keyword,

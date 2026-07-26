@@ -97,6 +97,7 @@ fn artifact_runtime_key_from_id(value: string) -> Option[string] {
         | "int16_to_string"
         | "int32_to_string"
         | "int64_to_string"
+        | "uint_to_string"
         | "uint8_to_string"
         | "uint16_to_string"
         | "uint32_to_string"
@@ -110,6 +111,7 @@ fn artifact_runtime_key_from_id(value: string) -> Option[string] {
         | "int16_hash"
         | "int32_hash"
         | "int64_hash"
+        | "uint_hash"
         | "uint8_hash"
         | "uint16_hash"
         | "uint32_hash"
@@ -889,7 +891,7 @@ fn artifact_decode_interface_value(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_decode_version_field(object, "format_version", 15) {
+    match artifact_decode_version_field(object, "format_version", 16) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };

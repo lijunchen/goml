@@ -27,6 +27,7 @@ fn is_integer_type(value: Type) -> bool {
         | Type::Int16
         | Type::Int32
         | Type::Int64
+        | Type::Uint
         | Type::Uint8
         | Type::Uint16
         | Type::Uint32
@@ -58,7 +59,7 @@ fn is_numeric_type(value: Type) -> bool {
 
 fn is_unsigned_type(value: Type) -> bool {
     match prune(value) {
-        Type::Uint8 | Type::Uint16 | Type::Uint32 | Type::Uint64 => true,
+        Type::Uint | Type::Uint8 | Type::Uint16 | Type::Uint32 | Type::Uint64 => true,
         _ => false,
     }
 }
@@ -227,6 +228,7 @@ fn unify(left: Type, right: Type) -> bool {
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
         | (Type::Int64, Type::Int64)
+        | (Type::Uint, Type::Uint)
         | (Type::Uint8, Type::Uint8)
         | (Type::Uint16, Type::Uint16)
         | (Type::Uint32, Type::Uint32)
@@ -361,6 +363,7 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
         | (Type::Int64, Type::Int64)
+        | (Type::Uint, Type::Uint)
         | (Type::Uint8, Type::Uint8)
         | (Type::Uint16, Type::Uint16)
         | (Type::Uint32, Type::Uint32)
@@ -511,6 +514,7 @@ fn types_equal(left: Type, right: Type) -> bool {
         | (Type::Int16, Type::Int16)
         | (Type::Int32, Type::Int32)
         | (Type::Int64, Type::Int64)
+        | (Type::Uint, Type::Uint)
         | (Type::Uint8, Type::Uint8)
         | (Type::Uint16, Type::Uint16)
         | (Type::Uint32, Type::Uint32)
@@ -1404,6 +1408,7 @@ fn type_constructor_name(value: Type) -> Option[string] {
         Type::Int16 => Option::Some("int16"),
         Type::Int32 => Option::Some("int32"),
         Type::Int64 => Option::Some("int64"),
+        Type::Uint => Option::Some("uint"),
         Type::Uint8 => Option::Some("uint8"),
         Type::Uint16 => Option::Some("uint16"),
         Type::Uint32 => Option::Some("uint32"),

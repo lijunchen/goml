@@ -15,6 +15,7 @@ pub(crate) fn is_integer_ty(ty: &tast::Ty) -> bool {
             | tast::Ty::TInt16
             | tast::Ty::TInt32
             | tast::Ty::TInt64
+            | tast::Ty::TUint
             | tast::Ty::TUint8
             | tast::Ty::TUint16
             | tast::Ty::TUint32
@@ -73,6 +74,7 @@ fn is_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32

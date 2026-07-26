@@ -244,6 +244,12 @@ fn build_expr(
                     },
                     ty: tast::Ty::TInt64,
                 },
+                Some(tast::Ty::TUint) => tast::Expr::EPrim {
+                    value: Prim::UInt {
+                        value: parse_unsigned(&value).unwrap_or(0),
+                    },
+                    ty: tast::Ty::TUint,
+                },
                 Some(tast::Ty::TUint8) => tast::Expr::EPrim {
                     value: Prim::UInt8 {
                         value: parse_unsigned(&value).unwrap_or(0),
@@ -318,6 +324,12 @@ fn build_expr(
                         value: value as i64,
                     },
                     ty: tast::Ty::TInt64,
+                },
+                Some(tast::Ty::TUint) => tast::Expr::EPrim {
+                    value: Prim::UInt {
+                        value: value as u64,
+                    },
+                    ty: tast::Ty::TUint,
                 },
                 Some(tast::Ty::TUint8) => tast::Expr::EPrim {
                     value: Prim::UInt8 { value: value as u8 },
@@ -1207,6 +1219,13 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                     ty: tast::Ty::TInt64,
                     astptr,
                 },
+                Some(tast::Ty::TUint) => tast::Pat::PPrim {
+                    value: Prim::UInt {
+                        value: parse_unsigned(&value).unwrap_or(0),
+                    },
+                    ty: tast::Ty::TUint,
+                    astptr,
+                },
                 Some(tast::Ty::TUint8) => tast::Pat::PPrim {
                     value: Prim::UInt8 {
                         value: parse_unsigned(&value).unwrap_or(0),
@@ -1294,6 +1313,13 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                         value: value.parse::<f64>().unwrap_or(0.0) as i64,
                     },
                     ty: tast::Ty::TInt64,
+                    astptr,
+                },
+                Some(tast::Ty::TUint) => tast::Pat::PPrim {
+                    value: Prim::UInt {
+                        value: value.parse::<f64>().unwrap_or(0.0) as u64,
+                    },
+                    ty: tast::Ty::TUint,
                     astptr,
                 },
                 Some(tast::Ty::TUint8) => tast::Pat::PPrim {

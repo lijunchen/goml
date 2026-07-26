@@ -132,6 +132,7 @@ pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
         Type::Int16 => builder.write_string("int16"),
         Type::Int32 => builder.write_string("int32"),
         Type::Int64 => builder.write_string("int64"),
+        Type::Uint => builder.write_string("uint"),
         Type::Uint8 => builder.write_string("uint8"),
         Type::Uint16 => builder.write_string("uint16"),
         Type::Uint32 => builder.write_string("uint32"),
@@ -313,6 +314,7 @@ pub fn write_primitive(builder: text::StringBuilder, value: Primitive) -> unit {
         | Primitive::Int16 { value }
         | Primitive::Int32 { value }
         | Primitive::Int64 { value }
+        | Primitive::Uint { value }
         | Primitive::Uint8 { value }
         | Primitive::Uint16 { value }
         | Primitive::Uint32 { value }

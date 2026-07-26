@@ -369,6 +369,7 @@ fn integer_literal_fits(value: string, ty: Type) -> bool {
             value,
             if negative { "9223372036854775808" } else { "9223372036854775807" },
         ),
+        Type::Uint => !negative && decimal_magnitude_fits(value, "18446744073709551615"),
         Type::Uint8 => !negative && decimal_magnitude_fits(value, "255"),
         Type::Uint16 => !negative && decimal_magnitude_fits(value, "65535"),
         Type::Uint32 => !negative && decimal_magnitude_fits(value, "4294967295"),
@@ -2476,6 +2477,7 @@ fn equality_comparable_type(ctx: Checker, value: Type) -> bool {
         | Type::Int16
         | Type::Int32
         | Type::Int64
+        | Type::Uint
         | Type::Uint8
         | Type::Uint16
         | Type::Uint32
@@ -4338,6 +4340,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                     | Type::Int16
                     | Type::Int32
                     | Type::Int64
+                    | Type::Uint
                     | Type::Uint8
                     | Type::Uint16
                     | Type::Uint32
@@ -4900,6 +4903,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                     | (Primitive::Int16 { value: left }, Primitive::Int16 { value: right })
                     | (Primitive::Int32 { value: left }, Primitive::Int32 { value: right })
                     | (Primitive::Int64 { value: left }, Primitive::Int64 { value: right })
+                    | (Primitive::Uint { value: left }, Primitive::Uint { value: right })
                     | (Primitive::Uint8 { value: left }, Primitive::Uint8 { value: right })
                     | (Primitive::Uint16 { value: left }, Primitive::Uint16 { value: right })
                     | (Primitive::Uint32 { value: left }, Primitive::Uint32 { value: right })

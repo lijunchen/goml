@@ -23,6 +23,7 @@ pub(crate) fn rewrite_ty(
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -229,6 +230,7 @@ fn visit_ty<B>(
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -334,6 +336,7 @@ pub(crate) fn injective_type_params(ty: &tast::Ty) -> HashSet<String> {
             | tast::Ty::TInt16
             | tast::Ty::TInt32
             | tast::Ty::TInt64
+            | tast::Ty::TUint
             | tast::Ty::TUint8
             | tast::Ty::TUint16
             | tast::Ty::TUint32

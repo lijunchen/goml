@@ -9,7 +9,7 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 15;
+pub const FORMAT_VERSION: u32 = 16;
 pub const COMPILER_ABI: u32 = 3;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -330,6 +330,7 @@ fn collect_private_local_names(
         | crate::tast::Ty::TInt16
         | crate::tast::Ty::TInt32
         | crate::tast::Ty::TInt64
+        | crate::tast::Ty::TUint
         | crate::tast::Ty::TUint8
         | crate::tast::Ty::TUint16
         | crate::tast::Ty::TUint32

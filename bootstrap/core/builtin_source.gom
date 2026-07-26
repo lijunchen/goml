@@ -853,6 +853,24 @@ pub fn builtin_source() -> string {
         \\fn range(start: int, end: int) -> FnIterator[int] {
         \\    __goml_builtin_range(start, end)
         \\}
+        \\
+        \\impl ToString for uint {
+        \\    fn to_string(self: uint) -> string {
+        \\        uint_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for uint {
+        \\    fn eq(self: uint, other: uint) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for uint {
+        \\    fn hash(self: uint) -> uint64 {
+        \\        uint_hash(self)
+        \\    }
+        \\}
     ;
     source
 }

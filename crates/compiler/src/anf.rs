@@ -2288,6 +2288,7 @@ pub mod anf_verify {
             | anf::Ty::TInt16
             | anf::Ty::TInt32
             | anf::Ty::TInt64
+            | anf::Ty::TUint
             | anf::Ty::TUint8
             | anf::Ty::TUint16
             | anf::Ty::TUint32

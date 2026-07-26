@@ -28,8 +28,8 @@ const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 const VALUE_COMPLETION_KEYWORDS: &[&str] = &[
     "array", "bool", "char", "dyn", "else", "enum", "extern", "false", "float32", "float64", "fn",
     "for", "go", "if", "impl", "in", "int8", "int16", "int32", "int64", "let", "match", "package",
-    "pub", "return", "string", "struct", "trait", "true", "type", "uint8", "uint16", "uint32",
-    "uint64", "unit", "use", "while", "_",
+    "pub", "return", "string", "struct", "trait", "true", "type", "uint", "uint8", "uint16",
+    "uint32", "uint64", "unit", "use", "while", "_",
 ];
 
 #[derive(Debug, Clone)]

@@ -154,6 +154,8 @@ fn integer_to_string_hook_type(key: string) -> Option[Type] {
         Option::Some(Type::Int32)
     } else if key == "core.int64_to_string" {
         Option::Some(Type::Int64)
+    } else if key == "core.uint_to_string" {
+        Option::Some(Type::Uint)
     } else if key == "core.uint8_to_string" {
         Option::Some(Type::Uint8)
     } else if key == "core.uint16_to_string" {
@@ -513,6 +515,7 @@ pub fn emit_runtime_hook_items(
     ordered.push("core.int16_to_string");
     ordered.push("core.int32_to_string");
     ordered.push("core.int64_to_string");
+    ordered.push("core.uint_to_string");
     ordered.push("core.uint8_to_string");
     ordered.push("core.uint16_to_string");
     ordered.push("core.uint32_to_string");
@@ -527,6 +530,7 @@ pub fn emit_runtime_hook_items(
     ordered.push("core.int32_hash");
     ordered.push("core.int64_hash");
     ordered.push("core.char_hash");
+    ordered.push("core.uint_hash");
     ordered.push("core.uint8_hash");
     ordered.push("core.uint16_hash");
     ordered.push("core.uint32_hash");

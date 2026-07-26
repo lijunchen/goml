@@ -107,6 +107,7 @@ pub enum TypeExpr {
     TInt16,
     TInt32,
     TInt64,
+    TUint,
     TUint8,
     TUint16,
     TUint32,

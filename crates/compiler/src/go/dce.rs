@@ -1653,6 +1653,7 @@ fn collect_packages_in_go_type(
         | crate::go::goty::GoType::TInt16
         | crate::go::goty::GoType::TInt32
         | crate::go::goty::GoType::TInt64
+        | crate::go::goty::GoType::TUint
         | crate::go::goty::GoType::TUint8
         | crate::go::goty::GoType::TUint16
         | crate::go::goty::GoType::TUint32

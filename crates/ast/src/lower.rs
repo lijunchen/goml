@@ -701,6 +701,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
         cst::Type::Int16Ty(_) => Some(ast::TypeExpr::TInt16),
         cst::Type::Int32Ty(_) => Some(ast::TypeExpr::TInt32),
         cst::Type::Int64Ty(_) => Some(ast::TypeExpr::TInt64),
+        cst::Type::UintTy(_) => Some(ast::TypeExpr::TUint),
         cst::Type::Uint8Ty(_) => Some(ast::TypeExpr::TUint8),
         cst::Type::Uint16Ty(_) => Some(ast::TypeExpr::TUint16),
         cst::Type::Uint32Ty(_) => Some(ast::TypeExpr::TUint32),

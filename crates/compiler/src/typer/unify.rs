@@ -147,6 +147,7 @@ fn occurs(
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -255,6 +256,7 @@ impl Typer {
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
             tast::Ty::TInt64 => tast::Ty::TInt64,
+            tast::Ty::TUint => tast::Ty::TUint,
             tast::Ty::TUint8 => tast::Ty::TUint8,
             tast::Ty::TUint16 => tast::Ty::TUint16,
             tast::Ty::TUint32 => tast::Ty::TUint32,
@@ -449,6 +451,7 @@ impl Typer {
             (tast::Ty::TInt8, tast::Ty::TInt8) => {}
             (tast::Ty::TInt16, tast::Ty::TInt16) => {}
             (tast::Ty::TInt64, tast::Ty::TInt64) => {}
+            (tast::Ty::TUint, tast::Ty::TUint) => {}
             (tast::Ty::TUint8, tast::Ty::TUint8) => {}
             (tast::Ty::TUint16, tast::Ty::TUint16) => {}
             (tast::Ty::TUint32, tast::Ty::TUint32) => {}
@@ -915,6 +918,7 @@ impl Typer {
             tast::Ty::TInt16 => ty.clone(),
             tast::Ty::TInt32 => ty.clone(),
             tast::Ty::TInt64 => ty.clone(),
+            tast::Ty::TUint => ty.clone(),
             tast::Ty::TUint8 => ty.clone(),
             tast::Ty::TUint16 => ty.clone(),
             tast::Ty::TUint32 => ty.clone(),
@@ -1044,6 +1048,7 @@ impl Typer {
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
             tast::Ty::TInt64 => tast::Ty::TInt64,
+            tast::Ty::TUint => tast::Ty::TUint,
             tast::Ty::TUint8 => tast::Ty::TUint8,
             tast::Ty::TUint16 => tast::Ty::TUint16,
             tast::Ty::TUint32 => tast::Ty::TUint32,
@@ -1135,6 +1140,7 @@ impl Typer {
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
             tast::Ty::TInt64 => tast::Ty::TInt64,
+            tast::Ty::TUint => tast::Ty::TUint,
             tast::Ty::TUint8 => tast::Ty::TUint8,
             tast::Ty::TUint16 => tast::Ty::TUint16,
             tast::Ty::TUint32 => tast::Ty::TUint32,

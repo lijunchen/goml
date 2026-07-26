@@ -1885,6 +1885,7 @@ impl NameResolution {
             ast::TypeExpr::TInt16 => hir::TypeExpr::TInt16,
             ast::TypeExpr::TInt32 => hir::TypeExpr::TInt32,
             ast::TypeExpr::TInt64 => hir::TypeExpr::TInt64,
+            ast::TypeExpr::TUint => hir::TypeExpr::TUint,
             ast::TypeExpr::TUint8 => hir::TypeExpr::TUint8,
             ast::TypeExpr::TUint16 => hir::TypeExpr::TUint16,
             ast::TypeExpr::TUint32 => hir::TypeExpr::TUint32,

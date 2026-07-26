@@ -12,6 +12,7 @@ fn is_type_first(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::Int16Keyword
         | lexer::TokenKind::Int32Keyword
         | lexer::TokenKind::Int64Keyword
+        | lexer::TokenKind::UintKeyword
         | lexer::TokenKind::Uint8Keyword
         | lexer::TokenKind::Uint16Keyword
         | lexer::TokenKind::Uint32Keyword
@@ -871,6 +872,10 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
         lexer::TokenKind::Int64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT64)
+        },
+        lexer::TokenKind::UintKeyword => {
+            parser.advance();
+            parser.close(marker, cst::NodeKind::TYPE_UINT)
         },
         lexer::TokenKind::Uint8Keyword => {
             parser.advance();

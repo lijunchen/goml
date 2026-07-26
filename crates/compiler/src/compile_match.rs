@@ -499,6 +499,7 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TInt16
         | Ty::TInt32
         | Ty::TInt64
+        | Ty::TUint
         | Ty::TUint8
         | Ty::TUint16
         | Ty::TUint32
@@ -1669,6 +1670,20 @@ fn compile_int_case(
                 |value| Prim::Int64 { value },
             );
         }
+        Ty::TUint => {
+            return compile_int_case_impl::<u64, _, _>(
+                genv,
+                gensym,
+                diagnostics,
+                rows,
+                bvar,
+                ty,
+                Ty::TUint,
+                match_range,
+                |prim| prim.as_uint(),
+                |value| Prim::UInt { value },
+            );
+        }
         Ty::TUint8 => {
             return compile_int_case_impl::<u8, _, _>(
                 genv,
@@ -2665,6 +2680,16 @@ fn compile_rows(
             &bvar,
             ty,
             Ty::TInt64,
+            match_range,
+        ),
+        Ty::TUint => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint,
             match_range,
         ),
         Ty::TUint8 => compile_int_case(

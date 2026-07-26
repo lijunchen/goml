@@ -269,6 +269,13 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
         };
     }
 
+    if let Some(v) = value.as_uint() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
     if let Some(v) = value.as_uint8() {
         return goast::Expr::Int {
             value: v.to_string(),
@@ -839,6 +846,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -3294,6 +3302,7 @@ fn ensure_typed_for_any(expr: goast::Expr, for_ty: &tast::Ty) -> goast::Expr {
         tast::Ty::TInt16 => Some("int16"),
         tast::Ty::TInt32 => Some("int32"),
         tast::Ty::TInt64 => Some("int64"),
+        tast::Ty::TUint => Some("uint"),
         tast::Ty::TUint8 => Some("uint8"),
         tast::Ty::TUint16 => Some("uint16"),
         tast::Ty::TUint32 => Some("uint32"),

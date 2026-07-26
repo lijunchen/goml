@@ -116,6 +116,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
         Item::Fn(int64_to_string()),
+        Item::Fn(uint_to_string()),
         Item::Fn(uint8_to_string()),
         Item::Fn(uint16_to_string()),
         Item::Fn(uint32_to_string()),
@@ -130,6 +131,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(int32_hash()),
         Item::Fn(int64_hash()),
         Item::Fn(char_hash()),
+        Item::Fn(uint_hash()),
         Item::Fn(uint8_hash()),
         Item::Fn(uint16_hash()),
         Item::Fn(uint32_hash()),
@@ -5666,6 +5668,10 @@ fn int64_to_string() -> goast::Fn {
     to_string_fn(RuntimeHookId::Int64ToString, goty::GoType::TInt64)
 }
 
+fn uint_to_string() -> goast::Fn {
+    to_string_fn(RuntimeHookId::UintToString, goty::GoType::TUint)
+}
+
 fn uint8_to_string() -> goast::Fn {
     to_string_fn(RuntimeHookId::Uint8ToString, goty::GoType::TUint8)
 }
@@ -6158,6 +6164,32 @@ fn uint8_hash() -> goast::Fn {
                     args: vec![goast::Expr::Var {
                         name: "x".to_string(),
                         ty: goty::GoType::TUint8,
+                    }],
+                    ty: goty::GoType::TUint64,
+                }),
+            }],
+        },
+    }
+}
+
+fn uint_hash() -> goast::Fn {
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::UintHash),
+        params: vec![("x".to_string(), goty::GoType::TUint)],
+        ret_ty: Some(goty::GoType::TUint64),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "uint64".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TUint],
+                            ret_ty: Box::new(goty::GoType::TUint64),
+                        },
+                    }),
+                    args: vec![goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: goty::GoType::TUint,
                     }],
                     ty: goty::GoType::TUint64,
                 }),

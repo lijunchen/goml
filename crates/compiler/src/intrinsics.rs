@@ -181,6 +181,7 @@ pub enum RuntimeHookId {
     Int16ToString,
     Int32ToString,
     Int64ToString,
+    UintToString,
     Uint8ToString,
     Uint16ToString,
     Uint32ToString,
@@ -194,6 +195,7 @@ pub enum RuntimeHookId {
     Int16Hash,
     Int32Hash,
     Int64Hash,
+    UintHash,
     Uint8Hash,
     Uint16Hash,
     Uint32Hash,
@@ -238,7 +240,7 @@ pub enum RuntimeHookId {
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 74] = [
+    pub const ALL: [Self; 76] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -259,6 +261,7 @@ impl RuntimeHookId {
         Self::Int16ToString,
         Self::Int32ToString,
         Self::Int64ToString,
+        Self::UintToString,
         Self::Uint8ToString,
         Self::Uint16ToString,
         Self::Uint32ToString,
@@ -272,6 +275,7 @@ impl RuntimeHookId {
         Self::Int16Hash,
         Self::Int32Hash,
         Self::Int64Hash,
+        Self::UintHash,
         Self::Uint8Hash,
         Self::Uint16Hash,
         Self::Uint32Hash,
@@ -337,6 +341,7 @@ impl RuntimeHookId {
             Self::Int16ToString => "core.int16_to_string",
             Self::Int32ToString => "core.int32_to_string",
             Self::Int64ToString => "core.int64_to_string",
+            Self::UintToString => "core.uint_to_string",
             Self::Uint8ToString => "core.uint8_to_string",
             Self::Uint16ToString => "core.uint16_to_string",
             Self::Uint32ToString => "core.uint32_to_string",
@@ -350,6 +355,7 @@ impl RuntimeHookId {
             Self::Int16Hash => "core.int16_hash",
             Self::Int32Hash => "core.int32_hash",
             Self::Int64Hash => "core.int64_hash",
+            Self::UintHash => "core.uint_hash",
             Self::Uint8Hash => "core.uint8_hash",
             Self::Uint16Hash => "core.uint16_hash",
             Self::Uint32Hash => "core.uint32_hash",
@@ -421,6 +427,7 @@ impl RuntimeHookId {
                 | Self::Int16ToString
                 | Self::Int32ToString
                 | Self::Int64ToString
+                | Self::UintToString
                 | Self::Uint8ToString
                 | Self::Uint16ToString
                 | Self::Uint32ToString
@@ -434,6 +441,7 @@ impl RuntimeHookId {
                 | Self::Int16Hash
                 | Self::Int32Hash
                 | Self::Int64Hash
+                | Self::UintHash
                 | Self::Uint8Hash
                 | Self::Uint16Hash
                 | Self::Uint32Hash
@@ -1066,6 +1074,7 @@ impl RuntimeHookId {
             Self::Int16ToString => signature(vec![Ty::TInt16], Ty::TString),
             Self::Int32ToString => signature(vec![Ty::TInt32], Ty::TString),
             Self::Int64ToString => signature(vec![Ty::TInt64], Ty::TString),
+            Self::UintToString => signature(vec![Ty::TUint], Ty::TString),
             Self::Uint8ToString => signature(vec![Ty::TUint8], Ty::TString),
             Self::Uint16ToString => signature(vec![Ty::TUint16], Ty::TString),
             Self::Uint32ToString => signature(vec![Ty::TUint32], Ty::TString),
@@ -1083,6 +1092,7 @@ impl RuntimeHookId {
             Self::Int16Hash => signature(vec![Ty::TInt16], Ty::TUint64),
             Self::Int32Hash => signature(vec![Ty::TInt32], Ty::TUint64),
             Self::Int64Hash => signature(vec![Ty::TInt64], Ty::TUint64),
+            Self::UintHash => signature(vec![Ty::TUint], Ty::TUint64),
             Self::Uint8Hash => signature(vec![Ty::TUint8], Ty::TUint64),
             Self::Uint16Hash => signature(vec![Ty::TUint16], Ty::TUint64),
             Self::Uint32Hash => signature(vec![Ty::TUint32], Ty::TUint64),

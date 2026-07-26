@@ -364,6 +364,7 @@ fn has_tparam(ty: &Ty) -> bool {
         | Ty::TInt16
         | Ty::TInt32
         | Ty::TInt64
+        | Ty::TUint
         | Ty::TUint8
         | Ty::TUint16
         | Ty::TUint32
@@ -427,6 +428,7 @@ fn format_ty_for_mono_diag(ty: &Ty) -> String {
         Ty::TInt16 => "int16".to_string(),
         Ty::TInt32 => "int32".to_string(),
         Ty::TInt64 => "int64".to_string(),
+        Ty::TUint => "uint".to_string(),
         Ty::TUint8 => "uint8".to_string(),
         Ty::TUint16 => "uint16".to_string(),
         Ty::TUint32 => "uint32".to_string(),
@@ -532,6 +534,7 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         | Ty::TInt16
         | Ty::TInt32
         | Ty::TInt64
+        | Ty::TUint
         | Ty::TUint8
         | Ty::TUint16
         | Ty::TUint32
@@ -619,6 +622,7 @@ fn contains_associated_projection(ty: &Ty) -> bool {
         | Ty::TInt16
         | Ty::TInt32
         | Ty::TInt64
+        | Ty::TUint
         | Ty::TUint8
         | Ty::TUint16
         | Ty::TUint32
@@ -789,6 +793,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
         | (Ty::TInt16, Ty::TInt16)
         | (Ty::TInt32, Ty::TInt32)
         | (Ty::TInt64, Ty::TInt64)
+        | (Ty::TUint, Ty::TUint)
         | (Ty::TUint8, Ty::TUint8)
         | (Ty::TUint16, Ty::TUint16)
         | (Ty::TUint32, Ty::TUint32)

@@ -52,6 +52,7 @@ fn artifact_integer_kind(value: tast::Type) -> string {
         tast::Type::Int16 => "Int16",
         tast::Type::Int32 => "Int32",
         tast::Type::Int64 => "Int64",
+        tast::Type::Uint => "UInt",
         tast::Type::Uint8 => "UInt8",
         tast::Type::Uint16 => "UInt16",
         tast::Type::Uint32 => "UInt32",
@@ -125,6 +126,12 @@ fn artifact_json_primitive(
         tast::Primitive::Int64 { value } => artifact_json_primitive_value(
             writer,
             "Int64",
+            value,
+            false,
+        ),
+        tast::Primitive::Uint { value } => artifact_json_primitive_value(
+            writer,
+            "UInt",
             value,
             false,
         ),

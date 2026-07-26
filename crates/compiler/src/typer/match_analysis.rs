@@ -52,6 +52,7 @@ enum ScalarKind {
     Int16,
     Int32,
     Int64,
+    Uint,
     Uint8,
     Uint16,
     Uint32,
@@ -922,6 +923,7 @@ fn scalar_domains(ty: &Ty) -> Option<(ScalarKind, Vec<(i128, i128)>)> {
             ScalarKind::Int64,
             vec![(i64::MIN as i128, i64::MAX as i128)],
         ),
+        Ty::TUint => (ScalarKind::Uint, vec![(0, usize::MAX as i128)]),
         Ty::TUint8 => (ScalarKind::Uint8, vec![(0, u8::MAX as i128)]),
         Ty::TUint16 => (ScalarKind::Uint16, vec![(0, u16::MAX as i128)]),
         Ty::TUint32 => (ScalarKind::Uint32, vec![(0, u32::MAX as i128)]),
@@ -1011,6 +1013,7 @@ fn primitive_constructor(value: &Prim, _ty: &Ty) -> Constructor {
         | Prim::Int16 { .. }
         | Prim::Int32 { .. }
         | Prim::Int64 { .. }
+        | Prim::UInt { .. }
         | Prim::UInt8 { .. }
         | Prim::UInt16 { .. }
         | Prim::UInt32 { .. }
@@ -1031,6 +1034,7 @@ fn scalar_prim(value: &Prim) -> Option<(ScalarKind, i128)> {
         Prim::Int16 { value } => Some((ScalarKind::Int16, *value as i128)),
         Prim::Int32 { value } => Some((ScalarKind::Int32, *value as i128)),
         Prim::Int64 { value } => Some((ScalarKind::Int64, *value as i128)),
+        Prim::UInt { value } => Some((ScalarKind::Uint, *value as i128)),
         Prim::UInt8 { value } => Some((ScalarKind::Uint8, *value as i128)),
         Prim::UInt16 { value } => Some((ScalarKind::Uint16, *value as i128)),
         Prim::UInt32 { value } => Some((ScalarKind::Uint32, *value as i128)),

@@ -33,6 +33,7 @@ impl TypeExpr {
             Self::TInt16 => RcDoc::text("int16"),
             Self::TInt32 => RcDoc::text("int32"),
             Self::TInt64 => RcDoc::text("int64"),
+            Self::TUint => RcDoc::text("uint"),
             Self::TUint8 => RcDoc::text("uint8"),
             Self::TUint16 => RcDoc::text("uint16"),
             Self::TUint32 => RcDoc::text("uint32"),

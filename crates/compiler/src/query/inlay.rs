@@ -330,6 +330,7 @@ fn contains_type_var(ty: &tast::Ty) -> bool {
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32

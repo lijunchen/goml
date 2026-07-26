@@ -91,6 +91,7 @@ fn inherent_base(receiver_ty: &tast::Ty) -> String {
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
         tast::Ty::TInt64 => "int64".to_string(),
+        tast::Ty::TUint => "uint".to_string(),
         tast::Ty::TUint8 => "uint8".to_string(),
         tast::Ty::TUint16 => "uint16".to_string(),
         tast::Ty::TUint32 => "uint32".to_string(),

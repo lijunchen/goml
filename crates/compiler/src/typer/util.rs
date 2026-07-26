@@ -37,6 +37,7 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
         tast::Ty::TInt64 => "int64".to_string(),
+        tast::Ty::TUint => "uint".to_string(),
         tast::Ty::TUint8 => "uint8".to_string(),
         tast::Ty::TUint16 => "uint16".to_string(),
         tast::Ty::TUint32 => "uint32".to_string(),
@@ -149,6 +150,7 @@ pub(crate) fn validate_ty(
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -405,6 +407,7 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -518,6 +521,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
@@ -544,6 +548,7 @@ impl tast::Ty {
             hir::TypeExpr::TInt16 => Self::TInt16,
             hir::TypeExpr::TInt32 => Self::TInt32,
             hir::TypeExpr::TInt64 => Self::TInt64,
+            hir::TypeExpr::TUint => Self::TUint,
             hir::TypeExpr::TUint8 => Self::TUint8,
             hir::TypeExpr::TUint16 => Self::TUint16,
             hir::TypeExpr::TUint32 => Self::TUint32,
@@ -733,6 +738,7 @@ pub(crate) fn type_expr_range(ty: &hir::TypeExpr) -> Option<TextRange> {
         | hir::TypeExpr::TInt16
         | hir::TypeExpr::TInt32
         | hir::TypeExpr::TInt64
+        | hir::TypeExpr::TUint
         | hir::TypeExpr::TUint8
         | hir::TypeExpr::TUint16
         | hir::TypeExpr::TUint32

@@ -144,6 +144,7 @@ fn unify_type(
         | (tast::Type::Int16, tast::Type::Int16)
         | (tast::Type::Int32, tast::Type::Int32)
         | (tast::Type::Int64, tast::Type::Int64)
+        | (tast::Type::Uint, tast::Type::Uint)
         | (tast::Type::Uint8, tast::Type::Uint8)
         | (tast::Type::Uint16, tast::Type::Uint16)
         | (tast::Type::Uint32, tast::Type::Uint32)
@@ -274,6 +275,7 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
         tast::Type::Int16 => tast::Type::Int16,
         tast::Type::Int32 => tast::Type::Int32,
         tast::Type::Int64 => tast::Type::Int64,
+        tast::Type::Uint => tast::Type::Uint,
         tast::Type::Uint8 => tast::Type::Uint8,
         tast::Type::Uint16 => tast::Type::Uint16,
         tast::Type::Uint32 => tast::Type::Uint32,
@@ -1126,6 +1128,7 @@ fn normalize_type(
         tast::Type::Int16 => tast::Type::Int16,
         tast::Type::Int32 => tast::Type::Int32,
         tast::Type::Int64 => tast::Type::Int64,
+        tast::Type::Uint => tast::Type::Uint,
         tast::Type::Uint8 => tast::Type::Uint8,
         tast::Type::Uint16 => tast::Type::Uint16,
         tast::Type::Uint32 => tast::Type::Uint32,
@@ -1218,6 +1221,7 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
         | tast::Type::Int16
         | tast::Type::Int32
         | tast::Type::Int64
+        | tast::Type::Uint
         | tast::Type::Uint8
         | tast::Type::Uint16
         | tast::Type::Uint32
@@ -1393,6 +1397,7 @@ fn builtin_scalar_type(value: tast::Type) -> bool {
         | tast::Type::Int16
         | tast::Type::Int32
         | tast::Type::Int64
+        | tast::Type::Uint
         | tast::Type::Uint8
         | tast::Type::Uint16
         | tast::Type::Uint32

@@ -26,6 +26,9 @@ pub(crate) fn parse_integer_literal_with_ty(
             .map(|value| Prim::Int32 { value }),
         tast::Ty::TInt64 => parse_signed_integer(diagnostics, literal, "int64", range)
             .map(|value| Prim::Int64 { value }),
+        tast::Ty::TUint => {
+            parse_uint(diagnostics, literal, range).map(|value| Prim::UInt { value })
+        }
         tast::Ty::TUint8 => parse_unsigned_integer(diagnostics, literal, "uint8", range)
             .map(|value| Prim::UInt8 { value }),
         tast::Ty::TUint16 => parse_unsigned_integer(diagnostics, literal, "uint16", range)
@@ -50,6 +53,21 @@ fn parse_int(
     #[cfg(target_pointer_width = "64")]
     {
         parse_signed_integer::<i64>(diagnostics, literal, "int", range)
+    }
+}
+
+fn parse_uint(
+    diagnostics: &mut Diagnostics,
+    literal: &str,
+    range: Option<TextRange>,
+) -> Option<u64> {
+    #[cfg(target_pointer_width = "32")]
+    {
+        parse_unsigned_integer::<u32>(diagnostics, literal, "uint", range).map(u64::from)
+    }
+    #[cfg(target_pointer_width = "64")]
+    {
+        parse_unsigned_integer::<u64>(diagnostics, literal, "uint", range)
     }
 }
 

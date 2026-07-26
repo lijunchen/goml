@@ -55,6 +55,7 @@ fn type_is_concrete(value: tast::Type) -> bool {
         | tast::Type::Int16
         | tast::Type::Int32
         | tast::Type::Int64
+        | tast::Type::Uint
         | tast::Type::Uint8
         | tast::Type::Uint16
         | tast::Type::Uint32
@@ -503,6 +504,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
         tast::Type::Int16 => tast::Type::Int16,
         tast::Type::Int32 => tast::Type::Int32,
         tast::Type::Int64 => tast::Type::Int64,
+        tast::Type::Uint => tast::Type::Uint,
         tast::Type::Uint8 => tast::Type::Uint8,
         tast::Type::Uint16 => tast::Type::Uint16,
         tast::Type::Uint32 => tast::Type::Uint32,

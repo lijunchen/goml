@@ -306,6 +306,7 @@ fn compile_primitive(value: tast::Primitive, ty: tast::Type) -> Expr {
         | tast::Primitive::Int16 { value }
         | tast::Primitive::Int32 { value }
         | tast::Primitive::Int64 { value }
+        | tast::Primitive::Uint { value }
         | tast::Primitive::Uint8 { value }
         | tast::Primitive::Uint16 { value }
         | tast::Primitive::Uint32 { value }
@@ -1119,6 +1120,7 @@ fn compile_value(
                 | tast::Type::Int16
                 | tast::Type::Int32
                 | tast::Type::Int64
+                | tast::Type::Uint
                 | tast::Type::Uint8
                 | tast::Type::Uint16
                 | tast::Type::Uint32

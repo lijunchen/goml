@@ -84,6 +84,7 @@ pub enum Ty {
     TInt16,
     TInt32,
     TInt64,
+    TUint,
     TUint8,
     TUint16,
     TUint32,
@@ -154,6 +155,7 @@ impl std::fmt::Debug for Ty {
             Self::TInt16 => write!(f, "TInt16"),
             Self::TInt32 => write!(f, "TInt32"),
             Self::TInt64 => write!(f, "TInt64"),
+            Self::TUint => write!(f, "TUint"),
             Self::TUint8 => write!(f, "TUint8"),
             Self::TUint16 => write!(f, "TUint16"),
             Self::TUint32 => write!(f, "TUint32"),
@@ -227,6 +229,7 @@ impl Prim {
             Ty::TInt16 => Prim::Int16 { value: 0 },
             Ty::TInt32 => Prim::Int32 { value: 0 },
             Ty::TInt64 => Prim::Int64 { value: 0 },
+            Ty::TUint => Prim::UInt { value: 0 },
             Ty::TUint8 => Prim::UInt8 { value: 0 },
             Ty::TUint16 => Prim::UInt16 { value: 0 },
             Ty::TUint32 => Prim::UInt32 { value: 0 },
@@ -295,6 +298,14 @@ impl Prim {
 
     pub fn as_uint8(&self) -> Option<u8> {
         if let Prim::UInt8 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_uint(&self) -> Option<u64> {
+        if let Prim::UInt { value } = self {
             Some(*value)
         } else {
             None

@@ -2180,6 +2180,7 @@ pub enum Type {
     Int16Ty(Int16Ty),
     Int32Ty(Int32Ty),
     Int64Ty(Int64Ty),
+    UintTy(UintTy),
     Uint8Ty(Uint8Ty),
     Uint16Ty(Uint16Ty),
     Uint32Ty(Uint32Ty),
@@ -2206,6 +2207,7 @@ impl CstNode for Type {
                 | TYPE_INT16
                 | TYPE_INT32
                 | TYPE_INT64
+                | TYPE_UINT
                 | TYPE_UINT8
                 | TYPE_UINT16
                 | TYPE_UINT32
@@ -2230,6 +2232,7 @@ impl CstNode for Type {
             TYPE_INT16 => Type::Int16Ty(Int16Ty { syntax }),
             TYPE_INT32 => Type::Int32Ty(Int32Ty { syntax }),
             TYPE_INT64 => Type::Int64Ty(Int64Ty { syntax }),
+            TYPE_UINT => Type::UintTy(UintTy { syntax }),
             TYPE_UINT8 => Type::Uint8Ty(Uint8Ty { syntax }),
             TYPE_UINT16 => Type::Uint16Ty(Uint16Ty { syntax }),
             TYPE_UINT32 => Type::Uint32Ty(Uint32Ty { syntax }),
@@ -2256,6 +2259,7 @@ impl CstNode for Type {
             Type::Int16Ty(it) => &it.syntax,
             Type::Int32Ty(it) => &it.syntax,
             Type::Int64Ty(it) => &it.syntax,
+            Type::UintTy(it) => &it.syntax,
             Type::Uint8Ty(it) => &it.syntax,
             Type::Uint16Ty(it) => &it.syntax,
             Type::Uint32Ty(it) => &it.syntax,
@@ -2352,6 +2356,16 @@ impl Int64Ty {}
 
 impl_cst_node_simple!(Int64Ty, MySyntaxKind::TYPE_INT64);
 impl_display_via_syntax!(Int64Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct UintTy {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl UintTy {}
+
+impl_cst_node_simple!(UintTy, MySyntaxKind::TYPE_UINT);
+impl_display_via_syntax!(UintTy);
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Uint8Ty {
