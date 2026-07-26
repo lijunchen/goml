@@ -198,7 +198,7 @@ pub fn project_command(
     directory: string,
 ) -> process::Output {
     let args = Vec::new().pushed(command);
-    if target != "" {
+    if command == "run" && target != "" {
         args.push(target)
     } else {
         ()
@@ -208,7 +208,20 @@ pub fn project_command(
     for value in extra {
         args.push(value)
     };
-    run(args, directory)
+    let candidate = if path::is_absolute(target) {
+        target
+    } else {
+        path::join(directory, target)
+    };
+    let command_directory = if command != "run"
+        && target != ""
+        && fs::is_file(path::join(candidate, "goml.toml"))
+    {
+        candidate
+    } else {
+        directory
+    };
+    run(args, command_directory)
 }
 
 pub fn write_basic_project(root: string, module_path: string) -> unit {

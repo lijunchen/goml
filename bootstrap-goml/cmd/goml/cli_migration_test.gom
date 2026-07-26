@@ -52,7 +52,10 @@ fn project_build_handles_deep_public_interface_type() -> unit {
     );
     let output = migration_build(root);
     test_support::assert_success(output);
-    testing::assert(fs::is_file(path::join(root, "_artifact/main.go")))
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/iface_deep/iface_deep.go",
+    )))
 }
 
 #[test]
@@ -103,10 +106,23 @@ fn version_prints_crate_version() -> unit {
 fn project_check_checks_module_from_cwd() -> unit {
     let root = test_support::workspace("check_from_cwd");
     test_support::write_basic_project(root, "demo");
-    test_support::assert_success(migration_check(root));
+    test_support::write_file(
+        path::join(root, "lib/lib.gom"),
+        "package lib;\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::assert_success(test_support::project_command(
+        "check",
+        "",
+        Vec::new(),
+        path::join(root, "lib"),
+    ));
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/check/pkg/demo/package.interface",
+        "_artifact/check/pkg/demo/demo.interface",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/check/pkg/demo/lib/lib.interface",
     )))
 }
 
@@ -115,7 +131,10 @@ fn project_build_writes_default_artifact_layout() -> unit {
     let root = test_support::workspace("default_artifact_layout");
     test_support::write_basic_project(root, "demo");
     test_support::assert_success(migration_build(root));
-    testing::assert(fs::is_file(path::join(root, "_artifact/main.go")));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/demo/demo.go",
+    )));
     testing::assert(fs::is_file(path::join(root, "_artifact/bin/demo")))
 }
 
@@ -131,7 +150,10 @@ fn project_uses_manifest_and_cli_target_directories() -> unit {
         "package main;\n\nfn main() -> unit { println(\"hello\") }\n",
     );
     test_support::assert_success(migration_build(root));
-    testing::assert(fs::is_file(path::join(root, "out/generated/main.go")));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "out/generated/build/pkg/demo/demo.go",
+    )));
     testing::assert(fs::is_file(path::join(root, "out/generated/bin/demo")));
     let override_output = test_support::project_command(
         "check",
@@ -142,7 +164,7 @@ fn project_uses_manifest_and_cli_target_directories() -> unit {
     test_support::assert_success(override_output);
     testing::assert(fs::is_file(path::join(
         root,
-        "cli output/check/pkg/demo/package.interface",
+        "cli output/check/pkg/demo/demo.interface",
     )))
 }
 
@@ -159,7 +181,10 @@ fn project_check_and_build_support_std_imports() -> unit {
     );
     test_support::assert_success(migration_check(root));
     test_support::assert_success(migration_build(root));
-    testing::assert(fs::is_file(path::join(root, "_artifact/main.go")))
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/demo/demo.go",
+    )))
 }
 
 #[test]
@@ -176,9 +201,9 @@ fn project_check_dry_run_prints_compiler_check_commands() -> unit {
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
         stdout,
-        "gomlc check --package demo --input main.gom --output _artifact/check/pkg/demo/package",
+        "gomlc check --package demo --input main.gom --output _artifact/check/pkg/demo/demo",
     );
-    testing::assert(!fs::exists(path::join(root, "_artifact/check/pkg/demo/package.interface")))
+    testing::assert(!fs::exists(path::join(root, "_artifact/check/pkg/demo/demo.interface")))
 }
 
 #[test]
@@ -195,15 +220,15 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> unit {
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
         stdout,
-        "gomlc build --package demo --input main.gom --output _artifact/build/pkg/demo/package",
+        "gomlc build --package demo --input main.gom --output _artifact/build/pkg/demo/demo",
     );
     test_support::assert_contains(
         stdout,
-        "gomlc link --input _artifact/build/pkg/demo/package.core --output _artifact/main.go --entry demo",
+        "gomlc link --input _artifact/build/pkg/demo/demo.core --output _artifact/build/pkg/demo/demo.go --entry demo",
     );
     test_support::assert_contains(
         stdout,
-        "go build -o _artifact/bin/demo _artifact/main.go",
+        "go build -o _artifact/bin/demo _artifact/build/pkg/demo/demo.go",
     )
 }
 
@@ -225,7 +250,7 @@ fn project_run_dry_run_prints_the_complete_plan_without_tools() -> unit {
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
         stdout,
-        "go build -o _artifact/bin/demo _artifact/main.go",
+        "go build -o _artifact/bin/demo _artifact/build/pkg/demo/demo.go",
     );
     test_support::assert_contains(
         stdout,
@@ -336,7 +361,7 @@ fn project_build_preserves_entry_directory_structure() -> unit {
     );
     let output = test_support::project_command(
         "build",
-        "src",
+        "",
         Vec::new(),
         root,
     );
@@ -344,6 +369,104 @@ fn project_build_preserves_entry_directory_structure() -> unit {
     testing::assert(fs::is_file(path::join(
         root,
         "_artifact/bin/src/src",
+    )))
+}
+
+#[test]
+fn project_build_links_every_main_package() -> unit {
+    let root = test_support::workspace("multiple_main_packages");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"alice::app\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "pkg/pkg.gom"),
+        "package pkg;\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "cmd/server/main.gom"),
+        "package main;\nuse alice::app::pkg;\nfn main() -> unit { println(pkg::value().to_string()) }\n",
+    );
+    test_support::write_file(
+        path::join(root, "cmd/client/main.gom"),
+        "package main;\nfn main() -> unit { println(\"client\") }\n",
+    );
+    test_support::assert_success(migration_build(root));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/alice/app/pkg/pkg.core",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/alice/app/pkg/pkg.interface",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/alice/app/cmd/server/server.core",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/alice/app/cmd/server/server.interface",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/alice/app/cmd/server/server.go",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/alice/app/cmd/client/client.go",
+    )));
+    let rejected = test_support::run(
+        Vec::new()
+            .pushed("build")
+            .pushed("cmd/server")
+            .pushed("--compiler")
+            .pushed(test_support::gomlc_binary()),
+        root,
+    );
+    test_support::assert_failure(rejected);
+    test_support::assert_contains(
+        test_support::stderr(rejected),
+        "unexpected argument",
+    );
+    let rejected = test_support::run(
+        Vec::new()
+            .pushed("check")
+            .pushed("cmd/server")
+            .pushed("--compiler")
+            .pushed(test_support::gomlc_binary()),
+        root,
+    );
+    test_support::assert_failure(rejected);
+    test_support::assert_contains(
+        test_support::stderr(rejected),
+        "unexpected argument",
+    )
+}
+
+#[test]
+fn project_build_accepts_modules_without_main_packages() -> unit {
+    let root = test_support::workspace("module_without_main");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "pkg/pkg.gom"),
+        "package pkg;\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::assert_success(migration_build(root));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/demo/pkg/pkg.core",
+    )));
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/demo/pkg/pkg.interface",
+    )));
+    testing::assert(!fs::exists(path::join(
+        root,
+        "_artifact/build/pkg/demo/pkg/pkg.go",
     )))
 }
 
@@ -364,7 +487,7 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     );
     let check = test_support::project_command(
         "check",
-        "math",
+        "",
         Vec::new().pushed("--dry-run"),
         root,
     );
@@ -375,7 +498,7 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     );
     let tested = test_support::project_command(
         "test",
-        "math",
+        "",
         Vec::new().pushed("--jobs").pushed("2"),
         root,
     );
@@ -389,7 +512,7 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     test_support::assert_contains(stdout, "2 passed; 0 failed; 1 ignored");
     let listed = test_support::project_command(
         "test",
-        "math",
+        "",
         Vec::new().pushed("--list"),
         root,
     );
@@ -400,7 +523,7 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     );
     let included = test_support::project_command(
         "test",
-        "math",
+        "",
         Vec::new().pushed("--include-ignored"),
         root,
     );
@@ -411,7 +534,7 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     );
     let json = test_support::project_command(
         "test",
-        "math",
+        "",
         Vec::new()
             .pushed("add_works")
             .pushed("--format")
@@ -422,6 +545,113 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     test_support::assert_contains(
         test_support::stdout(json),
         "{\"event\":\"ok\",\"name\":\"demo::math::add_works\"}",
+    )
+}
+
+#[test]
+fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
+    let root = test_support::workspace("all_package_tests");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "a/a.gom"),
+        "package a;\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "a/a_test.gom"),
+        "package a;\nuse std::testing;\n#[test]\nfn internal_a() -> unit { testing::assert_eq(value(), 1) }\n",
+    );
+    test_support::write_file(
+        path::join(root, "b/b.gom"),
+        "package b;\npub fn value() -> int32 { 2 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "b/b_test.gom"),
+        "package b;\nuse std::testing;\n#[test]\nfn internal_b() -> unit { testing::assert_eq(value(), 2) }\n",
+    );
+    test_support::write_file(
+        path::join(root, "b/tests/b_test.gom"),
+        "package tests;\nuse demo::b;\nuse std::testing;\n#[test]\nfn external_b() -> unit { testing::assert_eq(b::value(), 2) }\n",
+    );
+    let tested = test_support::project_command(
+        "test",
+        "",
+        Vec::new(),
+        root,
+    );
+    test_support::assert_success(tested);
+    let stdout = test_support::stdout(tested);
+    test_support::assert_contains(stdout, "demo::a::internal_a ... ok");
+    test_support::assert_contains(stdout, "demo::b::internal_b ... ok");
+    test_support::assert_contains(
+        stdout,
+        "demo::b::tests::external_b ... ok",
+    );
+    test_support::assert_contains(stdout, "3 passed; 0 failed; 0 ignored")
+}
+
+#[test]
+fn project_test_runs_parent_black_box_tests() -> unit {
+    let root = test_support::workspace("black_box_tests");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "math/math.gom"),
+        "package math;\n\nfn private_value() -> int32 { 41 }\n\npub fn public_value() -> int32 { private_value() + 1 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "math/tests/math_test.gom"),
+        "package tests;\n\nuse demo::math;\nuse std::testing;\n\n#[test]\nfn black_box() -> unit { testing::assert_eq(math::public_value(), 42) }\n",
+    );
+    let checked = test_support::project_command(
+        "check",
+        "",
+        Vec::new().pushed("--tests"),
+        root,
+    );
+    test_support::assert_success(checked);
+    let tested = test_support::project_command(
+        "test",
+        "",
+        Vec::new().pushed("--kind").pushed("external"),
+        root,
+    );
+    test_support::assert_success(tested);
+    test_support::assert_contains(
+        test_support::stdout(tested),
+        "demo::math::tests::black_box ... ok",
+    )
+}
+
+#[test]
+fn project_check_rejects_orphan_black_box_tests() -> unit {
+    let root = test_support::workspace("orphan_black_box_tests");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\nfn main() -> unit { () }\n",
+    );
+    test_support::write_file(
+        path::join(root, "orphan/tests/orphan_test.gom"),
+        "package tests;\n#[test]\nfn orphan() -> unit { () }\n",
+    );
+    let checked = test_support::project_command(
+        "check",
+        "",
+        Vec::new(),
+        root,
+    );
+    test_support::assert_failure(checked);
+    test_support::assert_contains(
+        test_support::stderr(checked),
+        "has no parent production package",
     )
 }
 
@@ -442,7 +672,7 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> unit {
     );
     let dry_run = test_support::project_command(
         "test",
-        "value",
+        "",
         Vec::new().pushed("--dry-run"),
         root,
     );
@@ -453,7 +683,7 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> unit {
     );
     let output = test_support::project_command(
         "test",
-        "value",
+        "",
         Vec::new(),
         root,
     );
@@ -521,7 +751,10 @@ fn project_build_handles_very_wide_struct_pattern() -> unit {
     );
     let output = migration_build(root);
     test_support::assert_success(output);
-    testing::assert(fs::is_file(path::join(root, "_artifact/main.go")))
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/build/pkg/wideproj/wideproj.go",
+    )))
 }
 
 #[test]
@@ -543,7 +776,7 @@ fn test_sources_cannot_repair_a_broken_normal_package() -> unit {
     // visible to the normal package, so test sources cannot repair it.
     let checked = test_support::project_command(
         "check",
-        "value",
+        "",
         Vec::new(),
         root,
     );

@@ -773,7 +773,7 @@ fn discovers_internal_and_external_test_items() -> unit {
         TestItemKind::Internal => (),
         TestItemKind::External => testing::fail("expected internal test"),
     };
-    let external = test_items("/tmp/project/tests/api/api_test.gom", source);
+    let external = test_items("/tmp/project/tests/api_test.gom", source);
     testing::assert_eq(external.len(), 1);
     match external.get(0).kind {
         TestItemKind::External => (),

@@ -85,8 +85,8 @@ fn manifest_parser_reads_project_manifest() -> unit {
 }
 
 #[test]
-fn build_plan_places_executables_under_package_paths() -> unit {
-    let root = match project::build_plan(project_context("alice::demo")) {
+fn run_plan_places_executables_under_package_paths() -> unit {
+    let root = match project::run_plan(project_context("alice::demo")) {
         Result::Ok(value) => value,
         Result::Err(message) => {
             testing::fail(message);
@@ -101,7 +101,7 @@ fn build_plan_places_executables_under_package_paths() -> unit {
         Option::None => testing::fail("missing root executable"),
     };
 
-    let nested = match project::build_plan(
+    let nested = match project::run_plan(
         project_context("alice::demo::cmd::server"),
     ) {
         Result::Ok(value) => value,
