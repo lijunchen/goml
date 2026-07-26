@@ -5,15 +5,17 @@
 Build it with the Rust driver:
 
 ```sh
-cargo run -p goml -- build bootstrap-goml/cmd/goml
+cd bootstrap-goml
+../target/debug/goml build --compiler ../target/debug/gomlc
 ```
 
 Use the checked-in GoML compiler implementation:
 
 ```sh
-bootstrap-goml/_artifact/bin/cmd/goml/goml check bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
-bootstrap-goml/_artifact/bin/cmd/goml/goml build bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
-bootstrap-goml/_artifact/bin/cmd/goml/goml test bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 4
+cd bootstrap-goml
+_artifact/bin/cmd/goml/goml check --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
+_artifact/bin/cmd/goml/goml build --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
+_artifact/bin/cmd/goml/goml test --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 4
 ```
 
 ## 测试
@@ -27,8 +29,8 @@ just test-bootstrap-goml
 这个 recipe 做了三件事：
 
 1. `cargo build -p goml -p gomlc` — 用 Rust 编译宿主 goml / gomlc
-2. `target/debug/goml build bootstrap-goml/cmd/goml --compiler target/debug/gomlc` — 用宿主 goml 编译 bootstrap CLI
-3. `target/debug/goml test bootstrap-goml/cmd/goml --compiler target/debug/gomlc --jobs 1` — 运行全部迁移测试
+2. 在 `bootstrap-goml` 中运行 `../target/debug/goml build --compiler ../target/debug/gomlc`
+3. 在 `bootstrap-goml` 中运行 `../target/debug/goml test --compiler ../target/debug/gomlc --jobs 1`
 
 ### 手动分步执行
 
@@ -37,26 +39,27 @@ just test-bootstrap-goml
 cargo build -p goml -p gomlc
 
 # Step 2: 编译 bootstrap CLI
-target/debug/goml build bootstrap-goml/cmd/goml --compiler target/debug/gomlc
+cd bootstrap-goml
+../target/debug/goml build --compiler ../target/debug/gomlc
 
 # Step 3: 运行全部测试
-target/debug/goml test bootstrap-goml/cmd/goml \
-  --compiler target/debug/gomlc \
+../target/debug/goml test \
+  --compiler ../target/debug/gomlc \
   --jobs 1
 
 # 按名称过滤
-target/debug/goml test bootstrap-goml/cmd/goml \
-  --compiler target/debug/gomlc \
+../target/debug/goml test \
+  --compiler ../target/debug/gomlc \
   wide_struct
 
 # 列出所有测试
-target/debug/goml test bootstrap-goml/cmd/goml \
-  --compiler target/debug/gomlc \
+../target/debug/goml test \
+  --compiler ../target/debug/gomlc \
   --list
 
 # JSON 输出
-target/debug/goml test bootstrap-goml/cmd/goml \
-  --compiler target/debug/gomlc \
+../target/debug/goml test \
+  --compiler ../target/debug/gomlc \
   --format json
 ```
 
@@ -114,17 +117,18 @@ just test-bootstrap-self-full     # check + build + test（完整自举）
 手动分步：
 
 ```sh
-GOML=./bootstrap-goml/_artifact/bin/cmd/goml/goml
-GOMLC=./bootstrap/_artifact/bin/cmd/gomlc/gomlc
+cd bootstrap-goml
+GOML=./_artifact/bin/cmd/goml/goml
+GOMLC=../bootstrap/_artifact/bin/cmd/gomlc/gomlc
 
 # Step 1: bootstrap goml check 自己
-$GOML check bootstrap-goml/cmd/goml --compiler $GOMLC
+$GOML check --compiler $GOMLC
 
 # Step 2: bootstrap goml build 自己
-$GOML build bootstrap-goml/cmd/goml --compiler $GOMLC
+$GOML build --compiler $GOMLC
 
 # Step 3: bootstrap goml test 自己
-$GOML test bootstrap-goml/cmd/goml --compiler $GOMLC --jobs 1
+$GOML test --compiler $GOMLC --jobs 1
 ```
 
 ### 测试层级总览
@@ -142,6 +146,6 @@ $GOML test bootstrap-goml/cmd/goml --compiler $GOMLC --jobs 1
                   └─────────────────────────────────┘
 ```
 
-The current implementation provides deterministic local package discovery, topological check/build/link plans, executable runs, internal test discovery, filtering, ignored tests, text or JSON test events, and a bounded `Channel` worker pool.
+The current implementation provides deterministic whole-project package discovery, topological check/build/link plans, executable runs, internal and black-box test discovery, filtering, ignored tests, text or JSON test events, and a bounded `Channel` worker pool.
 
-Registry dependencies, external black-box tests, incremental fingerprints, test timeouts, and package-management commands remain in the Rust driver for now.
+Registry dependencies, incremental fingerprints, test timeouts, and package-management commands remain in the Rust driver for now.

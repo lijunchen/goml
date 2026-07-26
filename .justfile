@@ -24,13 +24,13 @@ install-lsp:
 
 build-bootstrap-lsp:
     cargo build -p goml -p gomlc
-    target/debug/goml build bootstrap/cmd/gomlc --compiler target/debug/gomlc
-    target/debug/goml build bootstrap/cmd/gomllsp --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
+    cd bootstrap && ../target/debug/goml build --compiler ../target/debug/gomlc
+    cd bootstrap && ../target/debug/goml build --compiler _artifact/bin/cmd/gomlc/gomlc
 
 test-bootstrap-lsp:
     cargo build -p goml -p gomlc
-    target/debug/goml test bootstrap/query --compiler target/debug/gomlc --jobs 1
-    target/debug/goml test bootstrap/lsp --compiler target/debug/gomlc --jobs 1
+    cd bootstrap && ../target/debug/goml test query --compiler ../target/debug/gomlc --jobs 1
+    cd bootstrap && ../target/debug/goml test lsp --compiler ../target/debug/gomlc --jobs 1
     just build-bootstrap-lsp
 
 install-bootstrap-lsp:
@@ -61,37 +61,37 @@ install:
 
 install-bootstrap:
     cargo build -p goml -p gomlc
-    target/debug/goml build bootstrap/cmd/gomlc --compiler target/debug/gomlc
-    target/debug/goml build bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
+    cd bootstrap && ../target/debug/goml build --compiler ../target/debug/gomlc
+    cd bootstrap-goml && ../target/debug/goml build --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
     goml_home_dir="${GOML_HOME:-$HOME/.goml}"; mkdir -p "$goml_home_dir/bin"; cp bootstrap/_artifact/bin/cmd/gomlc/gomlc "$goml_home_dir/bin/gomlc"; cp bootstrap-goml/_artifact/bin/cmd/goml/goml "$goml_home_dir/bin/goml"; rm -rf "$goml_home_dir/lib/std"; mkdir -p "$goml_home_dir/lib"; cp -R stdlib/std "$goml_home_dir/lib/std"; cp crates/compiler/src/builtin_prelude.gom "$goml_home_dir/lib/"
 
 test-bootstrap-goml:
     cargo build -p goml -p gomlc
-    target/debug/goml build bootstrap-goml/cmd/goml --compiler target/debug/gomlc
-    target/debug/goml test bootstrap-goml/cmd/goml --compiler target/debug/gomlc --jobs 1
+    cd bootstrap-goml && ../target/debug/goml build --compiler ../target/debug/gomlc
+    cd bootstrap-goml && ../target/debug/goml test --compiler ../target/debug/gomlc --jobs 1
 
 test-bootstrap-self: _bootstrap-check _bootstrap-test
 
 test-bootstrap-self-full: _bootstrap-check _bootstrap-build _bootstrap-test
 
 _bootstrap-check:
-    bootstrap-goml/_artifact/bin/cmd/goml/goml check bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
+    cd bootstrap-goml && _artifact/bin/cmd/goml/goml check --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
 
 _bootstrap-build:
-    bootstrap-goml/_artifact/bin/cmd/goml/goml build bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
+    cd bootstrap-goml && _artifact/bin/cmd/goml/goml build --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
 
 _bootstrap-test:
-    bootstrap-goml/_artifact/bin/cmd/goml/goml test bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 1
+    cd bootstrap-goml && _artifact/bin/cmd/goml/goml test --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 1
 
 test-bootstrap-pipeline:
     cargo build -p goml -p gomlc
-    target/debug/goml test bootstrap/pipeline_test --compiler target/debug/gomlc --jobs 1
+    cd bootstrap && ../target/debug/goml test pipeline_test --compiler ../target/debug/gomlc --jobs 1
 
 test-bootstrap-compiler:
     cargo build -p goml -p gomlc
-    target/debug/goml build bootstrap/cmd/gomlc --compiler target/debug/gomlc
-    target/debug/goml build bootstrap-goml/cmd/goml --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc
-    bootstrap-goml/_artifact/bin/cmd/goml/goml test bootstrap/compiler_test --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 4
+    cd bootstrap && ../target/debug/goml build --compiler ../target/debug/gomlc
+    cd bootstrap-goml && ../target/debug/goml build --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
+    cd bootstrap && ../bootstrap-goml/_artifact/bin/cmd/goml/goml test compiler_test --compiler _artifact/bin/cmd/gomlc/gomlc --jobs 4
 
 install-lsp-suite:
     just install-lsp

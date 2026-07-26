@@ -12,11 +12,12 @@ It also supports package checking, package builds, test builds, linking, executi
 
 ## Build
 
-Build the Rust driver and then compile the bootstrap module from the repository root:
+Build the Rust driver and then compile the complete bootstrap module:
 
 ```sh
 cargo build -p goml -p gomlc
-target/debug/goml build bootstrap/cmd/gomlc
+cd bootstrap
+../target/debug/goml build --compiler ../target/debug/gomlc
 ```
 
 The resulting compiler is:
@@ -65,33 +66,31 @@ bootstrap/_artifact/bin/cmd/gomlc/gomlc go path/to/file.gom
 
 ## Project commands
 
-Use the bootstrap compiler with the Rust `goml` project driver:
+Run whole-project commands from anywhere inside the target module:
 
 ```sh
-target/debug/goml check --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc path/to/project
-target/debug/goml build --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc path/to/project
-target/debug/goml run --compiler bootstrap/_artifact/bin/cmd/gomlc/gomlc path/to/project
+cd path/to/project
+/path/to/goml/target/debug/goml check --compiler /path/to/goml/bootstrap/_artifact/bin/cmd/gomlc/gomlc
+/path/to/goml/target/debug/goml build --compiler /path/to/goml/bootstrap/_artifact/bin/cmd/gomlc/gomlc
+/path/to/goml/target/debug/goml run --compiler /path/to/goml/bootstrap/_artifact/bin/cmd/gomlc/gomlc
 ```
 
 The bootstrap binary also exposes the driver-facing `check`, `test-check`, `build`, `test-build`, `link`, and `test-link` commands.
 
 ## Bootstrap package tests
 
-Run the GoML package tests with the Rust driver:
+Run all GoML package tests with the Rust driver:
 
 ```sh
-target/debug/goml test bootstrap/cmd/gomlc
-target/debug/goml test bootstrap/lexer
-target/debug/goml test bootstrap/parser
-target/debug/goml test bootstrap/ast
-target/debug/goml test bootstrap/hir
-target/debug/goml test bootstrap/tast
-target/debug/goml test bootstrap/core
-target/debug/goml test bootstrap/mono
-target/debug/goml test bootstrap/lift
-target/debug/goml test bootstrap/anf
-target/debug/goml test bootstrap/go_backend
-target/debug/goml test bootstrap/stdlib
+cd bootstrap
+../target/debug/goml test --compiler ../target/debug/gomlc
+```
+
+The first positional argument is a test-name filter:
+
+```sh
+../target/debug/goml test lexer --compiler ../target/debug/gomlc
+../target/debug/goml test parser --compiler ../target/debug/gomlc
 ```
 
 ## Differential tests

@@ -188,7 +188,9 @@ pub fn message() -> string {
 - `use full::package::path;` loads a package into one source file. `use full::package::path as alias;` selects an explicit alias.
 - `use alias::Trait;` brings a trait from an already loaded package into method-call scope.
 - `mod`, `crate::`, `self::`, `super::`, and rooted `::path` syntax are unsupported.
-- The package selected by `goml check [target]` or `goml build [target]` is the entry package. A linked executable requires that package to be named `main` and define `fn main()`.
+- `goml check`, `goml build`, and `goml test` always operate on the complete module found from the current directory and do not accept package targets.
+- `goml build` links every package declared as `package main`; each executable entry must define `fn main()`.
+- A `tests` directory is one black-box test package for its parent package. Its direct `.gom` files declare `package tests;`; nested test-suite directories are unsupported.
 - Third-party dependencies are declared only in the module-root `goml.toml`.
 - Standalone single-file compiler commands may omit `package main;` and retain implicit builtin behavior.
 
@@ -244,8 +246,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Third-party source files remain in the registry cache under `~/.goml/cache/registry`
 - Project outputs are written under `[build].target-dir`, which defaults to `_artifact` and can be overridden with `--target-dir`.
 - Root-package executables are written to `<target-dir>/bin/<module-name>`. Nested entry packages preserve their module-relative package path and add the executable name, for example package `alice::app::cmd::server` is written to `<target-dir>/bin/cmd/server/server`.
-- Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/package.*`.
-- External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
+- Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/<package-name>.*`.
+- External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/<package-name>.*`.
+- Linked Go sources are written beside the entry package Core artifact as `<package-name>.go`.
 - Interfaces and dependency environments expose only public top-level API; current-package codegen still uses the package's full internal environment so private helpers compile normally.
 - Go-to-definition, hover, completion, and other query features can resolve into cached third-party source files
 
@@ -276,7 +279,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
 - Rust tests: `cargo test` (bootstrap differential tests are disabled by default).
 - Bootstrap differential tests: `cargo test -p compiler --features bootstrap-tests tests::bootstrap:: -- --test-threads=1`.
-- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check [package-directory]` and `cargo run -p goml -- build [package-directory]` for project workflows; use `--dry-run` to print planned per-package compiler commands; use `cargo run -p gomlc -- run-single <file.gom>` for standalone execution; use `cargo run -p gomlc -- check|build ...` for per-package artifacts and `gomlc link --entry <canonical-package> ...` for explicit linking; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `gomlc run-single` to print IR stages before execution.
+- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; run `goml check`, `goml build`, or `goml test` from anywhere inside a module for whole-project workflows; use `--dry-run` to print planned per-package compiler commands; use `cargo run -p gomlc -- run-single <file.gom>` for standalone execution; use `cargo run -p gomlc -- check|build ...` for per-package artifacts and `gomlc link --entry <canonical-package> ...` for explicit linking; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `gomlc run-single` to print IR stages before execution.
 - `goml check` and `goml build` locate `gomlc` through `--compiler`, `GOMLC`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`; the driver protocol is verified before compilation.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
