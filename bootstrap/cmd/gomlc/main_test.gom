@@ -224,11 +224,19 @@ fn parses_version_formats() -> unit {
 #[test]
 fn reports_driver_protocol_version() -> unit {
     testing::assert_eq(
-        version_output(VersionFormat::Text),
+        version_output_with(
+            VersionFormat::Text,
+            Option::None,
+            Option::None,
+        ),
         "gomlc 0.0.0",
     );
     testing::assert_eq(
-        version_output(VersionFormat::Json),
+        version_output_with(
+            VersionFormat::Json,
+            Option::None,
+            Option::None,
+        ),
         "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
     );
     match parse_version_format("yaml") {
@@ -249,6 +257,10 @@ fn suggests_similar_subcommands() -> unit {
     testing::assert_eq(
         unknown_subcommand_error("unknown"),
         "error: unrecognized subcommand 'unknown'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
+    );
+    testing::assert_eq(
+        unknown_subcommand_error("xcheck"),
+        "error: unrecognized subcommand 'xcheck'\n\n  tip: some similar subcommands exist: 'test-check', 'check'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
     )
 }
 
@@ -1571,6 +1583,10 @@ fn decodes_rust_artifact_type_shapes() -> unit {
 
 #[test]
 fn matches_rust_standard_interface_hashes() -> unit {
+    testing::assert_eq(
+        builtin_artifact_dependency().1,
+        "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
+    );
     let standard = package_world().standard;
     testing::assert_eq(
         standard.root.interface_unit.interface_hash,
@@ -1633,7 +1649,7 @@ fn renders_source_path_for_spanless_diagnostics() -> unit {
     diagnostics.push(tast::Diagnostic {
         severity: tast::DiagnosticSeverity::Error,
         stage: "typer",
-        message: "Could not infer type",
+        message: "Unknown trait Missing",
         source_path: "helper.gom",
         span: Option::None,
         primary_label: Option::None,
@@ -1642,6 +1658,6 @@ fn renders_source_path_for_spanless_diagnostics() -> unit {
     });
     testing::assert_eq(
         render_typer_diagnostics(diagnostics, "helper.gom", ""),
-        "error[typer]: Could not infer type\nat: helper.gom",
+        "error[typer]: Unknown trait Missing\nat: helper.gom",
     )
 }

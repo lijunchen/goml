@@ -129,7 +129,7 @@ impl Stage {
         }
     }
 
-    fn skips_empty_oracle(self) -> bool {
+    fn accepts_empty_oracle(self) -> bool {
         matches!(
             self,
             Self::Hir | Self::Tast | Self::Core | Self::Mono | Self::Lift | Self::Anf | Self::Go
@@ -308,7 +308,7 @@ fn compare_corpus_stage(stage: Stage) {
     for source_path in sources {
         let source = fs::read_to_string(&source_path).unwrap();
         let expected = stage.expected(&source_path, &source);
-        if expected.is_empty() && stage.skips_empty_oracle() {
+        if expected.is_empty() && stage.accepts_empty_oracle() {
             continue;
         }
         let actual = bootstrap_stage(&repository, stage, &source_path);
@@ -355,6 +355,19 @@ fn generated_sources_match() {
 fn compiler_version_protocols_match() {
     let _guard = serial();
     let repository = prepare();
+    let rust_text = checked_output(
+        Command::new(&repository.rust_gomlc).arg("version"),
+        "Rust compiler text version",
+    );
+    let bootstrap_text = checked_output(
+        Command::new(&repository.bootstrap_gomlc).arg("version"),
+        "bootstrap compiler text version",
+    );
+    assert_bytes(
+        "compiler text version mismatch",
+        &rust_text.stdout,
+        &bootstrap_text.stdout,
+    );
     let mut rust = Command::new(&repository.rust_gomlc);
     rust.args(["version", "--format", "json"]);
     let rust = checked_output(&mut rust, "Rust compiler version");
@@ -369,24 +382,118 @@ fn compiler_version_protocols_match() {
         "driver_protocol",
         "artifact_format",
         "compiler_abi",
+        "git_hash",
+        "git_date",
     ] {
         assert_eq!(rust[field], bootstrap[field], "version field {field}");
     }
-    assert!(bootstrap["git_hash"].is_null());
-    assert!(bootstrap["git_date"].is_null());
+}
+
+#[test]
+fn builtin_interfaces_match() {
+    fn difference(
+        left: &serde_json::Value,
+        right: &serde_json::Value,
+        path: &str,
+    ) -> Option<String> {
+        match (left, right) {
+            (serde_json::Value::Object(left), serde_json::Value::Object(right)) => {
+                let mut keys = left.keys().chain(right.keys()).collect::<Vec<_>>();
+                keys.sort();
+                keys.dedup();
+                for key in keys {
+                    let next = format!("{path}.{key}");
+                    match (left.get(key), right.get(key)) {
+                        (Some(left), Some(right)) => {
+                            if let Some(value) = difference(left, right, &next) {
+                                return Some(value);
+                            }
+                        }
+                        (left, right) => return Some(format!("{next}: {left:?} != {right:?}")),
+                    }
+                }
+                None
+            }
+            (serde_json::Value::Array(left), serde_json::Value::Array(right)) => {
+                if left.len() != right.len() {
+                    return Some(format!("{path}.len: {} != {}", left.len(), right.len()));
+                }
+                for (index, (left, right)) in left.iter().zip(right).enumerate() {
+                    if let Some(value) = difference(left, right, &format!("{path}[{index}]")) {
+                        return Some(value);
+                    }
+                }
+                None
+            }
+            _ if left == right => None,
+            _ => Some(format!("{path}: {left} != {right}")),
+        }
+    }
+
+    let _guard = serial();
+    let repository = prepare();
+    let genv = crate::builtins::builtin_env();
+    let exports = crate::artifact::PackageExports::from_genv(&genv);
+    let interface = crate::interface::PackageInterface::from_exports("builtin", &exports);
+    let rust = crate::artifact::InterfaceUnit::new(
+        "builtin".to_string(),
+        exports,
+        interface,
+        std::collections::BTreeMap::new(),
+    );
+    let bootstrap = checked_output(
+        Command::new(&repository.bootstrap_gomlc).arg("__builtin-interface"),
+        "bootstrap builtin interface",
+    );
+    let rust: serde_json::Value =
+        serde_json::from_str(&serde_json::to_string(&rust).unwrap()).unwrap();
+    let bootstrap: serde_json::Value = serde_json::from_slice(&bootstrap.stdout).unwrap();
+    assert_eq!(difference(&rust, &bootstrap, "$"), None);
 }
 
 #[test]
 fn cli_subcommand_suggestions_match() {
     let _guard = serial();
     let repository = prepare();
-    for typo in ["chec", "buid", "versio", "run-singe", "lnik"] {
+    let commands = [
+        "check",
+        "test-check",
+        "build",
+        "test-build",
+        "link",
+        "test-link",
+        "package-info",
+        "run-single",
+        "version",
+        "help",
+    ];
+    let mut typos = Vec::new();
+    for command in commands {
+        for index in 0..command.len() {
+            let mut deleted = command.to_string();
+            deleted.remove(index);
+            typos.push(deleted);
+        }
+        for index in 0..=command.len() {
+            let mut inserted = command.to_string();
+            inserted.insert(index, 'x');
+            typos.push(inserted);
+        }
+        for index in 0..command.len().saturating_sub(1) {
+            let mut bytes = command.as_bytes().to_vec();
+            bytes.swap(index, index + 1);
+            typos.push(String::from_utf8(bytes).unwrap());
+        }
+    }
+    typos.sort();
+    typos.dedup();
+    for typo in typos {
         let rust = Command::new(&repository.rust_gomlc)
-            .arg(typo)
+            .arg(&typo)
             .output()
             .unwrap();
         let bootstrap = Command::new(&repository.bootstrap_gomlc)
-            .arg(typo)
+            .arg(&typo)
             .output()
             .unwrap();
         assert_eq!(rust.status.code(), bootstrap.status.code(), "{typo}");
@@ -396,6 +503,86 @@ fn cli_subcommand_suggestions_match() {
             &bootstrap.stderr,
         );
     }
+}
+
+#[test]
+fn public_diagnostic_suites_match() {
+    let _guard = serial();
+    let repository = prepare();
+    let sources = gom_files(&[
+        repository.tests().join("diagnostics"),
+        repository.tests().join("typer"),
+        repository.tests().join("trait_impl"),
+        repository.tests().join("struct_type"),
+        repository.tests().join("crashers"),
+    ]);
+    let sources: Vec<PathBuf> = sources
+        .into_iter()
+        .filter(|source| PathBuf::from(format!("{}.diag", source.display())).is_file())
+        .collect();
+    assert!(!sources.is_empty());
+    for source in sources {
+        let rust = Command::new(&repository.rust_gomlc)
+            .arg("run-single")
+            .arg(&source)
+            .output()
+            .unwrap();
+        let bootstrap = Command::new(&repository.bootstrap_gomlc)
+            .arg("run-single")
+            .arg(&source)
+            .output()
+            .unwrap();
+        assert_eq!(
+            rust.status.code(),
+            bootstrap.status.code(),
+            "{}",
+            source.display()
+        );
+        assert_bytes(
+            &format!("run-single stdout mismatch for {}", source.display()),
+            &rust.stdout,
+            &bootstrap.stdout,
+        );
+        assert_bytes(
+            &format!("run-single stderr mismatch for {}", source.display()),
+            &rust.stderr,
+            &bootstrap.stderr,
+        );
+    }
+}
+
+#[test]
+fn successful_run_single_warning_behavior_matches() {
+    let _guard = serial();
+    let repository = prepare();
+    let temporary = TempDir::new("successful-warning");
+    let source = temporary.path().join("main.gom");
+    fs::write(
+        &source,
+        "fn main() -> unit {\n    let _ = match true {\n        true => 1,\n        true => 2,\n        false => 3,\n    };\n}\n",
+    )
+    .unwrap();
+    let rust = Command::new(&repository.rust_gomlc)
+        .arg("run-single")
+        .arg(&source)
+        .output()
+        .unwrap();
+    let bootstrap = Command::new(&repository.bootstrap_gomlc)
+        .arg("run-single")
+        .arg(&source)
+        .output()
+        .unwrap();
+    assert_eq!(rust.status.code(), bootstrap.status.code());
+    assert_bytes(
+        "successful warning stdout mismatch",
+        &rust.stdout,
+        &bootstrap.stdout,
+    );
+    assert_bytes(
+        "successful warning stderr mismatch",
+        &rust.stderr,
+        &bootstrap.stderr,
+    );
 }
 
 #[test]

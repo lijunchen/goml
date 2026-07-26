@@ -25,8 +25,18 @@ pub fn compare_lexer(parser: &Path, input_path: &Path, iterations: usize) {
         "(", ")", "{", "}", "[", "]", "'", "\"", "\\", "//", "\n", "\r\n", "\t", "0", "9i32",
         "1.5f64", "_name", "_", "é", "中", "🦀", "\u{301}", "\0",
     ];
-    let mut state = 0x4d59_5df4_d0f3_3173u64;
+    let seeds = [
+        0x4d59_5df4_d0f3_3173u64,
+        0x243f_6a88_85a3_08d3u64,
+        0x1319_8a2e_0370_7344u64,
+        0xa409_3822_299f_31d0u64,
+    ];
+    let chunk = iterations.div_ceil(seeds.len());
+    let mut state = seeds[0];
     for iteration in 0..iterations {
+        if iteration % chunk == 0 {
+            state = seeds[iteration / chunk];
+        }
         let source = lexer_source(&mut state, &fragments);
         fs::write(input_path, &source).unwrap();
         let expected = oracle::encode(&source);
@@ -216,12 +226,23 @@ pub fn compare_parser(parser: &Path, input_path: &Path, mode: &str, iterations: 
         mode == "cst" || mode == "ast" || mode == "hir" || mode == "tast",
         "invalid mode"
     );
-    let mut state = 0x6a09_e667_f3bc_c909u64;
+    let seeds = [
+        0x6a09_e667_f3bc_c909u64,
+        0x3c6e_f372_fe94_f82bu64,
+        0xa54f_f53a_5f1d_36f1u64,
+        0x510e_527f_ade6_82d1u64,
+    ];
+    let chunk = iterations.div_ceil(seeds.len());
+    let mut state = seeds[0];
     for iteration in 0..iterations {
+        if iteration % chunk == 0 {
+            state = seeds[iteration / chunk];
+        }
         let source = match mode {
             "cst" => random_source(&mut state),
-            "tast" => typed_source(&mut state),
-            _ => valid_source(&mut state),
+            "hir" | "tast" => typed_source(&mut state),
+            "ast" => valid_source(&mut state),
+            _ => unreachable!(),
         };
         fs::write(input_path, &source).unwrap();
         let expected = match mode {
@@ -235,7 +256,7 @@ pub fn compare_parser(parser: &Path, input_path: &Path, mode: &str, iterations: 
             panic!("Rust TAST oracle rejected iteration {iteration} for {source:?}");
         }
         if mode == "hir" && expected.is_empty() {
-            continue;
+            panic!("Rust HIR oracle rejected iteration {iteration} for {source:?}");
         }
         let output = Command::new(parser)
             .arg("__canonical-stage")
@@ -258,8 +279,18 @@ pub fn compare_parser(parser: &Path, input_path: &Path, mode: &str, iterations: 
 }
 
 pub fn compare_codegen(parser: &Path, input_path: &Path, iterations: usize) {
-    let mut state = 0xbb67_ae85_84ca_a73bu64;
+    let seeds = [
+        0xbb67_ae85_84ca_a73bu64,
+        0x9b05_688c_2b3e_6c1fu64,
+        0x1f83_d9ab_fb41_bd6bu64,
+        0x5be0_cd19_137e_2179u64,
+    ];
+    let chunk = iterations.div_ceil(seeds.len());
+    let mut state = seeds[0];
     for iteration in 0..iterations {
+        if iteration % chunk == 0 {
+            state = seeds[iteration / chunk];
+        }
         let source = typed_source(&mut state);
         fs::write(input_path, &source).unwrap();
         let expected = oracle::encode_go(input_path, &source);
