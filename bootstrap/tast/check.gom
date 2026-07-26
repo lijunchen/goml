@@ -1131,7 +1131,7 @@ fn check_static_member(
                             },
                             Option::None => {
                                 if report_inference {
-                                    push_global_diagnostic(ctx, "Could not infer type")
+                                    push_spanless_inference_diagnostic(ctx)
                                 } else {
                                     ()
                                 };
@@ -1180,7 +1180,7 @@ fn missing_constructor_expr(
 fn report_error_inference(ctx: Checker, expected: Option[Type]) -> unit {
     match expected {
         Option::Some(_) => (),
-        Option::None => push_global_diagnostic(ctx, "Could not infer type"),
+        Option::None => push_spanless_inference_diagnostic(ctx),
     }
 }
 
@@ -1620,31 +1620,62 @@ fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
     }
 }
 
-fn specialize_array_param(param: Type, actual: Type) -> Type {
-    match (prune(param), prune(actual)) {
-        (Type::Array { len: length, elem }, Type::Array { len: actual_length, elem: _ }) => {
-            if length < 0 {
-                Type::Array { len: actual_length, elem }
-            } else {
-                Type::Array { len: length, elem }
+fn array_wildcard_length(
+    params: Vec[Type],
+    values: Vec[Expr],
+) -> Option[int] {
+    let result = Ref::new(Option::None);
+    for index in range(0, params.len()) {
+        if index < values.len() {
+            match (prune(params.get(index)), prune(expr_type(values.get(index)))) {
+                (
+                    Type::Array { len: expected, elem: _ },
+                    Type::Array { len: actual, elem: _ },
+                ) => if expected < 0 && actual >= 0 {
+                    result.set(Option::Some(actual))
+                } else {
+                    ()
+                },
+                _ => (),
             }
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn specialize_array_type(value: Type, length: int) -> Type {
+    match prune(value) {
+        Type::Array { len, elem } => Type::Array {
+            len: if len < 0 { length } else { len },
+            elem,
         },
-        (param, _) => param,
+        other => other,
     }
 }
 
 fn specialize_array_callable(function: Expr, values: Vec[Expr]) -> Expr {
     match function {
         Expr::Callable { callable, ty: Type::Func { params, ret_ty } } => {
-            let specialized: Vec[Type] = Vec::new();
-            for index in range(0, params.len()) {
-                specialized.push(if index < values.len() {
-                    specialize_array_param(params.get(index), expr_type(values.get(index)))
-                } else {
-                    params.get(index)
-                })
-            };
-            Expr::Callable { callable, ty: Type::Func { params: specialized, ret_ty } }
+            match array_wildcard_length(params, values) {
+                Option::Some(length) => {
+                    let specialized: Vec[Type] = Vec::new();
+                    for param in params {
+                        specialized.push(specialize_array_type(param, length))
+                    };
+                    Expr::Callable {
+                        callable,
+                        ty: Type::Func {
+                            params: specialized,
+                            ret_ty: specialize_array_type(ret_ty, length),
+                        },
+                    }
+                },
+                Option::None => {
+                    Expr::Callable { callable, ty: Type::Func { params, ret_ty } }
+                },
+            }
         },
         other => other,
     }
@@ -1913,6 +1944,10 @@ fn apply_typed_call(
     } else {
         function
     };
+    let specialized_ret_ty = match expr_type(function) {
+        Type::Func { params: _, ret_ty } => ret_ty,
+        _ => ret_ty,
+    };
     let result_ty = if arity_mismatch {
         if trait_method && match dyn_method {
             Option::Some(_) => false,
@@ -1923,7 +1958,7 @@ fn apply_typed_call(
             fresh_unresolved_inference(ctx)
         }
     } else {
-        normalize_type(ctx, ret_ty)
+        normalize_type(ctx, specialized_ret_ty)
     };
     if arity_mismatch {
         match function {
