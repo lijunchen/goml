@@ -76,6 +76,44 @@ pub fn value() -> int32 {
 }
 
 #[test]
+fn explicit_aliases_allow_same_declared_package_name() {
+    let (_, diagnostics) = typecheck_project(&[
+        (
+            "main.gom",
+            r#"package main;
+
+use package_model_test::first as first_shared;
+use package_model_test::second as second_shared;
+
+fn main() -> unit {
+    println(first_shared::value() + second_shared::value())
+}
+"#,
+        ),
+        (
+            "first/first.gom",
+            r#"package shared;
+
+pub fn value() -> int32 {
+    20
+}
+"#,
+        ),
+        (
+            "second/second.gom",
+            r#"package shared;
+
+pub fn value() -> int32 {
+    22
+}
+"#,
+        ),
+    ])
+    .unwrap();
+    assert!(!diagnostics.has_errors(), "{diagnostics:#?}");
+}
+
+#[test]
 fn package_alias_trait_use_is_order_independent() {
     let (_, diagnostics) = typecheck_project(&[
         (
@@ -105,6 +143,34 @@ fn main() -> unit {
 
 pub trait Render {
     fn render(self: Self) -> string;
+}
+"#,
+        ),
+    ])
+    .unwrap();
+    assert!(!diagnostics.has_errors(), "{diagnostics:#?}");
+}
+
+#[test]
+fn declared_package_name_is_the_default_alias() {
+    let (_, diagnostics) = typecheck_project(&[
+        (
+            "main.gom",
+            r#"package main;
+
+use package_model_test::directory_name;
+
+fn main() -> unit {
+    println(declared_name::value())
+}
+"#,
+        ),
+        (
+            "directory_name/value.gom",
+            r#"package declared_name;
+
+pub fn value() -> int32 {
+    42
 }
 "#,
         ),
@@ -256,6 +322,48 @@ fn main() -> unit {
             .message()
             .contains("package package_model_test::nested is not provided")
     }));
+}
+
+#[test]
+fn transitive_public_type_metadata_is_available() {
+    let (_dir, main_path, main_src) = write_project(&[
+        (
+            "main.gom",
+            r#"package main;
+
+use package_model_test::facade;
+
+fn main() -> unit {
+    println(facade::make().value.to_string())
+}
+"#,
+        ),
+        (
+            "model/model.gom",
+            r#"package model;
+
+pub struct Box {
+    pub value: int32,
+}
+
+pub fn make() -> Box {
+    Box { value: 42 }
+}
+"#,
+        ),
+        (
+            "facade/facade.gom",
+            r#"package facade;
+
+use package_model_test::model;
+
+pub fn make() -> model::Box {
+    model::make()
+}
+"#,
+        ),
+    ]);
+    pipeline::compile(&main_path, &main_src).unwrap();
 }
 
 #[test]

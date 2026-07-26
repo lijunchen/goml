@@ -237,6 +237,62 @@ fn wrap[T](value: T) -> T {
 }
 
 #[test]
+fn struct_type_arity_mismatch_reports_error() {
+    let src = r#"
+struct Wrapper[T] {
+    value: T,
+}
+
+fn bad(value: Wrapper[int32, int32]) -> unit { () }
+"#;
+
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Type Wrapper expects 1 type arguments, but got 2",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+fn unknown_type_constructor_reports_error() {
+    let src = r#"
+fn bad(p: Undefined) -> unit { () }
+"#;
+
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Unknown type constructor Undefined",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+fn unbound_type_parameter_reports_error() {
+    let src = r#"
+struct Wrapper[T] {
+    value: T,
+}
+
+fn bad[T](value: Wrapper[U]) -> unit { () }
+"#;
+
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Unknown type constructor U",
+            ]
+        "#]],
+    );
+}
+
+#[test]
 fn enum_struct_type_arity_mismatch_reports_error() {
     let src = r#"
 struct Wrapper[T] {
