@@ -1,151 +1,39 @@
-# bootstrap-goml
+# goml project driver
 
-`bootstrap-goml` is the minimal GoML implementation of the project build and test driver. The Rust `goml` implementation remains available and is used to create the initial binary.
+`bootstrap-goml` is the self-hosted project driver. It provides project creation, package discovery, check/build/run/test plans, dependency resolution, registry cache management, incremental artifact fingerprints, native linking, and parallel test execution.
 
-Build it with the Rust driver:
+Build and verify the complete toolchain:
+
+```sh
+just bootstrap
+just test-bootstrap-driver
+```
+
+Use the stage1 driver directly:
 
 ```sh
 cd bootstrap-goml
-../target/debug/goml build --compiler ../target/debug/gomlc
+_bootstrap/stage1/bin/cmd/goml/goml check \
+  --compiler ../bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc
+_bootstrap/stage1/bin/cmd/goml/goml test \
+  --compiler ../bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc \
+  --jobs 4 \
+  --timeout 30s
 ```
 
-Use the checked-in GoML compiler implementation:
+`goml test --nocapture` inherits test output, while `--timeout` accepts positive `ms`, `s`, or `m` durations. Compiler, linker, and Go build steps are skipped only when their compiler identity, arguments, inputs, and recorded output digests all match.
+
+The driver resolves `gomlc` from `--compiler`, `GOMLC`, a sibling binary, `GOML_HOME/bin`, then `PATH`.
+
+Package-management commands are:
 
 ```sh
-cd bootstrap-goml
-_artifact/bin/cmd/goml/goml check --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
-_artifact/bin/cmd/goml/goml build --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc
-_artifact/bin/cmd/goml/goml test --compiler ../bootstrap/_artifact/bin/cmd/gomlc/gomlc --jobs 4
+goml update
+goml add owner::module
+goml add owner::module@1.2.3
+goml remove owner::module
 ```
 
-## 测试
+`update`, `add`, and `remove` accept `--local-registry <path>`. Registry state is stored under `$GOML_HOME/cache/registry`, defaulting to `~/.goml/cache/registry`.
 
-### 自动执行
-
-```sh
-just test-bootstrap-goml
-```
-
-这个 recipe 做了三件事：
-
-1. `cargo build -p goml -p gomlc` — 用 Rust 编译宿主 goml / gomlc
-2. 在 `bootstrap-goml` 中运行 `../target/debug/goml build --compiler ../target/debug/gomlc`
-3. 在 `bootstrap-goml` 中运行 `../target/debug/goml test --compiler ../target/debug/gomlc --jobs 1`
-
-### 手动分步执行
-
-```sh
-# Step 1: 编译宿主工具（只需一次）
-cargo build -p goml -p gomlc
-
-# Step 2: 编译 bootstrap CLI
-cd bootstrap-goml
-../target/debug/goml build --compiler ../target/debug/gomlc
-
-# Step 3: 运行全部测试
-../target/debug/goml test \
-  --compiler ../target/debug/gomlc \
-  --jobs 1
-
-# 按名称过滤
-../target/debug/goml test \
-  --compiler ../target/debug/gomlc \
-  wide_struct
-
-# 列出所有测试
-../target/debug/goml test \
-  --compiler ../target/debug/gomlc \
-  --list
-
-# JSON 输出
-../target/debug/goml test \
-  --compiler ../target/debug/gomlc \
-  --format json
-```
-
-### 环境变量
-
-`test_support/support.gom` 通过以下环境变量定位工具和仓库：
-
-| 变量 | 用途 | 默认值 |
-|---|---|---|
-| `GOML_TEST_GOML` | goml 二进制路径 | `_artifact/bin/cmd/goml/goml` |
-| `GOML_TEST_GOMLC` | gomlc 二进制路径 | `../../target/debug/gomlc`（相对仓库根） |
-| `GOML_REPO` | 仓库根目录 | `module_root()/..` |
-
-### 测试基础设施
-
-`test_support/support.gom` 提供：
-
-- `run(args, directory)` — 执行 goml 子进程
-- `project_command(command, target, extra, directory)` — 执行 goml 命令（自动注入 `--compiler`）
-- `workspace(name)` — 创建隔离工作目录 `_artifact/test-work/<name>`
-- `write_file(path, content)` / `read_file(path)` — 文件读写
-- `create_dir(path)` — 目录创建
-- `assert_success(output)` / `assert_failure(output)` — 退出码断言
-- `assert_contains(text, expected)` / `assert_not_contains(text, unexpected)` — 字符串断言
-- `stdout(output)` / `stderr(output)` — 输出捕获
-- `repository_root()` / `module_root()` — 路径定位
-
-测试文件在 `cmd/goml/cli_migration_test.gom`，测试输出写入 `_artifact/test-work/<case>/`。
-
-### `--compiler` 参数
-
-`goml` 是构建编排器，`gomlc` 是编译器后端。`goml` 的 check / build / test 都会
-fork 调用 `gomlc` 做实际编译，`--compiler` 告诉 goml 去哪个路径找 gomlc。
-
-不传 `--compiler` 时的查找顺序：
-1. `GOMLC` 环境变量
-2. 与 goml 同级目录下的 `gomlc`
-3. `$GOML_HOME/bin/gomlc`
-4. `PATH` 中的 `gomlc`
-
-### 自举测试（bootstrap 自己测试自己）
-
-完整的自举测试链：bootstrap 版 goml 驱动 bootstrap 版 gomlc 来编译和测试
-它们自己的源码。
-
-**前提**：bootstrap/gomlc 和 bootstrap-goml/cmd/goml 两个二进制已存在
-（由 `just test-bootstrap-goml` 或 `just install-bootstrap` 产生）。
-
-```sh
-# 两条捷径
-just test-bootstrap-self          # check + test（自举验证）
-just test-bootstrap-self-full     # check + build + test（完整自举）
-```
-
-手动分步：
-
-```sh
-cd bootstrap-goml
-GOML=./_artifact/bin/cmd/goml/goml
-GOMLC=../bootstrap/_artifact/bin/cmd/gomlc/gomlc
-
-# Step 1: bootstrap goml check 自己
-$GOML check --compiler $GOMLC
-
-# Step 2: bootstrap goml build 自己
-$GOML build --compiler $GOMLC
-
-# Step 3: bootstrap goml test 自己
-$GOML test --compiler $GOMLC --jobs 1
-```
-
-### 测试层级总览
-
-```
-                  ┌─────────────────────────────────┐
-                  │   just test-bootstrap-goml       │  ← Rust goml 驱动
-                  │   (rust goml + rust gomlc)       │
-                  └──────────────┬──────────────────┘
-                                 │ 产出
-                                 ▼
-                  ┌─────────────────────────────────┐
-                  │  just test-bootstrap-self        │  ← bootstrap goml 驱动
-                  │  (bootstrap goml + bootstrap gomlc) │   自己测试自己
-                  └─────────────────────────────────┘
-```
-
-The current implementation provides deterministic whole-project package discovery, topological check/build/link plans, executable runs, internal and black-box test discovery, filtering, ignored tests, text or JSON test events, and a bounded `Channel` worker pool.
-
-Registry dependencies, incremental fingerprints, test timeouts, and package-management commands remain in the Rust driver for now.
+Driver tests live beside the CLI in `cmd/goml/cli_migration_test.gom`. Their isolated workspaces are written below `_artifact/test-work`.
