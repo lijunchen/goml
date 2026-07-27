@@ -1,0 +1,21 @@
+fn main() {
+    let i = Ref::new(0);
+    while i.get() < 10 {
+        if i.get() == 5 {
+            break;
+        } else { () };
+        i.set(i.get() + 1);
+    };
+    println("break at " + i.get().to_string());
+
+    let j = Ref::new(0);
+    let sum = Ref::new(0);
+    while j.get() < 10 {
+        j.set(j.get() + 1);
+        if j.get() / 2 * 2 == j.get() {
+            continue;
+        } else { () };
+        sum.set(sum.get() + j.get());
+    };
+    println("odd sum " + sum.get().to_string());
+}

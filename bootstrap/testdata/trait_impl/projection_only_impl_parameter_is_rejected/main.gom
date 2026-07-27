@@ -1,0 +1,11 @@
+trait Source {
+    type Item;
+}
+
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+impl[S: Source] Mark for S::Item {
+    fn mark(self: Self) -> unit { () }
+}

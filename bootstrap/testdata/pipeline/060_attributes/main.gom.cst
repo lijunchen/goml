@@ -1,0 +1,303 @@
+FILE@0..442
+  STRUCT@0..62
+    ATTRIBUTE_LIST@0..20
+      ATTRIBUTE@0..20
+        Pound@0..1 "#"
+        LBracket@1..2 "["
+        Ident@2..8 "derive"
+        LParen@8..9 "("
+        Ident@9..17 "ToString"
+        RParen@17..18 ")"
+        RBracket@18..19 "]"
+        Whitespace@19..20 "\n"
+    StructKeyword@20..26 "struct"
+    Whitespace@26..27 " "
+    Ident@27..32 "Point"
+    Whitespace@32..33 " "
+    LBrace@33..34 "{"
+    Whitespace@34..37 "\n  "
+    STRUCT_FIELD_LIST@37..62
+      STRUCT_FIELD@37..45
+        Ident@37..38 "x"
+        Colon@38..39 ":"
+        Whitespace@39..40 " "
+        TYPE_INT32@40..45
+          Int32Keyword@40..45 "int32"
+      Comma@45..46 ","
+      Whitespace@46..49 "\n  "
+      STRUCT_FIELD@49..57
+        Ident@49..50 "y"
+        Colon@50..51 ":"
+        Whitespace@51..52 " "
+        TYPE_INT32@52..57
+          Int32Keyword@52..57 "int32"
+      Comma@57..58 ","
+      Whitespace@58..59 "\n"
+      RBrace@59..60 "}"
+      Whitespace@60..62 "\n\n"
+  ENUM@62..147
+    ATTRIBUTE_LIST@62..82
+      ATTRIBUTE@62..82
+        Pound@62..63 "#"
+        LBracket@63..64 "["
+        Ident@64..70 "derive"
+        LParen@70..71 "("
+        Ident@71..79 "ToString"
+        RParen@79..80 ")"
+        RBracket@80..81 "]"
+        Whitespace@81..82 "\n"
+    EnumKeyword@82..86 "enum"
+    Whitespace@86..87 " "
+    Ident@87..94 "Message"
+    Whitespace@94..95 " "
+    LBrace@95..96 "{"
+    Whitespace@96..99 "\n  "
+    VARIANT_LIST@99..147
+      VARIANT@99..103
+        Ident@99..103 "Quit"
+      Comma@103..104 ","
+      Whitespace@104..107 "\n  "
+      VARIANT@107..125
+        Ident@107..111 "Move"
+        TYPE_LIST@111..125
+          LParen@111..112 "("
+          TYPE_INT32@112..117
+            Int32Keyword@112..117 "int32"
+          Comma@117..118 ","
+          Whitespace@118..119 " "
+          TYPE_INT32@119..124
+            Int32Keyword@119..124 "int32"
+          RParen@124..125 ")"
+      Comma@125..126 ","
+      Whitespace@126..129 "\n  "
+      VARIANT@129..142
+        Ident@129..134 "Write"
+        TYPE_LIST@134..142
+          LParen@134..135 "("
+          TYPE_STRING@135..141
+            StringKeyword@135..141 "string"
+          RParen@141..142 ")"
+      Comma@142..143 ","
+      Whitespace@143..144 "\n"
+      RBrace@144..145 "}"
+      Whitespace@145..147 "\n\n"
+  FN@147..442
+    FnKeyword@147..149 "fn"
+    Whitespace@149..150 " "
+    Ident@150..154 "main"
+    PARAM_LIST@154..157
+      LParen@154..155 "("
+      RParen@155..156 ")"
+      Whitespace@156..157 " "
+    Arrow@157..159 "->"
+    Whitespace@159..160 " "
+    TYPE_UNIT@160..165
+      UnitKeyword@160..164 "unit"
+      Whitespace@164..165 " "
+    BLOCK@165..442
+      LBrace@165..166 "{"
+      Whitespace@166..169 "\n  "
+      STMT_LET@169..205
+        LetKeyword@169..172 "let"
+        Whitespace@172..173 " "
+        PATTERN_VARIABLE@173..179
+          Ident@173..178 "point"
+          Whitespace@178..179 " "
+        Eq@179..180 "="
+        Whitespace@180..181 " "
+        EXPR_STRUCT_LITERAL@181..201
+          PATH@181..187
+            Ident@181..186 "Point"
+            Whitespace@186..187 " "
+          STRUCT_LITERAL_FIELD_LIST@187..201
+            LBrace@187..188 "{"
+            Whitespace@188..189 " "
+            STRUCT_LITERAL_FIELD@189..193
+              Ident@189..190 "x"
+              Colon@190..191 ":"
+              Whitespace@191..192 " "
+              EXPR_INT@192..193
+                Int@192..193 "4"
+            Comma@193..194 ","
+            Whitespace@194..195 " "
+            STRUCT_LITERAL_FIELD@195..200
+              Ident@195..196 "y"
+              Colon@196..197 ":"
+              Whitespace@197..198 " "
+              EXPR_INT@198..200
+                Int@198..199 "7"
+                Whitespace@199..200 " "
+            RBrace@200..201 "}"
+        Semi@201..202 ";"
+        Whitespace@202..205 "\n  "
+      STMT_LET@205..240
+        LetKeyword@205..208 "let"
+        Whitespace@208..209 " "
+        PATTERN_VARIABLE@209..217
+          Ident@209..216 "summary"
+          Whitespace@216..217 " "
+        Eq@217..218 "="
+        Whitespace@218..219 " "
+        EXPR_CALL@219..236
+          EXPR_BINARY@219..234
+            EXPR_IDENT@219..224
+              PATH@219..224
+                Ident@219..224 "point"
+            Dot@224..225 "."
+            EXPR_IDENT@225..234
+              PATH@225..234
+                Ident@225..234 "to_string"
+          ARG_LIST@234..236
+            LParen@234..235 "("
+            RParen@235..236 ")"
+        Semi@236..237 ";"
+        Whitespace@237..240 "\n  "
+      STMT_LET@240..284
+        LetKeyword@240..243 "let"
+        Whitespace@243..244 " "
+        PATTERN_VARIABLE@244..247
+          Ident@244..246 "mv"
+          Whitespace@246..247 " "
+        Eq@247..248 "="
+        Whitespace@248..249 " "
+        EXPR_CALL@249..280
+          EXPR_BINARY@249..278
+            EXPR_CALL@249..268
+              EXPR_IDENT@249..262
+                PATH@249..262
+                  Ident@249..256 "Message"
+                  ColonColon@256..258 "::"
+                  Ident@258..262 "Move"
+              ARG_LIST@262..268
+                LParen@262..263 "("
+                ARG@263..266
+                  EXPR_INT@263..264
+                    Int@263..264 "1"
+                  Comma@264..265 ","
+                  Whitespace@265..266 " "
+                ARG@266..267
+                  EXPR_INT@266..267
+                    Int@266..267 "2"
+                RParen@267..268 ")"
+            Dot@268..269 "."
+            EXPR_IDENT@269..278
+              PATH@269..278
+                Ident@269..278 "to_string"
+          ARG_LIST@278..280
+            LParen@278..279 "("
+            RParen@279..280 ")"
+        Semi@280..281 ";"
+        Whitespace@281..284 "\n  "
+      STMT_LET@284..333
+        LetKeyword@284..287 "let"
+        Whitespace@287..288 " "
+        PATTERN_VARIABLE@288..293
+          Ident@288..292 "text"
+          Whitespace@292..293 " "
+        Eq@293..294 "="
+        Whitespace@294..295 " "
+        EXPR_CALL@295..329
+          EXPR_BINARY@295..327
+            EXPR_CALL@295..317
+              EXPR_IDENT@295..309
+                PATH@295..309
+                  Ident@295..302 "Message"
+                  ColonColon@302..304 "::"
+                  Ident@304..309 "Write"
+              ARG_LIST@309..317
+                LParen@309..310 "("
+                ARG@310..316
+                  EXPR_STR@310..316
+                    Str@310..316 "\"done\""
+                RParen@316..317 ")"
+            Dot@317..318 "."
+            EXPR_IDENT@318..327
+              PATH@318..327
+                Ident@318..327 "to_string"
+          ARG_LIST@327..329
+            LParen@327..328 "("
+            RParen@328..329 ")"
+        Semi@329..330 ";"
+        Whitespace@330..333 "\n  "
+      STMT_LET@333..373
+        LetKeyword@333..336 "let"
+        Whitespace@336..337 " "
+        PATTERN_VARIABLE@337..342
+          Ident@337..341 "exit"
+          Whitespace@341..342 " "
+        Eq@342..343 "="
+        Whitespace@343..344 " "
+        EXPR_CALL@344..369
+          EXPR_BINARY@344..367
+            EXPR_IDENT@344..357
+              PATH@344..357
+                Ident@344..351 "Message"
+                ColonColon@351..353 "::"
+                Ident@353..357 "Quit"
+            Dot@357..358 "."
+            EXPR_IDENT@358..367
+              PATH@358..367
+                Ident@358..367 "to_string"
+          ARG_LIST@367..369
+            LParen@367..368 "("
+            RParen@368..369 ")"
+        Semi@369..370 ";"
+        Whitespace@370..373 "\n  "
+      STMT_EXPR@373..393
+        EXPR_CALL@373..389
+          EXPR_IDENT@373..380
+            PATH@373..380
+              Ident@373..380 "println"
+          ARG_LIST@380..389
+            LParen@380..381 "("
+            ARG@381..388
+              EXPR_IDENT@381..388
+                PATH@381..388
+                  Ident@381..388 "summary"
+            RParen@388..389 ")"
+        Semi@389..390 ";"
+        Whitespace@390..393 "\n  "
+      STMT_EXPR@393..408
+        EXPR_CALL@393..404
+          EXPR_IDENT@393..400
+            PATH@393..400
+              Ident@393..400 "println"
+          ARG_LIST@400..404
+            LParen@400..401 "("
+            ARG@401..403
+              EXPR_IDENT@401..403
+                PATH@401..403
+                  Ident@401..403 "mv"
+            RParen@403..404 ")"
+        Semi@404..405 ";"
+        Whitespace@405..408 "\n  "
+      STMT_EXPR@408..425
+        EXPR_CALL@408..421
+          EXPR_IDENT@408..415
+            PATH@408..415
+              Ident@408..415 "println"
+          ARG_LIST@415..421
+            LParen@415..416 "("
+            ARG@416..420
+              EXPR_IDENT@416..420
+                PATH@416..420
+                  Ident@416..420 "text"
+            RParen@420..421 ")"
+        Semi@421..422 ";"
+        Whitespace@422..425 "\n  "
+      STMT_EXPR@425..440
+        EXPR_CALL@425..438
+          EXPR_IDENT@425..432
+            PATH@425..432
+              Ident@425..432 "println"
+          ARG_LIST@432..438
+            LParen@432..433 "("
+            ARG@433..437
+              EXPR_IDENT@433..437
+                PATH@433..437
+                  Ident@433..437 "exit"
+            RParen@437..438 ")"
+        Semi@438..439 ";"
+        Whitespace@439..440 "\n"
+      RBrace@440..441 "}"
+      Whitespace@441..442 "\n"

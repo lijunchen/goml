@@ -1,0 +1,17 @@
+struct Wrapper[T] {
+    inner: T,
+}
+
+fn wrap[T](x: T) -> Wrapper[T] {
+    Wrapper { inner: x }
+}
+
+fn unwrap[T](w: Wrapper[T]) -> T {
+    w.inner
+}
+
+fn main() {
+    let w = wrap(wrap(wrap(42)));
+    let result = unwrap(unwrap(unwrap(w)));
+    println(result.to_string());
+}

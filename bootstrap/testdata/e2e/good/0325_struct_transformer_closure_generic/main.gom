@@ -1,0 +1,14 @@
+struct Transformer[T] {
+    transform: (T) -> T,
+    name: string,
+}
+
+fn apply_named[T](t: Transformer[T], val: T) -> T {
+    t.transform(val)
+}
+
+fn main() {
+    let t = Transformer { transform: |x: int32| x + 100, name: "adder" };
+    let result = apply_named(t, 42);
+    println(result.to_string());
+}

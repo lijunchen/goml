@@ -1,0 +1,49 @@
+fn main() -> unit {
+  join ret66() -> unit {
+    ()
+  } in
+  let c/0 = 'A' in
+  let t67 = inherent#char#char#to_string(c/0) in
+  let _wild64 = println__T_string(t67) in
+  let d/1 = 'b' in
+  join k68(jp69: string) -> unit {
+    let out/2 = jp69 in
+    let _wild65 = println__T_string(out/2) in
+    jump ret66()
+  } in
+  match d/1 {
+    'a' => {
+      jump k68("A")
+    },
+    'b' => {
+      jump k68("B")
+    },
+    _ => {
+      jump k68("?")
+    },
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret70() -> unit {
+    ()
+  } in
+  let t71 = trait_impl#ToString#string#to_string(value/1) in
+  let t72 = @runtime(core.string_println)(t71) in
+  jump ret70()
+}
+
+fn inherent#char#char#to_string(self/7: char) -> string {
+  join ret73(retv74: string) -> string {
+    retv74
+  } in
+  let t75 = @runtime(core.char_to_string)(self/7) in
+  jump ret73(t75)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret76(retv77: string) -> string {
+    retv77
+  } in
+  jump ret76(self/38)
+}

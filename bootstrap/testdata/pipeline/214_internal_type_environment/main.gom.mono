@@ -1,0 +1,81 @@
+fn inherent#Point#Point#new(x/0: int32, y/1: int32) -> Point {
+  Point { x: x/0, y: y/1 }
+}
+
+fn inherent#Point#Point#copy(self/2: Point, other/3: Point) -> Point {
+  Point { x: (Point.x(self/2) + Point.x(other/3)), y: (Point.y(self/2) + Point.y(other/3)) }
+}
+
+fn inherent#Point#Point#origin() -> Point {
+  Point { x: 0, y: 0 }
+}
+
+fn shape_value(value/7: Shape__int32) -> int32 {
+  match value/7 {
+    Shape__int32::Dot(x64) => {
+      {
+        let x64 = Shape__int32::Dot._0(value/7) in
+        {
+          let point/8 = x64 in
+          (Point.x(point/8) + Point.y(point/8))
+        }
+      }
+    },
+    Shape__int32::Wrapped(x65) => {
+      {
+        let x65 = Shape__int32::Wrapped._0(value/7) in
+        {
+          let wrapper/9 = x65 in
+          Wrapper__int32.value(wrapper/9)
+        }
+      }
+    },
+    Shape__int32::Origin => {
+      0
+    },
+  }
+}
+
+fn list_value(value/10: List) -> int32 {
+  match value/10 {
+    List::Cons(x66) => {
+      {
+        let x66 = List::Cons._0(value/10) in
+        {
+          let node/11 = x66 in
+          (Node.value(node/11) + list_value(Node.next(node/11)))
+        }
+      }
+    },
+    List::Nil => {
+      0
+    },
+  }
+}
+
+fn main() -> unit {
+  let offset/12 = 1 in
+  let add/14 = |value/13| (value/13 + offset/12) in
+  let point/15 = inherent#Point#Point#new(add/14(1), 3) in
+  let combined/16 = inherent#Point#Point#copy(point/15, inherent#Point#Point#origin()) in
+  let wrapped/17 = Shape__int32::Wrapped(Wrapper__int32 { value: wrap__T_int32(4) }) in
+  let list/18 = List::Cons(Node { value: 5, next: List::Nil }) in
+  println__T_string(inherent#int32#int32#to_string((((Point.x(combined/16) + Point.y(combined/16)) + shape_value(wrapped/17)) + list_value(list/18))))
+}
+
+fn wrap__T_int32(value/4: int32) -> int32 {
+  let id/6 = |item/5| item/5 in
+  id/6(value/4)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

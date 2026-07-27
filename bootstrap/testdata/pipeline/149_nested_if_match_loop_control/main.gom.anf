@@ -1,0 +1,120 @@
+fn main() -> unit {
+  join ret69() -> unit {
+    ()
+  } in
+  let i/0 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let sum/1 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit70() -> unit {
+    let _wild67 = () in
+    let t71 = inherent#Ref#Ref[T]#get__T_int(sum/1) in
+    let _wild68 = println__T_int(t71) in
+    jump ret69()
+  } in
+  joinrec {
+    join loop72() -> unit {
+      let t73 = inherent#Ref#Ref[T]#get__T_int(i/0) in
+      let t74 = (t73 < 7) in
+      if t74 {
+        let cur/2 = inherent#Ref#Ref[T]#get__T_int(i/0) in
+        let t75 = (cur/2 + 1) in
+        let _wild64 = inherent#Ref#Ref[T]#set__T_int(i/0, t75) in
+        let t79 = (cur/2 < 5) in
+        join k76() -> unit {
+          let mtmp65 = () in
+          let t77 = inherent#Ref#Ref[T]#get__T_int(sum/1) in
+          let t78 = (t77 + cur/2) in
+          let _wild66 = inherent#Ref#Ref[T]#set__T_int(sum/1, t78) in
+          jump loop72()
+        } in
+        if t79 {
+          join k80() -> unit {
+            jump k76()
+          } in
+          match cur/2 {
+            1 => {
+              jump loop72()
+            },
+            3 => {
+              jump loop72()
+            },
+            _ => {
+              jump k80()
+            },
+          }
+        } else {
+          join k81() -> unit {
+            jump k76()
+          } in
+          match cur/2 {
+            5 => {
+              jump exit70()
+            },
+            _ => {
+              jump k81()
+            },
+          }
+        }
+      } else {
+        jump exit70()
+      }
+    } in
+  } in
+  jump loop72()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  join ret82(retv83: Ref[int]) -> Ref[int] {
+    retv83
+  } in
+  let t84 = @intrinsic(ref.new)(value/209) in
+  jump ret82(t84)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  join ret85(retv86: int) -> int {
+    retv86
+  } in
+  let t87 = @intrinsic(ref.get)(self/210) in
+  jump ret85(t87)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  join ret88() -> unit {
+    ()
+  } in
+  let t89 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret88()
+}
+
+fn println__T_int(value/1: int) -> unit {
+  join ret90() -> unit {
+    ()
+  } in
+  let t91 = trait_impl#ToString#int#to_string(value/1) in
+  let t92 = @runtime(core.string_println)(t91) in
+  jump ret90()
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  join ret93(retv94: string) -> string {
+    retv94
+  } in
+  let t95 = @runtime(core.int_to_string)(self/40) in
+  jump ret93(t95)
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  join ret96(retv97: bool) -> bool {
+    retv97
+  } in
+  let t98 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret96(t98)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  join ret99(retv100: uint64) -> uint64 {
+    retv100
+  } in
+  let t101 = @runtime(core.int_hash)(self/85) in
+  jump ret99(t101)
+}

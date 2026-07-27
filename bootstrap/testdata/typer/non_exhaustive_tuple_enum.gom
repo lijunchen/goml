@@ -1,0 +1,12 @@
+enum Option[T] {
+    Some(T),
+    None
+}
+
+fn main() -> int32 {
+    let pair = (Option::Some(1), Option::Some(2));
+    match pair {
+        (Option::Some(x), Option::Some(y)) => x + y,
+        (Option::None, Option::Some(y)) => y,
+    }
+}

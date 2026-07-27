@@ -1,0 +1,181 @@
+package main;
+
+use std::bytes;
+use std::env;
+use std::fs;
+use std::io;
+use std::path;
+use std::process;
+use std::testing;
+
+fn unwrap_string(value: Result[string, string]) -> string {
+    match value {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            ""
+        },
+    }
+}
+
+fn unwrap_unit(value: Result[unit, string]) -> unit {
+    match value {
+        Result::Ok(value) => value,
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+fn unwrap_bytes(value: Result[bytes::Bytes, string]) -> bytes::Bytes {
+    match value {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    }
+}
+
+fn unwrap_output(value: Result[process::Output, string]) -> process::Output {
+    match value {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            unwrap_output(process::Command::new("sh").arg("-c").arg("exit 0").output())
+        },
+    }
+}
+
+fn unwrap_status(value: Result[process::ExitStatus, string]) -> process::ExitStatus {
+    match value {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            unwrap_status(process::Command::new("sh").arg("-c").arg("exit 0").status())
+        },
+    }
+}
+
+fn bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let equal = Ref::new(true);
+        let index = Ref::new(0);
+        while equal.get() && index.get() < left.len() {
+            if left.get(index.get()) != right.get(index.get()) {
+                equal.set(false)
+            } else {
+                ()
+            };
+            index.set(index.get() + 1)
+        };
+        equal.get()
+    }
+}
+
+fn binary_data() -> bytes::Bytes {
+    let values: Vec[uint8] = Vec::new();
+    values.push(0);
+    values.push(127);
+    values.push(128);
+    values.push(255);
+    bytes::Bytes::from_vec(values)
+}
+
+fn assert_parent(path_value: string, expected: string) -> unit {
+    match path::parent(path_value) {
+        Option::Some(value) => testing::assert_eq(value, expected),
+        Option::None => testing::fail("missing parent"),
+    }
+}
+
+fn assert_file_name(path_value: string, expected: string) -> unit {
+    match path::file_name(path_value) {
+        Option::Some(value) => testing::assert_eq(value, expected),
+        Option::None => testing::fail("missing file name"),
+    }
+}
+
+fn assert_extension(path_value: string, expected: string) -> unit {
+    match path::extension(path_value) {
+        Option::Some(value) => testing::assert_eq(value, expected),
+        Option::None => testing::fail("missing extension"),
+    }
+}
+
+fn assert_file_stem(path_value: string, expected: string) -> unit {
+    match path::file_stem(path_value) {
+        Option::Some(value) => testing::assert_eq(value, expected),
+        Option::None => testing::fail("missing file stem"),
+    }
+}
+
+fn main() -> unit {
+    let cwd = unwrap_string(env::current_dir());
+    let executable = unwrap_string(env::current_exe());
+    testing::assert(path::is_absolute(cwd));
+    testing::assert(path::is_absolute(executable));
+    match env::var("PATH") {
+        Option::Some(value) => testing::assert(value != ""),
+        Option::None => testing::fail("PATH is missing"),
+    };
+    match env::var("GOML_HOST_API_EXPECTED_ABSENT_5F498A") {
+        Option::Some(value) => testing::fail("unexpected environment value: " + value),
+        Option::None => (),
+    };
+    testing::assert_eq(path::clean(path::join("a", "../b")), "b");
+
+    let file_path = path::join(cwd, "host-api.bin");
+    assert_parent(file_path, cwd);
+    assert_file_name(file_path, "host-api.bin");
+    assert_extension(file_path, "bin");
+    assert_file_stem(file_path, "host-api");
+    assert_file_stem(".gitignore", ".gitignore");
+    testing::assert_eq(path::with_extension("archive.tar.gz", "go"), "archive.tar.go");
+    testing::assert_eq(unwrap_string(path::absolute(".")), cwd);
+
+    let expected = binary_data();
+    unwrap_unit(fs::write_bytes(file_path, expected));
+    testing::assert(fs::exists(file_path));
+    testing::assert(fs::is_file(file_path));
+    testing::assert(fs::is_dir(cwd));
+    testing::assert_eq(unwrap_string(fs::canonicalize(file_path)), file_path);
+    testing::assert(bytes_equal(unwrap_bytes(fs::read_bytes(file_path)), expected));
+    match fs::read_file(file_path) {
+        Result::Ok(value) => testing::fail("invalid UTF-8 accepted: " + value),
+        Result::Err(error) => testing::assert_eq(error, "invalid UTF-8"),
+    };
+
+    let output = unwrap_output(
+        process::Command::new("sh")
+            .arg("-c")
+            .arg("printf '%s' \"$GOML_HOST_TEST:$PWD\"; printf err >&2; exit 7")
+            .env("GOML_HOST_TEST", "present")
+            .current_dir(cwd)
+            .output(),
+    );
+    let output_status = process::Output::status(output);
+    testing::assert(!process::ExitStatus::success(output_status));
+    match process::ExitStatus::code(output_status) {
+        Option::Some(code) => testing::assert_eq(code, 7),
+        Option::None => testing::fail("missing exit code"),
+    };
+    let output_stdout = process::Output::stdout(output);
+    let output_stderr = process::Output::stderr(output);
+    testing::assert_eq(unwrap_string(output_stdout.to_string()), "present:" + cwd);
+    testing::assert_eq(unwrap_string(output_stderr.to_string()), "err");
+
+    let status = unwrap_status(process::Command::new("sh").arg("-c").arg("exit 3").status());
+    match process::ExitStatus::code(status) {
+        Option::Some(code) => testing::assert_eq(code, 3),
+        Option::None => testing::fail("missing status code"),
+    };
+    match process::Command::new("goml-command-that-does-not-exist").output() {
+        Result::Ok(value) => testing::fail("missing command succeeded"),
+        Result::Err(error) => testing::assert(error != ""),
+    };
+
+    unwrap_unit(io::write_stdout(bytes::Bytes::from_string("raw stdout\n")));
+    unwrap_unit(io::write_stderr(bytes::Bytes::from_string("raw stderr\n")));
+    io::println("host api ok")
+}

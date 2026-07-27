@@ -1,0 +1,13 @@
+struct Inner {
+    compute: (int32) -> int32,
+}
+
+struct Outer {
+    inner: Inner,
+}
+
+fn main() {
+    let o = Outer { inner: Inner { compute: |x| x * x } };
+    let result = o.inner.compute(7);
+    println(result.to_string());
+}

@@ -1,0 +1,13 @@
+package events;
+
+pub enum Event {
+    Move {
+        x: int32,
+        y: int32,
+    },
+    Stop,
+}
+
+pub fn moved(x: int32, y: int32) -> Event {
+    Event::Move { y, x }
+}

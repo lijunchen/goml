@@ -1,0 +1,27 @@
+fn my_int_equal(x/0: int32, y/1: int32) -> bool {
+  if (!(x/0 < y/1)) {
+      (!(y/1 < x/0))
+  } else {
+      false
+  }
+}
+
+fn sum(n/2: int32) -> int32 {
+  if my_int_equal(n/2, 1) {
+      1
+  } else {
+      (n/2 + sum((n/2 - 1)))
+  }
+}
+
+fn main() -> unit {
+  println__T_int32(sum(100))
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  @runtime(core.int32_to_string)(self/43)
+}

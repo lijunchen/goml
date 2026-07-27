@@ -1,0 +1,36 @@
+fn show_int(label/0: string, value/1: int32) -> unit {
+    let _ : unit = (println : (string) -> unit)((label/0 : string) + (int32::to_string : (int32) -> string)((value/1 : int32)));
+    ()
+}
+
+fn show_bool(label/2: string, value/3: bool) -> unit {
+    let _ : unit = (println : (string) -> unit)((label/2 : string) + (ToString::to_string : (bool) -> string)((value/3 : bool)));
+    ()
+}
+
+fn main() -> unit {
+    let base/4: int32 = 10;
+    let sum/5: int32 = (base/4 : int32) + 5;
+    let diff/6: int32 = (sum/5 : int32) - 3;
+    let prod/7: int32 = (diff/6 : int32) * 2;
+    let quot/8: int32 = (prod/7 : int32) / 4;
+    let _ : unit = (show_int : (string, int32) -> unit)("sum=", (sum/5 : int32));
+    let _ : unit = (show_int : (string, int32) -> unit)("diff=", (diff/6 : int32));
+    let _ : unit = (show_int : (string, int32) -> unit)("prod=", (prod/7 : int32));
+    let _ : unit = (show_int : (string, int32) -> unit)("quot=", (quot/8 : int32));
+    let and_result/9: bool = true && false;
+    let or_result/10: bool = true || false;
+    let not_result/11: bool = !false;
+    let mixed/12: bool = !(and_result/9 : bool) && match (sum/5 : int32) + (prod/7 : int32) * (base/4 : int32) - (prod/7 : int32) / 2 {
+        0 => false,
+        _ : int32 => true,
+    } || !match (diff/6 : int32) - (quot/8 : int32) + (base/4 : int32) - (sum/5 : int32) / 2 {
+        0 => false,
+        _ : int32 => true,
+    };
+    let _ : unit = (show_bool : (string, bool) -> unit)("and=", (and_result/9 : bool));
+    let _ : unit = (show_bool : (string, bool) -> unit)("or=", (or_result/10 : bool));
+    let _ : unit = (show_bool : (string, bool) -> unit)("not=", (not_result/11 : bool));
+    let _ : unit = (show_bool : (string, bool) -> unit)("mixed=", (mixed/12 : bool));
+    ()
+}

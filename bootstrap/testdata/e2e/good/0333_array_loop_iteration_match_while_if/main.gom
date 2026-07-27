@@ -1,0 +1,26 @@
+fn find_first[T](arr: [T; 5], pred: (T) -> bool) -> Option[T] {
+    let i = Ref::new(0);
+    let result: Ref[Option[T]] = Ref::new(Option::None);
+    while i.get() < 5 {
+        let item = arr[i.get()];
+        if pred(item) {
+            match result.get() {
+                Option::None => result.set(Option::Some(item)),
+                Option::Some(_) => (),
+            };
+        } else {
+            ()
+        };
+        i.set(i.get() + 1);
+    };
+    result.get()
+}
+
+fn main() {
+    let arr = [3, 7, 2, 9, 4];
+    let result = find_first(arr, |x| x > 5);
+    match result {
+        Option::Some(v) => println("found: " + v.to_string()),
+        Option::None => println("not found"),
+    };
+}

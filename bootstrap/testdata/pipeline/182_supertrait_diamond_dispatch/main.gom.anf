@@ -1,0 +1,67 @@
+fn trait_impl#Base#Value#base(self/0: Value) -> string {
+  join ret65(retv66: string) -> string {
+    retv66
+  } in
+  jump ret65("B")
+}
+
+fn trait_impl#Left#Value#left(self/1: Value) -> string {
+  join ret67(retv68: string) -> string {
+    retv68
+  } in
+  jump ret67("L")
+}
+
+fn trait_impl#Right#Value#right(self/2: Value) -> string {
+  join ret69(retv70: string) -> string {
+    retv70
+  } in
+  jump ret69("R")
+}
+
+fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
+  join ret71(retv72: string) -> string {
+    retv72
+  } in
+  jump ret71("D")
+}
+
+fn main() -> unit {
+  join ret73() -> unit {
+    ()
+  } in
+  let t74 = Value {} in
+  let t75 = describe__T_Value(t74) in
+  let _wild64 = println__T_string(t75) in
+  jump ret73()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret76() -> unit {
+    ()
+  } in
+  let t77 = trait_impl#ToString#string#to_string(value/1) in
+  let t78 = @runtime(core.string_println)(t77) in
+  jump ret76()
+}
+
+fn describe__T_Value(value/4: Value) -> string {
+  join ret79(retv80: string) -> string {
+    retv80
+  } in
+  let t81 = trait_impl#Base#Value#base(value/4) in
+  let t82 = trait_impl#Left#Value#left(value/4) in
+  let t83 = (t81 + t82) in
+  let t84 = trait_impl#Right#Value#right(value/4) in
+  let t85 = (t83 + t84) in
+  let t86 = trait_impl#Diamond#Value#diamond(value/4) in
+  let t87 = (t85 + t86) in
+  jump ret79(t87)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret88(retv89: string) -> string {
+    retv89
+  } in
+  jump ret88(self/38)
+}

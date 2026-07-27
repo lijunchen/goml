@@ -1,0 +1,15 @@
+fn main() {
+    let x = Ref::new(0);
+    let result = Ref::new("");
+    while x.get() < 5 {
+        let current = x.get();
+        result.set(result.get() + match current {
+            0 => "zero",
+            1 => "one",
+            2 => "two",
+            _ => "many",
+        } + " ");
+        x.set(current + 1);
+    };
+    println(result.get());
+}

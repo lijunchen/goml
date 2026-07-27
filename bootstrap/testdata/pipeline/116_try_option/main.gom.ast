@@ -1,0 +1,33 @@
+package main;
+fn maybe_value(flag: bool) -> Option[int32] {
+    if flag {
+        {
+            Option::Some(4)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn add(a: int32, b: int32) -> int32 {
+    a + b
+}
+
+fn plus_two(flag: bool) -> Option[int32] {
+    Option::Some(add(maybe_value(flag)?, 2))
+}
+
+fn show(opt: Option[int32]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(plus_two(true)));
+    println(show(plus_two(false)));
+}
+

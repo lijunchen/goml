@@ -1,0 +1,33 @@
+fn make_string_channel() -> Channel[string] {
+    (Channel[string]::new : (int) -> Channel[string])(0)
+}
+
+fn roundtrip(channel/0: Channel[T], value/1: T) -> Option[T] {
+    go || => (Channel[T]::send : (Channel[T], T) -> unit)((channel/0 : Channel[T]), (value/1 : T));
+    (Channel[T]::recv : (Channel[T]) -> Option[T])((channel/0 : Channel[T]))
+}
+
+fn main() -> unit {
+    let buffered/2: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(2);
+    (Channel[int]::send : (Channel[int], int) -> unit)((buffered/2 : Channel[int]), 10);
+    (Channel[int]::send : (Channel[int], int) -> unit)((buffered/2 : Channel[int]), 20);
+    (Channel[int]::close : (Channel[int]) -> unit)((buffered/2 : Channel[int]));
+    (println : (int) -> unit)(match (Channel[int]::recv : (Channel[int]) -> Option[int])((buffered/2 : Channel[int])) {
+        Option::Some(value/3: int) => (value/3 : int),
+        Option::None => -1,
+    });
+    (println : (int) -> unit)(match (Channel[int]::recv : (Channel[int]) -> Option[int])((buffered/2 : Channel[int])) {
+        Option::Some(value/4: int) => (value/4 : int),
+        Option::None => -1,
+    });
+    (println : (string) -> unit)(match (Channel[int]::recv : (Channel[int]) -> Option[int])((buffered/2 : Channel[int])) {
+        Option::Some(_ : int) => "open",
+        Option::None => "closed",
+    });
+    let unbuffered/5: Channel[string] = (make_string_channel : () -> Channel[string])();
+    (println : (string) -> unit)(match (roundtrip : (Channel[string], string) -> Option[string])((unbuffered/5 : Channel[string]), "ready") {
+        Option::Some(value/6: string) => (value/6 : string),
+        Option::None => "closed",
+    });
+    (Channel[string]::close : (Channel[string]) -> unit)((unbuffered/5 : Channel[string]));
+}

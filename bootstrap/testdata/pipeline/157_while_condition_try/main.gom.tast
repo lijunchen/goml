@@ -1,0 +1,65 @@
+fn step_some(i/0: int32) -> Option[bool] {
+    if (i/0 : int32) < 3 {
+        {
+            Option::Some(true)
+        }
+    } else {
+        {
+            Option::Some(false)
+        }
+    }
+}
+
+fn step_none(i/1: int32) -> Option[bool] {
+    if (i/1 : int32) < 2 {
+        {
+            Option::Some(true)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn run_some() -> Option[int32] {
+    let i/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let total/3: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while match (step_some : (int32) -> Option[bool])((Ref[int32]::get : (Ref[int32]) -> int32)((i/2 : Ref[int32]))) {
+        Option::Some(try_value/31: bool) => (try_value/31 : bool),
+        Option::None => return Option::None,
+    } {
+        {
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((total/3 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((total/3 : Ref[int32])) + (Ref[int32]::get : (Ref[int32]) -> int32)((i/2 : Ref[int32])));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/2 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/2 : Ref[int32])) + 1);
+        }
+    };
+    Option::Some((Ref[int32]::get : (Ref[int32]) -> int32)((total/3 : Ref[int32])))
+}
+
+fn run_none() -> Option[int32] {
+    let i/4: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let total/5: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while match (step_none : (int32) -> Option[bool])((Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32]))) {
+        Option::Some(try_value/67: bool) => (try_value/67 : bool),
+        Option::None => return Option::None,
+    } {
+        {
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((total/5 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((total/5 : Ref[int32])) + (Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32])));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/4 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) + 1);
+        }
+    };
+    Option::Some((Ref[int32]::get : (Ref[int32]) -> int32)((total/5 : Ref[int32])))
+}
+
+fn show(x/6: Option[int32]) -> string {
+    match (x/6 : Option[int32]) {
+        Option::Some(v/7: int32) => "some=" + (int32::to_string : (int32) -> string)((v/7 : int32)),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((run_some : () -> Option[int32])()));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((run_none : () -> Option[int32])()));
+}

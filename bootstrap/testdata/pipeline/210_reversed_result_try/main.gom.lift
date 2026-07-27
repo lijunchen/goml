@@ -1,0 +1,56 @@
+fn parse(flag/0: bool) -> Result__int32__string {
+  if flag/0 {
+      Result__int32__string::Ok(41)
+  } else {
+      Result__int32__string::Err("bad")
+  }
+}
+
+fn compute(flag/1: bool) -> Result__int32__string {
+  let value/2 = let mtmp64 = parse(flag/1) in
+  match mtmp64 {
+    Result__int32__string::Err(x65) => {
+      let x65 = Result__int32__string::Err._0(mtmp64) in
+      let try_residual/12 = x65 in
+      return Result__int32__string::Err(try_residual/12)
+    },
+    Result__int32__string::Ok(x66) => {
+      let x66 = Result__int32__string::Ok._0(mtmp64) in
+      let try_value/12 = x66 in
+      try_value/12
+    },
+  } in
+  Result__int32__string::Ok((value/2 + 1))
+}
+
+fn show(value/3: Result__int32__string) -> string {
+  match value/3 {
+    Result__int32__string::Err(x67) => {
+      let x67 = Result__int32__string::Err._0(value/3) in
+      let error/5 = x67 in
+      error/5
+    },
+    Result__int32__string::Ok(x68) => {
+      let x68 = Result__int32__string::Ok._0(value/3) in
+      let value/4 = x68 in
+      inherent#int32#int32#to_string(value/4)
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild69 = println__T_string(show(compute(true))) in
+  println__T_string(show(compute(false)))
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

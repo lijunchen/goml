@@ -1,0 +1,17 @@
+fn main() {
+    let m: HashMap[string, int32] = HashMap::new();
+    m.set("a", 1);
+    m.set("b", 2);
+    m.set("c", 3);
+    
+    let keys = ["a", "b", "c", "d"];
+    let i = Ref::new(0);
+    while i.get() < 4 {
+        let key = keys[i.get()];
+        match m.get(key) {
+            Option::Some(v) => println(key + "=" + v.to_string()),
+            Option::None => println(key + " not found"),
+        };
+        i.set(i.get() + 1);
+    };
+}

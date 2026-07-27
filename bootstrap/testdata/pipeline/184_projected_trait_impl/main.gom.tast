@@ -1,0 +1,23 @@
+impl Pick[S::Item] for S{
+  fn pick(self/0: S) -> S::Item {
+      (Source::get : (S) -> S::Item)((self/0 : S))
+  }
+}
+
+impl Source for Value{
+  fn get(self/1: Value) -> int32 {
+      (self/1 : Value).value
+  }
+}
+
+fn copy(source/2: S) -> S::Item {
+    let value/3: S::Item = (Pick[S::Item]::pick : (S) -> S::Item)((source/2 : S));
+    let identity/5: (S::Item) -> S::Item = |item/4: S::Item| => (item/4 : S::Item);
+    (identity/5 : (S::Item) -> S::Item)((value/3 : S::Item))
+}
+
+fn main() -> unit {
+    let direct/6: int32 = (Pick[Value::Item]::pick : (Value) -> int32)(Value { value: 41 });
+    (println : (int32) -> unit)((direct/6 : int32));
+    (println : (int32) -> unit)((copy : (Value) -> int32)(Value { value: 42 }));
+}

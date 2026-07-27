@@ -1,0 +1,13 @@
+trait Default {
+    fn default() -> Self;
+}
+
+struct MyVal { n: int32 }
+impl Default for MyVal {
+    fn default() -> MyVal { MyVal { n: 0 } }
+}
+
+fn main() {
+    let v: MyVal = Default::default();
+    println(v.n.to_string());
+}

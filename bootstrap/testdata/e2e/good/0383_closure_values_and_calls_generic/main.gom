@@ -1,0 +1,6 @@
+fn apply[T](f: (T) -> T, x: T) -> T { f(x) }
+
+fn main() {
+    let transform: ((int32) -> int32, int32) -> int32 = |f, x| f(x) + f(x);
+    println(transform(|x| x * 3, 5).to_string());
+}

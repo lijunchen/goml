@@ -1,0 +1,20 @@
+trait Named {
+    fn name(self: Self) -> string;
+}
+
+struct Dog { breed: string }
+struct Cat { color: string }
+
+impl Named for Dog {
+    fn name(self: Dog) -> string { "Dog:" + self.breed }
+}
+impl Named for Cat {
+    fn name(self: Cat) -> string { "Cat:" + self.color }
+}
+
+fn main() {
+    let animals: [dyn Named; 3] = [Dog { breed: "Lab" }, Cat { color: "Black" }, Dog { breed: "Pug" }];
+    println(Named::name(animals[0]));
+    println(Named::name(animals[1]));
+    println(Named::name(animals[2]));
+}

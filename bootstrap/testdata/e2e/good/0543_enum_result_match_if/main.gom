@@ -1,0 +1,25 @@
+enum Result {
+    Ok(string),
+    Err(string),
+}
+
+fn try_parse(s: string) -> Result {
+    if s == "ok" {
+        Result::Ok("parsed successfully")
+    } else {
+        Result::Err("parse failed: " + s)
+    }
+}
+
+fn main() {
+    let r1 = try_parse("ok");
+    let r2 = try_parse("bad");
+    match r1 {
+        Result::Ok(msg) => println("OK: " + msg),
+        Result::Err(msg) => println("ERR: " + msg),
+    };
+    match r2 {
+        Result::Ok(msg) => println("OK: " + msg),
+        Result::Err(msg) => println("ERR: " + msg),
+    };
+}

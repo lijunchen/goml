@@ -1,0 +1,11 @@
+fn main() {
+    let fns: [(int32) -> int32; 3] = [|x| x + 1, |x| x * 2, |x| x - 3];
+    let result = Ref::new(10);
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        let f = fns[i.get()];
+        result.set(f(result.get()));
+        i.set(i.get() + 1);
+    };
+    println(result.get().to_string());
+}

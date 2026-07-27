@@ -1,0 +1,15 @@
+fn make_fn() -> () -> int32 {
+    || 42
+}
+
+fn make_adder(n: int32) -> (int32) -> int32 {
+    |x| x + n
+}
+
+fn main() {
+    let a: int32 = (make_fn())();
+    println(a);
+    
+    let b = (make_adder(5))(10);
+    println(b);
+}

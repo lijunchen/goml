@@ -1,0 +1,40 @@
+fn prepend_with(make/0: (int32, List__int32) -> List__int32, value/1: int32, values/2: List__int32) -> List__int32 {
+  make/0(value/1, values/2)
+}
+
+fn sum(values/3: List__int32) -> int32 {
+  match values/3 {
+    List__int32::Nil => {
+      0
+    },
+    List__int32::Cons(x64, x65) => {
+      let x64 = List__int32::Cons._0(values/3) in
+      let x65 = List__int32::Cons._1(values/3) in
+      let rest/5 = x65 in
+      let value/4 = x64 in
+      (value/4 + sum(rest/5))
+    },
+  }
+}
+
+fn main() -> unit {
+  let cons/6 = closure_env_cons_0 {} in
+  let values/7 = prepend_with(cons/6, 1, prepend_with(cons/6, 2, List__int32::Nil)) in
+  println__T_string(inherent#int32#int32#to_string(sum(values/7)))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn inherent#closure_env_cons_0#closure_env_cons_0#apply(env66: closure_env_cons_0, ctor_arg_0: int32, ctor_arg_1: List__int32) -> List__int32 {
+  List__int32::Cons(ctor_arg_0, ctor_arg_1)
+}

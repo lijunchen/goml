@@ -1,0 +1,20 @@
+enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom(int32, int32, int32),
+}
+
+fn color_value(c: Color) -> int32 {
+    match c {
+        Color::Red => 255,
+        Color::Green => 512,
+        Color::Blue => 1024,
+        Color::Custom(r, g, b) => r * 65536 + g * 256 + b,
+    }
+}
+
+fn main() {
+    println(color_value(Color::Red).to_string());
+    println(color_value(Color::Custom(128, 64, 32)).to_string());
+}

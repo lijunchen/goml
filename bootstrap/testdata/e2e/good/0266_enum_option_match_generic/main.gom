@@ -1,0 +1,19 @@
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn maybe_double(x: Option[uint8]) -> Option[uint8] {
+    match x {
+        Option::Some(v) => Option::Some(v + v),
+        Option::None => Option::None,
+    }
+}
+
+fn main() {
+    let r = maybe_double(Option::Some(21));
+    match r {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("none"),
+    };
+}

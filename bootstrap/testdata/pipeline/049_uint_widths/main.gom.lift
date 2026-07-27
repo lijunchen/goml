@@ -1,0 +1,45 @@
+fn main() -> unit {
+  let start8/0 = 200 in
+  let add8/1 = 55 in
+  let sum8/2 = (start8/0 + add8/1) in
+  let neg8/3 = (-start8/0) in
+  let start16/4 = 50000 in
+  let add16/5 = 12000 in
+  let sum16/6 = (start16/4 + add16/5) in
+  let diff16/7 = (sum16/6 - start16/4) in
+  let start32/8 = 3000000000 in
+  let add32/9 = 123456789 in
+  let sum32/10 = (start32/8 + add32/9) in
+  let neg32/11 = (-add32/9) in
+  let start64/12 = 6000000000 in
+  let add64/13 = 4000000000 in
+  let sum64/14 = (start64/12 + add64/13) in
+  let diff64/15 = (sum64/14 - add64/13) in
+  let message/16 = ((((((((trait_impl#ToString#uint8#to_string(sum8/2) + ", ") + trait_impl#ToString#uint8#to_string(neg8/3)) + "; ") + trait_impl#ToString#uint16#to_string(diff16/7)) + "; ") + trait_impl#ToString#uint32#to_string(neg32/11)) + "; ") + trait_impl#ToString#uint64#to_string(diff64/15)) in
+  let _wild64 = println__T_string(message/16) in
+  ()
+}
+
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/45)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/46: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/46)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/47)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/48)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

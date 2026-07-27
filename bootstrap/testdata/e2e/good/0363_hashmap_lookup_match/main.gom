@@ -1,0 +1,23 @@
+fn main() {
+    let m: HashMap[string, int32] = HashMap::new();
+    m.set("a", 1);
+    m.set("b", 2);
+    m.set("c", 3);
+    
+    match m.get("b") {
+        Option::Some(v) => println("b = " + v.to_string()),
+        Option::None => println("not found"),
+    };
+    
+    match m.get("d") {
+        Option::Some(v) => println("d = " + v.to_string()),
+        Option::None => println("not found"),
+    };
+    
+    println("len = " + m.len().to_string());
+    println("contains b = " + m.contains("b").to_string());
+    println("contains d = " + m.contains("d").to_string());
+    
+    m.remove("b");
+    println("len after remove = " + m.len().to_string());
+}

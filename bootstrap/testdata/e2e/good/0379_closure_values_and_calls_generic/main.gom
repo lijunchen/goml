@@ -1,0 +1,11 @@
+fn make_adder[T](val: T, add_fn: (T, T) -> T) -> (T) -> T {
+    |x| add_fn(x, val)
+}
+
+fn main() {
+    let add5 = make_adder(5, |a, b| a + b);
+    println(add5(10).to_string());
+    
+    let append_bang = make_adder("!", |a, b| a + b);
+    println(append_bang("hello"));
+}

@@ -1,0 +1,18 @@
+fn first[A, B](a: A, b: B) -> A { a }
+fn second[A, B](a: A, b: B) -> B { b }
+
+fn pick[A, B, C](a: A, b: B, c: C, flag: int32) -> B {
+    if flag == 0 {
+        first(b, c)
+    } else {
+        second(a, b)
+    }
+}
+
+fn main() {
+    let r1 = pick("a", 42, true, 0);
+    println(r1.to_string());
+    
+    let r2 = pick("a", 42, true, 1);
+    println(r2.to_string());
+}

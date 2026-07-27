@@ -1,0 +1,143 @@
+fn read_left(ok/0: bool) -> Result__int32__string {
+  if ok/0 {
+      {
+        Result__int32__string::Ok(10)
+      }
+  } else {
+      {
+        Result__int32__string::Err("left failed")
+      }
+  }
+}
+
+fn read_right(ok/1: bool) -> Result__int32__string {
+  if ok/1 {
+      {
+        Result__int32__string::Ok(20)
+      }
+  } else {
+      {
+        Result__int32__string::Err("right failed")
+      }
+  }
+}
+
+fn choose(choice/2: Choice) -> Result__int32__string {
+  let value/6 = match choice/2 {
+    Choice::Left(x64) => {
+      {
+        let x64 = Choice::Left._0(choice/2) in
+        {
+          let ok/3 = x64 in
+          {
+            let mtmp67 = read_left(ok/3) in
+            match mtmp67 {
+              Result__int32__string::Ok(x68) => {
+                {
+                  let x68 = Result__int32__string::Ok._0(mtmp67) in
+                  {
+                    let try_value/21 = x68 in
+                    try_value/21
+                  }
+                }
+              },
+              Result__int32__string::Err(x69) => {
+                {
+                  let x69 = Result__int32__string::Err._0(mtmp67) in
+                  {
+                    let try_residual/21 = x69 in
+                    return Result__int32__string::Err(try_residual/21)
+                  }
+                }
+              },
+            }
+          }
+        }
+      }
+    },
+    Choice::Right(x65) => {
+      {
+        let x65 = Choice::Right._0(choice/2) in
+        {
+          let ok/4 = x65 in
+          ({
+            let mtmp70 = read_right(ok/4) in
+            match mtmp70 {
+              Result__int32__string::Ok(x71) => {
+                {
+                  let x71 = Result__int32__string::Ok._0(mtmp70) in
+                  {
+                    let try_value/25 = x71 in
+                    try_value/25
+                  }
+                }
+              },
+              Result__int32__string::Err(x72) => {
+                {
+                  let x72 = Result__int32__string::Err._0(mtmp70) in
+                  {
+                    let try_residual/25 = x72 in
+                    return Result__int32__string::Err(try_residual/25)
+                  }
+                }
+              },
+            }
+          } + 1)
+        }
+      }
+    },
+    Choice::Keep(x66) => {
+      {
+        let x66 = Choice::Keep._0(choice/2) in
+        {
+          let value/5 = x66 in
+          value/5
+        }
+      }
+    },
+  } in
+  Result__int32__string::Ok(value/6)
+}
+
+fn show(res/7: Result__int32__string) -> string {
+  match res/7 {
+    Result__int32__string::Ok(x73) => {
+      {
+        let x73 = Result__int32__string::Ok._0(res/7) in
+        {
+          let value/8 = x73 in
+          ("ok " + inherent#int32#int32#to_string(value/8))
+        }
+      }
+    },
+    Result__int32__string::Err(x74) => {
+      {
+        let x74 = Result__int32__string::Err._0(res/7) in
+        {
+          let err/9 = x74 in
+          ("err " + err/9)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild75 = println__T_string(show(choose(Choice::Left(true)))) in
+  let _wild76 = println__T_string(show(choose(Choice::Right(true)))) in
+  let _wild77 = println__T_string(show(choose(Choice::Keep(5)))) in
+  let _wild78 = println__T_string(show(choose(Choice::Left(false)))) in
+  let _wild79 = println__T_string(show(choose(Choice::Right(false)))) in
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

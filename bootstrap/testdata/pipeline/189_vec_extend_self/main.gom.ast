@@ -1,0 +1,26 @@
+package main;
+fn print_values(values: Vec[int32]) -> unit {
+    println(values.len());
+    for value in values {
+        println(value)
+    }
+}
+
+fn main() {
+    let values: Vec[int32] = Vec::new();
+    values.push(1);
+    values.push(2);
+    values.push(3);
+    values.extend(values);
+    print_values(values);
+    let aliased: Vec[int32] = Vec::new();
+    aliased.push(4);
+    aliased.push(5);
+    let same = aliased;
+    aliased.extend(same);
+    print_values(aliased);
+    let empty: Vec[int32] = Vec::new();
+    empty.extend(empty);
+    print_values(empty)
+}
+

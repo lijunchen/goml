@@ -1,0 +1,16 @@
+fn make_fn(flag: bool) -> (int32) -> int32 {
+    let offset = 100;
+    let scale = 3;
+    if flag {
+        |x| x + offset
+    } else {
+        |x| x * scale
+    }
+}
+
+fn main() {
+    let f1 = make_fn(true);
+    let f2 = make_fn(false);
+    println(f1(5).to_string());
+    println(f2(5).to_string());
+}

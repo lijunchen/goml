@@ -1,0 +1,37 @@
+enum Expr {
+    Num(int32),
+    Add(Option[Expr], Option[Expr]),
+    Neg(Option[Expr]),
+}
+
+fn eval(e: Expr) -> int32 {
+    match e {
+        Expr::Num(n) => n,
+        Expr::Add(a, b) => {
+            let left = match a {
+                Option::Some(x) => eval(x),
+                Option::None => 0,
+            };
+            let right = match b {
+                Option::Some(x) => eval(x),
+                Option::None => 0,
+            };
+            left + right
+        },
+        Expr::Neg(inner) => {
+            let val = match inner {
+                Option::Some(x) => eval(x),
+                Option::None => 0,
+            };
+            0 - val
+        },
+    }
+}
+
+fn main() {
+    let e = Expr::Add(
+        Option::Some(Expr::Num(3)),
+        Option::Some(Expr::Neg(Option::Some(Expr::Num(2))))
+    );
+    println(eval(e).to_string());
+}

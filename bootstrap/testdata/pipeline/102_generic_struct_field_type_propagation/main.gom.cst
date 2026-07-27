@@ -1,0 +1,154 @@
+FILE@0..203
+  STRUCT@0..52
+    StructKeyword@0..6 "struct"
+    Whitespace@6..7 " "
+    Ident@7..11 "Pair"
+    GENERIC_LIST@11..18
+      LBracket@11..12 "["
+      GENERIC@12..13
+        Ident@12..13 "A"
+      Comma@13..14 ","
+      Whitespace@14..15 " "
+      GENERIC@15..16
+        Ident@15..16 "B"
+      RBracket@16..17 "]"
+      Whitespace@17..18 " "
+    LBrace@18..19 "{"
+    Whitespace@19..24 "\n    "
+    STRUCT_FIELD_LIST@24..52
+      STRUCT_FIELD@24..32
+        Ident@24..29 "first"
+        Colon@29..30 ":"
+        Whitespace@30..31 " "
+        TYPE_TAPP@31..32
+          PATH@31..32
+            Ident@31..32 "A"
+      Comma@32..33 ","
+      Whitespace@33..38 "\n    "
+      STRUCT_FIELD@38..47
+        Ident@38..44 "second"
+        Colon@44..45 ":"
+        Whitespace@45..46 " "
+        TYPE_TAPP@46..47
+          PATH@46..47
+            Ident@46..47 "B"
+      Comma@47..48 ","
+      Whitespace@48..49 "\n"
+      RBrace@49..50 "}"
+      Whitespace@50..52 "\n\n"
+  FN@52..203
+    FnKeyword@52..54 "fn"
+    Whitespace@54..55 " "
+    Ident@55..59 "main"
+    PARAM_LIST@59..62
+      LParen@59..60 "("
+      RParen@60..61 ")"
+      Whitespace@61..62 " "
+    BLOCK@62..203
+      LBrace@62..63 "{"
+      Whitespace@63..68 "\n    "
+      STMT_LET@68..136
+        LetKeyword@68..71 "let"
+        Whitespace@71..72 " "
+        PATTERN_VARIABLE@72..73
+          Ident@72..73 "p"
+        Colon@73..74 ":"
+        Whitespace@74..75 " "
+        TYPE_TAPP@75..96
+          PATH@75..79
+            Ident@75..79 "Pair"
+          TYPE_PARAM_LIST@79..96
+            LBracket@79..80 "["
+            TYPE_UINT8@80..85
+              Uint8Keyword@80..85 "uint8"
+            Comma@85..86 ","
+            Whitespace@86..87 " "
+            TYPE_FLOAT32@87..94
+              Float32Keyword@87..94 "float32"
+            RBracket@94..95 "]"
+            Whitespace@95..96 " "
+        Eq@96..97 "="
+        Whitespace@97..98 " "
+        EXPR_STRUCT_LITERAL@98..130
+          PATH@98..103
+            Ident@98..102 "Pair"
+            Whitespace@102..103 " "
+          STRUCT_LITERAL_FIELD_LIST@103..130
+            LBrace@103..104 "{"
+            Whitespace@104..105 " "
+            STRUCT_LITERAL_FIELD@105..114
+              Ident@105..110 "first"
+              Colon@110..111 ":"
+              Whitespace@111..112 " "
+              EXPR_INT@112..114
+                Int@112..114 "10"
+            Comma@114..115 ","
+            Whitespace@115..116 " "
+            STRUCT_LITERAL_FIELD@116..129
+              Ident@116..122 "second"
+              Colon@122..123 ":"
+              Whitespace@123..124 " "
+              EXPR_FLOAT@124..129
+                Float@124..128 "3.14"
+                Whitespace@128..129 " "
+            RBrace@129..130 "}"
+        Semi@130..131 ";"
+        Whitespace@131..136 "\n    "
+      STMT_EXPR@136..170
+        EXPR_CALL@136..164
+          EXPR_IDENT@136..143
+            PATH@136..143
+              Ident@136..143 "println"
+          ARG_LIST@143..164
+            LParen@143..144 "("
+            ARG@144..163
+              EXPR_CALL@144..163
+                EXPR_BINARY@144..161
+                  EXPR_BINARY@144..151
+                    EXPR_IDENT@144..145
+                      PATH@144..145
+                        Ident@144..145 "p"
+                    Dot@145..146 "."
+                    EXPR_IDENT@146..151
+                      PATH@146..151
+                        Ident@146..151 "first"
+                  Dot@151..152 "."
+                  EXPR_IDENT@152..161
+                    PATH@152..161
+                      Ident@152..161 "to_string"
+                ARG_LIST@161..163
+                  LParen@161..162 "("
+                  RParen@162..163 ")"
+            RParen@163..164 ")"
+        Semi@164..165 ";"
+        Whitespace@165..170 "\n    "
+      STMT_EXPR@170..201
+        EXPR_CALL@170..199
+          EXPR_IDENT@170..177
+            PATH@170..177
+              Ident@170..177 "println"
+          ARG_LIST@177..199
+            LParen@177..178 "("
+            ARG@178..198
+              EXPR_CALL@178..198
+                EXPR_BINARY@178..196
+                  EXPR_BINARY@178..186
+                    EXPR_IDENT@178..179
+                      PATH@178..179
+                        Ident@178..179 "p"
+                    Dot@179..180 "."
+                    EXPR_IDENT@180..186
+                      PATH@180..186
+                        Ident@180..186 "second"
+                  Dot@186..187 "."
+                  EXPR_IDENT@187..196
+                    PATH@187..196
+                      Ident@187..196 "to_string"
+                ARG_LIST@196..198
+                  LParen@196..197 "("
+                  RParen@197..198 ")"
+            RParen@198..199 ")"
+        Semi@199..200 ";"
+        Whitespace@200..201 "\n"
+      RBrace@201..202 "}"
+      Whitespace@202..203 "\n"

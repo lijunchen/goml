@@ -1,0 +1,16 @@
+struct Handler[T] {
+    handler: (T) -> string,
+    default_val: T,
+}
+
+fn run_handler[T](h: Handler[T]) -> string {
+    (h.handler)(h.default_val)
+}
+
+fn main() {
+    let h1 = Handler { handler: |x: int32| "num:" + x.to_string(), default_val: 42 };
+    println(run_handler(h1));
+    
+    let h2 = Handler { handler: |s: string| "got:" + s, default_val: "hello" };
+    println(run_handler(h2));
+}

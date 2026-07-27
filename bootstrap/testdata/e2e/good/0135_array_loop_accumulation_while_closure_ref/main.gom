@@ -1,0 +1,19 @@
+fn fold[T, A](arr: [T; 5], init: A, f: (A, T) -> A) -> A {
+    let acc = Ref::new(init);
+    let i = Ref::new(0);
+    while i.get() < 5 {
+        acc.set(f(acc.get(), arr[i.get()]));
+        i.set(i.get() + 1);
+    };
+    acc.get()
+}
+
+fn main() {
+    let nums = [1, 2, 3, 4, 5];
+    let sum = fold(nums, 0, |acc, x| acc + x);
+    println(sum.to_string());
+    
+    let strs = ["a", "b", "c", "d", "e"];
+    let concat = fold(strs, "", |acc, s| acc + s);
+    println(concat);
+}

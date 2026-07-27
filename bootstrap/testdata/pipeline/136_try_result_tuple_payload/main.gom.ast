@@ -1,0 +1,30 @@
+package main;
+fn split_host_port(ok: bool) -> Result[(string, string), string] {
+    if ok {
+        {
+            Result::Ok(("example.com", "443"))
+        }
+    } else {
+        {
+            Result::Err("missing port")
+        }
+    }
+}
+
+fn render(ok: bool) -> Result[string, string] {
+    let (host, port) = split_host_port(ok)?;
+    Result::Ok(host + ":" + port)
+}
+
+fn show(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(render(true)));
+    println(show(render(false)));
+}
+

@@ -1,0 +1,15 @@
+trait Source {
+    type Item;
+}
+
+trait Accept[T] {
+    fn accept(self: Self) -> T;
+}
+
+fn copy[S: Source + Accept[S::Item]](source: S) -> S::Item {
+    let value: S::Item = Accept::[S::Item]::accept(source);
+    let identity = |item: S::Item| item;
+    identity(value)
+}
+
+fn main() -> unit { () }

@@ -1,0 +1,17 @@
+fn present(value: int32) -> int32 {
+    value + 1
+}
+
+enum Option[T] {
+    Empty,
+    Present(T),
+}
+
+fn main() -> unit {
+    let map: HashMap[int32, int32] = HashMap::new();
+    map.set(1, 2);
+    match map.get(1) {
+        Option::Present(value) => println(value),
+        Option::Empty => println(0),
+    }
+}

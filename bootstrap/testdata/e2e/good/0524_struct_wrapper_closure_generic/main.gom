@@ -1,0 +1,22 @@
+fn id[T](x: T) -> T { x }
+
+struct Wrapper[T] {
+    value: T,
+    transform: (T) -> T,
+}
+
+fn make_wrapper[T](v: T, f: (T) -> T) -> Wrapper[T] {
+    Wrapper { value: v, transform: f }
+}
+
+fn apply_wrapper[T](w: Wrapper[T]) -> T {
+    w.transform(w.value)
+}
+
+fn main() {
+    let w = make_wrapper(10, |x| x * 3);
+    println(apply_wrapper(w).to_string());
+    
+    let w2 = make_wrapper("hello", |s| s + "!");
+    println(apply_wrapper(w2));
+}

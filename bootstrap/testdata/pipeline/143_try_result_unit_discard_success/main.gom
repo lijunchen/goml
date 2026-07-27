@@ -1,0 +1,24 @@
+fn step(ok: bool) -> Result[unit, string] {
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err("step failed")
+    }
+}
+
+fn run(ok: bool) -> Result[unit, string] {
+    let _ = step(ok)?;
+    Result::Ok(())
+}
+
+fn show(res: Result[unit, string]) -> string {
+    match res {
+        Result::Ok(()) => "ok unit",
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(run(true)));
+    println(show(run(false)));
+}

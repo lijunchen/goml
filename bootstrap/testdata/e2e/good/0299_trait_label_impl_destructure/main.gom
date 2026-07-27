@@ -1,0 +1,15 @@
+trait Label {
+    fn label(self: Self) -> string;
+}
+
+impl Label for (int, int) {
+    fn label(self: (int, int)) -> string {
+        let (x, y) = self;
+        "(" + x.to_string() + "," + y.to_string() + ")"
+    }
+}
+
+fn main() {
+    let p = (3, 4);
+    println(Label::label(p));
+}

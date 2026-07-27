@@ -1,0 +1,9 @@
+fn twice[T](f: (T) -> T, x: T) -> T {
+    f(f(x))
+}
+
+fn main() {
+    let offset = 10;
+    let result = twice(|x| x + offset, 5);
+    println(result.to_string());
+}

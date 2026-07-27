@@ -1,0 +1,12 @@
+fn main() {
+    let f: (int32) -> int32 = |x| x * 2;
+    let g: (int32) -> int32 = |x| x + 1;
+    
+    let fns: [(int32) -> int32; 2] = [f, g];
+    let i = Ref::new(0);
+    while i.get() < 2 {
+        let func = fns[i.get()];
+        println(func(10).to_string());
+        i.set(i.get() + 1);
+    };
+}

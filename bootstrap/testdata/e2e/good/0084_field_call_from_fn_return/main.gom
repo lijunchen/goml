@@ -1,0 +1,12 @@
+struct Mapper {
+    f: (int32) -> int32,
+}
+
+fn make_mapper() -> Mapper {
+    Mapper { f: |x| x * 3 }
+}
+
+fn main() {
+    let m = make_mapper();
+    println(m.f(10));
+}

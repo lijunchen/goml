@@ -1,0 +1,24 @@
+struct Box[T] { value: T }
+
+trait Describe {
+    fn describe(self: Self) -> string;
+}
+
+impl Describe for Box[int32] {
+    fn describe(self: Box[int32]) -> string {
+        "Box(" + self.value.to_string() + ")"
+    }
+}
+
+impl Describe for Box[string] {
+    fn describe(self: Box[string]) -> string {
+        "Box(\"" + self.value + "\")"
+    }
+}
+
+fn main() {
+    let b: Box[int32] = Box { value: 42 };
+    println(b.describe());
+    let s = Box { value: "hello" };
+    println(s.describe());
+}

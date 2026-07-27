@@ -1,0 +1,19 @@
+enum Tree[T] {
+    Leaf(T),
+    Node(Tree[T], Tree[T]),
+}
+
+fn sum_tree(t: Tree[int32]) -> int32 {
+    match t {
+        Tree::Leaf(v) => v,
+        Tree::Node(l, r) => sum_tree(l) + sum_tree(r),
+    }
+}
+
+fn main() {
+    let t = Tree::Node(
+        Tree::Node(Tree::Leaf(1), Tree::Leaf(2)),
+        Tree::Leaf(3)
+    );
+    println(sum_tree(t).to_string());
+}

@@ -1,0 +1,21 @@
+enum Either[L, R] {
+    Left(L),
+    Right(R),
+}
+
+fn main() {
+    let x: Either[int32, string] = Either::Left(42);
+    let y: Either[int32, string] = Either::Right("hello");
+    
+    let result = match x {
+        Either::Left(v) => v.to_string(),
+        Either::Right(s) => s,
+    };
+    println(result);
+    
+    let result2 = match y {
+        Either::Left(v) => v.to_string(),
+        Either::Right(s) => s,
+    };
+    println(result2);
+}

@@ -1,0 +1,49 @@
+package main
+file main.gom
+  struct Numbers {
+        values: Vec[int32],
+        conversions: Ref[int32],
+    }
+    
+    impl IntoIterator for Numbers {
+      type Item = int32;
+      type IntoIter = FnIterator[int32];
+      fn into_iter(local/1/0: Numbers) -> FnIterator[int32] {
+          self/0.conversions.set(self/0.conversions.get() + 1);
+          self/0.values.iter()
+      }
+    }
+    
+    fn make_numbers(local/1/1: Ref[int32], local/1/2: Ref[int32]) -> Numbers {
+        builds/1.set(builds/1.get() + 1);
+        let local/1/3: Vec[int32] = Vec::new();
+        values/3.push(1);
+        values/3.push(2);
+        values/3.push(3);
+        Numbers {
+            values: values/3,
+            conversions: conversions/2
+        }
+    }
+    
+    fn sum(local/1/4: S) -> int32 {
+        let local/1/5 = Ref::new(0);
+        for local/1/6 in source/4 {
+            total/5.set(total/5.get() + value/6);
+        };
+        total/5.get()
+    }
+    
+    fn main() -> unit {
+        let local/1/7 = Ref::new(0);
+        let local/1/8 = Ref::new(0);
+        println(def/1/3(def/1/2(builds/7, conversions/8)));
+        println(builds/7.get());
+        println(conversions/8.get());
+        let local/1/9: Vec[int32] = Vec::new();
+        values/9.push(10);
+        values/9.push(20);
+        values/9.push(30);
+        println(def/1/3(values/9));
+        println(def/1/3(values/9.slice(1, 3)));
+    }

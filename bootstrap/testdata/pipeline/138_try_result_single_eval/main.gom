@@ -1,0 +1,31 @@
+fn bump(counter: Ref[int32], ok: bool) -> Result[int32, string] {
+    counter.set(counter.get() + 1);
+    if ok {
+        Result::Ok(counter.get())
+    } else {
+        Result::Err("bump failed")
+    }
+}
+
+fn use_try(counter: Ref[int32], ok: bool) -> Result[int32, string] {
+    let value = bump(counter, ok)?;
+    Result::Ok(value + counter.get())
+}
+
+fn show(res: Result[int32, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value.to_string(),
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn run(ok: bool) -> string {
+    let counter = Ref::new(0);
+    let result = use_try(counter, ok);
+    show(result) + " count=" + counter.get().to_string()
+}
+
+fn main() -> unit {
+    println(run(true));
+    println(run(false));
+}

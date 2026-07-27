@@ -1,0 +1,15 @@
+fn repeat(n: int32, f: () -> unit) {
+    let i = Ref::new(0);
+    while i.get() < n {
+        f();
+        i.set(i.get() + 1);
+    };
+}
+
+fn main() {
+    let count = Ref::new(0);
+    repeat(5, || {
+        count.set(count.get() + 1);
+    });
+    println(count.get().to_string());
+}

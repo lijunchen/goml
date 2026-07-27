@@ -1,0 +1,24 @@
+struct Inner {
+    f: (int32) -> int32,
+}
+
+struct Outer {
+    inner: Inner,
+    g: (int32) -> int32,
+}
+
+fn make_outer() -> Outer {
+    Outer {
+        inner: Inner { f: |x| x + 1 },
+        g: |x| x * 2,
+    }
+}
+
+fn main() {
+    let o = make_outer();
+    println(o.g(5).to_string());
+    println(o.inner.f(5).to_string());
+    
+    let combined = o.g(o.inner.f(10));
+    println(combined.to_string());
+}

@@ -1,0 +1,13 @@
+struct Wrapper[T] { value: T }
+
+fn wrap[T](x: T) -> Wrapper[T] { Wrapper { value: x } }
+fn unwrap[T](w: Wrapper[T]) -> T { w.value }
+
+fn main() {
+    let w = wrap(wrap(wrap(42)));
+    let inner = unwrap(unwrap(unwrap(w)));
+    println(inner.to_string());
+    
+    let w2: Wrapper[Wrapper[string]] = wrap(wrap("deep"));
+    println(unwrap(unwrap(w2)));
+}

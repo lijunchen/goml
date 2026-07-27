@@ -1,0 +1,19 @@
+struct Widget {
+    name: string,
+    on_click: (string) -> string,
+}
+
+impl Widget {
+    fn get_name(self: Widget) -> string {
+        self.name
+    }
+}
+
+fn main() {
+    let w = Widget { 
+        name: "button",
+        on_click: |msg| "Clicked: " + msg,
+    };
+    println(w.get_name());
+    println(w.on_click("hello"));
+}

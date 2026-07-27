@@ -1,0 +1,22 @@
+struct Pipeline {
+    step1: (int32) -> int32,
+    step2: (int32) -> int32,
+    step3: (int32) -> string,
+}
+
+fn run_pipeline(p: Pipeline, x: int32) -> string {
+    p.step3(p.step2(p.step1(x)))
+}
+
+fn make_pipeline() -> Pipeline {
+    Pipeline {
+        step1: |x| x + 10,
+        step2: |x| x * 2,
+        step3: |x| "result=" + x.to_string(),
+    }
+}
+
+fn main() {
+    let p = make_pipeline();
+    println(run_pipeline(p, 5));
+}

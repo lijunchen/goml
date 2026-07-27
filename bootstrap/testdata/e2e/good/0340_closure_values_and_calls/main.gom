@@ -1,0 +1,13 @@
+fn main() {
+    let a = 1;
+    let f = |b| {
+        let c = a + b;
+        let g = |d| {
+            let e = c + d;
+            let h = |f_param| a + c + e + f_param;
+            h(100)
+        };
+        g(10)
+    };
+    println(f(5).to_string());
+}

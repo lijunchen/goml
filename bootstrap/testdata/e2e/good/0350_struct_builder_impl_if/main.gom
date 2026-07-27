@@ -1,0 +1,33 @@
+struct Builder {
+    name: string,
+    value: int32,
+    flag: bool,
+}
+
+impl Builder {
+    fn new() -> Builder {
+        Builder { name: "", value: 0, flag: false }
+    }
+    fn with_name(self: Builder, n: string) -> Builder {
+        Builder { name: n, value: self.value, flag: self.flag }
+    }
+    fn with_value(self: Builder, v: int32) -> Builder {
+        Builder { name: self.name, value: v, flag: self.flag }
+    }
+    fn with_flag(self: Builder) -> Builder {
+        Builder { name: self.name, value: self.value, flag: true }
+    }
+    fn build(self: Builder) -> string {
+        let flag_str = if self.flag { " [flagged]" } else { "" };
+        self.name + "=" + self.value.to_string() + flag_str
+    }
+}
+
+fn main() {
+    let result = Builder::new()
+        .with_name("test")
+        .with_value(42)
+        .with_flag()
+        .build();
+    println(result);
+}

@@ -1,0 +1,8 @@
+package worker;
+
+pub fn ready(value: int32) -> Channel[int32] {
+    let channel = Channel::new(1);
+    channel.send(value);
+    channel.close();
+    channel
+}

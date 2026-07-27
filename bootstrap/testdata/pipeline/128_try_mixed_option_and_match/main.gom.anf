@@ -1,0 +1,131 @@
+fn maybe_primary(flag/0: bool) -> Option__int32 {
+  join ret72(retv73: Option__int32) -> Option__int32 {
+    retv73
+  } in
+  join k74(jp75: Option__int32) -> Option__int32 {
+    jump ret72(jp75)
+  } in
+  if flag/0 {
+    let t76 = Option__int32::Some(4) in
+    jump k74(t76)
+  } else {
+    jump k74(Tag_0)
+  }
+}
+
+fn maybe_secondary(flag/1: bool) -> Option__int32 {
+  join ret77(retv78: Option__int32) -> Option__int32 {
+    retv78
+  } in
+  join k79(jp80: Option__int32) -> Option__int32 {
+    jump ret77(jp80)
+  } in
+  if flag/1 {
+    let t81 = Option__int32::Some(9) in
+    jump k79(t81)
+  } else {
+    jump k79(Tag_0)
+  }
+}
+
+fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
+  join ret82(retv83: Option__string) -> Option__string {
+    retv83
+  } in
+  let mtmp64 = maybe_primary(primary/2) in
+  join k84(jp85: int32) -> Option__string {
+    let value/4 = jp85 in
+    let mtmp66 = maybe_secondary(secondary/3) in
+    join k86(jp87: string) -> Option__string {
+      let label/6 = jp87 in
+      let t88 = inherent#int32#int32#to_string(value/4) in
+      let t89 = ("value=" + t88) in
+      let t90 = (t89 + ",") in
+      let t91 = (t90 + label/6) in
+      let t92 = Option__string::Some(t91) in
+      jump ret82(t92)
+    } in
+    match mtmp66 {
+      Tag_0 => {
+        jump k86("extra=none")
+      },
+      Tag_1 => {
+        let x67 = Option__int32::Some._0(mtmp66) in
+        let extra/5 = x67 in
+        let t93 = inherent#int32#int32#to_string(extra/5) in
+        let t94 = ("extra=" + t93) in
+        jump k86(t94)
+      },
+    }
+  } in
+  match mtmp64 {
+    Tag_0 => {
+      jump ret82(Tag_0)
+    },
+    Tag_1 => {
+      let x65 = Option__int32::Some._0(mtmp64) in
+      let try_value/18 = x65 in
+      jump k84(try_value/18)
+    },
+  }
+}
+
+fn show(opt/7: Option__string) -> string {
+  join ret95(retv96: string) -> string {
+    retv96
+  } in
+  join k97(jp98: string) -> string {
+    jump ret95(jp98)
+  } in
+  match opt/7 {
+    Tag_0 => {
+      jump k97("none")
+    },
+    Tag_1 => {
+      let x68 = Option__string::Some._0(opt/7) in
+      let value/8 = x68 in
+      let t99 = ("some=" + value/8) in
+      jump k97(t99)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret100() -> unit {
+    ()
+  } in
+  let t101 = mixed(true, true) in
+  let t102 = show(t101) in
+  let _wild69 = println__T_string(t102) in
+  let t103 = mixed(true, false) in
+  let t104 = show(t103) in
+  let _wild70 = println__T_string(t104) in
+  let t105 = mixed(false, true) in
+  let t106 = show(t105) in
+  let _wild71 = println__T_string(t106) in
+  jump ret100()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret107(retv108: string) -> string {
+    retv108
+  } in
+  let t109 = @runtime(core.int32_to_string)(self/6) in
+  jump ret107(t109)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret110() -> unit {
+    ()
+  } in
+  let t111 = trait_impl#ToString#string#to_string(value/1) in
+  let t112 = @runtime(core.string_println)(t111) in
+  jump ret110()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret113(retv114: string) -> string {
+    retv114
+  } in
+  jump ret113(self/38)
+}

@@ -1,0 +1,14 @@
+enum Flag {
+    On,
+    Off,
+}
+
+fn main() -> unit {
+    let value = Flag::On;
+    let _ = match value {
+        whole @ Flag::On | Flag::Off => match whole {
+            Flag::On => 1,
+            Flag::Off => 2,
+        },
+    };
+}

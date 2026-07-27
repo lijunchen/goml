@@ -1,0 +1,25 @@
+struct Processor {
+    process: (int32) -> int32,
+    name: string,
+}
+
+fn choose_processor(flag: bool) -> Processor {
+    if flag {
+        Processor { process: |x| x * 2, name: "double" }
+    } else {
+        Processor { process: |x| x + 10, name: "add10" }
+    }
+}
+
+fn main() {
+    let p = choose_processor(true);
+    let result1 = p.process(5);
+    println(result1.to_string());
+    
+    let q = choose_processor(false);
+    let result2 = q.process(5);
+    println(result2.to_string());
+    
+    let r = if true { choose_processor(true) } else { choose_processor(false) };
+    println(r.process(7).to_string());
+}

@@ -1,0 +1,13 @@
+struct Builder {
+    parts: string,
+}
+
+impl Builder {
+    fn new() -> Builder { Builder { parts: "" } }
+    fn add(self: Builder, s: string) -> Builder { Builder { parts: self.parts + s } }
+    fn finish(self: Builder) -> string { "[" + self.parts + "]" }
+}
+
+fn main() {
+    println(Builder::new().add("a").add("b").add("c").finish());
+}

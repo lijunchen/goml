@@ -1,0 +1,33 @@
+enum Tree[T] {
+    Leaf(T),
+    Branch(Option[Tree[T]], Option[Tree[T]]),
+}
+
+fn fold_tree[T, R](tree: Tree[T], leaf: (T) -> R, branch: (R, R) -> R, default: R) -> R {
+    match tree {
+        Tree::Leaf(v) => leaf(v),
+        Tree::Branch(left, right) => {
+            let l = match left {
+                Option::Some(t) => fold_tree(t, leaf, branch, default),
+                Option::None => default,
+            };
+            let r = match right {
+                Option::Some(t) => fold_tree(t, leaf, branch, default),
+                Option::None => default,
+            };
+            branch(l, r)
+        },
+    }
+}
+
+fn main() {
+    let tree: Tree[int32] = Tree::Branch(
+        Option::Some(Tree::Leaf(1)),
+        Option::Some(Tree::Branch(
+            Option::Some(Tree::Leaf(2)),
+            Option::Some(Tree::Leaf(3))
+        ))
+    );
+    let sum = fold_tree(tree, |x| x, |a, b| a + b, 0);
+    println(sum.to_string());
+}

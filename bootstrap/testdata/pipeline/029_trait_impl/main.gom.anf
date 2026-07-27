@@ -1,0 +1,83 @@
+fn trait_impl#Display#Point#show(self/0: Point) -> string {
+  join ret68(retv69: string) -> string {
+    retv69
+  } in
+  jump ret68("Point")
+}
+
+fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
+  join ret70(retv71: string) -> string {
+    retv71
+  } in
+  join k72(jp73: string) -> string {
+    jump ret70(jp73)
+  } in
+  match self/1 {
+    Tag_0 => {
+      let x64 = Maybe__int32::Just._0(self/1) in
+      let value/2 = x64 in
+      let t74 = inherent#int32#int32#to_string(value/2) in
+      let t75 = ("Just(" + t74) in
+      let t76 = (t75 + ")") in
+      jump k72(t76)
+    },
+    Tag_1 => {
+      jump k72("Nothing")
+    },
+  }
+}
+
+fn make_maybe(flag/3: bool) -> Maybe__int32 {
+  join ret77(retv78: Maybe__int32) -> Maybe__int32 {
+    retv78
+  } in
+  join k79(jp80: Maybe__int32) -> Maybe__int32 {
+    jump ret77(jp80)
+  } in
+  if flag/3 {
+    let t81 = Maybe__int32::Just(42) in
+    jump k79(t81)
+  } else {
+    jump k79(Tag_1)
+  }
+}
+
+fn main() -> unit {
+  join ret82() -> unit {
+    ()
+  } in
+  let point/4 = Point { x: 1, y: 2 } in
+  let some_number/5 = make_maybe(true) in
+  let none_number/6 = make_maybe(false) in
+  let t83 = trait_impl#Display#Point#show(point/4) in
+  let mtmp65 = println__T_string(t83) in
+  let t84 = trait_impl#Display#Maybe__int32#show(some_number/5) in
+  let mtmp66 = println__T_string(t84) in
+  let t85 = trait_impl#Display#Maybe__int32#show(none_number/6) in
+  let mtmp67 = println__T_string(t85) in
+  jump ret82()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret86(retv87: string) -> string {
+    retv87
+  } in
+  let t88 = @runtime(core.int32_to_string)(self/6) in
+  jump ret86(t88)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret89() -> unit {
+    ()
+  } in
+  let t90 = trait_impl#ToString#string#to_string(value/1) in
+  let t91 = @runtime(core.string_println)(t90) in
+  jump ret89()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret92(retv93: string) -> string {
+    retv93
+  } in
+  jump ret92(self/38)
+}

@@ -1,0 +1,17 @@
+struct Pair[A, B] { first: A, second: B }
+
+fn map_first[A, B, C](p: Pair[A, B], f: (A) -> C) -> Pair[C, B] {
+    Pair { first: f(p.first), second: p.second }
+}
+
+fn map_second[A, B, C](p: Pair[A, B], f: (B) -> C) -> Pair[A, C] {
+    Pair { first: p.first, second: f(p.second) }
+}
+
+fn main() {
+    let p = Pair { first: 10, second: "hello" };
+    let p2 = map_first(p, |x| x * 2);
+    let p3 = map_second(p2, |s| s + "!");
+    println(p3.first.to_string());
+    println(p3.second);
+}

@@ -1,0 +1,33 @@
+fn main() -> unit {
+  join ret65() -> unit {
+    ()
+  } in
+  let value/0 = 42 in
+  let text/1 = inherent#int32#int32#to_string(value/0) in
+  let mtmp64 = println__T_string(text/1) in
+  jump ret65()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret66(retv67: string) -> string {
+    retv67
+  } in
+  let t68 = @runtime(core.int32_to_string)(self/6) in
+  jump ret66(t68)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret69() -> unit {
+    ()
+  } in
+  let t70 = trait_impl#ToString#string#to_string(value/1) in
+  let t71 = @runtime(core.string_println)(t70) in
+  jump ret69()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret72(retv73: string) -> string {
+    retv73
+  } in
+  jump ret72(self/38)
+}

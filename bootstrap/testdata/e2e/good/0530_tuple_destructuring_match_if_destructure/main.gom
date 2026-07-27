@@ -1,0 +1,15 @@
+fn main() {
+    let x: int32 = if true { 1 } else { 2 };
+    println(x.to_string());
+    
+    let y: string = match x {
+        1 => "one",
+        2 => "two",
+        _ => "other",
+    };
+    println(y);
+    
+    let z: (int32, string) = (x, y);
+    let (a, b) = z;
+    println(a.to_string() + " " + b);
+}

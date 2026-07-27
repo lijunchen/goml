@@ -1,0 +1,10 @@
+fn main() {
+    let base = 10;
+    let make_adder = |n: int32| {
+        |x: int32| x + n + base
+    };
+    let add5 = make_adder(5);
+    let add3 = make_adder(3);
+    println(add5(1).to_string());
+    println(add3(1).to_string());
+}

@@ -1,0 +1,37 @@
+fn main() -> unit {
+  let p1/4 = inherent#Point#Point[U,V]#new__U_int32__V_string(10, "hello") in
+  let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
+  let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in
+  let x/7 = Point__string__int32.y(p3/6) in
+  let _wild64 = println__T_string(inherent#int32#int32#to_string(x/7)) in
+  let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
+  println__T_string(x2/8)
+}
+
+fn inherent#Point#Point[U,V]#new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {
+  Point__int32__string { x: x/0, y: y/1 }
+}
+
+fn inherent#Point#Point[U,V]#new__U_string__V_string(x/0: string, y/1: string) -> Point__string__string {
+  Point__string__string { x: x/0, y: y/1 }
+}
+
+fn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {
+  Point__string__int32 { x: Point__int32__string.y(self/2), y: Point__int32__string.x(self/2) }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
+  Point__string__string.x(self/3)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

@@ -1,0 +1,130 @@
+fn fetch(flag/0: bool) -> Option__int32 {
+  join ret71(retv72: Option__int32) -> Option__int32 {
+    retv72
+  } in
+  let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
+  join k73() -> Option__int32 {
+    let _wild65 = () in
+    let mtmp66 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
+    join k74(jp75: int32) -> Option__int32 {
+      let value/2 = jp75 in
+      let t76 = (value/2 + 1) in
+      let t77 = Option__int32::Some(t76) in
+      jump ret71(t77)
+    } in
+    match mtmp66 {
+      Tag_0 => {
+        jump ret71(Tag_0)
+      },
+      Tag_1 => {
+        let x67 = Option__int32::Some._0(mtmp66) in
+        let try_value/18 = x67 in
+        jump k74(try_value/18)
+      },
+    }
+  } in
+  if flag/0 {
+    let _wild64 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
+    jump k73()
+  } else {
+    jump k73()
+  }
+}
+
+fn show(opt/3: Option__int32) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  join k80(jp81: string) -> string {
+    jump ret78(jp81)
+  } in
+  match opt/3 {
+    Tag_0 => {
+      jump k80("none")
+    },
+    Tag_1 => {
+      let x68 = Option__int32::Some._0(opt/3) in
+      let value/4 = x68 in
+      let t82 = inherent#int32#int32#to_string(value/4) in
+      let t83 = ("some=" + t82) in
+      jump k80(t83)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret84() -> unit {
+    ()
+  } in
+  let t85 = fetch(true) in
+  let t86 = show(t85) in
+  let _wild69 = println__T_string(t86) in
+  let t87 = fetch(false) in
+  let t88 = show(t87) in
+  let _wild70 = println__T_string(t88) in
+  jump ret84()
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
+  join ret89(retv90: HashMap[string, int32]) -> HashMap[string, int32] {
+    retv90
+  } in
+  let t91 = @intrinsic(hashmap.new)() in
+  jump ret89(t91)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(self/200: HashMap[string, int32], key/201: string, value/202: int32) -> unit {
+  join ret92() -> unit {
+    ()
+  } in
+  let t93 = @intrinsic(hashmap.set)(self/200, key/201, value/202) in
+  jump ret92()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(self/198: HashMap[string, int32], key/199: string) -> Option__int32 {
+  join ret94(retv95: Option__int32) -> Option__int32 {
+    retv95
+  } in
+  let t96 = @intrinsic(hashmap.get)(self/198, key/199) in
+  jump ret94(t96)
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret97(retv98: string) -> string {
+    retv98
+  } in
+  let t99 = @runtime(core.int32_to_string)(self/6) in
+  jump ret97(t99)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret100() -> unit {
+    ()
+  } in
+  let t101 = trait_impl#ToString#string#to_string(value/1) in
+  let t102 = @runtime(core.string_println)(t101) in
+  jump ret100()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret103(retv104: string) -> string {
+    retv104
+  } in
+  jump ret103(self/38)
+}
+
+fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
+  join ret105(retv106: bool) -> bool {
+    retv106
+  } in
+  let t107 = @intrinsic(eq.primitive)(self/55, other/56) in
+  jump ret105(t107)
+}
+
+fn trait_impl#Hash#string#hash(self/83: string) -> uint64 {
+  join ret108(retv109: uint64) -> uint64 {
+    retv109
+  } in
+  let t110 = @runtime(core.string_hash)(self/83) in
+  jump ret108(t110)
+}

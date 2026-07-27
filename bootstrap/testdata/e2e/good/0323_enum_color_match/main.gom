@@ -1,0 +1,29 @@
+enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom(int32, int32, int32),
+}
+
+struct Pixel {
+    x: int32,
+    y: int32,
+    color: Color,
+}
+
+fn describe_pixel(p: Pixel) -> string {
+    let color_str = match p.color {
+        Color::Red => "red",
+        Color::Green => "green",
+        Color::Blue => "blue",
+        Color::Custom(r, g, b) => "custom(" + r.to_string() + "," + g.to_string() + "," + b.to_string() + ")",
+    };
+    "(" + p.x.to_string() + "," + p.y.to_string() + ")=" + color_str
+}
+
+fn main() {
+    let p1 = Pixel { x: 0, y: 0, color: Color::Red };
+    let p2 = Pixel { x: 10, y: 20, color: Color::Custom(128, 64, 255) };
+    println(describe_pixel(p1));
+    println(describe_pixel(p2));
+}

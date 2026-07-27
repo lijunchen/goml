@@ -1,0 +1,19 @@
+struct Mapper[A, B] {
+    f: (A) -> B,
+    name: string,
+}
+
+fn make_int_to_string_mapper() -> Mapper[int32, string] {
+    Mapper { f: |x| x.to_string(), name: "int_to_str" }
+}
+
+fn run_mapper[A, B](m: Mapper[A, B], input: A) -> B {
+    m.f(input)
+}
+
+fn main() {
+    let m = make_int_to_string_mapper();
+    let result = run_mapper(m, 42);
+    println(result);
+    println(m.name);
+}

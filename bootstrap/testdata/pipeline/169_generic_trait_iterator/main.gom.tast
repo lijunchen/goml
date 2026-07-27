@@ -1,0 +1,67 @@
+impl Convert[int32] for Token{
+  fn convert(self/0: Token) -> int32 {
+      7
+  }
+}
+
+impl Convert[string] for Token{
+  fn convert(self/1: Token) -> string {
+      "seven"
+  }
+}
+
+fn convert_to(value/2: V) -> T {
+    (Convert[T]::convert : (V) -> T)((value/2 : V))
+}
+
+impl Marker[T] for Any{
+  fn marker(self/3: Any) -> string {
+      "marked"
+  }
+}
+
+impl Counter{
+  fn new(start/4: int32, end/5: int32) -> Counter {
+      Counter { current: (Ref[int32]::new : (int32) -> Ref[int32])((start/4 : int32)), end: (end/5 : int32) }
+  }
+}
+
+impl Iterator for Counter{
+  fn next(self/6: Counter) -> Option[int32] {
+      let current/7: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((self/6 : Counter).current);
+      if (current/7 : int32) < (self/6 : Counter).end {
+          {
+              (Ref[int32]::set : (Ref[int32], int32) -> unit)((self/6 : Counter).current, (current/7 : int32) + 1);
+              Option::Some((current/7 : int32))
+          }
+      } else {
+          {
+              Option::None
+          }
+      }
+  }
+}
+
+fn main() -> unit {
+    (println : (int32) -> unit)((Convert[int32]::convert : (Token) -> int32)(Token {}));
+    (println : (string) -> unit)((Convert[string]::convert : (Token) -> string)(Token {}));
+    let converted/8: int32 = (convert_to : (Token) -> int32)(Token {});
+    (println : (int32) -> unit)((converted/8 : int32));
+    (println : (string) -> unit)((Marker[int32]::marker : (Any) -> string)(Any {}));
+    (println : (string) -> unit)((Marker[string]::marker : (Any) -> string)(Any {}));
+    (println : (string) -> unit)((Marker[Vec[int32]]::marker : (Any) -> string)(Any {}));
+    let mapped/10: MapIterator[int32, int32, Counter] = (iterator_map : (Counter, (int32) -> int32) -> MapIterator[int32, int32, Counter])((Counter::new : (int32, int32) -> Counter)(0, 8), |value/9: int32| => (value/9 : int32) * 2);
+    let filtered/12: FilterIterator[int32, MapIterator[int32, int32, Counter]] = (iterator_filter : (MapIterator[int32, int32, Counter], (int32) -> bool) -> FilterIterator[int32, MapIterator[int32, int32, Counter]])((mapped/10 : MapIterator[int32, int32, Counter]), |value/11: int32| => (value/11 : int32) > 4);
+    let limited/13: TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]] = (iterator_take : (FilterIterator[int32, MapIterator[int32, int32, Counter]], int) -> TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]])((filtered/12 : FilterIterator[int32, MapIterator[int32, int32, Counter]]), 3);
+    for value/14: int32 in (limited/13 : TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]]) {
+        (println : (int32) -> unit)((value/14 : int32));
+    };
+    let sum/17: int = (iterator_fold : (FnIterator[int], int, (int, int) -> int) -> int)((range : (int, int) -> FnIterator[int])(1, 5), 0, |total/15: int, value/16: int| => {
+        (total/15 : int) + (value/16 : int)
+    });
+    (println : (int) -> unit)((sum/17 : int));
+    let texts/19: Vec[string] = (iterator_collect : (MapIterator[int, string, FnIterator[int]]) -> Vec[string])((iterator_map : (FnIterator[int], (int) -> string) -> MapIterator[int, string, FnIterator[int]])((range : (int, int) -> FnIterator[int])(1, 4), |value/18: int| => "v" + (int::to_string : (int) -> string)((value/18 : int))));
+    for text/20: string in (texts/19 : Vec[string]) {
+        (println : (string) -> unit)((text/20 : string));
+    };
+}

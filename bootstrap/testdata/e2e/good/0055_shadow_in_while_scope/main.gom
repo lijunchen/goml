@@ -1,0 +1,9 @@
+fn main() {
+    let x = 10;
+    let i = Ref::new(0);
+    while i.get() < 1 {
+        let x = x + 1;
+        i.set(i.get() + 1);
+    };
+    println(x.to_string());
+}

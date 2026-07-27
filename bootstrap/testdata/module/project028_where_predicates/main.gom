@@ -1,0 +1,14 @@
+package main;
+
+use where_predicates::api;
+
+fn main() -> unit {
+    let values: Vec[int32] = vec_new();
+    values.push(1);
+    values.push(2);
+    println(api::render_vec(values));
+    let value: string = api::same("same");
+    println(value);
+    let selected: int32 = 7;
+    println(api::select(api::wrap(selected)));
+}

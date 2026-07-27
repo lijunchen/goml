@@ -1,0 +1,16 @@
+struct Pair[A, B] {
+    fst: A,
+    snd: B,
+}
+
+fn make_pair[A, B](a: A, b: B) -> Pair[A, B] {
+    Pair { fst: a, snd: b }
+}
+
+fn main() {
+    let p = make_pair(make_pair(1, "hello"), make_pair(true, 3.14));
+    println(p.fst.fst.to_string());
+    println(p.fst.snd);
+    println(p.snd.fst.to_string());
+    println(p.snd.snd.to_string());
+}

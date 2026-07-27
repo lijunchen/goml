@@ -1,0 +1,23 @@
+enum Shape {
+    Circle(int32),
+    Rect(int32, int32),
+}
+
+struct Canvas {
+    shape: Shape,
+    color: string,
+}
+
+fn area(c: Canvas) -> int32 {
+    match c.shape {
+        Shape::Circle(r) => r * r * 3,
+        Shape::Rect(w, h) => w * h,
+    }
+}
+
+fn main() {
+    let c1 = Canvas { shape: Shape::Circle(5), color: "red" };
+    let c2 = Canvas { shape: Shape::Rect(4, 6), color: "blue" };
+    println(area(c1).to_string());
+    println(area(c2).to_string());
+}

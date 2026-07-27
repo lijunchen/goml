@@ -1,0 +1,50 @@
+fn trait_impl#Render#Vec[int32]#render(self/0: Vec[int32]) -> string {
+  ("items=" + inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_int32(self/0)))
+}
+
+fn main() -> unit {
+  let values/5 = @intrinsic(vec.new)() in
+  let _wild64 = inherent#Vec#Vec[T]#push__T_int32(values/5, 1) in
+  let _wild65 = inherent#Vec#Vec[T]#push__T_int32(values/5, 2) in
+  let _wild66 = println__T_string(render_all__T_int32(values/5)) in
+  let text/6 = same__T_string__U_string("equal") in
+  let _wild67 = println__T_string(text/6) in
+  let selected/7 = Wrap__int32 { value: 7 } in
+  let _wild68 = println__T_string(require__T_Wrap[int32](selected/7)) in
+}
+
+fn inherent#Vec#Vec[T]#len__T_int32(self/139: Vec[int32]) -> int {
+  @intrinsic(vec.len)(self/139)
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  @runtime(core.int_to_string)(self/5)
+}
+
+fn inherent#Vec#Vec[T]#push__T_int32(self/128: Vec[int32], elem/129: int32) -> unit {
+  @intrinsic(vec.push)(self/128, elem/129)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn render_all__T_int32(values/2: Vec[int32]) -> string {
+  trait_impl#Render#Vec[int32]#render(values/2)
+}
+
+fn same__T_string__U_string(value/3: string) -> string {
+  value/3
+}
+
+fn require__T_Wrap[int32](value/4: Wrap__int32) -> string {
+  trait_impl#Selected#Wrap__int32#selected(value/4)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#Selected#Wrap__int32#selected(self/1: Wrap__int32) -> string {
+  "selected"
+}

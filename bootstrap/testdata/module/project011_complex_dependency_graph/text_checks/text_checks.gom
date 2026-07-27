@@ -1,0 +1,43 @@
+package text_checks;
+
+use std::bytes;
+use std::text;
+
+fn check(ok: Ref[bool], condition: bool) -> unit {
+    if condition {
+        ()
+    } else {
+        ok.set(false)
+    }
+}
+
+pub fn verify() -> bool {
+    let ok = Ref::new(true);
+    let source = "GoML 你好 😀";
+    let data = bytes::Bytes::from_string(source);
+    check(ok, data.len() == source.byte_len());
+    check(ok, data.capacity() >= data.len());
+    match data.to_string() {
+        Result::Ok(value) => check(ok, value == source),
+        Result::Err(_) => check(ok, false),
+    };
+
+    let invalid = bytes::Bytes::new();
+    invalid.push(255);
+    match invalid.to_string() {
+        Result::Ok(_) => check(ok, false),
+        Result::Err(message) => check(ok, message == "invalid UTF-8"),
+    };
+
+    let builder = text::StringBuilder::with_capacity(4);
+    check(ok, builder.is_empty());
+    builder.write_string("GoML");
+    builder.write_char(' ');
+    builder.write_string("编译器");
+    builder.write_line("!");
+    check(ok, builder.len() == "GoML 编译器!\n".byte_len());
+    check(ok, builder.finish() == "GoML 编译器!\n");
+    builder.clear();
+    check(ok, builder.len() == 0);
+    ok.get()
+}

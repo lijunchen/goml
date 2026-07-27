@@ -1,0 +1,18 @@
+fn main() {
+    let mut x = 10;
+    let bump_outer = || {
+        x = x + 1;
+        x
+    };
+
+    let run_shadow = || {
+        let mut x = 100;
+        x = x + 50;
+        x
+    };
+
+    println(run_shadow().to_string());
+    println(bump_outer().to_string());
+    println(x.to_string());
+    println(bump_outer().to_string());
+}

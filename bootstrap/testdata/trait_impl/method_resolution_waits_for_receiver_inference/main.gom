@@ -1,0 +1,23 @@
+trait Alpha {
+    fn text(self: Self) -> string;
+}
+
+trait Beta {
+    fn text(self: Self) -> string;
+}
+
+struct A {}
+struct B {}
+
+impl Alpha for A {
+    fn text(self: A) -> string { "a" }
+}
+
+impl Beta for B {
+    fn text(self: B) -> string { "b" }
+}
+
+fn main() -> unit {
+    let render = |value| value.text();
+    println(render(A {}))
+}

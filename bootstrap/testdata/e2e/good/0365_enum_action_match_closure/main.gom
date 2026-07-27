@@ -1,0 +1,23 @@
+enum Action {
+    Add(int32),
+    Mul(int32),
+    Reset,
+}
+
+fn to_fn(action: Action) -> (int32) -> int32 {
+    match action {
+        Action::Add(n) => |x| x + n,
+        Action::Mul(n) => |x| x * n,
+        Action::Reset => |x| 0,
+    }
+}
+
+fn main() {
+    let f1 = to_fn(Action::Add(5));
+    let f2 = to_fn(Action::Mul(3));
+    let f3 = to_fn(Action::Reset);
+    
+    println(f1(10).to_string());
+    println(f2(10).to_string());
+    println(f3(10).to_string());
+}

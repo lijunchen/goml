@@ -1,0 +1,111 @@
+package main
+file main.gom
+  trait Put[T] {
+      fn put(Self, T) -> string;
+    }
+    
+    struct Target {
+    }
+    
+    impl Put[int32] for Target {
+      fn put(local/1/0: Target, local/1/1: int32) -> string {
+          "number:" + value/1.to_string()
+      }
+    }
+    
+    impl Put[string] for Target {
+      fn put(local/1/2: Target, local/1/3: string) -> string {
+          "text:" + value/3
+      }
+    }
+    
+    trait Convert[T] {
+      type Output;
+      fn convert(Self) -> Self::Output;
+    }
+    
+    struct Convertible {
+    }
+    
+    impl Convert[int32] for Convertible {
+      type Output = string;
+      fn convert(local/1/4: Convertible) -> string {
+          "converted"
+      }
+    }
+    
+    impl Convert[string] for Convertible {
+      type Output = int32;
+      fn convert(local/1/5: Convertible) -> int32 {
+          7
+      }
+    }
+    
+    trait Source[T] {
+      type Item;
+      fn get(Self) -> Self::Item;
+    }
+    
+    struct Number {
+        value: int32,
+    }
+    
+    impl Source[int32] for Number {
+      type Item = int32;
+      fn get(local/1/6: Number) -> int32 {
+          self/6.value
+      }
+    }
+    
+    fn read(local/1/7: S) -> T {
+        Source[T]::get(source/7)
+    }
+    
+    trait ItemSource {
+      type Item;
+      fn item(Self) -> Self::Item;
+    }
+    
+    trait Select[T] {
+      fn select(Self) -> T;
+    }
+    
+    impl[S: ItemSource, T] Select[T] for S {
+      fn select(local/1/8: S) -> T {
+          ItemSource::item(self/8)
+      }
+    }
+    
+    struct Selected {
+        value: int32,
+    }
+    
+    impl ItemSource for Selected {
+      type Item = int32;
+      fn item(local/1/9: Selected) -> int32 {
+          self/9.value
+      }
+    }
+    
+    fn invoke(local/1/10: S) -> T {
+        source/10.select()
+    }
+    
+    fn select_item(local/1/11: S) -> S::Item {
+        def/1/17(source/11)
+    }
+    
+    fn main() -> unit {
+        println(Target {}.put(3));
+        println(Target {}.put("goml"));
+        let local/1/12: string = Convertible {}.convert();
+        let local/1/13: int32 = Convertible {}.convert();
+        println(text/12);
+        println(number/13);
+        println(def/1/11(Number {
+                value: 8
+            }));
+        println(def/1/18(Selected {
+                value: 9
+            }));
+    }

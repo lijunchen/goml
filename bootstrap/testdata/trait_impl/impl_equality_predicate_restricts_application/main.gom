@@ -1,0 +1,15 @@
+trait Selected {
+    fn selected(self: Self) -> unit;
+}
+
+struct Wrap[T] { value: T }
+
+impl[T] Selected for Wrap[T] where T = int32 {
+    fn selected(self: Wrap[T]) -> unit { () }
+}
+
+fn require[T: Selected](value: T) -> unit { () }
+
+fn main() -> unit {
+    require(Wrap { value: "no" })
+}

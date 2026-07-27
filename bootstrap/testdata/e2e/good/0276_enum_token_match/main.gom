@@ -1,0 +1,22 @@
+enum Token {
+    Number(int32),
+    Plus,
+    Minus,
+    End,
+}
+
+fn token_to_string(t: Token) -> string {
+    match t {
+        Token::Number(n) => n.to_string(),
+        Token::Plus => "+",
+        Token::Minus => "-",
+        Token::End => "END",
+    }
+}
+
+fn main() {
+    println(token_to_string(Token::Number(42)));
+    println(token_to_string(Token::Plus));
+    println(token_to_string(Token::Minus));
+    println(token_to_string(Token::End));
+}

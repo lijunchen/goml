@@ -1,0 +1,22 @@
+struct Builder {
+    value: int32,
+}
+
+impl Builder {
+    fn new() -> Builder {
+        Builder { value: 0 }
+    }
+    
+    fn add(self: Builder, v: int32) -> Builder {
+        Builder { value: self.value + v }
+    }
+    
+    fn build(self: Builder) -> int32 {
+        self.value
+    }
+}
+
+fn main() {
+    let result = Builder::new().add(10).add(20).add(12).build();
+    println(result.to_string());
+}

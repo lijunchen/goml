@@ -1,0 +1,13 @@
+fn main() {
+    let f = |x: int32| {
+        let g = |y: int32| x + y;
+        (g(1), g(10))
+    };
+    let (a, b) = f(100);
+    println(a.to_string() + " " + b.to_string());
+    
+    let make_adder = |base: int32| |x: int32| base + x;
+    let add5 = make_adder(5);
+    let add10 = make_adder(10);
+    println(add5(3).to_string() + " " + add10(3).to_string());
+}

@@ -1,0 +1,17 @@
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn main() {
+    let x: Option[Option[uint8]] = Option::Some(Option::Some(42));
+    match x {
+        Option::Some(inner) => {
+            match inner {
+                Option::Some(v) => println(v.to_string()),
+                Option::None => println("inner none"),
+            }
+        },
+        Option::None => println("outer none"),
+    };
+}

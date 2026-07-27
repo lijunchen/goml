@@ -1,0 +1,32 @@
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn divide(a: int32, b: int32) -> Result[int32, string] {
+    if b == 0 {
+        Result::Err("division by zero")
+    } else {
+        Result::Ok(a / b)
+    }
+}
+
+fn unwrap_or[T](r: Result[T, string], default: T) -> T {
+    match r {
+        Result::Ok(v) => v,
+        Result::Err(_) => default,
+    }
+}
+
+fn main() {
+    let r1 = divide(10, 3);
+    let r2 = divide(10, 0);
+    
+    println(unwrap_or(r1, -1).to_string());
+    println(unwrap_or(r2, -1).to_string());
+    
+    match divide(20, 4) {
+        Result::Ok(v) => println(v.to_string()),
+        Result::Err(e) => println(e),
+    };
+}

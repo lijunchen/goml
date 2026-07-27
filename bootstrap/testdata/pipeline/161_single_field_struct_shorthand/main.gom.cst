@@ -1,0 +1,84 @@
+FILE@0..125
+  STRUCT@0..37
+    StructKeyword@0..6 "struct"
+    Whitespace@6..7 " "
+    Ident@7..13 "Person"
+    Whitespace@13..14 " "
+    LBrace@14..15 "{"
+    Whitespace@15..20 "\n    "
+    STRUCT_FIELD_LIST@20..37
+      STRUCT_FIELD@20..32
+        Ident@20..24 "name"
+        Colon@24..25 ":"
+        Whitespace@25..26 " "
+        TYPE_STRING@26..32
+          StringKeyword@26..32 "string"
+      Comma@32..33 ","
+      Whitespace@33..34 "\n"
+      RBrace@34..35 "}"
+      Whitespace@35..37 "\n\n"
+  FN@37..125
+    FnKeyword@37..39 "fn"
+    Whitespace@39..40 " "
+    Ident@40..44 "main"
+    PARAM_LIST@44..47
+      LParen@44..45 "("
+      RParen@45..46 ")"
+      Whitespace@46..47 " "
+    BLOCK@47..125
+      LBrace@47..48 "{"
+      Whitespace@48..53 "\n    "
+      STMT_LET@53..77
+        LetKeyword@53..56 "let"
+        Whitespace@56..57 " "
+        PATTERN_VARIABLE@57..62
+          Ident@57..61 "name"
+          Whitespace@61..62 " "
+        Eq@62..63 "="
+        Whitespace@63..64 " "
+        EXPR_STR@64..71
+          Str@64..71 "\"Alice\""
+        Semi@71..72 ";"
+        Whitespace@72..77 "\n    "
+      STMT_LET@77..106
+        LetKeyword@77..80 "let"
+        Whitespace@80..81 " "
+        PATTERN_VARIABLE@81..83
+          Ident@81..82 "p"
+          Whitespace@82..83 " "
+        Eq@83..84 "="
+        Whitespace@84..85 " "
+        EXPR_STRUCT_LITERAL@85..100
+          PATH@85..92
+            Ident@85..91 "Person"
+            Whitespace@91..92 " "
+          STRUCT_LITERAL_FIELD_LIST@92..100
+            LBrace@92..93 "{"
+            Whitespace@93..94 " "
+            STRUCT_LITERAL_FIELD@94..99
+              Ident@94..98 "name"
+              Whitespace@98..99 " "
+            RBrace@99..100 "}"
+        Semi@100..101 ";"
+        Whitespace@101..106 "\n    "
+      STMT_EXPR@106..123
+        EXPR_CALL@106..121
+          EXPR_IDENT@106..113
+            PATH@106..113
+              Ident@106..113 "println"
+          ARG_LIST@113..121
+            LParen@113..114 "("
+            ARG@114..120
+              EXPR_BINARY@114..120
+                EXPR_IDENT@114..115
+                  PATH@114..115
+                    Ident@114..115 "p"
+                Dot@115..116 "."
+                EXPR_IDENT@116..120
+                  PATH@116..120
+                    Ident@116..120 "name"
+            RParen@120..121 ")"
+        Semi@121..122 ";"
+        Whitespace@122..123 "\n"
+      RBrace@123..124 "}"
+      Whitespace@124..125 "\n"

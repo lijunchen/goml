@@ -1,0 +1,19 @@
+struct State {
+    counter: Ref[int32],
+    label: string,
+}
+
+fn make_incrementer(s: State) -> () -> string {
+    || {
+        s.counter.set(s.counter.get() + 1);
+        s.label + ": " + s.counter.get().to_string()
+    }
+}
+
+fn main() {
+    let s = State { counter: Ref::new(0), label: "count" };
+    let inc = make_incrementer(s);
+    println(inc());
+    println(inc());
+    println(inc());
+}

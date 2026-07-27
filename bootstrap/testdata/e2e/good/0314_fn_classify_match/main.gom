@@ -1,0 +1,15 @@
+fn classify(p: (int32, int32)) -> string {
+    match p {
+        (0, 0) => "origin",
+        (0, _) => "y-axis",
+        (_, 0) => "x-axis",
+        (x, y) => "(" + x.to_string() + "," + y.to_string() + ")",
+    }
+}
+
+fn main() {
+    println(classify((0, 0)));
+    println(classify((0, 5)));
+    println(classify((3, 0)));
+    println(classify((1, 2)));
+}

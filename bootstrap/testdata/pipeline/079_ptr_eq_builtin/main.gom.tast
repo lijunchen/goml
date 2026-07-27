@@ -1,0 +1,7 @@
+fn main() -> unit {
+    let a/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(1);
+    let b/1: Ref[int] = (a/0 : Ref[int]);
+    let c/2: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(1);
+    (println : (bool) -> unit)((@intrinsic(ref.ptr_eq) : (Ref[int], Ref[int]) -> bool)((a/0 : Ref[int]), (b/1 : Ref[int])));
+    (println : (bool) -> unit)((@intrinsic(ref.ptr_eq) : (Ref[int], Ref[int]) -> bool)((a/0 : Ref[int]), (c/2 : Ref[int])));
+}

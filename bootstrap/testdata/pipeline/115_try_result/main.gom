@@ -1,0 +1,31 @@
+fn parse_flag(flag: bool) -> Result[int32, string] {
+    if flag {
+        Result::Ok(7)
+    } else {
+        Result::Err("nope")
+    }
+}
+
+fn add(a: int32, b: int32) -> int32 {
+    a + b
+}
+
+fn plus_one(flag: bool) -> Result[int32, string] {
+    let run = || {
+        let value = parse_flag(flag)?;
+        Result::Ok(add(value, 1))
+    };
+    run()
+}
+
+fn show(res: Result[int32, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok=" + value.to_string(),
+        Result::Err(err) => "err=" + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(plus_one(true)));
+    println(show(plus_one(false)));
+}

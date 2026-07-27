@@ -1,0 +1,29 @@
+enum Result[T, E] {
+    Err(E),
+    Ok(T),
+}
+
+fn parse(flag: bool) -> Result[int32, string] {
+    if flag {
+        Result::Ok(41)
+    } else {
+        Result::Err("bad")
+    }
+}
+
+fn compute(flag: bool) -> Result[int32, string] {
+    let value = parse(flag)?;
+    Result::Ok(value + 1)
+}
+
+fn show(value: Result[int32, string]) -> string {
+    match value {
+        Result::Ok(value) => value.to_string(),
+        Result::Err(error) => error,
+    }
+}
+
+fn main() -> unit {
+    println(show(compute(true)));
+    println(show(compute(false)))
+}

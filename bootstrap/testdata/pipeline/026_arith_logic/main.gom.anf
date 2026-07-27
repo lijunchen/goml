@@ -1,0 +1,133 @@
+fn show_int(label/0: string, value/1: int32) -> unit {
+  join ret76() -> unit {
+    ()
+  } in
+  let t77 = inherent#int32#int32#to_string(value/1) in
+  let t78 = (label/0 + t77) in
+  let mtmp64 = println__T_string(t78) in
+  jump ret76()
+}
+
+fn show_bool(label/2: string, value/3: bool) -> unit {
+  join ret79() -> unit {
+    ()
+  } in
+  let t80 = trait_impl#ToString#bool#to_string(value/3) in
+  let t81 = (label/2 + t80) in
+  let mtmp65 = println__T_string(t81) in
+  jump ret79()
+}
+
+fn main() -> unit {
+  join ret82() -> unit {
+    ()
+  } in
+  let base/4 = 10 in
+  let sum/5 = (base/4 + 5) in
+  let diff/6 = (sum/5 - 3) in
+  let prod/7 = (diff/6 * 2) in
+  let quot/8 = (prod/7 / 4) in
+  let mtmp66 = show_int("sum=", sum/5) in
+  let mtmp67 = show_int("diff=", diff/6) in
+  let mtmp68 = show_int("prod=", prod/7) in
+  let mtmp69 = show_int("quot=", quot/8) in
+  join k83(jp84: bool) -> unit {
+    let and_result/9 = jp84 in
+    join k85(jp86: bool) -> unit {
+      let or_result/10 = jp86 in
+      let not_result/11 = (!false) in
+      let t97 = (!and_result/9) in
+      join k89(jp90: bool) -> unit {
+        join k87(jp88: bool) -> unit {
+          let mixed/12 = jp88 in
+          let mtmp72 = show_bool("and=", and_result/9) in
+          let mtmp73 = show_bool("or=", or_result/10) in
+          let mtmp74 = show_bool("not=", not_result/11) in
+          let mtmp75 = show_bool("mixed=", mixed/12) in
+          jump ret82()
+        } in
+        if jp90 {
+          jump k87(true)
+        } else {
+          let t91 = (diff/6 - quot/8) in
+          let t92 = (t91 + base/4) in
+          let t93 = (sum/5 / 2) in
+          let mtmp71 = (t92 - t93) in
+          join k94(jp95: bool) -> unit {
+            let t96 = (!jp95) in
+            jump k87(t96)
+          } in
+          match mtmp71 {
+            0 => {
+              jump k94(false)
+            },
+            _ => {
+              jump k94(true)
+            },
+          }
+        }
+      } in
+      if t97 {
+        let t98 = (prod/7 * base/4) in
+        let t99 = (sum/5 + t98) in
+        let t100 = (prod/7 / 2) in
+        let mtmp70 = (t99 - t100) in
+        join k101(jp102: bool) -> unit {
+          jump k89(jp102)
+        } in
+        match mtmp70 {
+          0 => {
+            jump k101(false)
+          },
+          _ => {
+            jump k101(true)
+          },
+        }
+      } else {
+        jump k89(false)
+      }
+    } in
+    if true {
+      jump k85(true)
+    } else {
+      jump k85(false)
+    }
+  } in
+  if true {
+    jump k83(false)
+  } else {
+    jump k83(false)
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret103() -> unit {
+    ()
+  } in
+  let t104 = trait_impl#ToString#string#to_string(value/1) in
+  let t105 = @runtime(core.string_println)(t104) in
+  jump ret103()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret106(retv107: string) -> string {
+    retv107
+  } in
+  let t108 = @runtime(core.int32_to_string)(self/6) in
+  jump ret106(t108)
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  join ret109(retv110: string) -> string {
+    retv110
+  } in
+  let t111 = @runtime(core.bool_to_string)(self/37) in
+  jump ret109(t111)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret112(retv113: string) -> string {
+    retv113
+  } in
+  jump ret112(self/38)
+}

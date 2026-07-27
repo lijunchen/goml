@@ -1,0 +1,11 @@
+enum Pair[A, B] {
+    MakePair(A, B),
+    Empty,
+}
+
+fn main() {
+    let p = Pair::MakePair(1, "hello");
+    let Pair::MakePair(x, y) = p;
+    println(x.to_string());
+    println(y);
+}

@@ -1,0 +1,37 @@
+fn maybe_primary(flag: bool) -> Option[int32] {
+    if flag {
+        Option::Some(4)
+    } else {
+        Option::None
+    }
+}
+
+fn maybe_secondary(flag: bool) -> Option[int32] {
+    if flag {
+        Option::Some(9)
+    } else {
+        Option::None
+    }
+}
+
+fn mixed(primary: bool, secondary: bool) -> Option[string] {
+    let value = maybe_primary(primary)?;
+    let label = match maybe_secondary(secondary) {
+        Option::Some(extra) => "extra=" + extra.to_string(),
+        Option::None => "extra=none",
+    };
+    Option::Some("value=" + value.to_string() + "," + label)
+}
+
+fn show(opt: Option[string]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value,
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(mixed(true, true)));
+    println(show(mixed(true, false)));
+    println(show(mixed(false, true)));
+}

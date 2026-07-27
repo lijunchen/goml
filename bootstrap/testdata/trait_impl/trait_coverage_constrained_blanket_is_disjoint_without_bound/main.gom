@@ -1,0 +1,21 @@
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+trait Label {
+    fn label(self: Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl[T: Mark] Label for Box[T] {
+    fn label(self: Box[T]) -> string { "marked" }
+}
+
+impl Label for Box[string] {
+    fn label(self: Box[string]) -> string { self.value }
+}
+
+fn main() -> unit { () }

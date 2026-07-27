@@ -1,0 +1,31 @@
+enum Tree {
+    Leaf(int32),
+    Node(Tree, Tree),
+}
+
+fn sum(t: Tree) -> int32 {
+    match t {
+        Tree::Leaf(n) => n,
+        Tree::Node(left, right) => sum(left) + sum(right),
+    }
+}
+
+fn depth(t: Tree) -> int32 {
+    match t {
+        Tree::Leaf(_) => 1,
+        Tree::Node(left, right) => {
+            let ld = depth(left);
+            let rd = depth(right);
+            if ld > rd { ld + 1 } else { rd + 1 }
+        },
+    }
+}
+
+fn main() {
+    let t = Tree::Node(
+        Tree::Node(Tree::Leaf(1), Tree::Leaf(2)),
+        Tree::Node(Tree::Leaf(3), Tree::Node(Tree::Leaf(4), Tree::Leaf(5)))
+    );
+    println("sum: " + sum(t).to_string());
+    println("depth: " + depth(t).to_string());
+}

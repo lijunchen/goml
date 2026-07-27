@@ -1,0 +1,43 @@
+package main;
+fn maybe_seed(flag: bool) -> Option[int32] {
+    if flag {
+        {
+            Option::Some(3)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn maybe_double(value: int32) -> Option[int32] {
+    if value > 0 {
+        {
+            Option::Some(value * 2)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn maybe_total(flag: bool) -> Option[int32] {
+    let a = maybe_seed(flag)?;
+    let b = maybe_double(a)?;
+    Option::Some(a + b)
+}
+
+fn show(opt: Option[int32]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(maybe_total(true)));
+    println(show(maybe_total(false)));
+}
+

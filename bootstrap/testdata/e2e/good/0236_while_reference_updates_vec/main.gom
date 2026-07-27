@@ -1,0 +1,11 @@
+fn main() {
+    let v: Vec[uint8] = Vec::new();
+    v.push(1);
+    v.push(2);
+    v.push(3);
+    let i = Ref::new(0);
+    while i.get() < v.len() {
+        println(v[i.get()].to_string());
+        i.set(i.get() + 1);
+    };
+}

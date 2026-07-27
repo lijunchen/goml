@@ -1,0 +1,12 @@
+fn maybe(flag: bool) -> Option[int32] {
+    if flag {
+        Option::Some(1)
+    } else {
+        Option::None
+    }
+}
+
+fn bad(flag: bool) -> Result[int32, string] {
+    let value = maybe(flag)?;
+    Result::Ok(value)
+}

@@ -1,0 +1,16 @@
+struct Transformer {
+    f: (int32) -> int32,
+    g: (int32) -> string,
+}
+
+fn apply(t: Transformer, x: int32) -> string {
+    t.g(t.f(x))
+}
+
+fn main() {
+    let t = Transformer {
+        f: |x| x * 2 + 1,
+        g: |x| "result: " + x.to_string(),
+    };
+    println(apply(t, 20));
+}

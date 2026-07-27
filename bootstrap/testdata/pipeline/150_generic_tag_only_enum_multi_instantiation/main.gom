@@ -1,0 +1,30 @@
+enum Light[T] {
+    Red,
+    Green,
+}
+
+fn flip[T](x: Light[T]) -> Light[T] {
+    match x {
+        Light::Red => Light::Green,
+        Light::Green => Light::Red,
+    }
+}
+
+fn show_int(x: Light[int32]) -> string {
+    match x {
+        Light::Red => "ri",
+        Light::Green => "gi",
+    }
+}
+
+fn show_string(x: Light[string]) -> string {
+    match x {
+        Light::Red => "rs",
+        Light::Green => "gs",
+    }
+}
+
+fn main() -> unit {
+    println(show_int(flip(Light::Red)));
+    println(show_string(flip(Light::Green)));
+}

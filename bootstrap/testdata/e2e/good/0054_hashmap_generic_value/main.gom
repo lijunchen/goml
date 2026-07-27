@@ -1,0 +1,13 @@
+fn main() {
+    let m = HashMap::new();
+    m.set("x", Option::Some(42));
+    m.set("y", Option::None);
+
+    match m.get("x") {
+        Option::Some(opt) => match opt {
+            Option::Some(n) => println(n.to_string()),
+            Option::None => println("inner none"),
+        },
+        Option::None => println("not found"),
+    };
+}

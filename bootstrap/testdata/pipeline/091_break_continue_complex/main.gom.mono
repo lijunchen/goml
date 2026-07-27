@@ -1,0 +1,86 @@
+fn main() -> unit {
+  let sum/0 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/1 = inherent#Ref#Ref[T]#new__T_int(1) in
+  let _wild67 = while (inherent#Ref#Ref[T]#get__T_int(i/1) <= 100) {
+      {
+        let _wild64 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/1), 50) {
+            {
+              break
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let _wild65 = inherent#Ref#Ref[T]#set__T_int(sum/0, (inherent#Ref#Ref[T]#get__T_int(sum/0) + inherent#Ref#Ref[T]#get__T_int(i/1))) in
+        let _wild66 = inherent#Ref#Ref[T]#set__T_int(i/1, (inherent#Ref#Ref[T]#get__T_int(i/1) + 1)) in
+      }
+  } in
+  let mtmp68 = print__T_string("sum up to break: ") in
+  {
+    let mtmp69 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/0)) in
+    {
+      let even_sum/2 = inherent#Ref#Ref[T]#new__T_int(0) in
+      let j/3 = inherent#Ref#Ref[T]#new__T_int(1) in
+      let _wild73 = while (inherent#Ref#Ref[T]#get__T_int(j/3) <= 10) {
+          {
+            let cur/4 = inherent#Ref#Ref[T]#get__T_int(j/3) in
+            let _wild70 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
+            let _wild72 = if trait_impl#Eq#int#eq(cur/4, ((cur/4 / 2) * 2)) {
+                {
+                  let _wild71 = inherent#Ref#Ref[T]#set__T_int(even_sum/2, (inherent#Ref#Ref[T]#get__T_int(even_sum/2) + cur/4)) in
+                  continue
+                }
+            } else {
+                {
+                  ()
+                }
+            } in
+          }
+      } in
+      let mtmp74 = print__T_string("even sum: ") in
+      {
+        let mtmp75 = println__T_int(inherent#Ref#Ref[T]#get__T_int(even_sum/2)) in
+        {
+          ()
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/209)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/210)
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  @intrinsic(eq.primitive)(self/59, other/60)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
+}
+
+fn print__T_string(value/0: string) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
+}
+
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  @runtime(core.int_hash)(self/85)
+}

@@ -1,0 +1,8 @@
+fn main() {
+    let x = Ref::new(Ref::new(42));
+    let inner = x.get();
+    println(inner.get().to_string());
+    
+    inner.set(100);
+    println(x.get().get().to_string());
+}

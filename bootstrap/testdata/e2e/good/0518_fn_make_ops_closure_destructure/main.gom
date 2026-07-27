@@ -1,0 +1,10 @@
+fn make_ops() -> ((int32) -> int32, (int32) -> int32) {
+    (|x| x + 1, |x| x * 2)
+}
+
+fn main() {
+    let (inc, double) = make_ops();
+    println(inc(5).to_string());
+    println(double(5).to_string());
+    println(inc(double(3)).to_string());
+}

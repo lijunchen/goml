@@ -1,0 +1,24 @@
+enum Expr {
+    Num(int32),
+    Add(Ref[Expr], Ref[Expr]),
+    Mul(Ref[Expr], Ref[Expr]),
+}
+
+fn eval(e: Expr) -> int32 {
+    match e {
+        Expr::Num(n) => n,
+        Expr::Add(l, r) => eval(l.get()) + eval(r.get()),
+        Expr::Mul(l, r) => eval(l.get()) * eval(r.get()),
+    }
+}
+
+fn main() {
+    let expr = Expr::Add(
+        Ref::new(Expr::Mul(
+            Ref::new(Expr::Num(2)),
+            Ref::new(Expr::Num(3))
+        )),
+        Ref::new(Expr::Num(4))
+    );
+    println(eval(expr).to_string());
+}

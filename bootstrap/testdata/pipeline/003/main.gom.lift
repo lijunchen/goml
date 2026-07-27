@@ -1,0 +1,31 @@
+fn main() -> unit {
+  let mtmp64 = print__T_unit(()) in
+  let mtmp65 = print__T_bool(true) in
+  let mtmp66 = print__T_bool(false) in
+  let mtmp67 = print__T_int(123) in
+  ()
+}
+
+fn print__T_unit(value/0: unit) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#unit#to_string(value/0))
+}
+
+fn print__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#bool#to_string(value/0))
+}
+
+fn print__T_int(value/0: int) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#int#to_string(value/0))
+}
+
+fn trait_impl#ToString#unit#to_string(self/36: unit) -> string {
+  @runtime(core.unit_to_string)(self/36)
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
+}

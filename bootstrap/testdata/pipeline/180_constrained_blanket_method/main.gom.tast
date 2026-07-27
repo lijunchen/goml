@@ -1,0 +1,22 @@
+impl Mark for int32{
+  fn mark(self/0: int32) -> unit {
+      ()
+  }
+}
+
+impl Extra for T{
+  fn extra(self/1: T) -> int32 {
+      42
+  }
+}
+
+fn apply(value/2: T) -> int32 {
+    (Extra::extra : (T) -> int32)((value/2 : T))
+}
+
+fn main() -> unit {
+    let first/3: int32 = 1;
+    let second/4: int32 = 2;
+    (println : (int32) -> unit)((apply : (int32) -> int32)((first/3 : int32)));
+    (println : (int32) -> unit)((Extra::extra : (int32) -> int32)((second/4 : int32)));
+}

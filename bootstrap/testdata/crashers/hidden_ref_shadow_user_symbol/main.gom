@@ -1,0 +1,23 @@
+fn ref(x: int32) -> Ref[int32] {
+    println("user ref " + x.to_string());
+    Ref::new(x + 10)
+}
+
+fn ref_get(r: Ref[int32]) -> int32 {
+    println("user get");
+    100
+}
+
+fn ref_set(r: Ref[int32], x: int32) -> unit {
+    println("user set " + x.to_string());
+}
+
+fn main() -> unit {
+    let mut x = 0;
+    let inc = || {
+        x = x + 1;
+        x
+    };
+    println(inc().to_string());
+    println(x.to_string());
+}

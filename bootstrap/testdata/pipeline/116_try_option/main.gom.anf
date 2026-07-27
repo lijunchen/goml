@@ -1,0 +1,102 @@
+fn maybe_value(flag/0: bool) -> Option__int32 {
+  join ret69(retv70: Option__int32) -> Option__int32 {
+    retv70
+  } in
+  join k71(jp72: Option__int32) -> Option__int32 {
+    jump ret69(jp72)
+  } in
+  if flag/0 {
+    let t73 = Option__int32::Some(4) in
+    jump k71(t73)
+  } else {
+    jump k71(Tag_0)
+  }
+}
+
+fn add(a/1: int32, b/2: int32) -> int32 {
+  join ret74(retv75: int32) -> int32 {
+    retv75
+  } in
+  let t76 = (a/1 + b/2) in
+  jump ret74(t76)
+}
+
+fn plus_two(flag/3: bool) -> Option__int32 {
+  join ret77(retv78: Option__int32) -> Option__int32 {
+    retv78
+  } in
+  let mtmp64 = maybe_value(flag/3) in
+  join k79(jp80: int32) -> Option__int32 {
+    let t81 = add(jp80, 2) in
+    let t82 = Option__int32::Some(t81) in
+    jump ret77(t82)
+  } in
+  match mtmp64 {
+    Tag_0 => {
+      jump ret77(Tag_0)
+    },
+    Tag_1 => {
+      let x65 = Option__int32::Some._0(mtmp64) in
+      let try_value/15 = x65 in
+      jump k79(try_value/15)
+    },
+  }
+}
+
+fn show(opt/4: Option__int32) -> string {
+  join ret83(retv84: string) -> string {
+    retv84
+  } in
+  join k85(jp86: string) -> string {
+    jump ret83(jp86)
+  } in
+  match opt/4 {
+    Tag_0 => {
+      jump k85("none")
+    },
+    Tag_1 => {
+      let x66 = Option__int32::Some._0(opt/4) in
+      let value/5 = x66 in
+      let t87 = inherent#int32#int32#to_string(value/5) in
+      let t88 = ("some=" + t87) in
+      jump k85(t88)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret89() -> unit {
+    ()
+  } in
+  let t90 = plus_two(true) in
+  let t91 = show(t90) in
+  let _wild67 = println__T_string(t91) in
+  let t92 = plus_two(false) in
+  let t93 = show(t92) in
+  let _wild68 = println__T_string(t93) in
+  jump ret89()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret94(retv95: string) -> string {
+    retv95
+  } in
+  let t96 = @runtime(core.int32_to_string)(self/6) in
+  jump ret94(t96)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret97() -> unit {
+    ()
+  } in
+  let t98 = trait_impl#ToString#string#to_string(value/1) in
+  let t99 = @runtime(core.string_println)(t98) in
+  jump ret97()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret100(retv101: string) -> string {
+    retv101
+  } in
+  jump ret100(self/38)
+}

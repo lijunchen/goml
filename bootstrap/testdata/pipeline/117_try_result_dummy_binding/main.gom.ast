@@ -1,0 +1,48 @@
+package main;
+fn configure(ok: bool) -> Result[unit, string] {
+    if ok {
+        {
+            Result::Ok(())
+        }
+    } else {
+        {
+            Result::Err("config failed")
+        }
+    }
+}
+
+fn read_duration(ok: bool) -> Result[string, string] {
+    if ok {
+        {
+            Result::Ok("2s")
+        }
+    } else {
+        {
+            Result::Err("duration failed")
+        }
+    }
+}
+
+fn format_duration(value: string) -> string {
+    "duration=" + value
+}
+
+fn configure_and_format(config_ok: bool, read_ok: bool) -> Result[string, string] {
+    configure(config_ok)?;
+    let value = read_duration(read_ok)?;
+    Result::Ok(format_duration(value))
+}
+
+fn show(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(configure_and_format(true, true)));
+    println(show(configure_and_format(true, false)));
+    println(show(configure_and_format(false, true)));
+}
+

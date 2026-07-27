@@ -1,0 +1,60 @@
+fn main() -> unit {
+  let i/0 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let _wild67 = while (inherent#Ref#Ref[T]#get__T_int(i/0) < 10) {
+      {
+        let _wild64 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/0), 5) {
+            {
+              break
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let mtmp65 = println__T_int(inherent#Ref#Ref[T]#get__T_int(i/0)) in
+        {
+          let _wild66 = inherent#Ref#Ref[T]#set__T_int(i/0, (inherent#Ref#Ref[T]#get__T_int(i/0) + 1)) in
+        }
+      }
+  } in
+  let mtmp68 = println__T_string("done") in
+  {
+    ()
+  }
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/209)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/210)
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  @intrinsic(eq.primitive)(self/59, other/60)
+}
+
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  @runtime(core.int_hash)(self/85)
+}

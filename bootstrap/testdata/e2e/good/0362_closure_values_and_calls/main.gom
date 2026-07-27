@@ -1,0 +1,11 @@
+fn fold_left[A, B](init: B, f: (B, A) -> B, a1: A, a2: A, a3: A) -> B {
+    f(f(f(init, a1), a2), a3)
+}
+
+fn main() {
+    let result = fold_left(0, |acc, x| acc + x, 10, 20, 30);
+    println(result.to_string());
+    
+    let result2 = fold_left("", |acc, x: int32| acc + x.to_string() + " ", 1, 2, 3);
+    println(result2);
+}

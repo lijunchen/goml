@@ -1,0 +1,21 @@
+fn apply[A, B](f: (A) -> B, x: A) -> B {
+    f(x)
+}
+
+fn main() {
+    let result: string = apply(|x: int32| x.to_string(), 42);
+    println(result);
+    
+    let nums: [int32; 3] = [1, 2, 3];
+    let doubled: [int32; 3] = [
+        apply(|x| x * 2, nums[0]),
+        apply(|x| x * 2, nums[1]),
+        apply(|x| x * 2, nums[2]),
+    ];
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        println(doubled[i.get()].to_string() + " ");
+        i.set(i.get() + 1);
+    };
+    println("");
+}

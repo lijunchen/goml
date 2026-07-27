@@ -1,0 +1,34 @@
+fn main() -> unit {
+  join ret66() -> unit {
+    ()
+  } in
+  let s/0 = "abcde" in
+  let _wild64 = println__T_string(s/0) in
+  let _wild65 = print__T_string(s/0) in
+  jump ret66()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret67() -> unit {
+    ()
+  } in
+  let t68 = trait_impl#ToString#string#to_string(value/1) in
+  let t69 = @runtime(core.string_println)(t68) in
+  jump ret67()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  join ret70() -> unit {
+    ()
+  } in
+  let t71 = trait_impl#ToString#string#to_string(value/0) in
+  let t72 = @runtime(core.string_print)(t71) in
+  jump ret70()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret73(retv74: string) -> string {
+    retv74
+  } in
+  jump ret73(self/38)
+}

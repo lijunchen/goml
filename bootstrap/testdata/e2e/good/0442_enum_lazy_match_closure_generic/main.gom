@@ -1,0 +1,18 @@
+enum Lazy[T] {
+    Computed(T),
+    Pending(() -> T),
+}
+
+fn force[T](lazy: Lazy[T]) -> T {
+    match lazy {
+        Lazy::Computed(v) => v,
+        Lazy::Pending(f) => f(),
+    }
+}
+
+fn main() {
+    let x: Lazy[int32] = Lazy::Computed(42);
+    let y: Lazy[int32] = Lazy::Pending(|| 7 * 6);
+    println(force(x).to_string());
+    println(force(y).to_string());
+}

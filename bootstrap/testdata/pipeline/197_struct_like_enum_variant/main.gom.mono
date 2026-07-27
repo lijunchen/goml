@@ -1,0 +1,208 @@
+fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
+  match self/0 {
+    Key::Empty => {
+      "Key::Empty"
+    },
+    Key::Point(x64, x65) => {
+      {
+        let x64 = Key::Point._0(self/0) in
+        let x65 = Key::Point._1(self/0) in
+        {
+          let __field1/2 = x65 in
+          {
+            let __field0/1 = x64 in
+            (((((("Key::Point { " + "x: ") + inherent#int32#int32#to_string(__field0/1)) + ", ") + "y: ") + inherent#int32#int32#to_string(__field1/2)) + " }")
+          }
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
+  {
+    let mtmp66 = (self/3, other/4) in
+    {
+      let x67 = mtmp66.0 in
+      let x68 = mtmp66.1 in
+      match x68 {
+        Key::Empty => {
+          match x67 {
+            Key::Empty => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Key::Point(x69, x70) => {
+          {
+            let x69 = Key::Point._0(x68) in
+            let x70 = Key::Point._1(x68) in
+            match x67 {
+              Key::Point(x73, x74) => {
+                {
+                  let x73 = Key::Point._0(x67) in
+                  let x74 = Key::Point._1(x67) in
+                  {
+                    let __l1_1/6 = x74 in
+                    {
+                      let __l1_0/5 = x73 in
+                      {
+                        let __r1_1/8 = x70 in
+                        {
+                          let __r1_0/7 = x69 in
+                          if if true {
+                              trait_impl#Eq#int32#eq(__l1_0/5, __r1_0/7)
+                          } else {
+                              false
+                          } {
+                              trait_impl#Eq#int32#eq(__l1_1/6, __r1_1/8)
+                          } else {
+                              false
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#Hash#Key#hash(self/9: Key) -> uint64 {
+  match self/9 {
+    Key::Empty => {
+      {
+        let h/10 = (14695981039346656037 + 1) in
+        h/10
+      }
+    },
+    Key::Point(x75, x76) => {
+      {
+        let x75 = Key::Point._0(self/9) in
+        let x76 = Key::Point._1(self/9) in
+        {
+          let __field1_1/12 = x76 in
+          {
+            let __field1_0/11 = x75 in
+            {
+              let h/13 = (14695981039346656037 + 2) in
+              let h/14 = ((h/13 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/11)) in
+              let h/15 = ((h/14 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_1/12)) in
+              h/15
+            }
+          }
+        }
+      }
+    },
+  }
+}
+
+fn score(value/16: Message__string) -> int32 {
+  match value/16 {
+    Message__string::Quit => {
+      0
+    },
+    Message__string::Write(x77) => {
+      {
+        let x77 = Message__string::Write._0(value/16) in
+        1
+      }
+    },
+    Message__string::Move(x78, x79, x80) => {
+      {
+        let x78 = Message__string::Move._0(value/16) in
+        let x79 = Message__string::Move._1(value/16) in
+        let x80 = Message__string::Move._2(value/16) in
+        {
+          let vertical/18 = x79 in
+          {
+            let x/17 = x78 in
+            (x/17 + vertical/18)
+          }
+        }
+      }
+    },
+  }
+}
+
+fn label(value/19: Message__string) -> string {
+  match value/19 {
+    Message__string::Quit => {
+      "quit"
+    },
+    Message__string::Write(x81) => {
+      {
+        let x81 = Message__string::Write._0(value/19) in
+        {
+          let text/21 = x81 in
+          text/21
+        }
+      }
+    },
+    Message__string::Move(x82, x83, x84) => {
+      {
+        let x82 = Message__string::Move._0(value/19) in
+        let x83 = Message__string::Move._1(value/19) in
+        let x84 = Message__string::Move._2(value/19) in
+        {
+          let label/20 = x84 in
+          label/20
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let x/22 = 3 in
+  let direction/23 = "north" in
+  let first/24 = Message__string::Move(x/22, 4, direction/23) in
+  let second/25 = Message__string::Move(3, 4, "north") in
+  let _wild85 = println__T_int32(score(first/24)) in
+  let _wild86 = println__T_string(label(second/25)) in
+  let _wild87 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
+  let _wild88 = println__T_bool(trait_impl#Eq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  @intrinsic(eq.primitive)(self/65, other/66)
+}
+
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/88)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  @runtime(core.int32_to_string)(self/43)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
+}

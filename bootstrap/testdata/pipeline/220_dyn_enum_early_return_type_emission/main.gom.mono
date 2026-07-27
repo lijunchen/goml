@@ -1,0 +1,26 @@
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  inherent#int32#int32#to_string(self/0)
+}
+
+fn build() -> int32 {
+  let mtmp64 = Boxed::One(return 9) in
+  {
+    0
+  }
+}
+
+fn main() -> unit {
+  println__T_string(inherent#int32#int32#to_string(build()))
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

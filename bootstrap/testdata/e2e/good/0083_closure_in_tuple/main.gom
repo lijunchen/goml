@@ -1,0 +1,9 @@
+fn apply_tuple(pair: ((int32) -> int32, int32)) -> int32 {
+    let (f, x) = pair;
+    f(x)
+}
+
+fn main() {
+    let t = (|x| x * 3, 14);
+    println(apply_tuple(t));
+}

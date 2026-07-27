@@ -1,0 +1,25 @@
+fn test_nested() {
+    let i = Ref::new(0);
+    while i.get() < 2 {
+        let j = Ref::new(0);
+        while j.get() < 3 {
+            println("inner");
+            j.set(j.get() + 1);
+        };
+        i.set(i.get() + 1);
+    };
+}
+
+fn main() {
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        let j = Ref::new(0);
+        while j.get() < 2 {
+            let msg = i.get().to_string() + "," + j.get().to_string();
+            println(msg);
+            j.set(j.get() + 1);
+        };
+        i.set(i.get() + 1);
+    };
+    println("done");
+}

@@ -1,0 +1,11 @@
+trait Left {
+    type Item;
+}
+
+trait Right {
+    type Item;
+}
+
+fn project[T: Left + Right](value: T) -> T::Item {
+    value
+}

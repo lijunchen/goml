@@ -1,0 +1,13 @@
+trait Pair {
+    type First;
+    type Second;
+    fn touch(self: Self) -> unit;
+}
+
+struct Value {}
+
+impl Pair for Value {
+    type First = Self::Second;
+    type Second = Self::First;
+    fn touch(self: Value) -> unit { () }
+}

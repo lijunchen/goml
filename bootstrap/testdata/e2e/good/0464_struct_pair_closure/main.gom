@@ -1,0 +1,19 @@
+struct Pair[A, B] { first: A, second: B }
+
+fn swap[A, B](p: Pair[A, B]) -> Pair[B, A] {
+    Pair { first: p.second, second: p.first }
+}
+
+fn map_first[A, B, C](p: Pair[A, B], f: (A) -> C) -> Pair[C, B] {
+    Pair { first: f(p.first), second: p.second }
+}
+
+fn main() {
+    let p = Pair { first: 1, second: "hello" };
+    let p2 = swap(p);
+    println(p2.first + " " + p2.second.to_string());
+    
+    let p3 = Pair { first: 10, second: true };
+    let p4 = map_first(p3, |x| x.to_string() + "!");
+    println(p4.first + " " + p4.second.to_string());
+}

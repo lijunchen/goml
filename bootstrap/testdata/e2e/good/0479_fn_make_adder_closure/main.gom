@@ -1,0 +1,21 @@
+fn make_adder(base: int32) -> (int32) -> int32 {
+    |x| base + x
+}
+
+fn make_multiplier(factor: int32) -> (int32) -> int32 {
+    |x| factor * x
+}
+
+fn compose_fns(f: (int32) -> int32, g: (int32) -> int32) -> (int32) -> int32 {
+    |x| f(g(x))
+}
+
+fn main() {
+    let add5 = make_adder(5);
+    let mul3 = make_multiplier(3);
+    let combined = compose_fns(add5, mul3);
+    println(combined(4).to_string());
+    
+    let combined2 = compose_fns(mul3, add5);
+    println(combined2(4).to_string());
+}

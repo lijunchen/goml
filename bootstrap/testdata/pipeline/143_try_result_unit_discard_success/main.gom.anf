@@ -1,0 +1,97 @@
+fn step(ok/0: bool) -> Result__unit__string {
+  join ret72(retv73: Result__unit__string) -> Result__unit__string {
+    retv73
+  } in
+  join k74(jp75: Result__unit__string) -> Result__unit__string {
+    jump ret72(jp75)
+  } in
+  if ok/0 {
+    let t76 = Result__unit__string::Ok(()) in
+    jump k74(t76)
+  } else {
+    let t77 = Result__unit__string::Err("step failed") in
+    jump k74(t77)
+  }
+}
+
+fn run(ok/1: bool) -> Result__unit__string {
+  join ret78(retv79: Result__unit__string) -> Result__unit__string {
+    retv79
+  } in
+  let mtmp64 = step(ok/1) in
+  join k80() -> Result__unit__string {
+    let mtmp67 = () in
+    let t81 = Result__unit__string::Ok(()) in
+    jump ret78(t81)
+  } in
+  match mtmp64 {
+    Tag_0 => {
+      let x65 = Result__unit__string::Ok._0(mtmp64) in
+      let try_value/12 = x65 in
+      jump k80()
+    },
+    Tag_1 => {
+      let x66 = Result__unit__string::Err._0(mtmp64) in
+      let try_residual/12 = x66 in
+      let t82 = Result__unit__string::Err(try_residual/12) in
+      jump ret78(t82)
+    },
+  }
+}
+
+fn show(res/2: Result__unit__string) -> string {
+  join ret83(retv84: string) -> string {
+    retv84
+  } in
+  join k85(jp86: string) -> string {
+    jump ret83(jp86)
+  } in
+  match res/2 {
+    Tag_0 => {
+      let x68 = Result__unit__string::Ok._0(res/2) in
+      join k87(jp88: string) -> string {
+        jump k85(jp88)
+      } in
+      match x68 {
+        () => {
+          jump k87("ok unit")
+        },
+      }
+    },
+    Tag_1 => {
+      let x69 = Result__unit__string::Err._0(res/2) in
+      let err/3 = x69 in
+      let t89 = ("err " + err/3) in
+      jump k85(t89)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret90() -> unit {
+    ()
+  } in
+  let t91 = run(true) in
+  let t92 = show(t91) in
+  let _wild70 = println__T_string(t92) in
+  let t93 = run(false) in
+  let t94 = show(t93) in
+  let _wild71 = println__T_string(t94) in
+  jump ret90()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret95() -> unit {
+    ()
+  } in
+  let t96 = trait_impl#ToString#string#to_string(value/1) in
+  let t97 = @runtime(core.string_println)(t96) in
+  jump ret95()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret98(retv99: string) -> string {
+    retv99
+  } in
+  jump ret98(self/38)
+}

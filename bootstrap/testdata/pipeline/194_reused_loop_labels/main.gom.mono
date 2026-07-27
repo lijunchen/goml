@@ -1,0 +1,65 @@
+fn main() -> unit {
+  let running/0 = inherent#Ref#Ref[T]#new__T_bool(true) in
+  let _wild66 = while inherent#Ref#Ref[T]#get__T_bool(running/0) {
+      {
+        let event/1 = Event::Open in
+        let _wild64 = match event/1 {
+          Event::Open => {
+            {
+              let scanning/2 = inherent#Ref#Ref[T]#new__T_bool(false) in
+              while inherent#Ref#Ref[T]#get__T_bool(scanning/2) {
+                  {
+                    ()
+                  }
+              }
+            }
+          },
+          Event::Close => {
+            ()
+          },
+          Event::Advance => {
+            ()
+          },
+          Event::Error => {
+            ()
+          },
+        } in
+        let scanning/3 = inherent#Ref#Ref[T]#new__T_bool(false) in
+        let _wild65 = while inherent#Ref#Ref[T]#get__T_bool(scanning/3) {
+            {
+              ()
+            }
+        } in
+        inherent#Ref#Ref[T]#set__T_bool(running/0, false)
+      }
+  } in
+  @runtime(core.string_println)("ok")
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/209: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/209)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/210: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/210)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/211: Ref[bool], value/212: bool) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
+}
+
+fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
+  @intrinsic(eq.primitive)(self/53, other/54)
+}
+
+fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
+  if self/82 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}

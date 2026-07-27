@@ -1,0 +1,11 @@
+package main;
+
+use project012_trait_scope_and_ufcs::datapkg;
+use project012_trait_scope_and_ufcs::usepkg;
+
+fn main() -> unit {
+    let x = datapkg::Card { value: 3 };
+    println(usepkg::render_method(x));
+    let y = datapkg::Card { value: 3 };
+    println(usepkg::render_fancy(y));
+}

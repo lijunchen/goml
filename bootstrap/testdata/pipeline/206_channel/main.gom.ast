@@ -1,0 +1,35 @@
+package main;
+fn make_string_channel() -> Channel[string] {
+    Channel::[string]::new(0)
+}
+
+fn roundtrip(channel: Channel[T], value: T) -> Option[T] {
+    go || channel.send(value);
+    channel.recv()
+}
+
+fn main() -> unit {
+    let buffered = Channel::[int]::new(2);
+    buffered.send(10);
+    buffered.send(20);
+    buffered.close();
+    println(match buffered.recv() {
+          Option::Some(value) => value,
+          Option::None => -1,
+      });
+    println(match buffered.recv() {
+          Option::Some(value) => value,
+          Option::None => -1,
+      });
+    println(match buffered.recv() {
+          Option::Some(_) => "open",
+          Option::None => "closed",
+      });
+    let unbuffered = make_string_channel();
+    println(match roundtrip(unbuffered, "ready") {
+          Option::Some(value) => value,
+          Option::None => "closed",
+      });
+    unbuffered.close();
+}
+

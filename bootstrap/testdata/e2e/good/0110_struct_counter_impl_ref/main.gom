@@ -1,0 +1,25 @@
+struct Counter {
+    count: Ref[int32],
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter { count: Ref::new(0) }
+    }
+    
+    fn inc(self: Counter) {
+        self.count.set(self.count.get() + 1);
+    }
+    
+    fn get(self: Counter) -> int32 {
+        self.count.get()
+    }
+}
+
+fn main() {
+    let c = Counter::new();
+    Counter::inc(c);
+    Counter::inc(c);
+    Counter::inc(c);
+    println(Counter::get(c).to_string());
+}

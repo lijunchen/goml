@@ -1,0 +1,17 @@
+enum Action {
+    Run((int32) -> int32),
+    Stop,
+}
+
+fn execute(a: Action, x: int32) -> int32 {
+    match a {
+        Action::Run(f) => f(x),
+        Action::Stop => 0,
+    }
+}
+
+fn main() {
+    let a = Action::Run(|x| x + 10);
+    println(execute(a, 32).to_string());
+    println(execute(Action::Stop, 0).to_string());
+}

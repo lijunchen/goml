@@ -1,0 +1,28 @@
+struct Reducer {
+    init: int32,
+    step: (int32, int32) -> int32,
+    finalize: (int32) -> string,
+}
+
+fn run_reducer(r: Reducer, a: int32, b: int32, c: int32) -> string {
+    let acc = r.step(r.init, a);
+    let acc = r.step(acc, b);
+    let acc = r.step(acc, c);
+    r.finalize(acc)
+}
+
+fn main() {
+    let sum_reducer = Reducer {
+        init: 0,
+        step: |acc, x| acc + x,
+        finalize: |total| "sum = " + total.to_string(),
+    };
+    println(run_reducer(sum_reducer, 10, 20, 30));
+
+    let prod_reducer = Reducer {
+        init: 1,
+        step: |acc, x| acc * x,
+        finalize: |total| "product = " + total.to_string(),
+    };
+    println(run_reducer(prod_reducer, 2, 3, 4));
+}

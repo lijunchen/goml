@@ -1,0 +1,19 @@
+struct A {
+    get_b: () -> B,
+}
+
+struct B {
+    compute: (int32) -> int32,
+}
+
+fn make_a() -> A {
+    A {
+        get_b: || B { compute: |x| x * 3 },
+    }
+}
+
+fn main() {
+    let a = make_a();
+    let result = a.get_b().compute(7);
+    println(result.to_string());
+}

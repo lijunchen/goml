@@ -1,0 +1,24 @@
+enum Tree[T] {
+    Leaf(T),
+    Node(Tree[T], Tree[T]),
+}
+
+fn sum(t: Tree[int32]) -> int32 {
+    match t {
+        Tree::Leaf(v) => v,
+        Tree::Node(l, r) => sum(l) + sum(r),
+    }
+}
+
+fn map[A, B](t: Tree[A], f: (A) -> B) -> Tree[B] {
+    match t {
+        Tree::Leaf(v) => Tree::Leaf(f(v)),
+        Tree::Node(l, r) => Tree::Node(map(l, f), map(r, f)),
+    }
+}
+
+fn main() {
+    let t = Tree::Node(Tree::Leaf(1), Tree::Node(Tree::Leaf(2), Tree::Leaf(3)));
+    let doubled = map(t, |x| x * 2);
+    println(sum(doubled).to_string());
+}

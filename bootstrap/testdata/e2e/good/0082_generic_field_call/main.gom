@@ -1,0 +1,8 @@
+struct Wrapper[T] {
+    transform: (T) -> T,
+}
+
+fn main() {
+    let w = Wrapper { transform: |x: int32| x * 2 };
+    println(w.transform(21));
+}

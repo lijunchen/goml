@@ -1,0 +1,47 @@
+fn sum_to(limit/0: int32) -> int32 {
+    let acc/1: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let i/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/2 : Ref[int32])) < (limit/0 : int32) {
+        {
+            let current/3: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((i/2 : Ref[int32]));
+            let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((acc/1 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((acc/1 : Ref[int32])) + (current/3 : int32));
+            let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/2 : Ref[int32]), (current/3 : int32) + 1);
+            ()
+        }
+    };
+    (Ref[int32]::get : (Ref[int32]) -> int32)((acc/1 : Ref[int32]))
+}
+
+fn sum_even(limit/4: int32) -> int32 {
+    let acc/5: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let i/6: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let is_even/7: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(true);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/6 : Ref[int32])) < (limit/4 : int32) {
+        {
+            let current/8: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((i/6 : Ref[int32]));
+            let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/6 : Ref[int32]), (current/8 : int32) + 1);
+            let add_now/9: bool = (Ref[bool]::get : (Ref[bool]) -> bool)((is_even/7 : Ref[bool]));
+            let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((is_even/7 : Ref[bool]), !(add_now/9 : bool));
+            if (add_now/9 : bool) {
+                {
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((acc/5 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((acc/5 : Ref[int32])) + (current/8 : int32))
+                }
+            } else {
+                {
+                    ()
+                }
+            }
+        }
+    };
+    (Ref[int32]::get : (Ref[int32]) -> int32)((acc/5 : Ref[int32]))
+}
+
+fn main() -> unit {
+    let first/10: int32 = (sum_to : (int32) -> int32)(5);
+    let evens/11: int32 = (sum_even : (int32) -> int32)(6);
+    let _ : unit = (print : (string) -> unit)("sum_to(5)=");
+    let _ : unit = (println : (int32) -> unit)((first/10 : int32));
+    let _ : unit = (print : (string) -> unit)("sum_even(6)=");
+    let _ : unit = (println : (int32) -> unit)((evens/11 : int32));
+    ()
+}

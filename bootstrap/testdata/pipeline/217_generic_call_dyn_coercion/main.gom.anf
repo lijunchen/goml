@@ -1,0 +1,60 @@
+fn trait_impl#Show#Wrap__int32#show(self/0: Wrap__int32) -> string {
+  join ret64(retv65: string) -> string {
+    retv65
+  } in
+  let t66 = Wrap__int32.value(self/0) in
+  let t67 = inherent#int32#int32#to_string(t66) in
+  jump ret64(t67)
+}
+
+fn render(value/2: dyn Show) -> string {
+  join ret68(retv69: string) -> string {
+    retv69
+  } in
+  let t70 = dyn_call[Show::show](value/2) in
+  jump ret68(t70)
+}
+
+fn main() -> unit {
+  join ret71() -> unit {
+    ()
+  } in
+  let value/3 = 42 in
+  let t72 = make_wrap__T_int32(value/3) in
+  let t73 = to_dyn[Show]{Wrap__int32}(t72) in
+  let t74 = render(t73) in
+  let t75 = println__T_string(t74) in
+  jump ret71()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret76(retv77: string) -> string {
+    retv77
+  } in
+  let t78 = @runtime(core.int32_to_string)(self/6) in
+  jump ret76(t78)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret79() -> unit {
+    ()
+  } in
+  let t80 = trait_impl#ToString#string#to_string(value/1) in
+  let t81 = @runtime(core.string_println)(t80) in
+  jump ret79()
+}
+
+fn make_wrap__T_int32(value/1: int32) -> Wrap__int32 {
+  join ret82(retv83: Wrap__int32) -> Wrap__int32 {
+    retv83
+  } in
+  let t84 = Wrap__int32 { value: value/1 } in
+  jump ret82(t84)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret85(retv86: string) -> string {
+    retv86
+  } in
+  jump ret85(self/38)
+}

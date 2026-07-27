@@ -1,0 +1,125 @@
+fn make_counter() -> (() -> int32, () -> unit) {
+  join ret79(retv80: (() -> int32, () -> unit)) -> (() -> int32, () -> unit) {
+    retv80
+  } in
+  let cell/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let next/2 = closure_env_next_0 { cell_0: cell/0 } in
+  let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
+  let t81 = (next/2, reset/3) in
+  jump ret79(t81)
+}
+
+fn main() -> unit {
+  join ret82() -> unit {
+    ()
+  } in
+  let counter/4 = make_counter() in
+  let mtmp66 = counter/4 in
+  let x67 = mtmp66.0 in
+  let x68 = mtmp66.1 in
+  let reset/6 = x68 in
+  let next/5 = x67 in
+  let first/7 = next/5() in
+  let second/8 = next/5() in
+  let mtmp69 = reset/6() in
+  let third/9 = next/5() in
+  let new_counter/10 = make_counter() in
+  let mtmp70 = new_counter/10 in
+  let x71 = mtmp70.0 in
+  let x72 = mtmp70.1 in
+  let new_next/11 = x71 in
+  let fourth/12 = new_next/11() in
+  let t83 = inherent#int32#int32#to_string(first/7) in
+  let mtmp73 = println__T_string(t83) in
+  let t84 = inherent#int32#int32#to_string(second/8) in
+  let mtmp74 = println__T_string(t84) in
+  let t85 = inherent#int32#int32#to_string(third/9) in
+  let mtmp75 = println__T_string(t85) in
+  let t86 = inherent#int32#int32#to_string(fourth/12) in
+  let mtmp76 = println__T_string(t86) in
+  jump ret82()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/209: int32) -> Ref[int32] {
+  join ret87(retv88: Ref[int32]) -> Ref[int32] {
+    retv88
+  } in
+  let t89 = @intrinsic(ref.new)(value/209) in
+  jump ret87(t89)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/210: Ref[int32]) -> int32 {
+  join ret90(retv91: int32) -> int32 {
+    retv91
+  } in
+  let t92 = @intrinsic(ref.get)(self/210) in
+  jump ret90(t92)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/211: Ref[int32], value/212: int32) -> unit {
+  join ret93() -> unit {
+    ()
+  } in
+  let t94 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret93()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret95() -> unit {
+    ()
+  } in
+  let t96 = trait_impl#ToString#string#to_string(value/1) in
+  let t97 = @runtime(core.string_println)(t96) in
+  jump ret95()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret98(retv99: string) -> string {
+    retv99
+  } in
+  let t100 = @runtime(core.int32_to_string)(self/6) in
+  jump ret98(t100)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret101(retv102: string) -> string {
+    retv102
+  } in
+  jump ret101(self/38)
+}
+
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  join ret103(retv104: bool) -> bool {
+    retv104
+  } in
+  let t105 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret103(t105)
+}
+
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  join ret106(retv107: uint64) -> uint64 {
+    retv107
+  } in
+  let t108 = @runtime(core.int32_hash)(self/88) in
+  jump ret106(t108)
+}
+
+fn inherent#closure_env_next_0#closure_env_next_0#apply(env77: closure_env_next_0) -> int32 {
+  join ret109(retv110: int32) -> int32 {
+    retv110
+  } in
+  let cell/0 = closure_env_next_0.cell_0(env77) in
+  let t111 = inherent#Ref#Ref[T]#get__T_int32(cell/0) in
+  let next/1 = (t111 + 1) in
+  let mtmp64 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
+  jump ret109(next/1)
+}
+
+fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env78: closure_env_reset_1) -> unit {
+  join ret112() -> unit {
+    ()
+  } in
+  let cell/0 = closure_env_reset_1.cell_0(env78) in
+  let mtmp65 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
+  jump ret112()
+}

@@ -1,0 +1,15 @@
+trait Source[T] where Self::Item = T {
+    type Item;
+    fn get(self: Self) -> Self::Item;
+}
+
+struct Value { value: int32 }
+
+impl Source[int32] for Value {
+    type Item = int32;
+    fn get(self: Value) -> int32 { self.value }
+}
+
+fn read[T, S: Source[T]](source: S) -> T {
+    Source::[T]::get(source)
+}

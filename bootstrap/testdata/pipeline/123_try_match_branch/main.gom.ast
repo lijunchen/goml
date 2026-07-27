@@ -1,0 +1,55 @@
+package main;
+enum Choice {
+    Left(bool),
+    Right(bool),
+    Keep(int32)
+}
+
+fn read_left(ok: bool) -> Result[int32, string] {
+    if ok {
+        {
+            Result::Ok(10)
+        }
+    } else {
+        {
+            Result::Err("left failed")
+        }
+    }
+}
+
+fn read_right(ok: bool) -> Result[int32, string] {
+    if ok {
+        {
+            Result::Ok(20)
+        }
+    } else {
+        {
+            Result::Err("right failed")
+        }
+    }
+}
+
+fn choose(choice: Choice) -> Result[int32, string] {
+    let value = match choice {
+        Choice::Left(ok) => read_left(ok)?,
+        Choice::Right(ok) => read_right(ok)? + 1,
+        Choice::Keep(value) => value,
+    };
+    Result::Ok(value)
+}
+
+fn show(res: Result[int32, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value.to_string(),
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(choose(Choice::Left(true))));
+    println(show(choose(Choice::Right(true))));
+    println(show(choose(Choice::Keep(5))));
+    println(show(choose(Choice::Left(false))));
+    println(show(choose(Choice::Right(false))));
+}
+
