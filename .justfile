@@ -14,6 +14,16 @@ ci:
     cargo fmt
     just clippy
 
+generate-stage0-compiler-from-rust:
+    cargo build -p goml -p gomlc
+    cd bootstrap && ../target/debug/goml build --target-dir _artifact/stage0-rust --compiler ../target/debug/gomlc
+    cd bootstrap && ../target/debug/goml build --target-dir _artifact/stage0-selfhost --compiler _artifact/stage0-rust/bin/cmd/gomlc/gomlc
+    cd bootstrap && ../target/debug/goml build --target-dir _artifact/stage0-fixed --compiler _artifact/stage0-selfhost/bin/cmd/gomlc/gomlc
+    cmp bootstrap/_artifact/stage0-selfhost/build/pkg/gomlc/cmd/gomlc/goml_generated.go bootstrap/_artifact/stage0-fixed/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+    mkdir -p stage0/gomlc
+    cp bootstrap/_artifact/stage0-fixed/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc/gomlc.go
+    go build -trimpath -o bootstrap/_artifact/stage0-gomlc stage0/gomlc/gomlc.go
+
 build-lsp:
     cargo build -p lsp-server
 
