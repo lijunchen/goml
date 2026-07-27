@@ -62,8 +62,14 @@ pub fn gomlc_binary() -> string {
     match env::var("GOML_TEST_GOMLC") {
         Option::Some(value) => absolute(value),
         Option::None => path::join(
-            path::join(repository_root(), "target"),
-            "debug/gomlc",
+            path::join(
+                path::join(
+                    path::join(repository_root(), "bootstrap"),
+                    "_bootstrap",
+                ),
+                "stage1/bin/cmd/gomlc",
+            ),
+            "gomlc",
         ),
     }
 }
@@ -73,6 +79,14 @@ pub fn workspace(name: string) -> string {
         path::join(module_root(), "_artifact/test-work"),
         name,
     );
+    if fs::exists(result) {
+        match fs::remove_dir_all(result) {
+            Result::Ok(()) => (),
+            Result::Err(message) => testing::fail(message),
+        }
+    } else {
+        ()
+    };
     match fs::create_dir_all(result) {
         Result::Ok(()) => result,
         Result::Err(message) => {

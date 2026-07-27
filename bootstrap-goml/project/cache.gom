@@ -1,0 +1,509 @@
+package project;
+
+use gomlang::bootstrap_goml::util;
+use std::fs;
+use std::path;
+use std::text;
+
+struct CacheSpec {
+    kind: string,
+    args: Vec[string],
+    inputs: Vec[string],
+    outputs: Vec[string],
+    anchor: string,
+}
+
+fn sha256_constants() -> [uint32; 64] {
+    [
+        1116352408,
+        1899447441,
+        3049323471,
+        3921009573,
+        961987163,
+        1508970993,
+        2453635748,
+        2870763221,
+        3624381080,
+        310598401,
+        607225278,
+        1426881987,
+        1925078388,
+        2162078206,
+        2614888103,
+        3248222580,
+        3835390401,
+        4022224774,
+        264347078,
+        604807628,
+        770255983,
+        1249150122,
+        1555081692,
+        1996064986,
+        2554220882,
+        2821834349,
+        2952996808,
+        3210313671,
+        3336571891,
+        3584528711,
+        113926993,
+        338241895,
+        666307205,
+        773529912,
+        1294757372,
+        1396182291,
+        1695183700,
+        1986661051,
+        2177026350,
+        2456956037,
+        2730485921,
+        2820302411,
+        3259730800,
+        3345764771,
+        3516065817,
+        3600352804,
+        4094571909,
+        275423344,
+        430227734,
+        506948616,
+        659060556,
+        883997877,
+        958139571,
+        1322822218,
+        1537002063,
+        1747873779,
+        1955562222,
+        2024104815,
+        2227730452,
+        2361852424,
+        2428436474,
+        2756734187,
+        3204031479,
+        3329325298,
+    ]
+}
+
+fn sha256_rotate_right(value: uint32, count: uint32) -> uint32 {
+    (value >> count) | (value << (32 - count))
+}
+
+fn sha256_padded_byte(
+    value: Vec[uint8],
+    index: int,
+    padded_len: int,
+    bit_len: uint64,
+) -> uint8 {
+    if index < value.len() {
+        value.get(index)
+    } else if index == value.len() {
+        128
+    } else if index >= padded_len - 8 {
+        let shift = ((padded_len - 1 - index) * 8) as uint64;
+        ((bit_len >> shift) & 255) as uint8
+    } else {
+        0
+    }
+}
+
+fn sha256_message_word(
+    value: Vec[uint8],
+    offset: int,
+    padded_len: int,
+    bit_len: uint64,
+) -> uint32 {
+    ((sha256_padded_byte(value, offset, padded_len, bit_len) as uint32) << 24)
+        | ((sha256_padded_byte(
+            value,
+            offset + 1,
+            padded_len,
+            bit_len,
+        ) as uint32) << 16)
+        | ((sha256_padded_byte(
+            value,
+            offset + 2,
+            padded_len,
+            bit_len,
+        ) as uint32) << 8)
+        | (sha256_padded_byte(
+            value,
+            offset + 3,
+            padded_len,
+            bit_len,
+        ) as uint32)
+}
+
+fn sha256_write_hex(builder: text::StringBuilder, value: uint32) -> unit {
+    let digits = "0123456789abcdef";
+    for index in range(0, 8) {
+        let shift = ((7 - index) * 4) as uint32;
+        builder.write_char(digits.get(((value >> shift) & 15) as int))
+    }
+}
+
+fn sha256_bytes(value: Vec[uint8]) -> string {
+    let constants = sha256_constants();
+    let padded_len = Ref::new(value.len() + 9);
+    while padded_len.get() % 64 != 0 {
+        padded_len.set(padded_len.get() + 1)
+    };
+    let bit_len = (value.len() as uint64) * 8;
+    let h0 = Ref::new(1779033703);
+    let h1 = Ref::new(3144134277);
+    let h2 = Ref::new(1013904242);
+    let h3 = Ref::new(2773480762);
+    let h4 = Ref::new(1359893119);
+    let h5 = Ref::new(2600822924);
+    let h6 = Ref::new(528734635);
+    let h7 = Ref::new(1541459225);
+    for chunk in range(0, padded_len.get() / 64) {
+        let words: Vec[uint32] = Vec::new();
+        for index in range(0, 16) {
+            words.push(sha256_message_word(
+                value,
+                chunk * 64 + index * 4,
+                padded_len.get(),
+                bit_len,
+            ))
+        };
+        for index in range(16, 64) {
+            let first = words.get(index - 15);
+            let second = words.get(index - 2);
+            let sigma0 = sha256_rotate_right(first, 7)
+                ^ sha256_rotate_right(first, 18)
+                ^ (first >> 3);
+            let sigma1 = sha256_rotate_right(second, 17)
+                ^ sha256_rotate_right(second, 19)
+                ^ (second >> 10);
+            words.push(
+                words.get(index - 16)
+                    + sigma0
+                    + words.get(index - 7)
+                    + sigma1,
+            )
+        };
+        let a = Ref::new(h0.get());
+        let b = Ref::new(h1.get());
+        let c = Ref::new(h2.get());
+        let d = Ref::new(h3.get());
+        let e = Ref::new(h4.get());
+        let f = Ref::new(h5.get());
+        let g = Ref::new(h6.get());
+        let h = Ref::new(h7.get());
+        for index in range(0, 64) {
+            let sigma1 = sha256_rotate_right(e.get(), 6)
+                ^ sha256_rotate_right(e.get(), 11)
+                ^ sha256_rotate_right(e.get(), 25);
+            let choice = (e.get() & f.get()) ^ (~(e.get()) & g.get());
+            let temp1 = h.get()
+                + sigma1
+                + choice
+                + array_get(constants, index)
+                + words.get(index);
+            let sigma0 = sha256_rotate_right(a.get(), 2)
+                ^ sha256_rotate_right(a.get(), 13)
+                ^ sha256_rotate_right(a.get(), 22);
+            let majority = (a.get() & b.get())
+                ^ (a.get() & c.get())
+                ^ (b.get() & c.get());
+            let temp2 = sigma0 + majority;
+            h.set(g.get());
+            g.set(f.get());
+            f.set(e.get());
+            e.set(d.get() + temp1);
+            d.set(c.get());
+            c.set(b.get());
+            b.set(a.get());
+            a.set(temp1 + temp2)
+        };
+        h0.set(h0.get() + a.get());
+        h1.set(h1.get() + b.get());
+        h2.set(h2.get() + c.get());
+        h3.set(h3.get() + d.get());
+        h4.set(h4.get() + e.get());
+        h5.set(h5.get() + f.get());
+        h6.set(h6.get() + g.get());
+        h7.set(h7.get() + h.get())
+    };
+    let builder = text::StringBuilder::new();
+    sha256_write_hex(builder, h0.get());
+    sha256_write_hex(builder, h1.get());
+    sha256_write_hex(builder, h2.get());
+    sha256_write_hex(builder, h3.get());
+    sha256_write_hex(builder, h4.get());
+    sha256_write_hex(builder, h5.get());
+    sha256_write_hex(builder, h6.get());
+    sha256_write_hex(builder, h7.get());
+    builder.finish()
+}
+
+fn sha256_text(value: string) -> string {
+    sha256_bytes(value.to_bytes())
+}
+
+fn absolute_from_module(module_dir: string, value: string) -> string {
+    if path::is_absolute(value) {
+        value
+    } else {
+        path::join(module_dir, value)
+    }
+}
+
+fn file_digest(module_dir: string, value: string) -> Result[string, string] {
+    match fs::sha256_file(absolute_from_module(module_dir, value)) {
+        Result::Ok(value) => Result::Ok(value),
+        Result::Err(message) => Result::Err(
+            "failed to read cache input " + value + ": " + message,
+        ),
+    }
+}
+
+fn compiler_digest(context: Context) -> Result[string, string] {
+    if fs::is_file(context.compiler) {
+        file_digest(context.graph.module_dir, context.compiler)
+    } else {
+        Result::Ok(sha256_text(context.compiler))
+    }
+}
+
+fn cache_spec(value: Command) -> Option[CacheSpec] {
+    match value {
+        Command::Compile {
+            subcommand,
+            input_files,
+            interface_files,
+            output,
+            ..
+        } => {
+            let inputs = Vec::new();
+            for input in input_files {
+                inputs.push(input)
+            };
+            for input in interface_files {
+                inputs.push(input)
+            };
+            let outputs = Vec::new().pushed(path::with_extension(
+                output,
+                "interface",
+            ));
+            if subcommand == "build" || subcommand == "test-build" {
+                outputs.push(path::with_extension(output, "core"))
+            } else {
+                ()
+            };
+            Option::Some(CacheSpec {
+                kind: subcommand,
+                args: command_args(value).1,
+                inputs,
+                outputs,
+                anchor: output,
+            })
+        },
+        Command::Link {
+            input_cores,
+            output,
+            ..
+        } => Option::Some(CacheSpec {
+            kind: "link",
+            args: command_args(value).1,
+            inputs: input_cores,
+            outputs: Vec::new().pushed(output),
+            anchor: output,
+        }),
+        Command::TestLink {
+            input_cores,
+            output,
+            manifest,
+            ..
+        } => Option::Some(CacheSpec {
+            kind: "test-link",
+            args: command_args(value).1,
+            inputs: input_cores,
+            outputs: Vec::new().pushed(output).pushed(manifest),
+            anchor: output,
+        }),
+        Command::GoBuild { input, output } => Option::Some(CacheSpec {
+            kind: "go-build",
+            args: command_args(value).1,
+            inputs: Vec::new().pushed(input),
+            outputs: Vec::new().pushed(output),
+            anchor: output,
+        }),
+    }
+}
+
+fn cache_path(module_dir: string, spec: CacheSpec) -> string {
+    absolute_from_module(module_dir, spec.anchor)
+        + ".goml-"
+        + spec.kind
+        + "-fingerprint"
+}
+
+fn command_fingerprint(
+    context: Context,
+    compiler: string,
+    spec: CacheSpec,
+) -> Result[string, string] {
+    let builder = text::StringBuilder::new();
+    builder.write_string("goml-build-cache-v1\n");
+    builder.write_string(compiler);
+    builder.write_char('\n');
+    builder.write_string(context.graph.module_dir);
+    builder.write_char('\n');
+    builder.write_string(spec.kind);
+    builder.write_char('\n');
+    for argument in spec.args {
+        builder.write_string(argument.byte_len().to_string());
+        builder.write_char(':');
+        builder.write_string(argument)
+    };
+    builder.write_char('\n');
+    for input in spec.inputs {
+        let digest = match file_digest(context.graph.module_dir, input) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        builder.write_string(input.byte_len().to_string());
+        builder.write_char(':');
+        builder.write_string(input);
+        builder.write_string(digest)
+    };
+    Result::Ok(sha256_text(builder.finish()))
+}
+
+fn output_digests(
+    module_dir: string,
+    outputs: Vec[string],
+) -> Result[Option[Vec[string]], string] {
+    let result = Vec::new();
+    for output in outputs {
+        if fs::is_file(absolute_from_module(module_dir, output)) {
+            match file_digest(module_dir, output) {
+                Result::Ok(value) => result.push(value),
+                Result::Err(message) => return Result::Err(message),
+            }
+        } else {
+            return Result::Ok(Option::None)
+        }
+    };
+    Result::Ok(Option::Some(result))
+}
+
+fn cache_is_fresh(
+    context: Context,
+    spec: CacheSpec,
+    fingerprint: string,
+) -> Result[bool, string] {
+    let record_path = cache_path(context.graph.module_dir, spec);
+    if !fs::is_file(record_path) {
+        return Result::Ok(false)
+    } else {
+        ()
+    };
+    let source = match fs::read_file(record_path) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let lines = util::split(source, "\n");
+    if lines.len() != spec.outputs.len() + 1 || lines.get(0) != fingerprint {
+        return Result::Ok(false)
+    } else {
+        ()
+    };
+    let actual = match output_digests(
+        context.graph.module_dir,
+        spec.outputs,
+    ) {
+        Result::Ok(Option::Some(value)) => value,
+        Result::Ok(Option::None) => return Result::Ok(false),
+        Result::Err(message) => return Result::Err(message),
+    };
+    for index in range(0, actual.len()) {
+        if lines.get(index + 1) != actual.get(index) {
+            return Result::Ok(false)
+        } else {
+            ()
+        }
+    };
+    Result::Ok(true)
+}
+
+fn remove_cache_file(value: string) -> Result[unit, string] {
+    if fs::exists(value) {
+        fs::remove_file(value)
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn prepare_cache_execution(
+    context: Context,
+    spec: CacheSpec,
+) -> Result[unit, string] {
+    match remove_cache_file(cache_path(context.graph.module_dir, spec)) {
+        Result::Ok(()) => (),
+        Result::Err(message) => return Result::Err(message),
+    };
+    for output in spec.outputs {
+        match remove_cache_file(absolute_from_module(
+            context.graph.module_dir,
+            output,
+        )) {
+            Result::Ok(()) => (),
+            Result::Err(message) => return Result::Err(message),
+        }
+    };
+    Result::Ok(())
+}
+
+fn store_cache(
+    context: Context,
+    spec: CacheSpec,
+    compiler: string,
+    before: string,
+) -> Result[unit, string] {
+    let after = match command_fingerprint(context, compiler, spec) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            let _ = prepare_cache_execution(context, spec);
+            return Result::Err(message)
+        },
+    };
+    if after != before {
+        let _ = prepare_cache_execution(context, spec);
+        return Result::Err("cache input changed while executing subcommand")
+    } else {
+        ()
+    };
+    let digests = match output_digests(
+        context.graph.module_dir,
+        spec.outputs,
+    ) {
+        Result::Ok(Option::Some(value)) => value,
+        Result::Ok(Option::None) => {
+            let _ = prepare_cache_execution(context, spec);
+            return Result::Err(
+                "subcommand succeeded without all expected outputs",
+            )
+        },
+        Result::Err(message) => {
+            let _ = prepare_cache_execution(context, spec);
+            return Result::Err(message)
+        },
+    };
+    let builder = text::StringBuilder::new();
+    builder.write_string(after);
+    for digest in digests {
+        builder.write_char('\n');
+        builder.write_string(digest)
+    };
+    let record_path = cache_path(context.graph.module_dir, spec);
+    match path::parent(record_path) {
+        Option::Some(parent) => match fs::create_dir_all(parent) {
+            Result::Ok(()) => (),
+            Result::Err(message) => return Result::Err(message),
+        },
+        Option::None => return Result::Err(
+            "fingerprint path has no parent directory",
+        ),
+    };
+    fs::write_file(record_path, builder.finish())
+}

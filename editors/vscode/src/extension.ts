@@ -44,7 +44,7 @@ export function activate(context: ExtensionContext) {
                     'goml',
                     new ProcessExecution(
                         'goml',
-                        ['test', uri.fsPath, testName, '--kind', kind],
+                        ['test', testName, '--kind', kind],
                         { cwd }
                     )
                 );
@@ -62,7 +62,7 @@ export function activate(context: ExtensionContext) {
 
     if (!serverPath) {
         window.showErrorMessage(
-            'GoML language server not found. Please install the selected server or set goml.serverPath in settings.'
+            'GoML language server not found. Please install gomllsp or set goml.serverPath in settings.'
         );
         return;
     }
@@ -111,8 +111,7 @@ function findServerPath(context: ExtensionContext): string | undefined {
         return configPath;
     }
 
-    const implementation = config.get<string>('serverImplementation', 'rust');
-    const binary = implementation === 'bootstrap' ? 'gomllsp' : 'goml-lsp';
+    const binary = 'gomllsp';
     const bundledPath = path.join(context.extensionPath, 'bin', binary);
     if (fs.existsSync(bundledPath)) {
         return bundledPath;

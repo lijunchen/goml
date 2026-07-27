@@ -14,6 +14,8 @@ pub struct Options {
     pub ignored: bool,
     pub include_ignored: bool,
     pub json: bool,
+    pub nocapture: bool,
+    pub timeout_ms: int,
 }
 
 pub struct Group {
@@ -34,6 +36,7 @@ struct Test {
 enum Status {
     Passed,
     Failed(int),
+    TimedOut,
     Ignored,
 }
 
@@ -208,37 +211,69 @@ fn run_one(
             stderr: "",
         }
     } else {
-        match process::Command::new(test.executable)
+        let command = process::Command::new(test.executable)
             .arg(test.id)
             .current_dir(module_dir)
-            .env("TZ", "UTC")
-            .output()
-        {
-            Result::Ok(output) => Execution {
-                index,
-                test,
-                status: if process::ExitStatus::success(
-                    process::Output::status(output),
-                ) {
-                    Status::Passed
-                } else {
-                    Status::Failed(match process::ExitStatus::code(
-                        process::Output::status(output),
-                    ) {
-                        Option::Some(value) => value,
-                        Option::None => -1,
-                    })
+            .env("TZ", "UTC");
+        if options.nocapture {
+            match command.status_timeout(options.timeout_ms) {
+                Result::Ok(result) => Execution {
+                    index,
+                    test,
+                    status: if result.1 {
+                        Status::TimedOut
+                    } else if process::ExitStatus::success(result.0) {
+                        Status::Passed
+                    } else {
+                        Status::Failed(match process::ExitStatus::code(result.0) {
+                            Option::Some(value) => value,
+                            Option::None => -1,
+                        })
+                    },
+                    stdout: "",
+                    stderr: "",
                 },
-                stdout: bytes_text(process::Output::stdout(output)),
-                stderr: bytes_text(process::Output::stderr(output)),
-            },
-            Result::Err(message) => Execution {
-                index,
-                test,
-                status: Status::Failed(-1),
-                stdout: "",
-                stderr: message,
-            },
+                Result::Err(message) => Execution {
+                    index,
+                    test,
+                    status: Status::Failed(-1),
+                    stdout: "",
+                    stderr: message,
+                },
+            }
+        } else {
+            match command.output_timeout(options.timeout_ms) {
+                Result::Ok(result) => {
+                    let output = result.0;
+                    Execution {
+                        index,
+                        test,
+                        status: if result.1 {
+                            Status::TimedOut
+                        } else if process::ExitStatus::success(
+                            process::Output::status(output),
+                        ) {
+                            Status::Passed
+                        } else {
+                            Status::Failed(match process::ExitStatus::code(
+                                process::Output::status(output),
+                            ) {
+                                Option::Some(value) => value,
+                                Option::None => -1,
+                            })
+                        },
+                        stdout: bytes_text(process::Output::stdout(output)),
+                        stderr: bytes_text(process::Output::stderr(output)),
+                    }
+                },
+                Result::Err(message) => Execution {
+                    index,
+                    test,
+                    status: Status::Failed(-1),
+                    stdout: "",
+                    stderr: message,
+                },
+            }
         }
     }
 }
@@ -296,18 +331,39 @@ fn report_text(values: Vec[Execution]) -> int {
             },
             Status::Ignored => {
                 ignored.set(ignored.get() + 1);
-                io::println("test " + value.test.display_name + " ... ignored")
+                io::println(
+                    "test "
+                        + value.test.display_name
+                        + " ... "
+                        + match value.test.ignore_reason {
+                            Option::Some(reason) => "ignored: " + reason,
+                            Option::None => "ignored",
+                        },
+                )
             },
-            Status::Failed(_) => {
+            Status::TimedOut | Status::Failed(_) => {
                 failed.set(failed.get() + 1);
-                io::println("test " + value.test.display_name + " ... FAILED");
+                let status = match value.status {
+                    Status::TimedOut => "FAILED (timed out)",
+                    Status::Failed(code) => if code < 0 {
+                        "FAILED (terminated by signal)"
+                    } else {
+                        "FAILED (exit code " + code.to_string() + ")"
+                    },
+                    _ => "FAILED",
+                };
+                io::println(
+                    "test " + value.test.display_name + " ... " + status,
+                );
                 if value.stdout != "" {
-                    io::println(value.stdout)
+                    io::println("---- stdout ----");
+                    io::print(value.stdout)
                 } else {
                     ()
                 };
                 if value.stderr != "" {
-                    io::eprintln(value.stderr)
+                    io::println("---- stderr ----");
+                    io::print(value.stderr)
                 } else {
                     ()
                 }
@@ -337,6 +393,10 @@ fn report_json(values: Vec[Execution]) -> int {
             Status::Failed(_) => {
                 failed.set(failed.get() + 1);
                 "failed"
+            },
+            Status::TimedOut => {
+                failed.set(failed.get() + 1);
+                "timed_out"
             },
         };
         io::println(

@@ -15,9 +15,18 @@ pub struct PackageInfoFile {
 pub struct Package {
     pub name: string,
     pub declared_name: string,
+    pub module_name: string,
     pub directory: string,
+    pub artifact_prefix: string,
     pub files: Vec[string],
     pub imports: Vec[string],
+}
+
+pub struct ModuleSource {
+    pub name: string,
+    pub directory: string,
+    pub artifact_prefix: string,
+    pub dependencies: Vec[string],
 }
 
 pub struct Graph {
@@ -25,6 +34,7 @@ pub struct Graph {
     pub module_path: string,
     pub entry_package: string,
     pub packages: Vec[Package],
+    pub sources: Vec[ModuleSource],
     pub order: Vec[string],
 }
 

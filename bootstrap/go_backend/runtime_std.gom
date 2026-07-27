@@ -238,6 +238,66 @@ fn std_fs_read_file_item() -> Item {
     )
 }
 
+fn std_fs_sha256_file_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "data",
+        ty: Type::Slice { elem: Type::Uint8 },
+        value: Option::None,
+    });
+    stmts.push(Stmt::Var {
+        name: "err",
+        ty: Type::Named { name: "error" },
+        value: Option::None,
+    });
+    stmts.push(Stmt::MultiAssign {
+        names: Vec::new().pushed("data").pushed("err"),
+        value: std_call(
+            "_goml_os.ReadFile",
+            Vec::new().pushed(Expr::Var { name: "path" }),
+        ),
+    });
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return {
+        expr: Option::Some(std_bool_string_string_expr(
+            false,
+            Expr::String { value: "" },
+            std_error_string(),
+        )),
+    });
+    stmts.push(Stmt::If {
+        cond: std_error_condition(),
+        then_: Block { stmts: failed },
+        else_: Option::None,
+    });
+    stmts.push(Stmt::Var {
+        name: "digest",
+        ty: Type::Array { len: 32, elem: Type::Uint8 },
+        value: Option::Some(std_call(
+            "_goml_sha256.Sum256",
+            Vec::new().pushed(Expr::Var { name: "data" }),
+        )),
+    });
+    let format_args = Vec::new()
+        .pushed(Expr::String { value: "%x" })
+        .pushed(Expr::Var { name: "digest" });
+    stmts.push(Stmt::Return {
+        expr: Option::Some(std_bool_string_string_expr(
+            true,
+            std_call("_goml_fmt.Sprintf", format_args),
+            Expr::String { value: "" },
+        )),
+    });
+    std_function_item(
+        "std.fs.sha256_file",
+        params,
+        std_bool_string_string_type(),
+        stmts,
+    )
+}
+
 fn std_fs_write_file_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("path", Type::String));
@@ -398,6 +458,38 @@ fn std_fs_create_dir_all_item() -> Item {
         std_bool_string_type(),
         stmts,
     )
+}
+
+fn std_fs_remove_item(key: string, function: string) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var { name: "path" });
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "err",
+        ty: Type::Named { name: "error" },
+        value: Option::Some(std_call(function, args)),
+    });
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return {
+        expr: Option::Some(std_bool_string_expr(
+                false,
+                std_error_string(),
+            )),
+    });
+    stmts.push(Stmt::If {
+        cond: std_error_condition(),
+        then_: Block { stmts: failed },
+        else_: Option::None,
+    });
+    stmts.push(Stmt::Return {
+        expr: Option::Some(std_bool_string_expr(
+                true,
+                Expr::String { value: "" },
+            )),
+    });
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
 fn std_fs_file_exists_item() -> Item {
@@ -1170,6 +1262,12 @@ fn std_process_output_params() -> Vec[(string, Type)] {
     params
 }
 
+fn std_process_output_timeout_params() -> Vec[(string, Type)] {
+    let params = std_process_output_params();
+    params.push(("timeout_ms", Type::Int));
+    params
+}
+
 fn std_process_output_type() -> Type {
     let values: Vec[tast::Type] = Vec::new();
     values.push(tast::Type::Bool);
@@ -1177,6 +1275,17 @@ fn std_process_output_type() -> Type {
     values.push(std_vec_type(tast::Type::Uint8));
     values.push(std_vec_type(tast::Type::Uint8));
     values.push(tast::Type::String);
+    std_tuple_type(values)
+}
+
+fn std_process_output_timeout_type() -> Type {
+    let values: Vec[tast::Type] = Vec::new();
+    values.push(tast::Type::Bool);
+    values.push(tast::Type::Int);
+    values.push(std_vec_type(tast::Type::Uint8));
+    values.push(std_vec_type(tast::Type::Uint8));
+    values.push(tast::Type::String);
+    values.push(tast::Type::Bool);
     std_tuple_type(values)
 }
 
@@ -1188,15 +1297,57 @@ fn std_process_status_type() -> Type {
     std_tuple_type(values)
 }
 
-fn std_process_command_setup() -> Vec[Stmt] {
+fn std_process_status_timeout_type() -> Type {
+    let values: Vec[tast::Type] = Vec::new();
+    values.push(tast::Type::Bool);
+    values.push(tast::Type::Int);
+    values.push(tast::Type::String);
+    values.push(tast::Type::Bool);
+    std_tuple_type(values)
+}
+
+fn std_process_timeout_setup() -> Vec[Stmt] {
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "ctx",
+        ty: Type::Named { name: "_goml_context.Context" },
+        value: Option::None,
+    });
+    stmts.push(Stmt::Var {
+        name: "cancel",
+        ty: Type::Named { name: "_goml_context.CancelFunc" },
+        value: Option::None,
+    });
+    let duration_args = Vec::new().pushed(Expr::Var { name: "timeout_ms" });
+    let timeout = Expr::Binary {
+        op: BinaryOp::Mul,
+        lhs: std_call("_goml_time.Duration", duration_args),
+        rhs: Expr::Var { name: "_goml_time.Millisecond" },
+    };
+    let timeout_args = Vec::new()
+        .pushed(std_call("_goml_context.Background", Vec::new()))
+        .pushed(timeout);
+    stmts.push(Stmt::MultiAssign {
+        names: Vec::new().pushed("ctx").pushed("cancel"),
+        value: std_call("_goml_context.WithTimeout", timeout_args),
+    });
+    stmts
+}
+
+fn std_process_command_setup(command_function: string) -> Vec[Stmt] {
     let stmts: Vec[Stmt] = Vec::new();
     let command_args: Vec[Expr] = Vec::new();
+    if command_function == "_goml_exec.CommandContext" {
+        command_args.push(Expr::Var { name: "ctx" })
+    } else {
+        ()
+    };
     command_args.push(Expr::Var { name: "program" });
     command_args.push(Expr::Var { name: "arguments.items..." });
     stmts.push(Stmt::Var {
         name: "cmd",
         ty: Type::Pointer { elem: Type::Named { name: "_goml_exec.Cmd" } },
-        value: Option::Some(std_call("_goml_exec.Command", command_args)),
+        value: Option::Some(std_call(command_function, command_args)),
     });
     let set_directory: Vec[Stmt] = Vec::new();
     set_directory.push(Stmt::FieldAssign {
@@ -1266,6 +1417,7 @@ fn std_process_output_expr(
     valid: bool,
     code: Expr,
     error: Expr,
+    timed: bool,
 ) -> Expr {
     let values: Vec[Expr] = Vec::new();
     values.push(Expr::Bool { value: valid });
@@ -1273,15 +1425,30 @@ fn std_process_output_expr(
     values.push(std_process_buffer("stdout"));
     values.push(std_process_buffer("stderr"));
     values.push(error);
-    std_tuple_expr(std_process_output_type(), values)
+    if timed {
+        values.push(Expr::Var { name: "timed_out" });
+        std_tuple_expr(std_process_output_timeout_type(), values)
+    } else {
+        std_tuple_expr(std_process_output_type(), values)
+    }
 }
 
-fn std_process_status_expr(valid: bool, code: Expr, error: Expr) -> Expr {
+fn std_process_status_expr(
+    valid: bool,
+    code: Expr,
+    error: Expr,
+    timed: bool,
+) -> Expr {
     let values: Vec[Expr] = Vec::new();
     values.push(Expr::Bool { value: valid });
     values.push(code);
     values.push(error);
-    std_tuple_expr(std_process_status_type(), values)
+    if timed {
+        values.push(Expr::Var { name: "timed_out" });
+        std_tuple_expr(std_process_status_timeout_type(), values)
+    } else {
+        std_tuple_expr(std_process_status_type(), values)
+    }
 }
 
 fn std_process_exit_item() -> Item {
@@ -1297,8 +1464,70 @@ fn std_process_exit_item() -> Item {
     std_function_item("std.process.exit", params, Type::Unit, stmts)
 }
 
-fn std_process_output_item() -> Item {
-    let stmts = std_process_command_setup();
+fn std_process_look_path_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("program", Type::String));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "result",
+        ty: Type::String,
+        value: Option::None,
+    });
+    stmts.push(Stmt::Var {
+        name: "err",
+        ty: Type::Named { name: "error" },
+        value: Option::None,
+    });
+    stmts.push(Stmt::MultiAssign {
+        names: Vec::new().pushed("result").pushed("err"),
+        value: std_call(
+            "_goml_exec.LookPath",
+            Vec::new().pushed(Expr::Var { name: "program" }),
+        ),
+    });
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return {
+        expr: Option::Some(std_bool_string_string_expr(
+            false,
+            Expr::String { value: "" },
+            std_error_string(),
+        )),
+    });
+    stmts.push(Stmt::If {
+        cond: std_error_condition(),
+        then_: Block { stmts: failed },
+        else_: Option::None,
+    });
+    stmts.push(Stmt::Return {
+        expr: Option::Some(std_bool_string_string_expr(
+            true,
+            Expr::Var { name: "result" },
+            Expr::String { value: "" },
+        )),
+    });
+    std_function_item(
+        "std.process.look_path",
+        params,
+        std_bool_string_string_type(),
+        stmts,
+    )
+}
+
+fn std_process_output_item_for(timed: bool) -> Item {
+    let stmts = if timed {
+        std_process_timeout_setup()
+    } else {
+        Vec::new()
+    };
+    for stmt in std_process_command_setup(
+        if timed {
+            "_goml_exec.CommandContext"
+        } else {
+            "_goml_exec.Command"
+        },
+    ) {
+        stmts.push(stmt)
+    };
     let set_input: Vec[Stmt] = Vec::new();
     let reader_args: Vec[Expr] = Vec::new();
     reader_args.push(Expr::Field {
@@ -1340,6 +1569,22 @@ fn std_process_output_item() -> Item {
         ty: Type::Named { name: "error" },
         value: Option::Some(std_method_call(Expr::Var { name: "cmd" }, "Run", Vec::new())),
     });
+    if timed {
+        stmts.push(Stmt::Var {
+            name: "timed_out",
+            ty: Type::Bool,
+            value: Option::Some(Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::new()),
+                rhs: Expr::Var { name: "_goml_context.DeadlineExceeded" },
+            }),
+        });
+        stmts.push(Stmt::Expr {
+            expr: std_call("cancel", Vec::new()),
+        })
+    } else {
+        ()
+    };
     stmts.push(Stmt::Var {
         name: "code",
         ty: Type::Int,
@@ -1352,6 +1597,7 @@ fn std_process_output_item() -> Item {
                 false,
                 Expr::Int { value: "-1" },
                 std_error_string(),
+                timed,
             )),
     });
     failed.push(Stmt::If {
@@ -1382,18 +1628,52 @@ fn std_process_output_item() -> Item {
                 true,
                 Expr::Var { name: "code" },
                 Expr::String { value: "" },
+                timed,
             )),
     });
     std_function_item(
-        "std.process.output",
-        std_process_output_params(),
-        std_process_output_type(),
+        if timed {
+            "std.process.output_timeout"
+        } else {
+            "std.process.output"
+        },
+        if timed {
+            std_process_output_timeout_params()
+        } else {
+            std_process_output_params()
+        },
+        if timed {
+            std_process_output_timeout_type()
+        } else {
+            std_process_output_type()
+        },
         stmts,
     )
 }
 
-fn std_process_status_item() -> Item {
-    let stmts = std_process_command_setup();
+fn std_process_output_item() -> Item {
+    std_process_output_item_for(false)
+}
+
+fn std_process_output_timeout_item() -> Item {
+    std_process_output_item_for(true)
+}
+
+fn std_process_status_item_for(timed: bool) -> Item {
+    let stmts = if timed {
+        std_process_timeout_setup()
+    } else {
+        Vec::new()
+    };
+    for stmt in std_process_command_setup(
+        if timed {
+            "_goml_exec.CommandContext"
+        } else {
+            "_goml_exec.Command"
+        },
+    ) {
+        stmts.push(stmt)
+    };
     stmts.push(Stmt::FieldAssign {
         target: Expr::Var { name: "cmd" },
         field_name: "Stdin",
@@ -1414,6 +1694,22 @@ fn std_process_status_item() -> Item {
         ty: Type::Named { name: "error" },
         value: Option::Some(std_method_call(Expr::Var { name: "cmd" }, "Run", Vec::new())),
     });
+    if timed {
+        stmts.push(Stmt::Var {
+            name: "timed_out",
+            ty: Type::Bool,
+            value: Option::Some(Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::new()),
+                rhs: Expr::Var { name: "_goml_context.DeadlineExceeded" },
+            }),
+        });
+        stmts.push(Stmt::Expr {
+            expr: std_call("cancel", Vec::new()),
+        })
+    } else {
+        ()
+    };
     stmts.push(Stmt::Var {
         name: "code",
         ty: Type::Int,
@@ -1426,6 +1722,7 @@ fn std_process_status_item() -> Item {
                 false,
                 Expr::Int { value: "-1" },
                 std_error_string(),
+                timed,
             )),
     });
     failed.push(Stmt::If {
@@ -1456,14 +1753,37 @@ fn std_process_status_item() -> Item {
                 true,
                 Expr::Var { name: "code" },
                 Expr::String { value: "" },
+                timed,
             )),
     });
     std_function_item(
-        "std.process.status",
-        std_process_params(),
-        std_process_status_type(),
+        if timed {
+            "std.process.status_timeout"
+        } else {
+            "std.process.status"
+        },
+        if timed {
+            let params = std_process_params();
+            params.push(("timeout_ms", Type::Int));
+            params
+        } else {
+            std_process_params()
+        },
+        if timed {
+            std_process_status_timeout_type()
+        } else {
+            std_process_status_type()
+        },
         stmts,
     )
+}
+
+fn std_process_status_item() -> Item {
+    std_process_status_item_for(false)
+}
+
+fn std_process_status_timeout_item() -> Item {
+    std_process_status_item_for(true)
 }
 
 fn standard_runtime_hook_item(key: string) -> Option[Item] {
@@ -1477,6 +1797,8 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_env_var_item())
     } else if key == "std.fs.read_file" {
         Option::Some(std_fs_read_file_item())
+    } else if key == "std.fs.sha256_file" {
+        Option::Some(std_fs_sha256_file_item())
     } else if key == "std.fs.write_file" {
         Option::Some(std_fs_write_file_item())
     } else if key == "std.fs.read_bytes" {
@@ -1485,6 +1807,10 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_fs_write_bytes_item())
     } else if key == "std.fs.create_dir_all" {
         Option::Some(std_fs_create_dir_all_item())
+    } else if key == "std.fs.remove_file" {
+        Option::Some(std_fs_remove_item(key, "_goml_os.Remove"))
+    } else if key == "std.fs.remove_dir_all" {
+        Option::Some(std_fs_remove_item(key, "_goml_os.RemoveAll"))
     } else if key == "std.fs.file_exists" {
         Option::Some(std_fs_file_exists_item())
     } else if key == "std.fs.is_file" {
@@ -1539,8 +1865,14 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_process_exit_item())
     } else if key == "std.process.output" {
         Option::Some(std_process_output_item())
+    } else if key == "std.process.look_path" {
+        Option::Some(std_process_look_path_item())
+    } else if key == "std.process.output_timeout" {
+        Option::Some(std_process_output_timeout_item())
     } else if key == "std.process.status" {
         Option::Some(std_process_status_item())
+    } else if key == "std.process.status_timeout" {
+        Option::Some(std_process_status_timeout_item())
     } else if key == "std.testing.fail" {
         Option::Some(std_testing_fail_item())
     } else {
