@@ -6,6 +6,7 @@ The migration is complete:
 - `bootstrap-goml/` owns the project driver, package manager, dependency resolver, and CLI tests.
 - `bootstrap/testdata/` owns all source fixtures and generated golden files.
 - `stage0/` contains the version-controlled trusted Go sources.
+- `bin/stage0`, `bin/stage1`, and `bin/stage2` contain ignored executable outputs.
 - `just bootstrap` verifies the stage1/stage2 fixed point.
 - CI, installation, and the VS Code extension use only the self-hosted toolchain.
 

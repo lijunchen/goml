@@ -42,35 +42,14 @@ pub fn repository_root() -> string {
 pub fn goml_binary() -> string {
     match env::var("GOML_TEST_GOML") {
         Option::Some(value) => absolute(value),
-        Option::None => path::join(
-            path::join(
-                path::join(
-                    path::join(
-                        path::join(module_root(), "_artifact"),
-                        "bin",
-                    ),
-                    "cmd",
-                ),
-                "goml",
-            ),
-            "goml",
-        ),
+        Option::None => path::join(repository_root(), "bin/stage1/goml"),
     }
 }
 
 pub fn gomlc_binary() -> string {
     match env::var("GOML_TEST_GOMLC") {
         Option::Some(value) => absolute(value),
-        Option::None => path::join(
-            path::join(
-                path::join(
-                    path::join(repository_root(), "bootstrap"),
-                    "_bootstrap",
-                ),
-                "stage1/bin/cmd/gomlc",
-            ),
-            "gomlc",
-        ),
+        Option::None => path::join(repository_root(), "bin/stage1/gomlc"),
     }
 }
 
