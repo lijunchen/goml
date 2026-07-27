@@ -17,7 +17,7 @@ The fixed-point build compiles the stage0 sources, builds stage1 from GoML and s
 
 Generated executables are published under `bin/stage0`, `bin/stage1`, and `bin/stage2`. The entire `bin` directory is ignored by Git.
 
-Explore [bootstrap/testdata/pipeline](bootstrap/testdata/pipeline) for source programs and every compiler-stage golden file. Use `just verify-golden` to check the corpus or `just update-golden` to regenerate it through the self-hosted compiler.
+Explore [gomlc/testdata/pipeline](gomlc/testdata/pipeline) for source programs and every compiler-stage golden file. Use `just verify-golden` to check the corpus or `just update-golden` to regenerate it through the self-hosted compiler.
 
 ## Disclaimer
 

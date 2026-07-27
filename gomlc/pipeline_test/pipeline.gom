@@ -26,7 +26,7 @@ pub fn repo_root() -> string {
 
 pub fn fixture_dir(name: string) -> string {
     path::join(
-        path::join(repo_root(), "bootstrap/testdata/pipeline"),
+        path::join(repo_root(), "gomlc/testdata/pipeline"),
         name,
     )
 }
@@ -142,7 +142,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
     let result = Vec::new();
     let root = path::join(
         repo_root(),
-        "bootstrap/testdata/pipeline",
+        "gomlc/testdata/pipeline",
     );
     match fs::read_dir(root) {
         Result::Ok(names) => for name in names {

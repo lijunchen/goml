@@ -1,6 +1,6 @@
 # goml project driver
 
-`bootstrap-goml` is the self-hosted project driver. It provides project creation, package discovery, check/build/run/test plans, dependency resolution, registry cache management, incremental artifact fingerprints, native linking, and parallel test execution.
+`goml` is the self-hosted project driver. It provides project creation, package discovery, check/build/run/test plans, dependency resolution, registry cache management, incremental artifact fingerprints, native linking, and parallel test execution.
 
 Build and verify the complete toolchain:
 
@@ -12,7 +12,7 @@ just test-bootstrap-driver
 Use the stage1 driver directly:
 
 ```sh
-cd bootstrap-goml
+cd goml
 ../bin/stage1/goml check \
   --compiler ../bin/stage1/gomlc
 ../bin/stage1/goml test \
