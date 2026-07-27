@@ -24,6 +24,14 @@ generate-stage0-compiler-from-rust:
     cp bootstrap/_artifact/stage0-fixed/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc/gomlc.go
     go build -trimpath -o bootstrap/_artifact/stage0-gomlc stage0/gomlc/gomlc.go
 
+generate-stage0-driver-from-compiler:
+    cargo build -p goml
+    go build -trimpath -o bootstrap/_artifact/stage0-gomlc stage0/gomlc/gomlc.go
+    cd bootstrap-goml && ../target/debug/goml build --target-dir _artifact/stage0-selfhost --compiler ../bootstrap/_artifact/stage0-gomlc
+    mkdir -p stage0/goml
+    cp bootstrap-goml/_artifact/stage0-selfhost/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml/goml.go
+    go build -trimpath -o bootstrap-goml/_artifact/stage0-goml stage0/goml/goml.go
+
 build-lsp:
     cargo build -p lsp-server
 
