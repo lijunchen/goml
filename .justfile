@@ -32,6 +32,42 @@ generate-stage0-driver-from-compiler:
     cp bootstrap-goml/_artifact/stage0-selfhost/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml/goml.go
     go build -trimpath -o bootstrap-goml/_artifact/stage0-goml stage0/goml/goml.go
 
+build-stage0:
+    mkdir -p bin/stage0
+    go build -trimpath -o bin/stage0/gomlc stage0/gomlc/gomlc.go
+    go build -trimpath -o bin/stage0/goml stage0/goml/goml.go
+
+bootstrap-stage1: build-stage0
+    mkdir -p bin/stage1
+    cd bootstrap && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage0/gomlc
+    cp bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc bin/stage1/gomlc
+    cp bootstrap/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp bin/stage1/gomllsp
+    cd bootstrap-goml && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
+    cp bootstrap-goml/_bootstrap/stage1/bin/cmd/goml/goml bin/stage1/goml
+
+bootstrap-stage2: bootstrap-stage1
+    mkdir -p bin/stage2
+    cd bootstrap && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
+    cp bootstrap/_bootstrap/stage2/bin/cmd/gomlc/gomlc bin/stage2/gomlc
+    cp bootstrap/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp bin/stage2/gomllsp
+    cd bootstrap-goml && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
+    cp bootstrap-goml/_bootstrap/stage2/bin/cmd/goml/goml bin/stage2/goml
+
+verify-fixed-point: bootstrap-stage2
+    diff -ru --exclude='*.goml-*-fingerprint' bootstrap/_bootstrap/stage1/build/pkg bootstrap/_bootstrap/stage2/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' bootstrap-goml/_bootstrap/stage1/build/pkg bootstrap-goml/_bootstrap/stage2/build/pkg
+
+verify-bootstrap: verify-fixed-point
+    cmp stage0/gomlc/gomlc.go bootstrap/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+    cmp stage0/goml/goml.go bootstrap-goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
+
+bootstrap: verify-bootstrap
+
+regenerate-stage0: bootstrap-stage2
+    cp bootstrap/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc/gomlc.go
+    cp bootstrap-goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml/goml.go
+    just verify-fixed-point
+
 build-lsp:
     cargo build -p lsp-server
 
