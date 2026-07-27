@@ -13,10 +13,10 @@ Use the stage1 driver directly:
 
 ```sh
 cd bootstrap-goml
-../bin/stage1/goml check \
-  --compiler ../bin/stage1/gomlc
-../bin/stage1/goml test \
-  --compiler ../bin/stage1/gomlc \
+_bootstrap/stage1/bin/cmd/goml/goml check \
+  --compiler ../bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc
+_bootstrap/stage1/bin/cmd/goml/goml test \
+  --compiler ../bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc \
   --jobs 4 \
   --timeout 30s
 ```

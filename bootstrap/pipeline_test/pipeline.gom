@@ -81,11 +81,8 @@ fn tmp_dir() -> string {
     }
 }
 
-fn execute_go_and_read_stdout(go_source: string, name: string) -> string {
-    let work_dir = path::join(
-        path::join(tmp_dir(), "gomlc-pipeline-test"),
-        name,
-    );
+fn execute_go_and_read_stdout(go_source: string) -> string {
+    let work_dir = path::join(tmp_dir(), "gomlc-pipeline-test");
     match fs::create_dir_all(work_dir) {
         Result::Ok(()) => (),
         Result::Err(message) => {
@@ -150,20 +147,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
             if fs::is_dir(directory)
                 && fs::is_file(path::join(directory, "main.gom"))
             {
-                let inserted = Ref::new(false);
-                for index in range(0, result.len()) {
-                    if !(inserted.get()) && name < result.get(index) {
-                        result.insert(index, name);
-                        inserted.set(true)
-                    } else {
-                        ()
-                    }
-                };
-                if !(inserted.get()) {
-                    result.push(name)
-                } else {
-                    ()
-                }
+                result.push(name)
             } else {
                 ()
             }
@@ -206,25 +190,12 @@ pub fn test_one_case(name: string) -> unit {
             assert_snapshot(
                 base,
                 "out",
-                execute_go_and_read_stdout(go_source, name),
+                execute_go_and_read_stdout(go_source),
             )
         } else {
             ()
         }
     } else {
         ()
-    }
-}
-
-pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
-    let index = Ref::new(0);
-    for name in all_pipeline_cases() {
-        let current = index.get();
-        if current % shard_count == shard {
-            test_one_case(name)
-        } else {
-            ()
-        };
-        index.set(current + 1)
     }
 }

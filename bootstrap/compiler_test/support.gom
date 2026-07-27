@@ -280,32 +280,20 @@ pub fn assert_diagnostic_suite(name: string, expected_count: int) -> unit {
 
 fn bootstrap_goml_binary() -> string {
     match env::var("GOML_TEST_GOML") {
-        Option::Some(value) => match path::absolute(value) {
-            Result::Ok(value) => value,
-            Result::Err(message) => {
-                testing::fail(message);
-                value
-            },
-        },
+        Option::Some(value) => value,
         Option::None => path::join(
             repository_root(),
-            "bin/stage1/goml",
+            "bootstrap-goml/_artifact/bin/cmd/goml/goml",
         ),
     }
 }
 
 fn bootstrap_gomlc_binary() -> string {
     match env::var("GOML_TEST_GOMLC") {
-        Option::Some(value) => match path::absolute(value) {
-            Result::Ok(value) => value,
-            Result::Err(message) => {
-                testing::fail(message);
-                value
-            },
-        },
+        Option::Some(value) => value,
         Option::None => path::join(
             repository_root(),
-            "bin/stage1/gomlc",
+            "bootstrap/_artifact/bin/cmd/gomlc/gomlc",
         ),
     }
 }

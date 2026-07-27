@@ -135,7 +135,6 @@ Key functions in the emitter:
 - Self-hosted project driver module in `bootstrap-goml/`.
 - Standard-library navigation sources and builtin prelude in `stdlib/`.
 - Cold-bootstrap Go sources in `stage0/`.
-- Ignored executable outputs in `bin/stage0`, `bin/stage1`, and `bin/stage2`.
 - VS Code extension in `editors/vscode/`.
 - CI and development recipes in `.justfile`. Build artifacts are written below `_bootstrap/` and each module's `_artifact/`.
 
@@ -305,7 +304,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `bin/stage1/gomlc run-single bootstrap/testdata/pipeline/001/main.gom`
+- You can quick check a test case with: `bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc run-single bootstrap/testdata/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running `just update-golden`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `bootstrap/testdata/pipeline/` with a `main.gom` file, then run `just update-golden` to generate the expected outputs.
 
