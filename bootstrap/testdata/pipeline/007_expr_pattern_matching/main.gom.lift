@@ -1,0 +1,78 @@
+fn main() -> unit {
+  let a/0 = Expr::Mul(Expr::Add(Expr::Zero, Expr::Zero), Expr::Zero) in
+  match a/0 {
+    Expr::Add(x65, x66) => {
+      let x65 = Expr::Add._0(a/0) in
+      let x66 = Expr::Add._1(a/0) in
+      match x66 {
+        Expr::Zero => {
+          match x65 {
+            Expr::Zero => {
+              print__T_int(0)
+            },
+            Expr::Succ(x74) => {
+              let x74 = Expr::Succ._0(x65) in
+              let x/2 = x74 in
+              let y/3 = x66 in
+              print__T_int(2)
+            },
+            _ => let x/8 = x65 in
+            print__T_int(5),
+          }
+        },
+        _ => match x65 {
+          Expr::Succ(x79) => {
+            let x79 = Expr::Succ._0(x65) in
+            let x/2 = x79 in
+            let y/3 = x66 in
+            print__T_int(2)
+          },
+          _ => let x/9 = a/0 in
+          print__T_int(6),
+        },
+      }
+    },
+    Expr::Mul(x67, x68) => {
+      let x67 = Expr::Mul._0(a/0) in
+      let x68 = Expr::Mul._1(a/0) in
+      match x67 {
+        Expr::Zero => {
+          let x/1 = x68 in
+          print__T_int(1)
+        },
+        Expr::Add(x85, x86) => {
+          let x85 = Expr::Add._0(x67) in
+          let x86 = Expr::Add._1(x67) in
+          match x68 {
+            Expr::Zero => {
+              let x/4 = x67 in
+              print__T_int(3)
+            },
+            _ => let y/6 = x86 in
+            let x/5 = x85 in
+            let z/7 = x68 in
+            print__T_int(4),
+          }
+        },
+        _ => match x68 {
+          Expr::Zero => {
+            let x/4 = x67 in
+            print__T_int(3)
+          },
+          _ => let x/9 = a/0 in
+          print__T_int(6),
+        },
+      }
+    },
+    _ => let x/9 = a/0 in
+    print__T_int(6),
+  }
+}
+
+fn print__T_int(value/0: int) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#int#to_string(value/0))
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
+}

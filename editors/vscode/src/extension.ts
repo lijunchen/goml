@@ -44,7 +44,7 @@ export function activate(context: ExtensionContext) {
                     'goml',
                     new ProcessExecution(
                         'goml',
-                        ['test', uri.fsPath, testName, '--kind', kind],
+                        ['test', testName, '--kind', kind],
                         { cwd }
                     )
                 );
@@ -62,7 +62,7 @@ export function activate(context: ExtensionContext) {
 
     if (!serverPath) {
         window.showErrorMessage(
-            'GoML language server (goml-lsp) not found. Please install it or set goml.serverPath in settings.'
+            'GoML language server not found. Please install gomllsp or set goml.serverPath in settings.'
         );
         return;
     }
@@ -111,12 +111,13 @@ function findServerPath(context: ExtensionContext): string | undefined {
         return configPath;
     }
 
-    const bundledPath = path.join(context.extensionPath, 'bin', 'goml-lsp');
+    const binary = 'gomllsp';
+    const bundledPath = path.join(context.extensionPath, 'bin', binary);
     if (fs.existsSync(bundledPath)) {
         return bundledPath;
     }
 
-    const bundledPathExe = path.join(context.extensionPath, 'bin', 'goml-lsp.exe');
+    const bundledPathExe = path.join(context.extensionPath, 'bin', `${binary}.exe`);
     if (fs.existsSync(bundledPathExe)) {
         return bundledPathExe;
     }
@@ -125,11 +126,11 @@ function findServerPath(context: ExtensionContext): string | undefined {
     if (envPath) {
         const pathDirs = envPath.split(path.delimiter);
         for (const dir of pathDirs) {
-            const candidate = path.join(dir, 'goml-lsp');
+            const candidate = path.join(dir, binary);
             if (fs.existsSync(candidate)) {
                 return candidate;
             }
-            const candidateExe = path.join(dir, 'goml-lsp.exe');
+            const candidateExe = path.join(dir, `${binary}.exe`);
             if (fs.existsSync(candidateExe)) {
                 return candidateExe;
             }

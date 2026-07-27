@@ -1,0 +1,80 @@
+package anf;
+
+use gomlc::core;
+use gomlc::tast;
+
+fn lower_function(state: State, value: core::Function) -> Function {
+    let ret_id = fresh(state, "ret");
+    let takes_arg = type_is_unit(value.ret_ty) == false;
+    let ret_join = if takes_arg {
+        let ret_value = fresh(state, "retv");
+        let params = Vec::new();
+        params.push((ret_value, value.ret_ty));
+        JoinBind {
+            name: ret_id,
+            params,
+            ret_ty: value.ret_ty,
+            body: Block {
+                binds: no_binds(),
+                term: Term::Return(Imm::Var { name: ret_value, ty: value.ret_ty }),
+            },
+        }
+    } else {
+        JoinBind {
+            name: ret_id,
+            params: Vec::new(),
+            ret_ty: value.ret_ty,
+            body: Block {
+                binds: no_binds(),
+                term: Term::Return(unit_imm()),
+            },
+        }
+    };
+    let previous = state.return_ctx.get();
+    state.return_ctx.set(Option::Some(ReturnCtx {
+        join_id: ret_id,
+        ret_ty: value.ret_ty,
+        takes_arg,
+    }));
+    let lowered = lower_core_block(state, value.body, |result| {
+        jump_block(ret_id, result, takes_arg, value.ret_ty)
+    });
+    state.return_ctx.set(previous);
+    let binds = Vec::new();
+    binds.push(Bind::Join(ret_join));
+    for bind in lowered.binds {
+        binds.push(bind)
+    };
+    Function {
+        name: value.name,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: Block {
+            binds,
+            term: lowered.term,
+        },
+    }
+}
+
+pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
+    let enums = value.enums;
+    let structs = value.structs;
+    let type_instances = value.type_instances;
+    let state = State {
+        counter,
+        loop_ctx: Ref::new(Option::None),
+        return_ctx: Ref::new(Option::None),
+    };
+    let functions = Vec::new();
+    for function in value.functions {
+        functions.push(lower_function(state, function))
+    };
+    File { functions, enums, structs, type_instances }
+}
+
+pub fn lower(value: core::File) -> File {
+    let counter = Ref::new(initial_counter(value));
+    lower_with_counter(value, counter)
+}

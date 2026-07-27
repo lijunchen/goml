@@ -1,0 +1,44 @@
+fn main() -> unit {
+  join ret66() -> unit {
+    ()
+  } in
+  let a/0 = -128 in
+  let t67 = trait_impl#ToString#int8#to_string(a/0) in
+  let _wild64 = println__T_string(t67) in
+  let b/1 = -32768 in
+  let t68 = trait_impl#ToString#int16#to_string(b/1) in
+  let _wild65 = println__T_string(t68) in
+  jump ret66()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret69() -> unit {
+    ()
+  } in
+  let t70 = trait_impl#ToString#string#to_string(value/1) in
+  let t71 = @runtime(core.string_println)(t70) in
+  jump ret69()
+}
+
+fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
+  join ret72(retv73: string) -> string {
+    retv73
+  } in
+  let t74 = @runtime(core.int8_to_string)(self/41) in
+  jump ret72(t74)
+}
+
+fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
+  join ret75(retv76: string) -> string {
+    retv76
+  } in
+  let t77 = @runtime(core.int16_to_string)(self/42) in
+  jump ret75(t77)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  jump ret78(self/38)
+}

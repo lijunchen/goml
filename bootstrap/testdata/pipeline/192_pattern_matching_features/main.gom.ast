@@ -1,0 +1,104 @@
+package main;
+struct Pair {
+    left: int32,
+    right: int32,
+}
+
+enum Maybe {
+    None,
+    Some(int32)
+}
+
+enum Either {
+    Left(int32),
+    Right(int32)
+}
+
+fn unwrap_either(value: Either) -> int32 {
+    match value {
+        whole @ (Either::Left(shared) | Either::Right(shared)) => shared + match whole {
+              Either::Left(_) => 0,
+              Either::Right(_) => 1,
+          },
+    }
+}
+
+fn char_group(value: char) -> string {
+    match value {
+        'a'..='c' => "abc",
+        _ => "other",
+    }
+}
+
+fn describe(value: Maybe, numbers: Vec[int32], view: Slice[int32]) -> string {
+    let from_if = match value {
+        Maybe::Some(n) => {
+              match n {
+                  0 | 1 => "small",
+                  2..=4 => "middle",
+                  x if x > 10 => "large",
+                  _ => "other",
+              }
+          },
+        _ => {
+              "none"
+          },
+    };
+    let from_vec = match numbers {
+        [] => "empty",
+        [first, tail @ ..] if first == tail.len() as int32 => "balanced",
+        [_, ..] => "nonempty",
+    };
+    let from_slice = match view {
+        [first, .., last] if first == last => "same ends",
+        _ => "different ends",
+    };
+    from_if + "/" + from_vec + "/" + from_slice
+}
+
+fn main() -> unit {
+    let pair = Pair {
+        left: 3,
+        right: 9
+    };
+    let Pair { left: left, .. } = pair;
+    let values = [1, 2, 3, 1];
+    let [first, middle @ .., last] = values;
+    println(left);
+    println(first + array_get(middle, 0) + last);
+    let numbers = vec_new();
+    vec_push(numbers, 1);
+    vec_push(numbers, 8);
+    let view = slice(numbers, 0, numbers.len());
+    println(describe(Maybe::Some(3), numbers, view));
+    let empty = vec_new();
+    let empty_view = slice(empty, 0, 0);
+    println(describe(Maybe::None, empty, empty_view));
+    let state = Ref::new(Maybe::Some(7));
+    while true {
+        match state.get() {
+            Maybe::Some(n) => {
+                  println(n);
+                  state.set(Maybe::None);
+              },
+            _ => break,
+        }
+    };
+    match Maybe::Some(6) {
+        Maybe::Some(n) => {
+              println(n);
+          },
+        _ => (),
+    };
+    let aliased = match Maybe::Some(5) {
+        whole @ Maybe::Some(value) => value + match whole {
+              Maybe::Some(inner) => inner,
+              Maybe::None => 0,
+          },
+        Maybe::None => 0,
+    };
+    println(aliased);
+    println(unwrap_either(Either::Right(11)));
+    println(char_group('b'));
+}
+

@@ -1,0 +1,19 @@
+package datapkg;
+
+use project012_trait_scope_and_ufcs::traitpkg;
+
+pub struct Card {
+    pub value: int32,
+}
+
+impl traitpkg::Render for Card {
+    fn render(self: Card) -> string {
+        "R" + self.value.to_string()
+    }
+}
+
+impl traitpkg::Fancy for Card {
+    fn render(self: Card) -> string {
+        "F" + self.value.to_string()
+    }
+}

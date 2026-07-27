@@ -1,0 +1,19 @@
+trait Put[T] {
+    fn put(self: Self, arg1: T) -> string;
+}
+
+struct Value {}
+
+impl Put[int32] for Value {
+    fn put(self: Value, value: int32) -> string { value.to_string() }
+}
+
+impl Put[string] for Value {
+    fn put(self: Value, value: string) -> string { value }
+}
+
+fn main() -> unit {
+    let number = (Value {}).put(1);
+    let text = (Value {}).put("text");
+    let _ = (number, text);
+}

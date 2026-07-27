@@ -1,0 +1,780 @@
+package parser;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+fn is_expr_first(kind: lexer::TokenKind) -> bool {
+    match kind {
+        lexer::TokenKind::IntLit
+        | lexer::TokenKind::Float
+        | lexer::TokenKind::Str
+        | lexer::TokenKind::MultilineStr
+        | lexer::TokenKind::CharLit
+        | lexer::TokenKind::Ident
+        | lexer::TokenKind::TrueKeyword
+        | lexer::TokenKind::FalseKeyword
+        | lexer::TokenKind::Minus
+        | lexer::TokenKind::Bang
+        | lexer::TokenKind::Tilde
+        | lexer::TokenKind::LParen
+        | lexer::TokenKind::LBracket
+        | lexer::TokenKind::IfKeyword
+        | lexer::TokenKind::MatchKeyword
+        | lexer::TokenKind::WhileKeyword
+        | lexer::TokenKind::ForKeyword
+        | lexer::TokenKind::BreakKeyword
+        | lexer::TokenKind::ContinueKeyword
+        | lexer::TokenKind::ReturnKeyword
+        | lexer::TokenKind::Pipe
+        | lexer::TokenKind::OrOr
+        | lexer::TokenKind::GoKeyword => true,
+        _ => false,
+    }
+}
+
+fn expect_expr_with_message(parser: Parser, message: string) -> bool {
+    if marker_is_none(expr(parser)) == false {
+        true
+    } else {
+        if parser.eof() == false {
+            parser.advance_with_error(message)
+        } else {
+            ()
+        };
+        false
+    }
+}
+
+fn expect_expr_bp_with_message(parser: Parser, min_bp: int, message: string) -> bool {
+    if marker_is_none(expr_bp(parser, min_bp)) == false {
+        true
+    } else {
+        if parser.eof() == false {
+            parser.advance_with_error(message)
+        } else {
+            ()
+        };
+        false
+    }
+}
+
+fn simple_expression(parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
+    let marker = parser.open();
+    parser.advance();
+    parser.close(marker, kind)
+}
+
+fn array_literal(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBracket);
+    let previous = parser.set_struct_literals_allowed(true);
+    let parsing = Ref::new(
+        parser.at(lexer::TokenKind::RBracket) == false
+            && parser.eof() == false
+            && expect_expr_with_message(parser, "expected an expression in array literal"),
+    );
+    while parsing.get() && parser.at(lexer::TokenKind::Comma) {
+        parser.expect(lexer::TokenKind::Comma);
+        if parser.at(lexer::TokenKind::RBracket) {
+            parsing.set(false)
+        } else if expect_expr_with_message(parser, "expected an expression in array literal") == false {
+            parsing.set(false)
+        } else {
+            ()
+        }
+    };
+    parser.expect(lexer::TokenKind::RBracket);
+    parser.set_struct_literals_allowed(previous);
+    parser.close(marker, cst::NodeKind::EXPR_ARRAY_LITERAL)
+}
+
+fn ident_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    if path_has_type_args(parser) {
+        let owner = parser.open();
+        parse_path_always(parser);
+        parser.expect(lexer::TokenKind::ColonColon);
+        type_param_list(parser);
+        let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
+        if parser.eat(lexer::TokenKind::ColonColon) {
+            parse_path_always(parser)
+        } else {
+            ()
+        }
+    } else if path_has_legacy_type_args(parser) {
+        parser.error("generic expression arguments must use `::[...]`");
+        let owner = parser.open();
+        parse_path_always(parser);
+        type_param_list(parser);
+        let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
+        parser.expect(lexer::TokenKind::ColonColon);
+        parse_path_always(parser)
+    } else {
+        parse_path_always(parser)
+    };
+    if parser.struct_literals_allowed.get() && looks_like_struct_literal(parser) {
+        struct_literal_field_list(parser);
+        parser.close(marker, cst::NodeKind::EXPR_STRUCT_LITERAL)
+    } else {
+        parser.close(marker, cst::NodeKind::EXPR_IDENT)
+    }
+}
+
+fn paren_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LParen);
+    let previous = parser.set_struct_literals_allowed(true);
+    let result = if parser.at(lexer::TokenKind::RParen) {
+        parser.expect(lexer::TokenKind::RParen);
+        parser.close(marker, cst::NodeKind::EXPR_UNIT)
+    } else {
+        expect_expr_with_message(parser, "expected an expression in paren or tuple literal");
+        if parser.at(lexer::TokenKind::Comma) {
+            while parser.at(lexer::TokenKind::Comma) {
+                parser.expect(lexer::TokenKind::Comma);
+                if is_expr_first(parser.peek()) {
+                    expect_expr_with_message(parser, "expected an expression in tuple literal");
+                } else {
+                    ()
+                }
+            };
+            parser.expect(lexer::TokenKind::RParen);
+            parser.close(marker, cst::NodeKind::EXPR_TUPLE)
+        } else {
+            parser.expect(lexer::TokenKind::RParen);
+            parser.close(marker, cst::NodeKind::EXPR_PAREN)
+        }
+    };
+    parser.set_struct_literals_allowed(previous);
+    result
+}
+
+fn if_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::IfKeyword);
+    let condition = parser.open();
+    let previous = parser.set_struct_literals_allowed(false);
+    let is_let_condition = parser.at(lexer::TokenKind::LetKeyword);
+    if parser.eat(lexer::TokenKind::LetKeyword) {
+        let _ = pattern(parser);
+        parser.expect(lexer::TokenKind::Eq);
+        expect_expr_with_message(parser, "expected an expression after `=` in `if let`");
+    } else if is_expr_first(parser.peek()) {
+        expect_expr_with_message(parser, "expected an expression after `if`");
+    } else {
+        parser.advance_with_error("expected an expression after `if`")
+    };
+    parser.set_struct_literals_allowed(previous);
+    let _ = parser.close(condition, cst::NodeKind::EXPR_IF_COND);
+    let then_marker = parser.open();
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.error("`if` then branches require a block");
+        if is_expr_first(parser.peek()) {
+            let _ = expect_expr_with_message(parser, "expected a then-branch block for `if`");
+            ()
+        } else {
+            ()
+        }
+    };
+    let _ = parser.close(then_marker, cst::NodeKind::EXPR_IF_THEN);
+    if parser.at(lexer::TokenKind::ElseKeyword) {
+        parser.expect(lexer::TokenKind::ElseKeyword);
+        let else_marker = parser.open();
+        if parser.at(lexer::TokenKind::LBrace) {
+            block(parser)
+        } else if parser.at(lexer::TokenKind::IfKeyword) {
+            let _ = if_expression(parser);
+        } else {
+            parser.error("`else` branches require a block or another `if`");
+            if is_expr_first(parser.peek()) {
+                let _ = expect_expr_with_message(parser, "expected an else-branch block for `if`");
+                ()
+            } else {
+                ()
+            }
+        };
+        let _ = parser.close(else_marker, cst::NodeKind::EXPR_IF_ELSE);
+        ()
+    } else {
+        ()
+    };
+    parser.close(marker, cst::NodeKind::EXPR_IF)
+}
+
+fn match_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::MatchKeyword);
+    let previous = parser.set_struct_literals_allowed(false);
+    expect_expr_with_message(parser, "expected a scrutinee expression for `match`");
+    parser.set_struct_literals_allowed(previous);
+    if parser.at(lexer::TokenKind::LBrace) {
+        match_arm_list(parser)
+    } else {
+        parser.error("`match` requires a brace-delimited arm list")
+    };
+    parser.close(marker, cst::NodeKind::EXPR_MATCH)
+}
+
+fn while_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::WhileKeyword);
+    let condition = parser.open();
+    let previous = parser.set_struct_literals_allowed(false);
+    if parser.eat(lexer::TokenKind::LetKeyword) {
+        let _ = pattern(parser);
+        parser.expect(lexer::TokenKind::Eq);
+        expect_expr_with_message(parser, "expected an expression after `=` in `while let`");
+    } else if is_expr_first(parser.peek()) {
+        expect_expr_with_message(parser, "expected an expression after `while`");
+    } else {
+        parser.advance_with_error("expected an expression after `while`")
+    };
+    parser.set_struct_literals_allowed(previous);
+    let _ = parser.close(condition, cst::NodeKind::EXPR_WHILE_COND);
+    let body = parser.open();
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.error("`while` bodies require a block");
+        if is_expr_first(parser.peek()) {
+            let _ = expect_expr_with_message(parser, "expected a body block for `while`");
+            ()
+        } else {
+            ()
+        }
+    };
+    let _ = parser.close(body, cst::NodeKind::EXPR_WHILE_BODY);
+    parser.close(marker, cst::NodeKind::EXPR_WHILE)
+}
+
+fn for_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::ForKeyword);
+    let _ = pattern(parser);
+    if parser.eat(lexer::TokenKind::InKeyword) == false {
+        parser.error("expected `in` after `for` pattern")
+    } else {
+        ()
+    };
+    let previous = parser.set_struct_literals_allowed(false);
+    if is_expr_first(parser.peek()) {
+        expect_expr_with_message(parser, "expected an iterator expression after `in`");
+    } else {
+        parser.error("expected an iterator expression after `in`")
+    };
+    parser.set_struct_literals_allowed(previous);
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.error("expected a block for `for` loop body");
+        if is_expr_first(parser.peek()) {
+            let _ = expr(parser);
+        } else {
+            ()
+        }
+    };
+    parser.close(marker, cst::NodeKind::EXPR_FOR)
+}
+
+fn return_stops_expression(kind: lexer::TokenKind) -> bool {
+    match kind {
+        lexer::TokenKind::Semi
+        | lexer::TokenKind::Comma
+        | lexer::TokenKind::RParen
+        | lexer::TokenKind::RBracket
+        | lexer::TokenKind::RBrace
+        | lexer::TokenKind::Eof => true,
+        _ => false,
+    }
+}
+
+fn return_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::ReturnKeyword);
+    if return_stops_expression(parser.peek()) == false
+        && expect_expr_with_message(parser, "expected an expression after `return`") == false
+    {
+        while parser.eof() == false && return_stops_expression(parser.peek()) == false {
+            parser.advance()
+        }
+    } else {
+        ()
+    };
+    parser.close(marker, cst::NodeKind::EXPR_RETURN)
+}
+
+fn go_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::GoKeyword);
+    if expect_expr_with_message(parser, "expected an expression after `go`") == false {
+        while parser.eof() == false
+            && parser.at(lexer::TokenKind::Semi) == false
+            && parser.at(lexer::TokenKind::RBrace) == false
+        {
+            parser.advance()
+        }
+    } else {
+        ()
+    };
+    parser.close(marker, cst::NodeKind::EXPR_GO)
+}
+
+fn atom(parser: Parser) -> Option[MarkerClosed] {
+    let result = match parser.peek() {
+        lexer::TokenKind::IntLit => simple_expression(parser, cst::NodeKind::EXPR_INT),
+        lexer::TokenKind::Float => simple_expression(parser, cst::NodeKind::EXPR_FLOAT),
+        lexer::TokenKind::LBracket => array_literal(parser),
+        lexer::TokenKind::Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
+        lexer::TokenKind::MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
+        lexer::TokenKind::CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
+        lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
+            simple_expression(parser, cst::NodeKind::EXPR_BOOL),
+        lexer::TokenKind::Ident => ident_expression(parser),
+        lexer::TokenKind::LParen => paren_expression(parser),
+        lexer::TokenKind::IfKeyword => if_expression(parser),
+        lexer::TokenKind::MatchKeyword => match_expression(parser),
+        lexer::TokenKind::WhileKeyword => while_expression(parser),
+        lexer::TokenKind::ForKeyword => for_expression(parser),
+        lexer::TokenKind::BreakKeyword => simple_expression(parser, cst::NodeKind::EXPR_BREAK),
+        lexer::TokenKind::ContinueKeyword => simple_expression(parser, cst::NodeKind::EXPR_CONTINUE),
+        lexer::TokenKind::ReturnKeyword => return_expression(parser),
+        lexer::TokenKind::GoKeyword => go_expression(parser),
+        lexer::TokenKind::Pipe | lexer::TokenKind::OrOr => closure_expr(parser),
+        _ => return Option::None,
+    };
+    Option::Some(result)
+}
+
+fn path_has_type_args(parser: Parser) -> bool {
+    let index = Ref::new(1);
+    while token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::Ident)
+    {
+        index.set(index.get() + 2)
+    };
+    token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::LBracket)
+}
+
+fn path_has_legacy_type_args(parser: Parser) -> bool {
+    let index = Ref::new(1);
+    while token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::Ident)
+    {
+        index.set(index.get() + 2)
+    };
+    if token_is(parser.nth(index.get()), lexer::TokenKind::LBracket) == false {
+        false
+    } else {
+        let depth = Ref::new(0);
+        let result = Ref::new(false);
+        let parsing = Ref::new(true);
+        while parsing.get() {
+            match parser.nth(index.get()) {
+                lexer::TokenKind::LBracket => depth.set(depth.get() + 1),
+                lexer::TokenKind::RBracket => {
+                    depth.set(depth.get() - 1);
+                    if depth.get() == 0 {
+                        result.set(token_is(parser.nth(index.get() + 1), lexer::TokenKind::ColonColon));
+                        parsing.set(false)
+                    } else {
+                        ()
+                    }
+                },
+                lexer::TokenKind::Eof => parsing.set(false),
+                _ => (),
+            };
+            index.set(index.get() + 1)
+        };
+        result.get()
+    }
+}
+
+fn closure_expr(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    closure_param_list(parser);
+    closure_body(parser);
+    parser.close(marker, cst::NodeKind::EXPR_CLOSURE)
+}
+
+fn closure_param_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    if parser.at(lexer::TokenKind::OrOr) {
+        parser.expect(lexer::TokenKind::OrOr);
+        let _ = parser.close(marker, cst::NodeKind::CLOSURE_PARAM_LIST);
+        ()
+    } else {
+        parser.expect(lexer::TokenKind::Pipe);
+        let parsing = Ref::new(true);
+        while parsing.get() && parser.at(lexer::TokenKind::Pipe) == false && parser.eof() == false {
+            closure_param(parser);
+            if parser.at(lexer::TokenKind::Comma) {
+                parser.expect(lexer::TokenKind::Comma)
+            } else if parser.at(lexer::TokenKind::Pipe) {
+                parsing.set(false)
+            } else {
+                parser.advance_with_error("expected `,` or `|` after closure parameter")
+            }
+        };
+        parser.expect(lexer::TokenKind::Pipe);
+        let _ = parser.close(marker, cst::NodeKind::CLOSURE_PARAM_LIST);
+        ()
+    }
+}
+
+fn closure_param(parser: Parser) -> unit {
+    let marker = parser.open();
+    let valid = if parser.at_lower_ident() {
+        parser.expect_lower_ident("closure parameter name");
+        true
+    } else if parser.at(lexer::TokenKind::WildcardKeyword) {
+        parser.expect(lexer::TokenKind::WildcardKeyword);
+        true
+    } else {
+        if parser.at(lexer::TokenKind::Pipe) == false && parser.eof() == false {
+            parser.advance_with_error("expected an identifier in closure parameter")
+        } else {
+            ()
+        };
+        false
+    };
+    if valid && parser.at(lexer::TokenKind::Colon) {
+        parser.expect(lexer::TokenKind::Colon);
+        type_expr(parser)
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::CLOSURE_PARAM);
+    ()
+}
+
+fn closure_body(parser: Parser) -> unit {
+    let marker = parser.open();
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else if is_expr_first(parser.peek()) {
+        expect_expr_with_message(parser, "expected a closure body");
+    } else {
+        parser.advance_with_error("expected a closure body")
+    };
+    let _ = parser.close(marker, cst::NodeKind::EXPR_CLOSURE_BODY);
+    ()
+}
+
+fn match_arm_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBrace);
+    while parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
+        match_arm(parser);
+        if parser.eat(lexer::TokenKind::Comma) {
+            ()
+        } else if parser.at(lexer::TokenKind::RBrace) {
+            ()
+        } else {
+            parser.error("expected `,` between match arms")
+        }
+    };
+    parser.expect(lexer::TokenKind::RBrace);
+    let _ = parser.close(marker, cst::NodeKind::MATCH_ARM_LIST);
+    ()
+}
+
+fn match_arm(parser: Parser) -> unit {
+    let marker = parser.open();
+    let _ = pattern(parser);
+    if parser.at(lexer::TokenKind::IfKeyword) {
+        let guard = parser.open();
+        parser.expect(lexer::TokenKind::IfKeyword);
+        expect_expr_with_message(parser, "expected an expression after match guard `if`");
+        let _ = parser.close(guard, cst::NodeKind::MATCH_ARM_GUARD);
+        ()
+    } else {
+        ()
+    };
+    parser.expect(lexer::TokenKind::FatArrow);
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        expect_expr_with_message(parser, "expected an expression in match arm");
+    };
+    let _ = parser.close(marker, cst::NodeKind::MATCH_ARM);
+    ()
+}
+
+fn struct_literal_field_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBrace);
+    let previous = parser.set_struct_literals_allowed(true);
+    while parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
+        if parser.at_lower_ident() {
+            struct_literal_field(parser);
+            if parser.eat(lexer::TokenKind::Comma) {
+                ()
+            } else if parser.at(lexer::TokenKind::RBrace) {
+                ()
+            } else {
+                parser.error("expected `,` between struct literal fields")
+            }
+        } else {
+            parser.advance_with_error("expected a struct field")
+        }
+    };
+    parser.expect(lexer::TokenKind::RBrace);
+    parser.set_struct_literals_allowed(previous);
+    let _ = parser.close(marker, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST);
+    ()
+}
+
+fn struct_literal_field(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect_lower_ident("struct literal field name");
+    if parser.eat(lexer::TokenKind::Colon) {
+        if is_expr_first(parser.peek()) {
+            expect_expr_with_message(parser, "expected an expression");
+        } else {
+            parser.advance_with_error("expected an expression")
+        }
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::STRUCT_LITERAL_FIELD);
+    ()
+}
+
+fn looks_like_struct_literal(parser: Parser) -> bool {
+    if parser.at(lexer::TokenKind::LBrace) == false {
+        false
+    } else {
+        match parser.nth(1) {
+            lexer::TokenKind::RBrace => true,
+            lexer::TokenKind::Ident => match parser.nth(2) {
+                lexer::TokenKind::Colon | lexer::TokenKind::Comma => true,
+                lexer::TokenKind::RBrace => {
+                    let following = parser.nth(3);
+                    token_is(following, lexer::TokenKind::ElseKeyword) == false
+                        && token_is(following, lexer::TokenKind::LBrace) == false
+                },
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+}
+
+fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int] {
+    match kind {
+        lexer::TokenKind::LParen | lexer::TokenKind::LBracket => Option::Some(21),
+        lexer::TokenKind::Question => Option::Some(22),
+        _ => Option::None,
+    }
+}
+
+fn prefix_binding_power(kind: lexer::TokenKind) -> Option[int] {
+    match kind {
+        lexer::TokenKind::Minus | lexer::TokenKind::Bang | lexer::TokenKind::Tilde => Option::Some(23),
+        _ => Option::None,
+    }
+}
+
+fn infix_binding_power(kind: lexer::TokenKind) -> Option[(int, int)] {
+    match kind {
+        lexer::TokenKind::OrOr => Option::Some((1, 2)),
+        lexer::TokenKind::AndAnd => Option::Some((3, 4)),
+        lexer::TokenKind::EqEq
+        | lexer::TokenKind::NotEq
+        | lexer::TokenKind::Less
+        | lexer::TokenKind::Greater
+        | lexer::TokenKind::LessEq
+        | lexer::TokenKind::GreaterEq => Option::Some((5, 6)),
+        lexer::TokenKind::Pipe => Option::Some((7, 8)),
+        lexer::TokenKind::Caret => Option::Some((8, 9)),
+        lexer::TokenKind::Amp => Option::Some((9, 10)),
+        lexer::TokenKind::LessLess | lexer::TokenKind::GreaterGreater => Option::Some((12, 13)),
+        lexer::TokenKind::Plus | lexer::TokenKind::Minus => Option::Some((13, 14)),
+        lexer::TokenKind::Star | lexer::TokenKind::Slash | lexer::TokenKind::Percent =>
+            Option::Some((15, 16)),
+        lexer::TokenKind::Dot => Option::Some((23, 24)),
+        _ => Option::None,
+    }
+}
+
+fn is_comparison(kind: lexer::TokenKind) -> bool {
+    match kind {
+        lexer::TokenKind::EqEq
+        | lexer::TokenKind::NotEq
+        | lexer::TokenKind::Less
+        | lexer::TokenKind::Greater
+        | lexer::TokenKind::LessEq
+        | lexer::TokenKind::GreaterEq => true,
+        _ => false,
+    }
+}
+
+fn expr(parser: Parser) -> Option[MarkerClosed] {
+    expr_bp(parser, 0)
+}
+
+fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
+    if parser.enter_expr() == false {
+        Option::None
+    } else {
+        let initial = match prefix_binding_power(parser.peek()) {
+            Option::Some(right_bp) => {
+                let marker = parser.open();
+                parser.advance();
+                expect_expr_bp_with_message(parser, right_bp, "expected an operand for prefix operator");
+                Option::Some(parser.close(marker, cst::NodeKind::EXPR_PREFIX))
+            },
+            Option::None => atom(parser),
+        };
+        match initial {
+            Option::None => {
+                parser.leave_expr();
+                Option::None
+            },
+            Option::Some(value) => {
+                let lhs = Ref::new(value);
+                let parsed_range = Ref::new(false);
+                let parsed_comparison = Ref::new(false);
+                let parsing = Ref::new(true);
+                while parsing.get() && parser.eof() == false {
+                    let operator = parser.peek();
+                    if token_is(operator, lexer::TokenKind::DotDot) {
+                        if min_bp > 0 {
+                            parsing.set(false)
+                        } else if parsed_range.get() {
+                            parser.advance_with_error("range expressions cannot be chained");
+                            expect_expr_bp_with_message(
+                                parser,
+                                1,
+                                "expected a range endpoint after `..`",
+                            );
+                        } else {
+                            let marker = lhs.get().precede(parser);
+                            parser.advance();
+                            expect_expr_bp_with_message(
+                                parser,
+                                1,
+                                "expected a range endpoint after `..`",
+                            );
+                            lhs.set(marker.completed(parser, cst::NodeKind::EXPR_RANGE));
+                            parsed_range.set(true)
+                        }
+                    } else if token_is(operator, lexer::TokenKind::AsKeyword) {
+                        let left_bp = 17;
+                        if left_bp < min_bp {
+                            parsing.set(false)
+                        } else {
+                            let marker = lhs.get().precede(parser);
+                            parser.advance();
+                            type_expr(parser);
+                            lhs.set(marker.completed(parser, cst::NodeKind::EXPR_CAST))
+                        }
+                    } else {
+                        match postfix_binding_power(operator) {
+                            Option::Some(left_bp) => {
+                                if left_bp < min_bp {
+                                    parsing.set(false)
+                                } else if parser.at(lexer::TokenKind::LParen) {
+                                    let marker = lhs.get().precede(parser);
+                                    arg_list(parser);
+                                    lhs.set(marker.completed(parser, cst::NodeKind::EXPR_CALL))
+                                } else if parser.at(lexer::TokenKind::LBracket) {
+                                    let marker = lhs.get().precede(parser);
+                                    parser.expect(lexer::TokenKind::LBracket);
+                                    let previous = parser.set_struct_literals_allowed(true);
+                                    if is_expr_first(parser.peek()) {
+                                        expect_expr_with_message(parser, "expected an index expression");
+                                    } else if parser.at(lexer::TokenKind::RBracket) == false {
+                                        parser.advance_with_error("expected an index expression")
+                                    } else {
+                                        ()
+                                    };
+                                    parser.expect(lexer::TokenKind::RBracket);
+                                    parser.set_struct_literals_allowed(previous);
+                                    lhs.set(marker.completed(parser, cst::NodeKind::EXPR_INDEX))
+                                } else if parser.at(lexer::TokenKind::Question) {
+                                    let marker = lhs.get().precede(parser);
+                                    parser.advance();
+                                    lhs.set(marker.completed(parser, cst::NodeKind::EXPR_TRY))
+                                } else {
+                                    parser.advance_with_error(
+                                        "unexpected postfix operator " + lexer::token_kind_name(operator),
+                                    )
+                                }
+                            },
+                            Option::None => match infix_binding_power(operator) {
+                                Option::Some((left_bp, right_bp)) => {
+                                    if left_bp < min_bp {
+                                        parsing.set(false)
+                                    } else if is_comparison(operator) && parsed_comparison.get() {
+                                        parser.advance_with_error("comparison operators cannot be chained");
+                                        expect_expr_bp_with_message(
+                                            parser,
+                                            right_bp,
+                                            "expected a right-hand side for comparison operator",
+                                        );
+                                    } else {
+                                        let marker = lhs.get().precede(parser);
+                                        parser.advance();
+                                        expect_expr_bp_with_message(
+                                            parser,
+                                            right_bp,
+                                            "expected a right-hand side for binary operator",
+                                        );
+                                        lhs.set(marker.completed(parser, cst::NodeKind::EXPR_BINARY));
+                                        if is_comparison(operator) {
+                                            parsed_comparison.set(true)
+                                        } else {
+                                            ()
+                                        }
+                                    }
+                                },
+                                Option::None => parsing.set(false),
+                            },
+                        }
+                    }
+                };
+                let result = lhs.get();
+                parser.leave_expr();
+                Option::Some(result)
+            },
+        }
+    }
+}
+
+fn arg_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LParen);
+    let previous = parser.set_struct_literals_allowed(true);
+    let parsing = Ref::new(true);
+    while parsing.get() && parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
+        if is_expr_first(parser.peek()) {
+            arg(parser)
+        } else {
+            parsing.set(false)
+        }
+    };
+    parser.expect(lexer::TokenKind::RParen);
+    parser.set_struct_literals_allowed(previous);
+    let _ = parser.close(marker, cst::NodeKind::ARG_LIST);
+    ()
+}
+
+fn arg(parser: Parser) -> unit {
+    let marker = parser.open();
+    if marker_is_none(expr(parser)) {
+        parser.advance_with_error("expected an expression")
+    } else {
+        ()
+    };
+    if parser.at(lexer::TokenKind::RParen) == false {
+        parser.expect(lexer::TokenKind::Comma)
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::ARG);
+    ()
+}

@@ -1,0 +1,2772 @@
+package tast;
+
+use gomlc::ast;
+use gomlc::hir;
+
+fn function_context(
+    base: Checker,
+    ret_ty: Type,
+    self_ty: Option[Type],
+    type_params: Vec[string],
+    predicates: Vec[TypePredicate],
+) -> Checker {
+    let predicates = expand_implied_predicates(base, predicates);
+    let param_aliases = predicate_type_aliases(predicates);
+    let projection_aliases = predicate_projection_aliases(predicates);
+    Checker {
+        counter: base.counter,
+        diagnostics: base.diagnostics,
+        typeck_results: base.typeck_results,
+        package_name: base.package_name,
+        source_path: base.source_path,
+        current_span: base.current_span,
+        coercion_constraints: Vec::new(),
+        numeric_literal_constraints: Vec::new(),
+        defer_coercion_depth: Ref::new(0),
+        package_aliases: base.package_aliases,
+        in_scope_traits: base.in_scope_traits,
+        enums: base.enums,
+        structs: base.structs,
+        traits: base.traits,
+        functions: base.functions,
+        rejected_externs: base.rejected_externs,
+        methods: base.methods,
+        impls: base.impls,
+        invalid_impl_origins: base.invalid_impl_origins,
+        invalid_impl_arity_owners: base.invalid_impl_arity_owners,
+        predicates,
+        param_aliases,
+        projection_aliases,
+        field_constraints: Vec::new(),
+        silent_field_receivers: Vec::new(),
+        required_predicates: Vec::new(),
+        locals: Vec::new(),
+        unresolved_locals: Vec::new(),
+        unresolved_inference_vars: Vec::new(),
+        reported_inference_spans: Vec::new(),
+        suppress_unresolved_ref_diagnostic: Ref::new(0),
+        mutable_locals: Vec::new(),
+        return_ty: ret_ty,
+        self_ty,
+        type_params,
+        loop_depth: Ref::new(0),
+        condition_depth: Ref::new(0),
+        condition_loop_depth: Ref::new(0),
+    }
+}
+
+fn closure_context(base: Checker, ret_ty: Type) -> Checker {
+    Checker {
+        counter: base.counter,
+        diagnostics: base.diagnostics,
+        typeck_results: base.typeck_results,
+        package_name: base.package_name,
+        source_path: base.source_path,
+        current_span: base.current_span,
+        coercion_constraints: base.coercion_constraints,
+        numeric_literal_constraints: base.numeric_literal_constraints,
+        defer_coercion_depth: base.defer_coercion_depth,
+        package_aliases: base.package_aliases,
+        in_scope_traits: base.in_scope_traits,
+        enums: base.enums,
+        structs: base.structs,
+        traits: base.traits,
+        functions: base.functions,
+        rejected_externs: base.rejected_externs,
+        methods: base.methods,
+        impls: base.impls,
+        invalid_impl_origins: base.invalid_impl_origins,
+        invalid_impl_arity_owners: base.invalid_impl_arity_owners,
+        predicates: base.predicates,
+        param_aliases: base.param_aliases,
+        projection_aliases: base.projection_aliases,
+        field_constraints: base.field_constraints,
+        silent_field_receivers: base.silent_field_receivers,
+        required_predicates: base.required_predicates,
+        locals: base.locals,
+        unresolved_locals: base.unresolved_locals,
+        unresolved_inference_vars: base.unresolved_inference_vars,
+        reported_inference_spans: base.reported_inference_spans,
+        suppress_unresolved_ref_diagnostic: base.suppress_unresolved_ref_diagnostic,
+        mutable_locals: base.mutable_locals,
+        return_ty: ret_ty,
+        self_ty: base.self_ty,
+        type_params: base.type_params,
+        loop_depth: Ref::new(0),
+        condition_depth: Ref::new(0),
+        condition_loop_depth: Ref::new(0),
+    }
+}
+
+fn deferred_method_name(value: Callable) -> Option[string] {
+    match value {
+        Callable::Function(name) => {
+            let prefix = "__goml_deferred_method:";
+            if name.byte_len() > prefix.byte_len()
+                && name.byte_slice(0, prefix.byte_len()) == prefix
+            {
+                Option::Some(name.byte_slice(
+                    prefix.byte_len(),
+                    name.byte_len(),
+                ))
+            } else {
+                Option::None
+            }
+        },
+        _ => Option::None,
+    }
+}
+
+fn resolve_deferred_exprs(ctx: Checker, values: Vec[Expr]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::new();
+    for value in values {
+        result.push(resolve_deferred_expr(ctx, value))
+    };
+    result
+}
+
+fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    for stmt in value.stmts {
+        stmts.push(match stmt {
+            Stmt::Let { is_mut, pat, value } => Stmt::Let {
+                is_mut,
+                pat,
+                value: resolve_deferred_expr(ctx, value),
+            },
+            Stmt::Assign { target, value } => Stmt::Assign {
+                target: resolve_deferred_expr(ctx, target),
+                value: resolve_deferred_expr(ctx, value),
+            },
+            Stmt::Expr { expr } => Stmt::Expr {
+                expr: resolve_deferred_expr(ctx, expr),
+            },
+        })
+    };
+    Block {
+        stmts,
+        tail: match value.tail {
+            Option::Some(expr) => Option::Some(resolve_deferred_expr(ctx, expr)),
+            Option::None => Option::None,
+        },
+    }
+}
+
+fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
+    match value {
+        Expr::Closure { params, body, ty } => Expr::Closure {
+            params,
+            body: resolve_deferred_expr(ctx, body),
+            ty,
+        },
+        Expr::Block { block, ty } => Expr::Block {
+            block: resolve_deferred_block(ctx, block),
+            ty,
+        },
+        Expr::Call { func, args, ty } => {
+            let args = resolve_deferred_exprs(ctx, args);
+            let func = match func {
+                Expr::Callable { callable, ty: callable_ty } => {
+                    match deferred_method_name(callable) {
+                        Option::Some(name) => if args.len() > 0 {
+                            let arg_types: Vec[Type] = Vec::new();
+                            for index in range(1, args.len()) {
+                                arg_types.push(expr_type(args.get(index)))
+                            };
+                            match resolve_method(
+                                ctx,
+                                expr_type(args.get(0)),
+                                name,
+                                arg_types,
+                                Option::Some(ty),
+                            ) {
+                                Option::Some(value) => Expr::Callable {
+                                    callable: value.callable,
+                                    ty: value.ty,
+                                },
+                                Option::None => Expr::Callable {
+                                    callable,
+                                    ty: callable_ty,
+                                },
+                            }
+                        } else {
+                            Expr::Callable { callable, ty: callable_ty }
+                        },
+                        Option::None => Expr::Callable {
+                            callable,
+                            ty: callable_ty,
+                        },
+                    }
+                },
+                other => resolve_deferred_expr(ctx, other),
+            };
+            Expr::Call { func, args, ty }
+        },
+        other => other,
+    }
+}
+
+fn pattern_has_unresolved_inference(
+    ctx: Checker,
+    value: hir::Pat,
+) -> bool {
+    match value.kind {
+        hir::PatKind::Var { name } => match find_local(ctx, name) {
+            Option::Some(ty) => contains_unresolved_inference(ctx, ty),
+            Option::None => false,
+        },
+        hir::PatKind::Constr { constructor: _, args }
+        | hir::PatKind::Tuple { items: args }
+        | hir::PatKind::Or { pats: args } => {
+            let found = Ref::new(false);
+            for arg in args {
+                if pattern_has_unresolved_inference(ctx, arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => {
+            let found = Ref::new(false);
+            for field in fields {
+                if pattern_has_unresolved_inference(ctx, field.1) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        hir::PatKind::Array { prefix, rest: _, suffix } => {
+            let found = Ref::new(false);
+            for arg in prefix {
+                if pattern_has_unresolved_inference(ctx, arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            for arg in suffix {
+                if pattern_has_unresolved_inference(ctx, arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        hir::PatKind::Alias { name, pat } => {
+            let alias_unresolved = match find_local(ctx, name) {
+                Option::Some(ty) => contains_unresolved_inference(ctx, ty),
+                Option::None => false,
+            };
+            alias_unresolved || pattern_has_unresolved_inference(ctx, pat)
+        },
+        hir::PatKind::Range { start, end, inclusive: _ } => {
+            pattern_has_unresolved_inference(ctx, start)
+                || pattern_has_unresolved_inference(ctx, end)
+        },
+        _ => false,
+    }
+}
+
+fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr]) -> unit {
+    for value in values {
+        report_unresolved_expr(ctx, value)
+    }
+}
+
+fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
+    for stmt in value.stmts {
+        match stmt {
+            hir::Stmt::Let { is_mut: _, pat, annotation, value } => {
+                if match annotation {
+                    Option::Some(_) => false,
+                    Option::None => pattern_has_unresolved_inference(ctx, pat),
+                } {
+                    push_inference_diagnostic_at(ctx, pat.span, 1);
+                    mark_unresolved_pattern_locals(ctx, pat)
+                } else {
+                    ()
+                };
+                report_unresolved_expr(ctx, value)
+            },
+            hir::Stmt::Assign { target, value } => {
+                report_unresolved_expr(ctx, target);
+                report_unresolved_expr(ctx, value)
+            },
+            hir::Stmt::Expr { expr } => report_unresolved_expr(ctx, expr),
+        }
+    };
+    match value.tail {
+        Option::Some(expr) => report_unresolved_expr(ctx, expr),
+        Option::None => (),
+    }
+}
+
+fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
+    match value.kind {
+        hir::ExprKind::NameRef {
+            name_ref: hir::NameRef::Local(local),
+        } => match find_local(ctx, local) {
+            Option::Some(ty) => if contains_unresolved_inference(ctx, ty) {
+                push_inference_diagnostic_at(ctx, value.span, 2)
+            } else {
+                ()
+            },
+            Option::None => (),
+        },
+        hir::ExprKind::ConstructorValue { constructor: _ } => (),
+        hir::ExprKind::Constr { constructor: _, args }
+        | hir::ExprKind::Tuple { items: args }
+        | hir::ExprKind::Array { items: args } => {
+            report_unresolved_exprs(ctx, args)
+        },
+        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
+            report_unresolved_expr(ctx, field.1)
+        },
+        hir::ExprKind::Closure { params, body } => {
+            report_unresolved_expr(ctx, body);
+            for param in params {
+                match find_local(ctx, param.name) {
+                    Option::Some(ty) => if contains_unresolved_inference(ctx, ty) {
+                        push_inference_diagnostic_at(ctx, param.span, 3)
+                    } else {
+                        ()
+                    },
+                    Option::None => (),
+                }
+            }
+        },
+        hir::ExprKind::Match { expr, arms } => {
+            report_unresolved_expr(ctx, expr);
+            for arm in arms {
+                match arm.guard {
+                    Option::Some(guard) => report_unresolved_expr(ctx, guard),
+                    Option::None => (),
+                };
+                report_unresolved_expr(ctx, arm.body)
+            }
+        },
+        hir::ExprKind::If { cond, then_branch, else_branch } => {
+            report_unresolved_expr(ctx, cond);
+            report_unresolved_expr(ctx, then_branch);
+            report_unresolved_expr(ctx, else_branch)
+        },
+        hir::ExprKind::While { cond, body } => {
+            report_unresolved_expr(ctx, cond);
+            report_unresolved_expr(ctx, body)
+        },
+        hir::ExprKind::For { pat: _, iterator, body } => {
+            report_unresolved_expr(ctx, iterator);
+            report_unresolved_expr(ctx, body)
+        },
+        hir::ExprKind::Return { expr } => match expr {
+            Option::Some(expr) => report_unresolved_expr(ctx, expr),
+            Option::None => (),
+        },
+        hir::ExprKind::Call { func, args } => {
+            report_unresolved_expr(ctx, func);
+            report_unresolved_exprs(ctx, args)
+        },
+        hir::ExprKind::Unary { op: _, expr }
+        | hir::ExprKind::Cast { expr, ty: _ }
+        | hir::ExprKind::Try { depth: _, expr }
+        | hir::ExprKind::Proj { tuple: expr, index: _ }
+        | hir::ExprKind::Field { expr, field_name: _ }
+        | hir::ExprKind::Go { expr } => report_unresolved_expr(ctx, expr),
+        hir::ExprKind::Range { start, end }
+        | hir::ExprKind::Binary { op: _, lhs: start, rhs: end }
+        | hir::ExprKind::Index { base: start, index: end } => {
+            report_unresolved_expr(ctx, start);
+            report_unresolved_expr(ctx, end)
+        },
+        hir::ExprKind::Block { block } => report_unresolved_block(ctx, block),
+        _ => (),
+    }
+}
+
+fn check_function(
+    base: Checker,
+    value: hir::Function,
+    inherited_generics: Vec[string],
+    inherited_predicates: Vec[TypePredicate],
+    self_ty: Option[Type],
+    ignore_generic_bounds: bool,
+) -> Function {
+    match self_ty {
+        Option::None => if value.name == "main" {
+            if value.params.len() > 0 {
+                push_diagnostic_at(
+                    base,
+                    "main function must not have parameters",
+                    Option::None,
+                )
+            } else {
+                ()
+            };
+            if value.generics.len() > 0 {
+                push_diagnostic_at(
+                    base,
+                    "main function must not have type parameters",
+                    Option::None,
+                )
+            } else {
+                ()
+            }
+        } else {
+            ()
+        },
+        Option::Some(_) => (),
+    };
+    let type_params = append_names(inherited_generics, value.generics);
+    let raw_ret_ty = match value.ret_ty {
+        Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
+        Option::None => Type::Unit,
+    };
+    let predicates = resolve_signature_predicates(base, if ignore_generic_bounds {
+        inherited_predicates
+    } else {
+        append_predicates(
+            inherited_predicates,
+            predicates_from_hir(
+                value.generic_bounds,
+                value.predicates,
+                type_params,
+                self_ty,
+            ),
+        )
+    }, true);
+    let previous_span = base.current_span.get();
+    base.current_span.set(value.ret_ty_span);
+    let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
+    base.current_span.set(previous_span);
+    let ctx = function_context(base, ret_ty, self_ty, type_params, predicates);
+    let params: Vec[(string, Type)] = Vec::new();
+    for param in value.params {
+        let index = params.len();
+        let previous_span = ctx.current_span.get();
+        ctx.current_span.set(if index < value.param_type_spans.len() {
+            Option::Some(value.param_type_spans.get(index))
+        } else {
+            Option::None
+        });
+        let ty = resolve_signature_type(
+            ctx,
+            type_from_hir(param.1, type_params, self_ty),
+            predicates,
+            true,
+        );
+        ctx.current_span.set(previous_span);
+        insert_local(ctx, param.0, ty);
+        params.push((local_name(param.0), ty))
+    };
+    let checked_body = check_block(ctx, value.body, Option::Some(ret_ty));
+    resolve_field_constraints(ctx);
+    resolve_coercion_constraints(ctx);
+    resolve_numeric_literal_constraints(ctx);
+    if resolve_required_predicates(ctx) {
+        report_unresolved_block(ctx, value.body)
+    } else {
+        ()
+    };
+    let body = resolve_deferred_block(ctx, checked_body.0);
+    Function {
+        visibility: value.visibility,
+        name: value.name,
+        generics: type_params,
+        predicates,
+        params,
+        ret_ty,
+        body,
+    }
+}
+
+fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
+    match prune(value) {
+        Type::Param { name } => if contains_name(result, name) {
+            ()
+        } else {
+            result.push(name)
+        },
+        Type::Tuple { items } => for item in items {
+            collect_injective_type_params(item, result)
+        },
+        Type::Projection { for_ty: _, name: _, trait_ref: _ } => (),
+        Type::App { ty, args } => {
+            collect_injective_type_params(ty, result);
+            for arg in args {
+                collect_injective_type_params(arg, result)
+            }
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => collect_injective_type_params(elem, result),
+        Type::HashMap { key, value } => {
+            collect_injective_type_params(key, result);
+            collect_injective_type_params(value, result)
+        },
+        Type::Func { params, ret_ty } => {
+            for param in params {
+                collect_injective_type_params(param, result)
+            };
+            collect_injective_type_params(ret_ty, result)
+        },
+        _ => (),
+    }
+}
+
+fn type_contains_projection(value: Type) -> bool {
+    match prune(value) {
+        Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
+        Type::Tuple { items } => {
+            let found = Ref::new(false);
+            for item in items {
+                if type_contains_projection(item) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::App { ty, args } => {
+            let found = Ref::new(type_contains_projection(ty));
+            for arg in args {
+                if type_contains_projection(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => type_contains_projection(elem),
+        Type::HashMap { key, value } => {
+            type_contains_projection(key) || type_contains_projection(value)
+        },
+        Type::Func { params, ret_ty } => {
+            let found = Ref::new(type_contains_projection(ret_ty));
+            for param in params {
+                if type_contains_projection(param) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn validate_impl_type_params(
+    ctx: Checker,
+    generics: Vec[string],
+    reference: Option[TraitRef],
+    for_type: Type,
+    span: ast::Span,
+) -> unit {
+    let constrained: Vec[string] = Vec::new();
+    collect_injective_type_params(for_type, constrained);
+    match reference {
+        Option::Some(reference) => for arg in reference.args {
+            collect_injective_type_params(arg, constrained)
+        },
+        Option::None => (),
+    };
+    for generic in generics {
+        if contains_name(constrained, generic) {
+            ()
+        } else {
+            push_diagnostic_at(
+                ctx,
+                "Implementation type parameter "
+                    + generic
+                    + " is not constrained by type "
+                    + type_text(for_type),
+                if type_contains_projection(for_type) {
+                    Option::Some(span)
+                } else {
+                    Option::None
+                },
+            )
+        }
+    }
+}
+
+fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> unit {
+    for value in ctx.impls {
+        if value.span.start == span.start && value.span.end == span.end {
+            if contains_name(ctx.invalid_impl_origins, value.origin) {
+                ()
+            } else {
+                ctx.invalid_impl_origins.push(value.origin)
+            }
+        } else {
+            ()
+        }
+    }
+}
+
+fn trait_reference_has_wrong_arity(
+    ctx: Checker,
+    reference: TraitRef,
+) -> bool {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => info.generics.len() != reference.args.len(),
+        Option::None => false,
+    }
+}
+
+fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
+    match value {
+        hir::TypeExpr::Projection { base: hir::TypeExpr::Con { name }, associated: _ } => {
+            name == "Self"
+        },
+        hir::TypeExpr::Projection { base, associated: _ }
+        | hir::TypeExpr::Array { len: _, elem: base } => hir_type_uses_self_projection(base),
+        hir::TypeExpr::Tuple { items } => {
+            for item in items {
+                if hir_type_uses_self_projection(item) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        hir::TypeExpr::App { ty, args } => {
+            if hir_type_uses_self_projection(ty) {
+                true
+            } else {
+                for arg in args {
+                    if hir_type_uses_self_projection(arg) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
+        },
+        hir::TypeExpr::Func { params, ret_ty } => {
+            for param in params {
+                if hir_type_uses_self_projection(param) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            hir_type_uses_self_projection(ret_ty)
+        },
+        _ => false,
+    }
+}
+
+fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
+    let invalid = Ref::new(false);
+    let previous_span = base.current_span.get();
+    base.current_span.set(Option::Some(value.for_type_span));
+    let raw_for_type = type_from_hir(value.for_type, value.generics, Option::None);
+    let wrong_arity = nominal_application_has_wrong_arity(base, raw_for_type);
+    let for_type = resolve_signature_type(
+        base,
+        raw_for_type,
+        Vec::new(),
+        !type_contains_projection(raw_for_type),
+    );
+    base.current_span.set(previous_span);
+    if wrong_arity {
+        return ImplBlock {
+            generics: value.generics,
+            predicates: Vec::new(),
+            trait_ref: Option::None,
+            for_type,
+            associated_types: Vec::new(),
+            methods: Vec::new(),
+        }
+    } else {
+        ()
+    };
+    let predicates = resolve_signature_predicates(
+        base,
+        predicates_from_hir(
+            value.generic_bounds,
+            value.predicates,
+            value.generics,
+            Option::Some(for_type),
+        ),
+        true,
+    );
+    let trait_ref = match value.trait_ref {
+        Option::Some(reference) => {
+            let reference = trait_ref_from_hir(
+                reference,
+                value.generics,
+                Option::Some(for_type),
+            );
+            match find_trait(base, reference.name) {
+                Option::Some(_) => validate_trait_reference(base, reference),
+                Option::None => push_diagnostic(
+                    base,
+                    "Trait "
+                        + reference.name
+                        + " is not defined, cannot implement it for "
+                        + type_text(for_type),
+                ),
+            };
+            Option::Some(reference)
+        },
+        Option::None => Option::None,
+    };
+    let validation_start = base.diagnostics.len();
+    validate_impl_type_params(
+        base,
+        value.generics,
+        trait_ref,
+        for_type,
+        value.for_type_span,
+    );
+    if base.diagnostics.len() > validation_start {
+        invalid.set(true)
+    } else {
+        ()
+    };
+    match trait_ref {
+        Option::Some(reference) => if trait_reference_has_wrong_arity(
+            base,
+            reference,
+        ) {
+            mark_impl_invalid_at(base, value.for_type_span);
+            return ImplBlock {
+                generics: value.generics,
+                predicates,
+                trait_ref,
+                for_type,
+                associated_types: Vec::new(),
+                methods: Vec::new(),
+            }
+        } else {
+            ()
+        },
+        Option::None => (),
+    };
+    let associated_types: Vec[(string, Type)] = Vec::new();
+    for associated in value.associated_types {
+        let associated_predicates = match trait_ref {
+            Option::Some(reference) => if hir_type_uses_self_projection(associated.1) {
+                append_predicates(
+                    predicates,
+                    Vec::new().pushed(TypePredicate::Trait {
+                        for_ty: for_type,
+                        trait_ref: reference,
+                    }),
+                )
+            } else {
+                predicates
+            },
+            Option::None => predicates,
+        };
+        associated_types.push((
+            associated.0,
+            resolve_signature_type(
+                base,
+                type_from_hir(
+                    associated.1,
+                    value.generics,
+                    Option::Some(for_type),
+                ),
+                associated_predicates,
+                true,
+            ),
+        ))
+    };
+    match trait_ref {
+        Option::Some(reference) => {
+            let validation_span = base.current_span.get();
+            base.current_span.set(Option::Some(value.for_type_span));
+            let validation_start = base.diagnostics.len();
+            validate_trait_impl_definition_requirements(
+                base,
+                reference,
+                for_type,
+                associated_types,
+                predicates,
+            );
+            if base.diagnostics.len() > validation_start {
+                invalid.set(true)
+            } else {
+                ()
+            };
+            base.current_span.set(validation_span)
+        },
+        Option::None => (),
+    };
+    let methods: Vec[Function] = Vec::new();
+    let generic_method_names: Vec[string] = Vec::new();
+    for method in value.methods {
+        match trait_ref {
+            Option::Some(reference) => if method.generics.len() > 0 {
+                invalid.set(true);
+                generic_method_names.push(method.name);
+                push_diagnostic_at(
+                    base,
+                    "Trait method implementation "
+                        + short_name(reference.name)
+                        + "::"
+                        + method.name
+                        + " cannot declare type parameters",
+                    Option::None,
+                )
+            } else {
+                ()
+            },
+            Option::None => (),
+        };
+        methods.push(check_function(
+            base,
+            method,
+            value.generics,
+            predicates,
+            Option::Some(for_type),
+            method.generics.len() > 0,
+        ))
+    };
+    match trait_ref {
+        Option::Some(reference) => {
+            let validation_start = base.diagnostics.len();
+            validate_trait_impl(
+                base,
+                reference,
+                for_type,
+                associated_types,
+                methods,
+                generic_method_names,
+            );
+            if base.diagnostics.len() > validation_start {
+                invalid.set(true)
+            } else {
+                ()
+            }
+        },
+        Option::None => validate_inherent_impl(base, for_type, methods),
+    };
+    if invalid.get() {
+        mark_impl_invalid_at(base, value.for_type_span)
+    } else {
+        ()
+    };
+    ImplBlock {
+        generics: value.generics,
+        predicates,
+        trait_ref,
+        for_type,
+        associated_types,
+        methods,
+    }
+}
+
+fn type_matches(ctx: Checker, left: Type, right: Type) -> bool {
+    types_equal(normalize_type(ctx, left), normalize_type(ctx, right))
+}
+
+fn validate_method_signature(
+    ctx: Checker,
+    trait_name: string,
+    expected: TraitMethodInfo,
+    actual: Function,
+    substitutions: Vec[TypeSubst],
+) -> unit {
+    let expected_params: Vec[Type] = Vec::new();
+    for param in expected.params {
+        expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
+    };
+    let expected_ret = normalize_type(
+        ctx,
+        substitute_type(expected.ret_ty, substitutions),
+    );
+    if expected_params.len() != actual.params.len() {
+        push_diagnostic(ctx,
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " expects "
+                + expected_params.len().to_string()
+                + " parameters but impl has "
+                + actual.params.len().to_string(),
+        )
+    } else {
+        ()
+    };
+    let common = if expected_params.len() < actual.params.len() {
+        expected_params.len()
+    } else {
+        actual.params.len()
+    };
+    for index in range(0, common) {
+        let expected_ty = expected_params.get(index);
+        let actual_ty = normalize_type(ctx, actual.params.get(index).1);
+        if !type_matches(ctx, expected_ty, actual_ty) {
+            push_diagnostic(ctx,
+                "Trait "
+                    + trait_name
+                    + "::"
+                    + actual.name
+                    + " parameter "
+                    + index.to_string()
+                    + " expected type "
+                    + type_text(expected_ty)
+                    + " but found "
+                    + type_text(actual_ty),
+            )
+        } else {
+            ()
+        }
+    };
+    let actual_ret = normalize_type(ctx, actual.ret_ty);
+    if !type_matches(ctx, expected_ret, actual_ret) {
+        push_diagnostic(ctx,
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " expected return type "
+                + type_text(expected_ret)
+                + " but found "
+                + type_text(actual_ret),
+        )
+    } else {
+        ()
+    }
+}
+
+fn validate_trait_associated_types(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    for_type: Type,
+    associated_types: Vec[(string, Type)],
+) -> unit {
+    let seen: Vec[string] = Vec::new();
+    for associated in associated_types {
+        if !contains_associated_type(info.associated_types, associated.0) {
+            push_diagnostic(ctx,
+                "Associated type "
+                    + associated.0
+                    + " is not declared in trait "
+                    + reference.name,
+            )
+        } else if contains_name(seen, associated.0) {
+            push_diagnostic(ctx,
+                "Associated type "
+                    + associated.0
+                    + " is bound multiple times in impl of trait "
+                    + reference.name,
+            )
+        } else {
+            seen.push(associated.0)
+        }
+    };
+    for expected in info.associated_types {
+        if !contains_name(seen, expected.name) {
+            push_diagnostic(ctx,
+                "Trait "
+                    + reference.name
+                    + " implementation for "
+                    + type_text(for_type)
+                    + " is missing associated type "
+                    + expected.name,
+            )
+        } else {
+            ()
+        }
+    }
+}
+
+fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if value.name == name {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn impl_associated_type(
+    values: Vec[(string, Type)],
+    name: string,
+) -> Option[Type] {
+    let result = Ref::new(Option::None);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn associated_type_reaches(
+    values: Vec[(string, Type)],
+    value: Type,
+    target: string,
+    active: Vec[string],
+) -> bool {
+    match prune(value) {
+        Type::Projection { for_ty, name, trait_ref } => {
+            let found = Ref::new(name == target);
+            if !(found.get()) && !contains_name(active, name) {
+                match impl_associated_type(values, name) {
+                    Option::Some(next) => {
+                        active.push(name);
+                        found.set(associated_type_reaches(
+                            values,
+                            next,
+                            target,
+                            active,
+                        ));
+                        active.truncate(active.len() - 1)
+                    },
+                    Option::None => (),
+                }
+            } else {
+                ()
+            };
+            if found.get() {
+                true
+            } else {
+                let nested = Ref::new(associated_type_reaches(
+                    values,
+                    for_ty,
+                    target,
+                    active,
+                ));
+                match trait_ref {
+                    Option::Some(reference) => for arg in reference.args {
+                        if associated_type_reaches(
+                            values,
+                            arg,
+                            target,
+                            active,
+                        ) {
+                            nested.set(true)
+                        } else {
+                            ()
+                        }
+                    },
+                    Option::None => (),
+                };
+                nested.get()
+            }
+        },
+        Type::Tuple { items } => {
+            let found = Ref::new(false);
+            for item in items {
+                if associated_type_reaches(values, item, target, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::App { ty, args } => {
+            let found = Ref::new(associated_type_reaches(
+                values,
+                ty,
+                target,
+                active,
+            ));
+            for arg in args {
+                if associated_type_reaches(values, arg, target, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => {
+            associated_type_reaches(values, elem, target, active)
+        },
+        Type::HashMap { key, value } => {
+            associated_type_reaches(values, key, target, active)
+                || associated_type_reaches(values, value, target, active)
+        },
+        Type::Func { params, ret_ty } => {
+            let found = Ref::new(associated_type_reaches(
+                values,
+                ret_ty,
+                target,
+                active,
+            ));
+            for param in params {
+                if associated_type_reaches(values, param, target, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn validate_associated_type_cycles(
+    ctx: Checker,
+    reference: TraitRef,
+    associated_types: Vec[(string, Type)],
+) -> unit {
+    for associated in associated_types {
+        if associated_type_reaches(
+            associated_types,
+            associated.1,
+            associated.0,
+            Vec::new(),
+        ) {
+            push_diagnostic_at(
+                ctx,
+                "Associated type "
+                    + associated.0
+                    + " has a cyclic definition in impl of trait "
+                    + short_name(reference.name),
+                Option::None,
+            )
+        } else {
+            ()
+        }
+    }
+}
+
+fn predicate_text(value: TypePredicate) -> string {
+    match value {
+        TypePredicate::Trait { for_ty, trait_ref } => {
+            type_text(for_ty) + ": " + trait_ref_text(trait_ref)
+        },
+        TypePredicate::Equality { lhs, rhs } => {
+            type_text(lhs) + " == " + type_text(rhs)
+        },
+    }
+}
+
+fn resolve_impl_alias_types(
+    ctx: Checker,
+    values: Vec[Type],
+) -> Vec[Type] {
+    let result: Vec[Type] = Vec::new();
+    for value in values {
+        result.push(resolve_impl_alias_type(ctx, value))
+    };
+    result
+}
+
+fn resolve_impl_alias_trait_ref(
+    ctx: Checker,
+    value: TraitRef,
+) -> TraitRef {
+    TraitRef {
+        name: value.name,
+        args: resolve_impl_alias_types(ctx, value.args),
+    }
+}
+
+fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
+    match prune(value) {
+        projection @ Type::Projection { for_ty, name, trait_ref } => {
+            match projection_equality(ctx, for_ty, name, trait_ref) {
+                Option::Some(resolved) => resolved,
+                Option::None => Type::Projection {
+                    for_ty: resolve_impl_alias_type(ctx, for_ty),
+                    name,
+                    trait_ref: match trait_ref {
+                        Option::Some(value) => Option::Some(
+                            resolve_impl_alias_trait_ref(ctx, value),
+                        ),
+                        Option::None => Option::None,
+                    },
+                },
+            }
+        },
+        Type::Tuple { items } => Type::Tuple {
+            items: resolve_impl_alias_types(ctx, items),
+        },
+        Type::App { ty, args } => Type::App {
+            ty: resolve_impl_alias_type(ctx, ty),
+            args: resolve_impl_alias_types(ctx, args),
+        },
+        Type::Array { len, elem } => Type::Array {
+            len,
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::Slice { elem } => Type::Slice {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::VecType { elem } => Type::VecType {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::RefType { elem } => Type::RefType {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::HashMap { key, value } => Type::HashMap {
+            key: resolve_impl_alias_type(ctx, key),
+            value: resolve_impl_alias_type(ctx, value),
+        },
+        Type::Channel { elem } => Type::Channel {
+            elem: resolve_impl_alias_type(ctx, elem),
+        },
+        Type::Func { params, ret_ty } => Type::Func {
+            params: resolve_impl_alias_types(ctx, params),
+            ret_ty: resolve_impl_alias_type(ctx, ret_ty),
+        },
+        other => other,
+    }
+}
+
+fn resolve_impl_alias_predicate(
+    ctx: Checker,
+    value: TypePredicate,
+) -> TypePredicate {
+    match value {
+        TypePredicate::Trait { for_ty, trait_ref } => TypePredicate::Trait {
+            for_ty: resolve_impl_alias_type(ctx, for_ty),
+            trait_ref: resolve_impl_alias_trait_ref(ctx, trait_ref),
+        },
+        TypePredicate::Equality { lhs, rhs } => TypePredicate::Equality {
+            lhs: resolve_impl_alias_type(ctx, lhs),
+            rhs: resolve_impl_alias_type(ctx, rhs),
+        },
+    }
+}
+
+fn validate_associated_type_bounds(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    associated_types: Vec[(string, Type)],
+    substitutions: Vec[TypeSubst],
+) -> unit {
+    for definition in info.associated_types {
+        match impl_associated_type(associated_types, definition.name) {
+            Option::Some(actual) => for bound in definition.bounds {
+                let bound = substitute_trait_ref(bound, substitutions);
+                let actual = normalize_type(ctx, actual);
+                if trait_bound_satisfied_at(ctx, actual, bound, 0) {
+                    ()
+                } else {
+                    push_diagnostic(
+                        ctx,
+                        "Associated type "
+                            + definition.name
+                            + " = "
+                            + type_text(actual)
+                            + " does not satisfy bound "
+                            + trait_ref_text(bound)
+                            + " in impl of "
+                            + short_name(reference.name),
+                    )
+                }
+            },
+            Option::None => (),
+        }
+    }
+}
+
+fn validate_trait_impl_requirements(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    for_type: Type,
+    substitutions: Vec[TypeSubst],
+) -> unit {
+    for supertrait in info.supertraits {
+        let supertrait = substitute_trait_ref(supertrait, substitutions);
+        if trait_bound_satisfied_at(ctx, for_type, supertrait, 0) {
+            ()
+        } else {
+            push_diagnostic(
+                ctx,
+                "Trait "
+                    + short_name(reference.name)
+                    + " implementation for "
+                    + type_text(for_type)
+                    + " requires supertrait "
+                    + trait_ref_text(supertrait),
+            )
+        }
+    };
+    for predicate in substitute_predicates(info.predicates, substitutions) {
+        let predicate = resolve_impl_alias_predicate(ctx, predicate);
+        if predicates_satisfied_at(ctx, Vec::new().pushed(predicate), 0) {
+            ()
+        } else {
+            push_diagnostic(
+                ctx,
+                "Trait "
+                    + short_name(reference.name)
+                    + " implementation for "
+                    + type_text(for_type)
+                    + " does not satisfy declared requirement "
+                    + predicate_text(predicate),
+            )
+        }
+    }
+}
+
+fn validate_trait_impl_definition_requirements(
+    ctx: Checker,
+    reference: TraitRef,
+    for_type: Type,
+    associated_types: Vec[(string, Type)],
+    predicates: Vec[TypePredicate],
+) -> unit {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => {
+            let validation_ctx = function_context(
+                ctx,
+                Type::Unit,
+                Option::Some(for_type),
+                Vec::new(),
+                predicates,
+            );
+            validate_associated_type_cycles(
+                validation_ctx,
+                reference,
+                associated_types,
+            );
+            let substitutions = trait_substitutions(
+                validation_ctx,
+                info,
+                reference,
+                Option::Some(for_type),
+            );
+            for associated in associated_types {
+                validation_ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::Some(reference),
+                    },
+                    ty: associated.1,
+                });
+                validation_ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::None,
+                    },
+                    ty: associated.1,
+                })
+            };
+            validate_trait_impl_requirements(
+                validation_ctx,
+                info,
+                reference,
+                for_type,
+                substitutions,
+            );
+            validate_associated_type_bounds(
+                validation_ctx,
+                info,
+                reference,
+                associated_types,
+                substitutions,
+            )
+        },
+        Option::None => (),
+    }
+}
+
+fn validate_trait_impl(
+    ctx: Checker,
+    reference: TraitRef,
+    for_type: Type,
+    associated_types: Vec[(string, Type)],
+    methods: Vec[Function],
+    generic_method_names: Vec[string],
+) -> unit {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => {
+            validate_trait_associated_types(
+                ctx,
+                info,
+                reference,
+                for_type,
+                associated_types,
+            );
+            let substitutions = trait_substitutions(
+                ctx,
+                info,
+                reference,
+                Option::Some(for_type),
+            );
+            let projection_alias_count = ctx.projection_aliases.len();
+            for associated in associated_types {
+                ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::Some(reference),
+                    },
+                    ty: associated.1,
+                });
+                ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection {
+                        for_ty: for_type,
+                        name: associated.0,
+                        trait_ref: Option::None,
+                    },
+                    ty: associated.1,
+                })
+            };
+            let seen: Vec[string] = Vec::new();
+            for method in methods {
+                match find_trait_method(info, method.name) {
+                    Option::Some(expected) => if contains_name(seen, method.name) {
+                        push_diagnostic(ctx,
+                            "Method "
+                                + method.name
+                                + " implemented multiple times in impl of trait "
+                                + reference.name,
+                        )
+                    } else {
+                        seen.push(method.name);
+                        if contains_name(generic_method_names, method.name) {
+                            ()
+                        } else {
+                            validate_method_signature(
+                                ctx,
+                                reference.name,
+                                expected,
+                                method,
+                                substitutions,
+                            )
+                        }
+                    },
+                    Option::None => push_diagnostic(ctx,
+                        "Method "
+                            + method.name
+                            + " is not declared in trait "
+                            + reference.name,
+                    ),
+                }
+            };
+            for expected in info.methods {
+                if !contains_name(seen, expected.name) {
+                    push_diagnostic(ctx,
+                        "Trait "
+                            + reference.name
+                            + " implementation for "
+                            + type_text(for_type)
+                            + " is missing method "
+                            + expected.name,
+                    )
+                } else {
+                    ()
+                }
+            };
+            ctx.projection_aliases.truncate(projection_alias_count)
+        },
+        Option::None => (),
+    }
+}
+
+fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) -> unit {
+    let seen: Vec[string] = Vec::new();
+    for method in methods {
+        if contains_name(seen, method.name) {
+            push_diagnostic(ctx,
+                "Method "
+                    + method.name
+                    + " implemented multiple times in impl for "
+                    + type_text(for_type),
+            )
+        } else {
+            seen.push(method.name)
+        }
+    }
+}
+
+fn copied_names(values: Vec[string]) -> Vec[string] {
+    let result: Vec[string] = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn struct_application_parts(value: Type) -> Option[(string, Vec[Type])] {
+    match prune(value) {
+        Type::Con { name } => Option::Some((name, Vec::new())),
+        Type::App { ty: Type::Con { name }, args } => Option::Some((name, args)),
+        _ => Option::None,
+    }
+}
+
+fn by_value_type_has_cycle(
+    ctx: Checker,
+    value: Type,
+    active: Vec[string],
+) -> bool {
+    match prune(normalize_type(ctx, value)) {
+        Type::Tuple { items: values } => {
+            let found = Ref::new(false);
+            for value in values {
+                if by_value_type_has_cycle(ctx, value, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem } => by_value_type_has_cycle(ctx, elem, active),
+        value => match struct_application_parts(value) {
+            Option::Some(parts) => match find_struct_by_name(ctx, parts.0) {
+                Option::Some(info) => if contains_name(active, info.name) {
+                    true
+                } else {
+                    let next = copied_names(active);
+                    next.push(info.name);
+                    let found = Ref::new(false);
+                    for field in info.fields {
+                        if by_value_type_has_cycle(
+                            ctx,
+                            substitute_params(
+                                field.1,
+                                info.generics,
+                                parts.1,
+                            ),
+                            next,
+                        ) {
+                            found.set(true)
+                        } else {
+                            ()
+                        }
+                    };
+                    found.get()
+                },
+                Option::None => false,
+            },
+            Option::None => false,
+        },
+    }
+}
+
+fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
+    for index in range(0, struct_count) {
+        let info = ctx.structs.get(index);
+        let active = Vec::new().pushed(info.name);
+        let recursive = Ref::new(false);
+        for field in info.fields {
+            if by_value_type_has_cycle(ctx, field.1, active) {
+                recursive.set(true)
+            } else {
+                ()
+            }
+        };
+        if recursive.get() {
+            push_diagnostic(ctx,
+                "Struct "
+                    + info.name
+                    + " has infinite size due to recursive field; use Ref["
+                    + info.name
+                    + "] for indirection",
+            )
+        } else {
+            ()
+        }
+    }
+}
+
+fn supertrait_path(
+    ctx: Checker,
+    current: string,
+    target: string,
+    active: Vec[string],
+    path: Vec[string],
+) -> bool {
+    if names_match(current, target) {
+        true
+    } else if contains_name(active, current) {
+        false
+    } else {
+        active.push(current);
+        let found = Ref::new(false);
+        match find_trait(ctx, current) {
+            Option::Some(info) => for reference in info.supertraits {
+                if !(found.get()) {
+                    let length = path.len();
+                    path.push(short_name(reference.name));
+                    if supertrait_path(
+                        ctx,
+                        reference.name,
+                        target,
+                        active,
+                        path,
+                    ) {
+                        found.set(true)
+                    } else {
+                        path.truncate(length)
+                    }
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        };
+        active.truncate(active.len() - 1);
+        found.get()
+    }
+}
+
+fn cycle_text(values: Vec[string]) -> string {
+    let result = Ref::new("");
+    for value in values {
+        if result.get() == "" {
+            result.set(value)
+        } else {
+            result.set(result.get() + " -> " + value)
+        }
+    };
+    result.get()
+}
+
+fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
+    let reported = Ref::new(false);
+    for index in range(0, trait_count) {
+        let info = ctx.traits.get(index);
+        for reference in info.supertraits {
+            if !(reported.get()) {
+                let path = Vec::new()
+                    .pushed(short_name(info.name))
+                    .pushed(short_name(reference.name));
+                if supertrait_path(
+                    ctx,
+                    reference.name,
+                    info.name,
+                    Vec::new(),
+                    path,
+                ) {
+                    push_diagnostic_at(
+                        ctx,
+                        "Supertrait cycle detected: " + cycle_text(path),
+                        Option::None,
+                    );
+                    reported.set(true)
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            }
+        }
+    }
+}
+
+fn validate_local_definitions(
+    ctx: Checker,
+    enum_count: int,
+    struct_count: int,
+    trait_count: int,
+) -> unit {
+    for index in range(0, enum_count) {
+        for variant in ctx.enums.get(index).variants {
+            for field in enum_variant_field_types(variant.fields) {
+                validate_signature_type(ctx, field)
+            }
+        }
+    };
+    for index in range(0, struct_count) {
+        for field in ctx.structs.get(index).fields {
+            validate_signature_type(ctx, field.1)
+        }
+    };
+    validate_struct_sizes(ctx, struct_count);
+    validate_supertrait_cycles(ctx, trait_count);
+    for index in range(0, trait_count) {
+        let info = ctx.traits.get(index);
+        for predicate in info.predicates {
+            match predicate {
+                TypePredicate::Trait { for_ty, trait_ref: reference } => {
+                    validate_signature_type(ctx, for_ty);
+                    validate_trait_reference(ctx, reference)
+                },
+                TypePredicate::Equality { lhs: left, rhs: right } => {
+                    validate_signature_type(ctx, left);
+                    validate_signature_type(ctx, right)
+                },
+            }
+        };
+        for reference in info.supertraits {
+            validate_trait_reference(ctx, reference)
+        };
+        for associated in info.associated_types {
+            for reference in associated.bounds {
+                validate_trait_reference(ctx, reference)
+            }
+        };
+        for method in info.methods {
+            for param in method.params {
+                validate_signature_type(ctx, param)
+            };
+            validate_signature_type(ctx, method.ret_ty)
+        }
+    }
+}
+
+fn builtin_enum_definitions() -> Vec[EnumDef] {
+    let result: Vec[EnumDef] = Vec::new();
+    result.push(EnumDef {
+        name: "Option",
+        generics: Vec::new().pushed("T"),
+        variants: Vec::new()
+            .pushed(EnumVariantDef {
+                name: "None",
+                fields: EnumVariantFields::Unit,
+            })
+            .pushed(EnumVariantDef {
+                name: "Some",
+                fields: EnumVariantFields::Tuple(
+                    Vec::new().pushed(Type::Param { name: "T" }),
+                ),
+            }),
+    });
+    result.push(EnumDef {
+        name: "Result",
+        generics: Vec::new().pushed("T").pushed("E"),
+        variants: Vec::new()
+            .pushed(EnumVariantDef {
+                name: "Ok",
+                fields: EnumVariantFields::Tuple(
+                    Vec::new().pushed(Type::Param { name: "T" }),
+                ),
+            })
+            .pushed(EnumVariantDef {
+                name: "Err",
+                fields: EnumVariantFields::Tuple(
+                    Vec::new().pushed(Type::Param { name: "E" }),
+                ),
+            }),
+    });
+    result
+}
+
+fn declaration_name_index(values: Vec[string], expected: string) -> int {
+    for index in range(0, values.len()) {
+        if values.get(index) == expected {
+            return index
+        } else {
+            ()
+        }
+    };
+    -1
+}
+
+fn push_declaration_diagnostic(ctx: Checker, message: string) -> unit {
+    push_diagnostic_at(ctx, message, Option::None)
+}
+
+fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> unit {
+    let names: Vec[string] = Vec::new();
+    for name in values {
+        if contains_name(names, name) {
+            push_declaration_diagnostic(
+                ctx,
+                "type parameter " + name + " is defined multiple times",
+            )
+        } else {
+            names.push(name)
+        }
+    }
+}
+
+fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit {
+    let names: Vec[string] = Vec::new();
+    for param in value.params {
+        let name = param.0.hint;
+        if contains_name(names, name) {
+            push_declaration_diagnostic(
+                ctx,
+                "parameter " + name + " is defined multiple times",
+            )
+        } else {
+            names.push(name)
+        }
+    }
+}
+
+fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
+    let names: Vec[string] = Vec::new();
+    for variant in value.variants {
+        if contains_name(names, variant.name) {
+            push_declaration_diagnostic(
+                ctx,
+                "variant "
+                    + variant.name
+                    + " is defined multiple times in enum "
+                    + value.name,
+            )
+        } else {
+            names.push(variant.name)
+        };
+        match variant.fields {
+            hir::EnumVariantFields::Struct(fields) => {
+                let field_names: Vec[string] = Vec::new();
+                for field in fields {
+                    if contains_name(field_names, field.0) {
+                        push_declaration_diagnostic(
+                            ctx,
+                            "field "
+                                + field.0
+                                + " is defined multiple times in variant "
+                                + value.name
+                                + "::"
+                                + variant.name,
+                        )
+                    } else {
+                        field_names.push(field.0)
+                    }
+                }
+            },
+            _ => (),
+        }
+    }
+}
+
+fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
+    let names: Vec[string] = Vec::new();
+    for field in value.fields {
+        if contains_name(names, field.0) {
+            push_declaration_diagnostic(
+                ctx,
+                "field "
+                    + field.0
+                    + " is defined multiple times in struct "
+                    + value.name,
+            )
+        } else {
+            names.push(field.0)
+        }
+    }
+}
+
+fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
+    let methods: Vec[string] = Vec::new();
+    for method in value.method_sigs {
+        if contains_name(methods, method.name) {
+            push_declaration_diagnostic(
+                ctx,
+                "method "
+                    + method.name
+                    + " is defined multiple times in trait "
+                    + value.name,
+            )
+        } else {
+            methods.push(method.name)
+        }
+    };
+    let associated_types: Vec[string] = Vec::new();
+    for associated in value.associated_types {
+        if contains_name(associated_types, associated.name) {
+            push_declaration_diagnostic(
+                ctx,
+                "associated type "
+                    + associated.name
+                    + " is defined multiple times in trait "
+                    + value.name,
+            )
+        } else {
+            associated_types.push(associated.name)
+        }
+    }
+}
+
+fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
+    let nominal_names: Vec[string] = Vec::new();
+    let nominal_kinds: Vec[int] = Vec::new();
+    let function_names: Vec[string] = Vec::new();
+    for item in value.items {
+        let nominal = match item {
+            hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
+            hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+            _ => Option::None,
+        };
+        match nominal {
+            Option::Some(value) => {
+                let index = declaration_name_index(nominal_names, value.0);
+                if index < 0 {
+                    nominal_names.push(value.0);
+                    nominal_kinds.push(value.1)
+                } else if nominal_kinds.get(index) == value.1 {
+                    push_declaration_diagnostic(
+                        ctx,
+                        (if value.1 == 1 { "enum " } else { "struct " })
+                            + value.0
+                            + " is defined multiple times",
+                    )
+                } else {
+                    push_declaration_diagnostic(
+                        ctx,
+                        "type " + value.0 + " is defined as both a struct and an enum",
+                    )
+                }
+            },
+            Option::None => (),
+        };
+        let function_name = match item {
+            hir::Item::Function(function) => Option::Some(function.name),
+            hir::Item::ExternFunction(function) => Option::Some(function.name),
+            _ => Option::None,
+        };
+        match function_name {
+            Option::Some(name) => if contains_name(function_names, name) {
+                push_declaration_diagnostic(
+                    ctx,
+                    "function " + name + " is defined multiple times",
+                )
+            } else {
+                function_names.push(name)
+            },
+            Option::None => (),
+        }
+    };
+    for item in value.items {
+        match item {
+            hir::Item::EnumDef(definition) => {
+                validate_type_parameter_names(ctx, definition.generics);
+                validate_enum_variant_names(ctx, definition)
+            },
+            hir::Item::StructDef(definition) => {
+                validate_type_parameter_names(ctx, definition.generics);
+                validate_struct_field_names(ctx, definition)
+            },
+            hir::Item::TraitDef(definition) => {
+                validate_type_parameter_names(ctx, definition.generics);
+                validate_trait_member_names(ctx, definition)
+            },
+            hir::Item::ImplBlock(block) => {
+                validate_type_parameter_names(ctx, block.generics);
+                for method in block.methods {
+                    validate_type_parameter_names(
+                        ctx,
+                        append_names(block.generics, method.generics),
+                    );
+                    validate_function_parameter_names(ctx, method)
+                }
+            },
+            hir::Item::Function(function) => {
+                validate_type_parameter_names(ctx, function.generics);
+                validate_function_parameter_names(ctx, function)
+            },
+            hir::Item::ExternFunction(function) => {
+                validate_type_parameter_names(ctx, function.generics)
+            },
+        }
+    }
+}
+
+fn validate_cross_file_declaration_names(
+    ctx: Checker,
+    value: hir::File,
+    package_files: Vec[hir::File],
+) -> unit {
+    let files: Vec[hir::File] = Vec::new();
+    files.push(value);
+    for file in package_files {
+        files.push(file)
+    };
+    let nominal_names: Vec[string] = Vec::new();
+    let nominal_kinds: Vec[int] = Vec::new();
+    let function_names: Vec[string] = Vec::new();
+    for file in files {
+        let local_nominal_names: Vec[string] = Vec::new();
+        let local_nominal_kinds: Vec[int] = Vec::new();
+        let local_function_names: Vec[string] = Vec::new();
+        for item in file.items {
+            let nominal = match item {
+                hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
+                hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+                _ => Option::None,
+            };
+            match nominal {
+                Option::Some(value) => if !contains_name(local_nominal_names, value.0) {
+                    local_nominal_names.push(value.0);
+                    local_nominal_kinds.push(value.1)
+                } else {
+                    ()
+                },
+                Option::None => (),
+            };
+            let function_name = match item {
+                hir::Item::Function(function) => Option::Some(function.name),
+                hir::Item::ExternFunction(function) => Option::Some(function.name),
+                _ => Option::None,
+            };
+            match function_name {
+                Option::Some(name) => if !contains_name(local_function_names, name) {
+                    local_function_names.push(name)
+                } else {
+                    ()
+                },
+                Option::None => (),
+            }
+        };
+        for index in range(0, local_nominal_names.len()) {
+            let name = local_nominal_names.get(index);
+            let kind = local_nominal_kinds.get(index);
+            let previous = declaration_name_index(nominal_names, name);
+            if previous < 0 {
+                nominal_names.push(name);
+                nominal_kinds.push(kind)
+            } else if nominal_kinds.get(previous) == kind {
+                push_global_diagnostic(
+                    ctx,
+                    (if kind == 1 { "enum " } else { "struct " })
+                        + name
+                        + " is defined multiple times",
+                )
+            } else {
+                push_global_diagnostic(
+                    ctx,
+                    "type " + name + " is defined as both a struct and an enum",
+                )
+            }
+        };
+        for name in local_function_names {
+            if contains_name(function_names, name) {
+                push_global_diagnostic(
+                    ctx,
+                    "function " + name + " is defined multiple times",
+                )
+            } else {
+                function_names.push(name)
+            }
+        }
+    }
+}
+
+fn validate_extern_declarations(ctx: Checker) -> unit {
+    for value in ctx.rejected_externs {
+        if value.local {
+            ctx.diagnostics.push(new_diagnostic(
+                "typer",
+                "extern " + short_name(value.name) + " is not permitted in this source",
+                value.source_path,
+                Option::None,
+            ))
+        } else {
+            ()
+        }
+    }
+}
+
+fn validate_lang_item_attributes(
+    ctx: Checker,
+    attrs: Vec[ast::Attribute],
+    allow_lang_items: bool,
+) -> unit {
+    if allow_lang_items {
+        ()
+    } else {
+        for attribute in attrs {
+            match extern_attribute_payload(attribute, "lang") {
+                Option::Some(name) => ctx.diagnostics.push(new_diagnostic(
+                    "typer",
+                    "lang item " + name + " is not permitted in this source",
+                    ctx.source_path,
+                    Option::None,
+                )),
+                Option::None => (),
+            }
+        }
+    }
+}
+
+fn validate_lang_item_declarations(
+    ctx: Checker,
+    value: hir::File,
+    allow_lang_items: bool,
+) -> unit {
+    for item in value.items {
+        match item {
+            hir::Item::EnumDef(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::StructDef(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::TraitDef(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::Function(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::ExternFunction(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::ImplBlock(_) => (),
+        }
+    }
+}
+
+fn move_diagnostics_before(
+    values: Vec[Diagnostic],
+    message: string,
+    anchor: string,
+) -> Vec[Diagnostic] {
+    let has_anchor = Ref::new(false);
+    for value in values {
+        if value.message == anchor {
+            has_anchor.set(true)
+        } else {
+            ()
+        }
+    };
+    if !(has_anchor.get()) {
+        values
+    } else {
+        let moved: Vec[Diagnostic] = Vec::new();
+        for value in values {
+            if value.message == message {
+                moved.push(value)
+            } else {
+                ()
+            }
+        };
+        let result: Vec[Diagnostic] = Vec::new();
+        let inserted = Ref::new(false);
+        for value in values {
+            if value.message == message {
+                ()
+            } else {
+                if !(inserted.get()) && value.message == anchor {
+                    for diagnostic in moved {
+                        result.push(diagnostic)
+                    };
+                    inserted.set(true)
+                } else {
+                    ()
+                };
+                result.push(value)
+            }
+        };
+        result
+    }
+}
+
+fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
+    let result = Ref::new(ctx.diagnostics);
+    for value in ctx.rejected_externs {
+        if value.local {
+            let name = short_name(value.name);
+            result.set(move_diagnostics_before(
+                result.get(),
+                "Internal error: Function " + name + " not found in environment",
+                "extern " + name + " is not permitted in this source",
+            ))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn attach_diagnostic_span(
+    ctx: Checker,
+    message: string,
+    span: Option[ast::Span],
+) -> unit {
+    match span {
+        Option::Some(span) => {
+            let attached = Ref::new(false);
+            for index in range(0, ctx.diagnostics.len()) {
+                let value = ctx.diagnostics.get(index);
+                if !(attached.get())
+                    && value.message == message
+                    && value.source_path == ctx.source_path
+                {
+                    ctx.diagnostics.set(index, Diagnostic {
+                        severity: value.severity,
+                        stage: value.stage,
+                        message: value.message,
+                        source_path: value.source_path,
+                        span: Option::Some(span),
+                        primary_label: value.primary_label,
+                        secondary_labels: value.secondary_labels,
+                        sort_order: value.sort_order,
+                    });
+                    attached.set(true)
+                } else {
+                    ()
+                }
+            }
+        },
+        Option::None => (),
+    }
+}
+
+fn attach_type_diagnostic_span(
+    ctx: Checker,
+    value: hir::TypeExpr,
+    span: Option[ast::Span],
+) -> unit {
+    match value {
+        hir::TypeExpr::Con { name } => match nominal_arity(ctx, name) {
+            Option::Some(expected) => if expected != 0 {
+                attach_diagnostic_span(
+                    ctx,
+                    "Type "
+                        + short_name(name)
+                        + " expects "
+                        + expected.to_string()
+                        + " type arguments, but got 0",
+                    span,
+                )
+            } else {
+                ()
+            },
+            Option::None => attach_diagnostic_span(
+                ctx,
+                "Unknown type constructor " + name,
+                span,
+            ),
+        },
+        hir::TypeExpr::App { ty, args } => {
+            match ty {
+                hir::TypeExpr::Con { name } => match nominal_arity(ctx, name) {
+                    Option::Some(expected) => if expected != args.len() {
+                        let category = if expected == 0 && args.len() > 0 {
+                            match find_struct_by_name(ctx, name) {
+                                Option::Some(_) => "Struct",
+                                Option::None => "Type",
+                            }
+                        } else {
+                            "Type"
+                        };
+                        attach_diagnostic_span(
+                            ctx,
+                            category
+                                + " "
+                                + short_name(name)
+                                + " expects "
+                                + expected.to_string()
+                                + " type arguments, but got "
+                                + args.len().to_string(),
+                            span,
+                        )
+                    } else {
+                        ()
+                    },
+                    Option::None => attach_type_diagnostic_span(ctx, ty, span),
+                },
+                _ => attach_type_diagnostic_span(ctx, ty, span),
+            };
+            for arg in args {
+                attach_type_diagnostic_span(ctx, arg, span)
+            }
+        },
+        _ => (),
+    }
+}
+
+fn attach_trait_ref_diagnostic_spans(
+    ctx: Checker,
+    value: hir::TraitRef,
+) -> unit {
+    for index in range(0, value.args.len()) {
+        attach_type_diagnostic_span(
+            ctx,
+            value.args.get(index),
+            if index < value.arg_spans.len() {
+                value.arg_spans.get(index)
+            } else {
+                Option::None
+            },
+        )
+    }
+}
+
+fn attach_expr_list_diagnostic_spans(
+    ctx: Checker,
+    values: Vec[hir::Expr],
+) -> unit {
+    for value in values {
+        attach_expr_diagnostic_spans(ctx, value)
+    }
+}
+
+fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
+    for stmt in value.stmts {
+        match stmt {
+            hir::Stmt::Let { is_mut: _, pat: _, annotation: _, value } => {
+                attach_expr_diagnostic_spans(ctx, value)
+            },
+            hir::Stmt::Assign { target, value } => {
+                attach_expr_diagnostic_spans(ctx, target);
+                attach_expr_diagnostic_spans(ctx, value)
+            },
+            hir::Stmt::Expr { expr } => attach_expr_diagnostic_spans(ctx, expr),
+        }
+    };
+    match value.tail {
+        Option::Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
+        Option::None => (),
+    }
+}
+
+fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
+    match value.kind {
+        hir::ExprKind::StaticMember {
+            owner: _,
+            member: _,
+            type_args,
+            type_arg_spans,
+        } => for index in range(0, type_args.len()) {
+            attach_type_diagnostic_span(
+                ctx,
+                type_args.get(index),
+                if index < type_arg_spans.len() {
+                    type_arg_spans.get(index)
+                } else {
+                    Option::None
+                },
+            )
+        },
+        hir::ExprKind::ConstructorValue { constructor: _ } => (),
+        hir::ExprKind::Constr { constructor: _, args }
+        | hir::ExprKind::Tuple { items: args }
+        | hir::ExprKind::Array { items: args } => {
+            attach_expr_list_diagnostic_spans(ctx, args)
+        },
+        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
+            attach_expr_diagnostic_spans(ctx, field.1)
+        },
+        hir::ExprKind::Closure { params: _, body }
+        | hir::ExprKind::Unary { op: _, expr: body }
+        | hir::ExprKind::Cast { expr: body, ty: _ }
+        | hir::ExprKind::Try { depth: _, expr: body }
+        | hir::ExprKind::Proj { tuple: body, index: _ }
+        | hir::ExprKind::Field { expr: body, field_name: _ }
+        | hir::ExprKind::Go { expr: body } => {
+            attach_expr_diagnostic_spans(ctx, body)
+        },
+        hir::ExprKind::Match { expr, arms } => {
+            attach_expr_diagnostic_spans(ctx, expr);
+            for arm in arms {
+                match arm.guard {
+                    Option::Some(guard) => attach_expr_diagnostic_spans(ctx, guard),
+                    Option::None => (),
+                };
+                attach_expr_diagnostic_spans(ctx, arm.body)
+            }
+        },
+        hir::ExprKind::If { cond, then_branch, else_branch } => {
+            attach_expr_diagnostic_spans(ctx, cond);
+            attach_expr_diagnostic_spans(ctx, then_branch);
+            attach_expr_diagnostic_spans(ctx, else_branch)
+        },
+        hir::ExprKind::While { cond, body } => {
+            attach_expr_diagnostic_spans(ctx, cond);
+            attach_expr_diagnostic_spans(ctx, body)
+        },
+        hir::ExprKind::For { pat: _, iterator, body } => {
+            attach_expr_diagnostic_spans(ctx, iterator);
+            attach_expr_diagnostic_spans(ctx, body)
+        },
+        hir::ExprKind::Return { expr } => match expr {
+            Option::Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
+            Option::None => (),
+        },
+        hir::ExprKind::Call { func, args } => {
+            attach_expr_diagnostic_spans(ctx, func);
+            attach_expr_list_diagnostic_spans(ctx, args)
+        },
+        hir::ExprKind::Range { start, end }
+        | hir::ExprKind::Binary { op: _, lhs: start, rhs: end }
+        | hir::ExprKind::Index { base: start, index: end } => {
+            attach_expr_diagnostic_spans(ctx, start);
+            attach_expr_diagnostic_spans(ctx, end)
+        },
+        hir::ExprKind::Block { block } => attach_block_diagnostic_spans(ctx, block),
+        _ => (),
+    }
+}
+
+fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
+    for item in value.items {
+        match item {
+            hir::Item::EnumDef(value) => for variant in value.variants {
+                match variant.fields {
+                    hir::EnumVariantFields::Unit => (),
+                    hir::EnumVariantFields::Tuple(types) => {
+                        for index in range(0, types.len()) {
+                            attach_type_diagnostic_span(
+                                ctx,
+                                types.get(index),
+                                if index < variant.field_type_spans.len() {
+                                    Option::Some(variant.field_type_spans.get(index))
+                                } else {
+                                    Option::None
+                                },
+                            )
+                        }
+                    },
+                    hir::EnumVariantFields::Struct(values) => {
+                        for index in range(0, values.len()) {
+                            attach_type_diagnostic_span(
+                                ctx,
+                                values.get(index).1,
+                                if index < variant.field_type_spans.len() {
+                                    Option::Some(variant.field_type_spans.get(index))
+                                } else {
+                                    Option::None
+                                },
+                            )
+                        }
+                    },
+                }
+            },
+            hir::Item::StructDef(value) => if value.generics.len() == 0 {
+                for index in range(0, value.fields.len()) {
+                    attach_type_diagnostic_span(
+                        ctx,
+                        value.fields.get(index).1,
+                        if index < value.field_type_spans.len() {
+                            Option::Some(value.field_type_spans.get(index))
+                        } else {
+                            Option::None
+                        },
+                    )
+                }
+            } else {
+                ()
+            },
+            hir::Item::TraitDef(value) => {
+                for bound in value.generic_bounds {
+                    for reference in bound.1 {
+                        attach_trait_ref_diagnostic_spans(ctx, reference)
+                    }
+                };
+                for method in value.method_sigs {
+                    attach_type_diagnostic_span(
+                        ctx,
+                        method.ret_ty,
+                        method.ret_ty_span,
+                    )
+                }
+            },
+            hir::Item::Function(value) => {
+                for bound in value.generic_bounds {
+                    for reference in bound.1 {
+                        attach_trait_ref_diagnostic_spans(ctx, reference)
+                    }
+                };
+                attach_block_diagnostic_spans(ctx, value.body)
+            },
+            hir::Item::ImplBlock(value) => for method in value.methods {
+                attach_block_diagnostic_spans(ctx, method.body)
+            },
+            _ => (),
+        }
+    }
+}
+
+fn check_file_with_package(
+    value: hir::File,
+    package_files: Vec[hir::File],
+    dependencies: Vec[DependencyEnvironment],
+    diagnostics: Vec[Diagnostic],
+    include_builtin_types: bool,
+    validate_function_names: bool,
+    allow_externs: bool,
+) -> CheckResult {
+    let ctx = collect_environment(value, allow_externs);
+    for diagnostic in diagnostics {
+        ctx.diagnostics.push(diagnostic)
+    };
+    for span in value.invalid_self_type_spans {
+        push_diagnostic_at(
+            ctx,
+            "Self type is only valid in impl methods",
+            Option::Some(span),
+        )
+    };
+    validate_extern_declarations(ctx);
+    validate_lang_item_declarations(ctx, value, allow_externs);
+    validate_file_declaration_names(ctx, value);
+    if validate_function_names {
+        validate_cross_file_declaration_names(ctx, value, package_files)
+    } else {
+        ()
+    };
+    let local_enum_count = ctx.enums.len();
+    let local_struct_count = ctx.structs.len();
+    let local_trait_count = ctx.traits.len();
+    for package_file in package_files {
+        append_package_environment(ctx, package_file, allow_externs)
+    };
+    for dependency in dependencies {
+        append_dependency_environment(ctx, dependency)
+    };
+    for trait_name in value.use_traits {
+        match find_trait(ctx, trait_name) {
+            Option::Some(_) => (),
+            Option::None => {
+                push_global_diagnostic(ctx, "Could not infer type");
+                push_diagnostic_at(
+                    ctx,
+                    "Unknown trait " + trait_name,
+                    Option::None,
+                )
+            },
+        }
+    };
+    validate_local_definitions(
+        ctx,
+        local_enum_count,
+        local_struct_count,
+        local_trait_count,
+    );
+    expand_in_scope_supertraits(ctx);
+    validate_impl_overlaps(ctx);
+    validate_builtin_impl_overlaps(ctx, value);
+    let items: Vec[Item] = Vec::new();
+    for item in value.items {
+        match item {
+            hir::Item::ImplBlock(value) => items.push(Item::ImplBlock(check_impl(ctx, value))),
+            hir::Item::Function(value) => items.push(Item::Function(check_function(
+                ctx,
+                value,
+                Vec::new(),
+                Vec::new(),
+                Option::None,
+                false,
+            ))),
+            _ => (),
+        }
+    };
+    attach_file_diagnostic_spans(ctx, value);
+    let enums = if include_builtin_types {
+        builtin_enum_definitions()
+    } else {
+        Vec::new()
+    };
+    for index in range(0, local_enum_count) {
+        let value = ctx.enums.get(index);
+        let variants: Vec[EnumVariantDef] = Vec::new();
+        for variant in value.variants {
+            variants.push(EnumVariantDef {
+                name: variant.name,
+                fields: variant.fields,
+            })
+        };
+        enums.push(EnumDef {
+            name: value.name,
+            generics: value.generics,
+            variants,
+        })
+    };
+    let structs: Vec[StructDef] = Vec::new();
+    for index in range(0, local_struct_count) {
+        let value = ctx.structs.get(index);
+        structs.push(StructDef {
+            name: value.name,
+            generics: value.generics,
+            fields: value.fields,
+            public_fields: value.public_fields,
+            has_hidden_fields: false,
+        })
+    };
+    CheckResult {
+        tast: Option::Some(File {
+            items,
+            enums,
+            structs,
+        }),
+        diagnostics: order_extern_diagnostics(ctx),
+        typeck_results: ctx.typeck_results,
+    }
+}
+
+fn check_file(
+    value: hir::File,
+    dependencies: Vec[hir::File],
+    diagnostics: Vec[Diagnostic],
+    include_builtin_types: bool,
+    allow_externs: bool,
+) -> CheckResult {
+    check_file_with_package(
+        value,
+        Vec::new(),
+        dependency_environments(dependencies),
+        diagnostics,
+        include_builtin_types,
+        true,
+        allow_externs,
+    )
+}
+
+pub fn check(value: hir::LowerResult) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(
+            file,
+            Vec::new(),
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            true,
+            false,
+        ),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
+        },
+    }
+}
+
+pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(
+            file,
+            Vec::new(),
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            false,
+        ),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
+        },
+    }
+}
+
+pub fn check_for_link_with_dependencies(
+    value: hir::LowerResult,
+    dependencies: Vec[hir::File],
+) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(
+            file,
+            dependencies,
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            false,
+        ),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
+        },
+    }
+}
+
+pub fn check_for_link_with_dependencies_allowing_externs(
+    value: hir::LowerResult,
+    dependencies: Vec[hir::File],
+) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(
+            file,
+            dependencies,
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            true,
+        ),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
+        },
+    }
+}
+
+pub fn check_package_files_for_link_with_dependencies(
+    values: Vec[hir::File],
+    dependencies: Vec[hir::File],
+) -> CheckResult {
+    check_package_files_for_link_with_environments(
+        values,
+        dependency_environments(dependencies),
+    )
+}
+
+pub fn check_package_files_for_link_with_environments(
+    values: Vec[hir::File],
+    dependencies: Vec[DependencyEnvironment],
+) -> CheckResult {
+    let items: Vec[Item] = Vec::new();
+    let enums: Vec[EnumDef] = Vec::new();
+    let structs: Vec[StructDef] = Vec::new();
+    let diagnostics: Vec[Diagnostic] = Vec::new();
+    let typeck_results = empty_typeck_results();
+    let valid = Ref::new(true);
+    for index in range(0, values.len()) {
+        let package_files: Vec[hir::File] = Vec::new();
+        for other in range(0, values.len()) {
+            if other != index {
+                package_files.push(values.get(other))
+            } else {
+                ()
+            }
+        };
+        let checked = check_file_with_package(
+            values.get(index),
+            package_files,
+            dependencies,
+            Vec::new(),
+            false,
+            index == 0,
+            false,
+        );
+        for diagnostic in checked.diagnostics {
+            diagnostics.push(diagnostic)
+        };
+        append_typeck_results(typeck_results, checked.typeck_results);
+        match checked.tast {
+            Option::Some(file) => {
+                for item in file.items {
+                    items.push(item)
+                };
+                for definition in file.enums {
+                    enums.push(definition)
+                };
+                for definition in file.structs {
+                    structs.push(definition)
+                }
+            },
+            Option::None => valid.set(false),
+        }
+    };
+    CheckResult {
+        tast: if valid.get() {
+            Option::Some(File {
+                items,
+                enums,
+                structs,
+            })
+        } else {
+            Option::None
+        },
+        diagnostics,
+        typeck_results,
+    }
+}

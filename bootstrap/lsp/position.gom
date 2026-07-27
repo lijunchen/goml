@@ -1,0 +1,127 @@
+package lsp;
+
+pub struct Position {
+    pub line: int,
+    pub character: int,
+}
+
+pub struct Range {
+    pub start: Position,
+    pub end: Position,
+}
+
+fn utf8_width(value: uint8) -> int {
+    if value < 128 {
+        1
+    } else if value < 224 {
+        2
+    } else if value < 240 {
+        3
+    } else {
+        4
+    }
+}
+
+fn utf16_width(value: uint8) -> int {
+    if utf8_width(value) == 4 { 2 } else { 1 }
+}
+
+pub fn offset_to_position(source: string, offset: int) -> Position {
+    let limit = if offset < 0 {
+        0
+    } else if offset > source.byte_len() {
+        source.byte_len()
+    } else {
+        offset
+    };
+    let line = Ref::new(0);
+    let character = Ref::new(0);
+    let index = Ref::new(0);
+    while index.get() < limit {
+        let byte = source.byte_get(index.get());
+        if byte == 10 {
+            line.set(line.get() + 1);
+            character.set(0);
+            index.set(index.get() + 1)
+        } else {
+            let width = utf8_width(byte);
+            if index.get() + width <= limit {
+                character.set(character.get() + utf16_width(byte));
+                index.set(index.get() + width)
+            } else {
+                index.set(limit)
+            }
+        }
+    };
+    Position {
+        line: line.get(),
+        character: character.get(),
+    }
+}
+
+pub fn position_to_offset(source: string, position: Position) -> int {
+    let line = Ref::new(0);
+    let character = Ref::new(0);
+    let index = Ref::new(0);
+    while index.get() < source.byte_len() {
+        if line.get() == position.line
+            && character.get() >= position.character
+        {
+            return index.get()
+        } else {
+            ()
+        };
+        let byte = source.byte_get(index.get());
+        if byte == 10 {
+            if line.get() == position.line {
+                return index.get()
+            } else {
+                line.set(line.get() + 1);
+                character.set(0);
+                index.set(index.get() + 1)
+            }
+        } else {
+            let width = utf8_width(byte);
+            let units = utf16_width(byte);
+            if line.get() == position.line
+                && character.get() + units > position.character
+            {
+                return index.get()
+            } else {
+                character.set(character.get() + units);
+                index.set(index.get() + width)
+            }
+        }
+    };
+    source.byte_len()
+}
+
+pub fn position_to_offset_checked(
+    source: string,
+    position: Position,
+) -> Option[int] {
+    if position.line < 0 || position.character < 0 {
+        Option::None
+    } else {
+        let offset = position_to_offset(source, position);
+        let actual = offset_to_position(source, offset);
+        if actual.line == position.line
+            && actual.character == position.character
+        {
+            Option::Some(offset)
+        } else {
+            Option::None
+        }
+    }
+}
+
+pub fn offsets_to_range(
+    source: string,
+    start: int,
+    end: int,
+) -> Range {
+    Range {
+        start: offset_to_position(source, start),
+        end: offset_to_position(source, end),
+    }
+}

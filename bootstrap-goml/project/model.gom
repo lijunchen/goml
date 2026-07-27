@@ -1,0 +1,87 @@
+package project;
+
+pub struct PackageInfoUse {
+    pub path: string,
+    pub alias: Option[string],
+}
+
+pub struct PackageInfoFile {
+    pub path: string,
+    pub package_name: string,
+    pub package_explicit: bool,
+    pub uses: Vec[PackageInfoUse],
+}
+
+pub struct Package {
+    pub name: string,
+    pub declared_name: string,
+    pub module_name: string,
+    pub directory: string,
+    pub artifact_prefix: string,
+    pub files: Vec[string],
+    pub imports: Vec[string],
+}
+
+pub struct ModuleSource {
+    pub name: string,
+    pub directory: string,
+    pub artifact_prefix: string,
+    pub dependencies: Vec[string],
+}
+
+pub struct Graph {
+    pub module_dir: string,
+    pub module_path: string,
+    pub entry_package: string,
+    pub packages: Vec[Package],
+    pub sources: Vec[ModuleSource],
+    pub order: Vec[string],
+}
+
+pub struct Context {
+    pub graph: Graph,
+    pub compiler: string,
+    pub artifact_root: string,
+}
+
+pub struct ExternalTest {
+    pub graph: Graph,
+    pub target_package: string,
+}
+
+pub enum Command {
+    Compile {
+        subcommand: string,
+        package_name: string,
+        input_files: Vec[string],
+        interface_files: Vec[string],
+        output: string,
+    },
+    Link {
+        input_cores: Vec[string],
+        entry_package: string,
+        output: string,
+    },
+    TestLink {
+        input_cores: Vec[string],
+        packages: Vec[string],
+        output: string,
+        manifest: string,
+    },
+    GoBuild {
+        input: string,
+        output: string,
+    },
+}
+
+pub struct TestGroup {
+    pub kind: string,
+    pub manifest: string,
+    pub runner: string,
+}
+
+pub struct Plan {
+    pub commands: Vec[Command],
+    pub executable: Option[string],
+    pub test_groups: Vec[TestGroup],
+}

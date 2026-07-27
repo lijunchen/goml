@@ -1,0 +1,72 @@
+fn array_get(arr: [int32; 2], index: int32) -> int32 {
+    90 + index
+}
+
+fn array_set(arr: [int32; 2], index: int32, value: int32) -> [int32; 2] {
+    [77, 88]
+}
+
+fn vec_get(v: Vec[int32], index: int32) -> int32 {
+    70 + index
+}
+
+fn vec_set(v: Vec[int32], index: int32, value: int32) -> unit {
+    ()
+}
+
+fn slice_get(s: Slice[int32], index: int32) -> int32 {
+    60 + index
+}
+
+fn hashmap_get(m: HashMap[string, int32], key: string) -> Option[int32] {
+    Option::Some(55)
+}
+
+fn hashmap_set(m: HashMap[string, int32], key: string, value: int32) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let a = [4, 5];
+    println(array_get(a, 1));
+    println(a[1]);
+
+    let c: [int32; 2] = array_set(a, 0, 9);
+    println(c[0]);
+
+    let mut b = [1, 2];
+    b[0] = 9;
+    println(array_get(b, 0));
+    println(b[0]);
+
+    let v: Vec[int32] = Vec::new().pushed(8).pushed(9);
+    println(vec_get(v, 1));
+    println(v[1]);
+
+    let mut v2: Vec[int32] = Vec::new().pushed(1).pushed(2);
+    vec_set(v2, 0, 99);
+    println(v2[0]);
+    v2[1] = 99;
+    println(v2[1]);
+
+    let s = v.slice(0, 2);
+    println(slice_get(s, 1));
+    println(s[1]);
+
+    let m: HashMap[string, int32] = HashMap::new();
+    hashmap_set(m, "b", 11);
+    match m["b"] {
+        Option::Some(x) => println(x),
+        Option::None => println(0),
+    };
+
+    m["a"] = 42;
+    match hashmap_get(m, "a") {
+        Option::Some(x) => println(x),
+        Option::None => println(0),
+    };
+    match m["a"] {
+        Option::Some(x) => println(x),
+        Option::None => println(0),
+    };
+}

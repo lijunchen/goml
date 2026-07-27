@@ -1,0 +1,28 @@
+trait Show {
+    fn show(self: Self) -> string;
+}
+
+struct Wrap {
+    value: string,
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+impl Show for Wrap {
+    fn show(self: Wrap) -> string {
+        self.value
+    }
+}
+
+fn main() -> unit {
+    let values: Vec[dyn Show] = Vec::new();
+    let value: int32 = 10;
+    values.push(value);
+    values.push(Wrap { value: "ok" });
+    println(Show::show(values[0]));
+    println(Show::show(values[1]))
+}

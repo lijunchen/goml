@@ -1,0 +1,100 @@
+fn cut_pair(ok/0: bool) -> Option__(string,string) {
+  join ret72(retv73: Option__(string,string)) -> Option__(string,string) {
+    retv73
+  } in
+  join k74(jp75: Option__(string,string)) -> Option__(string,string) {
+    jump ret72(jp75)
+  } in
+  if ok/0 {
+    let t76 = ("left", "right") in
+    let t77 = Option__(string,string)::Some(t76) in
+    jump k74(t77)
+  } else {
+    jump k74(Tag_0)
+  }
+}
+
+fn pair(ok/1: bool) -> Option__(string,string) {
+  join ret78(retv79: Option__(string,string)) -> Option__(string,string) {
+    retv79
+  } in
+  let t80 = cut_pair(ok/1) in
+  jump ret78(t80)
+}
+
+fn describe(ok/2: bool) -> Option__string {
+  join ret81(retv82: Option__string) -> Option__string {
+    retv82
+  } in
+  let mtmp64 = pair(ok/2) in
+  join k83(jp84: (string, string)) -> Option__string {
+    let mtmp66 = jp84 in
+    let x67 = mtmp66.0 in
+    let x68 = mtmp66.1 in
+    let after/4 = x68 in
+    let before/3 = x67 in
+    let t85 = (before/3 + ":") in
+    let t86 = (t85 + after/4) in
+    let t87 = Option__string::Some(t86) in
+    jump ret81(t87)
+  } in
+  match mtmp64 {
+    Tag_0 => {
+      jump ret81(Tag_0)
+    },
+    Tag_1 => {
+      let x65 = Option__(string,string)::Some._0(mtmp64) in
+      let try_value/16 = x65 in
+      jump k83(try_value/16)
+    },
+  }
+}
+
+fn show(opt/5: Option__string) -> string {
+  join ret88(retv89: string) -> string {
+    retv89
+  } in
+  join k90(jp91: string) -> string {
+    jump ret88(jp91)
+  } in
+  match opt/5 {
+    Tag_0 => {
+      jump k90("none")
+    },
+    Tag_1 => {
+      let x69 = Option__string::Some._0(opt/5) in
+      let value/6 = x69 in
+      let t92 = ("some " + value/6) in
+      jump k90(t92)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret93() -> unit {
+    ()
+  } in
+  let t94 = describe(true) in
+  let t95 = show(t94) in
+  let _wild70 = println__T_string(t95) in
+  let t96 = describe(false) in
+  let t97 = show(t96) in
+  let _wild71 = println__T_string(t97) in
+  jump ret93()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret98() -> unit {
+    ()
+  } in
+  let t99 = trait_impl#ToString#string#to_string(value/1) in
+  let t100 = @runtime(core.string_println)(t99) in
+  jump ret98()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret101(retv102: string) -> string {
+    retv102
+  } in
+  jump ret101(self/38)
+}

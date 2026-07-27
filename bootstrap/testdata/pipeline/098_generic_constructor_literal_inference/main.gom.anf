@@ -1,0 +1,47 @@
+fn main() -> unit {
+  join ret66() -> unit {
+    ()
+  } in
+  let x/0 = Option__uint8::Some(42) in
+  join k67() -> unit {
+    let _wild65 = () in
+    jump ret66()
+  } in
+  match x/0 {
+    Tag_0 => {
+      let x64 = Option__uint8::Some._0(x/0) in
+      let v/1 = x64 in
+      let t68 = trait_impl#ToString#uint8#to_string(v/1) in
+      let t69 = println__T_string(t68) in
+      jump k67()
+    },
+    Tag_1 => {
+      let t70 = println__T_string("none") in
+      jump k67()
+    },
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret71() -> unit {
+    ()
+  } in
+  let t72 = trait_impl#ToString#string#to_string(value/1) in
+  let t73 = @runtime(core.string_println)(t72) in
+  jump ret71()
+}
+
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  join ret74(retv75: string) -> string {
+    retv75
+  } in
+  let t76 = @runtime(core.uint8_to_string)(self/45) in
+  jump ret74(t76)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret77(retv78: string) -> string {
+    retv78
+  } in
+  jump ret77(self/38)
+}

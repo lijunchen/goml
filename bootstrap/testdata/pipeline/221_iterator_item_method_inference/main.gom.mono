@@ -1,0 +1,38 @@
+fn trait_impl#Iterator#Values#next(self/0: Values) -> Option__int32 {
+  Option__int32::None
+}
+
+fn main() -> unit {
+  let _wild68 = {
+    let for_iter64 = trait_impl#IntoIterator#Values#into_iter(Values {}) in
+    while true {
+        {
+          let for_next65 = trait_impl#Iterator#Values#next(for_iter64) in
+          match for_next65 {
+            Option__int32::None => {
+              break
+            },
+            Option__int32::Some(x66) => {
+              {
+                let x66 = Option__int32::Some._0(for_next65) in
+                {
+                  let value/1 = x66 in
+                  {
+                    let _wild67 = @runtime(core.string_println)(inherent#int32#int32#to_string(value/1)) in
+                  }
+                }
+              }
+            },
+          }
+        }
+    }
+  } in
+}
+
+fn trait_impl#IntoIterator#Values#into_iter(self/109: Values) -> Values {
+  self/109
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}

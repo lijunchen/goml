@@ -1,0 +1,5227 @@
+package tast;
+
+use gomlc::ast;
+use gomlc::hir;
+
+struct FloatDecimal {
+    negative: bool,
+    digits: string,
+    exponent: int,
+}
+
+fn char_hex_value(value: uint8) -> Option[uint32] {
+    if value >= 48 && value <= 57 {
+        Option::Some((value - 48) as uint32)
+    } else if value >= 65 && value <= 70 {
+        Option::Some((value - 55) as uint32)
+    } else if value >= 97 && value <= 102 {
+        Option::Some((value - 87) as uint32)
+    } else {
+        Option::None
+    }
+}
+
+fn parse_char_literal(value: string) -> Option[char] {
+    if value.byte_len() == 0 {
+        Option::None
+    } else if value.byte_get(0) != 92 {
+        let character = value.get(0);
+        if character.to_string().byte_len() == value.byte_len() {
+            Option::Some(character)
+        } else {
+            Option::None
+        }
+    } else if value.byte_len() == 2 {
+        match value.byte_get(1) {
+            39 => Option::Some('\''),
+            34 => Option::Some('"'),
+            92 => Option::Some('\\'),
+            47 => Option::Some('/'),
+            98 => char_from_uint32(8),
+            102 => char_from_uint32(12),
+            110 => Option::Some('\n'),
+            114 => Option::Some('\r'),
+            116 => Option::Some('\t'),
+            _ => Option::None,
+        }
+    } else if value.byte_len() == 6 && value.byte_get(1) == 117 {
+        let code = Ref::new(0);
+        let valid = Ref::new(true);
+        for index in range(2, 6) {
+            match char_hex_value(value.byte_get(index)) {
+                Option::Some(digit) => code.set(code.get() * 16 + digit),
+                Option::None => valid.set(false),
+            }
+        };
+        if valid.get() {
+            char_from_uint32(code.get())
+        } else {
+            Option::None
+        }
+    } else {
+        Option::None
+    }
+}
+
+fn checked_char_literal(ctx: Checker, value: string) -> char {
+    match parse_char_literal(value) {
+        Option::Some(character) => character,
+        Option::None => {
+            push_diagnostic(ctx, "invalid char literal");
+            match char_from_uint32(0) {
+                Option::Some(character) => character,
+                Option::None => ' ',
+            }
+        },
+    }
+}
+
+fn decimal_digit(value: uint8) -> string {
+    match value {
+        0 => "0",
+        1 => "1",
+        2 => "2",
+        3 => "3",
+        4 => "4",
+        5 => "5",
+        6 => "6",
+        7 => "7",
+        8 => "8",
+        _ => "9",
+    }
+}
+
+fn increment_decimal(value: string) -> string {
+    let result = Ref::new("");
+    let carry = Ref::new(true);
+    let offset = Ref::new(0);
+    while offset.get() < value.byte_len() {
+        let index = value.byte_len() - offset.get() - 1;
+        let byte = value.byte_get(index);
+        if carry.get() {
+            if byte == 57 {
+                result.set("0" + result.get())
+            } else {
+                result.set(decimal_digit(byte - 47) + result.get());
+                carry.set(false)
+            }
+        } else {
+            result.set(value.byte_slice(index, index + 1) + result.get())
+        };
+        offset.set(offset.get() + 1)
+    };
+    if carry.get() { "1" + result.get() } else { result.get() }
+}
+
+fn repeated_zeros(count: int) -> string {
+    let result = Ref::new("");
+    for _ in range(0, count) {
+        result.set(result.get() + "0")
+    };
+    result.get()
+}
+
+fn trim_fractional_zeros(value: string) -> string {
+    let has_decimal = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 46 {
+            has_decimal.set(true)
+        } else {
+            ()
+        }
+    };
+    if !(has_decimal.get()) {
+        value
+    } else {
+        let end = Ref::new(value.byte_len());
+        while end.get() > 0 && value.byte_get(end.get() - 1) == 48 {
+            end.set(end.get() - 1)
+        };
+        if end.get() > 0 && value.byte_get(end.get() - 1) == 46 {
+            end.set(end.get() - 1)
+        } else {
+            ()
+        };
+        value.byte_slice(0, end.get())
+    }
+}
+
+fn fixed_decimal(coefficient: string, power: int) -> string {
+    let decimal_position = coefficient.byte_len() + power;
+    let value = if decimal_position <= 0 {
+        "0." + repeated_zeros(-decimal_position) + coefficient
+    } else if decimal_position >= coefficient.byte_len() {
+        coefficient + repeated_zeros(decimal_position - coefficient.byte_len())
+    } else {
+        coefficient.byte_slice(0, decimal_position)
+            + "."
+            + coefficient.byte_slice(decimal_position, coefficient.byte_len())
+    };
+    trim_fractional_zeros(value)
+}
+
+fn float_decimal(value: string) -> Option[FloatDecimal] {
+    let negative = value.byte_len() > 0 && value.byte_get(0) == 45;
+    let start = if negative { 1 } else { 0 };
+    let digits = Ref::new("");
+    let decimal_position = Ref::new(-1);
+    let valid = Ref::new(true);
+    for index in range(start, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if byte == 46 && decimal_position.get() < 0 {
+            decimal_position.set(digits.get().byte_len())
+        } else if byte >= 48 && byte <= 57 {
+            digits.set(digits.get() + value.byte_slice(index, index + 1))
+        } else {
+            valid.set(false)
+        }
+    };
+    if decimal_position.get() < 0 {
+        decimal_position.set(digits.get().byte_len())
+    } else {
+        ()
+    };
+    let first = Ref::new(0);
+    while first.get() < digits.get().byte_len()
+        && digits.get().byte_get(first.get()) == 48
+    {
+        first.set(first.get() + 1)
+    };
+    if !(valid.get()) || first.get() == digits.get().byte_len() {
+        Option::None
+    } else {
+        Option::Some(FloatDecimal {
+            negative,
+            digits: digits.get().byte_slice(first.get(), digits.get().byte_len()),
+            exponent: decimal_position.get() - first.get(),
+        })
+    }
+}
+
+fn signed_decimal(negative: bool, value: string) -> string {
+    if negative { "-" + value } else { value }
+}
+
+fn float32_literal_matches(value: string, expected: float64) -> bool {
+    let (valid, parsed) = string_parse_float32(value);
+    valid && parsed == expected
+}
+
+fn absolute_float64(value: float64) -> float64 {
+    if value < 0.0 { -value } else { value }
+}
+
+fn decimal_coefficient_even(value: string) -> bool {
+    let digit = value.byte_get(value.byte_len() - 1) - 48;
+    digit % 2 == 0
+}
+
+fn closer_float_literal(
+    expected: float64,
+    left: string,
+    left_coefficient: string,
+    right: string,
+    right_coefficient: string,
+) -> string {
+    let (_, left_value) = string_parse_float64(left);
+    let (_, right_value) = string_parse_float64(right);
+    let left_distance = absolute_float64(left_value - expected);
+    let right_distance = absolute_float64(right_value - expected);
+    if left_distance < right_distance {
+        left
+    } else if right_distance < left_distance {
+        right
+    } else if decimal_coefficient_even(left_coefficient) {
+        left
+    } else if decimal_coefficient_even(right_coefficient) {
+        right
+    } else {
+        left
+    }
+}
+
+fn shortest_float32_literal(value: float64) -> string {
+    let full = value.to_string();
+    match float_decimal(full) {
+        Option::Some(parts) => {
+            let limit = if parts.digits.byte_len() < 9 {
+                parts.digits.byte_len()
+            } else {
+                9
+            };
+            let result: Ref[Option[string]] = Ref::new(Option::None);
+            let found = Ref::new(false);
+            for precision in range(1, limit + 1) {
+                if found.get() {
+                    ()
+                } else {
+                    let coefficient = parts.digits.byte_slice(0, precision);
+                    let rounded_coefficient = increment_decimal(coefficient);
+                    let power = parts.exponent - precision;
+                    let truncated = signed_decimal(
+                        parts.negative,
+                        fixed_decimal(coefficient, power),
+                    );
+                    let rounded = signed_decimal(
+                        parts.negative,
+                        fixed_decimal(rounded_coefficient, power),
+                    );
+                    let truncated_matches = float32_literal_matches(truncated, value);
+                    let rounded_matches = float32_literal_matches(rounded, value);
+                    if truncated_matches && rounded_matches {
+                        result.set(Option::Some(closer_float_literal(
+                            value,
+                            truncated,
+                            coefficient,
+                            rounded,
+                            rounded_coefficient,
+                        )));
+                        found.set(true)
+                    } else if truncated_matches {
+                        result.set(Option::Some(truncated));
+                        found.set(true)
+                    } else if rounded_matches {
+                        result.set(Option::Some(rounded));
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                }
+            };
+            match result.get() {
+                Option::Some(value) => value,
+                Option::None => full,
+            }
+        },
+        Option::None => full,
+    }
+}
+
+fn normalized_float32_literal(value: string) -> string {
+    let (valid, parsed) = string_parse_float32(value);
+    if valid { shortest_float32_literal(parsed) } else { value }
+}
+
+fn normalized_float64_literal(value: string) -> string {
+    let (valid, parsed) = string_parse_float64(value);
+    if valid {
+        parsed.to_string()
+    } else {
+        value
+    }
+}
+
+fn integer_magnitude(value: string) -> string {
+    let start = Ref::new(if value.byte_len() > 0 && value.byte_get(0) == 45 {
+        1
+    } else {
+        0
+    });
+    while start.get() + 1 < value.byte_len()
+        && value.byte_get(start.get()) == 48
+    {
+        start.set(start.get() + 1)
+    };
+    value.byte_slice(start.get(), value.byte_len())
+}
+
+fn decimal_magnitude_fits(value: string, limit: string) -> bool {
+    let value = integer_magnitude(value);
+    if value.byte_len() < limit.byte_len() {
+        true
+    } else if value.byte_len() > limit.byte_len() {
+        false
+    } else {
+        let result = Ref::new(true);
+        let decided = Ref::new(false);
+        for index in range(0, value.byte_len()) {
+            if decided.get() == false
+                && value.byte_get(index) < limit.byte_get(index)
+            {
+                decided.set(true)
+            } else if decided.get() == false
+                && value.byte_get(index) > limit.byte_get(index)
+            {
+                result.set(false);
+                decided.set(true)
+            } else {
+                ()
+            }
+        };
+        result.get()
+    }
+}
+
+fn integer_literal_fits(value: string, ty: Type) -> bool {
+    let negative = value.byte_len() > 0 && value.byte_get(0) == 45;
+    match prune(ty) {
+        Type::Int => decimal_magnitude_fits(
+            value,
+            if negative { "9223372036854775808" } else { "9223372036854775807" },
+        ),
+        Type::Int8 => decimal_magnitude_fits(value, if negative { "128" } else { "127" }),
+        Type::Int16 => decimal_magnitude_fits(value, if negative { "32768" } else { "32767" }),
+        Type::Int32 => decimal_magnitude_fits(
+            value,
+            if negative { "2147483648" } else { "2147483647" },
+        ),
+        Type::Int64 => decimal_magnitude_fits(
+            value,
+            if negative { "9223372036854775808" } else { "9223372036854775807" },
+        ),
+        Type::Uint => !negative && decimal_magnitude_fits(value, "18446744073709551615"),
+        Type::Uint8 => !negative && decimal_magnitude_fits(value, "255"),
+        Type::Uint16 => !negative && decimal_magnitude_fits(value, "65535"),
+        Type::Uint32 => !negative && decimal_magnitude_fits(value, "4294967295"),
+        Type::Uint64 => !negative && decimal_magnitude_fits(value, "18446744073709551615"),
+        _ => true,
+    }
+}
+
+fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> unit {
+    if integer_literal_fits(value, ty) {
+        ()
+    } else {
+        push_diagnostic(
+            ctx,
+            "Integer literal " + value + " does not fit in " + type_text(ty),
+        )
+    }
+}
+
+fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
+    match value {
+        Expr::Prim { value: Primitive::Float { value: raw }, ty } => match prune(expected) {
+            Type::Float32 => Expr::Prim {
+                value: Primitive::Float { value: normalized_float32_literal(raw) },
+                ty,
+            },
+            Type::Float64 => Expr::Prim {
+                value: Primitive::Float { value: normalized_float64_literal(raw) },
+                ty,
+            },
+            _ => Expr::Prim { value: Primitive::Float { value: raw }, ty },
+        },
+        other => other,
+    }
+}
+
+fn float_literal_integer(value: string) -> Option[string] {
+    let normalized = normalized_float64_literal(value);
+    let integral = Ref::new(true);
+    for index in range(0, normalized.byte_len()) {
+        if normalized.byte_get(index) == 46 {
+            integral.set(false)
+        } else {
+            ()
+        }
+    };
+    if integral.get() {
+        Option::Some(normalized)
+    } else {
+        Option::None
+    }
+}
+
+fn optional_spans_equal(
+    left: Option[ast::Span],
+    right: Option[ast::Span],
+) -> bool {
+    match (left, right) {
+        (Option::Some(first), Option::Some(second)) => {
+            first.start == second.start && first.end == second.end
+        },
+        (Option::None, Option::None) => true,
+        _ => false,
+    }
+}
+
+fn defer_coercion(ctx: Checker, actual: Type, expected: Type) -> unit {
+    let span = ctx.current_span.get();
+    let duplicate = Ref::new(false);
+    for constraint in ctx.coercion_constraints {
+        if optional_spans_equal(constraint.span, span)
+            && types_equal(constraint.actual, actual)
+            && types_equal(constraint.expected, expected)
+        {
+            duplicate.set(true)
+        } else {
+            ()
+        }
+    };
+    if duplicate.get() {
+        ()
+    } else {
+        ctx.coercion_constraints.push(CoercionConstraint {
+            actual,
+            expected,
+            span,
+        })
+    }
+}
+
+fn resolve_coercion_constraints(ctx: Checker) -> unit {
+    for constraint in ctx.coercion_constraints {
+        expect_type_at(
+            ctx,
+            constraint.actual,
+            constraint.expected,
+            constraint.span,
+        )
+    }
+}
+
+fn defer_numeric_literal(
+    ctx: Checker,
+    raw: string,
+    ty: Type,
+    float: bool,
+) -> unit {
+    ctx.numeric_literal_constraints.push(NumericLiteralConstraint {
+        raw,
+        ty,
+        float,
+        negative: Ref::new(false),
+        span: ctx.current_span.get(),
+    })
+}
+
+fn same_type_variable(left: Type, right: Type) -> bool {
+    match (left, right) {
+        (Type::Var(left), Type::Var(right)) => ptr_eq(left, right),
+        _ => false,
+    }
+}
+
+fn negate_numeric_literal_constraint(ctx: Checker, ty: Type) -> unit {
+    for constraint in ctx.numeric_literal_constraints {
+        if same_type_variable(constraint.ty, ty) {
+            constraint.negative.set(!(constraint.negative.get()))
+        } else {
+            ()
+        }
+    }
+}
+
+fn resolve_numeric_literal_constraints(ctx: Checker) -> unit {
+    for constraint in ctx.numeric_literal_constraints {
+        let previous_span = ctx.current_span.get();
+        ctx.current_span.set(constraint.span);
+        let raw = if constraint.negative.get() {
+            "-" + constraint.raw
+        } else {
+            constraint.raw
+        };
+        let ty = resolve_type(constraint.ty);
+        if constraint.float && is_integer_type(ty) {
+            match float_literal_integer(raw) {
+                Option::Some(integer) => validate_integer_literal(ctx, integer, ty),
+                Option::None => push_diagnostic(
+                    ctx,
+                    "Float literal "
+                        + raw
+                        + " cannot be represented as "
+                        + type_text(ty),
+                ),
+            }
+        } else if constraint.float {
+            ()
+        } else {
+            validate_integer_literal(ctx, raw, ty)
+        };
+        ctx.current_span.set(previous_span)
+    }
+}
+
+fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
+    match (prune(expr_type(value)), prune(expected)) {
+        (Type::Error, Type::Var(variable)) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: _ } => variable.set(TypeVar::Link(Type::Error)),
+            TypeVar::Link(_) => (),
+        },
+        _ => (),
+    };
+    match value {
+        Expr::Prim { value: Primitive::Int { value: raw }, ty: _ } => {
+            validate_integer_literal(ctx, raw, expected)
+        },
+        Expr::Prim { value: Primitive::Float { value: raw }, ty: _ } => if is_integer_type(expected) {
+            match float_literal_integer(raw) {
+                Option::Some(integer) => validate_integer_literal(ctx, integer, expected),
+                Option::None => push_diagnostic(
+                    ctx,
+                    "Float literal " + raw + " cannot be represented as " + type_text(expected),
+                ),
+            }
+        } else {
+            ()
+        },
+        Expr::Unary {
+            op: ast::UnaryOp::Neg,
+            expr: Expr::Prim { value: Primitive::Int { value: _ }, ty: _ },
+            ty: _,
+        } => if is_unsigned_type(expected)
+            && types_equal(expr_type(value), expected)
+        {
+            push_diagnostic(ctx, "negative value cannot use unsigned type")
+        } else {
+            ()
+        },
+        _ => (),
+    };
+    expect_type(ctx, expr_type(value), expected);
+    normalize_float_expr(value, expected)
+}
+
+fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
+    match value {
+        Expr::Break { ty: _ } | Expr::Continue { ty: _ } | Expr::Return { expr: _, ty: _ } => value,
+        _ => match expected {
+            Option::Some(expected_ty) => match prune(expected_ty) {
+                Type::Var(variable) => match variable.get() {
+                    TypeVar::Unbound { id: _, kind: _ } => {
+                        if ctx.defer_coercion_depth.get() > 0
+                            && !types_equal(expr_type(value), expected_ty)
+                        {
+                            defer_coercion(ctx, expr_type(value), expected_ty);
+                            value
+                        } else {
+                            coerce_direct(ctx, value, expected_ty)
+                        }
+                    },
+                    TypeVar::Link(_) => coerce_direct(ctx, value, expected_ty),
+                },
+                Type::Dyn { trait_name } => match prune(expr_type(value)) {
+                    Type::Dyn { trait_name: actual } => {
+                        if actual != trait_name {
+                            push_diagnostic(ctx, "dyn trait mismatch")
+                        } else {
+                            ()
+                        };
+                        value
+                    },
+                    actual => {
+                        match find_trait(ctx, trait_name) {
+                            Option::Some(_) => if trait_bound_satisfied_at(
+                                ctx,
+                                actual,
+                                TraitRef {
+                                    name: trait_name,
+                                    args: Vec::new(),
+                                },
+                                0,
+                            ) {
+                                ()
+                            } else {
+                                require_predicate(
+                                    ctx,
+                                    TypePredicate::Trait {
+                                        for_ty: actual,
+                                        trait_ref: TraitRef {
+                                                                                    name: trait_name,
+                                                                                    args: Vec::new(),
+                                                                                },
+                                    },
+                                    "Type "
+                                        + type_text(actual)
+                                        + " does not implement trait "
+                                        + trait_name,
+                                )
+                            },
+                            Option::None => expect_type(ctx, actual, expected_ty),
+                        };
+                        Expr::ToDyn {
+                            trait_name,
+                            for_ty: actual,
+                            expr: value,
+                            ty: expected_ty,
+                        }
+                    },
+                },
+                _ => coerce_direct(ctx, value, expected_ty),
+            },
+            Option::None => value,
+        },
+    }
+}
+
+fn contains_unbound_type_variable(value: Type) -> bool {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: _ } => true,
+            TypeVar::Link(inner) => contains_unbound_type_variable(inner),
+        },
+        Type::Tuple { items: values } => {
+            let found = Ref::new(false);
+            for value in values {
+                if contains_unbound_type_variable(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
+            let found = Ref::new(contains_unbound_type_variable(base));
+            match reference {
+                Option::Some(reference) => for arg in reference.args {
+                    if contains_unbound_type_variable(arg) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            found.get()
+        },
+        Type::App { ty: base, args } => {
+            let found = Ref::new(contains_unbound_type_variable(base));
+            for arg in args {
+                if contains_unbound_type_variable(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => contains_unbound_type_variable(elem),
+        Type::HashMap { key, value: item } => {
+            contains_unbound_type_variable(key)
+                || contains_unbound_type_variable(item)
+        },
+        Type::Func { params, ret_ty } => {
+            let found = Ref::new(contains_unbound_type_variable(ret_ty));
+            for param in params {
+                if contains_unbound_type_variable(param) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn unresolved_inference_var(ctx: Checker, variable: Ref[TypeVar]) -> bool {
+    let result = Ref::new(false);
+    for candidate in ctx.unresolved_inference_vars {
+        if ptr_eq(candidate, variable) || occurs(variable, Type::Var(candidate)) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn contains_unresolved_inference(ctx: Checker, value: Type) -> bool {
+    match value {
+        Type::Var(variable) => if unresolved_inference_var(ctx, variable) {
+            true
+        } else {
+            match variable.get() {
+                TypeVar::Link(inner) => contains_unresolved_inference(ctx, inner),
+                TypeVar::Unbound { id: _, kind: _ } => false,
+            }
+        },
+        Type::Tuple { items: values } => {
+            let result = Ref::new(false);
+            for value in values {
+                if contains_unresolved_inference(ctx, value) {
+                    result.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
+            let result = Ref::new(contains_unresolved_inference(ctx, base));
+            match reference {
+                Option::Some(value) => for argument in value.args {
+                    if contains_unresolved_inference(ctx, argument) {
+                        result.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            result.get()
+        },
+        Type::App { ty: base, args } => {
+            let result = Ref::new(contains_unresolved_inference(ctx, base));
+            for value in args {
+                if contains_unresolved_inference(ctx, value) {
+                    result.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => contains_unresolved_inference(ctx, elem),
+        Type::HashMap { key, value } => {
+            contains_unresolved_inference(ctx, key)
+                || contains_unresolved_inference(ctx, value)
+        },
+        Type::Func { params, ret_ty: result_ty } => {
+            let result = Ref::new(contains_unresolved_inference(ctx, result_ty));
+            for value in params {
+                if contains_unresolved_inference(ctx, value) {
+                    result.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        _ => false,
+    }
+}
+
+fn fresh_unresolved_inference(ctx: Checker) -> Type {
+    let value = fresh_type(ctx.counter, VarKind::Any);
+    match value {
+        Type::Var(variable) => ctx.unresolved_inference_vars.push(variable),
+        _ => (),
+    };
+    value
+}
+
+fn is_unbound_any_type(value: Type) -> bool {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: VarKind::Any } => true,
+            TypeVar::Link(inner) => is_unbound_any_type(inner),
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+fn has_unresolved_projection(value: Type) -> bool {
+    match prune(value) {
+        Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
+            let unresolved = Ref::new(contains_unbound_type_variable(base));
+            match reference {
+                Option::Some(reference) => for arg in reference.args {
+                    if contains_unbound_type_variable(arg) {
+                        unresolved.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            unresolved.get()
+        },
+        Type::Tuple { items: values } => {
+            let found = Ref::new(false);
+            for value in values {
+                if has_unresolved_projection(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::App { ty: base, args } => {
+            let found = Ref::new(has_unresolved_projection(base));
+            for arg in args {
+                if has_unresolved_projection(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array { len: _, elem }
+        | Type::Slice { elem }
+        | Type::VecType { elem }
+        | Type::RefType { elem }
+        | Type::Channel { elem } => has_unresolved_projection(elem),
+        Type::HashMap { key, value: item } => {
+            has_unresolved_projection(key) || has_unresolved_projection(item)
+        },
+        Type::Func { params, ret_ty } => {
+            let found = Ref::new(has_unresolved_projection(ret_ty));
+            for param in params {
+                if has_unresolved_projection(param) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[Type]) -> unit {
+    match propagated_expected(expected) {
+        Option::Some(expected_ty) => match prune(callable_ty) {
+            Type::Func { params: _, ret_ty } => {
+                let ret_ty = normalize_type(ctx, ret_ty);
+                if has_unresolved_projection(ret_ty) {
+                    ()
+                } else {
+                    expect_type(ctx, ret_ty, expected_ty)
+                }
+            },
+            _ => (),
+        },
+        Option::None => (),
+    }
+}
+
+fn propagated_expected(expected: Option[Type]) -> Option[Type] {
+    match expected {
+        Option::Some(ty) => match prune(ty) {
+            Type::Dyn { trait_name: _ } => Option::None,
+            _ => Option::Some(ty),
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
+    match value.kind {
+        hir::ExprKind::Unit => Option::Some(Expr::Prim { value: Primitive::Unit, ty: Type::Unit }),
+        hir::ExprKind::Bool { value } => Option::Some(Expr::Prim {
+            value: Primitive::Bool { value },
+            ty: Type::Bool,
+        }),
+        hir::ExprKind::Int { value } => Option::Some(Expr::Prim {
+            value: Primitive::Int { value },
+            ty: fresh_type(ctx.counter, VarKind::Integer),
+        }),
+        hir::ExprKind::Float { value } => Option::Some(Expr::Prim {
+            value: Primitive::Float { value: value.to_string() },
+            ty: fresh_type(ctx.counter, VarKind::Float),
+        }),
+        hir::ExprKind::String { value } => Option::Some(Expr::Prim {
+            value: Primitive::String { value },
+            ty: Type::String,
+        }),
+        hir::ExprKind::Char { value } => Option::Some(Expr::Prim {
+            value: Primitive::Char { value: checked_char_literal(ctx, value) },
+            ty: Type::Char,
+        }),
+        _ => Option::None,
+    }
+}
+
+fn function_scheme_for_name_ref(
+    ctx: Checker,
+    value: hir::NameRef,
+) -> Option[FunctionScheme] {
+    match value {
+        hir::NameRef::Local(_) => Option::None,
+        hir::NameRef::Def(definition) => find_function_by_def(ctx, definition),
+        hir::NameRef::Other(name) => match find_function_by_name(ctx, name) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => builtin_function_scheme(name),
+        },
+    }
+}
+
+fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
+    match value {
+        hir::NameRef::Local(local) => match find_local(ctx, local) {
+            Option::Some(ty) => Expr::Var { name: local_name(local), ty },
+            Option::None => {
+                push_diagnostic(ctx, "Unknown variable " + local_name(local));
+                Expr::Var {
+                    name: local_name(local),
+                    ty: if contains_local(ctx.unresolved_locals, local) {
+                                            fresh_type(ctx.counter, VarKind::Any)
+                                        } else {
+                                            Type::Error
+                                        },
+                }
+            },
+        },
+        hir::NameRef::Def(definition) => match find_function_by_def(ctx, definition) {
+            Option::Some(scheme) => {
+                let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
+                Expr::Callable { callable, ty }
+            },
+            Option::None => match find_rejected_extern(ctx, definition) {
+                Option::Some(value) => match builtin_function_scheme(short_name(value.name)) {
+                    Option::Some(scheme) => {
+                        let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
+                        Expr::Callable { callable, ty }
+                    },
+                    Option::None => {
+                        push_diagnostic_at(
+                            ctx,
+                            "Internal error: Function "
+                                + short_name(value.name)
+                                + " not found in environment",
+                            Option::None,
+                        );
+                        let params: Vec[Type] = Vec::new();
+                        for _ in range(0, value.arity) {
+                            params.push(fresh_type(ctx.counter, VarKind::Any))
+                        };
+                        Expr::Callable {
+                            callable: Callable::Function(value.name),
+                            ty: Type::Func {
+                                                            params,
+                                                            ret_ty: fresh_type(ctx.counter, VarKind::Any),
+                                                        },
+                        }
+                    },
+                },
+                Option::None => {
+                    push_diagnostic(ctx, "definition not found");
+                    Expr::Callable { callable: Callable::Function("<error>"), ty: Type::Error }
+                },
+            },
+        },
+        hir::NameRef::Other(name) => {
+            let scheme = match find_function_by_name(ctx, name) {
+                Option::Some(value) => Option::Some(value),
+                Option::None => builtin_function_scheme(name),
+            };
+            match scheme {
+                Option::Some(value) => {
+                    let (callable, ty) = instantiate_scheme(ctx, value, Vec::new());
+                    Expr::Callable { callable, ty }
+                },
+                Option::None => {
+                    push_diagnostic(ctx, "Unresolved name " + name);
+                    Expr::Var { name, ty: fresh_unresolved_inference(ctx) }
+                },
+            }
+        },
+    }
+}
+
+fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
+    let result = check_name_ref_inner(ctx, value);
+    match value {
+        hir::NameRef::Local(local) => if contains_local(ctx.unresolved_locals, local)
+            && ctx.suppress_unresolved_ref_diagnostic.get() == 0
+            && contains_unresolved_inference(ctx, expr_type(result))
+        {
+            push_global_diagnostic(ctx, "Could not infer type")
+        } else {
+            ()
+        },
+        _ => (),
+    };
+    result
+}
+
+fn resolved_constructor_value_expr(
+    ctx: Checker,
+    info: ResolvedConstructor,
+) -> Expr {
+    if info.fields.len() == 0 {
+        check_resolved_constructor_expr(ctx, info, Vec::new(), Option::None)
+    } else if !(info.named) {
+        let params: Vec[ClosureParam] = Vec::new();
+        let args: Vec[Expr] = Vec::new();
+        for index in range(0, info.fields.len()) {
+            let name = "ctor_arg_" + index.to_string();
+            let ty = info.fields.get(index);
+            params.push(ClosureParam { name, ty });
+            args.push(Expr::Var { name, ty })
+        };
+        Expr::Closure {
+            params,
+            body: Expr::Constr {
+                constructor: info.constructor,
+                args,
+                ty: info.ty,
+            },
+            ty: Type::Func {
+                params: info.fields,
+                ret_ty: info.ty,
+            },
+        }
+    } else {
+        push_diagnostic(
+            ctx,
+            "Constructor "
+                + info.constructor.name
+                + " is a struct-like enum variant and requires named fields",
+        );
+        Expr::Constr {
+            constructor: info.constructor,
+            args: Vec::new(),
+            ty: Type::Error,
+        }
+    }
+}
+
+fn check_constructor_value_expr(
+    ctx: Checker,
+    constructor: hir::ConstructorRef,
+    expected: Option[Type],
+) -> Expr {
+    match resolve_constructor(ctx, constructor) {
+        Option::Some(info) => resolved_constructor_value_expr(ctx, info),
+        Option::None => missing_constructor_expr(
+            ctx,
+            match constructor {
+                hir::ConstructorRef::Unresolved(name) => name,
+                hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
+                    "<error>"
+                },
+            },
+            expected,
+        ),
+    }
+}
+
+fn check_static_member(
+    ctx: Checker,
+    owner: string,
+    member: string,
+    type_args: Vec[hir::TypeExpr],
+    report_inference: bool,
+) -> Expr {
+    match resolve_named_constructor(ctx, owner, member) {
+        Option::Some(info) => resolved_constructor_value_expr(ctx, info),
+        Option::None => match resolve_static_member(ctx, owner, member, type_args) {
+            Option::Some(value) => match value.callable {
+                Callable::InherentMethod { receiver_ty: _, method_name: _ } => {
+                    push_stage_diagnostic(ctx, "compile",
+                        "Inherent method values are not supported; call the method directly",
+                    );
+                    Expr::Callable { callable: value.callable, ty: value.ty }
+                },
+                _ => Expr::Callable { callable: value.callable, ty: value.ty },
+            },
+            Option::None => {
+                let infer_result = Ref::new(false);
+                if contains_name(ctx.invalid_impl_arity_owners, owner) {
+                    ()
+                } else {
+                    match find_enum_by_name(ctx, owner) {
+                        Option::Some(_) => push_diagnostic(
+                            ctx,
+                            "Variant " + member + " not found for enum " + owner,
+                        ),
+                        Option::None => match find_struct_by_name(ctx, owner) {
+                            Option::Some(_) => {
+                                push_diagnostic(
+                                    ctx,
+                                    "Method " + member + " not found for type " + owner,
+                                );
+                                infer_result.set(true)
+                            },
+                            Option::None => {
+                                if report_inference {
+                                    push_spanless_inference_diagnostic(ctx)
+                                } else {
+                                    ()
+                                };
+                                push_diagnostic(
+                                    ctx,
+                                    "Type or trait "
+                                        + diagnostic_type_name(ctx, owner)
+                                        + " not found for member access",
+                                )
+                            },
+                        },
+                    }
+                };
+                Expr::Callable {
+                    callable: Callable::Function(owner + "::" + member),
+                    ty: if infer_result.get() {
+                                            fresh_unresolved_inference(ctx)
+                                        } else {
+                                            Type::Error
+                                        },
+                }
+            },
+        },
+    }
+}
+
+fn missing_constructor_expr(
+    ctx: Checker,
+    name: string,
+    expected: Option[Type],
+) -> Expr {
+    report_error_inference(ctx, expected);
+    push_diagnostic(ctx, "Constructor " + name + " not found in environment");
+    Expr::Constr {
+        constructor: Constructor {
+                    name: "<error>",
+                    fields: Vec::new(),
+                    is_struct: false,
+                    tag: Option::None,
+                },
+        args: Vec::new(),
+        ty: Type::Error,
+    }
+}
+
+fn report_error_inference(ctx: Checker, expected: Option[Type]) -> unit {
+    match expected {
+        Option::Some(_) => (),
+        Option::None => push_spanless_inference_diagnostic(ctx),
+    }
+}
+
+fn check_resolved_constructor_expr(
+    ctx: Checker,
+    info: ResolvedConstructor,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    if info.named {
+        for arg in args {
+            let _ = check_expr(ctx, arg, Option::None);
+        };
+        push_diagnostic(
+            ctx,
+            "Constructor "
+                + info.constructor.name
+                + " is a struct-like enum variant and requires named fields",
+        );
+        return Expr::Constr {
+            constructor: info.constructor,
+            args: Vec::new(),
+            ty: fresh_unresolved_inference(ctx),
+        }
+    } else {
+        ()
+    };
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, info.ty, ty),
+        Option::None => (),
+    };
+    let arity_mismatch = args.len() != info.fields.len();
+    if arity_mismatch {
+        push_diagnostic(
+            ctx,
+            "Constructor "
+                + short_name(info.constructor.name)
+                + " expects "
+                + info.fields.len().to_string()
+                + " arguments, but got "
+                + args.len().to_string(),
+        )
+    } else {
+        ()
+    };
+    let values: Vec[Expr] = Vec::new();
+    for index in range(0, args.len()) {
+        let expected = if index < info.fields.len() {
+            Option::Some(info.fields.get(index))
+        } else {
+            Option::None
+        };
+        values.push(check_expr(ctx, args.get(index), expected))
+    };
+    let result_ty = if arity_mismatch {
+        fresh_unresolved_inference(ctx)
+    } else {
+        info.ty
+    };
+    coerce_expr(
+        ctx,
+        Expr::Constr { constructor: info.constructor, args: values, ty: result_ty },
+        expected,
+    )
+}
+
+fn check_constructor_expr(
+    ctx: Checker,
+    constructor: hir::ConstructorRef,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    match resolve_constructor(ctx, constructor) {
+        Option::Some(info) => check_resolved_constructor_expr(ctx, info, args, expected),
+        Option::None => match constructor {
+            hir::ConstructorRef::Unresolved(name) => match resolve_struct(ctx, name) {
+                Option::Some(info) => {
+                    check_positional_struct_expr(ctx, info, args, expected)
+                },
+                Option::None => missing_constructor_expr(ctx, name, expected),
+            },
+            hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
+                missing_constructor_expr(ctx, "<error>", expected)
+            },
+        },
+    }
+}
+
+fn check_struct_expr(
+    ctx: Checker,
+    name: string,
+    fields: Vec[(string, hir::Expr)],
+    expected: Option[Type],
+) -> Expr {
+    match resolve_named_field_constructor(ctx, name) {
+        NamedFieldConstructorResolution::Found(info) => {
+            if info.has_hidden_fields {
+                for field in fields {
+                    let _ = check_expr(ctx, field.1, Option::None);
+                };
+                push_diagnostic(
+                    ctx,
+                    "Struct "
+                        + info.constructor.name
+                        + " has private fields and cannot be constructed here",
+                );
+                report_error_inference(ctx, expected);
+                return Expr::Constr {
+                    constructor: info.constructor,
+                    args: Vec::new(),
+                    ty: Type::Error,
+                }
+            } else {
+                ()
+            };
+            match propagated_expected(expected) {
+                Option::Some(ty) => expect_type(ctx, info.ty, ty),
+                Option::None => (),
+            };
+            for index in range(0, fields.len()) {
+                let provided = fields.get(index);
+                let duplicate = Ref::new(false);
+                for previous in range(0, index) {
+                    if fields.get(previous).0 == provided.0 {
+                        duplicate.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if duplicate.get() {
+                    push_diagnostic_at(
+                        ctx,
+                        "Duplicate field "
+                            + provided.0
+                            + " in struct literal "
+                            + name,
+                        Option::Some(provided.1.span),
+                    )
+                } else {
+                    ()
+                };
+                let known = Ref::new(false);
+                for field in info.fields {
+                    if field.0 == provided.0 {
+                        known.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if known.get() {
+                    ()
+                } else {
+                    push_diagnostic_at(
+                        ctx,
+                        "Unknown field " + provided.0 + " on struct literal " + name,
+                        Option::Some(provided.1.span),
+                    )
+                }
+            };
+            let values: Vec[Expr] = Vec::new();
+            for field in info.fields {
+                match find_named_field(fields, field.0) {
+                    Option::Some(value) => values.push(check_expr(
+                        ctx,
+                        value,
+                        Option::Some(field.1),
+                    )),
+                    Option::None => {
+                        push_diagnostic(
+                            ctx,
+                            "Missing field " + field.0 + " in struct literal " + name,
+                        );
+                        values.push(Expr::Prim { value: Primitive::Unit, ty: Type::Error })
+                    },
+                }
+            };
+            coerce_expr(
+                ctx,
+                Expr::Constr { constructor: info.constructor, args: values, ty: info.ty },
+                expected,
+            )
+        },
+        NamedFieldConstructorResolution::WrongStyle => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            push_diagnostic(
+                ctx,
+                "Constructor " + name + " is not a struct-like enum variant",
+            );
+            Expr::Constr {
+                constructor: Constructor {
+                                    name,
+                                    fields: Vec::new(),
+                                    is_struct: false,
+                                    tag: Option::None,
+                                },
+                args: Vec::new(),
+                ty: fresh_unresolved_inference(ctx),
+            }
+        },
+        NamedFieldConstructorResolution::Ambiguous => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            push_diagnostic(ctx, "Ambiguous constructor " + name);
+            Expr::Constr {
+                constructor: Constructor {
+                                    name,
+                                    fields: Vec::new(),
+                                    is_struct: false,
+                                    tag: Option::None,
+                                },
+                args: Vec::new(),
+                ty: fresh_unresolved_inference(ctx),
+            }
+        },
+        NamedFieldConstructorResolution::Missing => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            push_diagnostic(ctx, "Constructor " + name + " not found in environment");
+            report_error_inference(ctx, expected);
+            Expr::Constr {
+                constructor: Constructor {
+                                    name,
+                                    fields: Vec::new(),
+                                    is_struct: false,
+                                    tag: Option::None,
+                },
+                args: Vec::new(),
+                ty: Type::Error,
+            }
+        },
+    }
+}
+
+fn check_positional_struct_expr(
+    ctx: Checker,
+    info: ResolvedStruct,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    if info.has_hidden_fields {
+        for arg in args {
+            let _ = check_expr(ctx, arg, Option::None);
+        };
+        push_diagnostic(
+            ctx,
+            "Struct "
+                + info.constructor.name
+                + " has private fields and cannot be constructed here",
+        );
+        report_error_inference(ctx, expected);
+        return Expr::Constr {
+            constructor: info.constructor,
+            args: Vec::new(),
+            ty: Type::Error,
+        }
+    } else {
+        ()
+    };
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, info.ty, ty),
+        Option::None => (),
+    };
+    let arity_mismatch = args.len() != info.fields.len();
+    if arity_mismatch {
+        push_diagnostic(
+            ctx,
+            "Constructor "
+                + short_name(info.constructor.name)
+                + " expects "
+                + info.fields.len().to_string()
+                + " arguments, but got "
+                + args.len().to_string(),
+        )
+    } else {
+        ()
+    };
+    let values: Vec[Expr] = Vec::new();
+    for index in range(0, args.len()) {
+        let expected = if index < info.fields.len() {
+            Option::Some(info.fields.get(index).1)
+        } else {
+            Option::None
+        };
+        values.push(check_expr(ctx, args.get(index), expected))
+    };
+    let result_ty = if arity_mismatch {
+        fresh_unresolved_inference(ctx)
+    } else {
+        info.ty
+    };
+    coerce_expr(
+        ctx,
+        Expr::Constr { constructor: info.constructor, args: values, ty: result_ty },
+        expected,
+    )
+}
+
+fn check_tuple_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]) -> Expr {
+    let items: Vec[Expr] = Vec::new();
+    let types: Vec[Type] = Vec::new();
+    for _ in values {
+        types.push(fresh_type(ctx.counter, VarKind::Any))
+    };
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, Type::Tuple { items: types }, ty),
+        Option::None => (),
+    };
+    for index in range(0, values.len()) {
+        items.push(check_expr(
+            ctx,
+            values.get(index),
+            Option::Some(types.get(index)),
+        ))
+    };
+    coerce_expr(ctx, Expr::Tuple { items, ty: Type::Tuple { items: types } }, expected)
+}
+
+fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]) -> Expr {
+    let elem = fresh_type(ctx.counter, VarKind::Any);
+    let array_ty = Type::Array { len: values.len(), elem };
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, array_ty, ty),
+        Option::None => (),
+    };
+    let items: Vec[Expr] = Vec::new();
+    for value in values {
+        items.push(check_expr(ctx, value, Option::Some(elem)))
+    };
+    coerce_expr(ctx, Expr::Array { items, ty: array_ty }, expected)
+}
+
+fn check_closure_expr(
+    ctx: Checker,
+    params: Vec[hir::ClosureParam],
+    body: hir::Expr,
+    expected: Option[Type],
+) -> Expr {
+    let expected_parts: (Vec[Type], Option[Type]) = match propagated_expected(expected) {
+        Option::Some(ty) => match prune(ty) {
+            Type::Func { params, ret_ty } => (params, Option::Some(ret_ty)),
+            _ => (Vec::new(), Option::None),
+        },
+        Option::None => (Vec::new(), Option::None),
+    };
+    let ret_ty = match expected_parts.1 {
+        Option::Some(ty) => ty,
+        Option::None => fresh_type(ctx.counter, VarKind::Any),
+    };
+    let closure_ctx = closure_context(ctx, ret_ty);
+    let typed_params: Vec[ClosureParam] = Vec::new();
+    let param_types: Vec[Type] = Vec::new();
+    for param in params {
+        let index = typed_params.len();
+        let contextual = if index < expected_parts.0.len() {
+            Option::Some(expected_parts.0.get(index))
+        } else {
+            Option::None
+        };
+        let ty = match param.ty {
+            Option::Some(value) => {
+                let declared = resolve_signature_type(
+                    ctx,
+                    type_from_hir(value, ctx.type_params, ctx.self_ty),
+                    ctx.predicates,
+                    true,
+                );
+                match contextual {
+                    Option::Some(expected) => expect_type(ctx, declared, expected),
+                    Option::None => (),
+                };
+                declared
+            },
+            Option::None => match contextual {
+                Option::Some(ty) => ty,
+                Option::None => fresh_type(ctx.counter, VarKind::Any),
+            },
+        };
+        insert_local(closure_ctx, param.name, ty);
+        typed_params.push(ClosureParam {
+            name: local_name(param.name),
+            ty,
+        });
+        param_types.push(ty)
+    };
+    let typed_body = check_expr(closure_ctx, body, Option::Some(ret_ty));
+    match (prune(ret_ty), prune(expr_type(typed_body))) {
+        (Type::Var(_), Type::Never) => expect_type(ctx, ret_ty, Type::Unit),
+        _ => (),
+    };
+    Expr::Closure {
+        params: typed_params,
+        body: typed_body,
+        ty: Type::Func { params: param_types, ret_ty },
+    }
+}
+
+fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
+    match prune(value) {
+        Type::Func { params, ret_ty } => (params, ret_ty),
+        Type::Var(variable) => {
+            let params: Vec[Type] = Vec::new();
+            for _ in range(0, arity) {
+                params.push(fresh_unresolved_inference(ctx))
+            };
+            let ret_ty = fresh_unresolved_inference(ctx);
+            let numeric = is_numeric_type(Type::Var(variable));
+            expect_type(ctx, Type::Var(variable), Type::Func { params, ret_ty });
+            if numeric {
+                push_global_diagnostic(ctx, "Could not infer type")
+            } else {
+                ()
+            };
+            (params, ret_ty)
+        },
+        Type::Error => (Vec::new(), Type::Error),
+        _ => {
+            push_diagnostic(
+                ctx,
+                "Cannot call non-function type " + type_text(value),
+            );
+            (Vec::new(), Type::Error)
+        },
+    }
+}
+
+fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
+    match value {
+        Expr::Callable { callable, ty } => Expr::Callable {
+            callable: normalize_callable(ctx, callable),
+            ty: normalize_type(ctx, ty),
+        },
+        other => other,
+    }
+}
+
+fn array_wildcard_length(
+    params: Vec[Type],
+    values: Vec[Expr],
+) -> Option[int] {
+    let result = Ref::new(Option::None);
+    for index in range(0, params.len()) {
+        if index < values.len() {
+            match (prune(params.get(index)), prune(expr_type(values.get(index)))) {
+                (
+                    Type::Array { len: expected, elem: _ },
+                    Type::Array { len: actual, elem: _ },
+                ) => if expected < 0 && actual >= 0 {
+                    result.set(Option::Some(actual))
+                } else {
+                    ()
+                },
+                _ => (),
+            }
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn specialize_array_type(value: Type, length: int) -> Type {
+    match prune(value) {
+        Type::Array { len, elem } => Type::Array {
+            len: if len < 0 { length } else { len },
+            elem,
+        },
+        other => other,
+    }
+}
+
+fn specialize_array_callable(function: Expr, values: Vec[Expr]) -> Expr {
+    match function {
+        Expr::Callable { callable, ty: Type::Func { params, ret_ty } } => {
+            match array_wildcard_length(params, values) {
+                Option::Some(length) => {
+                    let specialized: Vec[Type] = Vec::new();
+                    for param in params {
+                        specialized.push(specialize_array_type(param, length))
+                    };
+                    Expr::Callable {
+                        callable,
+                        ty: Type::Func {
+                            params: specialized,
+                            ret_ty: specialize_array_type(ret_ty, length),
+                        },
+                    }
+                },
+                Option::None => {
+                    Expr::Callable { callable, ty: Type::Func { params, ret_ty } }
+                },
+            }
+        },
+        other => other,
+    }
+}
+
+fn trait_method_callable(value: Expr) -> bool {
+    match value {
+        Expr::Callable { callable: Callable::TraitMethod { trait_ref: _, method_name: _ }, ty: _ } => true,
+        _ => false,
+    }
+}
+
+fn dyn_trait_method(
+    function: Expr,
+    values: Vec[Expr],
+) -> Option[(string, string)] {
+    match function {
+        Expr::Callable {
+            callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+            ty: _,
+        } => {
+            if values.len() > 0 {
+                match prune(expr_type(values.get(0))) {
+                    Type::Dyn { trait_name: owner } => if names_match(owner, reference.name) {
+                        Option::Some((reference.name, name))
+                    } else {
+                        Option::None
+                    },
+                    _ => Option::None,
+                }
+            } else {
+                Option::None
+            }
+        },
+        _ => Option::None,
+    }
+}
+
+fn arity_diagnostic_types(values: Vec[Type]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::new();
+    for value in values {
+        result.push(arity_diagnostic_type(value))
+    };
+    result
+}
+
+fn arity_diagnostic_type(value: Type) -> Type {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: _ } => Type::Con { name: "unknown" },
+            TypeVar::Link(inner) => arity_diagnostic_type(inner),
+        },
+        Type::Tuple { items: values } => Type::Tuple { items: arity_diagnostic_types(values) },
+        Type::Projection { for_ty: base, name, trait_ref: reference } => {
+            Type::Projection { for_ty: arity_diagnostic_type(base), name, trait_ref: reference }
+        },
+        Type::App { ty: base, args } => {
+            Type::App { ty: arity_diagnostic_type(base), args: arity_diagnostic_types(args) }
+        },
+        Type::Array { len: length, elem } => {
+            Type::Array { len: length, elem: arity_diagnostic_type(elem) }
+        },
+        Type::Slice { elem } => Type::Slice { elem: arity_diagnostic_type(elem) },
+        Type::VecType { elem } => Type::VecType { elem: arity_diagnostic_type(elem) },
+        Type::RefType { elem } => Type::RefType { elem: arity_diagnostic_type(elem) },
+        Type::HashMap { key, value } => Type::HashMap {
+            key: arity_diagnostic_type(key),
+            value: arity_diagnostic_type(value),
+        },
+        Type::Channel { elem } => Type::Channel { elem: arity_diagnostic_type(elem) },
+        Type::Func { params, ret_ty } => Type::Func {
+            params: arity_diagnostic_types(params),
+            ret_ty: arity_diagnostic_type(ret_ty),
+        },
+        other => other,
+    }
+}
+
+fn apply_typed_call(
+    ctx: Checker,
+    function: Expr,
+    raw_values: Vec[Expr],
+    params: Vec[Type],
+    ret_ty: Type,
+    prefix_len: int,
+    is_static: bool,
+) -> Expr {
+    let values: Vec[Expr] = Vec::new();
+    for value in raw_values {
+        let index = values.len();
+        let expected = if index < params.len() {
+            Option::Some(params.get(index))
+        } else {
+            Option::None
+        };
+        values.push(if index < prefix_len {
+            coerce_expr(ctx, value, expected)
+        } else {
+            value
+        })
+    };
+    let arity_mismatch = !types_equal(ret_ty, Type::Error)
+        && values.len() != params.len();
+    let trait_method = trait_method_callable(function);
+    let trait_argument_mismatch = Ref::new(false);
+    if trait_method && !arity_mismatch {
+        for index in range(1, values.len()) {
+            if index < params.len()
+                && !call_types_compatible(
+                    params.get(index),
+                    expr_type(values.get(index)),
+                )
+            {
+                trait_argument_mismatch.set(true)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    let dyn_method = dyn_trait_method(function, values);
+    if arity_mismatch {
+        let actual_params: Vec[Type] = Vec::new();
+        for value in values {
+            actual_params.push(expr_type(value))
+        };
+        match dyn_method {
+            Option::Some(value) => push_diagnostic(
+                ctx,
+                "Trait method "
+                    + short_name(value.0)
+                    + "::"
+                    + value.1
+                    + " expects "
+                    + params.len().to_string()
+                    + " arguments but got "
+                    + values.len().to_string(),
+            ),
+            Option::None => if trait_method {
+                let expected_params = arity_diagnostic_types(actual_params);
+                let found_params = arity_diagnostic_types(params);
+                push_diagnostic(
+                    ctx,
+                    "Function arity mismatch: expected "
+                        + type_text(Type::Func { params: expected_params, ret_ty })
+                        + ", found "
+                        + type_text(Type::Func { params: found_params, ret_ty }),
+                )
+            } else {
+                let found_params: Vec[Type] = Vec::new();
+                for _ in actual_params {
+                    found_params.push(Type::Con { name: "unknown" })
+                };
+                push_diagnostic(
+                    ctx,
+                    "Function arity mismatch: expected "
+                        + type_text(expr_type(function))
+                        + ", found "
+                        + type_text(Type::Func {
+                            params: found_params,
+                            ret_ty: Type::Con { name: "unknown" },
+                        }),
+                )
+            },
+        };
+        ()
+    } else {
+        ()
+    };
+    match function {
+        Expr::Callable {
+            callable: Callable::TraitMethod { trait_ref: reference, method_name: _ },
+            ty: _,
+        } => if is_static {
+            let receiver_ty = if values.len() > 0 {
+                expr_type(values.get(0))
+            } else {
+                Type::Unit
+            };
+            if contains_unbound_type_variable(ret_ty) {
+                let _ = unify(ret_ty, receiver_ty);
+            } else {
+                ()
+            };
+            if contains_unbound_type_variable(receiver_ty)
+                && is_numeric_type(receiver_ty)
+            {
+                require_predicate(
+                    ctx,
+                    TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
+                    "type predicate not satisfied",
+                )
+            } else if arity_mismatch || trait_argument_mismatch.get() {
+                require_predicate(
+                    ctx,
+                    TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
+                    "type predicate not satisfied",
+                )
+            } else if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
+                push_diagnostic(
+                    ctx,
+                    predicate_requirement_message(
+                        ctx,
+                        TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
+                        "type predicate not satisfied",
+                    ),
+                )
+            } else {
+                ()
+            }
+        } else {
+            ()
+        },
+        _ => (),
+    };
+    let function = specialize_array_callable(function, values);
+    let function = if is_static && values.len() > 0 {
+        match function {
+            Expr::Callable {
+                callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                ty,
+            } => {
+                if reference.args.len() == 0 {
+                    match prune(expr_type(values.get(0))) {
+                        Type::Dyn { trait_name: owner } => if trait_bound_satisfied_at(
+                            ctx,
+                            Type::Dyn { trait_name: owner },
+                            reference,
+                            0,
+                        ) {
+                            Expr::Callable {
+                                callable: Callable::DynTraitMethod {
+                                                                    trait_name: owner,
+                                                                    dispatch_name: reference.name,
+                                                                    method_name: name,
+                                                                },
+                                ty,
+                            }
+                        } else {
+                            Expr::Callable {
+                                callable: Callable::TraitMethod {
+                                                                trait_ref: reference,
+                                                                method_name: name,
+                                                            },
+                                ty,
+                            }
+                        },
+                        _ => Expr::Callable {
+                            callable: Callable::TraitMethod {
+                                                        trait_ref: reference,
+                                                        method_name: name,
+                                                    },
+                            ty,
+                        },
+                    }
+                } else {
+                    Expr::Callable {
+                        callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                        ty,
+                    }
+                }
+            },
+            other => other,
+        }
+    } else {
+        function
+    };
+    let specialized_ret_ty = match expr_type(function) {
+        Type::Func { params: _, ret_ty } => ret_ty,
+        _ => ret_ty,
+    };
+    let result_ty = if arity_mismatch {
+        if trait_method && match dyn_method {
+            Option::Some(_) => false,
+            Option::None => true,
+        } {
+            Type::Error
+        } else {
+            fresh_unresolved_inference(ctx)
+        }
+    } else {
+        normalize_type(ctx, specialized_ret_ty)
+    };
+    if arity_mismatch {
+        match function {
+            Expr::Callable { callable: _, ty: _ } => (),
+            _ => push_global_diagnostic(ctx, "Could not infer type"),
+        }
+    } else {
+        ()
+    };
+    Expr::Call {
+        func: normalize_function_expr(ctx, function),
+        args: values,
+        ty: result_ty,
+    }
+}
+
+fn apply_call(
+    ctx: Checker,
+    function: Expr,
+    prefix: Vec[Expr],
+    args: Vec[hir::Expr],
+) -> Expr {
+    let is_static = prefix.len() == 0;
+    let prefix_len = prefix.len();
+    let arity = prefix.len() + args.len();
+    let parts = callable_parts(ctx, expr_type(function), arity);
+    let params = parts.0;
+    let ret_ty = parts.1;
+    let values: Vec[Expr] = Vec::new();
+    for value in prefix {
+        values.push(value)
+    };
+    for value in args {
+        let index = values.len();
+        let expected = if index < params.len() {
+            Option::Some(params.get(index))
+        } else {
+            Option::None
+        };
+        values.push(match function {
+            Expr::Callable {
+                callable: Callable::TraitMethod { trait_ref: _, method_name: _ },
+                ty: _,
+            } => {
+                coerce_expr(ctx, check_expr(ctx, value, Option::None), expected)
+            },
+            _ => check_expr(ctx, value, expected),
+        })
+    };
+    apply_typed_call(
+        ctx,
+        function,
+        values,
+        params,
+        ret_ty,
+        prefix_len,
+        is_static,
+    )
+}
+
+fn check_method_call(
+    ctx: Checker,
+    receiver_source: hir::Expr,
+    name: string,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    ctx.suppress_unresolved_ref_diagnostic.set(
+        ctx.suppress_unresolved_ref_diagnostic.get() + 1,
+    );
+    let receiver = check_expr(ctx, receiver_source, Option::None);
+    ctx.suppress_unresolved_ref_diagnostic.set(
+        ctx.suppress_unresolved_ref_diagnostic.get() - 1,
+    );
+    if types_equal(expr_type(receiver), Type::Error) {
+        for source in args {
+            let _ = check_expr(ctx, source, Option::None);
+        };
+        return Expr::Var { name: "<error>", ty: Type::Error }
+    } else {
+        ()
+    };
+    require_hashmap_type(ctx, expr_type(receiver));
+    let arg_types: Vec[Type] = Vec::new();
+    for source in args {
+        let value = check_expr(ctx, source, Option::None);
+        arg_types.push(expr_type(value))
+    };
+    let receiver_ty = if is_numeric_type(expr_type(receiver)) {
+        resolve_type(expr_type(receiver))
+    } else {
+        expr_type(receiver)
+    };
+    let resolved = if contains_unbound_type_variable(receiver_ty) {
+        match deferred_method_candidate(
+            ctx,
+            receiver_ty,
+            name,
+            arg_types,
+            expected,
+        ) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => resolve_method(
+                ctx,
+                receiver_ty,
+                name,
+                arg_types,
+                expected,
+            ),
+        }
+    } else {
+        resolve_method(ctx, receiver_ty, name, arg_types, expected)
+    };
+    match resolved {
+        Option::Some(value) => {
+            let trait_method = match value.callable {
+                Callable::TraitMethod { trait_ref: _, method_name: _ } => true,
+                _ => false,
+            };
+            let function = Expr::Callable { callable: value.callable, ty: value.ty };
+            let result = apply_call(ctx, function, one_expr(receiver), args);
+            if trait_method {
+                match expected {
+                    Option::Some(expected_ty) => {
+                        if types_equal(expr_type(result), expected_ty) {
+                            result
+                        } else {
+                            expect_type(ctx, expected_ty, expr_type(result));
+                            with_expr_type(result, expected_ty)
+                        }
+                    },
+                    Option::None => result,
+                }
+            } else {
+                result
+            }
+        },
+        Option::None => {
+            let field_ty = match resolve_field_type(ctx, expr_type(receiver), name) {
+                Option::Some(ty) => ty,
+                Option::None => {
+                    if contains_unbound_type_variable(receiver_ty) {
+                        push_diagnostic(
+                            ctx,
+                            "Could not infer the receiver type for method " + name,
+                        )
+                    } else {
+                        push_diagnostic(
+                            ctx,
+                            "Method "
+                                + name
+                                + " not found for type "
+                                + type_text(receiver_ty),
+                        )
+                    };
+                    if contains_unbound_type_variable(receiver_ty) {
+                        fresh_unresolved_inference(ctx)
+                    } else {
+                        match expected {
+                            Option::Some(_) => fresh_unresolved_inference(ctx),
+                            Option::None => if struct_has_hidden_fields(
+                                ctx,
+                                expr_type(receiver),
+                            ) {
+                                push_global_diagnostic(ctx, "Could not infer type");
+                                Type::Error
+                            } else {
+                                fresh_unresolved_inference(ctx)
+                            },
+                        }
+                    }
+                },
+            };
+            apply_call(
+                ctx,
+                Expr::Field { expr: receiver, field_name: name, ty: field_ty },
+                Vec::new(),
+                args,
+            )
+        },
+    }
+}
+
+fn struct_has_hidden_fields(ctx: Checker, ty: Type) -> bool {
+    match type_constructor_name(ty) {
+        Option::Some(name) => match find_struct_by_name(ctx, name) {
+            Option::Some(info) => info.has_hidden_fields,
+            Option::None => false,
+        },
+        Option::None => false,
+    }
+}
+
+fn one_expr(value: Expr) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::new();
+    result.push(value);
+    result
+}
+
+fn is_inherent_callable(value: Expr) -> bool {
+    match value {
+        Expr::Callable {
+            callable: Callable::InherentMethod { receiver_ty: _, method_name: _ },
+            ty: _,
+        } => true,
+        _ => false,
+    }
+}
+
+fn call_reference_target(
+    reference: hir::NameRef,
+    result: Expr,
+) -> ReferenceTarget {
+    match reference {
+        hir::NameRef::Local(local) => ReferenceTarget::Local(local),
+        hir::NameRef::Def(definition) => {
+            ReferenceTarget::Definition(definition)
+        },
+        hir::NameRef::Other(name) => match result {
+            Expr::Call {
+                func: Expr::Callable { callable, ty },
+                args: _,
+                ty: _,
+            } => match resolve_type(ty) {
+                Type::Error => ReferenceTarget::Unresolved(name),
+                _ => ReferenceTarget::Callable(callable),
+            },
+            Expr::Constr { constructor, .. } => {
+                ReferenceTarget::Constructor(constructor)
+            },
+            _ => ReferenceTarget::Unresolved(name),
+        },
+    }
+}
+
+fn call_callee_type(result: Expr) -> Type {
+    match result {
+        Expr::Call { func, .. } => expr_type(func),
+        other => expr_type(other),
+    }
+}
+
+fn typed_call_target(result: Expr, fallback: string) -> ReferenceTarget {
+    match result {
+        Expr::Call {
+            func: Expr::Callable { callable, ty },
+            args: _,
+            ty: _,
+        } => match resolve_type(ty) {
+            Type::Error => ReferenceTarget::Unresolved(fallback),
+            _ => ReferenceTarget::Callable(callable),
+        },
+        Expr::Constr { constructor, .. } => {
+            ReferenceTarget::Constructor(constructor)
+        },
+        _ => ReferenceTarget::Unresolved(fallback),
+    }
+}
+
+fn check_call_expr(
+    ctx: Checker,
+    call_span: ast::Span,
+    function: hir::Expr,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    let function_span = function.span;
+    let function_source = function;
+    let argument_spans = Vec::new();
+    for argument in args {
+        argument_spans.push(argument.span)
+    };
+    let result = match function.kind {
+        hir::ExprKind::Field { expr: receiver, field_name: name } => {
+            check_method_call(ctx, receiver, name, args, expected)
+        },
+        hir::ExprKind::NameRef { name_ref: reference } => match function_scheme_for_name_ref(ctx, reference) {
+            Option::Some(scheme) => {
+                let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::new());
+                constrain_callable_return(ctx, candidate.ty, expected);
+                let result = apply_call(
+                    ctx,
+                    Expr::Callable { callable: candidate.callable, ty: candidate.ty },
+                    Vec::new(),
+                    args,
+                );
+                require_predicates(ctx, candidate.predicates);
+                result
+            },
+            Option::None => match reference {
+                hir::NameRef::Other(name) => {
+                    push_diagnostic(ctx, "Unresolved callee " + name);
+                    match expected {
+                        Option::Some(_) => (),
+                        Option::None => push_global_diagnostic(ctx, "Could not infer type"),
+                    };
+                    let values: Vec[Expr] = Vec::new();
+                    for value in args {
+                        values.push(check_expr(ctx, value, Option::None))
+                    };
+                    Expr::Call {
+                        func: Expr::Callable { callable: Callable::Function(name), ty: Type::Error },
+                        args: values,
+                        ty: Type::Error,
+                    }
+                },
+                _ => apply_call(
+                    ctx,
+                    check_name_ref(ctx, reference),
+                    Vec::new(),
+                    args,
+                ),
+            },
+        },
+        hir::ExprKind::StaticMember {
+            owner,
+            member,
+            type_args,
+            type_arg_spans: _,
+        } => {
+            let previous_span = ctx.current_span.get();
+            let value = match resolve_named_constructor(ctx, owner, member) {
+                Option::Some(info) => {
+                    check_resolved_constructor_expr(ctx, info, args, expected)
+                },
+                Option::None => match explicit_function_scheme(ctx, owner, member) {
+                    Option::Some(scheme) => {
+                        let candidate = instantiate_scheme_candidate(
+                            ctx,
+                            scheme,
+                            explicit_types(ctx, type_args),
+                        );
+                        constrain_callable_return(ctx, candidate.ty, expected);
+                        let result = apply_call(
+                            ctx,
+                            Expr::Callable { callable: candidate.callable, ty: candidate.ty },
+                            Vec::new(),
+                            args,
+                        );
+                        require_predicates(ctx, candidate.predicates);
+                        result
+                    },
+                    Option::None => {
+                        ctx.current_span.set(Option::Some(function_span));
+                        let resolved = resolve_static_member(
+                            ctx,
+                            owner,
+                            member,
+                            type_args,
+                        );
+                        ctx.current_span.set(previous_span);
+                        let function = match resolved {
+                            Option::Some(value) => {
+                                Expr::Callable { callable: value.callable, ty: value.ty }
+                            },
+                            Option::None => if is_package_alias(ctx, owner) {
+                                report_error_inference(ctx, expected);
+                                let name = canonical_imported_name(
+                                    ctx,
+                                    owner + "::" + member,
+                                );
+                                push_diagnostic(ctx, "Unresolved callee " + name);
+                                Expr::Callable {
+                                    callable: Callable::Function(name),
+                                    ty: Type::Error,
+                                }
+                            } else {
+                                check_static_member(
+                                    ctx,
+                                    owner,
+                                    member,
+                                    type_args,
+                                    match expected {
+                                        Option::Some(_) => false,
+                                        Option::None => true,
+                                    },
+                                )
+                            },
+                        };
+                        let defer_coercions = is_inherent_callable(function) && match expected {
+                            Option::Some(ty) => !contains_unbound_type_variable(ty),
+                            Option::None => false,
+                        };
+                        if defer_coercions {
+                            ctx.defer_coercion_depth.set(
+                                ctx.defer_coercion_depth.get() + 1,
+                            )
+                        } else {
+                            ()
+                        };
+                        let result = apply_call(
+                            ctx,
+                            function,
+                            Vec::new(),
+                            args,
+                        );
+                        if defer_coercions {
+                            ctx.defer_coercion_depth.set(
+                                ctx.defer_coercion_depth.get() - 1,
+                            )
+                        } else {
+                            ()
+                        };
+                        if names_match(owner, "HashMap") && member == "new" {
+                            require_hashmap_type(ctx, expr_type(result))
+                        } else {
+                            ()
+                        };
+                        result
+                    },
+                },
+            };
+            ctx.current_span.set(previous_span);
+            value
+        },
+        _ => apply_call(
+            ctx,
+            check_expr(ctx, function, Option::None),
+            Vec::new(),
+            args,
+        ),
+    };
+    let target = match function_source.kind {
+        hir::ExprKind::NameRef { name_ref: reference } => {
+            call_reference_target(reference, result)
+        },
+        hir::ExprKind::StaticMember { owner, member, .. } => {
+            typed_call_target(result, owner + "::" + member)
+        },
+        hir::ExprKind::Field { field_name, .. } => {
+            typed_call_target(result, field_name)
+        },
+        _ => typed_call_target(result, "<call>"),
+    };
+    ctx.typeck_results.references.push(ReferenceFact {
+        source_path: ctx.source_path,
+        span: function_span,
+        target,
+        ty: call_callee_type(result),
+    });
+    ctx.typeck_results.calls.push(CallFact {
+        source_path: ctx.source_path,
+        span: call_span,
+        callee_span: function_span,
+        argument_spans,
+        target,
+        callee_ty: call_callee_type(result),
+        result_ty: expr_type(result),
+    });
+    result
+}
+
+fn is_arithmetic_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Add
+        | ast::BinaryOp::Sub
+        | ast::BinaryOp::Mul
+        | ast::BinaryOp::Div => true,
+        _ => false,
+    }
+}
+
+fn is_remainder_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Rem => true,
+        _ => false,
+    }
+}
+
+fn is_logic_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::And | ast::BinaryOp::Or => true,
+        _ => false,
+    }
+}
+
+fn is_comparison_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Less
+        | ast::BinaryOp::Greater
+        | ast::BinaryOp::LessEq
+        | ast::BinaryOp::GreaterEq
+        | ast::BinaryOp::Eq
+        | ast::BinaryOp::NotEq => true,
+        _ => false,
+    }
+}
+
+fn is_equality_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Eq | ast::BinaryOp::NotEq => true,
+        _ => false,
+    }
+}
+
+fn is_order_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Less
+        | ast::BinaryOp::Greater
+        | ast::BinaryOp::LessEq
+        | ast::BinaryOp::GreaterEq => true,
+        _ => false,
+    }
+}
+
+fn equality_comparable_type(ctx: Checker, value: Type) -> bool {
+    let value = prune(value);
+    match value {
+        Type::Error
+        | Type::Var(_)
+        | Type::Unit
+        | Type::Bool
+        | Type::Int
+        | Type::Int8
+        | Type::Int16
+        | Type::Int32
+        | Type::Int64
+        | Type::Uint
+        | Type::Uint8
+        | Type::Uint16
+        | Type::Uint32
+        | Type::Uint64
+        | Type::Float32
+        | Type::Float64
+        | Type::String
+        | Type::Char => true,
+        Type::Tuple { items: values } => {
+            let valid = Ref::new(true);
+            for value in values {
+                if !equality_comparable_type(ctx, value) {
+                    valid.set(false)
+                } else {
+                    ()
+                }
+            };
+            valid.get()
+        },
+        Type::Array { len: _, elem: element } => equality_comparable_type(ctx, element),
+        Type::Con { name } | Type::App { ty: Type::Con { name }, args: _ } => {
+            match find_struct_by_name(ctx, name) {
+                Option::Some(info) => {
+                    let substitutions = substitutions_for_nominal(info.generics, value);
+                    let valid = Ref::new(true);
+                    for field in info.fields {
+                        if !equality_comparable_type(
+                            ctx,
+                            substitute_type(field.1, substitutions),
+                        ) {
+                            valid.set(false)
+                        } else {
+                            ()
+                        }
+                    };
+                    valid.get()
+                },
+                Option::None => false,
+            }
+        },
+        _ => false,
+    }
+}
+
+fn order_comparable_type(value: Type) -> bool {
+    is_numeric_type(value) || match prune(value) {
+        Type::String | Type::Char | Type::Error => true,
+        _ => false,
+    }
+}
+
+fn is_bitwise_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::BitAnd
+        | ast::BinaryOp::BitOr
+        | ast::BinaryOp::BitXor
+        | ast::BinaryOp::Shl
+        | ast::BinaryOp::Shr => true,
+        _ => false,
+    }
+}
+
+fn is_shift_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Shl | ast::BinaryOp::Shr => true,
+        _ => false,
+    }
+}
+
+fn is_numeric_literal_source(value: hir::Expr) -> bool {
+    match value.kind {
+        hir::ExprKind::Int { value: _ } | hir::ExprKind::Float { value: _ } => true,
+        hir::ExprKind::Unary { op: ast::UnaryOp::Neg, expr: source } => {
+            is_numeric_literal_source(source)
+        },
+        _ => false,
+    }
+}
+
+fn push_operator_not_defined(
+    ctx: Checker,
+    op: ast::BinaryOp,
+    ty: Type,
+    span: ast::Span,
+) -> unit {
+    push_diagnostic_at(
+        ctx,
+        "Operator " + binary_symbol(op) + " is not defined for type " + type_text(ty),
+        Option::Some(span),
+    )
+}
+
+fn check_binary_expr(
+    ctx: Checker,
+    op: ast::BinaryOp,
+    left_source: hir::Expr,
+    right_source: hir::Expr,
+    expected: Option[Type],
+) -> Expr {
+    if is_logic_op(op) {
+        let left = check_expr(ctx, left_source, Option::Some(Type::Bool));
+        let right = check_expr(ctx, right_source, Option::Some(Type::Bool));
+        Expr::Binary {
+            op,
+            lhs: left,
+            rhs: right,
+            ty: Type::Bool,
+            resolution: BinaryResolution::Builtin,
+        }
+    } else {
+        let contextual = match propagated_expected(expected) {
+            Option::Some(ty) => if is_shift_op(op) && is_integer_type(ty) {
+                Option::Some(ty)
+            } else if is_arithmetic_op(op) && is_numeric_type(ty) {
+                Option::Some(ty)
+            } else if (is_bitwise_op(op) || is_remainder_op(op))
+                && is_integer_type(ty)
+            {
+                Option::Some(ty)
+            } else {
+                Option::None
+            },
+            Option::None => Option::None,
+        };
+        let operands = if !is_shift_op(op)
+            && is_numeric_literal_source(left_source)
+            && !is_numeric_literal_source(right_source)
+        {
+            let right = check_expr(ctx, right_source, contextual);
+            let left = check_expr(
+                ctx,
+                left_source,
+                Option::Some(expr_type(right)),
+            );
+            (left, right)
+        } else {
+            let left = check_expr(ctx, left_source, contextual);
+            let right = if is_shift_op(op) {
+                check_expr(ctx, right_source, Option::None)
+            } else if is_comparison_op(op)
+                && !is_numeric_literal_source(right_source)
+            {
+                check_expr(ctx, right_source, Option::None)
+            } else {
+                check_expr(ctx, right_source, Option::Some(expr_type(left)))
+            };
+            (left, right)
+        };
+        let left = operands.0;
+        let right = operands.1;
+        match right_source.kind {
+            hir::ExprKind::NameRef { name_ref: hir::NameRef::Local(local) } => {
+                if contains_local(ctx.unresolved_locals, local)
+                    && contains_unbound_type_variable(expr_type(right))
+                {
+                    push_inference_diagnostic_at(ctx, right_source.span, 0)
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        };
+        if is_comparison_op(op) {
+            expect_type_at(
+                ctx,
+                expr_type(left),
+                expr_type(right),
+                Option::Some(left_source.span),
+            )
+        } else {
+            ()
+        };
+        if is_unbound_any_type(expr_type(left)) {
+            push_diagnostic_at(
+                ctx,
+                "Could not infer the operand type for operator " + binary_symbol(op),
+                Option::Some(left_source.span),
+            )
+        } else if is_shift_op(op) {
+            if !is_integer_type(expr_type(left)) {
+                push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+            } else {
+                ()
+            };
+            if !is_integer_type(expr_type(right)) {
+                push_operator_not_defined(ctx, op, expr_type(right), right_source.span)
+            } else {
+                ()
+            }
+        } else if (is_bitwise_op(op) || is_remainder_op(op))
+            && !is_integer_type(expr_type(left))
+        {
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+        } else if is_equality_op(op) && !trait_bound_satisfied_at(
+            ctx,
+            expr_type(left),
+            TraitRef {
+                name: "Eq",
+                args: Vec::new(),
+            },
+            0,
+        ) {
+            push_diagnostic_at(
+                ctx,
+                predicate_requirement_message(
+                    ctx,
+                    TypePredicate::Trait {
+                        for_ty: expr_type(left),
+                        trait_ref: TraitRef {
+                                                    name: "Eq",
+                                                    args: Vec::new(),
+                                                },
+                    },
+                    "type predicate not satisfied",
+                ),
+                Option::Some(left_source.span),
+            )
+        } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+        } else if is_arithmetic_op(op)
+            && !is_numeric_type(expr_type(left))
+            && !(match prune(expr_type(left)) {
+                Type::String => match op {
+                    ast::BinaryOp::Add => true,
+                    _ => false,
+                },
+                Type::Con { name: _ } | Type::App { ty: _, args: _ } | Type::Param { name: _ } => true,
+                _ => false,
+            }) {
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+        } else {
+            ()
+        };
+        Expr::Binary {
+            op,
+            lhs: left,
+            rhs: right,
+            ty: if is_comparison_op(op) {
+                            Type::Bool
+                        } else {
+                            expr_type(left)
+            },
+            resolution: if is_equality_op(op) {
+                            BinaryResolution::Overloaded { trait_name: "Eq" }
+                        } else {
+                            BinaryResolution::Builtin
+                        },
+        }
+    }
+}
+
+fn check_unary_expr(
+    ctx: Checker,
+    op: ast::UnaryOp,
+    source: hir::Expr,
+    expected: Option[Type],
+) -> Expr {
+    match op {
+        ast::UnaryOp::Not => Expr::Unary {
+            op,
+            expr: check_expr(ctx, source, Option::Some(Type::Bool)),
+            ty: Type::Bool,
+        },
+        ast::UnaryOp::Neg => {
+            let source_span = source.span;
+            let contextual = match propagated_expected(expected) {
+                Option::Some(ty) => if is_numeric_type(ty) && !is_unsigned_type(ty) {
+                    Option::Some(ty)
+                } else if match prune(ty) {
+                    Type::Var(_) => true,
+                    _ => false,
+                } {
+                    Option::Some(ty)
+                } else {
+                    Option::None
+                },
+                Option::None => Option::None,
+            };
+            let value = match contextual {
+                Option::Some(ty) => match source.kind {
+                    hir::ExprKind::Int { value: raw } => if is_integer_type(ty) {
+                        validate_integer_literal(ctx, "-" + raw, ty);
+                        Expr::Prim { value: Primitive::Int { value: raw }, ty }
+                    } else {
+                        check_expr(ctx, source, Option::Some(ty))
+                    },
+                    _ => check_expr(ctx, source, Option::Some(ty)),
+                },
+                Option::None => check_expr(ctx, source, Option::None),
+            };
+            negate_numeric_literal_constraint(ctx, expr_type(value));
+            if !is_numeric_type(expr_type(value)) {
+                push_diagnostic_at(
+                    ctx,
+                    "Operator - is not defined for type " + type_text(expr_type(value)),
+                    Option::Some(source_span),
+                )
+            } else {
+                ()
+            };
+            Expr::Unary { op, expr: value, ty: expr_type(value) }
+        },
+        ast::UnaryOp::BitNot => {
+            let source_span = source.span;
+            let contextual = match propagated_expected(expected) {
+                Option::Some(ty) => if is_integer_type(ty) {
+                    Option::Some(ty)
+                } else {
+                    Option::None
+                },
+                Option::None => Option::None,
+            };
+            let value = check_expr(ctx, source, contextual);
+            if !is_integer_type(expr_type(value)) {
+                push_diagnostic_at(
+                    ctx,
+                    "Operator ~ is not defined for type " + type_text(expr_type(value)),
+                    Option::Some(source_span),
+                )
+            } else {
+                ()
+            };
+            Expr::Unary { op, expr: value, ty: expr_type(value) }
+        },
+    }
+}
+
+fn checker_string_has_prefix(value: string, prefix: string) -> bool {
+    value.byte_len() >= prefix.byte_len()
+        && value.byte_slice(0, prefix.byte_len()) == prefix
+}
+
+fn checker_string_contains(value: string, needle: string) -> bool {
+    if needle.byte_len() == 0 {
+        return true
+    } else {
+        ()
+    };
+    let found = Ref::new(false);
+    if value.byte_len() >= needle.byte_len() {
+        for index in range(0, value.byte_len() - needle.byte_len() + 1) {
+            if value.byte_slice(index, index + needle.byte_len()) == needle {
+                found.set(true)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    found.get()
+}
+
+fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
+    let result = Vec::new();
+    match value.kind {
+        hir::PatKind::Var { name } => result.push(name),
+        hir::PatKind::Constr { constructor: _, args }
+        | hir::PatKind::Tuple { items: args }
+        | hir::PatKind::Or { pats: args } => for arg in args {
+            for local in hir_pattern_locals(arg) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+            for local in hir_pattern_locals(field.1) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        hir::PatKind::Array { prefix, rest, suffix } => {
+            for arg in prefix {
+                for local in hir_pattern_locals(arg) {
+                    if !contains_local(result, local) {
+                        result.push(local)
+                    } else {
+                        ()
+                    }
+                }
+            };
+            match rest {
+                Option::Some(value) => match value.binding {
+                    Option::Some(local) => result.push(local),
+                    Option::None => (),
+                },
+                Option::None => (),
+            };
+            for arg in suffix {
+                for local in hir_pattern_locals(arg) {
+                    if !contains_local(result, local) {
+                        result.push(local)
+                    } else {
+                        ()
+                    }
+                }
+            }
+        },
+        hir::PatKind::Alias { name, pat } => {
+            result.push(name);
+            for local in hir_pattern_locals(pat) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        hir::PatKind::Range { start, end, inclusive: _ } => {
+            for local in hir_pattern_locals(start) {
+                result.push(local)
+            };
+            for local in hir_pattern_locals(end) {
+                if !contains_local(result, local) {
+                    result.push(local)
+                } else {
+                    ()
+                }
+            }
+        },
+        _ => (),
+    };
+    result
+}
+
+fn hir_local_sets_match(
+    left: Vec[hir::LocalId],
+    right: Vec[hir::LocalId],
+) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let matches = Ref::new(true);
+        for local in left {
+            if !contains_local(right, local) {
+                matches.set(false)
+            } else {
+                ()
+            }
+        };
+        matches.get()
+    }
+}
+
+fn hir_or_pattern_binding_mismatch(value: hir::Pat) -> bool {
+    match value.kind {
+        hir::PatKind::Or { pats } => {
+            let mismatch = Ref::new(false);
+            if pats.len() > 0 {
+                let expected = hir_pattern_locals(pats.get(0));
+                for index in range(1, pats.len()) {
+                    if !hir_local_sets_match(
+                        expected,
+                        hir_pattern_locals(pats.get(index)),
+                    ) {
+                        mismatch.set(true)
+                    } else {
+                        ()
+                    }
+                }
+            } else {
+                ()
+            };
+            mismatch.get()
+        },
+        _ => false,
+    }
+}
+
+fn pattern_has_or_binding_diagnostic(
+    ctx: Checker,
+    span: ast::Span,
+) -> bool {
+    let found = Ref::new(false);
+    for diagnostic in ctx.diagnostics {
+        if checker_string_has_prefix(
+            diagnostic.message,
+            "Or-pattern alternatives",
+        ) && match diagnostic.span {
+            Option::Some(value) => value.start == span.start && value.end == span.end,
+            Option::None => false,
+        } {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn tast_pattern_binding_count(value: Pat) -> int {
+    match value {
+        Pat::Var { name: _, ty: _ } => 1,
+        Pat::Constr { constructor: _, args, ty: _ }
+        | Pat::Tuple { items: args, ty: _ }
+        | Pat::Or { pats: args, ty: _ } => {
+            let count = Ref::new(0);
+            for arg in args {
+                count.set(count.get() + tast_pattern_binding_count(arg))
+            };
+            count.get()
+        },
+        Pat::Array { prefix, rest, suffix, ty: _ } => {
+            let count = Ref::new(0);
+            for arg in prefix {
+                count.set(count.get() + tast_pattern_binding_count(arg))
+            };
+            match rest {
+                Option::Some(value) => match value.binding {
+                    Option::Some(_) => count.set(count.get() + 1),
+                    Option::None => (),
+                },
+                Option::None => (),
+            };
+            for arg in suffix {
+                count.set(count.get() + tast_pattern_binding_count(arg))
+            };
+            count.get()
+        },
+        Pat::Alias { name: _, pat, ty: _ } => {
+            1 + tast_pattern_binding_count(pat)
+        },
+        _ => 0,
+    }
+}
+
+fn tast_or_pattern_binding_mismatch(value: Pat) -> bool {
+    match value {
+        Pat::Or { pats, ty: _ } => {
+            let mismatch = Ref::new(false);
+            if pats.len() > 0 {
+                let expected = tast_pattern_binding_count(pats.get(0));
+                for index in range(1, pats.len()) {
+                    if tast_pattern_binding_count(pats.get(index)) != expected {
+                        mismatch.set(true)
+                    } else {
+                        ()
+                    }
+                }
+            } else {
+                ()
+            };
+            mismatch.get()
+        },
+        _ => false,
+    }
+}
+
+fn check_match_expr(
+    ctx: Checker,
+    source: hir::Expr,
+    arms: Vec[hir::Arm],
+    expected: Option[Type],
+) -> Expr {
+    let scrutinee_always_exits = hir_expr_always_exits_loop_control(source);
+    let scrutinee = check_expr(ctx, source, Option::None);
+    let scrutinee = if scrutinee_always_exits {
+        with_expr_type(scrutinee, fresh_type(ctx.counter, VarKind::Any))
+    } else {
+        scrutinee
+    };
+    let result_ty = match expected {
+        Option::Some(ty) => ty,
+        Option::None => fresh_type(ctx.counter, VarKind::Any),
+    };
+    let typed_arms: Vec[Arm] = Vec::new();
+    let pattern_spans: Vec[ast::Span] = Vec::new();
+    let invalid_pattern_arms: Vec[bool] = Vec::new();
+    let follows_invalid_coverage: Vec[bool] = Vec::new();
+    let complete_coverage_found = Ref::new(false);
+    let invalid_patterns = Ref::new(false);
+    for arm in arms {
+        follows_invalid_coverage.push(complete_coverage_found.get());
+        pattern_spans.push(arm.pat.span);
+        let or_binding_mismatch = hir_or_pattern_binding_mismatch(arm.pat)
+            || pattern_has_or_binding_diagnostic(ctx, arm.pat.span);
+        let diagnostic_count = ctx.diagnostics.len();
+        let pat = check_pattern(ctx, arm.pat, expr_type(scrutinee));
+        let invalid_pattern = ctx.diagnostics.len() > diagnostic_count;
+        let invalidates_coverage = Ref::new(false);
+        for diagnostic_index in range(diagnostic_count, ctx.diagnostics.len()) {
+            let message = ctx.diagnostics.get(diagnostic_index).message;
+            if checker_string_has_prefix(message, "Or-pattern alternatives")
+                || (checker_string_has_prefix(message, "Constructor ")
+                    && checker_string_contains(message, " expects "))
+            {
+                invalidates_coverage.set(true)
+            } else {
+                ()
+            }
+        };
+        let invalidates_coverage = invalidates_coverage.get()
+            || or_binding_mismatch
+            || tast_or_pattern_binding_mismatch(pat);
+        invalid_pattern_arms.push(invalidates_coverage);
+        if invalidates_coverage {
+            complete_coverage_found.set(true)
+        } else {
+            ()
+        };
+        if invalid_pattern {
+            invalid_patterns.set(true)
+        } else {
+            ()
+        };
+        let guard = match arm.guard {
+            Option::Some(value) => Option::Some(check_expr(
+                ctx,
+                value,
+                Option::Some(Type::Bool),
+            )),
+            Option::None => Option::None,
+        };
+        if coverage_guard(guard) && pattern_is_irrefutable(ctx, pat) {
+            complete_coverage_found.set(true)
+        } else {
+            ()
+        };
+        let body = check_expr(ctx, arm.body, Option::Some(result_ty));
+        typed_arms.push(Arm { pat, guard, body })
+    };
+    if typed_arms.len() > 0
+        && contains_unbound_type_variable(expr_type(scrutinee))
+        && is_numeric_type(expr_type(scrutinee))
+    {
+        let _ = resolve_type(expr_type(scrutinee));
+    } else {
+        ()
+    };
+    let analysis_arms: Vec[Arm] = Vec::new();
+    for index in range(0, typed_arms.len()) {
+        let arm = typed_arms.get(index);
+        analysis_arms.push(Arm {
+            pat: if invalid_pattern_arms.get(index) {
+                Pat::Wild { ty: expr_type(scrutinee) }
+            } else {
+                arm.pat
+            },
+            guard: arm.guard,
+            body: arm.body,
+        })
+    };
+    let useful_arms = match_useful_arms(ctx, analysis_arms);
+    let invalid_coverage_seen = Ref::new(false);
+    for index in range(0, useful_arms.len()) {
+        if follows_invalid_coverage.get(index)
+            || invalid_coverage_seen.get()
+            || !(useful_arms.get(index))
+        {
+            push_warning_at(
+                ctx,
+                "Unreachable match arm",
+                Option::Some(pattern_spans.get(index)),
+            )
+        } else {
+            ()
+        };
+        if invalid_pattern_arms.get(index) {
+            invalid_coverage_seen.set(true)
+        } else {
+            ()
+        }
+    };
+    let witnesses = if invalid_patterns.get() {
+        Vec::new()
+    } else {
+        match_witnesses(ctx, expr_type(scrutinee), typed_arms)
+    };
+    if invalid_patterns.get() || witnesses.len() == 0 {
+        ()
+    } else {
+        let message = Ref::new(
+            "non-exhaustive match: missing pattern"
+                + if witnesses.len() == 1 { " " } else { "s " },
+        );
+        for index in range(0, witnesses.len()) {
+            if index > 0 {
+                message.set(message.get() + ", ")
+            } else {
+                ()
+            };
+            message.set(message.get() + witnesses.get(index))
+        };
+        push_diagnostic(ctx, message.get())
+    };
+    Expr::Match { expr: scrutinee, arms: typed_arms, ty: result_ty }
+}
+
+fn check_if_expr(
+    ctx: Checker,
+    cond: hir::Expr,
+    then_branch: hir::Expr,
+    else_branch: hir::Expr,
+    expected: Option[Type],
+) -> Expr {
+    let result_ty = match expected {
+        Option::Some(ty) => ty,
+        Option::None => fresh_type(ctx.counter, VarKind::Any),
+    };
+    Expr::If {
+        cond: check_expr(ctx, cond, Option::Some(Type::Bool)),
+        then_branch: check_expr(ctx, then_branch, Option::Some(result_ty)),
+        else_branch: check_expr(ctx, else_branch, Option::Some(result_ty)),
+        ty: result_ty,
+    }
+}
+
+fn try_type_parts(value: Type) -> Option[(string, Vec[Type])] {
+    match prune(value) {
+        Type::App { ty: base, args } => match type_constructor_name(base) {
+            Option::Some(name) => Option::Some((name, args)),
+            Option::None => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[int] {
+    match find_enum_by_name(ctx, name) {
+        Option::Some(definition) => {
+            let result = Ref::new(Option::None);
+            let found = Ref::new(false);
+            for index in range(0, definition.variants.len()) {
+                if found.get() == false && definition.variants.get(index).name == variant {
+                    result.set(Option::Some(index));
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn try_constructor(ctx: Checker, name: string, variant: string) -> Constructor {
+    let tag = match find_enum_by_name(ctx, name) {
+        Option::Some(_) => user_try_variant_tag(ctx, name, variant),
+        Option::None => if variant == "None" || variant == "Ok" {
+            Option::Some(0)
+        } else {
+            Option::Some(1)
+        },
+    };
+    Constructor {
+        name: name + "::" + variant,
+        fields: Vec::new(),
+        is_struct: false,
+        tag,
+    }
+}
+
+fn try_variant_fields(
+    ctx: Checker,
+    enum_name: string,
+    variant_name: string,
+    args: Vec[Type],
+) -> Option[Vec[Type]] {
+    match find_enum_by_name(ctx, enum_name) {
+        Option::Some(info) => {
+            let result = Ref::new(Option::None);
+            for variant in info.variants {
+                if variant.name == variant_name {
+                    let fields: Vec[Type] = Vec::new();
+                    for field in enum_variant_field_types(variant.fields) {
+                        fields.push(substitute_params(
+                            field,
+                            info.generics,
+                            args,
+                        ))
+                    };
+                    result.set(Option::Some(fields))
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn option_try_shape_is_valid(
+    ctx: Checker,
+    name: string,
+    args: Vec[Type],
+) -> bool {
+    match find_enum_by_name(ctx, name) {
+        Option::Some(_) => match (
+            try_variant_fields(ctx, name, "Some", args),
+            try_variant_fields(ctx, name, "None", args),
+        ) {
+            (Option::Some(some), Option::Some(none)) => {
+                some.len() == 1
+                    && none.len() == 0
+                    && types_equal(
+                        normalize_type(ctx, some.get(0)),
+                        normalize_type(ctx, args.get(0)),
+                    )
+            },
+            _ => false,
+        },
+        Option::None => true,
+    }
+}
+
+fn result_try_shape_is_valid(
+    ctx: Checker,
+    name: string,
+    args: Vec[Type],
+) -> bool {
+    match find_enum_by_name(ctx, name) {
+        Option::Some(_) => match (
+            try_variant_fields(ctx, name, "Ok", args),
+            try_variant_fields(ctx, name, "Err", args),
+        ) {
+            (Option::Some(ok), Option::Some(error)) => {
+                ok.len() == 1
+                    && error.len() == 1
+                    && types_equal(
+                        normalize_type(ctx, ok.get(0)),
+                        normalize_type(ctx, args.get(0)),
+                    )
+                    && types_equal(
+                        normalize_type(ctx, error.get(0)),
+                        normalize_type(ctx, args.get(1)),
+                    )
+            },
+            _ => false,
+        },
+        Option::None => true,
+    }
+}
+
+fn check_option_try(
+    ctx: Checker,
+    index: int,
+    inner: Expr,
+    name: string,
+    args: Vec[Type],
+) -> Expr {
+    let ok_ty = args.get(0);
+    let outer_ok = fresh_type(ctx.counter, VarKind::Any);
+    let return_valid = match prune(ctx.return_ty) {
+        Type::Var(_) => true,
+        _ => match try_type_parts(ctx.return_ty) {
+            Option::Some(parts) => names_match(parts.0, name) && parts.1.len() == 1,
+            Option::None => false,
+        },
+    };
+    if return_valid {
+        let _ = unify(ctx.return_ty, nominal_type(name, one_type(outer_ok)));
+    } else {
+        push_diagnostic(
+            ctx,
+            "`?` on Option[T] requires the enclosing function or closure to return Option[_]",
+        )
+    };
+    let inner_ty = expr_type(inner);
+    let value_name = "try_value/" + index.to_string();
+    let success_args: Vec[Pat] = Vec::new();
+    success_args.push(Pat::Var { name: value_name, ty: ok_ty });
+    let success = Arm {
+        pat: Pat::Constr {
+            constructor: try_constructor(ctx, name, "Some"),
+            args: success_args,
+            ty: inner_ty,
+        },
+        guard: Option::None,
+        body: Expr::Var { name: value_name, ty: ok_ty },
+    };
+    let failure = Arm {
+        pat: Pat::Constr {
+            constructor: try_constructor(ctx, name, "None"),
+            args: Vec::new(),
+            ty: inner_ty,
+        },
+        guard: Option::None,
+        body: Expr::Return {
+            expr: Option::Some(Expr::Constr {
+                            constructor: try_constructor(ctx, name, "None"),
+                            args: Vec::new(),
+                            ty: ctx.return_ty,
+                        }),
+            ty: ok_ty,
+        },
+    };
+    let arms: Vec[Arm] = Vec::new();
+    arms.push(success);
+    arms.push(failure);
+    Expr::Match { expr: inner, arms, ty: ok_ty }
+}
+
+fn check_result_try(
+    ctx: Checker,
+    index: int,
+    inner: Expr,
+    name: string,
+    args: Vec[Type],
+) -> Expr {
+    let ok_ty = args.get(0);
+    let error_ty = args.get(1);
+    let outer_ok = fresh_type(ctx.counter, VarKind::Any);
+    let return_valid = match prune(ctx.return_ty) {
+        Type::Var(_) => true,
+        _ => match try_type_parts(ctx.return_ty) {
+            Option::Some(parts) => names_match(parts.0, name)
+                && parts.1.len() == 2
+                && types_equal(parts.1.get(1), error_ty),
+            Option::None => false,
+        },
+    };
+    if return_valid {
+        let _ = unify(
+            ctx.return_ty,
+            nominal_type(name, two_types(outer_ok, error_ty)),
+        );
+    } else {
+        push_diagnostic(
+            ctx,
+            "`?` on Result[T, E] requires the enclosing function or closure to return Result[_, E]",
+        )
+    };
+    let inner_ty = expr_type(inner);
+    let value_name = "try_value/" + index.to_string();
+    let residual_name = "try_residual/" + index.to_string();
+    let success_args: Vec[Pat] = Vec::new();
+    success_args.push(Pat::Var { name: value_name, ty: ok_ty });
+    let success = Arm {
+        pat: Pat::Constr {
+            constructor: try_constructor(ctx, name, "Ok"),
+            args: success_args,
+            ty: inner_ty,
+        },
+        guard: Option::None,
+        body: Expr::Var { name: value_name, ty: ok_ty },
+    };
+    let residual_args: Vec[Pat] = Vec::new();
+    residual_args.push(Pat::Var { name: residual_name, ty: error_ty });
+    let return_args: Vec[Expr] = Vec::new();
+    return_args.push(Expr::Var { name: residual_name, ty: error_ty });
+    let failure = Arm {
+        pat: Pat::Constr {
+            constructor: try_constructor(ctx, name, "Err"),
+            args: residual_args,
+            ty: inner_ty,
+        },
+        guard: Option::None,
+        body: Expr::Return {
+            expr: Option::Some(Expr::Constr {
+                            constructor: try_constructor(ctx, name, "Err"),
+                            args: return_args,
+                            ty: ctx.return_ty,
+                        }),
+            ty: ok_ty,
+        },
+    };
+    let arms: Vec[Arm] = Vec::new();
+    arms.push(success);
+    arms.push(failure);
+    Expr::Match { expr: inner, arms, ty: ok_ty }
+}
+
+fn check_try_expr(
+    ctx: Checker,
+    index: int,
+    source: hir::Expr,
+    span: ast::Span,
+) -> Expr {
+    let expected = if is_numeric_literal_source(source) {
+        match try_type_parts(ctx.return_ty) {
+        Option::Some(parts) => if names_match(parts.0, "Option")
+            && parts.1.len() == 1
+        {
+            Option::Some(nominal_type(
+                parts.0,
+                one_type(fresh_type(ctx.counter, VarKind::Any)),
+            ))
+        } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
+            Option::Some(nominal_type(
+                parts.0,
+                two_types(
+                    fresh_type(ctx.counter, VarKind::Any),
+                    parts.1.get(1),
+                ),
+            ))
+        } else {
+            Option::None
+        },
+        Option::None => Option::None,
+        }
+    } else {
+        Option::None
+    };
+    let constraint_start = ctx.numeric_literal_constraints.len();
+    let coercion_start = ctx.coercion_constraints.len();
+    let numeric_source = is_numeric_literal_source(source);
+    let inner = if numeric_source {
+        let previous_span = ctx.current_span.get();
+        ctx.current_span.set(Option::Some(span));
+        let value = check_expr_inner(ctx, source, expected);
+        ctx.current_span.set(previous_span);
+        value
+    } else {
+        check_expr(ctx, source, expected)
+    };
+    if numeric_source {
+        for constraint_index in range(
+            constraint_start,
+            ctx.numeric_literal_constraints.len(),
+        ) {
+            let constraint = ctx.numeric_literal_constraints.get(constraint_index);
+            ctx.numeric_literal_constraints.set(
+                constraint_index,
+                NumericLiteralConstraint {
+                    raw: constraint.raw,
+                    ty: constraint.ty,
+                    float: constraint.float,
+                    negative: constraint.negative,
+                    span: Option::Some(span),
+                },
+            )
+        };
+        for constraint_index in range(
+            coercion_start,
+            ctx.coercion_constraints.len(),
+        ) {
+            let constraint = ctx.coercion_constraints.get(constraint_index);
+            ctx.coercion_constraints.set(
+                constraint_index,
+                CoercionConstraint {
+                    actual: constraint.actual,
+                    expected: constraint.expected,
+                    span: Option::Some(span),
+                },
+            )
+        }
+    } else {
+        ()
+    };
+    match try_type_parts(expr_type(inner)) {
+        Option::Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
+            if option_try_shape_is_valid(ctx, parts.0, parts.1) {
+                check_option_try(ctx, index, inner, parts.0, parts.1)
+            } else {
+                push_diagnostic(ctx,
+                    "`?` on Option[T] requires the enum to define `Some(T)` and `None` variants",
+                );
+                Expr::Var { name: "<try>", ty: Type::Error }
+            }
+        } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
+            if result_try_shape_is_valid(ctx, parts.0, parts.1) {
+                check_result_try(ctx, index, inner, parts.0, parts.1)
+            } else {
+                push_diagnostic(ctx,
+                    "`?` on Result[T, E] requires the enum to define `Ok(T)` and `Err(E)` variants",
+                );
+                Expr::Var { name: "<try>", ty: Type::Error }
+            }
+        } else {
+            push_diagnostic(
+                ctx,
+                "`?` can only be used on values of type Option[T] or Result[T, E]",
+            );
+            Expr::Var { name: "<try>", ty: Type::Error }
+        },
+        Option::None => {
+            if match expected {
+                Option::Some(_) => is_numeric_type(expr_type(inner)),
+                Option::None => false,
+            } {
+                ()
+            } else {
+                push_diagnostic(
+                    ctx,
+                    "`?` can only be used on values of type Option[T] or Result[T, E]",
+                )
+            };
+            Expr::Var { name: "<try>", ty: Type::Error }
+        },
+    }
+}
+
+fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr) -> Expr {
+    let start = check_expr(ctx, start, Option::Some(Type::Int));
+    let end = check_expr(ctx, end, Option::Some(Type::Int));
+    let args: Vec[Expr] = Vec::new();
+    args.push(start);
+    args.push(end);
+    match builtin_function_scheme("__goml_builtin_range") {
+        Option::Some(scheme) => {
+            let (callable, function_ty) = instantiate_scheme(ctx, scheme, Vec::new());
+            match function_ty {
+                Type::Func { params: _, ret_ty } => Expr::Call {
+                    func: Expr::Callable { callable, ty: function_ty },
+                    args,
+                    ty: ret_ty,
+                },
+                _ => {
+                    push_diagnostic(ctx, "Internal error: range must have a function type");
+                    Expr::Var { name: "<range>", ty: Type::Error }
+                },
+            }
+        },
+        Option::None => {
+            push_diagnostic(ctx, "Internal error: range builtin is missing");
+            Expr::Var { name: "<range>", ty: Type::Error }
+        },
+    }
+}
+
+fn with_expr_type(value: Expr, ty: Type) -> Expr {
+    match value {
+        Expr::Var { name, ty: _ } => Expr::Var { name, ty },
+        Expr::Callable { callable, ty: _ } => Expr::Callable { callable, ty },
+        Expr::Prim { value, ty: _ } => Expr::Prim { value, ty },
+        Expr::Constr { constructor, args, ty: _ } => Expr::Constr { constructor, args, ty },
+        Expr::Tuple { items: values, ty: _ } => Expr::Tuple { items: values, ty },
+        Expr::Array { items: values, ty: _ } => Expr::Array { items: values, ty },
+        Expr::Closure { params, body, ty: _ } => Expr::Closure { params, body, ty },
+        Expr::Block { block, ty: _ } => Expr::Block { block, ty },
+        Expr::Match { expr: source, arms, ty: _ } => Expr::Match { expr: source, arms, ty },
+        Expr::If { cond, then_branch, else_branch, ty: _ } => {
+            Expr::If { cond, then_branch, else_branch, ty }
+        },
+        Expr::While { cond, body, ty: _ } => Expr::While { cond, body, ty },
+        Expr::For {
+            pat,
+            iterator,
+            into_iter_trait_ref: into_ref,
+            iterator_trait_ref: iter_ref,
+            iterator_ty,
+            body,
+            ty: _,
+        } => {
+            Expr::For {
+                pat,
+                iterator,
+                into_iter_trait_ref: into_ref,
+                iterator_trait_ref: iter_ref,
+                iterator_ty,
+                body,
+                ty,
+            }
+        },
+        Expr::Break { ty: _ } => Expr::Break { ty },
+        Expr::Continue { ty: _ } => Expr::Continue { ty },
+        Expr::Return { expr: value, ty: _ } => Expr::Return { expr: value, ty },
+        Expr::Go { expr: value, ty: _ } => Expr::Go { expr: value, ty },
+        Expr::Call { func: function, args, ty: _ } => Expr::Call { func: function, args, ty },
+        Expr::Unary { op, expr: value, ty: _ } => Expr::Unary { op, expr: value, ty },
+        Expr::Cast { expr: value, ty: _ } => Expr::Cast { expr: value, ty },
+        Expr::Proj { tuple: value, index, ty: _ } => Expr::Proj { tuple: value, index, ty },
+        Expr::Field { expr: value, field_name: name, ty: _ } => Expr::Field { expr: value, field_name: name, ty },
+        Expr::Index { base, index, ty: _ } => Expr::Index { base, index, ty },
+        Expr::Binary { op, lhs: left, rhs: right, ty: _, resolution } => {
+            Expr::Binary { op, lhs: left, rhs: right, ty, resolution }
+        },
+        Expr::ToDyn { trait_name: name, for_ty: source_ty, expr: value, ty: _ } => {
+            Expr::ToDyn { trait_name: name, for_ty: source_ty, expr: value, ty }
+        },
+    }
+}
+
+fn defer_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] {
+    match prune(normalize_type(ctx, receiver)) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: _ } => {
+                let field_ty = fresh_type(ctx.counter, VarKind::Any);
+                ctx.field_constraints.push(FieldConstraint {
+                    receiver,
+                    name,
+                    field_ty,
+                    span: ctx.current_span.get(),
+                });
+                Option::Some(field_ty)
+            },
+            TypeVar::Link(_) => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn contains_silent_field_receiver(ctx: Checker, receiver: Type) -> bool {
+    let found = Ref::new(false);
+    for value in ctx.silent_field_receivers {
+        if types_equal(value, receiver) {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn resolve_field_constraints(ctx: Checker) -> unit {
+    for constraint in ctx.field_constraints {
+        match resolve_field_type(ctx, constraint.receiver, constraint.name) {
+            Option::Some(ty) => expect_type(ctx, ty, constraint.field_ty),
+            Option::None => {
+                if type_contains_error(constraint.receiver) {
+                    ()
+                } else if contains_unbound_type_variable(constraint.receiver) {
+                    push_diagnostic_at(
+                        ctx,
+                        "Could not infer the base type for field " + constraint.name,
+                        constraint.span,
+                    )
+                } else {
+                    push_diagnostic_at(
+                        ctx,
+                        "field not found: " + constraint.name,
+                        constraint.span,
+                    )
+                }
+            },
+        }
+    }
+}
+
+fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
+    let always_exits = hir_expr_always_exits_loop_control(source);
+    let value = check_expr(ctx, source, Option::None);
+    if types_equal(expr_type(value), Type::Error) {
+        Expr::Field { expr: value, field_name: name, ty: Type::Error }
+    } else if contains_silent_field_receiver(ctx, expr_type(value)) {
+        Expr::Field { expr: value, field_name: name, ty: fresh_type(ctx.counter, VarKind::Any) }
+    } else if always_exits {
+        Expr::Field { expr: value, field_name: name, ty: Type::Unit }
+    } else {
+        match resolve_field_type(ctx, expr_type(value), name) {
+            Option::Some(ty) => Expr::Field { expr: value, field_name: name, ty },
+            Option::None => match defer_field_type(ctx, expr_type(value), name) {
+                Option::Some(ty) => Expr::Field { expr: value, field_name: name, ty },
+                Option::None => match type_constructor_name(expr_type(value)) {
+                    Option::Some(owner) => match find_struct_by_name(ctx, owner) {
+                        Option::Some(_) => {
+                            push_diagnostic_at(
+                                ctx,
+                                "Struct " + owner + " has no field " + name,
+                                Option::None,
+                            );
+                            push_global_diagnostic(ctx, "Could not infer type");
+                            Expr::Field {
+                                expr: value,
+                                field_name: name,
+                                ty: fresh_unresolved_inference(ctx),
+                            }
+                        },
+                        Option::None => {
+                            push_diagnostic(ctx, "field not found: " + name);
+                            push_global_diagnostic(ctx, "Could not infer type");
+                            Expr::Field {
+                                expr: value,
+                                field_name: name,
+                                ty: fresh_unresolved_inference(ctx),
+                            }
+                        },
+                    },
+                    Option::None => {
+                        match prune(expr_type(value)) {
+                            Type::Tuple { items: _ } => push_diagnostic(
+                                ctx,
+                                "Field "
+                                    + name
+                                    + " not found on type "
+                                    + type_text(expr_type(value)),
+                            ),
+                            _ => push_diagnostic(ctx, "field not found: " + name),
+                        };
+                        push_global_diagnostic(ctx, "Could not infer type");
+                        Expr::Field {
+                            expr: value,
+                            field_name: name,
+                            ty: fresh_unresolved_inference(ctx),
+                        }
+                    },
+                },
+            },
+        }
+    }
+}
+
+fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int) -> Expr {
+    let always_exits = hir_expr_always_exits_loop_control(source);
+    let value = check_expr(ctx, source, Option::None);
+    if always_exits {
+        Expr::Proj { tuple: value, index, ty: Type::Unit }
+    } else {
+        match prune(expr_type(value)) {
+            Type::Tuple { items: types } => if index >= 0 && index < types.len() {
+                Expr::Proj { tuple: value, index, ty: types.get(index) }
+            } else {
+                push_diagnostic(
+                    ctx,
+                    "Tuple index "
+                        + index.to_string()
+                        + " out of bounds for type "
+                        + type_text(arity_diagnostic_type(expr_type(value))),
+                );
+                push_global_diagnostic(ctx, "Could not infer type");
+                Expr::Proj { tuple: value, index, ty: fresh_unresolved_inference(ctx) }
+            },
+            _ => {
+                push_diagnostic(ctx, "tuple required");
+                Expr::Proj { tuple: value, index, ty: Type::Error }
+            },
+        }
+    }
+}
+
+fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Expr) -> Expr {
+    let base_always_exits = hir_expr_always_exits_loop_control(base_source);
+    let base = check_expr(ctx, base_source, Option::None);
+    if base_always_exits {
+        Expr::Index {
+            base,
+            index: check_expr(ctx, index_source, Option::Some(Type::Int)),
+            ty: Type::Unit,
+        }
+    } else if hir_expr_always_exits_loop_control(index_source) {
+        Expr::Index {
+            base,
+            index: check_expr(ctx, index_source, Option::None),
+            ty: Type::Unit,
+        }
+    } else {
+        let parts = match prune(expr_type(base)) {
+            Type::Array { len: _, elem } | Type::VecType { elem } | Type::Slice { elem } => {
+                (Type::Int, elem)
+            },
+            Type::HashMap { key, value } => (
+                key,
+                nominal_type("Option", one_type(value)),
+            ),
+            Type::String => (Type::Int, Type::Char),
+            _ => {
+                push_diagnostic(ctx, "indexable value required");
+                (Type::Error, Type::Error)
+            },
+        };
+        let index = check_expr(ctx, index_source, Option::Some(parts.0));
+        Expr::Index { base, index, ty: parts.1 }
+    }
+}
+
+fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
+    let target_span = target.span;
+    match target.kind {
+        hir::ExprKind::Index { base: base_source, index: index_source } => {
+            let local_root = array_assignment_local_root(base_source);
+            let base = check_expr(ctx, base_source, Option::None);
+            let parts = match prune(expr_type(base)) {
+                Type::Array { len: _, elem } => {
+                    validate_array_assignment_root(ctx, local_root, base, target_span);
+                    (Type::Int, Type::Unit, elem)
+                },
+                Type::VecType { elem } => (Type::Int, Type::Unit, elem),
+                Type::Slice { elem } => {
+                    push_diagnostic_at(ctx,
+                        "cannot assign through Slice indexing; Slice is read-only",
+                        Option::Some(target_span),
+                    );
+                    (Type::Int, Type::Unit, elem)
+                },
+                Type::HashMap { key, value } => (
+                    key,
+                    Type::Unit,
+                    value,
+                ),
+                _ => {
+                    push_diagnostic(ctx, "indexable assignment target required");
+                    (Type::Error, Type::Error, Type::Error)
+                },
+            };
+            let index = check_expr(ctx, index_source, Option::Some(parts.0));
+            (Expr::Index { base, index, ty: parts.1 }, parts.2)
+        },
+        _ => {
+            let typed = check_expr(ctx, target, Option::None);
+            (typed, expr_type(typed))
+        },
+    }
+}
+
+fn array_assignment_local_root(value: hir::Expr) -> Option[hir::LocalId] {
+    match value.kind {
+        hir::ExprKind::NameRef { name_ref: hir::NameRef::Local(local) } => Option::Some(local),
+        hir::ExprKind::Proj { tuple: base, index: _ }
+        | hir::ExprKind::Field { expr: base, field_name: _ }
+        | hir::ExprKind::Index { base, index: _ } => array_assignment_local_root(base),
+        _ => Option::None,
+    }
+}
+
+fn typed_array_assignment_root_is_ref(value: Expr) -> bool {
+    match value {
+        Expr::Proj { tuple: base, index: _, ty: _ }
+        | Expr::Field { expr: base, field_name: _, ty: _ }
+        | Expr::Index { base, index: _, ty: _ } => typed_array_assignment_root_is_ref(base),
+        Expr::Call { func: Expr::Callable { callable, ty: _ }, args, ty: _ } => if args.len() == 1 {
+            match callable {
+                Callable::InherentMethod {
+                    receiver_ty: Type::RefType { elem: _ },
+                    method_name: name,
+                } => name == "get",
+                Callable::Intrinsic(name) => name == "ref.get",
+                _ => false,
+            }
+        } else {
+            false
+        },
+        _ => false,
+    }
+}
+
+fn validate_array_assignment_root(
+    ctx: Checker,
+    local_root: Option[hir::LocalId],
+    typed_base: Expr,
+    span: ast::Span,
+) -> unit {
+    match local_root {
+        Option::Some(local) => if local_is_mutable(ctx, local) {
+            ()
+        } else {
+            push_diagnostic_at(
+                ctx,
+                "cannot assign through array indexing on immutable binding `"
+                    + local.hint
+                    + "`",
+                Option::Some(span),
+            )
+        },
+        Option::None => if typed_array_assignment_root_is_ref(typed_base) {
+            ()
+        } else {
+            push_diagnostic_at(
+                ctx,
+                "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
+                Option::Some(span),
+            )
+        },
+    }
+}
+
+fn trait_projection(base: Type, name: string, trait_name: string) -> Type {
+    Type::Projection {
+        for_ty: base,
+        name,
+        trait_ref: Option::Some(TraitRef {
+                    name: trait_name,
+                    args: Vec::new(),
+                }),
+    }
+}
+
+fn projected_into_iterator_item(
+    ctx: Checker,
+    iterator_ty: Type,
+    preserve_projection: bool,
+) -> Type {
+    let direct = trait_projection(iterator_ty, "Item", "IntoIterator");
+    let normalized = normalize_type(ctx, direct);
+    if !types_equal(normalized, direct) {
+        normalized
+    } else if trait_bound_satisfied_at(
+        ctx,
+        iterator_ty,
+        TraitRef {
+            name: "Iterator",
+            args: Vec::new(),
+        },
+        0,
+    ) {
+        normalize_type(ctx, trait_projection(iterator_ty, "Item", "Iterator"))
+    } else if preserve_projection {
+        trait_projection(
+            trait_projection(iterator_ty, "IntoIter", "IntoIterator"),
+            "Item",
+            "Iterator",
+        )
+    } else {
+        fresh_type(ctx.counter, VarKind::Any)
+    }
+}
+
+fn into_iterator_item_type(ctx: Checker, iterator_ty: Type) -> Type {
+    let iterator_ty = normalize_type(ctx, iterator_ty);
+    match prune(iterator_ty) {
+        Type::Array { len: _, elem } | Type::VecType { elem } | Type::Slice { elem } => elem,
+        Type::App { ty: Type::Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
+            args.get(0)
+        } else {
+            projected_into_iterator_item(ctx, iterator_ty, false)
+        },
+        Type::Param { name: _ } | Type::Projection { for_ty: _, name: _, trait_ref: _ } => {
+            projected_into_iterator_item(ctx, iterator_ty, true)
+        },
+        _ => projected_into_iterator_item(ctx, iterator_ty, false),
+    }
+}
+
+fn check_for_expr(
+    ctx: Checker,
+    pat: hir::Pat,
+    iterator_source: hir::Expr,
+    body_source: hir::Expr,
+) -> Expr {
+    let pat_span = pat.span;
+    let iterator_span = iterator_source.span;
+    let body_span = body_source.span;
+    let iterator = check_expr(ctx, iterator_source, Option::None);
+    let source_ty = expr_type(iterator);
+    let into_iterator_ref = TraitRef {
+        name: "IntoIterator",
+        args: Vec::new(),
+    };
+    if !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, 0) {
+        push_diagnostic_at(ctx,
+            "for loop expects a type implementing IntoIterator, got "
+                + type_text(source_ty),
+            Option::Some(iterator_span),
+        )
+    } else {
+        ()
+    };
+    let item = into_iterator_item_type(ctx, source_ty);
+    let typed_pat = check_pattern(ctx, pat, item);
+    if pattern_is_irrefutable(ctx, typed_pat) {
+        ()
+    } else {
+        push_diagnostic_at(ctx,
+            "Refutable pattern is not allowed in for loop; use match instead",
+            Option::Some(pat_span),
+        )
+    };
+    ctx.loop_depth.set(ctx.loop_depth.get() + 1);
+    let body = check_expr(ctx, body_source, Option::None);
+    expect_type_at(ctx, Type::Unit, expr_type(body), Option::Some(body_span));
+    ctx.loop_depth.set(ctx.loop_depth.get() - 1);
+    let projected_iterator_ty = trait_projection(source_ty, "IntoIter", "IntoIterator");
+    let normalized_iterator_ty = normalize_type(ctx, projected_iterator_ty);
+    let iterator_ty = if types_equal(normalized_iterator_ty, projected_iterator_ty)
+        && trait_bound_satisfied_at(
+            ctx,
+            source_ty,
+            TraitRef {
+                name: "Iterator",
+                args: Vec::new(),
+            },
+            0,
+        )
+    {
+        source_ty
+    } else {
+        normalized_iterator_ty
+    };
+    Expr::For {
+        pat: typed_pat,
+        iterator,
+        into_iter_trait_ref: TraitRef {
+                    name: "IntoIterator",
+                    args: Vec::new(),
+                },
+        iterator_trait_ref: TraitRef {
+                    name: "Iterator",
+                    args: Vec::new(),
+                },
+        iterator_ty,
+        body,
+        ty: Type::Unit,
+    }
+}
+
+fn check_while_expr(
+    ctx: Checker,
+    cond_source: hir::Expr,
+    body_source: hir::Expr,
+) -> Expr {
+    let cond_always_exits = hir_expr_always_exits_loop_control(cond_source);
+    let previous_condition_depth = ctx.condition_depth.get();
+    let previous_condition_loop_depth = ctx.condition_loop_depth.get();
+    ctx.condition_depth.set(previous_condition_depth + 1);
+    ctx.condition_loop_depth.set(ctx.loop_depth.get());
+    let cond = check_expr(
+        ctx,
+        cond_source,
+        if cond_always_exits { Option::None } else { Option::Some(Type::Bool) },
+    );
+    let cond = if cond_always_exits {
+        with_expr_type(cond, Type::Bool)
+    } else {
+        cond
+    };
+    ctx.condition_depth.set(previous_condition_depth);
+    ctx.condition_loop_depth.set(previous_condition_loop_depth);
+    ctx.loop_depth.set(ctx.loop_depth.get() + 1);
+    let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
+    ctx.loop_depth.set(ctx.loop_depth.get() - 1);
+    Expr::While { cond, body, ty: Type::Unit }
+}
+
+fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
+    if ctx.condition_depth.get() > 0
+        && ctx.loop_depth.get() <= ctx.condition_loop_depth.get()
+    {
+        push_diagnostic(ctx,
+            if is_break {
+                "`break` is not allowed in a while condition"
+            } else {
+                "`continue` is not allowed in a while condition"
+            },
+        )
+    } else if ctx.loop_depth.get() == 0 {
+        push_diagnostic(ctx,
+            if is_break {
+                "`break` outside of a loop"
+            } else {
+                "`continue` outside of a loop"
+            },
+        )
+    } else {
+        ()
+    }
+}
+
+fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
+    let value_span = value.span;
+    match primitive_expr(ctx, value) {
+        Option::Some(result) => result,
+        Option::None => match value.kind {
+            hir::ExprKind::NameRef { name_ref: reference } => {
+                let result = check_name_ref_inner(ctx, reference);
+                match reference {
+                    hir::NameRef::Local(local) => if contains_local(
+                        ctx.unresolved_locals,
+                        local,
+                    ) && ctx.suppress_unresolved_ref_diagnostic.get() == 0
+                        && contains_unresolved_inference(ctx, expr_type(result))
+                    {
+                        push_inference_diagnostic_at(ctx, value_span, 0)
+                    } else {
+                        ()
+                    },
+                    _ => (),
+                };
+                result
+            },
+            hir::ExprKind::StaticMember {
+                owner,
+                member,
+                type_args: args,
+                type_arg_spans: _,
+            } => {
+                check_static_member(ctx, owner, member, args, true)
+            },
+            hir::ExprKind::ConstructorValue { constructor } => {
+                check_constructor_value_expr(ctx, constructor, Option::None)
+            },
+            hir::ExprKind::Constr { constructor, args } => {
+                check_constructor_expr(ctx, constructor, args, Option::None)
+            },
+            hir::ExprKind::StructLiteral { name, fields } => {
+                check_struct_expr(ctx, name, fields, Option::None)
+            },
+            hir::ExprKind::Tuple { items: values } => check_tuple_expr(ctx, values, Option::None),
+            hir::ExprKind::Array { items: values } => check_array_expr(ctx, values, Option::None),
+            hir::ExprKind::Closure { params, body } => {
+                check_closure_expr(ctx, params, body, Option::None)
+            },
+            hir::ExprKind::Match { expr: source, arms } => {
+                check_match_expr(ctx, source, arms, Option::None)
+            },
+            hir::ExprKind::If { cond, then_branch, else_branch } => {
+                check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
+            },
+            hir::ExprKind::While { cond, body } => check_while_expr(ctx, cond, body),
+            hir::ExprKind::For { pat, iterator, body } => check_for_expr(ctx, pat, iterator, body),
+            hir::ExprKind::Break => {
+                check_loop_control(ctx, true);
+                Expr::Break { ty: Type::Never }
+            },
+            hir::ExprKind::Continue => {
+                check_loop_control(ctx, false);
+                Expr::Continue { ty: Type::Never }
+            },
+            hir::ExprKind::Return { expr: value } => {
+                let typed = match value {
+                    Option::Some(inner) => Option::Some(check_expr(
+                        ctx,
+                        inner,
+                        Option::Some(ctx.return_ty),
+                    )),
+                    Option::None => {
+                        expect_type(ctx, ctx.return_ty, Type::Unit);
+                        Option::None
+                    },
+                };
+                Expr::Return { expr: typed, ty: Type::Never }
+            },
+            hir::ExprKind::Go { expr: value } => {
+                let span = value.span;
+                let value = check_expr(ctx, value, Option::None);
+                let actual = resolve_type(expr_type(value));
+                let valid = match actual {
+                    Type::Func { params, ret_ty } => {
+                        params.len() == 0 && types_equal(ret_ty, Type::Unit)
+                    },
+                    _ => false,
+                };
+                if valid {
+                    ()
+                } else {
+                    push_diagnostic_at(
+                        ctx,
+                        "`go` expects a value of type () -> unit, found "
+                            + diagnostic_type_text(actual),
+                        Option::Some(span),
+                    )
+                };
+                Expr::Go { expr: value, ty: Type::Unit }
+            },
+            hir::ExprKind::Call { func: function, args } => {
+                check_call_expr(ctx, value.span, function, args, Option::None)
+            },
+            hir::ExprKind::Unary { op, expr: value } => {
+                check_unary_expr(ctx, op, value, Option::None)
+            },
+            hir::ExprKind::Cast { expr: value, ty } => {
+                let target = resolve_signature_type(
+                    ctx,
+                    type_from_hir(ty, ctx.type_params, ctx.self_ty),
+                    ctx.predicates,
+                    true,
+                );
+                let source_span = value.span;
+                let source = check_expr(ctx, value, Option::None);
+                let source_ty = resolve_type(expr_type(source));
+                let target_ty = resolve_type(target);
+                let valid = (is_integer_type(source_ty) && is_integer_type(target_ty))
+                    || match (source_ty, target_ty) {
+                        (Type::Char, Type::Uint32) => true,
+                        _ => false,
+                    };
+                if !valid {
+                    push_diagnostic_at(
+                        ctx,
+                        "Invalid cast from "
+                            + diagnostic_type_text(source_ty)
+                            + " to "
+                            + diagnostic_type_text(target_ty),
+                        Option::Some(source_span),
+                    )
+                } else {
+                    ()
+                };
+                Expr::Cast { expr: source, ty: target }
+            },
+            hir::ExprKind::Try { depth: index, expr: value } => {
+                let source_span = value.span;
+                check_try_expr(
+                    ctx,
+                    index,
+                    value,
+                    ast::span(source_span.start, source_span.end + 1),
+                )
+            },
+            hir::ExprKind::Range { start, end } => check_range_expr(ctx, start, end),
+            hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
+                check_binary_expr(ctx, op, left, right, Option::None)
+            },
+            hir::ExprKind::Proj { tuple: value, index } => check_projection_expr(ctx, value, index),
+            hir::ExprKind::Field { expr: value, field_name: name } => check_field_expr(ctx, value, name),
+            hir::ExprKind::Index { base, index } => check_index_expr(ctx, base, index),
+            hir::ExprKind::Block { block } => {
+                let typed = check_block(ctx, block, Option::None);
+                Expr::Block { block: typed.0, ty: typed.1 }
+            },
+            _ => {
+                push_diagnostic(ctx, "expression is not implemented");
+                Expr::Prim { value: Primitive::Unit, ty: Type::Error }
+            },
+        },
+    }
+}
+
+fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
+    let always_exits = hir_expr_always_exits_loop_control(value);
+    let value_span = value.span;
+    match value.kind {
+        hir::ExprKind::NameRef { name_ref: reference } => {
+            let unresolved_other = match reference {
+                hir::NameRef::Other(_) => true,
+                _ => false,
+            };
+            let unresolved_local = match reference {
+                hir::NameRef::Local(local) => contains_local(ctx.unresolved_locals, local)
+                    && ctx.suppress_unresolved_ref_diagnostic.get() == 0,
+                _ => false,
+            };
+            let result = check_name_ref_inner(ctx, reference);
+            if unresolved_local && contains_unresolved_inference(ctx, expr_type(result)) {
+                push_inference_diagnostic_at(
+                    ctx,
+                    match ctx.current_span.get() {
+                        Option::Some(span) => span,
+                        Option::None => value_span,
+                    },
+                    0,
+                )
+            } else {
+                ()
+            };
+            if unresolved_other
+                && ctx.suppress_unresolved_ref_diagnostic.get() == 0
+                && contains_unresolved_inference(ctx, expr_type(result))
+            {
+                match expected {
+                    Option::Some(_) => (),
+                    Option::None => push_global_diagnostic(ctx, "Could not infer type"),
+                }
+            } else {
+                ()
+            };
+            coerce_expr(ctx, result, expected)
+        },
+        hir::ExprKind::Int { value: raw } => {
+            let deferred = match expected {
+                Option::Some(ty) => match prune(ty) {
+                    Type::Var(_) => true,
+                    Type::Dyn { trait_name: name } => match find_trait(ctx, name) {
+                        Option::Some(_) => false,
+                        Option::None => true,
+                    },
+                    other => !(is_numeric_type(other)),
+                },
+                Option::None => true,
+            };
+            if deferred {
+                let ty = fresh_type(ctx.counter, VarKind::Integer);
+                defer_numeric_literal(ctx, raw, ty, false);
+                coerce_expr(
+                    ctx,
+                    Expr::Prim { value: Primitive::Int { value: raw }, ty },
+                    expected,
+                )
+            } else {
+                let target = match propagated_expected(expected) {
+                Option::Some(ty) => match prune(ty) {
+                    Type::Int
+                    | Type::Int8
+                    | Type::Int16
+                    | Type::Int32
+                    | Type::Int64
+                    | Type::Uint
+                    | Type::Uint8
+                    | Type::Uint16
+                    | Type::Uint32
+                    | Type::Uint64
+                    | Type::Float32
+                    | Type::Float64 => (ty, true),
+                    _ => (Type::Int, false),
+                },
+                Option::None => (Type::Int, false),
+            };
+                if target.1 {
+                    ()
+                } else {
+                    validate_integer_literal(ctx, raw, target.0)
+                };
+                coerce_expr(
+                    ctx,
+                    Expr::Prim { value: Primitive::Int { value: raw }, ty: target.0 },
+                    expected,
+                )
+            }
+        },
+        hir::ExprKind::Float { value: raw } => {
+            let raw_text = raw.to_string();
+            let deferred = match expected {
+                Option::Some(ty) => match prune(ty) {
+                    Type::Var(_) => true,
+                    Type::Dyn { trait_name: name } => match find_trait(ctx, name) {
+                        Option::Some(_) => false,
+                        Option::None => true,
+                    },
+                    other => !(is_numeric_type(other)),
+                },
+                Option::None => true,
+            };
+            if deferred {
+                let ty = fresh_type(ctx.counter, VarKind::Float);
+                defer_numeric_literal(ctx, raw_text, ty, true);
+                coerce_expr(
+                    ctx,
+                    Expr::Prim { value: Primitive::Float { value: raw_text }, ty },
+                    expected,
+                )
+            } else {
+                let target = match propagated_expected(expected) {
+                    Option::Some(ty) => if is_numeric_type(ty) {
+                        ty
+                    } else {
+                        Type::Float64
+                    },
+                    Option::None => Type::Float64,
+                };
+                let primitive = if is_integer_type(target) {
+                    match float_literal_integer(raw_text) {
+                        Option::Some(integer) => {
+                            validate_integer_literal(ctx, integer, target);
+                            Primitive::Int { value: integer }
+                        },
+                        Option::None => {
+                            push_diagnostic(
+                                ctx,
+                                "Float literal "
+                                    + raw_text
+                                    + " cannot be represented as "
+                                    + type_text(target),
+                            );
+                            Primitive::Int { value: "0" }
+                        },
+                    }
+                } else {
+                    Primitive::Float { value: raw_text }
+                };
+                coerce_expr(ctx, Expr::Prim { value: primitive, ty: target }, expected)
+            }
+        },
+        hir::ExprKind::Unary { op, expr: source } => {
+            let result = check_unary_expr(ctx, op, source, expected);
+            if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+        hir::ExprKind::Range { start, end } => {
+            coerce_expr(ctx, check_range_expr(ctx, start, end), expected)
+        },
+        hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
+            let result = check_binary_expr(ctx, op, left, right, expected);
+            if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+        hir::ExprKind::Call { func: function, args } => {
+            let result = check_call_expr(
+                ctx,
+                value.span,
+                function,
+                args,
+                expected,
+            );
+            if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+        hir::ExprKind::ConstructorValue { constructor } => {
+            coerce_expr(
+                ctx,
+                check_constructor_value_expr(ctx, constructor, expected),
+                expected,
+            )
+        },
+        hir::ExprKind::Constr { constructor, args } => {
+            check_constructor_expr(ctx, constructor, args, expected)
+        },
+        hir::ExprKind::StructLiteral { name, fields } => {
+            check_struct_expr(ctx, name, fields, expected)
+        },
+        hir::ExprKind::Tuple { items: values } => check_tuple_expr(ctx, values, expected),
+        hir::ExprKind::Array { items: values } => check_array_expr(ctx, values, expected),
+        hir::ExprKind::Closure { params, body } => coerce_expr(
+            ctx,
+            check_closure_expr(ctx, params, body, expected),
+            expected,
+        ),
+        hir::ExprKind::Match { expr: source, arms } => check_match_expr(ctx, source, arms, expected),
+        hir::ExprKind::If { cond, then_branch, else_branch } => {
+            check_if_expr(ctx, cond, then_branch, else_branch, expected)
+        },
+        hir::ExprKind::Block { block } => {
+            let typed = check_block(ctx, block, expected);
+            let result = Expr::Block { block: typed.0, ty: typed.1 };
+            if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+        _ => {
+            let result = infer_expr(ctx, value);
+            if always_exits { result } else { coerce_expr(ctx, result, expected) }
+        },
+    }
+}
+
+fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
+    let previous = ctx.current_span.get();
+    ctx.current_span.set(Option::Some(value.span));
+    let result = check_expr_inner(ctx, value, expected);
+    let ty = expr_type(result);
+    ctx.typeck_results.exprs.push(ExprFact {
+        source_path: ctx.source_path,
+        span: value.span,
+        ty,
+    });
+    match value.kind {
+        hir::ExprKind::NameRef { name_ref: reference } => {
+            let target = match reference {
+                hir::NameRef::Local(local) => ReferenceTarget::Local(local),
+                hir::NameRef::Def(definition) => {
+                    ReferenceTarget::Definition(definition)
+                },
+                hir::NameRef::Other(name) => match result {
+                    Expr::Callable { callable, ty: _ } => {
+                        ReferenceTarget::Callable(callable)
+                    },
+                    _ => ReferenceTarget::Unresolved(name),
+                },
+            };
+            ctx.typeck_results.references.push(ReferenceFact {
+                source_path: ctx.source_path,
+                span: value.span,
+                target,
+                ty,
+            })
+        },
+        _ => (),
+    };
+    ctx.current_span.set(previous);
+    result
+}
+
+fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)] {
+    match value.kind {
+        hir::PatKind::Unit => Option::Some((Primitive::Unit, Type::Unit)),
+        hir::PatKind::Bool { value } => Option::Some((Primitive::Bool { value }, Type::Bool)),
+        hir::PatKind::Int { value } => Option::Some((
+            Primitive::Int { value },
+            fresh_type(ctx.counter, VarKind::Integer),
+        )),
+        hir::PatKind::Float { value } => Option::Some((
+            Primitive::Float { value },
+            fresh_type(ctx.counter, VarKind::Float),
+        )),
+        hir::PatKind::String { value } => Option::Some((Primitive::String { value }, Type::String)),
+        hir::PatKind::Char { value } => Option::Some((
+            Primitive::Char { value: checked_char_literal(ctx, value) },
+            Type::Char,
+        )),
+        _ => Option::None,
+    }
+}
+
+fn check_constructor_pattern(
+    ctx: Checker,
+    constructor: hir::ConstructorRef,
+    args: Vec[hir::Pat],
+    expected: Type,
+) -> Pat {
+    match resolve_constructor(ctx, constructor) {
+        Option::Some(info) => {
+            if info.named {
+                for value in args {
+                    mark_unresolved_pattern_locals(ctx, value)
+                };
+                push_diagnostic(
+                    ctx,
+                    "Constructor "
+                        + info.constructor.name
+                        + " is a struct-like enum variant and requires named fields",
+                );
+                return Pat::Wild { ty: expected }
+            } else {
+                ()
+            };
+            expect_type(ctx, info.ty, expected);
+            let values: Vec[Pat] = Vec::new();
+            if args.len() != info.fields.len() {
+                for value in args {
+                    mark_unresolved_pattern_locals(ctx, value)
+                };
+                push_diagnostic(
+                    ctx,
+                    "Constructor "
+                        + short_name(info.constructor.name)
+                        + " expects "
+                        + info.fields.len().to_string()
+                        + " arguments, but got "
+                        + args.len().to_string(),
+                )
+            } else {
+                for index in range(0, args.len()) {
+                    values.push(check_pattern(
+                        ctx,
+                        args.get(index),
+                        info.fields.get(index),
+                    ))
+                }
+            };
+            Pat::Constr { constructor: info.constructor, args: values, ty: expected }
+        },
+        Option::None => {
+            match constructor {
+                hir::ConstructorRef::Unresolved(name) => {
+                    if bare_constructor_match_count(ctx, name) > 1 {
+                        push_diagnostic(ctx, "Ambiguous constructor " + name)
+                    } else {
+                        push_diagnostic(ctx, "pattern constructor not found")
+                    }
+                },
+                hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
+                    push_diagnostic(ctx, "pattern constructor not found")
+                },
+            };
+            Pat::Wild { ty: expected }
+        },
+    }
+}
+
+fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
+    match value.kind {
+        hir::PatKind::Var { name: local } => if contains_local(ctx.unresolved_locals, local) {
+            ()
+        } else {
+            ctx.unresolved_locals.push(local)
+        },
+        hir::PatKind::Constr { constructor: _, args: values }
+        | hir::PatKind::Tuple { items: values }
+        | hir::PatKind::Or { pats: values } => for value in values {
+            mark_unresolved_pattern_locals(ctx, value)
+        },
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+            mark_unresolved_pattern_locals(ctx, field.1)
+        },
+        hir::PatKind::Array { prefix, rest: _, suffix } => {
+            for value in prefix {
+                mark_unresolved_pattern_locals(ctx, value)
+            };
+            for value in suffix {
+                mark_unresolved_pattern_locals(ctx, value)
+            }
+        },
+        hir::PatKind::Alias { name: local, pat } => {
+            if contains_local(ctx.unresolved_locals, local) {
+                ()
+            } else {
+                ctx.unresolved_locals.push(local)
+            };
+            mark_unresolved_pattern_locals(ctx, pat)
+        },
+        hir::PatKind::Range { start, end, inclusive: _ } => {
+            mark_unresolved_pattern_locals(ctx, start);
+            mark_unresolved_pattern_locals(ctx, end)
+        },
+        _ => (),
+    }
+}
+
+fn check_struct_pattern(
+    ctx: Checker,
+    name: string,
+    fields: Vec[(string, hir::Pat)],
+    has_rest: bool,
+    expected: Type,
+) -> Pat {
+    match resolve_named_field_constructor(ctx, name) {
+        NamedFieldConstructorResolution::Found(info) => {
+            expect_type(ctx, info.ty, expected);
+            if info.has_hidden_fields && !has_rest {
+                push_diagnostic(
+                    ctx,
+                    "Struct pattern "
+                        + name
+                        + " must use `..` because it has private fields",
+                )
+            } else {
+                ()
+            };
+            for index in range(0, fields.len()) {
+                let duplicate = Ref::new(false);
+                for previous in range(0, index) {
+                    if fields.get(previous).0 == fields.get(index).0 {
+                        duplicate.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if duplicate.get() {
+                    push_diagnostic(
+                        ctx,
+                        "Struct pattern "
+                            + name
+                            + " has duplicate field "
+                            + fields.get(index).0,
+                    )
+                } else {
+                    ()
+                }
+            };
+            let unknown = Ref::new("");
+            for provided in fields {
+                let known = Ref::new(false);
+                for field in info.fields {
+                    if provided.0 == field.0 {
+                        known.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if !(known.get()) {
+                    if unknown.get().byte_len() > 0 {
+                        unknown.set(unknown.get() + ", ")
+                    } else {
+                        ()
+                    };
+                    unknown.set(unknown.get() + provided.0)
+                } else {
+                    ()
+                }
+            };
+            if unknown.get().byte_len() > 0 {
+                push_diagnostic(
+                    ctx,
+                    "Struct pattern "
+                        + name
+                        + " has unknown fields: "
+                        + unknown.get(),
+                )
+            } else {
+                ()
+            };
+            let values: Vec[Pat] = Vec::new();
+            for field in info.fields {
+                match find_named_pattern(fields, field.0) {
+                    Option::Some(value) => values.push(check_pattern(ctx, value, field.1)),
+                    Option::None => {
+                        if !has_rest {
+                            push_diagnostic(
+                                ctx,
+                                "Struct pattern "
+                                    + name
+                                    + " missing field "
+                                    + field.0,
+                            )
+                        } else {
+                            ()
+                        };
+                        values.push(Pat::Wild { ty: field.1 })
+                    },
+                }
+            };
+            Pat::Constr { constructor: info.constructor, args: values, ty: expected }
+        },
+        NamedFieldConstructorResolution::WrongStyle => {
+            for field in fields {
+                mark_unresolved_pattern_locals(ctx, field.1)
+            };
+            push_diagnostic(
+                ctx,
+                "Constructor " + name + " is not a struct-like enum variant",
+            );
+            Pat::Wild { ty: expected }
+        },
+        NamedFieldConstructorResolution::Ambiguous => {
+            for field in fields {
+                mark_unresolved_pattern_locals(ctx, field.1)
+            };
+            push_diagnostic(ctx, "Ambiguous constructor " + name);
+            Pat::Wild { ty: expected }
+        },
+        NamedFieldConstructorResolution::Missing => {
+            for field in fields {
+                mark_unresolved_pattern_locals(ctx, field.1)
+            };
+            push_diagnostic(
+                ctx,
+                "Constructor " + name + " not found when checking pattern",
+            );
+            Pat::Wild { ty: expected }
+        },
+    }
+}
+
+fn array_pattern_types(
+    ctx: Checker,
+    expected: Type,
+    fixed_count: int,
+) -> (Type, Type) {
+    match prune(expected) {
+        Type::Array { len: length, elem } => (
+            elem,
+            Type::Array { len: if length >= fixed_count { length - fixed_count } else { 0 }, elem },
+        ),
+        Type::VecType { elem } | Type::Slice { elem } => (elem, Type::Slice { elem }),
+        _ => {
+            let elem = fresh_type(ctx.counter, VarKind::Any);
+            expect_type(ctx, expected, Type::Array { len: fixed_count, elem });
+            (elem, Type::Array { len: 0, elem })
+        },
+    }
+}
+
+fn check_array_pattern(
+    ctx: Checker,
+    prefix: Vec[hir::Pat],
+    rest: Option[hir::ArrayPatRest],
+    suffix: Vec[hir::Pat],
+    expected: Type,
+) -> Pat {
+    let (elem, rest_ty) = array_pattern_types(ctx, expected, prefix.len() + suffix.len());
+    let typed_prefix: Vec[Pat] = Vec::new();
+    for value in prefix {
+        typed_prefix.push(check_pattern(ctx, value, elem))
+    };
+    let typed_rest = match rest {
+        Option::Some(value) => {
+            let binding = match value.binding {
+                Option::Some(local) => {
+                    insert_local(ctx, local, rest_ty);
+                    Option::Some(local_name(local))
+                },
+                Option::None => Option::None,
+            };
+            Option::Some(ArrayPatRest {
+                binding,
+                ty: rest_ty,
+            })
+        },
+        Option::None => Option::None,
+    };
+    let typed_suffix: Vec[Pat] = Vec::new();
+    for value in suffix {
+        typed_suffix.push(check_pattern(ctx, value, elem))
+    };
+    Pat::Array { prefix: typed_prefix, rest: typed_rest, suffix: typed_suffix, ty: expected }
+}
+
+fn primitive_from_pattern(value: Pat) -> Primitive {
+    match value {
+        Pat::Prim { value: primitive, ty: _ } => primitive,
+        _ => Primitive::Unit,
+    }
+}
+
+fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
+    match value {
+        Primitive::Float { value: raw } => match prune(expected) {
+            Type::Float32 => Primitive::Float { value: normalized_float32_literal(raw) },
+            _ => Primitive::Float { value: normalized_float64_literal(raw) },
+        },
+        other => other,
+    }
+}
+
+fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
+    match prune(expected) {
+        Type::Dyn { trait_name: name } => match value.kind {
+            hir::PatKind::Var { name: _ } | hir::PatKind::Wild => (),
+            _ => {
+                push_diagnostic(
+                    ctx,
+                    "Pattern matching on dyn " + short_name(name) + " is not supported",
+                );
+                return Pat::Wild { ty: expected }
+            },
+        },
+        _ => (),
+    };
+    match primitive_pattern(ctx, value) {
+        Option::Some(result) => {
+            expect_type(ctx, result.1, expected);
+            Pat::Prim { value: normalize_pattern_primitive(result.0, expected), ty: expected }
+        },
+        Option::None => match value.kind {
+            hir::PatKind::Var { name: local } => {
+                insert_local(ctx, local, expected);
+                Pat::Var { name: local_name(local), ty: expected }
+            },
+            hir::PatKind::Constr { constructor, args } => {
+                check_constructor_pattern(ctx, constructor, args, expected)
+            },
+            hir::PatKind::Struct { name, fields, has_rest } => {
+                check_struct_pattern(ctx, name, fields, has_rest, expected)
+            },
+            hir::PatKind::Tuple { items: values } => {
+                let types: Vec[Type] = Vec::new();
+                for _ in values {
+                    types.push(fresh_type(ctx.counter, VarKind::Any))
+                };
+                expect_type(ctx, expected, Type::Tuple { items: types });
+                let items: Vec[Pat] = Vec::new();
+                for index in range(0, values.len()) {
+                    items.push(check_pattern(ctx, values.get(index), types.get(index)))
+                };
+                Pat::Tuple { items, ty: expected }
+            },
+            hir::PatKind::Array { prefix, rest, suffix } => {
+                check_array_pattern(ctx, prefix, rest, suffix, expected)
+            },
+            hir::PatKind::Alias { name: local, pat } => {
+                insert_local(ctx, local, expected);
+                Pat::Alias {
+                    name: local_name(local),
+                    pat: check_pattern(ctx, pat, expected),
+                    ty: expected,
+                }
+            },
+            hir::PatKind::Or { pats: values } => {
+                let items: Vec[Pat] = Vec::new();
+                for value in values {
+                    items.push(check_pattern(ctx, value, expected))
+                };
+                Pat::Or { pats: items, ty: expected }
+            },
+            hir::PatKind::Range { start, end, inclusive } => {
+                let typed_start = check_pattern(ctx, start, expected);
+                let typed_end = check_pattern(ctx, end, expected);
+                let start_value = primitive_from_pattern(typed_start);
+                let end_value = primitive_from_pattern(typed_end);
+                let equal = match (start_value, end_value) {
+                    (Primitive::Int { value: left }, Primitive::Int { value: right })
+                    | (Primitive::Int8 { value: left }, Primitive::Int8 { value: right })
+                    | (Primitive::Int16 { value: left }, Primitive::Int16 { value: right })
+                    | (Primitive::Int32 { value: left }, Primitive::Int32 { value: right })
+                    | (Primitive::Int64 { value: left }, Primitive::Int64 { value: right })
+                    | (Primitive::Uint { value: left }, Primitive::Uint { value: right })
+                    | (Primitive::Uint8 { value: left }, Primitive::Uint8 { value: right })
+                    | (Primitive::Uint16 { value: left }, Primitive::Uint16 { value: right })
+                    | (Primitive::Uint32 { value: left }, Primitive::Uint32 { value: right })
+                    | (Primitive::Uint64 { value: left }, Primitive::Uint64 { value: right }) => {
+                        left == right
+                    },
+                    (Primitive::Char { value: left }, Primitive::Char { value: right }) => left == right,
+                    _ => false,
+                };
+                if !inclusive && equal {
+                    push_diagnostic(
+                        ctx,
+                        "Range pattern lower bound must be less than its upper bound",
+                    )
+                } else {
+                    ()
+                };
+                Pat::Range {
+                    start: start_value,
+                    end: end_value,
+                    inclusive,
+                    ty: expected,
+                }
+            },
+            hir::PatKind::Wild => Pat::Wild { ty: expected },
+            _ => {
+                push_diagnostic(ctx, "pattern is not implemented");
+                Pat::Wild { ty: expected }
+            },
+        },
+    }
+}
+
+fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
+    let previous = ctx.current_span.get();
+    ctx.current_span.set(Option::Some(value.span));
+    let result = check_pattern_inner(ctx, value, expected);
+    ctx.typeck_results.pats.push(PatFact {
+        source_path: ctx.source_path,
+        span: value.span,
+        ty: pat_type(result),
+    });
+    ctx.current_span.set(previous);
+    result
+}
+
+fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
+    match value {
+        hir::Stmt::Let { is_mut, pat, annotation, value: source } => {
+            let invalid_annotation = Ref::new(false);
+            let closure_value = match source.kind {
+                hir::ExprKind::Closure { params: _, body: _ } => true,
+                _ => false,
+            };
+            let previous_span = ctx.current_span.get();
+            ctx.current_span.set(match annotation {
+                Option::Some(hir::TypeExpr::Dyn { trait_name: _ }) => Option::Some(source.span),
+                _ => previous_span,
+            });
+            let annotation_ty = match annotation {
+                Option::Some(value) => {
+                    let raw = type_from_hir(value, ctx.type_params, ctx.self_ty);
+                    invalid_annotation.set(
+                        nominal_application_has_wrong_arity(ctx, raw),
+                    );
+                    Option::Some(resolve_signature_type(
+                        ctx,
+                        raw,
+                        ctx.predicates,
+                        true,
+                    ))
+                },
+                Option::None => Option::None,
+            };
+            ctx.current_span.set(previous_span);
+            let expression = check_expr(ctx, source, annotation_ty);
+            if is_mut {
+                mark_mutable_pattern(ctx, pat)
+            } else {
+                ()
+            };
+            let pattern_ty = match annotation_ty {
+                Option::Some(ty) => if invalid_annotation.get() {
+                    let recovery = fresh_unresolved_inference(ctx);
+                    ctx.silent_field_receivers.push(recovery);
+                    mark_unresolved_pattern_locals(ctx, pat);
+                    recovery
+                } else {
+                    ty
+                },
+                Option::None => {
+                    let ty = expr_type(expression);
+                    if contains_unresolved_inference(ctx, ty) && !closure_value {
+                        push_inference_diagnostic_at(ctx, pat.span, 0);
+                        mark_unresolved_pattern_locals(ctx, pat)
+                    } else {
+                        ()
+                    };
+                    ty
+                },
+            };
+            let simple_pattern = match pat.kind {
+                hir::PatKind::Var { name: _ } | hir::PatKind::Wild => true,
+                _ => false,
+            };
+            let pattern = check_pattern(ctx, pat, pattern_ty);
+            if simple_pattern {
+                ()
+            } else if pattern_is_irrefutable(ctx, pattern) {
+                ()
+            } else {
+                push_diagnostic_at(ctx,
+                    "Refutable pattern is not allowed in let binding; use match instead",
+                    Option::Some(pat.span),
+                )
+            };
+            Stmt::Let { is_mut, pat: pattern, value: expression }
+        },
+        hir::Stmt::Assign { target, value: source } => {
+            let checked = check_assign_target(ctx, target);
+            let source = check_expr(ctx, source, Option::Some(checked.1));
+            Stmt::Assign { target: checked.0, value: source }
+        },
+        hir::Stmt::Expr { expr: value } => Stmt::Expr { expr: check_expr(ctx, value, Option::None) },
+    }
+}
+
+fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
+    match value.kind {
+        hir::PatKind::Var { name: local } => mark_mutable_local(ctx, local),
+        hir::PatKind::Constr { constructor: _, args: values } | hir::PatKind::Tuple { items: values } | hir::PatKind::Or {
+            pats: values,
+        } => {
+            for value in values {
+                mark_mutable_pattern(ctx, value)
+            }
+        },
+        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+            mark_mutable_pattern(ctx, field.1)
+        },
+        hir::PatKind::Array { prefix, rest, suffix } => {
+            for value in prefix {
+                mark_mutable_pattern(ctx, value)
+            };
+            match rest {
+                Option::Some(value) => match value.binding {
+                    Option::Some(local) => mark_mutable_local(ctx, local),
+                    Option::None => (),
+                },
+                Option::None => (),
+            };
+            for value in suffix {
+                mark_mutable_pattern(ctx, value)
+            }
+        },
+        hir::PatKind::Alias { name: local, pat } => {
+            mark_mutable_local(ctx, local);
+            mark_mutable_pattern(ctx, pat)
+        },
+        hir::PatKind::Range { start, end, inclusive: _ } => {
+            mark_mutable_pattern(ctx, start);
+            mark_mutable_pattern(ctx, end)
+        },
+        _ => (),
+    }
+}
+
+fn hir_exprs_any_exit_loop_control(values: Vec[hir::Expr]) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if hir_expr_always_exits_loop_control(value) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn hir_fields_any_exit_loop_control(values: Vec[(string, hir::Expr)]) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if hir_expr_always_exits_loop_control(value.1) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn hir_match_has_catch_all(arms: Vec[hir::Arm]) -> bool {
+    let result = Ref::new(false);
+    for arm in arms {
+        match arm.pat.kind {
+            hir::PatKind::Var { name: _ } | hir::PatKind::Wild => result.set(true),
+            _ => (),
+        }
+    };
+    result.get()
+}
+
+fn hir_match_bodies_all_exit_loop_control(arms: Vec[hir::Arm]) -> bool {
+    let result = Ref::new(true);
+    for arm in arms {
+        if hir_expr_always_exits_loop_control(arm.body) {
+            ()
+        } else {
+            result.set(false)
+        }
+    };
+    result.get()
+}
+
+fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
+    match value.kind {
+        hir::ExprKind::Break | hir::ExprKind::Continue | hir::ExprKind::Return { expr: _ } => true,
+        hir::ExprKind::ConstructorValue { constructor: _ } => false,
+        hir::ExprKind::Constr { constructor: _, args } => hir_exprs_any_exit_loop_control(args),
+        hir::ExprKind::StructLiteral { name: _, fields } => {
+            hir_fields_any_exit_loop_control(fields)
+        },
+        hir::ExprKind::Tuple { items: values } | hir::ExprKind::Array { items: values } => {
+            hir_exprs_any_exit_loop_control(values)
+        },
+        hir::ExprKind::Call { func: function, args } => {
+            hir_expr_always_exits_loop_control(function)
+                || hir_exprs_any_exit_loop_control(args)
+        },
+        hir::ExprKind::Unary { op: _, expr: source }
+        | hir::ExprKind::Cast { expr: source, ty: _ }
+        | hir::ExprKind::Try { depth: _, expr: source }
+        | hir::ExprKind::Go { expr: source }
+        | hir::ExprKind::Field { expr: source, field_name: _ } => {
+            hir_expr_always_exits_loop_control(source)
+        },
+        hir::ExprKind::Binary { op, lhs: left, rhs: right } => {
+            hir_expr_always_exits_loop_control(left)
+                || match op {
+                    ast::BinaryOp::And | ast::BinaryOp::Or => false,
+                    _ => hir_expr_always_exits_loop_control(right),
+                }
+        },
+        hir::ExprKind::Proj { tuple: source, index: _ } => hir_expr_always_exits_loop_control(source),
+        hir::ExprKind::Index { base, index } => {
+            hir_expr_always_exits_loop_control(base)
+                || hir_expr_always_exits_loop_control(index)
+        },
+        hir::ExprKind::Block { block } => hir_block_always_exits_loop_control(block),
+        hir::ExprKind::If { cond: _, then_branch, else_branch } => {
+            hir_expr_always_exits_loop_control(then_branch)
+                && hir_expr_always_exits_loop_control(else_branch)
+        },
+        hir::ExprKind::Match { expr: _, arms } => {
+            hir_match_has_catch_all(arms)
+                && hir_match_bodies_all_exit_loop_control(arms)
+        },
+        hir::ExprKind::While { cond, body: _ } => hir_expr_always_exits_loop_control(cond),
+        hir::ExprKind::For { pat: _, iterator, body: _ } => {
+            hir_expr_always_exits_loop_control(iterator)
+        },
+        _ => false,
+    }
+}
+
+fn hir_stmt_always_exits_loop_control(value: hir::Stmt) -> bool {
+    match value {
+        hir::Stmt::Expr { expr } => hir_expr_always_exits_loop_control(expr),
+        _ => false,
+    }
+}
+
+fn hir_block_always_exits_loop_control(value: hir::Block) -> bool {
+    let result = Ref::new(false);
+    for stmt in value.stmts {
+        if hir_stmt_always_exits_loop_control(stmt) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    match value.tail {
+        Option::Some(expr) => if hir_expr_always_exits_loop_control(expr) {
+            result.set(true)
+        } else {
+            ()
+        },
+        Option::None => (),
+    };
+    result.get()
+}
+
+fn check_block(
+    ctx: Checker,
+    value: hir::Block,
+    expected: Option[Type],
+) -> (Block, Type) {
+    let stmts: Vec[Stmt] = Vec::new();
+    for stmt in value.stmts {
+        stmts.push(check_stmt(ctx, stmt))
+    };
+    let tail = match value.tail {
+        Option::Some(expr) => Option::Some(check_expr(ctx, expr, expected)),
+        Option::None => {
+            if !hir_block_always_exits_loop_control(value) {
+                match expected {
+                    Option::Some(ty) => expect_type(ctx, Type::Unit, ty),
+                    Option::None => (),
+                }
+            } else {
+                ()
+            };
+            Option::None
+        },
+    };
+    let ty = match tail {
+        Option::Some(expr) => expr_type(expr),
+        Option::None => Type::Unit,
+    };
+    (Block { stmts, tail }, ty)
+}

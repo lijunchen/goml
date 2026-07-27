@@ -1,0 +1,211 @@
+package go_backend;
+
+use std::text;
+
+fn sha256_constants() -> [uint32; 64] {
+    [
+        1116352408,
+        1899447441,
+        3049323471,
+        3921009573,
+        961987163,
+        1508970993,
+        2453635748,
+        2870763221,
+        3624381080,
+        310598401,
+        607225278,
+        1426881987,
+        1925078388,
+        2162078206,
+        2614888103,
+        3248222580,
+        3835390401,
+        4022224774,
+        264347078,
+        604807628,
+        770255983,
+        1249150122,
+        1555081692,
+        1996064986,
+        2554220882,
+        2821834349,
+        2952996808,
+        3210313671,
+        3336571891,
+        3584528711,
+        113926993,
+        338241895,
+        666307205,
+        773529912,
+        1294757372,
+        1396182291,
+        1695183700,
+        1986661051,
+        2177026350,
+        2456956037,
+        2730485921,
+        2820302411,
+        3259730800,
+        3345764771,
+        3516065817,
+        3600352804,
+        4094571909,
+        275423344,
+        430227734,
+        506948616,
+        659060556,
+        883997877,
+        958139571,
+        1322822218,
+        1537002063,
+        1747873779,
+        1955562222,
+        2024104815,
+        2227730452,
+        2361852424,
+        2428436474,
+        2756734187,
+        3204031479,
+        3329325298,
+    ]
+}
+
+fn rotate_right(value: uint32, count: uint32) -> uint32 {
+    (value >> count) | (value << (32 - count))
+}
+
+fn padded_byte(
+    value: string,
+    index: int,
+    padded_len: int,
+    bit_len: uint64,
+) -> uint8 {
+    if index < value.byte_len() {
+        value.byte_get(index)
+    } else if index == value.byte_len() {
+        128
+    } else if index >= padded_len - 8 {
+        let shift = ((padded_len - 1 - index) * 8) as uint64;
+        ((bit_len >> shift) & 255) as uint8
+    } else {
+        0
+    }
+}
+
+fn message_word(
+    value: string,
+    offset: int,
+    padded_len: int,
+    bit_len: uint64,
+) -> uint32 {
+    ((padded_byte(value, offset, padded_len, bit_len) as uint32) << 24)
+        | ((padded_byte(value, offset + 1, padded_len, bit_len) as uint32) << 16)
+        | ((padded_byte(value, offset + 2, padded_len, bit_len) as uint32) << 8)
+        | (padded_byte(value, offset + 3, padded_len, bit_len) as uint32)
+}
+
+fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
+    let digits = "0123456789abcdef";
+    for index in range(0, 8) {
+        let shift = ((7 - index) * 4) as uint32;
+        builder.write_char(digits.get(((value >> shift) & 15) as int))
+    }
+}
+
+pub fn sha256_hex(value: string) -> string {
+    let constants = sha256_constants();
+    let padded_len = Ref::new(value.byte_len() + 9);
+    while padded_len.get() % 64 != 0 {
+        padded_len.set(padded_len.get() + 1)
+    };
+    let bit_len = (value.byte_len() as uint64) * 8;
+    let h0 = Ref::new(1779033703);
+    let h1 = Ref::new(3144134277);
+    let h2 = Ref::new(1013904242);
+    let h3 = Ref::new(2773480762);
+    let h4 = Ref::new(1359893119);
+    let h5 = Ref::new(2600822924);
+    let h6 = Ref::new(528734635);
+    let h7 = Ref::new(1541459225);
+    for chunk in range(0, padded_len.get() / 64) {
+        let words: Vec[uint32] = Vec::new();
+        for index in range(0, 16) {
+            words.push(message_word(
+                value,
+                chunk * 64 + index * 4,
+                padded_len.get(),
+                bit_len,
+            ))
+        };
+        for index in range(16, 64) {
+            let first = words.get(index - 15);
+            let second = words.get(index - 2);
+            let sigma0 = rotate_right(first, 7)
+                ^ rotate_right(first, 18)
+                ^ (first >> 3);
+            let sigma1 = rotate_right(second, 17)
+                ^ rotate_right(second, 19)
+                ^ (second >> 10);
+            words.push(
+                words.get(index - 16) + sigma0 + words.get(index - 7) + sigma1,
+            )
+        };
+        let a = Ref::new(h0.get());
+        let b = Ref::new(h1.get());
+        let c = Ref::new(h2.get());
+        let d = Ref::new(h3.get());
+        let e = Ref::new(h4.get());
+        let f = Ref::new(h5.get());
+        let g = Ref::new(h6.get());
+        let h = Ref::new(h7.get());
+        for index in range(0, 64) {
+            let sigma1 = rotate_right(e.get(), 6)
+                ^ rotate_right(e.get(), 11)
+                ^ rotate_right(e.get(), 25);
+            let choice = (e.get() & f.get()) ^ (~(e.get()) & g.get());
+            let temp1 = h.get()
+                + sigma1
+                + choice
+                + array_get(constants, index)
+                + words.get(index);
+            let sigma0 = rotate_right(a.get(), 2)
+                ^ rotate_right(a.get(), 13)
+                ^ rotate_right(a.get(), 22);
+            let majority = (a.get() & b.get())
+                ^ (a.get() & c.get())
+                ^ (b.get() & c.get());
+            let temp2 = sigma0 + majority;
+            h.set(g.get());
+            g.set(f.get());
+            f.set(e.get());
+            e.set(d.get() + temp1);
+            d.set(c.get());
+            c.set(b.get());
+            b.set(a.get());
+            a.set(temp1 + temp2)
+        };
+        h0.set(h0.get() + a.get());
+        h1.set(h1.get() + b.get());
+        h2.set(h2.get() + c.get());
+        h3.set(h3.get() + d.get());
+        h4.set(h4.get() + e.get());
+        h5.set(h5.get() + f.get());
+        h6.set(h6.get() + g.get());
+        h7.set(h7.get() + h.get())
+    };
+    let builder = text::StringBuilder::new();
+    write_hex_word(builder, h0.get());
+    write_hex_word(builder, h1.get());
+    write_hex_word(builder, h2.get());
+    write_hex_word(builder, h3.get());
+    write_hex_word(builder, h4.get());
+    write_hex_word(builder, h5.get());
+    write_hex_word(builder, h6.get());
+    write_hex_word(builder, h7.get());
+    builder.finish()
+}
+
+pub fn sha256_prefix(value: string) -> string {
+    sha256_hex(value).byte_slice(0, 32)
+}

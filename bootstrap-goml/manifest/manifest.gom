@@ -1,0 +1,208 @@
+package manifest;
+
+use gomlang::bootstrap_goml::util;
+use std::fs;
+use std::path;
+
+pub struct Dependency {
+    pub name: string,
+    pub version: string,
+}
+
+pub struct Manifest {
+    pub module_path: string,
+    pub target_dir: string,
+    pub dependencies: Vec[Dependency],
+}
+
+fn strip_comment(value: string) -> string {
+    let quoted = Ref::new(false);
+    let escaped = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if escaped.get() {
+            escaped.set(false)
+        } else if quoted.get() && byte == 92 {
+            escaped.set(true)
+        } else if byte == 34 {
+            quoted.set(!(quoted.get()))
+        } else if !(quoted.get()) && byte == 35 {
+            return value.byte_slice(0, index)
+        } else {
+            ()
+        }
+    };
+    value
+}
+
+fn parse_string(value: string) -> Result[string, string] {
+    let value = util::trim(value);
+    if value.byte_len() < 2
+        || value.byte_get(0) != 34
+        || value.byte_get(value.byte_len() - 1) != 34
+    {
+        return Result::Err("manifest values must be quoted strings")
+    } else {
+        ()
+    };
+    let result = Ref::new("");
+    let index = Ref::new(1);
+    while index.get() < value.byte_len() - 1 {
+        let byte = value.byte_get(index.get());
+        if byte == 92 {
+            if index.get() + 1 >= value.byte_len() - 1 {
+                return Result::Err("invalid manifest string escape")
+            } else {
+                ()
+            };
+            let escaped = value.byte_get(index.get() + 1);
+            if escaped == 34 || escaped == 92 {
+                result.set(
+                    result.get()
+                        + value.byte_slice(index.get() + 1, index.get() + 2),
+                );
+                index.set(index.get() + 2)
+            } else {
+                return Result::Err("unsupported manifest string escape")
+            }
+        } else {
+            result.set(result.get() + value.byte_slice(index.get(), index.get() + 1));
+            index.set(index.get() + 1)
+        }
+    };
+    Result::Ok(result.get())
+}
+
+fn valid_segment(value: string) -> bool {
+    if value.byte_len() == 0 {
+        return false
+    } else {
+        ()
+    };
+    for index in range(0, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if (byte >= 48 && byte <= 57)
+            || (byte >= 65 && byte <= 90)
+            || (byte >= 97 && byte <= 122)
+            || byte == 95
+            || byte == 45
+        {
+            ()
+        } else {
+            return false
+        }
+    };
+    true
+}
+
+fn validate_module_path(value: string) -> Result[unit, string] {
+    let segments = util::split(value, "::");
+    if segments.len() == 0 {
+        return Result::Err("module.path is empty")
+    } else {
+        ()
+    };
+    for segment in segments {
+        if !valid_segment(segment) {
+            return Result::Err("invalid module.path " + value)
+        } else {
+            ()
+        }
+    };
+    Result::Ok(())
+}
+
+fn validate_target_dir(value: string) -> Result[unit, string] {
+    if value == "" || path::is_absolute(value) {
+        Result::Err("build.target-dir must be a non-empty relative path")
+    } else {
+        for segment in util::split(value, "/") {
+            if segment == ".." {
+                return Result::Err("build.target-dir must stay inside the module")
+            } else {
+                ()
+            }
+        };
+        for segment in util::split(value, "\\") {
+            if segment == ".." {
+                return Result::Err("build.target-dir must stay inside the module")
+            } else {
+                ()
+            }
+        };
+        Result::Ok(())
+    }
+}
+
+pub fn load(path: string) -> Result[Manifest, string] {
+    let source = match fs::read_file(path) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let section = Ref::new("");
+    let module_path: Ref[Option[string]] = Ref::new(Option::None);
+    let target_dir = Ref::new("_artifact");
+    let dependencies = Vec::new();
+    for original in util::split_lines(source) {
+        let line = util::trim(strip_comment(original));
+        if line == "" {
+            ()
+        } else if line.byte_len() >= 2
+            && line.byte_get(0) == 91
+            && line.byte_get(line.byte_len() - 1) == 93
+        {
+            section.set(util::trim(line.byte_slice(1, line.byte_len() - 1)))
+        } else {
+            let equals = Ref::new(-1);
+            for index in range(0, line.byte_len()) {
+                if equals.get() < 0 && line.byte_get(index) == 61 {
+                    equals.set(index)
+                } else {
+                    ()
+                }
+            };
+            if equals.get() < 0 {
+                return Result::Err("invalid manifest line: " + original)
+            } else {
+                ()
+            };
+            let key = util::trim(line.byte_slice(0, equals.get()));
+            let value = match parse_string(line.byte_slice(
+                equals.get() + 1,
+                line.byte_len(),
+            )) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            if section.get() == "module" && key == "path" {
+                module_path.set(Option::Some(value))
+            } else if section.get() == "build" && key == "target-dir" {
+                target_dir.set(value)
+            } else if section.get() == "dependencies" {
+                let name = match parse_string(key) {
+                    Result::Ok(value) => value,
+                    Result::Err(message) => return Result::Err(message),
+                };
+                dependencies.push(Dependency { name, version: value })
+            } else {
+                ()
+            }
+        }
+    };
+    let module_path = match module_path.get() {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("goml.toml is missing [module].path"),
+    };
+    match validate_module_path(module_path) {
+        Result::Ok(()) => (),
+        Result::Err(message) => return Result::Err(message),
+    };
+    match validate_target_dir(target_dir.get()) {
+        Result::Ok(()) => Result::Ok(Manifest {
+            module_path,
+            target_dir: target_dir.get(),
+            dependencies,
+        }),
+        Result::Err(message) => Result::Err(message),
+    }
+}

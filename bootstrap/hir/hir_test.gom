@@ -1,0 +1,358 @@
+package hir;
+
+use gomlc::ast;
+use gomlc::parser;
+use std::testing;
+
+fn lowered_file(source: string) -> File {
+    let result = lower(ast::lower(parser::parse(source)), "main.gom");
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected HIR");
+            File {
+                package_name: "",
+                path: "",
+                source_path: "",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+                invalid_self_type_spans: Vec::new(),
+            }
+        },
+    }
+}
+
+fn lowered_package_file(source: string, package_name: string) -> File {
+    let result = lower_package(
+        ast::lower(parser::parse(source)),
+        "package.gom",
+        package_name,
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected package HIR");
+            File {
+                package_name: "",
+                path: "",
+                source_path: "",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+                invalid_self_type_spans: Vec::new(),
+            }
+        },
+    }
+}
+
+#[test]
+fn reports_pattern_binding_errors_during_resolution() -> unit {
+    let duplicate = lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let (value, value) = (1, 2); }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(duplicate.diagnostics.len(), 1);
+    testing::assert_eq(
+        duplicate.diagnostics.get(0).message,
+        "Variable value is bound more than once in the same pattern",
+    );
+    match duplicate.hir {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected duplicate pattern HIR"),
+    };
+    let inconsistent = lower(
+        ast::lower(parser::parse(
+            "enum Maybe { None, Some(int32) } fn main() -> unit { let value = Maybe::Some(1); let _ = match value { Maybe::Some(inner) | Maybe::None => inner, _ => 0 }; }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(inconsistent.diagnostics.len(), 1);
+    testing::assert_eq(
+        inconsistent.diagnostics.get(0).message,
+        "Or-pattern alternatives must bind the same variables: missing inner",
+    );
+    match inconsistent.hir {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected inconsistent pattern HIR"),
+    }
+}
+
+#[test]
+fn indents_multiline_calls_canonically() -> unit {
+    let source = "struct Box { value: int32 } fn make(value: Box) -> Box { value } fn main() -> unit { let values = Vec::new().pushed(make(Box { value: 1 })).pushed(make(Box { value: 2 })); }";
+    testing::assert_eq(
+        encode(lower(ast::lower(parser::parse(source)), "main.gom")),
+        "package main\nfile main.gom\n  struct Box {\n        value: int32,\n    }\n    \n    fn make(local/1/0: Box) -> Box {\n        value/0\n    }\n    \n    fn main() -> unit {\n        let local/1/1 = Vec::new().pushed(def/1/1(Box {\n                  value: 1\n              })).pushed(def/1/1(Box {\n                value: 2\n            }));\n    }",
+    )
+}
+
+#[test]
+fn qualifies_package_items_types_and_import_aliases() -> unit {
+    let source = "package sample; use std::io as output; struct Value { field: int32 } fn emit(value: Value) -> Value { output::println(\"ok\"); Value { field: value.field } }";
+    let file = lowered_package_file(source, "std::sample");
+    testing::assert_eq(file.package_name, "std::sample");
+    testing::assert_eq(file.import_aliases.len(), 1);
+    testing::assert_eq(file.import_aliases.get(0).alias, "output");
+    testing::assert_eq(file.import_aliases.get(0).package_name, "std::io");
+    match file.items.get(1) {
+        Item::Function(value) => {
+            testing::assert_eq(value.name, "std::sample::emit");
+            match value.params.get(0).1 {
+                TypeExpr::Con { name } => testing::assert_eq(name, "std::sample::Value"),
+                _ => testing::fail("expected qualified parameter type"),
+            };
+            match value.body.stmts.get(0) {
+                Stmt::Expr {
+                    expr: Expr {
+                                        kind: ExprKind::Call {
+                                            func: Expr {
+                                                                        kind: ExprKind::StaticMember { owner, member, type_args: _, type_arg_spans: _ },
+                                                                        span: _,
+                                                                    },
+                                            args: _,
+                                        },
+                                        span: _,
+                                    },
+                } => {
+                    testing::assert_eq(owner, "std::io");
+                    testing::assert_eq(member, "println")
+                },
+                _ => testing::fail("expected qualified package call"),
+            };
+            match value.body.tail {
+                Option::Some(Expr {
+                    kind: ExprKind::StructLiteral { name, fields: _ },
+                    span: _,
+                }) => {
+                    testing::assert_eq(name, "std::sample::Value")
+                },
+                _ => testing::fail("expected qualified struct literal"),
+            }
+        },
+        _ => testing::fail("expected package function"),
+    }
+}
+
+#[test]
+fn resolves_traits_imported_through_package_aliases() -> unit {
+    let file = lowered_package_file(
+        "package usepkg; use vendor::traits as traitpkg; use traitpkg::Render; fn render() -> unit {}",
+        "vendor::usepkg",
+    );
+    testing::assert_eq(file.import_aliases.len(), 1);
+    testing::assert_eq(file.import_aliases.get(0).alias, "traitpkg");
+    testing::assert_eq(file.import_aliases.get(0).package_name, "vendor::traits");
+    testing::assert_eq(file.use_traits.len(), 1);
+    testing::assert_eq(file.use_traits.get(0), "vendor::traits::Render")
+}
+
+#[test]
+fn exposes_derived_impls_without_lowering_them_twice() -> unit {
+    let expanded = expand_derives(ast::lower(parser::parse(
+        "#[derive(Eq, Hash)] struct Key { value: int32 }",
+    )));
+    match expanded.ast {
+        Option::Some(file) => {
+            testing::assert_eq(file.items.len(), 3);
+            match file.items.get(1) {
+                ast::Item::ImplBlock(_) => (),
+                _ => testing::fail("expected derived Eq impl"),
+            };
+            match file.items.get(2) {
+                ast::Item::ImplBlock(_) => (),
+                _ => testing::fail("expected derived Hash impl"),
+            }
+        },
+        Option::None => testing::fail("expected expanded AST"),
+    };
+    let result = lower_expanded(expanded, "main.gom");
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => testing::assert_eq(file.items.len(), 3),
+        Option::None => testing::fail("expected HIR"),
+    }
+}
+
+#[test]
+fn resolves_definitions_and_shadowed_locals() -> unit {
+    let source = "fn id(value: int32) -> int32 { value } fn main() -> int32 { let value = 1; id(value) }";
+    let file = lowered_file(source);
+    testing::assert_eq(file.items.len(), 2);
+    match file.items.get(1) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let {
+                    is_mut: _,
+                    pat: Pat {
+                                        kind: PatKind::Var { name: local },
+                                        span: _,
+                                    },
+                    annotation: _,
+                    value: Expr {
+                                        kind: ExprKind::Int { value: number },
+                                        span: _,
+                                    },
+                } => {
+                    testing::assert_eq(local.pkg, 1);
+                    testing::assert_eq(local.index, 1);
+                    testing::assert_eq(number, "1")
+                },
+                _ => testing::fail("expected local binding"),
+            };
+            match value.body.tail {
+                Option::Some(Expr {
+                    kind: ExprKind::Call { func: function, args },
+                    span: _,
+                }) => {
+                    match function.kind {
+                        ExprKind::NameRef { name_ref: NameRef::Def(definition) } => {
+                            testing::assert_eq(definition.pkg, 1);
+                            testing::assert_eq(definition.index, 0)
+                        },
+                        _ => testing::fail("expected definition reference"),
+                    };
+                    testing::assert_eq(args.len(), 1);
+                    match args.get(0).kind {
+                        ExprKind::NameRef { name_ref: NameRef::Local(local) } => {
+                            testing::assert_eq(local.pkg, 1);
+                            testing::assert_eq(local.index, 1)
+                        },
+                        _ => testing::fail("expected local reference"),
+                    }
+                },
+                _ => testing::fail("expected function call"),
+            }
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn resolves_enum_constructors_and_pattern_bindings() -> unit {
+    let source = "enum Choice { None, Some(int32) } fn unwrap(value: Choice) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
+    let file = lowered_file(source);
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr {
+                kind: ExprKind::Match { expr: _, arms },
+                span: _,
+            }) => {
+                testing::assert_eq(arms.len(), 2);
+                match arms.get(0).pat.kind {
+                    PatKind::Constr {
+                        constructor: ConstructorRef::Resolved {
+                                                enum_def: definition,
+                                                variant_index: variant,
+                                            },
+                        args,
+                    } => {
+                        testing::assert_eq(definition.pkg, 1);
+                        testing::assert_eq(definition.index, 0);
+                        testing::assert_eq(variant, 1);
+                        testing::assert_eq(args.len(), 1)
+                    },
+                    _ => testing::fail("expected resolved constructor pattern"),
+                };
+                match arms.get(0).body.kind {
+                    ExprKind::NameRef { name_ref: NameRef::Local(local) } => {
+                        testing::assert_eq(local.pkg, 1);
+                        testing::assert_eq(local.index, 1)
+                    },
+                    _ => testing::fail("expected pattern local reference"),
+                }
+            },
+            _ => testing::fail("expected match expression"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn resolves_cross_file_constructor_patterns() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
+    parsed.push(parser::parse(
+        "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
+    ));
+    let ast_files = ast::lower_package(parsed);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    inputs.push((ast_files.get(0), "types.gom"));
+    inputs.push((ast_files.get(1), "main.gom"));
+    let lowered = lower_package_files(inputs, "main");
+    testing::assert_eq(lowered.len(), 2);
+    match lowered.get(1).hir {
+        Option::Some(file) => match file.items.get(0) {
+            Item::Function(function) => match function.body.tail {
+                Option::Some(Expr {
+                    kind: ExprKind::Match { expr: _, arms },
+                    span: _,
+                }) => {
+                    match arms.get(0).pat.kind {
+                        PatKind::Constr {
+                            constructor: ConstructorRef::Resolved {
+                                                        enum_def: definition,
+                                                        variant_index: variant,
+                                                    },
+                            args,
+                        } => {
+                            testing::assert_eq(definition.index, 0);
+                            testing::assert_eq(variant, 0);
+                            testing::assert_eq(args.len(), 0)
+                        },
+                        _ => testing::fail("expected resolved Idle pattern"),
+                    };
+                    match arms.get(1).pat.kind {
+                        PatKind::Constr {
+                            constructor: ConstructorRef::Resolved {
+                                                        enum_def: definition,
+                                                        variant_index: variant,
+                                                    },
+                            args,
+                        } => {
+                            testing::assert_eq(definition.index, 0);
+                            testing::assert_eq(variant, 1);
+                            testing::assert_eq(args.len(), 1)
+                        },
+                        _ => testing::fail("expected resolved Busy pattern"),
+                    }
+                },
+                _ => testing::fail("expected cross-file match"),
+            },
+            _ => testing::fail("expected label function"),
+        },
+        Option::None => testing::fail("expected cross-file HIR"),
+    }
+}
+
+#[test]
+fn rejects_invalid_derives() -> unit {
+    let unsupported = lower(
+        ast::lower(parser::parse(
+            "#[derive(ToJson)] struct User { name: string }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(unsupported.diagnostics.len(), 1);
+    testing::assert_eq(
+        unsupported.diagnostics.get(0).message,
+        "unsupported derive target `ToJson`",
+    );
+    let generic = lower(
+        ast::lower(parser::parse(
+            "#[derive(ToString)] struct Box[T] { value: T }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(generic.diagnostics.len(), 1);
+    testing::assert_eq(
+        generic.diagnostics.get(0).message,
+        "`#[derive(ToString)]` is not supported for generic struct `Box`",
+    )
+}

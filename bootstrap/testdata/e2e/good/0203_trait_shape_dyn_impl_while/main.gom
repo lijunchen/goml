@@ -1,0 +1,30 @@
+trait Shape {
+    fn area(self: Self) -> float64;
+}
+
+struct Circle { radius: float64 }
+struct Rectangle { width: float64, height: float64 }
+
+impl Shape for Circle {
+    fn area(self: Circle) -> float64 { self.radius * self.radius * 3.14159 }
+}
+
+impl Shape for Rectangle {
+    fn area(self: Rectangle) -> float64 { self.width * self.height }
+}
+
+fn print_area(s: dyn Shape) {
+    println(Shape::area(s).to_string());
+}
+
+fn main() {
+    print_area(Circle { radius: 5.0 });
+    print_area(Rectangle { width: 3.0, height: 4.0 });
+    
+    let shapes: [dyn Shape; 2] = [Circle { radius: 1.0 }, Rectangle { width: 2.0, height: 3.0 }];
+    let i = Ref::new(0);
+    while i.get() < 2 {
+        print_area(shapes[i.get()]);
+        i.set(i.get() + 1);
+    };
+}

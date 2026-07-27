@@ -1,0 +1,35 @@
+package main;
+fn main() -> unit {
+    let i = Ref::new(0);
+    let sum = Ref::new(0);
+    while i.get() < 5 {
+        {
+            i.set(i.get() + 1);
+            let cur = if i.get() == 3 {
+                {
+                    continue
+                }
+            } else {
+                {
+                    i.get()
+                }
+            };
+            sum.set(sum.get() + cur);
+        }
+    };
+    println(sum.get());
+    let j = Ref::new(0);
+    let total = Ref::new(0);
+    while true {
+        {
+            j.set(j.get() + 1);
+            let cur = match j.get() {
+                5 => break,
+                _ => j.get(),
+            };
+            total.set(total.get() + cur);
+        }
+    };
+    println(total.get());
+}
+

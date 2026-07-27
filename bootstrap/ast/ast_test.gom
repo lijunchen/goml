@@ -1,0 +1,226 @@
+package ast;
+
+use gomlc::cst;
+use gomlc::parser;
+use std::testing;
+
+fn lowered_file(source: string) -> File {
+    let result = lower(parser::parse(source));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.ast {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected AST");
+            File {
+                package_name: "",
+                package_explicit: false,
+                uses: Vec::new(),
+                items: Vec::new(),
+                invalid_self_type_spans: Vec::new(),
+            }
+        },
+    }
+}
+
+fn has_diagnostic(
+    values: Vec[cst::Diagnostic],
+    expected: string,
+) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.message == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+#[test]
+fn rejects_deeply_nested_patterns_without_overflowing() -> unit {
+    let pattern = Ref::new("_");
+    for _ in range(0, 150) {
+        pattern.set("(" + pattern.get() + ", _)")
+    };
+    let result = lower(parser::parse(
+        "fn main() -> unit { let " + pattern.get() + " = (); }",
+    ));
+    testing::assert(has_diagnostic(
+        result.diagnostics,
+        "pattern is too deeply nested",
+    ))
+}
+
+#[test]
+fn rejects_deeply_nested_expressions_without_overflowing() -> unit {
+    let expression = Ref::new("1");
+    for _ in range(0, 600) {
+        expression.set("(" + expression.get() + ")")
+    };
+    let result = lower(parser::parse(
+        "fn main() -> unit { let value = "
+            + expression.get()
+            + "; println(value); }",
+    ));
+    testing::assert(has_diagnostic(
+        result.diagnostics,
+        "expression is too deeply nested",
+    ))
+}
+
+#[test]
+fn lowers_items_types_and_float_values() -> unit {
+    let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: int32, right: float64 } fn value() -> float64 { 3.140 }";
+    let file = lowered_file(source);
+    testing::assert_eq(file.package_name, "sample");
+    testing::assert(file.package_explicit);
+    testing::assert_eq(file.items.len(), 3);
+    match file.items.get(0) {
+        Item::EnumDef(value) => {
+            testing::assert_eq(value.name, "Choice");
+            testing::assert_eq(value.generics.len(), 1);
+            testing::assert_eq(value.variants.len(), 2)
+        },
+        _ => testing::fail("expected enum"),
+    };
+    match file.items.get(2) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Float { value: number, span: _ }) => testing::assert(number == 3.14),
+            _ => testing::fail("expected float tail"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn lowers_unicode_strings_and_constructor_patterns() -> unit {
+    let source = "enum Choice { Empty, Text(string) } fn read(value: Choice) -> string { let prefix = \"λ\\u0041🙂\"; match value { Choice::Text(text) => prefix + text, Choice::Empty => prefix } }";
+    let file = lowered_file(source);
+    match file.items.get(1) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let {
+                    is_mut: _,
+                    pat: _,
+                    annotation: _,
+                    value: Expr::String { value: text_value, span: _ },
+                    span: _,
+                } => testing::assert_eq(text_value, "λA🙂"),
+                _ => testing::fail("expected string binding"),
+            };
+            match value.body.tail {
+                Option::Some(Expr::Match { expr: _, arms, span: _ }) => {
+                    testing::assert_eq(arms.len(), 2);
+                    match arms.get(0).pat {
+                        Pat::Constr { constructor: path, args, span: _ } => {
+                            testing::assert_eq(path.segments.len(), 2);
+                            testing::assert_eq(args.len(), 1)
+                        },
+                        _ => testing::fail("expected constructor pattern"),
+                    }
+                },
+                _ => testing::fail("expected match tail"),
+            }
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn lowers_cross_file_constructor_patterns() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
+    parsed.push(parser::parse(
+        "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
+    ));
+    let lowered = lower_package(parsed);
+    testing::assert_eq(lowered.len(), 2);
+    match lowered.get(1).ast {
+        Option::Some(file) => match file.items.get(0) {
+            Item::Function(function) => match function.body.tail {
+                Option::Some(Expr::Match { expr: _, arms, span: _ }) => match arms.get(0).pat {
+                    Pat::Constr { constructor: path, args, span: _ } => {
+                        testing::assert_eq(path.segments.get(0).ident, "Idle");
+                        testing::assert_eq(args.len(), 0)
+                    },
+                    _ => testing::fail("expected cross-file constructor pattern"),
+                },
+                _ => testing::fail("expected match expression"),
+            },
+            _ => testing::fail("expected label function"),
+        },
+        Option::None => testing::fail("expected cross-file AST"),
+    }
+}
+
+#[test]
+fn parser_diagnostics_prevent_ast_creation() -> unit {
+    let result = lower(parser::parse("fn broken( {"));
+    testing::assert(result.diagnostics.len() > 0);
+    match result.ast {
+        Option::Some(_) => testing::fail("unexpected AST"),
+        Option::None => (),
+    }
+}
+
+#[test]
+fn reports_invalid_parameter_types() -> unit {
+    let result = lower(parser::parse(
+        "fn take(value: [int32; 18446744073709551615]) -> unit { () }",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 2);
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "Invalid array length: 18446744073709551615",
+    );
+    testing::assert_eq(
+        result.diagnostics.get(1).message,
+        "Param value has no type",
+    )
+}
+
+#[test]
+fn reports_trait_impl_method_visibility_on_the_impl() -> unit {
+    let source = "trait Render { fn render(self: Self) -> string; } struct Value {} impl Render for Value { pub fn render(self: Value) -> string { \"value\" } }";
+    let result = lower(parser::parse(source));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.get(0).start, 66);
+    testing::assert_eq(result.diagnostics.get(0).end, 140)
+}
+
+#[test]
+fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
+    let inconsistent = lower(parser::parse(
+        "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",
+    ));
+    testing::assert_eq(inconsistent.diagnostics.len(), 0);
+    match inconsistent.ast {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected inconsistent pattern AST"),
+    };
+    let duplicate = lower(parser::parse(
+        "fn main() -> unit { let (value, value) = (1, 2); }",
+    ));
+    testing::assert_eq(duplicate.diagnostics.len(), 0);
+    match duplicate.ast {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected duplicate pattern AST"),
+    }
+}
+
+#[test]
+fn pretty_prints_run_single_ast_dump() -> unit {
+    let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
+    let expected = "package main;\n"
+        + "fn main() {\n"
+        + "    let _ = ();\n"
+        + "    let a = (true, false, (true, false));\n"
+        + "    let b = match a {\n"
+        + "        (x, y, (z, w)) => w,\n"
+        + "    };\n"
+        + "    let _ = print(b);\n"
+        + "    ()\n"
+        + "}\n\n";
+    testing::assert_eq(pretty(lower(parser::parse(source))), expected)
+}

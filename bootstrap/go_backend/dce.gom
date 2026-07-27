@@ -1,0 +1,674 @@
+package go_backend;
+
+struct DceNames {
+    values: Vec[string],
+    present: HashMap[string, unit],
+}
+
+struct DceResult {
+    block: Block,
+    live: DceNames,
+    needs_decl: DceNames,
+}
+
+fn new_dce_names() -> DceNames {
+    DceNames {
+        values: Vec::new(),
+        present: HashMap::new(),
+    }
+}
+
+fn contains_name(values: DceNames, expected: string) -> bool {
+    values.present.contains(expected)
+}
+
+fn add_name(values: DceNames, value: string) -> unit {
+    if !contains_name(values, value) {
+        values.present.set(value, ());
+        values.values.push(value)
+    } else {
+        ()
+    }
+}
+
+fn add_names(target: DceNames, values: DceNames) -> unit {
+    for value in values.values {
+        if contains_name(values, value) {
+            add_name(target, value)
+        } else {
+            ()
+        }
+    }
+}
+
+fn copy_names(values: DceNames) -> DceNames {
+    let result = new_dce_names();
+    add_names(result, values);
+    result
+}
+
+fn remove_name(values: DceNames, expected: string) -> unit {
+    values.present.remove(expected)
+}
+
+fn add_expr_uses(values: DceNames, value: Expr) -> unit {
+    match value {
+        Expr::Var { name } => add_name(values, name),
+        Expr::Call { func, args } => {
+            add_expr_uses(values, func);
+            for arg in args {
+                add_expr_uses(values, arg)
+            }
+        },
+        Expr::Unary { op: _, expr } => add_expr_uses(values, expr),
+        Expr::Binary { op: _, lhs, rhs } => {
+            add_expr_uses(values, lhs);
+            add_expr_uses(values, rhs)
+        },
+        Expr::Field { expr, field_name: _ } => add_expr_uses(values, expr),
+        Expr::Index { base: expr, index } => {
+            add_expr_uses(values, expr);
+            add_expr_uses(values, index)
+        },
+        Expr::Slice { base: expr, start, end } => {
+            add_expr_uses(values, expr);
+            add_expr_uses(values, start);
+            add_expr_uses(values, end)
+        },
+        Expr::Cast { expr, ty: _ } | Expr::Convert { ty: _, expr } => add_expr_uses(values, expr),
+        Expr::Make { ty: _, args } => {
+            for arg in args {
+                add_expr_uses(values, arg)
+            }
+        },
+        Expr::Send { channel, value } => {
+            add_expr_uses(values, channel);
+            add_expr_uses(values, value)
+        },
+        Expr::Receive { channel } => add_expr_uses(values, channel),
+        Expr::StructLiteral { ty: _, fields } => {
+            for field in fields {
+                add_expr_uses(values, field.1)
+            }
+        },
+        Expr::ArrayLiteral { ty: _, items } => {
+            for item in items {
+                add_expr_uses(values, item)
+            }
+        },
+        Expr::FuncLit { params, ret_ty: _, body } => {
+            let uses = new_dce_names();
+            add_block_uses(uses, body);
+            for param in params {
+                remove_name(uses, param.0)
+            };
+            add_names(values, uses)
+        },
+        Expr::Nil
+        | Expr::Unit
+        | Expr::Bool { value: _ }
+        | Expr::Int { value: _ }
+        | Expr::Float { value: _ }
+        | Expr::String { value: _ } => (),
+    }
+}
+
+fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
+    match value {
+        Stmt::Expr { expr } | Stmt::Go { call: expr } => add_expr_uses(values, expr),
+        Stmt::Var { name: _, ty: _, value: initial } => match initial {
+            Option::Some(expr) => add_expr_uses(values, expr),
+            Option::None => (),
+        },
+        Stmt::Assign { name: _, value: expr } => add_expr_uses(values, expr),
+        Stmt::FieldAssign { target, field_name: _, value: expr } => {
+            add_expr_uses(values, target);
+            add_expr_uses(values, expr)
+        },
+        Stmt::IndexAssign { base: target, index, value: expr } => {
+            add_expr_uses(values, target);
+            add_expr_uses(values, index);
+            add_expr_uses(values, expr)
+        },
+        Stmt::MultiAssign { names: _, value: expr } => add_expr_uses(values, expr),
+        Stmt::Return { expr } => match expr {
+            Option::Some(expr) => add_expr_uses(values, expr),
+            Option::None => (),
+        },
+        Stmt::ReturnMulti { exprs } => {
+            for expr in exprs {
+                add_expr_uses(values, expr)
+            }
+        },
+        Stmt::If { cond, then_, else_ } => {
+            add_expr_uses(values, cond);
+            add_block_uses(values, then_);
+            match else_ {
+                Option::Some(body) => add_block_uses(values, body),
+                Option::None => (),
+            }
+        },
+        Stmt::Loop { body } | Stmt::LabeledLoop { label: _, body } => add_block_uses(values, body),
+        Stmt::Range { names, expr, body } => {
+            add_expr_uses(values, expr);
+            let body_uses = new_dce_names();
+            add_block_uses(body_uses, body);
+            for name in names {
+                remove_name(body_uses, name)
+            };
+            add_names(values, body_uses)
+        },
+        Stmt::Switch { expr, cases, default } => {
+            add_expr_uses(values, expr);
+            for case in cases {
+                add_expr_uses(values, case.value);
+                add_block_uses(values, case.body)
+            };
+            match default {
+                Option::Some(body) => add_block_uses(values, body),
+                Option::None => (),
+            }
+        },
+        Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
+            add_expr_uses(values, expr);
+            let body_uses = new_dce_names();
+            for case in cases {
+                add_block_uses(body_uses, case.body)
+            };
+            match default {
+                Option::Some(body) => add_block_uses(body_uses, body),
+                Option::None => (),
+            };
+            match bind {
+                Option::Some(name) => remove_name(body_uses, name),
+                Option::None => (),
+            };
+            add_names(values, body_uses)
+        },
+        Stmt::Break
+        | Stmt::BreakLabel { label: _ }
+        | Stmt::Continue
+        | Stmt::Panic { message: _ }
+        | Stmt::Unreachable => (),
+    }
+}
+
+fn add_block_uses(values: DceNames, value: Block) -> unit {
+    for stmt in value.stmts {
+        add_stmt_uses(values, stmt)
+    }
+}
+
+fn free_vars_in_block(value: Block) -> DceNames {
+    let used = new_dce_names();
+    let declared = new_dce_names();
+    for stmt in value.stmts {
+        match stmt {
+            Stmt::Expr { expr } | Stmt::Go { call: expr } => add_expr_uses(used, expr),
+            Stmt::Var { name, ty: _, value: initial } => {
+                add_name(declared, name);
+                match initial {
+                    Option::Some(expr) => add_expr_uses(used, expr),
+                    Option::None => (),
+                }
+            },
+            Stmt::Assign { name: _, value: expr } => add_expr_uses(used, expr),
+            Stmt::FieldAssign { target, field_name: _, value: expr } => {
+                add_expr_uses(used, target);
+                add_expr_uses(used, expr)
+            },
+            Stmt::IndexAssign { base: target, index, value: expr } => {
+                add_expr_uses(used, target);
+                add_expr_uses(used, index);
+                add_expr_uses(used, expr)
+            },
+            Stmt::MultiAssign { names: _, value: expr } => add_expr_uses(used, expr),
+            Stmt::Return { expr } => match expr {
+                Option::Some(expr) => add_expr_uses(used, expr),
+                Option::None => (),
+            },
+            Stmt::ReturnMulti { exprs } => {
+                for expr in exprs {
+                    add_expr_uses(used, expr)
+                }
+            },
+            Stmt::If { cond, then_, else_ } => {
+                add_expr_uses(used, cond);
+                add_names(used, free_vars_in_block(then_));
+                match else_ {
+                    Option::Some(body) => add_names(used, free_vars_in_block(body)),
+                    Option::None => (),
+                }
+            },
+            Stmt::Loop { body } | Stmt::LabeledLoop { label: _, body } => {
+                add_names(used, free_vars_in_block(body))
+            },
+            Stmt::Range { names, expr, body } => {
+                add_expr_uses(used, expr);
+                let body_uses = free_vars_in_block(body);
+                for name in names {
+                    remove_name(body_uses, name)
+                };
+                add_names(used, body_uses)
+            },
+            Stmt::Switch { expr, cases, default } => {
+                add_expr_uses(used, expr);
+                for case in cases {
+                    add_expr_uses(used, case.value);
+                    add_names(used, free_vars_in_block(case.body))
+                };
+                match default {
+                    Option::Some(body) => add_names(used, free_vars_in_block(body)),
+                    Option::None => (),
+                }
+            },
+            Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
+                add_expr_uses(used, expr);
+                for case in cases {
+                    let case_uses = free_vars_in_block(case.body);
+                    match bind {
+                        Option::Some(name) => remove_name(case_uses, name),
+                        Option::None => (),
+                    };
+                    add_names(used, case_uses)
+                };
+                match default {
+                    Option::Some(body) => {
+                        let default_uses = free_vars_in_block(body);
+                        match bind {
+                            Option::Some(name) => remove_name(default_uses, name),
+                            Option::None => (),
+                        };
+                        add_names(used, default_uses)
+                    },
+                    Option::None => (),
+                }
+            },
+            Stmt::Break
+            | Stmt::BreakLabel { label: _ }
+            | Stmt::Continue
+            | Stmt::Panic { message: _ }
+            | Stmt::Unreachable => (),
+        }
+    };
+    for name in declared.values {
+        remove_name(used, name)
+    };
+    used
+}
+
+fn call_result_must_be_used(value: Expr) -> bool {
+    match value {
+        Expr::Var { name } => {
+            name == "append"
+                || name == "cap"
+                || name == "complex"
+                || name == "imag"
+                || name == "len"
+                || name == "make"
+                || name == "max"
+                || name == "min"
+                || name == "new"
+                || name == "real"
+                || name == "bool"
+                || name == "byte"
+                || name == "rune"
+                || name == "string"
+                || name == "int"
+                || name == "int8"
+                || name == "int16"
+                || name == "int32"
+                || name == "int64"
+                || name == "uint"
+                || name == "uint8"
+                || name == "uint16"
+                || name == "uint32"
+                || name == "uint64"
+                || name == "uintptr"
+                || name == "float32"
+                || name == "float64"
+                || name == "complex64"
+                || name == "complex128"
+        },
+        _ => false,
+    }
+}
+
+fn append_call(value: Expr) -> bool {
+    match value {
+        Expr::Var { name } => name == "append",
+        _ => false,
+    }
+}
+
+fn append_target(values: Vec[Expr]) -> Option[string] {
+    if values.len() > 0 {
+        match values.get(0) {
+            Expr::Var { name } => Option::Some(name),
+            _ => Option::None,
+        }
+    } else {
+        Option::None
+    }
+}
+
+fn emit_side_effect(value: Expr) -> Stmt {
+    match value {
+        Expr::Call { func, args } => if append_call(func) {
+            let call = Expr::Call { func, args };
+            match append_target(args) {
+                Option::Some(name) => Stmt::Assign { name, value: call },
+                Option::None => Stmt::Assign { name: "_", value: call },
+            }
+        } else {
+            Stmt::Expr { expr: Expr::Call { func, args } }
+        },
+        _ => Stmt::Assign { name: "_", value },
+    }
+}
+
+fn expr_has_side_effects(value: Expr) -> bool {
+    match value {
+        Expr::Call { func, args } => {
+            let nested = Ref::new(false);
+            for arg in args {
+                if expr_has_side_effects(arg) {
+                    nested.set(true)
+                } else {
+                    ()
+                }
+            };
+            append_call(func) || !call_result_must_be_used(func) || nested.get()
+        },
+        Expr::Unary { op: _, expr } => expr_has_side_effects(expr),
+        Expr::Binary { op: _, lhs, rhs } => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
+        Expr::Field { expr, field_name: _ } => expr_has_side_effects(expr),
+        Expr::Index { base: expr, index } => expr_has_side_effects(expr) || expr_has_side_effects(index),
+        Expr::Slice { base: expr, start, end } => {
+            expr_has_side_effects(expr)
+                || expr_has_side_effects(start)
+                || expr_has_side_effects(end)
+        },
+        Expr::Cast { expr, ty: _ } | Expr::Convert { ty: _, expr } => expr_has_side_effects(expr),
+        Expr::Make { ty: _, args } => {
+            let found = Ref::new(false);
+            for arg in args {
+                if expr_has_side_effects(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Expr::Send { channel: _, value: _ } | Expr::Receive { channel: _ } => true,
+        Expr::StructLiteral { ty: _, fields } => {
+            let found = Ref::new(false);
+            for field in fields {
+                if expr_has_side_effects(field.1) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Expr::ArrayLiteral { ty: _, items } => {
+            let found = Ref::new(false);
+            for item in items {
+                if expr_has_side_effects(item) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Expr::FuncLit { params: _, ret_ty: _, body: _ } => false,
+        Expr::Nil
+        | Expr::Unit
+        | Expr::Var { name: _ }
+        | Expr::Bool { value: _ }
+        | Expr::Int { value: _ }
+        | Expr::Float { value: _ }
+        | Expr::String { value: _ } => false,
+    }
+}
+
+fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    for index in range(0, values.len()) {
+        result.push(values.get(values.len() - index - 1))
+    };
+    result
+}
+
+fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
+    let live = copy_names(live_out);
+    let needs_decl = new_dce_names();
+    let output: Vec[Stmt] = Vec::new();
+    let index = Ref::new(value.stmts.len());
+    while index.get() > 0 {
+        index.set(index.get() - 1);
+        match value.stmts.get(index.get()) {
+            Stmt::Expr { expr } => {
+                if expr_has_side_effects(expr) {
+                    add_expr_uses(live, expr);
+                    output.push(Stmt::Expr { expr })
+                } else {
+                    ()
+                }
+            },
+            Stmt::Go { call: expr } => {
+                add_expr_uses(live, expr);
+                output.push(Stmt::Go { call: expr })
+            },
+            Stmt::Var { name, ty, value: initial } => {
+                if contains_name(live, name) {
+                    remove_name(live, name);
+                    remove_name(needs_decl, name);
+                    match initial {
+                        Option::Some(expr) => add_expr_uses(live, expr),
+                        Option::None => (),
+                    };
+                    output.push(Stmt::Var { name, ty, value: initial })
+                } else if contains_name(needs_decl, name) {
+                    remove_name(needs_decl, name);
+                    match initial {
+                        Option::Some(expr) => {
+                            if expr_has_side_effects(expr) {
+                                add_expr_uses(live, expr);
+                                output.push(emit_side_effect(expr))
+                            } else {
+                                ()
+                            };
+                            output.push(Stmt::Var { name, ty, value: Option::None })
+                        },
+                        Option::None => output.push(Stmt::Var { name, ty, value: Option::None }),
+                    }
+                } else {
+                    match initial {
+                        Option::Some(expr) => {
+                            if expr_has_side_effects(expr) {
+                                add_expr_uses(live, expr);
+                                output.push(emit_side_effect(expr))
+                            } else {
+                                ()
+                            }
+                        },
+                        Option::None => (),
+                    }
+                }
+            },
+            Stmt::Assign { name, value: expr } => {
+                if name == "_" || contains_name(live, name) {
+                    remove_name(live, name);
+                    add_expr_uses(live, expr);
+                    add_name(needs_decl, name);
+                    output.push(Stmt::Assign { name, value: expr })
+                } else if expr_has_side_effects(expr) {
+                    add_expr_uses(live, expr);
+                    output.push(emit_side_effect(expr))
+                } else {
+                    ()
+                }
+            },
+            Stmt::FieldAssign { target, field_name: field, value: expr } => {
+                add_expr_uses(live, target);
+                add_expr_uses(live, expr);
+                output.push(Stmt::FieldAssign { target, field_name: field, value: expr })
+            },
+            Stmt::IndexAssign { base: target, index: target_index, value: expr } => {
+                add_expr_uses(live, target);
+                add_expr_uses(live, target_index);
+                add_expr_uses(live, expr);
+                output.push(Stmt::IndexAssign { base: target, index: target_index, value: expr })
+            },
+            Stmt::MultiAssign { names, value: expr } => {
+                for name in names {
+                    remove_name(live, name);
+                    add_name(needs_decl, name)
+                };
+                add_expr_uses(live, expr);
+                output.push(Stmt::MultiAssign { names, value: expr })
+            },
+            Stmt::Return { expr } => {
+                match expr {
+                    Option::Some(value) => add_expr_uses(live, value),
+                    Option::None => (),
+                };
+                output.push(Stmt::Return { expr })
+            },
+            Stmt::ReturnMulti { exprs } => {
+                for expr in exprs {
+                    add_expr_uses(live, expr)
+                };
+                output.push(Stmt::ReturnMulti { exprs })
+            },
+            Stmt::If { cond, then_, else_ } => {
+                let then_result = dce_block_with_live(then_, live);
+                let lowered_else = match else_ {
+                    Option::Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    Option::None => Option::None,
+                };
+                add_names(live, then_result.live);
+                add_names(needs_decl, then_result.needs_decl);
+                add_expr_uses(live, cond);
+                output.push(Stmt::If { cond, then_: then_result.block, else_: lowered_else })
+            },
+            Stmt::Loop { body } => {
+                let loop_live = copy_names(live);
+                add_names(loop_live, free_vars_in_block(body));
+                let result = dce_block_with_live(body, loop_live);
+                add_names(live, result.live);
+                add_names(needs_decl, result.needs_decl);
+                output.push(Stmt::Loop { body: result.block })
+            },
+            Stmt::LabeledLoop { label, body } => {
+                let loop_live = copy_names(live);
+                add_names(loop_live, free_vars_in_block(body));
+                let result = dce_block_with_live(body, loop_live);
+                add_names(live, result.live);
+                add_names(needs_decl, result.needs_decl);
+                output.push(Stmt::LabeledLoop { label, body: result.block })
+            },
+            Stmt::Range { names, expr, body } => {
+                let loop_live = copy_names(live);
+                let body_uses = free_vars_in_block(body);
+                for name in names {
+                    remove_name(body_uses, name)
+                };
+                add_names(loop_live, body_uses);
+                let result = dce_block_with_live(body, loop_live);
+                for name in names {
+                    remove_name(result.live, name);
+                    remove_name(result.needs_decl, name)
+                };
+                add_names(live, result.live);
+                add_names(needs_decl, result.needs_decl);
+                add_expr_uses(live, expr);
+                output.push(Stmt::Range { names, expr, body: result.block })
+            },
+            Stmt::Break => output.push(Stmt::Break),
+            Stmt::BreakLabel { label } => output.push(Stmt::BreakLabel { label }),
+            Stmt::Continue => output.push(Stmt::Continue),
+            Stmt::Switch { expr, cases, default } => {
+                let lowered_cases: Vec[SwitchCase] = Vec::new();
+                for case in cases {
+                    let result = dce_block_with_live(case.body, live);
+                    add_expr_uses(live, case.value);
+                    add_names(live, result.live);
+                    add_names(needs_decl, result.needs_decl);
+                    lowered_cases.push(SwitchCase { value: case.value, body: result.block })
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    Option::None => Option::None,
+                };
+                add_expr_uses(live, expr);
+                output.push(Stmt::Switch { expr, cases: lowered_cases, default: lowered_default })
+            },
+            Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
+                let lowered_cases: Vec[TypeSwitchCase] = Vec::new();
+                for case in cases {
+                    let result = dce_block_with_live(case.body, live);
+                    match bind {
+                        Option::Some(name) => {
+                            remove_name(result.live, name);
+                            remove_name(result.needs_decl, name)
+                        },
+                        Option::None => (),
+                    };
+                    add_names(live, result.live);
+                    add_names(needs_decl, result.needs_decl);
+                    lowered_cases.push(TypeSwitchCase { ty: case.ty, body: result.block })
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        match bind {
+                            Option::Some(name) => {
+                                remove_name(result.live, name);
+                                remove_name(result.needs_decl, name)
+                            },
+                            Option::None => (),
+                        };
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    Option::None => Option::None,
+                };
+                add_expr_uses(live, expr);
+                output.push(Stmt::TypeSwitch {
+                    binding: bind,
+                    expr,
+                    cases: lowered_cases,
+                    default: lowered_default,
+                })
+            },
+            Stmt::Panic { message } => output.push(Stmt::Panic { message }),
+            Stmt::Unreachable => output.push(Stmt::Unreachable),
+        }
+    };
+    DceResult {
+        block: Block { stmts: reversed(output) },
+        live,
+        needs_decl,
+    }
+}
+
+pub fn eliminate_dead_vars(value: Block) -> Block {
+    let live = new_dce_names();
+    dce_block_with_live(value, live).block
+}

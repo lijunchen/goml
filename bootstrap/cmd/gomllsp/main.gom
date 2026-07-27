@@ -1,0 +1,15 @@
+package main;
+
+use gomlc::lsp;
+use std::io;
+use std::process;
+
+fn main() -> unit {
+    match lsp::run_server() {
+        Result::Ok(_) => (),
+        Result::Err(message) => {
+            io::eprintln(message);
+            process::exit(1)
+        },
+    }
+}

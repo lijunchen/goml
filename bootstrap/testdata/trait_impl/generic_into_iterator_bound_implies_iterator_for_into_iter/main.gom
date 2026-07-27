@@ -1,0 +1,12 @@
+fn sum[S: IntoIterator](source: S) -> int32
+where
+    S::Item = int32,
+{
+    let total = Ref::new(0);
+    for value in source {
+        total.set(total.get() + value);
+    };
+    total.get()
+}
+
+fn main() -> unit { () }

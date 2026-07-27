@@ -1,0 +1,167 @@
+fn choose(flag/0: bool) -> int32 {
+  join ret70(retv71: int32) -> int32 {
+    retv71
+  } in
+  join k72(jp73: int32) -> int32 {
+    let value/1 = jp73 in
+    let t74 = (value/1 + 1) in
+    jump ret70(t74)
+  } in
+  if flag/0 {
+    jump ret70(10)
+  } else {
+    jump k72(20)
+  }
+}
+
+fn continue_branch() -> unit {
+  join ret75() -> unit {
+    ()
+  } in
+  let count/2 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit76() -> unit {
+    jump ret75()
+  } in
+  joinrec {
+    join loop77() -> unit {
+      let t78 = inherent#Ref#Ref[T]#get__T_int(count/2) in
+      let t79 = (t78 < 2) in
+      if t79 {
+        let t80 = inherent#Ref#Ref[T]#get__T_int(count/2) in
+        let t81 = (t80 + 1) in
+        let _wild64 = inherent#Ref#Ref[T]#set__T_int(count/2, t81) in
+        let t85 = inherent#Ref#Ref[T]#get__T_int(count/2) in
+        let t86 = trait_impl#Eq#int#eq(t85, 1) in
+        join k82(jp83: int) -> unit {
+          let value/3 = jp83 in
+          let t84 = println__T_int(value/3) in
+          jump loop77()
+        } in
+        if t86 {
+          jump loop77()
+        } else {
+          jump k82(7)
+        }
+      } else {
+        jump exit76()
+      }
+    } in
+  } in
+  jump loop77()
+}
+
+fn break_branch(stop/4: bool) -> unit {
+  join ret87() -> unit {
+    ()
+  } in
+  join exit88() -> unit {
+    jump ret87()
+  } in
+  joinrec {
+    join loop89() -> unit {
+      if true {
+        join k90(jp91: int) -> unit {
+          let value/5 = jp91 in
+          let _wild65 = println__T_int(value/5) in
+          jump exit88()
+        } in
+        if stop/4 {
+          jump exit88()
+        } else {
+          jump k90(9)
+        }
+      } else {
+        jump exit88()
+      }
+    } in
+  } in
+  jump loop89()
+}
+
+fn main() -> unit {
+  join ret92() -> unit {
+    ()
+  } in
+  let t93 = choose(false) in
+  let _wild66 = println__T_int32(t93) in
+  let t94 = choose(true) in
+  let _wild67 = println__T_int32(t94) in
+  let _wild68 = continue_branch() in
+  let _wild69 = break_branch(false) in
+  let t95 = break_branch(true) in
+  jump ret92()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  join ret96(retv97: Ref[int]) -> Ref[int] {
+    retv97
+  } in
+  let t98 = @intrinsic(ref.new)(value/209) in
+  jump ret96(t98)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  join ret99(retv100: int) -> int {
+    retv100
+  } in
+  let t101 = @intrinsic(ref.get)(self/210) in
+  jump ret99(t101)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  join ret102() -> unit {
+    ()
+  } in
+  let t103 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret102()
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  join ret104(retv105: bool) -> bool {
+    retv105
+  } in
+  let t106 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret104(t106)
+}
+
+fn println__T_int(value/1: int) -> unit {
+  join ret107() -> unit {
+    ()
+  } in
+  let t108 = trait_impl#ToString#int#to_string(value/1) in
+  let t109 = @runtime(core.string_println)(t108) in
+  jump ret107()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret110() -> unit {
+    ()
+  } in
+  let t111 = trait_impl#ToString#int32#to_string(value/1) in
+  let t112 = @runtime(core.string_println)(t111) in
+  jump ret110()
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  join ret113(retv114: string) -> string {
+    retv114
+  } in
+  let t115 = @runtime(core.int_to_string)(self/40) in
+  jump ret113(t115)
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  join ret116(retv117: string) -> string {
+    retv117
+  } in
+  let t118 = @runtime(core.int32_to_string)(self/43) in
+  jump ret116(t118)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  join ret119(retv120: uint64) -> uint64 {
+    retv120
+  } in
+  let t121 = @runtime(core.int_hash)(self/85) in
+  jump ret119(t121)
+}

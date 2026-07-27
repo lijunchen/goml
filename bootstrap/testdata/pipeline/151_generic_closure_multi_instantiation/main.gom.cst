@@ -1,0 +1,185 @@
+FILE@0..270
+  FN@0..105
+    FnKeyword@0..2 "fn"
+    Whitespace@2..3 " "
+    Ident@3..14 "make_pairer"
+    GENERIC_LIST@14..27
+      LBracket@14..15 "["
+      GENERIC@15..26
+        Ident@15..16 "T"
+        Colon@16..17 ":"
+        Whitespace@17..18 " "
+        TRAIT_SET@18..26
+          TYPE_TAPP@18..26
+            PATH@18..26
+              Ident@18..26 "ToString"
+      RBracket@26..27 "]"
+    PARAM_LIST@27..34
+      LParen@27..28 "("
+      PARAM@28..32
+        Ident@28..29 "x"
+        Colon@29..30 ":"
+        Whitespace@30..31 " "
+        TYPE_TAPP@31..32
+          PATH@31..32
+            Ident@31..32 "T"
+      RParen@32..33 ")"
+      Whitespace@33..34 " "
+    Arrow@34..36 "->"
+    Whitespace@36..37 " "
+    TYPE_FUNC@37..56
+      TYPE_TUPLE@37..46
+        TYPE_LIST@37..46
+          LParen@37..38 "("
+          TYPE_STRING@38..44
+            StringKeyword@38..44 "string"
+          RParen@44..45 ")"
+          Whitespace@45..46 " "
+      Arrow@46..48 "->"
+      Whitespace@48..49 " "
+      TYPE_STRING@49..56
+        StringKeyword@49..55 "string"
+        Whitespace@55..56 " "
+    BLOCK@56..105
+      LBrace@56..57 "{"
+      Whitespace@57..62 "\n    "
+      EXPR_CLOSURE@62..102
+        CLOSURE_PARAM_LIST@62..76
+          Pipe@62..63 "|"
+          CLOSURE_PARAM@63..74
+            Ident@63..66 "tag"
+            Colon@66..67 ":"
+            Whitespace@67..68 " "
+            TYPE_STRING@68..74
+              StringKeyword@68..74 "string"
+          Pipe@74..75 "|"
+          Whitespace@75..76 " "
+        EXPR_CLOSURE_BODY@76..102
+          EXPR_BINARY@76..102
+            EXPR_BINARY@76..86
+              EXPR_IDENT@76..80
+                PATH@76..80
+                  Ident@76..79 "tag"
+                  Whitespace@79..80 " "
+              Plus@80..81 "+"
+              Whitespace@81..82 " "
+              EXPR_STR@82..86
+                Str@82..85 "\":\""
+                Whitespace@85..86 " "
+            Plus@86..87 "+"
+            Whitespace@87..88 " "
+            EXPR_CALL@88..102
+              EXPR_BINARY@88..99
+                EXPR_IDENT@88..89
+                  PATH@88..89
+                    Ident@88..89 "x"
+                Dot@89..90 "."
+                EXPR_IDENT@90..99
+                  PATH@90..99
+                    Ident@90..99 "to_string"
+              ARG_LIST@99..102
+                LParen@99..100 "("
+                RParen@100..101 ")"
+                Whitespace@101..102 "\n"
+      RBrace@102..103 "}"
+      Whitespace@103..105 "\n\n"
+  FN@105..270
+    FnKeyword@105..107 "fn"
+    Whitespace@107..108 " "
+    Ident@108..112 "main"
+    PARAM_LIST@112..115
+      LParen@112..113 "("
+      RParen@113..114 ")"
+      Whitespace@114..115 " "
+    Arrow@115..117 "->"
+    Whitespace@117..118 " "
+    TYPE_UNIT@118..123
+      UnitKeyword@118..122 "unit"
+      Whitespace@122..123 " "
+    BLOCK@123..270
+      LBrace@123..124 "{"
+      Whitespace@124..129 "\n    "
+      STMT_LET@129..166
+        LetKeyword@129..132 "let"
+        Whitespace@132..133 " "
+        PATTERN_VARIABLE@133..144
+          Ident@133..143 "int_pairer"
+          Whitespace@143..144 " "
+        Eq@144..145 "="
+        Whitespace@145..146 " "
+        EXPR_CALL@146..160
+          EXPR_IDENT@146..157
+            PATH@146..157
+              Ident@146..157 "make_pairer"
+          ARG_LIST@157..160
+            LParen@157..158 "("
+            ARG@158..159
+              EXPR_INT@158..159
+                Int@158..159 "7"
+            RParen@159..160 ")"
+        Semi@160..161 ";"
+        Whitespace@161..166 "\n    "
+      STMT_LET@166..209
+        LetKeyword@166..169 "let"
+        Whitespace@169..170 " "
+        PATTERN_VARIABLE@170..184
+          Ident@170..183 "string_pairer"
+          Whitespace@183..184 " "
+        Eq@184..185 "="
+        Whitespace@185..186 " "
+        EXPR_CALL@186..203
+          EXPR_IDENT@186..197
+            PATH@186..197
+              Ident@186..197 "make_pairer"
+          ARG_LIST@197..203
+            LParen@197..198 "("
+            ARG@198..202
+              EXPR_STR@198..202
+                Str@198..202 "\"ok\""
+            RParen@202..203 ")"
+        Semi@203..204 ";"
+        Whitespace@204..209 "\n    "
+      STMT_EXPR@209..239
+        EXPR_CALL@209..233
+          EXPR_IDENT@209..216
+            PATH@209..216
+              Ident@209..216 "println"
+          ARG_LIST@216..233
+            LParen@216..217 "("
+            ARG@217..232
+              EXPR_CALL@217..232
+                EXPR_IDENT@217..227
+                  PATH@217..227
+                    Ident@217..227 "int_pairer"
+                ARG_LIST@227..232
+                  LParen@227..228 "("
+                  ARG@228..231
+                    EXPR_STR@228..231
+                      Str@228..231 "\"a\""
+                  RParen@231..232 ")"
+            RParen@232..233 ")"
+        Semi@233..234 ";"
+        Whitespace@234..239 "\n    "
+      STMT_EXPR@239..268
+        EXPR_CALL@239..266
+          EXPR_IDENT@239..246
+            PATH@239..246
+              Ident@239..246 "println"
+          ARG_LIST@246..266
+            LParen@246..247 "("
+            ARG@247..265
+              EXPR_CALL@247..265
+                EXPR_IDENT@247..260
+                  PATH@247..260
+                    Ident@247..260 "string_pairer"
+                ARG_LIST@260..265
+                  LParen@260..261 "("
+                  ARG@261..264
+                    EXPR_STR@261..264
+                      Str@261..264 "\"b\""
+                  RParen@264..265 ")"
+            RParen@265..266 ")"
+        Semi@266..267 ";"
+        Whitespace@267..268 "\n"
+      RBrace@268..269 "}"
+      Whitespace@269..270 "\n"

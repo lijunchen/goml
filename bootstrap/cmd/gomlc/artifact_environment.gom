@@ -1,0 +1,339 @@
+package main;
+
+use gomlc::ast;
+use gomlc::hir;
+use gomlc::tast;
+
+struct ArtifactFunctionType {
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
+}
+
+fn artifact_function_type_parts(
+    value: tast::Type,
+) -> Result[ArtifactFunctionType, string] {
+    match tast::resolve_type(value) {
+        tast::Type::Func { params, ret_ty } => Result::Ok(ArtifactFunctionType {
+            params,
+            ret_ty,
+        }),
+        _ => Result::Err(artifact_decode_error("function type in package exports")),
+    }
+}
+
+fn artifact_dependency_trait_ref(
+    value: tast::TraitRef,
+) -> tast::TraitRef {
+    let args = Vec::new();
+    for arg in value.args {
+        args.push(artifact_dependency_trait_type(arg))
+    };
+    tast::TraitRef {
+        name: value.name,
+        args,
+    }
+}
+
+fn artifact_dependency_optional_trait_ref(
+    value: Option[tast::TraitRef],
+) -> Option[tast::TraitRef] {
+    match value {
+        Option::Some(value) => Option::Some(artifact_dependency_trait_ref(value)),
+        Option::None => Option::None,
+    }
+}
+
+fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Con { name } => if name == "Self" {
+            tast::Type::Param { name }
+        } else {
+            tast::Type::Con { name }
+        },
+        tast::Type::Tuple { items: values } => {
+            let result = Vec::new();
+            for value in values {
+                result.push(artifact_dependency_trait_type(value))
+            };
+            tast::Type::Tuple { items: result }
+        },
+        tast::Type::Projection { for_ty, name, trait_ref } => tast::Type::Projection {
+            for_ty: artifact_dependency_trait_type(for_ty),
+            name,
+            trait_ref: artifact_dependency_optional_trait_ref(trait_ref),
+        },
+        tast::Type::App { ty: base, args } => {
+            let result = Vec::new();
+            for arg in args {
+                result.push(artifact_dependency_trait_type(arg))
+            };
+            tast::Type::App { ty: artifact_dependency_trait_type(base), args: result }
+        },
+        tast::Type::Array { len: length, elem: element } => tast::Type::Array {
+            len: length,
+            elem: artifact_dependency_trait_type(element),
+        },
+        tast::Type::Slice { elem: element } => tast::Type::Slice {
+            elem: artifact_dependency_trait_type(element),
+        },
+        tast::Type::VecType { elem: element } => tast::Type::VecType {
+            elem: artifact_dependency_trait_type(element),
+        },
+        tast::Type::RefType { elem: element } => tast::Type::RefType {
+            elem: artifact_dependency_trait_type(element),
+        },
+        tast::Type::Channel { elem: element } => tast::Type::Channel {
+            elem: artifact_dependency_trait_type(element),
+        },
+        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+            key: artifact_dependency_trait_type(key),
+            value: artifact_dependency_trait_type(value),
+        },
+        tast::Type::Func { params, ret_ty } => {
+            let result = Vec::new();
+            for param in params {
+                result.push(artifact_dependency_trait_type(param))
+            };
+            tast::Type::Func { params: result, ret_ty: artifact_dependency_trait_type(ret_ty) }
+        },
+        other => other,
+    }
+}
+
+fn artifact_dependency_trait_predicate(
+    value: tast::TypePredicate,
+) -> tast::TypePredicate {
+    match value {
+        tast::TypePredicate::Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
+            for_ty: artifact_dependency_trait_type(for_ty),
+            trait_ref: artifact_dependency_trait_ref(trait_ref),
+        },
+        tast::TypePredicate::Equality { lhs: left, rhs: right } => tast::TypePredicate::Equality {
+            lhs: artifact_dependency_trait_type(left),
+            rhs: artifact_dependency_trait_type(right),
+        },
+    }
+}
+
+fn artifact_dependency_trait_predicates(
+    values: Vec[tast::TypePredicate],
+) -> Vec[tast::TypePredicate] {
+    let result = Vec::new();
+    for value in values {
+        result.push(artifact_dependency_trait_predicate(value))
+    };
+    result
+}
+
+fn artifact_dependency_function_scheme(
+    value: ArtifactFnScheme,
+    inherited: Vec[tast::TypePredicate],
+    callable: tast::Callable,
+) -> Result[tast::FunctionScheme, string] {
+    let function_type = match artifact_function_type_parts(value.ty) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let predicates = Vec::new();
+    for predicate in inherited {
+        predicates.push(predicate)
+    };
+    for predicate in value.constraints {
+        predicates.push(predicate)
+    };
+    Result::Ok(tast::FunctionScheme {
+        def_id: Option::None,
+        name: value.name,
+        generics: value.type_params,
+        predicates,
+        params: function_type.params,
+        ret_ty: function_type.ret_ty,
+        callable,
+    })
+}
+
+fn artifact_dependency_trait(
+    value: ArtifactTraitDef,
+) -> Result[tast::TraitInfo, string] {
+    let associated_types = Vec::new();
+    for associated in value.associated_types {
+        let bounds = Vec::new();
+        for bound in associated.bounds {
+            bounds.push(artifact_dependency_trait_ref(bound))
+        };
+        associated_types.push(tast::AssociatedTypeInfo {
+            name: associated.name,
+            bounds,
+        })
+    };
+    let methods = Vec::new();
+    for method in value.methods {
+        let function_type = match artifact_function_type_parts(
+            artifact_dependency_trait_type(method.ty),
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        methods.push(tast::TraitMethodInfo {
+            name: method.name,
+            params: function_type.params,
+            ret_ty: function_type.ret_ty,
+        })
+    };
+    let supertraits = Vec::new();
+    for supertrait in value.supertraits {
+        supertraits.push(artifact_dependency_trait_ref(supertrait))
+    };
+    Result::Ok(tast::TraitInfo {
+        name: value.name,
+        generics: value.params,
+        predicates: artifact_dependency_trait_predicates(value.predicates),
+        supertraits,
+        associated_types,
+        methods,
+    })
+}
+
+fn artifact_dependency_enum(value: tast::EnumDef) -> tast::EnumInfo {
+    let variants = Vec::new();
+    for variant in value.variants {
+        variants.push(tast::EnumVariantInfo {
+            name: variant.name,
+            fields: variant.fields,
+        })
+    };
+    tast::EnumInfo {
+        def_id: hir::DefId { pkg: -1, index: -1 },
+        name: value.name,
+        generics: value.generics,
+        variants,
+    }
+}
+
+fn artifact_dependency_struct(value: tast::StructDef) -> tast::StructInfo {
+    tast::StructInfo {
+        def_id: hir::DefId { pkg: -1, index: -1 },
+        name: value.name,
+        generics: value.generics,
+        fields: value.fields,
+        public_fields: value.public_fields,
+        has_hidden_fields: value.has_hidden_fields,
+    }
+}
+
+fn artifact_dependency_inherent_for_type(
+    value: ArtifactInherentImpl,
+) -> tast::Type {
+    match value.key {
+        ArtifactInherentImplKey::Exact(value) => value,
+        ArtifactInherentImplKey::Constr(name) => {
+            let generics = Vec::new();
+            for generic in value.definition.params {
+                generics.push(tast::Type::Param { name: generic })
+            };
+            if generics.len() == 0 {
+                tast::Type::Con { name }
+            } else {
+                tast::Type::App { ty: tast::Type::Con { name }, args: generics }
+            }
+        },
+    }
+}
+
+fn artifact_dependency_environment_from_exports(
+    value: ArtifactPackageExports,
+) -> Result[tast::DependencyEnvironment, string] {
+    let enums = Vec::new();
+    for definition in value.enums {
+        enums.push(artifact_dependency_enum(definition))
+    };
+    let structs = Vec::new();
+    for definition in value.structs {
+        structs.push(artifact_dependency_struct(definition))
+    };
+    let traits = Vec::new();
+    for definition in value.traits {
+        match artifact_dependency_trait(definition) {
+            Result::Ok(value) => traits.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    let functions = Vec::new();
+    for function in value.functions {
+        let callable = function.body;
+        match artifact_dependency_function_scheme(function, Vec::new(), callable) {
+            Result::Ok(value) => functions.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    let methods = Vec::new();
+    let impls = Vec::new();
+    for implementation in value.trait_impls {
+        if implementation.definition.valid {
+            impls.push(tast::ImplInfo {
+                generics: implementation.definition.params,
+                predicates: implementation.definition.constraints,
+                trait_ref: implementation.trait_ref,
+                for_type: implementation.for_ty,
+                associated_types: implementation.definition.associated_types,
+                origin: "",
+                span: ast::span(0, 0),
+            });
+            for method in implementation.definition.methods {
+                let callable = tast::Callable::TraitMethod {
+                    trait_ref: implementation.trait_ref,
+                    method_name: method.name,
+                };
+                match artifact_dependency_function_scheme(
+                    method,
+                    implementation.definition.constraints,
+                    callable,
+                ) {
+                    Result::Ok(function) => methods.push(tast::MethodInfo {
+                        generics: function.generics,
+                        trait_ref: Option::Some(implementation.trait_ref),
+                        for_type: implementation.for_ty,
+                        function,
+                    }),
+                    Result::Err(error) => return Result::Err(error),
+                }
+            }
+        } else {
+            ()
+        }
+    };
+    for implementation in value.inherent_impls {
+        if implementation.definition.valid {
+            let for_type = artifact_dependency_inherent_for_type(implementation);
+            for method in implementation.definition.methods {
+                let callable = tast::Callable::InherentMethod {
+                    receiver_ty: for_type,
+                    method_name: method.name,
+                };
+                match artifact_dependency_function_scheme(
+                    method,
+                    implementation.definition.constraints,
+                    callable,
+                ) {
+                    Result::Ok(function) => methods.push(tast::MethodInfo {
+                        generics: function.generics,
+                        trait_ref: Option::None,
+                        for_type,
+                        function,
+                    }),
+                    Result::Err(error) => return Result::Err(error),
+                }
+            }
+        } else {
+            ()
+        }
+    };
+    Result::Ok(tast::dependency_environment(
+        enums,
+        structs,
+        traits,
+        functions,
+        methods,
+        impls,
+    ))
+}

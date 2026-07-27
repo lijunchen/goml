@@ -1,0 +1,92 @@
+fn cut_pair(ok/0: bool) -> Option__(string,string) {
+  join ret72(retv73: Option__(string,string)) -> Option__(string,string) {
+    retv73
+  } in
+  join k74(jp75: Option__(string,string)) -> Option__(string,string) {
+    jump ret72(jp75)
+  } in
+  if ok/0 {
+    let t76 = ("alpha", "beta") in
+    let t77 = Option__(string,string)::Some(t76) in
+    jump k74(t77)
+  } else {
+    jump k74(Tag_0)
+  }
+}
+
+fn describe(ok/1: bool) -> Option__string {
+  join ret78(retv79: Option__string) -> Option__string {
+    retv79
+  } in
+  let mtmp64 = cut_pair(ok/1) in
+  join k80(jp81: (string, string)) -> Option__string {
+    let mtmp66 = jp81 in
+    let x67 = mtmp66.0 in
+    let x68 = mtmp66.1 in
+    let after/3 = x68 in
+    let before/2 = x67 in
+    let t82 = (before/2 + "|") in
+    let t83 = (t82 + after/3) in
+    let t84 = Option__string::Some(t83) in
+    jump ret78(t84)
+  } in
+  match mtmp64 {
+    Tag_0 => {
+      jump ret78(Tag_0)
+    },
+    Tag_1 => {
+      let x65 = Option__(string,string)::Some._0(mtmp64) in
+      let try_value/13 = x65 in
+      jump k80(try_value/13)
+    },
+  }
+}
+
+fn show(opt/4: Option__string) -> string {
+  join ret85(retv86: string) -> string {
+    retv86
+  } in
+  join k87(jp88: string) -> string {
+    jump ret85(jp88)
+  } in
+  match opt/4 {
+    Tag_0 => {
+      jump k87("none")
+    },
+    Tag_1 => {
+      let x69 = Option__string::Some._0(opt/4) in
+      let value/5 = x69 in
+      let t89 = ("some " + value/5) in
+      jump k87(t89)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret90() -> unit {
+    ()
+  } in
+  let t91 = describe(true) in
+  let t92 = show(t91) in
+  let _wild70 = println__T_string(t92) in
+  let t93 = describe(false) in
+  let t94 = show(t93) in
+  let _wild71 = println__T_string(t94) in
+  jump ret90()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret95() -> unit {
+    ()
+  } in
+  let t96 = trait_impl#ToString#string#to_string(value/1) in
+  let t97 = @runtime(core.string_println)(t96) in
+  jump ret95()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret98(retv99: string) -> string {
+    retv99
+  } in
+  jump ret98(self/38)
+}

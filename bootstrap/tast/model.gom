@@ -1,0 +1,310 @@
+package tast;
+
+use gomlc::ast;
+
+pub enum VarKind {
+    Any,
+    Integer,
+    Float,
+}
+
+pub enum TypeVar {
+    Unbound { id: int, kind: VarKind },
+    Link(Type),
+}
+
+pub enum Type {
+    Var(Ref[TypeVar]),
+    Unit,
+    Never,
+    Bool,
+    Int,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Float32,
+    Float64,
+    String,
+    Char,
+    Tuple { items: Vec[Type] },
+    Con { name: string },
+    Dyn { trait_name: string },
+    Projection { for_ty: Type, name: string, trait_ref: Option[TraitRef] },
+    App { ty: Type, args: Vec[Type] },
+    Array { len: int, elem: Type },
+    Slice { elem: Type },
+    VecType { elem: Type },
+    RefType { elem: Type },
+    HashMap { key: Type, value: Type },
+    Channel { elem: Type },
+    Param { name: string },
+    Func { params: Vec[Type], ret_ty: Type },
+    Error,
+}
+
+pub struct TraitRef {
+    pub name: string,
+    pub args: Vec[Type],
+}
+
+pub enum Primitive {
+    Unit,
+    Bool { value: bool },
+    Int { value: string },
+    Int8 { value: string },
+    Int16 { value: string },
+    Int32 { value: string },
+    Int64 { value: string },
+    Uint { value: string },
+    Uint8 { value: string },
+    Uint16 { value: string },
+    Uint32 { value: string },
+    Uint64 { value: string },
+    Float { value: string },
+    Float32 { value: string },
+    Float64 { value: string },
+    String { value: string },
+    Char { value: char },
+}
+
+pub struct Constructor {
+    pub name: string,
+    pub fields: Vec[string],
+    pub is_struct: bool,
+    pub tag: Option[int],
+}
+
+pub enum Callable {
+    Function(string),
+    Runtime(string),
+    Intrinsic(string),
+    TraitMethod { trait_ref: TraitRef, method_name: string },
+    DynTraitMethod { trait_name: string, dispatch_name: string, method_name: string },
+    InherentMethod { receiver_ty: Type, method_name: string },
+}
+
+pub enum BinaryResolution {
+    Builtin,
+    Overloaded { trait_name: string },
+}
+
+pub struct ClosureParam {
+    pub name: string,
+    pub ty: Type,
+}
+
+pub enum Expr {
+    Var { name: string, ty: Type },
+    Callable { callable: Callable, ty: Type },
+    Prim { value: Primitive, ty: Type },
+    Constr { constructor: Constructor, args: Vec[Expr], ty: Type },
+    Tuple { items: Vec[Expr], ty: Type },
+    Array { items: Vec[Expr], ty: Type },
+    Closure { params: Vec[ClosureParam], body: Expr, ty: Type },
+    Block { block: Block, ty: Type },
+    Match { expr: Expr, arms: Vec[Arm], ty: Type },
+    If { cond: Expr, then_branch: Expr, else_branch: Expr, ty: Type },
+    While { cond: Expr, body: Expr, ty: Type },
+    For {
+        pat: Pat,
+        iterator: Expr,
+        into_iter_trait_ref: TraitRef,
+        iterator_trait_ref: TraitRef,
+        iterator_ty: Type,
+        body: Expr,
+        ty: Type,
+    },
+    Break { ty: Type },
+    Continue { ty: Type },
+    Return { expr: Option[Expr], ty: Type },
+    Go { expr: Expr, ty: Type },
+    Call { func: Expr, args: Vec[Expr], ty: Type },
+    Unary { op: ast::UnaryOp, expr: Expr, ty: Type },
+    Cast { expr: Expr, ty: Type },
+    Proj { tuple: Expr, index: int, ty: Type },
+    Field { expr: Expr, field_name: string, ty: Type },
+    Index { base: Expr, index: Expr, ty: Type },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: Expr,
+        rhs: Expr,
+        ty: Type,
+        resolution: BinaryResolution,
+    },
+    ToDyn { trait_name: string, for_ty: Type, expr: Expr, ty: Type },
+}
+
+pub struct Block {
+    pub stmts: Vec[Stmt],
+    pub tail: Option[Expr],
+}
+
+pub enum Stmt {
+    Let { is_mut: bool, pat: Pat, value: Expr },
+    Assign { target: Expr, value: Expr },
+    Expr { expr: Expr },
+}
+
+pub struct Arm {
+    pub pat: Pat,
+    pub guard: Option[Expr],
+    pub body: Expr,
+}
+
+pub struct ArrayPatRest {
+    pub binding: Option[string],
+    pub ty: Type,
+}
+
+pub enum Pat {
+    Var { name: string, ty: Type },
+    Prim { value: Primitive, ty: Type },
+    Constr { constructor: Constructor, args: Vec[Pat], ty: Type },
+    Tuple { items: Vec[Pat], ty: Type },
+    Array {
+        prefix: Vec[Pat],
+        rest: Option[ArrayPatRest],
+        suffix: Vec[Pat],
+        ty: Type,
+    },
+    Alias { name: string, pat: Pat, ty: Type },
+    Or { pats: Vec[Pat], ty: Type },
+    Range { start: Primitive, end: Primitive, inclusive: bool, ty: Type },
+    Wild { ty: Type },
+}
+
+pub struct Function {
+    pub visibility: ast::Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub predicates: Vec[TypePredicate],
+    pub params: Vec[(string, Type)],
+    pub ret_ty: Type,
+    pub body: Block,
+}
+
+pub struct ImplBlock {
+    pub generics: Vec[string],
+    pub predicates: Vec[TypePredicate],
+    pub trait_ref: Option[TraitRef],
+    pub for_type: Type,
+    pub associated_types: Vec[(string, Type)],
+    pub methods: Vec[Function],
+}
+
+pub enum Item {
+    ImplBlock(ImplBlock),
+    Function(Function),
+}
+
+pub struct EnumVariantDef {
+    pub name: string,
+    pub fields: EnumVariantFields,
+}
+
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec[Type]),
+    Struct(Vec[(string, Type)]),
+}
+
+pub struct EnumDef {
+    pub name: string,
+    pub generics: Vec[string],
+    pub variants: Vec[EnumVariantDef],
+}
+
+pub struct StructDef {
+    pub name: string,
+    pub generics: Vec[string],
+    pub fields: Vec[(string, Type)],
+    pub public_fields: Vec[string],
+    pub has_hidden_fields: bool,
+}
+
+pub struct File {
+    pub items: Vec[Item],
+    pub enums: Vec[EnumDef],
+    pub structs: Vec[StructDef],
+}
+
+pub struct DiagnosticLabel {
+    pub message: string,
+    pub source_path: string,
+    pub span: ast::Span,
+}
+
+pub enum DiagnosticSeverity {
+    Error,
+    Warning,
+}
+
+pub struct Diagnostic {
+    pub severity: DiagnosticSeverity,
+    pub stage: string,
+    pub message: string,
+    pub source_path: string,
+    pub span: Option[ast::Span],
+    pub primary_label: Option[string],
+    pub secondary_labels: Vec[DiagnosticLabel],
+    pub sort_order: int,
+}
+
+pub struct CheckResult {
+    pub tast: Option[File],
+    pub diagnostics: Vec[Diagnostic],
+    pub typeck_results: TypeckResults,
+}
+
+pub fn diagnostic_message(value: Diagnostic) -> string {
+    value.message
+}
+
+pub fn expr_type(value: Expr) -> Type {
+    match value {
+        Expr::Var { ty, .. }
+        | Expr::Callable { ty, .. }
+        | Expr::Prim { ty, .. }
+        | Expr::Constr { ty, .. }
+        | Expr::Tuple { ty, .. }
+        | Expr::Array { ty, .. }
+        | Expr::Closure { ty, .. }
+        | Expr::Block { ty, .. }
+        | Expr::Match { ty, .. }
+        | Expr::If { ty, .. }
+        | Expr::While { ty, .. }
+        | Expr::For { ty, .. }
+        | Expr::Break { ty }
+        | Expr::Continue { ty }
+        | Expr::Return { ty, .. }
+        | Expr::Go { ty, .. }
+        | Expr::Call { ty, .. }
+        | Expr::Unary { ty, .. }
+        | Expr::Cast { ty, .. }
+        | Expr::Proj { ty, .. }
+        | Expr::Field { ty, .. }
+        | Expr::Index { ty, .. }
+        | Expr::Binary { ty, .. }
+        | Expr::ToDyn { ty, .. } => ty,
+    }
+}
+
+pub fn pat_type(value: Pat) -> Type {
+    match value {
+        Pat::Var { ty, .. }
+        | Pat::Prim { ty, .. }
+        | Pat::Constr { ty, .. }
+        | Pat::Tuple { ty, .. }
+        | Pat::Array { ty, .. }
+        | Pat::Alias { ty, .. }
+        | Pat::Or { ty, .. }
+        | Pat::Range { ty, .. }
+        | Pat::Wild { ty } => ty,
+    }
+}

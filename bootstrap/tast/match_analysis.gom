@@ -1,0 +1,1848 @@
+package tast;
+
+use std::text;
+
+struct CoverageConstructor {
+    key: string,
+    fields: Vec[Type],
+}
+
+struct CoverageNumber {
+    negative: bool,
+    magnitude: string,
+}
+
+struct CoverageScalar {
+    kind: string,
+    lo: CoverageNumber,
+    hi: CoverageNumber,
+}
+
+struct CoverageSequence {
+    prefix: int,
+    suffix: int,
+    has_rest: bool,
+}
+
+struct CoveragePat {
+    constructor: Option[CoverageConstructor],
+    scalar: Option[CoverageScalar],
+    sequence: Option[CoverageSequence],
+    fields: Vec[CoveragePat],
+    ty: Type,
+}
+
+struct CoverageWitness {
+    constructor: Option[CoverageConstructor],
+    scalar: Option[CoverageScalar],
+    fields: Vec[CoverageWitness],
+    ty: Type,
+}
+
+fn coverage_wild(ty: Type) -> CoveragePat {
+    CoveragePat {
+        constructor: Option::None,
+        scalar: Option::None,
+        sequence: Option::None,
+        fields: Vec::new(),
+        ty,
+    }
+}
+
+fn coverage_one(value: CoveragePat) -> Vec[CoveragePat] {
+    Vec::new().pushed(value)
+}
+
+fn coverage_copy(values: Vec[CoveragePat]) -> Vec[CoveragePat] {
+    let result = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn coverage_join(left: Vec[CoveragePat], right: Vec[CoveragePat]) -> Vec[CoveragePat] {
+    let result = coverage_copy(left);
+    for value in right {
+        result.push(value)
+    };
+    result
+}
+
+fn coverage_lists_at(values: Vec[Pat], index: int) -> Vec[Vec[CoveragePat]] {
+    if index >= values.len() {
+        Vec::new().pushed(Vec::new())
+    } else {
+        let result = Vec::new();
+        let suffixes = coverage_lists_at(values, index + 1);
+        for alternative in coverage_patterns(values.get(index)) {
+            for suffix in suffixes {
+                let row = Vec::new().pushed(alternative);
+                for value in suffix {
+                    row.push(value)
+                };
+                result.push(row)
+            }
+        };
+        result
+    }
+}
+
+fn coverage_lists(values: Vec[Pat]) -> Vec[Vec[CoveragePat]] {
+    coverage_lists_at(values, 0)
+}
+
+fn coverage_owner(value: string) -> string {
+    let separator = Ref::new(-1);
+    for index in range(0, value.byte_len() - 1) {
+        if value.byte_get(index) == 58 && value.byte_get(index + 1) == 58 {
+            separator.set(index)
+        } else {
+            ()
+        }
+    };
+    if separator.get() < 0 {
+        value
+    } else {
+        value.byte_slice(0, separator.get())
+    }
+}
+
+fn coverage_enum_key(name: string, tag: int) -> string {
+    "enum:" + name + ":" + tag.to_string()
+}
+
+fn coverage_value_key(value: Constructor) -> string {
+    if value.is_struct {
+        "struct:" + value.name
+    } else {
+        match value.tag {
+            Option::Some(tag) => coverage_enum_key(coverage_owner(value.name), tag),
+            Option::None => "constructor:" + value.name,
+        }
+    }
+}
+
+fn coverage_primitive_value(value: Primitive) -> string {
+    match value {
+        Primitive::Unit => "unit",
+        Primitive::Bool { value } => if value { "bool:true" } else { "bool:false" },
+        Primitive::Int { value } => "int:" + value,
+        Primitive::Int8 { value } => "int8:" + value,
+        Primitive::Int16 { value } => "int16:" + value,
+        Primitive::Int32 { value } => "int32:" + value,
+        Primitive::Int64 { value } => "int64:" + value,
+        Primitive::Uint { value } => "uint:" + value,
+        Primitive::Uint8 { value } => "uint8:" + value,
+        Primitive::Uint16 { value } => "uint16:" + value,
+        Primitive::Uint32 { value } => "uint32:" + value,
+        Primitive::Uint64 { value } => "uint64:" + value,
+        Primitive::Float { value } => "float:" + value,
+        Primitive::Float32 { value } => "float32:" + value,
+        Primitive::Float64 { value } => "float64:" + value,
+        Primitive::String { value } => "string:" + value,
+        Primitive::Char { value } => "char:" + (value as uint32).to_string(),
+    }
+}
+
+fn coverage_primitive_raw(value: Primitive) -> Option[string] {
+    match value {
+        Primitive::Int { value }
+        | Primitive::Int8 { value }
+        | Primitive::Int16 { value }
+        | Primitive::Int32 { value }
+        | Primitive::Int64 { value }
+        | Primitive::Uint { value }
+        | Primitive::Uint8 { value }
+        | Primitive::Uint16 { value }
+        | Primitive::Uint32 { value }
+        | Primitive::Uint64 { value } => Option::Some(value),
+        Primitive::Char { value } => Option::Some((value as uint32).to_string()),
+        _ => Option::None,
+    }
+}
+
+fn coverage_number(value: string) -> CoverageNumber {
+    let magnitude = integer_magnitude(value);
+    CoverageNumber {
+        negative: value.byte_len() > 0
+            && value.byte_get(0) == 45
+            && magnitude != "0",
+        magnitude,
+    }
+}
+
+fn coverage_magnitude_compare(left: string, right: string) -> int {
+    if left.byte_len() < right.byte_len() {
+        -1
+    } else if left.byte_len() > right.byte_len() {
+        1
+    } else {
+        let result = Ref::new(0);
+        let decided = Ref::new(false);
+        for index in range(0, left.byte_len()) {
+            if !(decided.get()) && left.byte_get(index) < right.byte_get(index) {
+                result.set(-1);
+                decided.set(true)
+            } else if !(decided.get()) && left.byte_get(index) > right.byte_get(index) {
+                result.set(1);
+                decided.set(true)
+            } else {
+                ()
+            }
+        };
+        result.get()
+    }
+}
+
+fn coverage_number_compare(left: CoverageNumber, right: CoverageNumber) -> int {
+    if left.negative && !(right.negative) {
+        -1
+    } else if !(left.negative) && right.negative {
+        1
+    } else {
+        let result = coverage_magnitude_compare(left.magnitude, right.magnitude);
+        if left.negative { -result } else { result }
+    }
+}
+
+fn coverage_number_equal(left: CoverageNumber, right: CoverageNumber) -> bool {
+    coverage_number_compare(left, right) == 0
+}
+
+fn coverage_number_min(left: CoverageNumber, right: CoverageNumber) -> CoverageNumber {
+    if coverage_number_compare(left, right) <= 0 { left } else { right }
+}
+
+fn coverage_number_max(left: CoverageNumber, right: CoverageNumber) -> CoverageNumber {
+    if coverage_number_compare(left, right) >= 0 { left } else { right }
+}
+
+fn coverage_decrement_magnitude(value: string) -> string {
+    let result = Ref::new("");
+    let borrow = Ref::new(true);
+    let offset = Ref::new(0);
+    while offset.get() < value.byte_len() {
+        let index = value.byte_len() - offset.get() - 1;
+        let digit = value.byte_get(index);
+        if borrow.get() {
+            if digit == 48 {
+                result.set("9" + result.get())
+            } else {
+                result.set(decimal_digit(digit - 49) + result.get());
+                borrow.set(false)
+            }
+        } else {
+            result.set(value.byte_slice(index, index + 1) + result.get())
+        };
+        offset.set(offset.get() + 1)
+    };
+    let start = Ref::new(0);
+    while start.get() + 1 < result.get().byte_len()
+        && result.get().byte_get(start.get()) == 48
+    {
+        start.set(start.get() + 1)
+    };
+    result.get().byte_slice(start.get(), result.get().byte_len())
+}
+
+fn coverage_number_increment(value: CoverageNumber) -> CoverageNumber {
+    if value.negative {
+        if value.magnitude == "1" {
+            coverage_number("0")
+        } else {
+            CoverageNumber {
+                negative: true,
+                magnitude: coverage_decrement_magnitude(value.magnitude),
+            }
+        }
+    } else {
+        CoverageNumber {
+            negative: false,
+            magnitude: increment_decimal(value.magnitude),
+        }
+    }
+}
+
+fn coverage_number_decrement(value: CoverageNumber) -> CoverageNumber {
+    if value.negative {
+        CoverageNumber {
+            negative: true,
+            magnitude: increment_decimal(value.magnitude),
+        }
+    } else if value.magnitude == "0" {
+        coverage_number("-1")
+    } else {
+        CoverageNumber {
+            negative: false,
+            magnitude: coverage_decrement_magnitude(value.magnitude),
+        }
+    }
+}
+
+fn coverage_scalar_kind(ty: Type) -> Option[string] {
+    match resolve_type(ty) {
+        Type::Int => Option::Some("int"),
+        Type::Int8 => Option::Some("int8"),
+        Type::Int16 => Option::Some("int16"),
+        Type::Int32 => Option::Some("int32"),
+        Type::Int64 => Option::Some("int64"),
+        Type::Uint => Option::Some("uint"),
+        Type::Uint8 => Option::Some("uint8"),
+        Type::Uint16 => Option::Some("uint16"),
+        Type::Uint32 => Option::Some("uint32"),
+        Type::Uint64 => Option::Some("uint64"),
+        Type::Char => Option::Some("char"),
+        _ => Option::None,
+    }
+}
+
+fn coverage_scalar_primitive(value: Primitive, ty: Type) -> Option[CoverageScalar] {
+    match (coverage_scalar_kind(ty), coverage_primitive_raw(value)) {
+        (Option::Some(kind), Option::Some(value)) => {
+            let value = coverage_number(value);
+            Option::Some(CoverageScalar {
+                kind,
+                lo: value,
+                hi: value,
+            })
+        },
+        _ => Option::None,
+    }
+}
+
+fn coverage_scalar_range(
+    start: Primitive,
+    end: Primitive,
+    inclusive: bool,
+    ty: Type,
+) -> Option[CoverageScalar] {
+    match (
+        coverage_scalar_kind(ty),
+        coverage_primitive_raw(start),
+        coverage_primitive_raw(end),
+    ) {
+        (Option::Some(kind), Option::Some(start), Option::Some(end)) => {
+            Option::Some(CoverageScalar {
+                kind,
+                lo: coverage_number(start),
+                hi: if inclusive {
+                    coverage_number(end)
+                } else {
+                    coverage_number_decrement(coverage_number(end))
+                },
+            })
+        },
+        _ => Option::None,
+    }
+}
+
+fn coverage_range_pattern(
+    start: Primitive,
+    end: Primitive,
+    inclusive: bool,
+    ty: Type,
+) -> CoveragePat {
+    CoveragePat {
+        constructor: Option::Some(CoverageConstructor {
+            key: "range:"
+                + coverage_primitive_value(start)
+                + ":"
+                + coverage_primitive_value(end),
+            fields: Vec::new(),
+        }),
+        scalar: coverage_scalar_range(start, end, inclusive, ty),
+        sequence: Option::None,
+        fields: Vec::new(),
+        ty,
+    }
+}
+
+fn coverage_scalar_domain(
+    kind: string,
+    lo: string,
+    hi: string,
+) -> CoverageScalar {
+    CoverageScalar {
+        kind,
+        lo: coverage_number(lo),
+        hi: coverage_number(hi),
+    }
+}
+
+fn coverage_scalar_domains(ty: Type) -> Option[Vec[CoverageScalar]] {
+    let result = Vec::new();
+    match resolve_type(ty) {
+        Type::Int => result.push(coverage_scalar_domain(
+            "int",
+            "-9223372036854775808",
+            "9223372036854775807",
+        )),
+        Type::Int8 => result.push(coverage_scalar_domain("int8", "-128", "127")),
+        Type::Int16 => result.push(coverage_scalar_domain("int16", "-32768", "32767")),
+        Type::Int32 => result.push(coverage_scalar_domain(
+            "int32",
+            "-2147483648",
+            "2147483647",
+        )),
+        Type::Int64 => result.push(coverage_scalar_domain(
+            "int64",
+            "-9223372036854775808",
+            "9223372036854775807",
+        )),
+        Type::Uint => result.push(coverage_scalar_domain(
+            "uint",
+            "0",
+            "18446744073709551615",
+        )),
+        Type::Uint8 => result.push(coverage_scalar_domain("uint8", "0", "255")),
+        Type::Uint16 => result.push(coverage_scalar_domain("uint16", "0", "65535")),
+        Type::Uint32 => result.push(coverage_scalar_domain(
+            "uint32",
+            "0",
+            "4294967295",
+        )),
+        Type::Uint64 => result.push(coverage_scalar_domain(
+            "uint64",
+            "0",
+            "18446744073709551615",
+        )),
+        Type::Char => {
+            result.push(coverage_scalar_domain("char", "0", "55295"));
+            result.push(coverage_scalar_domain("char", "57344", "1114111"))
+        },
+        _ => return Option::None,
+    };
+    Option::Some(result)
+}
+
+fn coverage_scalar_intersection(
+    left: CoverageScalar,
+    right: CoverageScalar,
+) -> Option[CoverageScalar] {
+    if left.kind != right.kind {
+        Option::None
+    } else {
+        let lo = coverage_number_max(left.lo, right.lo);
+        let hi = coverage_number_min(left.hi, right.hi);
+        if coverage_number_compare(lo, hi) <= 0 {
+            Option::Some(CoverageScalar {
+                kind: left.kind,
+                lo,
+                hi,
+            })
+        } else {
+            Option::None
+        }
+    }
+}
+
+fn coverage_repeat(value: Type, count: int) -> Vec[Type] {
+    let result = Vec::new();
+    for _ in range(0, count) {
+        result.push(value)
+    };
+    result
+}
+
+fn coverage_fixed_array(
+    prefix: Vec[Pat],
+    suffix: Vec[Pat],
+    length: int,
+    element: Type,
+    ty: Type,
+) -> Vec[CoveragePat] {
+    let result = Vec::new();
+    for prefix_values in coverage_lists(prefix) {
+        for suffix_values in coverage_lists(suffix) {
+            let fields = Vec::new();
+            for _ in range(0, length) {
+                fields.push(coverage_wild(element))
+            };
+            for index in range(0, prefix_values.len()) {
+                if index < length {
+                    fields.set(index, prefix_values.get(index))
+                } else {
+                    ()
+                }
+            };
+            for offset in range(0, suffix_values.len()) {
+                let target = length - suffix_values.len() + offset;
+                if target >= 0 && target < length {
+                    fields.set(target, suffix_values.get(offset))
+                } else {
+                    ()
+                }
+            };
+            result.push(CoveragePat {
+                constructor: Option::Some(CoverageConstructor {
+                    key: "array:" + length.to_string(),
+                    fields: coverage_repeat(element, length),
+                }),
+                scalar: Option::None,
+                sequence: Option::None,
+                fields,
+                ty,
+            })
+        }
+    };
+    result
+}
+
+fn coverage_sequence_patterns(
+    prefix: Vec[Pat],
+    rest: Option[ArrayPatRest],
+    suffix: Vec[Pat],
+    element: Type,
+    ty: Type,
+) -> Vec[CoveragePat] {
+    let result = Vec::new();
+    let has_rest = match rest {
+        Option::Some(_) => true,
+        Option::None => false,
+    };
+    for prefix_values in coverage_lists(prefix) {
+        for suffix_values in coverage_lists(suffix) {
+            let fields = coverage_join(prefix_values, suffix_values);
+            let field_types = Vec::new();
+            for _ in fields {
+                field_types.push(element)
+            };
+            result.push(CoveragePat {
+                constructor: Option::Some(CoverageConstructor {
+                    key: "sequence:"
+                        + prefix_values.len().to_string()
+                        + ":"
+                        + suffix_values.len().to_string()
+                        + ":"
+                        + has_rest.to_string(),
+                    fields: field_types,
+                }),
+                scalar: Option::None,
+                sequence: Option::Some(CoverageSequence {
+                    prefix: prefix_values.len(),
+                    suffix: suffix_values.len(),
+                    has_rest,
+                }),
+                fields,
+                ty,
+            })
+        }
+    };
+    result
+}
+
+fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
+    match value {
+        Pat::Var { name: _, ty } | Pat::Wild { ty } => coverage_one(coverage_wild(ty)),
+        Pat::Prim { value, ty } => coverage_one(CoveragePat {
+            constructor: Option::Some(CoverageConstructor {
+                key: coverage_primitive_value(value),
+                fields: Vec::new(),
+            }),
+            scalar: coverage_scalar_primitive(value, ty),
+            sequence: Option::None,
+            fields: Vec::new(),
+            ty,
+        }),
+        Pat::Constr { constructor, args, ty } => {
+            let result = Vec::new();
+            for fields in coverage_lists(args) {
+                let field_types = Vec::new();
+                for field in fields {
+                    field_types.push(field.ty)
+                };
+                result.push(CoveragePat {
+                    constructor: Option::Some(CoverageConstructor {
+                        key: coverage_value_key(constructor),
+                        fields: field_types,
+                    }),
+                    scalar: Option::None,
+                    sequence: Option::None,
+                    fields,
+                    ty,
+                })
+            };
+            result
+        },
+        Pat::Tuple { items, ty } => {
+            let result = Vec::new();
+            for fields in coverage_lists(items) {
+                let field_types = Vec::new();
+                for field in fields {
+                    field_types.push(field.ty)
+                };
+                result.push(CoveragePat {
+                    constructor: Option::Some(CoverageConstructor {
+                        key: "tuple:" + fields.len().to_string(),
+                        fields: field_types,
+                    }),
+                    scalar: Option::None,
+                    sequence: Option::None,
+                    fields,
+                    ty,
+                })
+            };
+            result
+        },
+        Pat::Array { prefix, rest, suffix, ty } => match prune(ty) {
+            Type::Array { len: length, elem: element } => coverage_fixed_array(
+                prefix,
+                suffix,
+                length,
+                element,
+                ty,
+            ),
+            Type::VecType { elem: element } | Type::Slice { elem: element } => coverage_sequence_patterns(
+                prefix,
+                rest,
+                suffix,
+                element,
+                ty,
+            ),
+            _ => coverage_one(coverage_wild(ty)),
+        },
+        Pat::Alias { name: _, pat, ty: _ } => coverage_patterns(pat),
+        Pat::Or { pats: values, ty: _ } => {
+            let result = Vec::new();
+            for value in values {
+                for alternative in coverage_patterns(value) {
+                    result.push(alternative)
+                }
+            };
+            result
+        },
+        Pat::Range { start, end, inclusive, ty } => coverage_one(coverage_range_pattern(
+            start,
+            end,
+            inclusive,
+            ty,
+        )),
+    }
+}
+
+fn coverage_type_args(value: Type) -> Vec[Type] {
+    match prune(value) {
+        Type::App { ty: _, args } => args,
+        _ => Vec::new(),
+    }
+}
+
+fn coverage_substitutions(names: Vec[string], ty: Type) -> Vec[TypeSubst] {
+    let args = coverage_type_args(ty);
+    let result = Vec::new();
+    for index in range(0, names.len()) {
+        if index < args.len() {
+            result.push(TypeSubst {
+                name: names.get(index),
+                ty: args.get(index),
+            })
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn coverage_enum_domain(info: EnumInfo, ty: Type) -> Vec[CoverageConstructor] {
+    let result = Vec::new();
+    let substitutions = coverage_substitutions(info.generics, ty);
+    for index in range(0, info.variants.len()) {
+        let fields = Vec::new();
+        for field in enum_variant_field_types(info.variants.get(index).fields) {
+            fields.push(substitute_type(field, substitutions))
+        };
+        result.push(CoverageConstructor {
+            key: coverage_enum_key(info.name, index),
+            fields,
+        })
+    };
+    result
+}
+
+fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstructor]] {
+    let args = coverage_type_args(ty);
+    let result = Vec::new();
+    if short_name(name) == "Option" && args.len() == 1 {
+        result.push(CoverageConstructor {
+            key: coverage_enum_key(name, 0),
+            fields: Vec::new(),
+        });
+        result.push(CoverageConstructor {
+            key: coverage_enum_key(name, 1),
+            fields: Vec::new().pushed(args.get(0)),
+        });
+        Option::Some(result)
+    } else if short_name(name) == "Result" && args.len() == 2 {
+        result.push(CoverageConstructor {
+            key: coverage_enum_key(name, 0),
+            fields: Vec::new().pushed(args.get(0)),
+        });
+        result.push(CoverageConstructor {
+            key: coverage_enum_key(name, 1),
+            fields: Vec::new().pushed(args.get(1)),
+        });
+        Option::Some(result)
+    } else {
+        Option::None
+    }
+}
+
+fn coverage_domain(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
+    match prune(ty) {
+        Type::Unit => Option::Some(Vec::new().pushed(CoverageConstructor {
+            key: "unit",
+            fields: Vec::new(),
+        })),
+        Type::Bool => Option::Some(
+            Vec::new()
+                .pushed(CoverageConstructor {
+                    key: "bool:false",
+                    fields: Vec::new(),
+                })
+                .pushed(CoverageConstructor {
+                    key: "bool:true",
+                    fields: Vec::new(),
+                }),
+        ),
+        Type::Tuple { items: values } => Option::Some(Vec::new().pushed(CoverageConstructor {
+            key: "tuple:" + values.len().to_string(),
+            fields: values,
+        })),
+        Type::Array { len: length, elem: element } => Option::Some(Vec::new().pushed(
+            CoverageConstructor {
+                key: "array:" + length.to_string(),
+                fields: coverage_repeat(element, length),
+            },
+        )),
+        Type::Con { name } | Type::App { ty: Type::Con { name }, args: _ } => {
+            match find_enum_by_name(ctx, name) {
+                Option::Some(info) => Option::Some(coverage_enum_domain(info, ty)),
+                Option::None => match coverage_builtin_domain(name, ty) {
+                    Option::Some(value) => Option::Some(value),
+                    Option::None => match find_struct_by_name(ctx, name) {
+                        Option::Some(info) => {
+                            let fields = Vec::new();
+                            let substitutions = coverage_substitutions(info.generics, ty);
+                            for field in info.fields {
+                                fields.push(substitute_type(field.1, substitutions))
+                            };
+                            Option::Some(Vec::new().pushed(CoverageConstructor {
+                                key: "struct:" + info.name,
+                                fields,
+                            }))
+                        },
+                        Option::None => Option::None,
+                    },
+                },
+            }
+        },
+        _ => Option::None,
+    }
+}
+
+fn coverage_type_key(value: Type) -> string {
+    let builder = text::StringBuilder::new();
+    write_type(builder, value);
+    builder.finish()
+}
+
+fn coverage_copy_strings(values: Vec[string]) -> Vec[string] {
+    let result = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn coverage_constructor_inhabited_at(
+    ctx: Checker,
+    constructor: CoverageConstructor,
+    visiting: Vec[string],
+    depth: int,
+) -> bool {
+    for field in constructor.fields {
+        if !(coverage_type_inhabited_at(ctx, field, visiting, depth + 1)) {
+            return false
+        } else {
+            ()
+        }
+    };
+    true
+}
+
+fn coverage_type_inhabited_at(
+    ctx: Checker,
+    ty: Type,
+    visiting: Vec[string],
+    depth: int,
+) -> bool {
+    if depth >= 128 {
+        true
+    } else {
+        let key = coverage_type_key(ty);
+        if coverage_has_key(visiting, key) {
+            false
+        } else {
+            let next = coverage_copy_strings(visiting);
+            next.push(key);
+            match coverage_domain(ctx, ty) {
+                Option::Some(domain) => {
+                    for constructor in domain {
+                        if coverage_constructor_inhabited_at(
+                            ctx,
+                            constructor,
+                            next,
+                            depth,
+                        ) {
+                            return true
+                        } else {
+                            ()
+                        }
+                    };
+                    false
+                },
+                Option::None => true,
+            }
+        }
+    }
+}
+
+fn coverage_type_inhabited(ctx: Checker, ty: Type) -> bool {
+    coverage_type_inhabited_at(ctx, ty, Vec::new(), 0)
+}
+
+fn coverage_inhabited_domain(
+    ctx: Checker,
+    domain: Vec[CoverageConstructor],
+) -> Vec[CoverageConstructor] {
+    let result = Vec::new();
+    for constructor in domain {
+        if coverage_constructor_inhabited_at(ctx, constructor, Vec::new(), 0) {
+            result.push(constructor)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn coverage_has_key(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
+    let result = Vec::new();
+    for row in matrix {
+        if row.len() > 0 {
+            match row.get(0).constructor {
+                Option::Some(value) => if !coverage_has_key(result, value.key) {
+                    result.push(value.key)
+                } else {
+                    ()
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn coverage_tail(row: Vec[CoveragePat]) -> Vec[CoveragePat] {
+    let result = Vec::new();
+    for index in range(1, row.len()) {
+        result.push(row.get(index))
+    };
+    result
+}
+
+fn coverage_wild_fields(values: Vec[Type]) -> Vec[CoveragePat] {
+    let result = Vec::new();
+    for value in values {
+        result.push(coverage_wild(value))
+    };
+    result
+}
+
+fn coverage_specialize(
+    matrix: Vec[Vec[CoveragePat]],
+    constructor: CoverageConstructor,
+) -> Vec[Vec[CoveragePat]] {
+    let result = Vec::new();
+    for row in matrix {
+        if row.len() > 0 {
+            let fields = match row.get(0).constructor {
+                Option::Some(value) => if value.key == constructor.key {
+                    Option::Some(row.get(0).fields)
+                } else {
+                    Option::None
+                },
+                Option::None => Option::Some(coverage_wild_fields(constructor.fields)),
+            };
+            match fields {
+                Option::Some(fields) => result.push(coverage_join(fields, coverage_tail(row))),
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn coverage_default(matrix: Vec[Vec[CoveragePat]]) -> Vec[Vec[CoveragePat]] {
+    let result = Vec::new();
+    for row in matrix {
+        if row.len() > 0 {
+            match row.get(0).constructor {
+                Option::None => result.push(coverage_tail(row)),
+                Option::Some(_) => (),
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn coverage_sequence_element(ty: Type) -> Option[Type] {
+    match prune(ty) {
+        Type::VecType { elem: element } | Type::Slice { elem: element } => Option::Some(element),
+        _ => Option::None,
+    }
+}
+
+fn coverage_int_has(values: Vec[int], expected: int) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn coverage_int_push_unique(values: Vec[int], value: int) -> unit {
+    if coverage_int_has(values, value) {
+        ()
+    } else {
+        values.push(value)
+    }
+}
+
+fn coverage_sequence_matches(
+    shape: Option[CoverageSequence],
+    length: int,
+) -> bool {
+    match shape {
+        Option::Some(shape) => if shape.has_rest {
+            length >= shape.prefix + shape.suffix
+        } else {
+            length == shape.prefix + shape.suffix
+        },
+        Option::None => true,
+    }
+}
+
+fn coverage_sequence_specialize_pattern(
+    pattern: CoveragePat,
+    length: int,
+    element: Type,
+) -> Option[Vec[CoveragePat]] {
+    if !(coverage_sequence_matches(pattern.sequence, length)) {
+        Option::None
+    } else {
+        let fields = Vec::new();
+        for _ in range(0, length) {
+            fields.push(coverage_wild(element))
+        };
+        match pattern.sequence {
+            Option::Some(shape) => {
+                for index in range(0, shape.prefix) {
+                    fields.set(index, pattern.fields.get(index))
+                };
+                for offset in range(0, shape.suffix) {
+                    fields.set(
+                        length - offset - 1,
+                        pattern.fields.get(shape.prefix + shape.suffix - offset - 1),
+                    )
+                }
+            },
+            Option::None => (),
+        };
+        Option::Some(fields)
+    }
+}
+
+fn coverage_sequence_specialize_row(
+    row: Vec[CoveragePat],
+    length: int,
+    element: Type,
+) -> Option[Vec[CoveragePat]] {
+    if row.len() == 0 {
+        Option::None
+    } else {
+        match coverage_sequence_specialize_pattern(row.get(0), length, element) {
+            Option::Some(fields) => Option::Some(coverage_join(fields, coverage_tail(row))),
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn coverage_useful_sequence(
+    ctx: Checker,
+    matrix: Vec[Vec[CoveragePat]],
+    candidate: Vec[CoveragePat],
+    element: Type,
+) -> bool {
+    let head = candidate.get(0);
+    let tail = coverage_tail(candidate);
+    let max_prefix = Ref::new(0);
+    let max_suffix = Ref::new(0);
+    let exact_lengths = Vec::new();
+    for row in matrix {
+        if row.len() > 0 {
+            match row.get(0).sequence {
+                Option::Some(shape) => if shape.has_rest {
+                    if shape.prefix > max_prefix.get() {
+                        max_prefix.set(shape.prefix)
+                    } else {
+                        ()
+                    };
+                    if shape.suffix > max_suffix.get() {
+                        max_suffix.set(shape.suffix)
+                    } else {
+                        ()
+                    }
+                } else {
+                    coverage_int_push_unique(
+                        exact_lengths,
+                        shape.prefix + shape.suffix,
+                    )
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    match head.sequence {
+        Option::Some(shape) => if shape.has_rest {
+            if shape.prefix > max_prefix.get() {
+                max_prefix.set(shape.prefix)
+            } else {
+                ()
+            };
+            if shape.suffix > max_suffix.get() {
+                max_suffix.set(shape.suffix)
+            } else {
+                ()
+            }
+        } else {
+            coverage_int_push_unique(exact_lengths, shape.prefix + shape.suffix)
+        },
+        Option::None => (),
+    };
+    let stable_length = max_prefix.get() + max_suffix.get();
+    let large_length = Ref::new(stable_length + 1);
+    while coverage_int_has(exact_lengths, large_length.get()) {
+        large_length.set(large_length.get() + 1)
+    };
+    let lengths = Vec::new();
+    for length in range(0, stable_length + 1) {
+        coverage_int_push_unique(lengths, length)
+    };
+    coverage_int_push_unique(lengths, large_length.get());
+    for length in exact_lengths {
+        coverage_int_push_unique(lengths, length)
+    };
+    let element_inhabited = coverage_type_inhabited(ctx, element);
+    for length in lengths {
+        if coverage_sequence_matches(head.sequence, length)
+            && (length == 0 || element_inhabited)
+        {
+            let specialized = Vec::new();
+            for row in matrix {
+                match coverage_sequence_specialize_row(row, length, element) {
+                    Option::Some(row) => specialized.push(row),
+                    Option::None => (),
+                }
+            };
+            match coverage_sequence_specialize_pattern(head, length, element) {
+                Option::Some(fields) => if coverage_useful(
+                    ctx,
+                    specialized,
+                    coverage_join(fields, tail),
+                ) {
+                    return true
+                } else {
+                    ()
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn coverage_number_insert(
+    values: Vec[CoverageNumber],
+    value: CoverageNumber,
+) -> Vec[CoverageNumber] {
+    let result = Vec::new();
+    let inserted = Ref::new(false);
+    for current in values {
+        let comparison = coverage_number_compare(value, current);
+        if !(inserted.get()) && comparison < 0 {
+            result.push(value);
+            inserted.set(true)
+        } else if !(inserted.get()) && comparison == 0 {
+            inserted.set(true)
+        } else {
+            ()
+        };
+        result.push(current)
+    };
+    if !(inserted.get()) {
+        result.push(value)
+    } else {
+        ()
+    };
+    result
+}
+
+fn coverage_copy_scalars(values: Vec[CoverageScalar]) -> Vec[CoverageScalar] {
+    let result = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn coverage_scalar_candidate_intervals(
+    head: CoveragePat,
+    domains: Vec[CoverageScalar],
+) -> Vec[CoverageScalar] {
+    match head.constructor {
+        Option::None => coverage_copy_scalars(domains),
+        Option::Some(_) => match head.scalar {
+            Option::Some(value) => {
+                let result = Vec::new();
+                for domain in domains {
+                    match coverage_scalar_intersection(value, domain) {
+                        Option::Some(value) => result.push(value),
+                        Option::None => (),
+                    }
+                };
+                result
+            },
+            Option::None => Vec::new(),
+        },
+    }
+}
+
+fn coverage_scalar_contains(
+    container: CoverageScalar,
+    value: CoverageScalar,
+) -> bool {
+    container.kind == value.kind
+        && coverage_number_compare(container.lo, value.lo) <= 0
+        && coverage_number_compare(container.hi, value.hi) >= 0
+}
+
+fn coverage_scalar_specialize(
+    matrix: Vec[Vec[CoveragePat]],
+    atom: CoverageScalar,
+) -> Vec[Vec[CoveragePat]] {
+    let result = Vec::new();
+    for row in matrix {
+        if row.len() > 0 {
+            let matches = match row.get(0).constructor {
+                Option::None => true,
+                Option::Some(_) => match row.get(0).scalar {
+                    Option::Some(value) => coverage_scalar_contains(value, atom),
+                    Option::None => false,
+                },
+            };
+            if matches {
+                result.push(coverage_tail(row))
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn coverage_useful_scalar(
+    ctx: Checker,
+    matrix: Vec[Vec[CoveragePat]],
+    candidate: Vec[CoveragePat],
+    domains: Vec[CoverageScalar],
+) -> bool {
+    let head = candidate.get(0);
+    let tail = coverage_tail(candidate);
+    for interval in coverage_scalar_candidate_intervals(head, domains) {
+        let boundaries = Vec::new();
+        let sorted = coverage_number_insert(boundaries, interval.lo);
+        let sorted = coverage_number_insert(sorted, coverage_number_increment(interval.hi));
+        let boundaries = Ref::new(sorted);
+        for row in matrix {
+            if row.len() > 0 {
+                match row.get(0).scalar {
+                    Option::Some(value) => match coverage_scalar_intersection(
+                        value,
+                        interval,
+                    ) {
+                        Option::Some(value) => {
+                            boundaries.set(coverage_number_insert(
+                                boundaries.get(),
+                                value.lo,
+                            ));
+                            boundaries.set(coverage_number_insert(
+                                boundaries.get(),
+                                coverage_number_increment(value.hi),
+                            ))
+                        },
+                        Option::None => (),
+                    },
+                    Option::None => (),
+                }
+            } else {
+                ()
+            }
+        };
+        for index in range(0, boundaries.get().len() - 1) {
+            let atom = CoverageScalar {
+                kind: interval.kind,
+                lo: boundaries.get().get(index),
+                hi: coverage_number_decrement(boundaries.get().get(index + 1)),
+            };
+            if coverage_number_compare(atom.lo, atom.hi) <= 0
+                && coverage_useful(
+                    ctx,
+                    coverage_scalar_specialize(matrix, atom),
+                    tail,
+                )
+            {
+                return true
+            } else {
+                ()
+            }
+        }
+    };
+    false
+}
+
+fn coverage_useful(
+    ctx: Checker,
+    matrix: Vec[Vec[CoveragePat]],
+    candidate: Vec[CoveragePat],
+) -> bool {
+    if candidate.len() == 0 {
+        matrix.len() == 0
+    } else {
+        let head = candidate.get(0);
+        let tail = coverage_tail(candidate);
+        match coverage_sequence_element(head.ty) {
+            Option::Some(element) => coverage_useful_sequence(
+                ctx,
+                matrix,
+                candidate,
+                element,
+            ),
+            Option::None => match coverage_scalar_domains(head.ty) {
+                Option::Some(domains) => coverage_useful_scalar(
+                    ctx,
+                    matrix,
+                    candidate,
+                    domains,
+                ),
+                Option::None => match head.constructor {
+                Option::Some(constructor) => coverage_useful(
+                    ctx,
+                    coverage_specialize(matrix, constructor),
+                    coverage_join(head.fields, tail),
+                ),
+                Option::None => match coverage_domain(ctx, head.ty) {
+                    Option::Some(domain) => {
+                        let domain = coverage_inhabited_domain(ctx, domain);
+                        let present = coverage_present(matrix);
+                        let complete = Ref::new(true);
+                        for constructor in domain {
+                            if !coverage_has_key(present, constructor.key) {
+                                complete.set(false)
+                            } else {
+                                ()
+                            }
+                        };
+                        if complete.get() {
+                            for constructor in domain {
+                                if coverage_useful(
+                                    ctx,
+                                    coverage_specialize(matrix, constructor),
+                                    coverage_join(
+                                        coverage_wild_fields(constructor.fields),
+                                        tail,
+                                    ),
+                                ) {
+                                    return true
+                                } else {
+                                    ()
+                                }
+                            };
+                            false
+                        } else {
+                            coverage_useful(ctx, coverage_default(matrix), tail)
+                        }
+                    },
+                    Option::None => coverage_useful(ctx, coverage_default(matrix), tail),
+                },
+            },
+            },
+        }
+    }
+}
+
+fn coverage_witness_wild(ty: Type) -> CoverageWitness {
+    CoverageWitness {
+        constructor: Option::None,
+        scalar: Option::None,
+        fields: Vec::new(),
+        ty,
+    }
+}
+
+fn coverage_witness_pat(value: CoverageWitness) -> CoveragePat {
+    let fields = Vec::new();
+    for field in value.fields {
+        fields.push(coverage_witness_pat(field))
+    };
+    CoveragePat {
+        constructor: value.constructor,
+        scalar: value.scalar,
+        sequence: Option::None,
+        fields,
+        ty: value.ty,
+    }
+}
+
+fn coverage_witness_prefix(
+    values: Vec[CoverageWitness],
+    count: int,
+) -> Vec[CoverageWitness] {
+    let result = Vec::new();
+    for index in range(0, count) {
+        result.push(values.get(index))
+    };
+    result
+}
+
+fn coverage_witness_suffix(
+    values: Vec[CoverageWitness],
+    start: int,
+) -> Vec[CoverageWitness] {
+    let result = Vec::new();
+    for index in range(start, values.len()) {
+        result.push(values.get(index))
+    };
+    result
+}
+
+fn coverage_prepend_witness(
+    head: CoverageWitness,
+    tail: Vec[CoverageWitness],
+) -> Vec[CoverageWitness] {
+    let result = Vec::new().pushed(head);
+    for value in tail {
+        result.push(value)
+    };
+    result
+}
+
+fn coverage_find_scalar_witness(
+    ctx: Checker,
+    matrix: Vec[Vec[CoveragePat]],
+    candidate: Vec[CoveragePat],
+    domains: Vec[CoverageScalar],
+) -> Option[Vec[CoverageWitness]] {
+    let head = candidate.get(0);
+    let tail = coverage_tail(candidate);
+    for interval in coverage_scalar_candidate_intervals(head, domains) {
+        let boundaries = Vec::new();
+        let sorted = coverage_number_insert(boundaries, interval.lo);
+        let sorted = coverage_number_insert(
+            sorted,
+            coverage_number_increment(interval.hi),
+        );
+        let boundaries = Ref::new(sorted);
+        for row in matrix {
+            if row.len() > 0 {
+                match row.get(0).scalar {
+                    Option::Some(value) => match coverage_scalar_intersection(
+                        value,
+                        interval,
+                    ) {
+                        Option::Some(value) => {
+                            boundaries.set(coverage_number_insert(
+                                boundaries.get(),
+                                value.lo,
+                            ));
+                            boundaries.set(coverage_number_insert(
+                                boundaries.get(),
+                                coverage_number_increment(value.hi),
+                            ))
+                        },
+                        Option::None => (),
+                    },
+                    Option::None => (),
+                }
+            } else {
+                ()
+            }
+        };
+        for index in range(0, boundaries.get().len() - 1) {
+            let atom = CoverageScalar {
+                kind: interval.kind,
+                lo: boundaries.get().get(index),
+                hi: coverage_number_decrement(boundaries.get().get(index + 1)),
+            };
+            if coverage_number_compare(atom.lo, atom.hi) <= 0 {
+                match coverage_find_witness(
+                    ctx,
+                    coverage_scalar_specialize(matrix, atom),
+                    tail,
+                ) {
+                    Option::Some(tail_witnesses) => return Option::Some(
+                        coverage_prepend_witness(
+                            CoverageWitness {
+                                constructor: Option::Some(CoverageConstructor {
+                                    key: "scalar:witness",
+                                    fields: Vec::new(),
+                                }),
+                                scalar: Option::Some(atom),
+                                fields: Vec::new(),
+                                ty: head.ty,
+                            },
+                            tail_witnesses,
+                        ),
+                    ),
+                    Option::None => (),
+                }
+            } else {
+                ()
+            }
+        }
+    };
+    Option::None
+}
+
+fn coverage_find_witness(
+    ctx: Checker,
+    matrix: Vec[Vec[CoveragePat]],
+    candidate: Vec[CoveragePat],
+) -> Option[Vec[CoverageWitness]] {
+    if candidate.len() == 0 {
+        if matrix.len() == 0 { Option::Some(Vec::new()) } else { Option::None }
+    } else {
+        let head = candidate.get(0);
+        let tail = coverage_tail(candidate);
+        match coverage_sequence_element(head.ty) {
+            Option::Some(_) => if coverage_useful(ctx, matrix, candidate) {
+                Option::Some(coverage_prepend_witness(
+                    coverage_witness_wild(head.ty),
+                    Vec::new(),
+                ))
+            } else {
+                Option::None
+            },
+            Option::None => match coverage_scalar_domains(head.ty) {
+                Option::Some(domains) => coverage_find_scalar_witness(
+                    ctx,
+                    matrix,
+                    candidate,
+                    domains,
+                ),
+                Option::None => match head.constructor {
+                    Option::Some(constructor) => {
+                        let specialized = coverage_join(head.fields, tail);
+                        match coverage_find_witness(
+                            ctx,
+                            coverage_specialize(matrix, constructor),
+                            specialized,
+                        ) {
+                            Option::Some(values) => {
+                                let count = constructor.fields.len();
+                                Option::Some(coverage_prepend_witness(
+                                    CoverageWitness {
+                                        constructor: Option::Some(constructor),
+                                        scalar: head.scalar,
+                                        fields: coverage_witness_prefix(values, count),
+                                        ty: head.ty,
+                                    },
+                                    coverage_witness_suffix(values, count),
+                                ))
+                            },
+                            Option::None => Option::None,
+                        }
+                    },
+                    Option::None => match coverage_domain(ctx, head.ty) {
+                        Option::Some(domain) => {
+                            let domain = coverage_inhabited_domain(ctx, domain);
+                            let present = coverage_present(matrix);
+                            let complete = Ref::new(true);
+                            for constructor in domain {
+                                if !(coverage_has_key(present, constructor.key)) {
+                                    complete.set(false)
+                                } else {
+                                    ()
+                                }
+                            };
+                            if complete.get() {
+                                for constructor in domain {
+                                    match coverage_find_witness(
+                                        ctx,
+                                        coverage_specialize(matrix, constructor),
+                                        coverage_join(
+                                            coverage_wild_fields(constructor.fields),
+                                            tail,
+                                        ),
+                                    ) {
+                                        Option::Some(values) => {
+                                            let count = constructor.fields.len();
+                                            return Option::Some(
+                                                coverage_prepend_witness(
+                                                    CoverageWitness {
+                                                        constructor: Option::Some(constructor),
+                                                        scalar: Option::None,
+                                                        fields: coverage_witness_prefix(
+                                                            values,
+                                                            count,
+                                                        ),
+                                                        ty: head.ty,
+                                                    },
+                                                    coverage_witness_suffix(values, count),
+                                                ),
+                                            )
+                                        },
+                                        Option::None => (),
+                                    }
+                                };
+                                Option::None
+                            } else {
+                                match coverage_find_witness(
+                                    ctx,
+                                    coverage_default(matrix),
+                                    tail,
+                                ) {
+                                    Option::Some(tail_witnesses) => {
+                                        let missing = Ref::new(Option::None);
+                                        for constructor in domain {
+                                            if match missing.get() {
+                                                Option::Some(_) => false,
+                                                Option::None => !(coverage_has_key(
+                                                    present,
+                                                    constructor.key,
+                                                )),
+                                            } {
+                                                missing.set(Option::Some(constructor))
+                                            } else {
+                                                ()
+                                            }
+                                        };
+                                        let witness = match missing.get() {
+                                            Option::Some(constructor) => {
+                                                let fields = Vec::new();
+                                                for ty in constructor.fields {
+                                                    fields.push(coverage_witness_wild(ty))
+                                                };
+                                                CoverageWitness {
+                                                    constructor: Option::Some(constructor),
+                                                    scalar: Option::None,
+                                                    fields,
+                                                    ty: head.ty,
+                                                }
+                                            },
+                                            Option::None => coverage_witness_wild(head.ty),
+                                        };
+                                        Option::Some(coverage_prepend_witness(
+                                            witness,
+                                            tail_witnesses,
+                                        ))
+                                    },
+                                    Option::None => Option::None,
+                                }
+                            }
+                        },
+                        Option::None => match coverage_find_witness(
+                            ctx,
+                            coverage_default(matrix),
+                            tail,
+                        ) {
+                            Option::Some(values) => Option::Some(
+                                coverage_prepend_witness(
+                                    coverage_witness_wild(head.ty),
+                                    values,
+                                ),
+                            ),
+                            Option::None => Option::None,
+                        },
+                    },
+                },
+            },
+        }
+    }
+}
+
+fn coverage_number_text(value: CoverageNumber) -> string {
+    if value.negative { "-" + value.magnitude } else { value.magnitude }
+}
+
+fn coverage_number_uint32(value: CoverageNumber) -> uint32 {
+    let result = Ref::new(0);
+    for index in range(0, value.magnitude.byte_len()) {
+        result.set(
+            result.get() * 10
+                + (value.magnitude.byte_get(index) - 48) as uint32,
+        )
+    };
+    result.get()
+}
+
+fn coverage_char_text(value: CoverageNumber) -> string {
+    let code = coverage_number_uint32(value);
+    if code == 0 {
+        "'\\u0000'"
+    } else {
+        match char_from_uint32(code) {
+            Option::Some(value) => "'" + value.to_string() + "'",
+            Option::None => "'\\u0000'",
+        }
+    }
+}
+
+fn coverage_scalar_text(value: CoverageScalar) -> string {
+    let lo = if value.kind == "char" {
+        coverage_char_text(value.lo)
+    } else {
+        coverage_number_text(value.lo)
+    };
+    let hi = if value.kind == "char" {
+        coverage_char_text(value.hi)
+    } else {
+        coverage_number_text(value.hi)
+    };
+    if coverage_number_equal(value.lo, value.hi) {
+        lo
+    } else {
+        lo + "..=" + hi
+    }
+}
+
+fn coverage_witness_list_text(
+    ctx: Checker,
+    values: Vec[CoverageWitness],
+) -> string {
+    let result = Ref::new("");
+    for value in values {
+        if result.get().byte_len() > 0 {
+            result.set(result.get() + ", ")
+        } else {
+            ()
+        };
+        result.set(result.get() + coverage_witness_text(ctx, value))
+    };
+    result.get()
+}
+
+fn coverage_enum_witness_text(
+    ctx: Checker,
+    constructor: CoverageConstructor,
+    fields: Vec[CoverageWitness],
+    ty: Type,
+) -> string {
+    let name = match prune(ty) {
+        Type::Con { name } | Type::App { ty: Type::Con { name }, args: _ } => name,
+        _ => "<unknown>",
+    };
+    let variant = Ref::new("<unknown>");
+    match find_enum_by_name(ctx, name) {
+        Option::Some(info) => for index in range(0, info.variants.len()) {
+            if constructor.key == coverage_enum_key(info.name, index) {
+                variant.set(info.variants.get(index).name)
+            } else {
+                ()
+            }
+        },
+        Option::None => if short_name(name) == "Option" {
+            if constructor.key == coverage_enum_key(name, 0) {
+                variant.set("None")
+            } else {
+                variant.set("Some")
+            }
+        } else if short_name(name) == "Result" {
+            if constructor.key == coverage_enum_key(name, 0) {
+                variant.set("Ok")
+            } else {
+                variant.set("Err")
+            }
+        } else {
+            ()
+        },
+    };
+    let base = short_name(name) + "::" + variant.get();
+    if fields.len() == 0 {
+        base
+    } else {
+        base + "(" + coverage_witness_list_text(ctx, fields) + ")"
+    }
+}
+
+fn coverage_witness_text(ctx: Checker, value: CoverageWitness) -> string {
+    match value.scalar {
+        Option::Some(scalar) => coverage_scalar_text(scalar),
+        Option::None => match value.constructor {
+            Option::None => "_",
+            Option::Some(constructor) => if constructor.key == "unit" {
+                "()"
+            } else if constructor.key == "bool:false" {
+                "false"
+            } else if constructor.key == "bool:true" {
+                "true"
+            } else if constructor.key.byte_len() >= 6
+                && constructor.key.byte_slice(0, 6) == "tuple:"
+            {
+                "(" + coverage_witness_list_text(ctx, value.fields) + ")"
+            } else if constructor.key.byte_len() >= 5
+                && constructor.key.byte_slice(0, 5) == "enum:"
+            {
+                coverage_enum_witness_text(ctx, constructor, value.fields, value.ty)
+            } else {
+                "_"
+            },
+        },
+    }
+}
+
+fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
+    if arms.len() == 0 && contains_unbound_type_variable(ty) {
+        return Vec::new().pushed("_")
+    } else {
+        ()
+    };
+    let witness_ty = if arms.len() > 0 { resolve_type(ty) } else { ty };
+    let matrix = Vec::new();
+    for arm in arms {
+        if coverage_guard(arm.guard) {
+            for pattern in coverage_patterns(arm.pat) {
+                matrix.push(Vec::new().pushed(pattern))
+            }
+        } else {
+            ()
+        }
+    };
+    let witnesses = Vec::new();
+    while witnesses.len() < 8 {
+        match coverage_find_witness(
+            ctx,
+            matrix,
+            Vec::new().pushed(coverage_wild(witness_ty)),
+        ) {
+            Option::Some(values) => if values.len() > 0 {
+                let witness = values.get(0);
+                witnesses.push(coverage_witness_text(ctx, witness));
+                matrix.push(Vec::new().pushed(coverage_witness_pat(witness)))
+            } else {
+                return witnesses
+            },
+            Option::None => return witnesses,
+        }
+    };
+    witnesses
+}
+
+fn coverage_guard(value: Option[Expr]) -> bool {
+    match value {
+        Option::None => true,
+        Option::Some(Expr::Prim { value: Primitive::Bool { value }, ty: _ }) => value,
+        Option::Some(_) => false,
+    }
+}
+
+fn coverage_guard_may_match(value: Option[Expr]) -> bool {
+    match value {
+        Option::Some(Expr::Prim { value: Primitive::Bool { value }, ty: _ }) => value,
+        Option::None | Option::Some(_) => true,
+    }
+}
+
+fn match_is_exhaustive(ctx: Checker, ty: Type, arms: Vec[Arm]) -> bool {
+    let matrix = Vec::new();
+    for arm in arms {
+        if coverage_guard_may_match(arm.guard) {
+            for pattern in coverage_patterns(arm.pat) {
+                matrix.push(Vec::new().pushed(pattern))
+            }
+        } else {
+            ()
+        }
+    };
+    !coverage_useful(ctx, matrix, Vec::new().pushed(coverage_wild(ty)))
+}
+
+fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
+    let matrix: Vec[Vec[CoveragePat]] = Vec::new();
+    let result: Vec[bool] = Vec::new();
+    for arm in arms {
+        let patterns = coverage_patterns(arm.pat);
+        let useful = Ref::new(false);
+        if coverage_guard(arm.guard) {
+            for pattern in patterns {
+                if coverage_useful(ctx, matrix, Vec::new().pushed(pattern)) {
+                    useful.set(true)
+                } else {
+                    ()
+                }
+            }
+        } else {
+            ()
+        };
+        result.push(useful.get());
+        if coverage_guard(arm.guard) {
+            for pattern in patterns {
+                matrix.push(Vec::new().pushed(pattern))
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn pattern_is_irrefutable(ctx: Checker, value: Pat) -> bool {
+    let matrix = Vec::new();
+    for pattern in coverage_patterns(value) {
+        matrix.push(Vec::new().pushed(pattern))
+    };
+    !coverage_useful(
+        ctx,
+        matrix,
+        Vec::new().pushed(coverage_wild(pat_type(value))),
+    )
+}

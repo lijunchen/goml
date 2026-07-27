@@ -1,0 +1,24 @@
+trait Source {
+    type Item;
+    fn get(self: Self) -> Self::Item;
+}
+
+trait Pick[T] {
+    fn pick(self: Self) -> T;
+}
+
+impl[S: Source] Pick[S::Item] for S {
+    fn pick(self: S) -> S::Item { Source::get(self) }
+}
+
+struct Value { value: int32 }
+
+impl Source for Value {
+    type Item = int32;
+    fn get(self: Value) -> int32 { self.value }
+}
+
+fn main() -> unit {
+    let value: int32 = (Value { value: 1 }).pick();
+    let _ = value;
+}

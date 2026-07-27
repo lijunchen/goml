@@ -1,0 +1,40 @@
+fn trait_impl#Display#S#show(self/0: S) -> string {
+  join ret66(retv67: string) -> string {
+    retv67
+  } in
+  jump ret66("ok")
+}
+
+fn main() -> unit {
+  join ret68() -> unit {
+    ()
+  } in
+  let t69 = S {} in
+  let mtmp64 = to_dyn__T_S(t69) in
+  let _wild65 = println__T_string("ok") in
+  jump ret68()
+}
+
+fn to_dyn__T_S(x/1: S) -> dyn Display {
+  join ret70(retv71: dyn Display) -> dyn Display {
+    retv71
+  } in
+  let t72 = to_dyn[Display]{S}(x/1) in
+  jump ret70(t72)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret73() -> unit {
+    ()
+  } in
+  let t74 = trait_impl#ToString#string#to_string(value/1) in
+  let t75 = @runtime(core.string_println)(t74) in
+  jump ret73()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret76(retv77: string) -> string {
+    retv77
+  } in
+  jump ret76(self/38)
+}

@@ -1,0 +1,21 @@
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+trait Source {
+    type Item;
+    fn get(self: Self) -> Self::Item;
+}
+
+fn require_mark[T: Mark](value: T) -> unit { () }
+
+fn consume[A: Source, B: Source](left: A, right: B) -> unit
+where
+    A::Item = B::Item,
+    B::Item: Mark,
+{
+    let _ = right;
+    require_mark(Source::get(left))
+}
+
+fn main() -> unit { () }

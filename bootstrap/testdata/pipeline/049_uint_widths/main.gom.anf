@@ -1,0 +1,84 @@
+fn main() -> unit {
+  join ret65() -> unit {
+    ()
+  } in
+  let start8/0 = 200 in
+  let add8/1 = 55 in
+  let sum8/2 = (start8/0 + add8/1) in
+  let neg8/3 = (-start8/0) in
+  let start16/4 = 50000 in
+  let add16/5 = 12000 in
+  let sum16/6 = (start16/4 + add16/5) in
+  let diff16/7 = (sum16/6 - start16/4) in
+  let start32/8 = 3000000000 in
+  let add32/9 = 123456789 in
+  let sum32/10 = (start32/8 + add32/9) in
+  let neg32/11 = (-add32/9) in
+  let start64/12 = 6000000000 in
+  let add64/13 = 4000000000 in
+  let sum64/14 = (start64/12 + add64/13) in
+  let diff64/15 = (sum64/14 - add64/13) in
+  let t66 = trait_impl#ToString#uint8#to_string(sum8/2) in
+  let t67 = (t66 + ", ") in
+  let t68 = trait_impl#ToString#uint8#to_string(neg8/3) in
+  let t69 = (t67 + t68) in
+  let t70 = (t69 + "; ") in
+  let t71 = trait_impl#ToString#uint16#to_string(diff16/7) in
+  let t72 = (t70 + t71) in
+  let t73 = (t72 + "; ") in
+  let t74 = trait_impl#ToString#uint32#to_string(neg32/11) in
+  let t75 = (t73 + t74) in
+  let t76 = (t75 + "; ") in
+  let t77 = trait_impl#ToString#uint64#to_string(diff64/15) in
+  let message/16 = (t76 + t77) in
+  let _wild64 = println__T_string(message/16) in
+  jump ret65()
+}
+
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  let t80 = @runtime(core.uint8_to_string)(self/45) in
+  jump ret78(t80)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/46: uint16) -> string {
+  join ret81(retv82: string) -> string {
+    retv82
+  } in
+  let t83 = @runtime(core.uint16_to_string)(self/46) in
+  jump ret81(t83)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
+  join ret84(retv85: string) -> string {
+    retv85
+  } in
+  let t86 = @runtime(core.uint32_to_string)(self/47) in
+  jump ret84(t86)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+  join ret87(retv88: string) -> string {
+    retv88
+  } in
+  let t89 = @runtime(core.uint64_to_string)(self/48) in
+  jump ret87(t89)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret90() -> unit {
+    ()
+  } in
+  let t91 = trait_impl#ToString#string#to_string(value/1) in
+  let t92 = @runtime(core.string_println)(t91) in
+  jump ret90()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret93(retv94: string) -> string {
+    retv94
+  } in
+  jump ret93(self/38)
+}

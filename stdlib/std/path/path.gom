@@ -1,0 +1,64 @@
+package path;
+
+use std::internal::host;
+
+pub fn join(base: string, child: string) -> string {
+    host::path_join(base, child)
+}
+
+pub fn clean(path: string) -> string {
+    host::path_clean(path)
+}
+
+pub fn is_absolute(path: string) -> bool {
+    host::path_is_absolute(path)
+}
+
+pub fn parent(path: string) -> Option[string] {
+    let (found, value) = host::path_parent(path);
+    if found {
+        Option::Some(value)
+    } else {
+        Option::None
+    }
+}
+
+pub fn file_name(path: string) -> Option[string] {
+    let (found, value) = host::path_file_name(path);
+    if found {
+        Option::Some(value)
+    } else {
+        Option::None
+    }
+}
+
+pub fn extension(path: string) -> Option[string] {
+    let (found, value) = host::path_extension(path);
+    if found {
+        Option::Some(value)
+    } else {
+        Option::None
+    }
+}
+
+pub fn file_stem(path: string) -> Option[string] {
+    let (found, value) = host::path_file_stem(path);
+    if found {
+        Option::Some(value)
+    } else {
+        Option::None
+    }
+}
+
+pub fn with_extension(path: string, extension: string) -> string {
+    host::path_with_extension(path, extension)
+}
+
+pub fn absolute(path: string) -> Result[string, string] {
+    let (ok, value, err) = host::path_absolute(path);
+    if ok {
+        Result::Ok(value)
+    } else {
+        Result::Err(err)
+    }
+}

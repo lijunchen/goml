@@ -11,17 +11,18 @@ The generated Go code does not include generics — goml performs monomorphizati
 The file extension for goml source files is `.gom`.
 
 ## Project Snapshot
-- Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core -> Mono -> Lift → ANF` before emitting Go (`crates/compiler/src/go`).
-- The `goml` CLI in `crates/goml` handles project builds and package management, while `gomlc` in `crates/gomlc` exposes compiler commands; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
-- The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
-- `typer/name_resolution.rs` should only handle AST → HIR lowering plus pure name resolution and visibility metadata; avoid making decisions that depend on `GlobalTypeEnv` or type information. Cross-package export filtering happens at package/interface construction time.
-- `typer/check.rs` should only handle HIR → TAST type inference, checking, and constraint generation; avoid name-resolution responsibilities such as "fallback resolution paths" or cross-package name lookup.
-- Any "ambiguity" should produce recoverable diagnostics; never `panic!` inside env/lookup. When multiple candidates exist, return `None` and report the error at a higher level.
+- The self-hosted frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core → Mono → Lift → ANF` before emitting Go.
+- `bootstrap/` contains the compiler, query engine, language server, standard-library generator, and compiler tests.
+- `bootstrap-goml/` contains the `goml` project driver, registry client, dependency resolver, and CLI tests.
+- `stage0/` contains version-controlled generated Go sources used only to start a cold bootstrap.
+- Regression fixtures and all generated golden files live in `bootstrap/testdata`.
+- `hir/` should only handle AST → HIR lowering and name resolution. `tast/` owns inference, checking, constraints, and type-directed decisions.
+- Ambiguity must produce recoverable diagnostics. Environment and lookup code must return failure values instead of terminating the compiler.
 
 
 ## ANF IR and Join Points
 
-The ANF (A-Normal Form) IR is the last intermediate representation before Go code generation. It lives in `crates/compiler/src/anf.rs` and is produced by the `anf_file` pass from the Lift IR.
+The ANF (A-Normal Form) IR is the last intermediate representation before Go code generation. It lives in `bootstrap/anf/` and is produced from Lift IR.
 
 ### Core Data Types
 
@@ -104,7 +105,7 @@ joinrec {
 jump loop()
 ```
 
-### Go Code Generation from ANF (`crates/compiler/src/go/compile.rs`)
+### Go Code Generation from ANF (`bootstrap/go_backend/`)
 
 The Go emitter produces structured code (if/else, switch, for) — never goto/label. It works by recognizing patterns in the ANF:
 
@@ -127,14 +128,16 @@ Key functions in the emitter:
 - The `JoinEnv` is a flat `HashMap<JoinId, JoinBind>` built once per function. While-loop `JoinRec` members are NOT in `JoinEnv` — they are compiled directly by `compile_while_loop`.
 - `continue_targets: HashSet<JoinId>` tracks which `JoinId`s represent the current enclosing while loop. A `Jump` to a continue target emits nothing (the `for` loop naturally continues).
 - Join bodies form a DAG (except `JoinRec` which is handled specially). The emitter inlines join bodies at their use sites, which is safe because each non-recursive join is used at most once in the continuation position and any remaining uses are in tail position.
-- DCE (`crates/compiler/src/go/dce.rs`) runs on the Go AST after emission. Since the structured emitter produces no goto/label, DCE is always enabled.
+- DCE (`bootstrap/go_backend/dce.gom`) runs on the Go AST after emission. Since the structured emitter produces no goto/label, DCE is always enabled.
 
 ## Project Structure & Module Organization
-- Rust workspace in `crates/*`:
-  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `gomlc` (compiler CLI), `goml-project` (manifest, registry, and package graph), `goml` (build and package-manager CLI), `wasm-app` (Rust → Wasm bindings), `lsp-server` (Language Server Protocol).
-- Frontend in `webapp` (Vite + React + TypeScript) consuming `crates/wasm-app/pkg`.
-- VS Code extension in `editors/vscode/` consuming LSP server binary.
-- CI/dev helpers in `.justfile`. Build artifacts in `target/` and `webapp/dist/`.
+- Self-hosted compiler module in `bootstrap/`.
+- Self-hosted project driver module in `bootstrap-goml/`.
+- Standard-library navigation sources and builtin prelude in `stdlib/`.
+- Cold-bootstrap Go sources in `stage0/`.
+- Ignored executable outputs in `bin/stage0`, `bin/stage1`, and `bin/stage2`.
+- VS Code extension in `editors/vscode/`.
+- CI and development recipes in `.justfile`. Build artifacts are written below `_bootstrap/` and each module's `_artifact/`.
 
 ## Project Configuration (`goml.toml`)
 
@@ -146,7 +149,7 @@ GoML projects use a `goml.toml` file for project configuration. A module owns a 
 path = "alice::myapp"
 
 [build]
-target-dir = "artifact"
+target-dir = "_artifact"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -178,7 +181,7 @@ pub fn message() -> string {
 | Field          | Required | Default | Description |
 | -------------- | -------- | ------- | ----------- |
 | `module.path`  | Yes      | -       | Canonical module path |
-| `build.target-dir` | No   | `artifact` | Module-relative root for GoML build artifacts |
+| `build.target-dir` | No   | `_artifact` | Module-relative root for GoML build artifacts |
 | `dependencies` | No       | `{}`    | Third-party modules keyed by canonical path with minimum version `X.Y.Z` |
 
 ### Project Discovery
@@ -188,14 +191,16 @@ pub fn message() -> string {
 - `use full::package::path;` loads a package into one source file. `use full::package::path as alias;` selects an explicit alias.
 - `use alias::Trait;` brings a trait from an already loaded package into method-call scope.
 - `mod`, `crate::`, `self::`, `super::`, and rooted `::path` syntax are unsupported.
-- The package selected by `goml check [target]` or `goml build [target]` is the entry package. A linked executable requires that package to be named `main` and define `fn main()`.
+- `goml check`, `goml build`, and `goml test` always operate on the complete module found from the current directory and do not accept package targets.
+- `goml build` links every package declared as `package main`; each executable entry must define `fn main()`.
+- A `tests` directory is one black-box test package for its parent package. Its direct `.gom` files declare `package tests;`; nested test-suite directories are unsupported.
 - Third-party dependencies are declared only in the module-root `goml.toml`.
 - Standalone single-file compiler commands may omit `package main;` and retain implicit builtin behavior.
 
 ### Current Visibility Semantics
 - Cross-package access is filtered by top-level item visibility. A package can use another package's `pub fn`, `pub struct`, `pub enum`, and `pub trait`; private top-level items are not exported.
 - Private helpers remain usable in every file of their defining package, including from public wrapper functions.
-- Struct fields and `impl` methods do not yet have fine-grained visibility enforcement. Do not rely on that as a long-term API guarantee.
+- Struct fields and inherent `impl` methods are private by default and require `pub` for cross-package access. Trait implementation methods inherit the trait method visibility and must not use `pub`.
 - Interface files and external dependency artifacts export only public top-level API. Each package has its own interface and Core artifact.
 
 ## Package Management
@@ -242,71 +247,70 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Build, Check, And LSP Behavior
 - `goml check`, `goml build`, compiler queries, and LSP requests all resolve and typecheck third-party dependencies
 - Third-party source files remain in the registry cache under `~/.goml/cache/registry`
-- Project outputs are written under `[build].target-dir`, which defaults to `artifact` and can be overridden with `--target-dir`.
-- Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/package.*`.
-- External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
+- Project outputs are written under `[build].target-dir`, which defaults to `_artifact` and can be overridden with `--target-dir`.
+- Root-package executables are written to `<target-dir>/bin/<module-name>`. Nested entry packages preserve their module-relative package path and add the executable name, for example package `alice::app::cmd::server` is written to `<target-dir>/bin/cmd/server/server`.
+- Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/<package-name>.*`.
+- External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/<package-name>.*`.
+- Linked Go sources are written beside the entry package Core artifact as `goml_generated.go`.
 - Interfaces and dependency environments expose only public top-level API; current-package codegen still uses the package's full internal environment so private helpers compile normally.
 - Go-to-definition, hover, completion, and other query features can resolve into cached third-party source files
 
 ## VS Code LSP Extension
 
 ### Design Philosophy
-- Reuse existing compiler infrastructure: the LSP server delegates to `crates/compiler/src/query.rs` which already powers the Monaco web editor.
+- Reuse the self-hosted query infrastructure in `bootstrap/query/`.
 - Full compilation on every request: no incremental/salsa-based caching yet; each hover/completion triggers a full typecheck of the target package and its dependencies.
 - Module/package aware: the LSP discovers directory packages from `[module]`, honors file-scoped aliases, and resolves definitions using canonical package identities.
 
 ### Build Commands
-- `just build-lsp`: Build release LSP binary (`target/release/goml-lsp`).
+- `just build-lsp`: Build the self-hosted `gomllsp`.
 - `just install-lsp`: Build and copy binary to `editors/vscode/bin/`.
 - `just vscode-ext`: Full build (LSP + extension TypeScript).
 
 ### Development Workflow
-1. Build LSP: `cargo build -p lsp-server --release`
-2. Copy binary: `cp target/release/goml-lsp editors/vscode/bin/`
-3. Install deps: `cd editors/vscode && pnpm install`
-4. Compile TS: `pnpm run compile`
-5. Press F5 in VS Code to launch Extension Development Host.
+1. Build and install the LSP: `just install-lsp`
+2. Install dependencies: `cd editors/vscode && npm install`
+3. Compile TypeScript: `npm run compile`
+4. Press F5 in VS Code to launch Extension Development Host.
 
 ### Configuration
-- `goml.serverPath`: Custom path to `goml-lsp` binary (defaults to bundled or PATH lookup).
+- `goml.serverPath`: Custom path to `gomllsp` binary (defaults to bundled or PATH lookup).
 - `goml.trace.server`: Trace LSP communication (`off`, `messages`, `verbose`).
 
 ## Build, Test, and Development Commands
-- Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
-- Rust tests: `cargo test`
-- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check [package-directory]` and `cargo run -p goml -- build [package-directory]` for project workflows; use `--dry-run` to print planned per-package compiler commands; use `cargo run -p gomlc -- run-single <file.gom>` for standalone execution; use `cargo run -p gomlc -- check|build ...` for per-package artifacts and `gomlc link --entry <canonical-package> ...` for explicit linking; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `gomlc run-single` to print IR stages before execution.
+- Cold bootstrap and fixed point: `just bootstrap`.
+- Full self-hosted tests: `just test-selfhost`.
+- Compiler corpus: `just test-bootstrap-compiler`.
+- Pipeline snapshots: `just test-bootstrap-pipeline`.
+- Driver tests: `just test-bootstrap-driver`.
+- Query and LSP tests: `just test-bootstrap-lsp`.
+- CLI: use `goml new <project_name>` to scaffold a module; run `goml check`, `goml build`, or `goml test` from anywhere inside a module; use `--dry-run` to print planned commands; use `gomlc run-single <file.gom>` for standalone execution; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to inspect IR stages.
 - `goml check` and `goml build` locate `gomlc` through `--compiler`, `GOMLC`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`; the driver protocol is verified before compilation.
-- Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
-- Format (Rust): `cargo fmt`.
-- Wasm build: `wasm-pack build ./crates/wasm-app`.
-- Webapp dev: `just start` (build Wasm, then `pnpm install` and `pnpm run dev` in `webapp`).
-- Webapp build/preview: `pnpm -C webapp build` and `pnpm -C webapp preview`.
-- CI locally: cargo check, test, fmt, clippy.
+- Local CI: `just ci`.
 
 ## Coding Style & Naming Conventions
 - do not write any comments, instead, write simple, clear and self-explanatory code
-- Rust (edition 2024): format with `rustfmt`; deny clippy warnings. Use snake_case for functions/modules, CamelCase for types, SCREAMING_SNAKE_CASE for consts.
-- TypeScript/React: 2‑space indent; PascalCase components; named exports preferred. Lint with `pnpm -C webapp lint`.
+- GoML: use four-space indentation, snake_case functions/packages, CamelCase types, and explicit top-level signatures.
+- TypeScript: 2‑space indent; PascalCase components; named exports preferred.
 - Keep packages small and focused. Public cross-package APIs must be explicitly marked `pub`; files in one directory form one package.
 
 ## Testing Guidelines
-- We use expect-test, there are two basic commands:
-  - `cargo test` run test to match golden snapshots
-  - `env UPDATE_EXPECT=1 cargo test` to update snapshots
+- `just verify-golden` checks every generated snapshot.
+- `just update-golden` regenerates snapshots through the self-hosted GoML tests.
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures when relevant.
 
 ### Single-File Pipeline Tests
-- Each pipeline test case is in its own directory under `crates/compiler/src/tests/pipeline/`. Directory names follow the pattern `NNN/` (e.g., `000/`, `001/`) or `NNN_description/` (e.g., `007_expr_pattern_matching/`, `025_missing_match/`).
+- Each pipeline test case is in its own directory under `bootstrap/testdata/pipeline/`. Directory names follow the pattern `NNN/` (e.g., `000/`, `001/`) or `NNN_description/` (e.g., `007_expr_pattern_matching/`, `025_missing_match/`).
 - Each test directory contains:
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `cargo run -p gomlc -- run-single crates/compiler/src/tests/pipeline/001/main.gom`
-- You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
-- When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
+- You can quick check a test case with: `bin/stage1/gomlc run-single bootstrap/testdata/pipeline/001/main.gom`
+- You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running `just update-golden`.
+- When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `bootstrap/testdata/pipeline/` with a `main.gom` file, then run `just update-golden` to generate the expected outputs.
 
 ### Multi-Package Tests
-- Multi-package tests are located in `crates/compiler/src/tests/module/`. They test module manifests, directory packages, file-scoped imports, visibility, separate compilation, and linking.
+- Multi-package tests are located in `bootstrap/testdata/module/`. They test module manifests, directory packages, file-scoped imports, visibility, separate compilation, and linking.
 - Each project directory follows the pattern `projectNNN/` (e.g., `project001/`, `project002/`) or `projectNNN_description/`.
 - Structure of a multi-package project:
   - `goml.toml` - module configuration with `[module] path = "..."`
@@ -321,30 +325,31 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   - Cross-package references use an imported alias, such as `math::Pair`.
   - Trait method syntax `x.method(...)` for non-`dyn` values is enabled by `use alias::Trait` after importing the package; builtin traits like `Show` are in the prelude.
 - To add a new multi-package test:
-  1. Create a new directory under `crates/compiler/src/tests/module/` (e.g., `project011/`)
+  1. Create a new directory under `bootstrap/testdata/module/` (e.g., `project011/`)
   2. Create `goml.toml` with a `[module]` section
   3. Create the entry package file with `package main;`, imports, and `fn main()`
   4. Create child package files under their package directories
-  5. Run `env UPDATE_EXPECT=1 cargo test` to generate the expected output file
+  5. Run `just update-golden` to generate the expected output file
 - Note: Multi-package tests run package discovery and project execution, and only generate `.out` files, not intermediate IR stages like pipeline tests
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: "add parser error for ...".
-- PRs: include a clear description, linked issues, and before/after notes or screenshots for web UI changes.
-- Required: run cargo check, test, fmt, clippy locally; ensure no clippy or fmt diffs.
-- If a change updates expect snapshots, use two commits: first the logic change, then a snapshot-only commit generated via `env UPDATE_EXPECT=1 cargo test` (e.g. `chore(tests): update snapshots`). If the change also adds new tests, use three commits: (1) logic, (2) the new test source files, (3) snapshots.
+- PRs: include a clear description, linked issues, and before/after notes when relevant.
+- Required: run `just ci`.
+- If a change updates snapshots, use two commits: first the logic change, then a snapshot-only commit generated by `just update-golden`. If the change also adds tests, use three commits: logic, test sources, then snapshots.
 - Always run tests before notifying the user that a task is complete.
 
 ## Environment & Tooling
-- Requirements: Rust toolchain, `wasm-pack`, Node 18+, `pnpm`.
-- If adding crates, update workspace in `Cargo.toml`; keep inter‑crate deps via `[workspace.dependencies]`.
+- Requirements: Go 1.25+, Node 20+, npm, and `just`.
 
 ## GoML Introduction
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
+* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
 * Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+  * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `int` and unconstrained floating-point literals default to `float64`.
+  * Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
   * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
   * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
 * String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
@@ -380,7 +385,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
 * Single-pass iterators implement `Iterator` and bind its associated `Item` type.
   * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
-  * `range(start, end)` creates a half-open `FnIterator[int32]` over increasing values.
+  * `range(start, end)` creates a half-open `FnIterator[int]` over increasing values.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -391,20 +396,21 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * `for pattern in source { ... }` accepts any value implementing `IntoIterator`, evaluates the source expression and `into_iter` conversion once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; `Vec[T]`, `Slice[T]`, and iterator values can be used directly.
 * Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
 * `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
+* `expr?` propagates `None` or `Err` from `Option[T]` and `Result[T, E]`. Other enum shapes do not opt into `?`; there is no user-defined `Try` trait yet.
 
 ### Traits and `impl`
 
 * `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits may declare type parameters, for example `trait Convert[T] { fn convert(Self) -> T; }`.
 * Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[int32]` and `Convert[string]`.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert[int32]::convert(value)`.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert::[int32]::convert(value)`.
   * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use alias::Trait` after the defining package is imported (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
-* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert[int32]::convert(x)`).
+* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert::[int32]::convert(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
   * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
-  * Limitations (current): generic traits are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
+  * Limitations (current): generic traits and traits with associated types are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
 
 ### Notes on `char`
 
@@ -435,7 +441,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Builtin `HashMap`
 
 * Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
-* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
+* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
 
 ### Builtin `Iterator`
@@ -446,9 +452,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Builtin API:
   * `FnIterator::from_fn(next_fn: () -> Option[T]) -> FnIterator[T]`
   * `Iterator::next(iterator) -> Option[Iterator::Item]` or `iterator.next()`
-  * `Vec[T]::iter() -> FnIterator[T]`
-  * `Slice[T]::iter() -> FnIterator[T]`
-  * `range(start: int32, end: int32) -> FnIterator[int32]`
+  * `Vec::[T]::iter() -> FnIterator[T]`
+  * `Slice::[T]::iter() -> FnIterator[T]`
+  * `range(start: int, end: int) -> FnIterator[int]`
   * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
   * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`
 * `range` is half-open and increasing; `start >= end` produces an empty iterator.
@@ -458,10 +464,10 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Builtin type: `Slice[T]`, a bounded read-only view over contiguous `Vec[T]` storage.
 * Builtin API:
-  * `slice(vec: Vec[T], start: int32, end: int32) -> Slice[T]`
-  * `slice_get(s: Slice[T], index: int32) -> T`
-  * `slice_len(s: Slice[T]) -> int32`
-  * `slice_sub(s: Slice[T], start: int32, end: int32) -> Slice[T]`
+  * `slice(vec: Vec[T], start: int, end: int) -> Slice[T]`
+  * `slice_get(s: Slice[T], index: int) -> T`
+  * `slice_len(s: Slice[T]) -> int`
+  * `slice_sub(s: Slice[T], start: int, end: int) -> Slice[T]`
 * Inherent methods on `Slice[T]`: `get`, `len`, `sub`.
 * Current limitation: mutable slice operations are intentionally not provided.
 
@@ -469,13 +475,13 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * `trait Eq { fn eq(Self, Self) -> bool; }`
 * `trait Hash { fn hash(Self) -> uint64; }`
-* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`self.get()`), not pointer identity.
+* `Ref[T]` implements `Eq`/`Hash` by reference identity. Mutating the pointed-to value does not change equality or hashing.
 
 ### Testing / snapshots gotchas
 
-* Adding/changing builtins changes the `builtin` interface hash, which can break `crates/goml/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
-* Pipeline tests under `crates/compiler/src/tests/pipeline/` must only be updated via `env UPDATE_EXPECT=1 cargo test` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
-* Visibility tests live in `crates/compiler/src/tests/visibility_test.rs`; prefer focused typecheck fixtures there when checking `pub`/private module API behavior.
+* Adding or changing builtins changes the `builtin` interface hash; regenerate affected artifacts and snapshots with `just update-golden`.
+* Pipeline tests under `bootstrap/testdata/pipeline/` must only be updated via `just update-golden` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
+* Visibility fixtures live under `bootstrap/testdata/module_diagnostics/`; prefer focused projects there when checking `pub`/private module API behavior.
 
 ### Name collisions
 

@@ -1,0 +1,229 @@
+package test_support;
+
+use gomlang::bootstrap_goml::util;
+use std::bytes;
+use std::env;
+use std::fs;
+use std::path;
+use std::process;
+use std::testing;
+
+fn absolute(value: string) -> string {
+    if path::is_absolute(value) {
+        value
+    } else {
+        match path::absolute(value) {
+            Result::Ok(value) => value,
+            Result::Err(message) => {
+                testing::fail(message);
+                value
+            },
+        }
+    }
+}
+
+pub fn module_root() -> string {
+    match env::current_dir() {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            "."
+        },
+    }
+}
+
+pub fn repository_root() -> string {
+    match env::var("GOML_REPO") {
+        Option::Some(value) => absolute(value),
+        Option::None => absolute(path::join(module_root(), "..")),
+    }
+}
+
+pub fn goml_binary() -> string {
+    match env::var("GOML_TEST_GOML") {
+        Option::Some(value) => absolute(value),
+        Option::None => path::join(repository_root(), "bin/stage1/goml"),
+    }
+}
+
+pub fn gomlc_binary() -> string {
+    match env::var("GOML_TEST_GOMLC") {
+        Option::Some(value) => absolute(value),
+        Option::None => path::join(repository_root(), "bin/stage1/gomlc"),
+    }
+}
+
+pub fn workspace(name: string) -> string {
+    let result = path::join(
+        path::join(module_root(), "_artifact/test-work"),
+        name,
+    );
+    if fs::exists(result) {
+        match fs::remove_dir_all(result) {
+            Result::Ok(()) => (),
+            Result::Err(message) => testing::fail(message),
+        }
+    } else {
+        ()
+    };
+    match fs::create_dir_all(result) {
+        Result::Ok(()) => result,
+        Result::Err(message) => {
+            testing::fail(message);
+            result
+        },
+    }
+}
+
+pub fn create_dir(value: string) -> unit {
+    match fs::create_dir_all(value) {
+        Result::Ok(()) => (),
+        Result::Err(message) => testing::fail(message),
+    }
+}
+
+pub fn write_file(file: string, content: string) -> unit {
+    match path::parent(file) {
+        Option::Some(parent) => create_dir(parent),
+        Option::None => (),
+    };
+    match fs::write_file(file, content) {
+        Result::Ok(()) => (),
+        Result::Err(message) => testing::fail(message),
+    }
+}
+
+pub fn read_file(file: string) -> string {
+    match fs::read_file(file) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            ""
+        },
+    }
+}
+
+fn bytes_text(value: bytes::Bytes) -> string {
+    match value.to_string() {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            ""
+        },
+    }
+}
+
+pub fn stdout(output: process::Output) -> string {
+    bytes_text(process::Output::stdout(output))
+}
+
+pub fn stderr(output: process::Output) -> string {
+    bytes_text(process::Output::stderr(output))
+}
+
+pub fn assert_success(output: process::Output) -> unit {
+    if process::ExitStatus::success(process::Output::status(output)) {
+        ()
+    } else {
+        testing::fail(
+            "command failed\nstdout:\n"
+                + stdout(output)
+                + "\nstderr:\n"
+                + stderr(output),
+        )
+    }
+}
+
+pub fn assert_failure(output: process::Output) -> unit {
+    testing::assert(
+        !process::ExitStatus::success(process::Output::status(output)),
+    )
+}
+
+pub fn assert_contains(value: string, expected: string) -> unit {
+    if util::contains(value, expected) {
+        ()
+    } else {
+        testing::fail(
+            "expected text to contain:\n"
+                + expected
+                + "\nactual:\n"
+                + value,
+        )
+    }
+}
+
+pub fn assert_not_contains(value: string, unexpected: string) -> unit {
+    if util::contains(value, unexpected) {
+        testing::fail(
+            "expected text not to contain:\n"
+                + unexpected
+                + "\nactual:\n"
+                + value,
+        )
+    } else {
+        ()
+    }
+}
+
+pub fn run(args: Vec[string], directory: string) -> process::Output {
+    match process::Command::new(goml_binary())
+        .args(args)
+        .current_dir(directory)
+        .output()
+    {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            process::Output {
+                status_value: process::ExitStatus { code_value: -1 },
+                stdout_value: bytes::Bytes::new(),
+                stderr_value: bytes::Bytes::new(),
+            }
+        },
+    }
+}
+
+pub fn project_command(
+    command: string,
+    target: string,
+    extra: Vec[string],
+    directory: string,
+) -> process::Output {
+    let args = Vec::new().pushed(command);
+    if command == "run" && target != "" {
+        args.push(target)
+    } else {
+        ()
+    };
+    args.push("--compiler");
+    args.push(gomlc_binary());
+    for value in extra {
+        args.push(value)
+    };
+    let candidate = if path::is_absolute(target) {
+        target
+    } else {
+        path::join(directory, target)
+    };
+    let command_directory = if command != "run"
+        && target != ""
+        && fs::is_file(path::join(candidate, "goml.toml"))
+    {
+        candidate
+    } else {
+        directory
+    };
+    run(args, command_directory)
+}
+
+pub fn write_basic_project(root: string, module_path: string) -> unit {
+    write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"" + module_path + "\"\n",
+    );
+    write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nfn main() -> unit {\n    println(\"hello\")\n}\n",
+    )
+}

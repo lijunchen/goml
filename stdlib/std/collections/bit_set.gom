@@ -1,0 +1,74 @@
+package collections;
+
+pub struct BitSet {
+    pub words: Vec[uint64],
+    pub len: Ref[int],
+}
+
+impl BitSet {
+    pub fn new() -> BitSet {
+        BitSet {
+            words: Vec::new(),
+            len: Ref::new(0),
+        }
+    }
+
+    pub fn len(self: BitSet) -> int {
+        self.len.get()
+    }
+
+    pub fn is_empty(self: BitSet) -> bool {
+        self.len.get() == 0
+    }
+
+    pub fn contains(self: BitSet, index: int) -> bool {
+        if index < 0 {
+            false
+        } else {
+            let word_index = index / 64;
+            if word_index >= self.words.len() {
+                false
+            } else {
+                let mask = 1 << (index % 64);
+                self.words.get(word_index) & mask != 0
+            }
+        }
+    }
+
+    pub fn insert(self: BitSet, index: int) -> bool {
+        if index < 0 {
+            false
+        } else {
+            let word_index = index / 64;
+            while self.words.len() <= word_index {
+                self.words.push(0);
+            };
+            let mask = 1 << (index % 64);
+            let old = self.words.get(word_index);
+            if old & mask != 0 {
+                false
+            } else {
+                self.words.set(word_index, old | mask);
+                self.len.set(self.len.get() + 1);
+                true
+            }
+        }
+    }
+
+    pub fn remove(self: BitSet, index: int) -> bool {
+        if !self.contains(index) {
+            false
+        } else {
+            let word_index = index / 64;
+            let mask = 1 << (index % 64);
+            self.words.set(word_index, self.words.get(word_index) & ~mask);
+            self.len.set(self.len.get() - 1);
+            true
+        }
+    }
+
+    pub fn clear(self: BitSet) -> unit {
+        self.words.clear();
+        self.len.set(0)
+    }
+}

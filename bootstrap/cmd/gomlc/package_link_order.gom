@@ -1,0 +1,111 @@
+package main;
+
+use gomlc::hir;
+
+struct PackageOrderNode {
+    name: string,
+    dependencies: Vec[string],
+    position: int,
+}
+
+fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
+    let result = Vec::new();
+    for value in values {
+        for dependency in value.import_aliases {
+            if public_names_contain(result, dependency.package_name) {
+                ()
+            } else {
+                result.push(dependency.package_name)
+            }
+        }
+    };
+    result
+}
+
+fn package_node_name_present(values: Vec[PackageOrderNode], name: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.name == name {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn package_node_is_ready(
+    value: PackageOrderNode,
+    remaining: Vec[PackageOrderNode],
+) -> bool {
+    let ready = Ref::new(true);
+    for dependency in value.dependencies {
+        if package_node_name_present(remaining, dependency) {
+            ready.set(false)
+        } else {
+            ()
+        }
+    };
+    ready.get()
+}
+
+fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string] {
+    let remaining = Vec::new();
+    let names = Vec::new();
+    for value in values {
+        if public_names_contain(names, value.name) {
+            return Result::Err("duplicate core provided for package " + value.name)
+        } else {
+            names.push(value.name);
+            remaining.push(value)
+        }
+    };
+    let result = Vec::new();
+    while remaining.len() > 0 {
+        let candidate = Ref::new(-1);
+        for index in range(0, remaining.len()) {
+            let value = remaining.get(index);
+            if package_node_is_ready(value, remaining)
+                && (candidate.get() < 0
+                    || artifact_string_less(
+                        value.name,
+                        remaining.get(candidate.get()).name,
+                    ))
+            {
+                candidate.set(index)
+            } else {
+                ()
+            }
+        };
+        if candidate.get() < 0 {
+            return Result::Err("package dependency cycle detected in core inputs")
+        } else {
+            result.push(remaining.remove(candidate.get()).position)
+        }
+    };
+    Result::Ok(result)
+}
+
+fn order_artifact_compilations(
+    values: Vec[ArtifactCompilation],
+) -> Result[Vec[ArtifactCompilation], string] {
+    let nodes = Vec::new();
+    for index in range(0, values.len()) {
+        let value = values.get(index);
+        nodes.push(PackageOrderNode {
+            name: value.package_name,
+            dependencies: value.dependency_names,
+            position: index,
+        })
+    };
+    match order_package_nodes(nodes) {
+        Result::Ok(order) => {
+            let result = Vec::new();
+            for index in order {
+                result.push(values.get(index))
+            };
+            Result::Ok(result)
+        },
+        Result::Err(error) => Result::Err(error),
+    }
+}

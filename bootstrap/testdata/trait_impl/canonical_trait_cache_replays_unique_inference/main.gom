@@ -1,0 +1,18 @@
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+impl Mark for Vec[int32] {
+    fn mark(self: Vec[int32]) -> unit { () }
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let first = vec_new();
+    require_mark(first);
+    let second = vec_new();
+    require_mark(second)
+}

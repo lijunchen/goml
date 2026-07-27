@@ -1,49 +1,22 @@
-# GoML VS Code Extension
+# GoML VS Code extension
 
-This extension provides language support for GoML (`.gom` files).
+The extension provides syntax highlighting, diagnostics, hover, completion, go-to-definition, signature help, inlay hints, test code lenses, and quick fixes.
 
-## Features
+Build the self-hosted language server and extension:
 
-- Syntax highlighting
-- Hover type information
-- Autocompletion (dot, `::`, and value completions)
-- Go-to-definition
-- Diagnostics (errors and warnings)
-
-## Installation
-
-### Development
-
-1. Build the LSP server:
-   ```bash
-   cargo build -p lsp-server --release
-   ```
-
-2. Copy the binary to the extension's `bin` folder:
-   ```bash
-   mkdir -p editors/vscode/bin
-   cp target/release/goml-lsp editors/vscode/bin/
-   ```
-
-3. Install dependencies and compile the extension:
-   ```bash
-   cd editors/vscode
-   npm install
-   npm run compile
-   ```
-
-4. Open VS Code in the extension folder and press F5 to launch a new Extension Development Host.
-
-### Configuration
-
-- `goml.serverPath`: Path to the goml-lsp executable. If empty, uses the bundled server or searches PATH.
-- `goml.trace.server`: Traces communication between VS Code and the language server.
-
-## Building for Distribution
-
-```bash
-cd editors/vscode
-npm run package
+```sh
+just vscode-ext
 ```
 
-This creates a `.vsix` file that can be installed in VS Code.
+Press F5 from VS Code to launch the Extension Development Host.
+
+Configuration:
+
+- `goml.serverPath` overrides the bundled or `PATH`-resolved `gomllsp`.
+- `goml.trace.server` controls language-server tracing.
+
+Package a `.vsix` with:
+
+```sh
+just package-vscode-ext
+```

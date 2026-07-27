@@ -1,0 +1,31 @@
+fn parse(flag/0: bool) -> Result[int32, string] {
+    if (flag/0 : bool) {
+        {
+            Result::Ok(41)
+        }
+    } else {
+        {
+            Result::Err("bad")
+        }
+    }
+}
+
+fn compute(flag/1: bool) -> Result[int32, string] {
+    let value/2: int32 = match (parse : (bool) -> Result[int32, string])((flag/1 : bool)) {
+        Result::Ok(try_value/12: int32) => (try_value/12 : int32),
+        Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+    };
+    Result::Ok((value/2 : int32) + 1)
+}
+
+fn show(value/3: Result[int32, string]) -> string {
+    match (value/3 : Result[int32, string]) {
+        Result::Ok(value/4: int32) => (int32::to_string : (int32) -> string)((value/4 : int32)),
+        Result::Err(error/5: string) => (error/5 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((compute : (bool) -> Result[int32, string])(true)));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((compute : (bool) -> Result[int32, string])(false)))
+}

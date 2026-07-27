@@ -1,0 +1,66 @@
+fn add_after_match(flag/0: bool) -> int32 {
+  let value/1 = match flag/0 {
+    true => {
+      return 5
+    },
+    false => {
+      7
+    },
+  } in
+  (value/1 + 1)
+}
+
+fn receiver_after_match(flag/2: bool) -> string {
+  inherent#int#int#to_string(match flag/2 {
+    true => {
+      return "early"
+    },
+    false => {
+      7
+    },
+  })
+}
+
+fn closure_after_match(flag/3: bool) -> int32 {
+  let f/6 = |inner/4| {
+    let value/5 = match inner/4 {
+      true => {
+        return 2
+      },
+      false => {
+        4
+      },
+    } in
+    (value/5 + 3)
+  } in
+  f/6(flag/3)
+}
+
+fn main() -> unit {
+  let _wild64 = println__T_int32(add_after_match(false)) in
+  let _wild65 = println__T_int32(add_after_match(true)) in
+  let _wild66 = println__T_string(receiver_after_match(false)) in
+  let _wild67 = println__T_string(receiver_after_match(true)) in
+  let _wild68 = println__T_int32(closure_after_match(false)) in
+  let _wild69 = println__T_int32(closure_after_match(true)) in
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  @runtime(core.int_to_string)(self/5)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  @runtime(core.int32_to_string)(self/43)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

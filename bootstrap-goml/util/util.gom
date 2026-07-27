@@ -1,0 +1,234 @@
+package util;
+
+pub fn starts_with(value: string, prefix: string) -> bool {
+    value.byte_len() >= prefix.byte_len()
+        && value.byte_slice(0, prefix.byte_len()) == prefix
+}
+
+pub fn ends_with(value: string, suffix: string) -> bool {
+    value.byte_len() >= suffix.byte_len()
+        && value.byte_slice(
+            value.byte_len() - suffix.byte_len(),
+            value.byte_len(),
+        ) == suffix
+}
+
+fn whitespace(value: uint8) -> bool {
+    value == 32 || value == 9 || value == 10 || value == 13
+}
+
+pub fn trim(value: string) -> string {
+    let start = Ref::new(0);
+    while start.get() < value.byte_len()
+        && whitespace(value.byte_get(start.get()))
+    {
+        start.set(start.get() + 1)
+    };
+    let end = Ref::new(value.byte_len());
+    while end.get() > start.get()
+        && whitespace(value.byte_get(end.get() - 1))
+    {
+        end.set(end.get() - 1)
+    };
+    value.byte_slice(start.get(), end.get())
+}
+
+pub fn contains(value: string, needle: string) -> bool {
+    if needle.byte_len() == 0 {
+        return true
+    } else {
+        ()
+    };
+    if needle.byte_len() > value.byte_len() {
+        return false
+    } else {
+        ()
+    };
+    for index in range(0, value.byte_len() - needle.byte_len() + 1) {
+        if value.byte_slice(index, index + needle.byte_len()) == needle {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+pub fn split_lines(value: string) -> Vec[string] {
+    let result = Vec::new();
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 10 {
+            let end = if index > start.get()
+                && value.byte_get(index - 1) == 13
+            {
+                index - 1
+            } else {
+                index
+            };
+            result.push(value.byte_slice(start.get(), end));
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    if start.get() <= value.byte_len() {
+        result.push(value.byte_slice(start.get(), value.byte_len()))
+    } else {
+        ()
+    };
+    result
+}
+
+pub fn split(value: string, separator: string) -> Vec[string] {
+    let result = Vec::new();
+    if separator.byte_len() == 0 {
+        result.push(value);
+        return result
+    } else {
+        ()
+    };
+    let start = Ref::new(0);
+    let index = Ref::new(0);
+    while index.get() + separator.byte_len() <= value.byte_len() {
+        if value.byte_slice(
+            index.get(),
+            index.get() + separator.byte_len(),
+        ) == separator {
+            result.push(value.byte_slice(start.get(), index.get()));
+            index.set(index.get() + separator.byte_len());
+            start.set(index.get())
+        } else {
+            index.set(index.get() + 1)
+        }
+    };
+    result.push(value.byte_slice(start.get(), value.byte_len()));
+    result
+}
+
+pub fn join(values: Vec[string], separator: string) -> string {
+    let result = Ref::new("");
+    for index in range(0, values.len()) {
+        if index > 0 {
+            result.set(result.get() + separator)
+        } else {
+            ()
+        };
+        result.set(result.get() + values.get(index))
+    };
+    result.get()
+}
+
+pub fn sorted(values: Vec[string]) -> Vec[string] {
+    let result = Vec::new();
+    for value in values {
+        let inserted = Ref::new(false);
+        for index in range(0, result.len()) {
+            if !(inserted.get()) && value < result.get(index) {
+                result.insert(index, value);
+                inserted.set(true)
+            } else {
+                ()
+            }
+        };
+        if !(inserted.get()) {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
+    let result = Vec::new();
+    for value in sorted(values) {
+        if result.len() == 0 || result.get(result.len() - 1) != value {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+pub fn parse_positive_int(value: string) -> Result[int, string] {
+    if value.byte_len() == 0 {
+        return Result::Err("expected a positive integer")
+    } else {
+        ()
+    };
+    let result = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if byte < 48 || byte > 57 {
+            return Result::Err("expected a positive integer")
+        } else {
+            let digit = if byte == 48 {
+                0
+            } else if byte == 49 {
+                1
+            } else if byte == 50 {
+                2
+            } else if byte == 51 {
+                3
+            } else if byte == 52 {
+                4
+            } else if byte == 53 {
+                5
+            } else if byte == 54 {
+                6
+            } else if byte == 55 {
+                7
+            } else if byte == 56 {
+                8
+            } else {
+                9
+            };
+            result.set(result.get() * 10 + digit)
+        }
+    };
+    if result.get() > 0 {
+        Result::Ok(result.get())
+    } else {
+        Result::Err("expected a positive integer")
+    }
+}
+
+pub fn shell_escape(value: string) -> string {
+    if value.byte_len() > 0 {
+        let plain = Ref::new(true);
+        for index in range(0, value.byte_len()) {
+            let byte = value.byte_get(index);
+            if (byte >= 48 && byte <= 57)
+                || (byte >= 65 && byte <= 90)
+                || (byte >= 97 && byte <= 122)
+                || byte == 45
+                || byte == 46
+                || byte == 47
+                || byte == 58
+                || byte == 95
+            {
+                ()
+            } else {
+                plain.set(false)
+            }
+        };
+        if plain.get() {
+            return value
+        } else {
+            ()
+        }
+    } else {
+        ()
+    };
+    let result = Ref::new("'");
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 39 {
+            result.set(result.get() + "'\\''")
+        } else {
+            result.set(result.get() + value.byte_slice(index, index + 1))
+        }
+    };
+    result.get() + "'"
+}

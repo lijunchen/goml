@@ -1,0 +1,140 @@
+package anf;
+
+use gomlc::ast;
+use gomlc::core;
+use gomlc::tast;
+
+pub struct File {
+    pub functions: Vec[Function],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
+    pub type_instances: Vec[core::TypeInstance],
+}
+
+pub struct Function {
+    pub name: string,
+    pub root: bool,
+    pub trait_impl: Option[core::TraitImpl],
+    pub params: Vec[(string, tast::Type)],
+    pub ret_ty: tast::Type,
+    pub body: Block,
+}
+
+pub struct Block {
+    pub binds: Vec[Bind],
+    pub term: Term,
+}
+
+pub enum Imm {
+    Var { name: string, ty: tast::Type },
+    Callable { callable: tast::Callable, ty: tast::Type },
+    Prim { value: tast::Primitive, ty: tast::Type },
+    Tag { index: int, ty: tast::Type },
+}
+
+pub struct LetBind {
+    pub name: string,
+    pub value: Value,
+    pub ty: tast::Type,
+}
+
+pub struct JoinBind {
+    pub name: string,
+    pub params: Vec[(string, tast::Type)],
+    pub ret_ty: tast::Type,
+    pub body: Block,
+}
+
+pub enum Bind {
+    Let(LetBind),
+    Join(JoinBind),
+    JoinRec(Vec[JoinBind]),
+}
+
+pub enum Value {
+    Imm(Imm),
+    Constr { constructor: tast::Constructor, args: Vec[Imm], ty: tast::Type },
+    Tuple { items: Vec[Imm], ty: tast::Type },
+    Array { items: Vec[Imm], ty: tast::Type },
+    ConstrGet {
+        expr: Imm,
+        constructor: tast::Constructor,
+        field_index: int,
+        ty: tast::Type,
+    },
+    Unary { op: ast::UnaryOp, expr: Imm, ty: tast::Type },
+    Cast { expr: Imm, ty: tast::Type },
+    Binary { op: ast::BinaryOp, lhs: Imm, rhs: Imm, ty: tast::Type },
+    Assign { name: string, value: Imm, target_ty: tast::Type, ty: tast::Type },
+    Call { func: Imm, args: Vec[Imm], ty: tast::Type },
+    ToDyn { trait_name: string, for_ty: tast::Type, expr: Imm, ty: tast::Type },
+    DynCall {
+        trait_name: string,
+        method_name: string,
+        receiver: Imm,
+        args: Vec[Imm],
+        ty: tast::Type,
+    },
+    Go { closure: Imm, ty: tast::Type },
+    Proj { tuple: Imm, index: int, ty: tast::Type },
+}
+
+pub struct Arm {
+    pub lhs: Imm,
+    pub body: Block,
+}
+
+pub enum Term {
+    Return(Imm),
+    Jump { target: string, args: Vec[Imm], ret_ty: tast::Type },
+    If { cond: Imm, then_: Block, else_: Block, ret_ty: tast::Type },
+    Match {
+        scrutinee: Imm,
+        arms: Vec[Arm],
+        default: Option[Block],
+        ret_ty: tast::Type,
+    },
+    Unreachable { ty: tast::Type },
+}
+
+pub fn imm_type(value: Imm) -> tast::Type {
+    match value {
+        Imm::Var { ty, .. }
+        | Imm::Callable { ty, .. }
+        | Imm::Prim { ty, .. }
+        | Imm::Tag { ty, .. } => ty,
+    }
+}
+
+pub fn value_type(value: Value) -> tast::Type {
+    match value {
+        Value::Imm(value) => imm_type(value),
+        Value::Constr { ty, .. }
+        | Value::Tuple { ty, .. }
+        | Value::Array { ty, .. }
+        | Value::ConstrGet { ty, .. }
+        | Value::Unary { ty, .. }
+        | Value::Cast { ty, .. }
+        | Value::Binary { ty, .. }
+        | Value::Assign { ty, .. }
+        | Value::Call { ty, .. }
+        | Value::ToDyn { ty, .. }
+        | Value::DynCall { ty, .. }
+        | Value::Go { ty, .. }
+        | Value::Proj { ty, .. } => ty,
+    }
+}
+
+pub fn term_type(value: Term) -> tast::Type {
+    match value {
+        Term::Return(value) => imm_type(value),
+        Term::Jump { ret_ty, .. }
+        | Term::If { ret_ty, .. }
+        | Term::Match { ret_ty, .. } => ret_ty,
+        Term::Unreachable { ty } => ty,
+    }
+}
+
+pub fn block_type(value: Block) -> tast::Type {
+    term_type(value.term)
+}

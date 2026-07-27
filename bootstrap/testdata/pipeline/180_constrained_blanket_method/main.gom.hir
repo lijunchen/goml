@@ -1,0 +1,32 @@
+package main
+file main.gom
+  trait Mark {
+      fn mark(Self) -> unit;
+    }
+    
+    trait Extra {
+      fn extra(Self) -> int32;
+    }
+    
+    impl Mark for int32 {
+      fn mark(local/1/0: int32) -> unit {
+          ()
+      }
+    }
+    
+    impl[T: Mark] Extra for T {
+      fn extra(local/1/1: T) -> int32 {
+          42
+      }
+    }
+    
+    fn apply(local/1/2: T) -> int32 {
+        value/2.extra()
+    }
+    
+    fn main() -> unit {
+        let local/1/3: int32 = 1;
+        let local/1/4: int32 = 2;
+        println(def/1/4(first/3));
+        println(second/4.extra());
+    }

@@ -1,0 +1,82 @@
+package main;
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+struct Node {
+    value: int32,
+    next: List,
+}
+
+enum List {
+    Cons(Node),
+    Nil
+}
+
+enum Shape[T] {
+    Dot(Point),
+    Wrapped(Wrapper[T]),
+    Origin
+}
+
+impl Point {
+  fn new(x: int32, y: int32) -> Self {
+      Point {
+          x: x,
+          y: y
+      }
+  }
+  fn copy(self: Self, other: Self) -> Self {
+      Point {
+          x: self.x + other.x,
+          y: self.y + other.y
+      }
+  }
+  fn origin() -> Self {
+      Point {
+          x: 0,
+          y: 0
+      }
+  }
+}
+
+fn wrap(value: T) -> T {
+    let id = |item: T| item;
+    id(value)
+}
+
+fn shape_value(value: Shape[int32]) -> int32 {
+    match value {
+        Shape::Dot(point) => point.x + point.y,
+        Shape::Wrapped(wrapper) => wrapper.value,
+        Shape::Origin => 0,
+    }
+}
+
+fn list_value(value: List) -> int32 {
+    match value {
+        List::Cons(node) => node.value + list_value(node.next),
+        List::Nil => 0,
+    }
+}
+
+fn main() -> unit {
+    let offset = 1;
+    let add = |value| value + offset;
+    let point = Point::new(add(1), 3);
+    let combined = Point::copy(point, Point::origin());
+    let wrapped = Shape::Wrapped(Wrapper {
+        value: wrap(4)
+    });
+    let list = List::Cons(Node {
+        value: 5,
+        next: List::Nil
+    });
+    println(combined.x + combined.y + shape_value(wrapped) + list_value(list).to_string())
+}
+

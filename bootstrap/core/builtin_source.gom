@@ -1,0 +1,876 @@
+package core;
+
+pub fn builtin_source() -> string {
+    let source = \\package builtin;
+        \\
+        \\trait Iterator {
+        \\    type Item;
+        \\
+        \\    fn next(self: Self) -> Option[Self::Item];
+        \\}
+        \\
+        \\trait IntoIterator {
+        \\    type Item;
+        \\    type IntoIter: Iterator;
+        \\
+        \\    fn into_iter(self: Self) -> Self::IntoIter;
+        \\}
+        \\
+        \\struct FnIterator[T] {
+        \\    next_fn: () -> Option[T],
+        \\}
+        \\
+        \\struct MapIterator[A, B, I] {
+        \\    iterator: I,
+        \\    map_fn: (A) -> B,
+        \\}
+        \\
+        \\struct FilterIterator[T, I] {
+        \\    iterator: I,
+        \\    predicate: (T) -> bool,
+        \\}
+        \\
+        \\struct TakeIterator[I] {
+        \\    iterator: I,
+        \\    remaining: Ref[int],
+        \\}
+        \\
+        \\fn print[T: ToString](value: T) -> unit {
+        \\    string_print(ToString::to_string(value))
+        \\}
+        \\
+        \\fn println[T: ToString](value: T) -> unit {
+        \\    string_println(ToString::to_string(value))
+        \\}
+        \\
+        \\fn char_from_uint32(value: uint32) -> Option[char] {
+        \\    let (valid, value) = char_from_uint32_raw(value);
+        \\    if valid {
+        \\        Option::Some(value)
+        \\    } else {
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\impl int {
+        \\    fn to_string(self: int) -> string {
+        \\        int_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl int32 {
+        \\    fn to_string(self: int32) -> string {
+        \\        int32_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl char {
+        \\    fn to_string(self: char) -> string {
+        \\        char_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl string {
+        \\    fn len(self: string) -> int {
+        \\        string_len(self)
+        \\    }
+        \\
+        \\    fn byte_len(self: string) -> int {
+        \\        string_len(self)
+        \\    }
+        \\
+        \\    fn get(self: string, index: int) -> char {
+        \\        string_get(self, index)
+        \\    }
+        \\
+        \\    fn byte_get(self: string, index: int) -> uint8 {
+        \\        string_byte_get(self, index)
+        \\    }
+        \\
+        \\    fn byte_slice(self: string, start: int, end: int) -> string {
+        \\        string_byte_slice(self, start, end)
+        \\    }
+        \\
+        \\    fn is_char_boundary(self: string, index: int) -> bool {
+        \\        string_is_char_boundary(self, index)
+        \\    }
+        \\
+        \\    fn decode_at(self: string, index: int) -> Option[(char, int)] {
+        \\        let (valid, value, width) = string_decode_utf8_at(self, index);
+        \\        if valid {
+        \\            Option::Some((value, width))
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    }
+        \\
+        \\    fn to_bytes(self: string) -> Vec[uint8] {
+        \\        string_to_bytes(self)
+        \\    }
+        \\
+        \\    fn chars(self: string) -> FnIterator[char] {
+        \\        let index = Ref::new(0);
+        \\        FnIterator::from_fn(|| {
+        \\            match self.decode_at(index.get()) {
+        \\                Option::Some(decoded) => {
+        \\                    let (value, width) = decoded;
+        \\                    index.set(index.get() + width);
+        \\                    Option::Some(value)
+        \\                },
+        \\                Option::None => Option::None,
+        \\            }
+        \\        })
+        \\    }
+        \\
+        \\    fn char_indices(self: string) -> FnIterator[(int, char)] {
+        \\        let index = Ref::new(0);
+        \\        FnIterator::from_fn(|| {
+        \\            let current = index.get();
+        \\            match self.decode_at(current) {
+        \\                Option::Some(decoded) => {
+        \\                    let (value, width) = decoded;
+        \\                    index.set(current + width);
+        \\                    Option::Some((current, value))
+        \\                },
+        \\                Option::None => Option::None,
+        \\            }
+        \\        })
+        \\    }
+        \\}
+        \\
+        \\impl ToString for unit {
+        \\    fn to_string(self: unit) -> string {
+        \\        unit_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for bool {
+        \\    fn to_string(self: bool) -> string {
+        \\        bool_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for string {
+        \\    fn to_string(self: string) -> string {
+        \\        self
+        \\    }
+        \\}
+        \\
+        \\impl ToString for char {
+        \\    fn to_string(self: char) -> string {
+        \\        char_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for int {
+        \\    fn to_string(self: int) -> string {
+        \\        int_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for int8 {
+        \\    fn to_string(self: int8) -> string {
+        \\        int8_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for int16 {
+        \\    fn to_string(self: int16) -> string {
+        \\        int16_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for int32 {
+        \\    fn to_string(self: int32) -> string {
+        \\        int32_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for int64 {
+        \\    fn to_string(self: int64) -> string {
+        \\        int64_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for uint8 {
+        \\    fn to_string(self: uint8) -> string {
+        \\        uint8_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for uint16 {
+        \\    fn to_string(self: uint16) -> string {
+        \\        uint16_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for uint32 {
+        \\    fn to_string(self: uint32) -> string {
+        \\        uint32_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for uint64 {
+        \\    fn to_string(self: uint64) -> string {
+        \\        uint64_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for float32 {
+        \\    fn to_string(self: float32) -> string {
+        \\        float32_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for float64 {
+        \\    fn to_string(self: float64) -> string {
+        \\        float64_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for unit {
+        \\    fn eq(self: unit, other: unit) -> bool {
+        \\        true
+        \\    }
+        \\}
+        \\
+        \\impl Eq for bool {
+        \\    fn eq(self: bool, other: bool) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for string {
+        \\    fn eq(self: string, other: string) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for char {
+        \\    fn eq(self: char, other: char) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for int {
+        \\    fn eq(self: int, other: int) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for int8 {
+        \\    fn eq(self: int8, other: int8) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for int16 {
+        \\    fn eq(self: int16, other: int16) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for int32 {
+        \\    fn eq(self: int32, other: int32) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for int64 {
+        \\    fn eq(self: int64, other: int64) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for uint8 {
+        \\    fn eq(self: uint8, other: uint8) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for uint16 {
+        \\    fn eq(self: uint16, other: uint16) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for uint32 {
+        \\    fn eq(self: uint32, other: uint32) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for uint64 {
+        \\    fn eq(self: uint64, other: uint64) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for float32 {
+        \\    fn eq(self: float32, other: float32) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for float64 {
+        \\    fn eq(self: float64, other: float64) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for unit {
+        \\    fn hash(self: unit) -> uint64 {
+        \\        0
+        \\    }
+        \\}
+        \\
+        \\impl Hash for bool {
+        \\    fn hash(self: bool) -> uint64 {
+        \\        if self { 1 } else { 0 }
+        \\    }
+        \\}
+        \\
+        \\impl Hash for string {
+        \\    fn hash(self: string) -> uint64 {
+        \\        string_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for char {
+        \\    fn hash(self: char) -> uint64 {
+        \\        char_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for int {
+        \\    fn hash(self: int) -> uint64 {
+        \\        int_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for int8 {
+        \\    fn hash(self: int8) -> uint64 {
+        \\        int8_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for int16 {
+        \\    fn hash(self: int16) -> uint64 {
+        \\        int16_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for int32 {
+        \\    fn hash(self: int32) -> uint64 {
+        \\        int32_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for int64 {
+        \\    fn hash(self: int64) -> uint64 {
+        \\        int64_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for uint8 {
+        \\    fn hash(self: uint8) -> uint64 {
+        \\        uint8_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for uint16 {
+        \\    fn hash(self: uint16) -> uint64 {
+        \\        uint16_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for uint32 {
+        \\    fn hash(self: uint32) -> uint64 {
+        \\        uint32_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for uint64 {
+        \\    fn hash(self: uint64) -> uint64 {
+        \\        self
+        \\    }
+        \\}
+        \\
+        \\impl Hash for float32 {
+        \\    fn hash(self: float32) -> uint64 {
+        \\        float32_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for float64 {
+        \\    fn hash(self: float64) -> uint64 {
+        \\        float64_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl [T] Eq for Ref[T] {
+        \\    fn eq(self: Ref[T], other: Ref[T]) -> bool {
+        \\        ptr_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl [T] Hash for Ref[T] {
+        \\    fn hash(self: Ref[T]) -> uint64 {
+        \\        ptr_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl [T: ToString] ToString for Ref[T] {
+        \\    fn to_string(self: Ref[T]) -> string {
+        \\        let v: T = self.get();
+        \\        "ref(" + ToString::to_string(v) + ")"
+        \\    }
+        \\}
+        \\
+        \\impl [T] FnIterator[T] {
+        \\    fn from_fn(next_fn: () -> Option[T]) -> Self {
+        \\        FnIterator { next_fn }
+        \\    }
+        \\}
+        \\
+        \\impl [T] Iterator for FnIterator[T] {
+        \\    type Item = T;
+        \\
+        \\    fn next(self: Self) -> Option[T] {
+        \\        self.next_fn()
+        \\    }
+        \\}
+        \\
+        \\impl [A, B, I: Iterator] Iterator for MapIterator[A, B, I]
+        \\where
+        \\    I::Item = A,
+        \\{
+        \\    type Item = B;
+        \\
+        \\    fn next(self: Self) -> Option[B] {
+        \\        match Iterator::next(self.iterator) {
+        \\            Option::Some(value) => Option::Some(self.map_fn(value)),
+        \\            Option::None => Option::None,
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [T, I: Iterator] Iterator for FilterIterator[T, I]
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    type Item = T;
+        \\
+        \\    fn next(self: Self) -> Option[T] {
+        \\        while true {
+        \\            match Iterator::next(self.iterator) {
+        \\                Option::Some(value) => if self.predicate(value) {
+        \\                    return Option::Some(value)
+        \\                } else {
+        \\                    ()
+        \\                },
+        \\                Option::None => return Option::None,
+        \\            };
+        \\        };
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\impl [I: Iterator] Iterator for TakeIterator[I] {
+        \\    type Item = I::Item;
+        \\
+        \\    fn next(self: Self) -> Option[I::Item] {
+        \\        let remaining = self.remaining.get();
+        \\        if remaining > 0 {
+        \\            self.remaining.set(remaining - 1);
+        \\            Iterator::next(self.iterator)
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [I: Iterator] IntoIterator for I {
+        \\    type Item = I::Item;
+        \\    type IntoIter = I;
+        \\
+        \\    fn into_iter(self: I) -> I {
+        \\        self
+        \\    }
+        \\}
+        \\
+        \\fn iterator_map[A, B, I: Iterator](
+        \\    iterator: I,
+        \\    map_fn: (A) -> B,
+        \\) -> MapIterator[A, B, I]
+        \\where
+        \\    I::Item = A,
+        \\{
+        \\    MapIterator { iterator, map_fn }
+        \\}
+        \\
+        \\fn iterator_filter[T, I: Iterator](
+        \\    iterator: I,
+        \\    predicate: (T) -> bool,
+        \\) -> FilterIterator[T, I]
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    FilterIterator { iterator, predicate }
+        \\}
+        \\
+        \\fn iterator_take[I: Iterator](iterator: I, count: int) -> TakeIterator[I] {
+        \\    let remaining = if count > 0 { count } else { 0 };
+        \\    TakeIterator {
+        \\        iterator,
+        \\        remaining: Ref::new(remaining),
+        \\    }
+        \\}
+        \\
+        \\fn iterator_fold[T, A, I: Iterator](
+        \\    iterator: I,
+        \\    initial: A,
+        \\    combine: (A, T) -> A,
+        \\) -> A
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    let accumulator = Ref::new(initial);
+        \\    let running = Ref::new(true);
+        \\    while running.get() {
+        \\        match Iterator::next(iterator) {
+        \\            Option::Some(value) => accumulator.set(combine(accumulator.get(), value)),
+        \\            Option::None => running.set(false),
+        \\        };
+        \\    };
+        \\    accumulator.get()
+        \\}
+        \\
+        \\fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T]
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    let values: Vec[T] = Vec::new();
+        \\    let running = Ref::new(true);
+        \\    while running.get() {
+        \\        match Iterator::next(iterator) {
+        \\            Option::Some(value) => values.push(value),
+        \\            Option::None => running.set(false),
+        \\        };
+        \\    };
+        \\    values
+        \\}
+        \\
+        \\impl [T] Vec[T] {
+        \\    fn new() -> Self {
+        \\        vec_new()
+        \\    }
+        \\
+        \\    fn with_capacity(capacity: int) -> Self {
+        \\        vec_with_capacity(capacity)
+        \\    }
+        \\
+        \\    fn push(self: Self, elem: T) -> unit {
+        \\        vec_push(self, elem)
+        \\    }
+        \\
+        \\    fn pushed(self: Self, elem: T) -> Self {
+        \\        let result: Vec[T] = Vec::new();
+        \\        let index = Ref::new(0);
+        \\        while index.get() < self.len() {
+        \\            result.push(self.get(index.get()));
+        \\            index.set(index.get() + 1);
+        \\        };
+        \\        result.push(elem);
+        \\        result
+        \\    }
+        \\
+        \\    fn get(self: Self, index: int) -> T {
+        \\        vec_get(self, index)
+        \\    }
+        \\
+        \\    fn set(self: Self, index: int, elem: T) -> unit {
+        \\        vec_set(self, index, elem)
+        \\    }
+        \\
+        \\    fn len(self: Self) -> int {
+        \\        vec_len(self)
+        \\    }
+        \\
+        \\    fn capacity(self: Self) -> int {
+        \\        vec_capacity(self)
+        \\    }
+        \\
+        \\    fn is_empty(self: Self) -> bool {
+        \\        self.len() == 0
+        \\    }
+        \\
+        \\    fn reserve(self: Self, additional: int) -> unit {
+        \\        vec_reserve(self, additional)
+        \\    }
+        \\
+        \\    fn truncate(self: Self, len: int) -> unit {
+        \\        vec_truncate(self, len)
+        \\    }
+        \\
+        \\    fn clear(self: Self) -> unit {
+        \\        self.truncate(0)
+        \\    }
+        \\
+        \\    fn last(self: Self) -> Option[T] {
+        \\        let len = self.len();
+        \\        if len == 0 {
+        \\            Option::None
+        \\        } else {
+        \\            Option::Some(self.get(len - 1))
+        \\        }
+        \\    }
+        \\
+        \\    fn pop(self: Self) -> Option[T] {
+        \\        let len = self.len();
+        \\        if len == 0 {
+        \\            Option::None
+        \\        } else {
+        \\            let value = self.get(len - 1);
+        \\            self.truncate(len - 1);
+        \\            Option::Some(value)
+        \\        }
+        \\    }
+        \\
+        \\    fn swap(self: Self, left: int, right: int) -> unit {
+        \\        let value = self.get(left);
+        \\        self.set(left, self.get(right));
+        \\        self.set(right, value)
+        \\    }
+        \\
+        \\    fn swap_remove(self: Self, index: int) -> T {
+        \\        let len = self.len();
+        \\        let value = self.get(index);
+        \\        if index + 1 < len {
+        \\            self.set(index, self.get(len - 1));
+        \\        } else {
+        \\            ()
+        \\        };
+        \\        self.truncate(len - 1);
+        \\        value
+        \\    }
+        \\
+        \\    fn insert(self: Self, index: int, value: T) -> unit {
+        \\        let len = self.len();
+        \\        if index == len {
+        \\            self.push(value)
+        \\        } else {
+        \\            let _ = self.get(index);
+        \\            self.push(self.get(len - 1));
+        \\            let current = Ref::new(len - 1);
+        \\            while current.get() > index {
+        \\                self.set(current.get(), self.get(current.get() - 1));
+        \\                current.set(current.get() - 1);
+        \\            };
+        \\            self.set(index, value)
+        \\        }
+        \\    }
+        \\
+        \\    fn remove(self: Self, index: int) -> T {
+        \\        let len = self.len();
+        \\        let value = self.get(index);
+        \\        let current = Ref::new(index);
+        \\        while current.get() + 1 < len {
+        \\            self.set(current.get(), self.get(current.get() + 1));
+        \\            current.set(current.get() + 1);
+        \\        };
+        \\        self.truncate(len - 1);
+        \\        value
+        \\    }
+        \\
+        \\    fn reverse(self: Self) -> unit {
+        \\        let left = Ref::new(0);
+        \\        let right = Ref::new(self.len() - 1);
+        \\        while left.get() < right.get() {
+        \\            self.swap(left.get(), right.get());
+        \\            left.set(left.get() + 1);
+        \\            right.set(right.get() - 1);
+        \\        }
+        \\    }
+        \\
+        \\    fn extend(self: Self, other: Vec[T]) -> unit {
+        \\        let len = other.len();
+        \\        self.reserve(len);
+        \\        let index = Ref::new(0);
+        \\        while index.get() < len {
+        \\            self.push(other.get(index.get()));
+        \\            index.set(index.get() + 1);
+        \\        }
+        \\    }
+        \\
+        \\    fn slice(self: Self, start: int, end: int) -> Slice[T] {
+        \\        slice(self, start, end)
+        \\    }
+        \\
+        \\    fn iter(self: Self) -> FnIterator[T] {
+        \\        let index = Ref::new(0);
+        \\        let len = self.len();
+        \\        FnIterator::from_fn(|| {
+        \\            let current = index.get();
+        \\            if current < len {
+        \\                let value = self.get(current);
+        \\                index.set(current + 1);
+        \\                Option::Some(value)
+        \\            } else {
+        \\                Option::None
+        \\            }
+        \\        })
+        \\    }
+        \\}
+        \\
+        \\impl [T] IntoIterator for Vec[T] {
+        \\    type Item = T;
+        \\    type IntoIter = FnIterator[T];
+        \\
+        \\    fn into_iter(self: Vec[T]) -> FnIterator[T] {
+        \\        self.iter()
+        \\    }
+        \\}
+        \\
+        \\impl [T] Slice[T] {
+        \\    fn get(self: Self, index: int) -> T {
+        \\        slice_get(self, index)
+        \\    }
+        \\
+        \\    fn len(self: Self) -> int {
+        \\        slice_len(self)
+        \\    }
+        \\
+        \\    fn sub(self: Self, start: int, end: int) -> Self {
+        \\        slice_sub(self, start, end)
+        \\    }
+        \\
+        \\    fn iter(self: Self) -> FnIterator[T] {
+        \\        let index = Ref::new(0);
+        \\        let len = self.len();
+        \\        FnIterator::from_fn(|| {
+        \\            let current = index.get();
+        \\            if current < len {
+        \\                let value = self.get(current);
+        \\                index.set(current + 1);
+        \\                Option::Some(value)
+        \\            } else {
+        \\                Option::None
+        \\            }
+        \\        })
+        \\    }
+        \\}
+        \\
+        \\impl [T] IntoIterator for Slice[T] {
+        \\    type Item = T;
+        \\    type IntoIter = FnIterator[T];
+        \\
+        \\    fn into_iter(self: Slice[T]) -> FnIterator[T] {
+        \\        self.iter()
+        \\    }
+        \\}
+        \\
+        \\impl [K: Hash + Eq, V] HashMap[K, V] {
+        \\    fn new() -> Self {
+        \\        hashmap_new()
+        \\    }
+        \\
+        \\    fn get(self: Self, key: K) -> Option[V] {
+        \\        hashmap_get(self, key)
+        \\    }
+        \\
+        \\    fn set(self: Self, key: K, value: V) -> unit {
+        \\        hashmap_set(self, key, value)
+        \\    }
+        \\
+        \\    fn remove(self: Self, key: K) -> unit {
+        \\        hashmap_remove(self, key)
+        \\    }
+        \\
+        \\    fn len(self: Self) -> int {
+        \\        hashmap_len(self)
+        \\    }
+        \\
+        \\    fn contains(self: Self, key: K) -> bool {
+        \\        hashmap_contains(self, key)
+        \\    }
+        \\
+        \\    fn entries(self: Self) -> Vec[(K, V)] {
+        \\        hashmap_entries(self)
+        \\    }
+        \\}
+        \\
+        \\impl [T] Ref[T] {
+        \\    fn new(value: T) -> Self {
+        \\        ref(value)
+        \\    }
+        \\
+        \\    fn get(self: Self) -> T {
+        \\        ref_get(self)
+        \\    }
+        \\
+        \\    fn set(self: Self, value: T) -> unit {
+        \\        ref_set(self, value)
+        \\    }
+        \\}
+        \\
+        \\impl [T] Channel[T] {
+        \\    fn new(capacity: int) -> Self {
+        \\        channel_new(capacity)
+        \\    }
+        \\
+        \\    fn send(self: Self, value: T) -> unit {
+        \\        channel_send(self, value)
+        \\    }
+        \\
+        \\    fn recv(self: Self) -> Option[T] {
+        \\        let (value, ok) = channel_recv(self);
+        \\        if ok {
+        \\            Option::Some(value)
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    }
+        \\
+        \\    fn close(self: Self) -> unit {
+        \\        channel_close(self)
+        \\    }
+        \\}
+        \\
+        \\fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
+        \\    let current = Ref::new(start);
+        \\    FnIterator::from_fn(|| {
+        \\        let value = current.get();
+        \\        if value < end {
+        \\            current.set(value + 1);
+        \\            Option::Some(value)
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    })
+        \\}
+        \\
+        \\fn range(start: int, end: int) -> FnIterator[int] {
+        \\    __goml_builtin_range(start, end)
+        \\}
+        \\
+        \\impl ToString for uint {
+        \\    fn to_string(self: uint) -> string {
+        \\        uint_to_string(self)
+        \\    }
+        \\}
+        \\
+        \\impl Eq for uint {
+        \\    fn eq(self: uint, other: uint) -> bool {
+        \\        __goml_primitive_eq(self, other)
+        \\    }
+        \\}
+        \\
+        \\impl Hash for uint {
+        \\    fn hash(self: uint) -> uint64 {
+        \\        uint_hash(self)
+        \\    }
+        \\}
+    ;
+    source
+}

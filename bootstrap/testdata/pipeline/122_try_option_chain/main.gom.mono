@@ -1,0 +1,95 @@
+fn maybe_seed(flag/0: bool) -> Option__int32 {
+  if flag/0 {
+      {
+        Option__int32::Some(3)
+      }
+  } else {
+      {
+        Option__int32::None
+      }
+  }
+}
+
+fn maybe_double(value/1: int32) -> Option__int32 {
+  if (value/1 > 0) {
+      {
+        Option__int32::Some((value/1 * 2))
+      }
+  } else {
+      {
+        Option__int32::None
+      }
+  }
+}
+
+fn maybe_total(flag/2: bool) -> Option__int32 {
+  let a/3 = {
+    let mtmp64 = maybe_seed(flag/2) in
+    match mtmp64 {
+      Option__int32::None => {
+        return Option__int32::None
+      },
+      Option__int32::Some(x65) => {
+        {
+          let x65 = Option__int32::Some._0(mtmp64) in
+          {
+            let try_value/22 = x65 in
+            try_value/22
+          }
+        }
+      },
+    }
+  } in
+  let b/4 = {
+    let mtmp66 = maybe_double(a/3) in
+    match mtmp66 {
+      Option__int32::None => {
+        return Option__int32::None
+      },
+      Option__int32::Some(x67) => {
+        {
+          let x67 = Option__int32::Some._0(mtmp66) in
+          {
+            let try_value/26 = x67 in
+            try_value/26
+          }
+        }
+      },
+    }
+  } in
+  Option__int32::Some((a/3 + b/4))
+}
+
+fn show(opt/5: Option__int32) -> string {
+  match opt/5 {
+    Option__int32::None => {
+      "none"
+    },
+    Option__int32::Some(x68) => {
+      {
+        let x68 = Option__int32::Some._0(opt/5) in
+        {
+          let value/6 = x68 in
+          ("some=" + inherent#int32#int32#to_string(value/6))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild69 = println__T_string(show(maybe_total(true))) in
+  let _wild70 = println__T_string(show(maybe_total(false))) in
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

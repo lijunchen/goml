@@ -1,0 +1,49 @@
+package main;
+trait Render {
+  fn render(self: Self) -> string;
+}
+
+trait Parent[T] {
+  fn parent(self: Self) -> T;
+}
+
+trait Child[T: ToString]: Parent[T] + Render {
+  fn child(self: Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl[T] Parent[T] for Box[T] {
+  fn parent(self: Box[T]) -> T {
+      self.value
+  }
+}
+
+impl[T] Render for Box[T] {
+  fn render(self: Box[T]) -> string {
+      ":render"
+  }
+}
+
+impl[T: ToString + Eq] Child[T] for Box[T] {
+  fn child(self: Box[T]) -> string {
+      ":child"
+  }
+}
+
+fn describe(value: B) -> string {
+    value.parent().to_string() + value.render() + value.child()
+}
+
+fn main() -> unit {
+    string_println(describe(Box {
+            value: 5
+        }));
+    let value: Box[int32] = Box {
+        value: 6
+    };
+    string_println(Child::[int32]::parent(value).to_string())
+}
+

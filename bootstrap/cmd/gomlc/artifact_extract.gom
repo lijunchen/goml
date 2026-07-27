@@ -1,0 +1,606 @@
+package main;
+
+use gomlc::ast;
+use gomlc::tast;
+
+fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type) -> tast::Type {
+    let types = Vec::new();
+    for param in params {
+        types.push(param.1)
+    };
+    tast::Type::Func { params: types, ret_ty }
+}
+
+fn artifact_fn_scheme(value: tast::FunctionScheme) -> ArtifactFnScheme {
+    ArtifactFnScheme {
+        name: value.name,
+        type_params: value.generics,
+        constraints: value.predicates,
+        ty: tast::Type::Func { params: value.params, ret_ty: value.ret_ty },
+        body: value.callable,
+    }
+}
+
+fn artifact_local_trait_name(
+    owner: string,
+    name: string,
+    trait_names: Vec[string],
+) -> string {
+    if artifact_string_contains(name, "::") {
+        name
+    } else {
+        let separator = artifact_constructor_separator(owner);
+        let candidate = if separator < 0 {
+            name
+        } else {
+            owner.byte_slice(0, separator + 2) + name
+        };
+        if public_names_contain(trait_names, candidate) { candidate } else { name }
+    }
+}
+
+fn artifact_trait_definition_ref(
+    value: tast::TraitRef,
+    owner: string,
+    trait_names: Vec[string],
+) -> tast::TraitRef {
+    let args = Vec::new();
+    for arg in value.args {
+        args.push(artifact_trait_definition_type(arg, owner, trait_names))
+    };
+    tast::TraitRef {
+        name: artifact_local_trait_name(owner, value.name, trait_names),
+        args,
+    }
+}
+
+fn artifact_trait_definition_type(
+    value: tast::Type,
+    owner: string,
+    trait_names: Vec[string],
+) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Param { name } => if name == "Self" {
+            tast::Type::Con { name }
+        } else {
+            tast::Type::Param { name }
+        },
+        tast::Type::Tuple { items: values } => {
+            let result = Vec::new();
+            for value in values {
+                result.push(artifact_trait_definition_type(value, owner, trait_names))
+            };
+            tast::Type::Tuple { items: result }
+        },
+        tast::Type::Projection { for_ty, name, trait_ref } => tast::Type::Projection {
+            for_ty: artifact_trait_definition_type(for_ty, owner, trait_names),
+            name,
+            trait_ref: match trait_ref {
+                            Option::Some(value) => Option::Some(artifact_trait_definition_ref(
+                                value,
+                                owner,
+                                trait_names,
+                            )),
+                            Option::None => Option::None,
+                        },
+        },
+        tast::Type::App { ty: base, args } => {
+            let result = Vec::new();
+            for arg in args {
+                result.push(artifact_trait_definition_type(arg, owner, trait_names))
+            };
+            tast::Type::App {
+                ty: artifact_trait_definition_type(base, owner, trait_names),
+                args: result,
+            }
+        },
+        tast::Type::Array { len: length, elem: element } => tast::Type::Array {
+            len: length,
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::Slice { elem: element } => tast::Type::Slice {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::VecType { elem: element } => tast::Type::VecType {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::RefType { elem: element } => tast::Type::RefType {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::Channel { elem: element } => tast::Type::Channel {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
+        tast::Type::HashMap { key, value: item } => tast::Type::HashMap {
+            key: artifact_trait_definition_type(key, owner, trait_names),
+            value: artifact_trait_definition_type(item, owner, trait_names),
+        },
+        tast::Type::Func { params, ret_ty } => {
+            let result = Vec::new();
+            for param in params {
+                result.push(artifact_trait_definition_type(param, owner, trait_names))
+            };
+            tast::Type::Func {
+                params: result,
+                ret_ty: artifact_trait_definition_type(ret_ty, owner, trait_names),
+            }
+        },
+        other => other,
+    }
+}
+
+fn artifact_trait_definition_predicate(
+    value: tast::TypePredicate,
+    owner: string,
+    trait_names: Vec[string],
+) -> tast::TypePredicate {
+    match value {
+        tast::TypePredicate::Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
+            for_ty: artifact_trait_definition_type(for_ty, owner, trait_names),
+            trait_ref: artifact_trait_definition_ref(trait_ref, owner, trait_names),
+        },
+        tast::TypePredicate::Equality { lhs: left, rhs: right } => tast::TypePredicate::Equality {
+            lhs: artifact_trait_definition_type(left, owner, trait_names),
+            rhs: artifact_trait_definition_type(right, owner, trait_names),
+        },
+    }
+}
+
+fn artifact_trait_def(
+    value: tast::TraitInfo,
+    trait_names: Vec[string],
+) -> ArtifactTraitDef {
+    let associated_types = Vec::new();
+    for associated in value.associated_types {
+        let bounds = Vec::new();
+        for bound in associated.bounds {
+            bounds.push(artifact_trait_definition_ref(
+                bound,
+                value.name,
+                trait_names,
+            ))
+        };
+        associated_types.push(ArtifactAssociatedTypeDef {
+            name: associated.name,
+            bounds,
+        })
+    };
+    let methods = Vec::new();
+    for method in value.methods {
+        methods.push(ArtifactFnScheme {
+            name: method.name,
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: artifact_trait_definition_type(
+                tast::Type::Func { params: method.params, ret_ty: method.ret_ty },
+                value.name,
+                trait_names,
+            ),
+            body: tast::Callable::Function(method.name),
+        })
+    };
+    let predicates = Vec::new();
+    for predicate in value.predicates {
+        predicates.push(artifact_trait_definition_predicate(
+            predicate,
+            value.name,
+            trait_names,
+        ))
+    };
+    let supertraits = Vec::new();
+    for supertrait in value.supertraits {
+        supertraits.push(artifact_trait_definition_ref(
+            supertrait,
+            value.name,
+            trait_names,
+        ))
+    };
+    ArtifactTraitDef {
+        name: value.name,
+        params: value.generics,
+        predicates,
+        supertraits,
+        associated_types,
+        methods,
+    }
+}
+
+fn artifact_method_constraints(
+    value: tast::Function,
+    start: int,
+) -> Vec[tast::TypePredicate] {
+    let result = Vec::new();
+    for index in range(start, value.predicates.len()) {
+        result.push(value.predicates.get(index))
+    };
+    result
+}
+
+fn artifact_method_scheme(
+    value: tast::Function,
+    constraint_start: int,
+) -> ArtifactFnScheme {
+    ArtifactFnScheme {
+        name: value.name,
+        type_params: value.generics,
+        constraints: artifact_method_constraints(value, constraint_start),
+        ty: artifact_function_type(value.params, value.ret_ty),
+        body: tast::Callable::Function(value.name),
+    }
+}
+
+fn artifact_method_is_public(value: tast::Function) -> bool {
+    match value.visibility {
+        ast::Visibility::Public => true,
+        ast::Visibility::Private => false,
+    }
+}
+
+fn artifact_impl_methods(
+    value: tast::ImplBlock,
+    constraint_start: int,
+    public_only: bool,
+) -> Vec[ArtifactFnScheme] {
+    let result = Vec::new();
+    for method in value.methods {
+        if !public_only || artifact_method_is_public(method) {
+            result.push(artifact_method_scheme(method, constraint_start))
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn artifact_trait_impl(value: tast::ImplBlock) -> ArtifactTraitImpl {
+    let trait_ref = match value.trait_ref {
+        Option::Some(value) => value,
+        Option::None => {
+            fail("error[compile]: missing trait in compiler artifact");
+            tast::TraitRef {
+                name: "<error>",
+                args: Vec::new(),
+            }
+        },
+    };
+    ArtifactTraitImpl {
+        trait_ref,
+        for_ty: value.for_type,
+        definition: ArtifactImplDef {
+            params: value.generics,
+            constraints: value.predicates,
+            associated_types: value.associated_types,
+            methods: artifact_impl_methods(value, value.predicates.len(), false),
+            valid: true,
+        },
+    }
+}
+
+fn artifact_inherent_constructor(value: tast::Type) -> string {
+    match tast::resolve_type(value) {
+        tast::Type::Con { name } => name,
+        tast::Type::App { ty: base, args: _ } => artifact_inherent_constructor(base),
+        tast::Type::Slice { elem: _ } => "Slice",
+        tast::Type::VecType { elem: _ } => "Vec",
+        tast::Type::RefType { elem: _ } => "Ref",
+        tast::Type::Channel { elem: _ } => "Channel",
+        tast::Type::HashMap { key: _, value: _ } => "HashMap",
+        _ => {
+            fail("error[compile]: invalid inherent implementation in compiler artifact");
+            "<error>"
+        },
+    }
+}
+
+fn artifact_inherent_impl(
+    value: tast::ImplBlock,
+    public_only: bool,
+) -> ArtifactInherentImpl {
+    ArtifactInherentImpl {
+        key: if value.generics.len() > 0 {
+            ArtifactInherentImplKey::Constr(artifact_inherent_constructor(value.for_type))
+        } else {
+            ArtifactInherentImplKey::Exact(value.for_type)
+        },
+        definition: ArtifactImplDef {
+            params: Vec::new(),
+            constraints: Vec::new(),
+            associated_types: Vec::new(),
+            methods: artifact_impl_methods(value, 0, public_only),
+            valid: true,
+        },
+    }
+}
+
+fn artifact_struct_def(
+    value: tast::StructDef,
+    public_only: bool,
+) -> tast::StructDef {
+    if !public_only {
+        value
+    } else {
+        let fields = Vec::new();
+        let public_fields = Vec::new();
+        for field in value.fields {
+            if public_names_contain(value.public_fields, field.0) {
+                fields.push(field);
+                public_fields.push(field.0)
+            } else {
+                ()
+            }
+        };
+        tast::StructDef {
+            name: value.name,
+            generics: value.generics,
+            fields,
+            public_fields,
+            has_hidden_fields: value.has_hidden_fields
+                || fields.len() != value.fields.len(),
+        }
+    }
+}
+
+fn artifact_type_has_public_names(
+    value: tast::Type,
+    package_name: string,
+    public_names: Vec[string],
+) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::Con { name } => local_item_is_public(package_name, public_names, name),
+        tast::Type::Dyn { trait_name: name } => local_item_is_public(package_name, public_names, name),
+        tast::Type::Tuple { items: values } => {
+            for value in values {
+                if !artifact_type_has_public_names(value, package_name, public_names) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            true
+        },
+        tast::Type::Projection { for_ty, name: _, trait_ref } => {
+            if !artifact_type_has_public_names(for_ty, package_name, public_names) {
+                false
+            } else {
+                match trait_ref {
+                    Option::Some(value) => artifact_trait_ref_has_public_names(
+                        value,
+                        package_name,
+                        public_names,
+                    ),
+                    Option::None => true,
+                }
+            }
+        },
+        tast::Type::App { ty: base, args } => {
+            if !artifact_type_has_public_names(base, package_name, public_names) {
+                false
+            } else {
+                for arg in args {
+                    if !artifact_type_has_public_names(arg, package_name, public_names) {
+                        return false
+                    } else {
+                        ()
+                    }
+                };
+                true
+            }
+        },
+        tast::Type::Array { len: _, elem: element }
+        | tast::Type::Slice { elem: element }
+        | tast::Type::VecType { elem: element }
+        | tast::Type::RefType { elem: element }
+        | tast::Type::Channel { elem: element } => artifact_type_has_public_names(
+            element,
+            package_name,
+            public_names,
+        ),
+        tast::Type::HashMap { key, value } => artifact_type_has_public_names(
+            key,
+            package_name,
+            public_names,
+        ) && artifact_type_has_public_names(value, package_name, public_names),
+        tast::Type::Func { params, ret_ty } => {
+            for param in params {
+                if !artifact_type_has_public_names(param, package_name, public_names) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            artifact_type_has_public_names(ret_ty, package_name, public_names)
+        },
+        tast::Type::Var(_)
+        | tast::Type::Unit
+        | tast::Type::Never
+        | tast::Type::Bool
+        | tast::Type::Int
+        | tast::Type::Int8
+        | tast::Type::Int16
+        | tast::Type::Int32
+        | tast::Type::Int64
+        | tast::Type::Uint
+        | tast::Type::Uint8
+        | tast::Type::Uint16
+        | tast::Type::Uint32
+        | tast::Type::Uint64
+        | tast::Type::Float32
+        | tast::Type::Float64
+        | tast::Type::String
+        | tast::Type::Char
+        | tast::Type::Param { name: _ }
+        | tast::Type::Error => true,
+    }
+}
+
+fn artifact_trait_ref_has_public_names(
+    value: tast::TraitRef,
+    package_name: string,
+    public_names: Vec[string],
+) -> bool {
+    if !local_item_is_public(package_name, public_names, value.name) {
+        false
+    } else {
+        for arg in value.args {
+            if !artifact_type_has_public_names(arg, package_name, public_names) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
+fn artifact_trait_impl_is_public(
+    value: tast::ImplBlock,
+    package_name: string,
+    public_names: Vec[string],
+) -> bool {
+    match value.trait_ref {
+        Option::Some(trait_ref) => artifact_trait_ref_has_public_names(
+            trait_ref,
+            package_name,
+            public_names,
+        ) && artifact_type_has_public_names(value.for_type, package_name, public_names),
+        Option::None => true,
+    }
+}
+
+fn artifact_add_type_name(values: Vec[string], name: string) -> unit {
+    if public_names_contain(values, name) {
+        ()
+    } else {
+        values.push(name)
+    }
+}
+
+fn artifact_package_exports(
+    file: tast::File,
+    signatures: tast::PackageSignatures,
+    package_name: string,
+    public_names: Vec[string],
+    public_only: bool,
+    enum_type_names: Vec[string],
+    struct_type_names: Vec[string],
+) -> ArtifactPackageExports {
+    let result = empty_artifact_package_exports();
+    for name in enum_type_names {
+        artifact_add_type_name(result.enum_type_names, name)
+    };
+    for name in struct_type_names {
+        artifact_add_type_name(result.struct_type_names, name)
+    };
+    for definition in file.enums {
+        artifact_add_type_name(result.enum_type_names, definition.name);
+        if !public_only || public_names_contain(public_names, definition.name) {
+            result.enums.push(definition)
+        } else {
+            ()
+        }
+    };
+    for definition in file.structs {
+        artifact_add_type_name(result.struct_type_names, definition.name);
+        if !public_only || public_names_contain(public_names, definition.name) {
+            result.structs.push(artifact_struct_def(definition, public_only))
+        } else {
+            ()
+        }
+    };
+    let trait_names = Vec::new();
+    for definition in signatures.traits {
+        trait_names.push(definition.name)
+    };
+    for definition in signatures.traits {
+        if !public_only || public_names_contain(public_names, definition.name) {
+            result.traits.push(artifact_trait_def(definition, trait_names))
+        } else {
+            ()
+        }
+    };
+    for function in signatures.functions {
+        if !public_only || public_names_contain(public_names, function.name) {
+            result.functions.push(artifact_fn_scheme(function))
+        } else {
+            ()
+        }
+    };
+    for item in file.items {
+        match item {
+            tast::Item::ImplBlock(value) => match value.trait_ref {
+                Option::Some(_) => if !public_only || artifact_trait_impl_is_public(
+                    value,
+                    package_name,
+                    public_names,
+                ) {
+                    result.trait_impls.push(artifact_trait_impl(value))
+                } else {
+                    ()
+                },
+                Option::None => {
+                    let implementation = artifact_inherent_impl(value, public_only);
+                    if !public_only || implementation.definition.methods.len() > 0 {
+                        result.inherent_impls.push(implementation)
+                    } else {
+                        ()
+                    }
+                },
+            },
+            tast::Item::Function(_) => (),
+        }
+    };
+    result
+}
+
+fn artifact_relative_export_name(package_name: string, name: string) -> string {
+    if package_name == "main" || package_name == "builtin" {
+        name
+    } else {
+        let prefix = package_name + "::";
+        if artifact_string_starts_with(name, prefix) {
+            name.byte_slice(prefix.byte_len(), name.byte_len())
+        } else {
+            name
+        }
+    }
+}
+
+fn artifact_package_interface(
+    package_name: string,
+    declared_name: string,
+    exports: ArtifactPackageExports,
+) -> ArtifactPackageInterface {
+    let function_names = Vec::new();
+    for function in exports.functions {
+        function_names.push(function.name)
+    };
+    let function_names = sort_artifact_names(function_names);
+    let value_exports = Vec::new();
+    for index in range(0, function_names.len()) {
+        value_exports.push((function_names.get(index), index))
+    };
+    let enum_names = Vec::new();
+    for definition in exports.enums {
+        enum_names.push(artifact_relative_export_name(package_name, definition.name))
+    };
+    let enum_names = sort_artifact_names(enum_names);
+    let enum_variants = Vec::new();
+    for name in enum_names {
+        let variants = Vec::new();
+        for definition in exports.enums {
+            if artifact_relative_export_name(package_name, definition.name) == name {
+                for variant in definition.variants {
+                    variants.push(variant.name)
+                }
+            } else {
+                ()
+            }
+        };
+        enum_variants.push((name, sort_artifact_names(variants)))
+    };
+    ArtifactPackageInterface {
+        package_name,
+        name: declared_name,
+        value_exports,
+        enum_variants,
+    }
+}

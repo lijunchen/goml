@@ -1,0 +1,21 @@
+fn show_scalar(value/0: uint32) -> unit {
+    match (char_from_uint32 : (uint32) -> Option[char])((value/0 : uint32)) {
+        Option::Some(result/1: char) => (println : (uint32) -> unit)((result/1 : char) as uint32),
+        Option::None => (println : (string) -> unit)("none"),
+    }
+}
+
+fn main() -> unit {
+    (show_scalar : (uint32) -> unit)(0);
+    (show_scalar : (uint32) -> unit)(65);
+    (show_scalar : (uint32) -> unit)(55295);
+    (show_scalar : (uint32) -> unit)(55296);
+    (show_scalar : (uint32) -> unit)(57343);
+    (show_scalar : (uint32) -> unit)(57344);
+    (show_scalar : (uint32) -> unit)(1114111);
+    (show_scalar : (uint32) -> unit)(1114112);
+    match (char_from_uint32 : (uint32) -> Option[char])(128512) {
+        Option::Some(result/2: char) => (println : (string) -> unit)((char::to_string : (char) -> string)((result/2 : char))),
+        Option::None => (println : (string) -> unit)("none"),
+    }
+}

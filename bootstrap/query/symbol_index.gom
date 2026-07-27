@@ -1,0 +1,402 @@
+package query;
+
+use gomlc::ast;
+use gomlc::cst;
+use gomlc::lexer;
+use gomlc::parser;
+
+pub enum SymbolKind {
+    Function,
+    Struct,
+    Enum,
+    Trait,
+    Variant,
+    Method,
+    Field,
+}
+
+pub struct Symbol {
+    pub name: string,
+    pub qualified_name: string,
+    pub package_name: string,
+    pub source_path: string,
+    pub span: ast::Span,
+    pub kind: SymbolKind,
+    pub public: bool,
+}
+
+pub struct SymbolIndex {
+    pub symbols: Vec[Symbol],
+}
+
+fn token_is_inside_node(token: SyntaxToken, node: SyntaxNode) -> bool {
+    token.start >= node.start && token.end <= node.end
+}
+
+fn first_identifier(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+) -> Option[SyntaxToken] {
+    let result = Ref::new(Option::None);
+    for token in syntax.tokens {
+        if match result.get() {
+            Option::Some(_) => false,
+            Option::None => true,
+        } && token_is_inside_node(token, node)
+            && lexer::token_kind_equal(
+                token.kind,
+                lexer::TokenKind::Ident,
+            )
+        {
+            result.set(Option::Some(token))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn type_node_kind(value: cst::NodeKind) -> bool {
+    cst::node_kind_equal(value, cst::NodeKind::TYPE_UNIT)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_BOOL)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_INT)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_INT8)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_INT16)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_INT32)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_INT64)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_UINT)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_UINT8)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_UINT16)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_UINT32)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_UINT64)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_FLOAT32)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_FLOAT64)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_STRING)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_CHAR)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_TUPLE)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_TAPP)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_DYN)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_ARRAY)
+        || cst::node_kind_equal(value, cst::NodeKind::TYPE_FUNC)
+}
+
+fn first_type_name_token(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+) -> Option[SyntaxToken] {
+    let result = Ref::new(Option::None);
+    for token in syntax.tokens {
+        if match result.get() {
+            Option::Some(_) => false,
+            Option::None => true,
+        } && token_is_inside_node(token, node)
+            && !lexer::token_is_trivia(token.kind)
+            && token.text.byte_len() > 0
+            && ((token.text.byte_get(0) >= 65
+                    && token.text.byte_get(0) <= 90)
+                || (token.text.byte_get(0) >= 97
+                    && token.text.byte_get(0) <= 122)
+                || token.text.byte_get(0) == 95)
+            && token.text != "dyn"
+        {
+            result.set(Option::Some(token))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn owner_name_token(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+) -> Option[SyntaxToken] {
+    if cst::node_kind_equal(node.kind, cst::NodeKind::IMPL) {
+        let selected = Ref::new(Option::None);
+        for candidate in syntax.nodes {
+            if match candidate.parent {
+                Option::Some(parent) => parent == node.id,
+                Option::None => false,
+            }
+                && type_node_kind(candidate.kind)
+            {
+                selected.set(Option::Some(candidate))
+            } else {
+                ()
+            }
+        };
+        match selected.get() {
+            Option::Some(owner) => first_type_name_token(syntax, owner),
+            Option::None => first_identifier(syntax, node),
+        }
+    } else {
+        first_identifier(syntax, node)
+    }
+}
+
+fn symbol_kind(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+) -> Option[SymbolKind] {
+    if cst::node_kind_equal(node.kind, cst::NodeKind::FN) {
+        match parent_with_kind(
+            syntax,
+            node,
+            cst::NodeKind::IMPL,
+            cst::NodeKind::TRAIT,
+        ) {
+            Option::Some(_) => Option::Some(SymbolKind::Method),
+            Option::None => Option::Some(SymbolKind::Function),
+        }
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::STRUCT) {
+        Option::Some(SymbolKind::Struct)
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::ENUM) {
+        Option::Some(SymbolKind::Enum)
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::TRAIT) {
+        Option::Some(SymbolKind::Trait)
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::VARIANT) {
+        Option::Some(SymbolKind::Variant)
+    } else if cst::node_kind_equal(
+        node.kind,
+        cst::NodeKind::TRAIT_METHOD_SIG,
+    ) {
+        Option::Some(SymbolKind::Method)
+    } else if cst::node_kind_equal(
+        node.kind,
+        cst::NodeKind::STRUCT_FIELD,
+    ) {
+        Option::Some(SymbolKind::Field)
+    } else {
+        Option::None
+    }
+}
+
+fn parent_with_kind(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+    first: cst::NodeKind,
+    second: cst::NodeKind,
+) -> Option[SyntaxNode] {
+    let current = Ref::new(node.parent);
+    while match current.get() {
+        Option::Some(_) => true,
+        Option::None => false,
+    } {
+        match current.get() {
+            Option::Some(id) => {
+                let parent = syntax.nodes.get(id);
+                if cst::node_kind_equal(parent.kind, first)
+                    || cst::node_kind_equal(parent.kind, second)
+                {
+                    return Option::Some(parent)
+                } else {
+                    current.set(parent.parent)
+                }
+            },
+            Option::None => (),
+        }
+    };
+    Option::None
+}
+
+fn qualified_symbol_name(
+    source: SourceFile,
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+    name: string,
+    kind: SymbolKind,
+) -> string {
+    let owner = match kind {
+        SymbolKind::Variant => parent_with_kind(
+            syntax,
+            node,
+            cst::NodeKind::ENUM,
+            cst::NodeKind::ENUM,
+        ),
+        SymbolKind::Method => parent_with_kind(
+            syntax,
+            node,
+            cst::NodeKind::TRAIT,
+            cst::NodeKind::IMPL,
+        ),
+        SymbolKind::Field => parent_with_kind(
+            syntax,
+            node,
+            cst::NodeKind::STRUCT,
+            cst::NodeKind::VARIANT,
+        ),
+        _ => Option::None,
+    };
+    match owner {
+        Option::Some(owner_node) => match owner_name_token(
+            syntax,
+            owner_node,
+        ) {
+            Option::Some(owner_token) => {
+                source.package_name
+                    + "::"
+                    + owner_token.text
+                    + "::"
+                    + name
+            },
+            Option::None => source.package_name + "::" + name,
+        },
+        Option::None => source.package_name + "::" + name,
+    }
+}
+
+fn node_has_token(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+    kind: lexer::TokenKind,
+) -> bool {
+    let result = Ref::new(false);
+    for token in syntax.tokens {
+        if token_is_inside_node(token, node)
+            && lexer::token_kind_equal(token.kind, kind)
+        {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn owner_public(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+    first: cst::NodeKind,
+    second: cst::NodeKind,
+) -> bool {
+    match parent_with_kind(syntax, node, first, second) {
+        Option::Some(owner) => node_has_token(
+            syntax,
+            owner,
+            lexer::TokenKind::PubKeyword,
+        ),
+        Option::None => false,
+    }
+}
+
+fn symbol_public(
+    syntax: SyntaxIndex,
+    node: SyntaxNode,
+    kind: SymbolKind,
+) -> bool {
+    match kind {
+        SymbolKind::Variant => owner_public(
+            syntax,
+            node,
+            cst::NodeKind::ENUM,
+            cst::NodeKind::ENUM,
+        ),
+        SymbolKind::Field => node_has_token(
+            syntax,
+            node,
+            lexer::TokenKind::PubKeyword,
+        ),
+        SymbolKind::Method => {
+            node_has_token(
+                syntax,
+                node,
+                lexer::TokenKind::PubKeyword,
+            ) || owner_public(
+                syntax,
+                node,
+                cst::NodeKind::TRAIT,
+                cst::NodeKind::TRAIT,
+            )
+        },
+        _ => node_has_token(
+            syntax,
+            node,
+            lexer::TokenKind::PubKeyword,
+        ),
+    }
+}
+
+fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
+    let parsed = parser::parse(source.source);
+    let syntax = syntax_index(parsed.root);
+    for node in syntax.nodes {
+        match symbol_kind(syntax, node) {
+            Option::Some(kind) => match first_identifier(syntax, node) {
+                Option::Some(token) => symbols.push(Symbol {
+                    name: token.text,
+                    qualified_name: qualified_symbol_name(
+                        source,
+                        syntax,
+                        node,
+                        token.text,
+                        kind,
+                    ),
+                    package_name: source.package_name,
+                    source_path: source.path,
+                    span: ast::span(token.start, token.end),
+                    kind,
+                    public: source.package_name == "builtin"
+                        || symbol_public(syntax, node, kind),
+                }),
+                Option::None => (),
+            },
+            Option::None => (),
+        }
+    }
+}
+
+pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
+    build_symbol_index_from_sources(value.sources)
+}
+
+pub fn build_symbol_index_from_sources(
+    sources: Vec[SourceFile],
+) -> SymbolIndex {
+    let symbols = Vec::new();
+    for source in sources {
+        index_source(source, symbols)
+    };
+    SymbolIndex { symbols }
+}
+
+fn symbol_name_ends_with(value: string, expected: string) -> bool {
+    let suffix = "::" + expected;
+    value.byte_len() >= suffix.byte_len()
+        && value.byte_slice(
+            value.byte_len() - suffix.byte_len(),
+            value.byte_len(),
+        ) == suffix
+}
+
+pub fn find_symbol(
+    index: SymbolIndex,
+    qualified_name: string,
+) -> Option[Symbol] {
+    let exact = Ref::new(Option::None);
+    let suffix = Ref::new(Option::None);
+    let suffix_count = Ref::new(0);
+    for symbol in index.symbols {
+        if symbol.qualified_name == qualified_name {
+            exact.set(Option::Some(symbol))
+        } else if symbol_name_ends_with(
+            qualified_name,
+            symbol.qualified_name,
+        ) || symbol_name_ends_with(
+            symbol.qualified_name,
+            qualified_name,
+        ) {
+            suffix.set(Option::Some(symbol));
+            suffix_count.set(suffix_count.get() + 1)
+        } else {
+            ()
+        }
+    };
+    match exact.get() {
+        Option::Some(symbol) => Option::Some(symbol),
+        Option::None => if suffix_count.get() == 1 {
+            suffix.get()
+        } else {
+            Option::None
+        },
+    }
+}

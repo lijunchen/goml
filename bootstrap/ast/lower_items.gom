@@ -1,0 +1,650 @@
+package ast;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+fn self_type_occurrences(value: LocatedNode) -> int {
+    let result = Ref::new(0);
+    for token in direct_tokens(value) {
+        if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
+            && token.token.text == "Self"
+        {
+            result.set(result.get() + 1)
+        } else {
+            ()
+        }
+    };
+    for child in direct_nodes(value) {
+        result.set(result.get() + self_type_occurrences(child))
+    };
+    result.get()
+}
+
+fn record_disallowed_self_type(ctx: LowerCtx, value: LocatedNode) -> unit {
+    for _ in range(0, self_type_occurrences(value)) {
+        ctx.invalid_self_type_spans.push(type_head_span(value))
+    }
+}
+
+fn record_disallowed_self_types(ctx: LowerCtx, value: LocatedNode) -> unit {
+    for child in direct_nodes(value) {
+        if cst::node_kind_equal(node_kind(child), cst::NodeKind::BLOCK) {
+            ()
+        } else if is_type_kind(node_kind(child)) {
+            record_disallowed_self_type(ctx, child)
+        } else {
+            record_disallowed_self_types(ctx, child)
+        }
+    }
+}
+
+fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
+    match node_kind(node) {
+        cst::NodeKind::ENUM => {
+            record_disallowed_self_types(ctx, node);
+            match lower_enum(ctx, node) {
+            Option::Some(value) => Option::Some(Item::EnumDef(value)),
+            Option::None => Option::None,
+            }
+        },
+        cst::NodeKind::STRUCT => {
+            record_disallowed_self_types(ctx, node);
+            match lower_struct(ctx, node) {
+            Option::Some(value) => Option::Some(Item::StructDef(value)),
+            Option::None => Option::None,
+            }
+        },
+        cst::NodeKind::TRAIT => match lower_trait(ctx, node) {
+            Option::Some(value) => Option::Some(Item::TraitDef(value)),
+            Option::None => Option::None,
+        },
+        cst::NodeKind::IMPL => match lower_impl(ctx, node) {
+            Option::Some(value) => Option::Some(Item::ImplBlock(value)),
+            Option::None => Option::None,
+        },
+        cst::NodeKind::FN => {
+            record_disallowed_self_types(ctx, node);
+            match lower_function(ctx, node, Option::None) {
+            Option::Some(value) => Option::Some(Item::Function(value)),
+            Option::None => Option::None,
+            }
+        },
+        cst::NodeKind::EXTERN => {
+            record_disallowed_self_types(ctx, node);
+            lower_extern(ctx, node)
+        },
+        _ => Option::None,
+    }
+}
+
+fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
+    match first_token(node, lexer::TokenKind::Ident) {
+        Option::Some(name_token) => {
+            let name = name_token.token.text;
+            let (generics, _) = lower_generics(ctx, node);
+            let variants: Vec[EnumVariant] = Vec::new();
+            match first_child(node, cst::NodeKind::VARIANT_LIST) {
+                Option::Some(list) => for variant in children_of_kind(list, cst::NodeKind::VARIANT) {
+                    match first_token(variant, lexer::TokenKind::Ident) {
+                        Option::Some(variant_name) => {
+                            if variant_name.token.text.byte_len() == 0
+                                || variant_name.token.text.byte_get(0) < 65
+                                || variant_name.token.text.byte_get(0) > 90
+                            {
+                                push_error(
+                                    ctx,
+                                    token_span(variant_name),
+                                    "Enum variant "
+                                        + variant_name.token.text
+                                        + " must start with an uppercase letter",
+                                )
+                            } else {
+                                ()
+                            };
+                            let field_type_spans: Vec[Span] = Vec::new();
+                            let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
+                                Option::Some(type_list) => {
+                                    let lowered: Vec[TypeExpr] = Vec::new();
+                                    for ty in type_children(type_list) {
+                                        field_type_spans.push(type_head_span(ty));
+                                        match lower_ty(ctx, ty) {
+                                            Option::Some(value) => lowered.push(value),
+                                            Option::None => (),
+                                        }
+                                    };
+                                    EnumVariantFields::Tuple(lowered)
+                                },
+                                Option::None => match first_child(
+                                    variant,
+                                    cst::NodeKind::STRUCT_FIELD_LIST,
+                                ) {
+                                    Option::Some(field_list) => {
+                                        let named: Vec[(string, TypeExpr)] = Vec::new();
+                                        for field in children_of_kind(
+                                            field_list,
+                                            cst::NodeKind::STRUCT_FIELD,
+                                        ) {
+                                            match lower_visibility(field) {
+                                                Visibility::Public => push_error(
+                                                    ctx,
+                                                    node_span(field),
+                                                    "Enum variant fields inherit the enum visibility and must not use `pub`",
+                                                ),
+                                                Visibility::Private => (),
+                                            };
+                                            let field_name = first_token(
+                                                field,
+                                                lexer::TokenKind::Ident,
+                                            );
+                                            let types = type_children(field);
+                                            match field_name {
+                                                Option::Some(name) => if types.len() > 0 {
+                                                    match lower_ty(ctx, types.get(0)) {
+                                                        Option::Some(ty) => {
+                                                            field_type_spans.push(type_head_span(
+                                                                types.get(0),
+                                                            ));
+                                                            named.push((
+                                                                name.token.text,
+                                                                ty,
+                                                            ))
+                                                        },
+                                                        Option::None => (),
+                                                    }
+                                                } else {
+                                                    push_error(
+                                                        ctx,
+                                                        node_span(field),
+                                                        "Struct-like enum variant field is malformed",
+                                                    )
+                                                },
+                                                Option::None => push_error(
+                                                    ctx,
+                                                    node_span(field),
+                                                    "Struct-like enum variant field is malformed",
+                                                ),
+                                            }
+                                        };
+                                        EnumVariantFields::Struct(named)
+                                    },
+                                    Option::None => EnumVariantFields::Unit,
+                                },
+                            };
+                            variants.push(EnumVariant {
+                                name: variant_name.token.text,
+                                fields,
+                                field_type_spans,
+                            })
+                        },
+                        Option::None => push_error(ctx, node_span(variant), "Enum variant is missing a name"),
+                    }
+                },
+                Option::None => push_error(ctx, node_span(node), "Enum " + name + " has no variants"),
+            };
+            Option::Some(EnumDef {
+                attrs: lower_attributes(node),
+                visibility: lower_visibility(node),
+                name,
+                generics,
+                variants,
+            })
+        },
+        Option::None => {
+            push_error(ctx, node_span(node), "Enum is missing a name");
+            Option::None
+        },
+    }
+}
+
+fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
+    match first_token(node, lexer::TokenKind::Ident) {
+        Option::Some(name_token) => {
+            let (generics, _) = lower_generics(ctx, node);
+            let fields: Vec[(string, TypeExpr)] = Vec::new();
+            let field_type_spans: Vec[Span] = Vec::new();
+            let public_fields: Vec[string] = Vec::new();
+            match first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
+                Option::Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
+                    let field_name = first_token(field, lexer::TokenKind::Ident);
+                    let types = type_children(field);
+                    match field_name {
+                        Option::Some(name) => if types.len() > 0 {
+                            let type_node = types.get(0);
+                            match lower_ty(ctx, type_node) {
+                                Option::Some(ty) => {
+                                    field_type_spans.push(type_head_span(type_node));
+                                    fields.push((name.token.text, ty));
+                                    match lower_visibility(field) {
+                                        Visibility::Public => public_fields.push(name.token.text),
+                                        Visibility::Private => (),
+                                    }
+                                },
+                                Option::None => (),
+                            }
+                        } else {
+                            ()
+                        },
+                        Option::None => (),
+                    }
+                },
+                Option::None => (),
+            };
+            Option::Some(StructDef {
+                attrs: lower_attributes(node),
+                visibility: lower_visibility(node),
+                name: name_token.token.text,
+                generics,
+                fields,
+                field_type_spans,
+                public_fields,
+            })
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSignature] {
+    match first_token(node, lexer::TokenKind::Ident) {
+        Option::Some(name_token) => {
+            let params = match first_child(node, cst::NodeKind::PARAM_LIST) {
+                Option::Some(_) => lower_params(
+                    ctx,
+                    node,
+                    Option::Some(TypeExpr::Con { path: path_from_single_ident("Self") }),
+                ),
+                Option::None => {
+                    push_error(ctx, node_span(node), "TraitMethod " + name_token.token.text + " has no params");
+                    Vec::new()
+                },
+            };
+            if params.len() > 0 {
+                let first = params.get(0);
+                if ast_type_is_self(first.1) && first.0 != "self" {
+                    push_error(
+                        ctx,
+                        node_span(node),
+                        "Trait method receiver must be written as `self: Self`",
+                    )
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            };
+            for index in range(0, params.len()) {
+                let param = params.get(index);
+                if param.0 == "self" && (index != 0 || !ast_type_is_self(param.1)) {
+                    push_error(
+                        ctx,
+                        node_span(node),
+                        "Trait method receiver must be the first parameter with type Self",
+                    )
+                } else {
+                    ()
+                }
+            };
+            let returns = type_children(node);
+            let ret_ty = if returns.len() == 0 {
+                Option::Some(TypeExpr::Unit)
+            } else {
+                lower_ty(ctx, returns.get(0))
+            };
+            match ret_ty {
+                Option::Some(value) => Option::Some(TraitMethodSignature {
+                    name: name_token.token.text,
+                    params,
+                    ret_ty: value,
+                }),
+                Option::None => {
+                    push_error(ctx, node_span(node), "TraitMethod " + name_token.token.text + " has no return type");
+                    Option::None
+                },
+            }
+        },
+        Option::None => {
+            push_error(ctx, node_span(node), "Trait method is missing a name");
+            Option::None
+        },
+    }
+}
+
+fn ast_type_is_self(value: TypeExpr) -> bool {
+    match value {
+        TypeExpr::Con { path } => {
+            path.segments.len() == 1 && path.segments.get(0).ident == "Self"
+        },
+        _ => false,
+    }
+}
+
+fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
+    match first_token(node, lexer::TokenKind::Ident) {
+        Option::Some(name_token) => {
+            let name = name_token.token.text;
+            let (generics, generic_bounds) = lower_generics(ctx, node);
+            let supertraits = match first_child(node, cst::NodeKind::TRAIT_SET) {
+                Option::Some(set) => lower_trait_set(ctx, set),
+                Option::None => Vec::new(),
+            };
+            let associated_types: Vec[AssociatedType] = Vec::new();
+            let method_sigs: Vec[TraitMethodSignature] = Vec::new();
+            match first_child(node, cst::NodeKind::TRAIT_METHOD_SIG_LIST) {
+                Option::Some(list) => {
+                    for associated in children_of_kind(list, cst::NodeKind::TRAIT_ASSOCIATED_TYPE) {
+                        match first_token(associated, lexer::TokenKind::Ident) {
+                            Option::Some(associated_name) => {
+                                let bounds = match first_child(associated, cst::NodeKind::TRAIT_SET) {
+                                    Option::Some(set) => lower_trait_set(ctx, set),
+                                    Option::None => Vec::new(),
+                                };
+                                associated_types.push(AssociatedType {
+                                    name: associated_name.token.text,
+                                    bounds,
+                                })
+                            },
+                            Option::None => (),
+                        }
+                    };
+                    for method in children_of_kind(list, cst::NodeKind::TRAIT_METHOD_SIG) {
+                        match lower_trait_method(ctx, method) {
+                            Option::Some(value) => method_sigs.push(value),
+                            Option::None => (),
+                        }
+                    }
+                },
+                Option::None => push_error(ctx, node_span(node), "Trait " + name + " has no methods"),
+            };
+            Option::Some(TraitDef {
+                attrs: lower_attributes(node),
+                visibility: lower_visibility(node),
+                name,
+                generics,
+                generic_bounds,
+                predicates: lower_where_clause(ctx, node),
+                supertraits,
+                associated_types,
+                method_sigs,
+            })
+        },
+        Option::None => {
+            push_error(ctx, node_span(node), "Trait is missing a name");
+            Option::None
+        },
+    }
+}
+
+fn lower_param(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    index: int,
+    shorthand_self_ty: Option[TypeExpr],
+) -> Option[(string, TypeExpr)] {
+    match first_token(node, lexer::TokenKind::Ident) {
+        Option::Some(name_token) => {
+            let types = type_children(node);
+            if types.len() == 0 {
+                match shorthand_self_ty {
+                    Option::Some(ty) => if index == 0 && name_token.token.text == "self" {
+                        Option::Some((name_token.token.text, ty))
+                    } else {
+                        push_error(
+                            ctx,
+                            node_span(node),
+                            "only the first trait or impl parameter may use the `self` shorthand",
+                        );
+                        Option::None
+                    },
+                    Option::None => {
+                        push_error(ctx, node_span(node), "Param " + name_token.token.text + " has no type");
+                        Option::None
+                    },
+                }
+            } else {
+                match lower_ty(ctx, types.get(0)) {
+                    Option::Some(ty) => Option::Some((name_token.token.text, ty)),
+                    Option::None => {
+                        push_error(
+                            ctx,
+                            node_span(node),
+                            "Param " + name_token.token.text + " has no type",
+                        );
+                        Option::None
+                    },
+                }
+            }
+        },
+        Option::None => {
+            push_error(ctx, node_span(node), "Parameter is missing a name");
+            Option::None
+        },
+    }
+}
+
+fn lower_params(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    shorthand_self_ty: Option[TypeExpr],
+) -> Vec[(string, TypeExpr)] {
+    let result: Vec[(string, TypeExpr)] = Vec::new();
+    match first_child(node, cst::NodeKind::PARAM_LIST) {
+        Option::Some(list) => {
+            let index = Ref::new(0);
+            for param in children_of_kind(list, cst::NodeKind::PARAM) {
+                match lower_param(ctx, param, index.get(), shorthand_self_ty) {
+                    Option::Some(value) => result.push(value),
+                    Option::None => (),
+                };
+                index.set(index.get() + 1)
+            }
+        },
+        Option::None => (),
+    };
+    result
+}
+
+fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
+    let result: Vec[Span] = Vec::new();
+    match first_child(node, cst::NodeKind::PARAM_LIST) {
+        Option::Some(list) => for param in children_of_kind(list, cst::NodeKind::PARAM) {
+            let types = type_children(param);
+            if types.len() > 0 {
+                result.push(type_head_span(types.get(0)))
+            } else {
+                ()
+            }
+        },
+        Option::None => (),
+    };
+    result
+}
+
+fn lower_function(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    shorthand_self_ty: Option[TypeExpr],
+) -> Option[Function] {
+    match first_token(node, lexer::TokenKind::Ident) {
+        Option::Some(name_token) => match first_child(node, cst::NodeKind::PARAM_LIST) {
+            Option::Some(_) => match first_child(node, cst::NodeKind::BLOCK) {
+                Option::Some(block_node) => match lower_block(ctx, block_node) {
+                    Option::Some(body) => {
+                        let (generics, generic_bounds) = lower_generics(ctx, node);
+                        let returns = type_children(node);
+                        let ret_ty = if returns.len() > 0 {
+                            lower_ty(ctx, returns.get(0))
+                        } else {
+                            Option::None
+                        };
+                        Option::Some(Function {
+                            attrs: lower_attributes(node),
+                            visibility: lower_visibility(node),
+                            name: name_token.token.text,
+                            generics,
+                            generic_bounds,
+                            predicates: lower_where_clause(ctx, node),
+                            params: lower_params(ctx, node, shorthand_self_ty),
+                            param_type_spans: lower_param_type_spans(node),
+                            ret_ty,
+                            ret_ty_span: if returns.len() > 0 {
+                                Option::Some(type_head_span(returns.get(0)))
+                            } else {
+                                Option::None
+                            },
+                            body,
+                        })
+                    },
+                    Option::None => {
+                        push_error(ctx, node_span(node), "Fn " + name_token.token.text + " has no body");
+                        Option::None
+                    },
+                },
+                Option::None => {
+                    push_error(ctx, node_span(node), "Fn " + name_token.token.text + " has no body");
+                    Option::None
+                },
+            },
+            Option::None => {
+                push_error(ctx, node_span(node), "Fn " + name_token.token.text + " has no params");
+                Option::None
+            },
+        },
+        Option::None => {
+            push_error(ctx, node_span(node), "Function declaration is missing a name");
+            Option::None
+        },
+    }
+}
+
+fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
+    let (generics, generic_bounds) = lower_generics(ctx, node);
+    let types = type_children(node);
+    if types.len() == 0 {
+        push_error(ctx, node_span(node), "Impl block is missing a target type");
+        Option::None
+    } else {
+        let has_for = has_token(node, lexer::TokenKind::ForKeyword);
+        let trait_ref = if has_for {
+            lower_trait_ref(ctx, types.get(0))
+        } else {
+            Option::None
+        };
+        let target_index = if has_for { types.len() - 1 } else { types.len() - 1 };
+        record_disallowed_self_type(ctx, types.get(target_index));
+        match lower_ty(ctx, types.get(target_index)) {
+            Option::Some(for_type) => {
+                let associated_types: Vec[(string, TypeExpr)] = Vec::new();
+                for associated in children_of_kind(node, cst::NodeKind::IMPL_ASSOCIATED_TYPE) {
+                    let name = first_token(associated, lexer::TokenKind::Ident);
+                    let associated_ty = type_children(associated);
+                    match name {
+                        Option::Some(name_token) => if associated_ty.len() > 0 {
+                            match lower_ty(ctx, associated_ty.get(0)) {
+                                Option::Some(ty) => associated_types.push((name_token.token.text, ty)),
+                                Option::None => (),
+                            }
+                        } else {
+                            ()
+                        },
+                        Option::None => (),
+                    }
+                };
+                let methods: Vec[Function] = Vec::new();
+                for method in children_of_kind(node, cst::NodeKind::FN) {
+                    match lower_function(ctx, method, Option::Some(for_type)) {
+                        Option::Some(value) => {
+                            match trait_ref {
+                                Option::Some(_) => match value.visibility {
+                                    Visibility::Public => push_error(
+                                        ctx,
+                                        node_span(node),
+                                        "Trait implementation method "
+                                            + value.name
+                                            + " must not use `pub`",
+                                    ),
+                                    Visibility::Private => (),
+                                },
+                                Option::None => (),
+                            };
+                            methods.push(value)
+                        },
+                        Option::None => (),
+                    }
+                };
+                Option::Some(ImplBlock {
+                    attrs: lower_attributes(node),
+                    generics,
+                    generic_bounds,
+                    predicates: lower_where_clause(ctx, node),
+                    associated_types,
+                    trait_ref,
+                    for_type,
+                    for_type_span: type_head_span(types.get(target_index)),
+                    methods,
+                })
+            },
+            Option::None => {
+                push_error(ctx, node_span(node), "Impl block is missing a target type");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
+    let attrs = lower_attributes(node);
+    let intrinsic = find_attribute(attrs, "intrinsic");
+    let runtime = find_attribute(attrs, "runtime");
+    if option_attribute_is_none(intrinsic) && option_attribute_is_none(runtime) {
+        push_error(ctx, node_span(node), "Extern declarations require `#[intrinsic(...)]` or `#[runtime(...)]`.");
+        Option::None
+    } else if has_token(node, lexer::TokenKind::TypeKeyword) {
+        let attr_span = match intrinsic {
+            Option::Some(value) => value.span,
+            Option::None => match runtime {
+                Option::Some(value) => value.span,
+                Option::None => node_span(node),
+            },
+        };
+        push_error(ctx, attr_span, "Extern function declarations cannot declare types");
+        Option::None
+    } else {
+        let strings = tokens_of_kind(node, lexer::TokenKind::Str);
+        if strings.len() > 0 {
+            push_error(ctx, token_span(strings.get(0)), "Extern function declarations should not specify a language string")
+        } else {
+            ()
+        };
+        match first_token(node, lexer::TokenKind::Ident) {
+            Option::Some(name_token) => {
+                let (generics, generic_bounds) = lower_generics(ctx, node);
+                let returns = type_children(node);
+                let ret_ty = if returns.len() > 0 {
+                    lower_ty(ctx, returns.get(0))
+                } else {
+                    Option::None
+                };
+                Option::Some(Item::ExternFunction(ExternFunction {
+                    attrs,
+                    visibility: lower_visibility(node),
+                    name: name_token.token.text,
+                    generics,
+                    generic_bounds,
+                    predicates: lower_where_clause(ctx, node),
+                    params: lower_params(ctx, node, Option::None),
+                    ret_ty,
+                }))
+            },
+            Option::None => {
+                push_error(ctx, node_span(node), "Extern function declaration is missing function name");
+                Option::None
+            },
+        }
+    }
+}
+
+fn option_attribute_is_none(value: Option[Attribute]) -> bool {
+    match value {
+        Option::Some(_) => false,
+        Option::None => true,
+    }
+}

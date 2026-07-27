@@ -1,0 +1,21 @@
+fn main() -> unit {
+  let x/0 = 5 in
+  let y/1 = match x/0 {
+    0 => {
+      "zero"
+    },
+    1 => {
+      "one"
+    },
+    _ => "other",
+  } in
+  let _wild64 = println__T_string(y/1) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

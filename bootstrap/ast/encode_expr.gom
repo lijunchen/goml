@@ -1,0 +1,365 @@
+package ast;
+
+use std::text;
+
+fn encode_exprs(builder: text::StringBuilder, values: Vec[Expr]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        encode_expr(builder, value)
+    }
+}
+
+fn encode_pats(builder: text::StringBuilder, values: Vec[Pat]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        encode_pat(builder, value)
+    }
+}
+
+fn unary_name(value: UnaryOp) -> string {
+    match value {
+        UnaryOp::Neg => "Neg",
+        UnaryOp::Not => "Not",
+        UnaryOp::BitNot => "BitNot",
+    }
+}
+
+fn binary_name(value: BinaryOp) -> string {
+    match value {
+        BinaryOp::Add => "Add",
+        BinaryOp::Sub => "Sub",
+        BinaryOp::Mul => "Mul",
+        BinaryOp::Div => "Div",
+        BinaryOp::Rem => "Rem",
+        BinaryOp::BitAnd => "BitAnd",
+        BinaryOp::BitOr => "BitOr",
+        BinaryOp::BitXor => "BitXor",
+        BinaryOp::Shl => "Shl",
+        BinaryOp::Shr => "Shr",
+        BinaryOp::And => "And",
+        BinaryOp::Or => "Or",
+        BinaryOp::Less => "Less",
+        BinaryOp::Greater => "Greater",
+        BinaryOp::LessEq => "LessEq",
+        BinaryOp::GreaterEq => "GreaterEq",
+        BinaryOp::Eq => "Eq",
+        BinaryOp::NotEq => "NotEq",
+    }
+}
+
+fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
+    encode_open(builder, "Arm");
+    encode_pat(builder, value.pat);
+    match value.guard {
+        Option::Some(guard) => {
+            encode_some(builder);
+            encode_expr(builder, guard)
+        },
+        Option::None => encode_none(builder),
+    };
+    encode_expr(builder, value.body);
+    encode_close(builder)
+}
+
+fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
+    match value {
+        Expr::Path { path, type_args, span: value_span } => {
+            encode_open(builder, "Expr.Path");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_list(builder, type_args.len());
+            for ty in type_args {
+                encode_type(builder, ty)
+            }
+        },
+        Expr::Unit { span: value_span } => {
+            encode_open(builder, "Expr.Unit");
+            encode_span(builder, value_span)
+        },
+        Expr::Bool { value, span: value_span } => {
+            encode_open(builder, "Expr.Bool");
+            encode_span(builder, value_span);
+            encode_bool_value(builder, value)
+        },
+        Expr::Int { value, span: value_span } => encode_literal_expr(builder, "Int", value, value_span),
+        Expr::Float { value, span: value_span } => {
+            encode_open(builder, "Expr.Float");
+            encode_span(builder, value_span);
+            encode_string_value(builder, float64_hash(value).to_string())
+        },
+        Expr::String { value, span: value_span } => encode_literal_expr(builder, "String", value, value_span),
+        Expr::Char { value, span: value_span } => encode_literal_expr(builder, "Char", value, value_span),
+        Expr::ConstructorValue { constructor: path, span: value_span } => {
+            encode_open(builder, "Expr.Constr");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_exprs(builder, Vec::new())
+        },
+        Expr::Constr { constructor: path, args, span: value_span } => {
+            encode_open(builder, "Expr.Constr");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_exprs(builder, args)
+        },
+        Expr::StructLiteral { name: path, fields, span: value_span } => {
+            encode_open(builder, "Expr.StructLiteral");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_list(builder, fields.len());
+            for field in fields {
+                let (name, expr) = field;
+                encode_open(builder, "ExprField");
+                encode_string_value(builder, name);
+                encode_expr(builder, expr);
+                encode_close(builder)
+            }
+        },
+        Expr::Tuple { items, span: value_span } => {
+            encode_open(builder, "Expr.Tuple");
+            encode_span(builder, value_span);
+            encode_exprs(builder, items)
+        },
+        Expr::Array { items, span: value_span } => {
+            encode_open(builder, "Expr.Array");
+            encode_span(builder, value_span);
+            encode_exprs(builder, items)
+        },
+        Expr::Closure { params, body, span: value_span } => {
+            encode_open(builder, "Expr.Closure");
+            encode_span(builder, value_span);
+            encode_list(builder, params.len());
+            for param in params {
+                encode_open(builder, "ClosureParam");
+                encode_span(builder, param.span);
+                encode_string_value(builder, param.name);
+                encode_optional_type(builder, param.ty);
+                encode_close(builder)
+            };
+            encode_expr(builder, body)
+        },
+        Expr::Match { expr, arms, span: value_span } => {
+            encode_open(builder, "Expr.Match");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr);
+            encode_list(builder, arms.len());
+            for arm in arms {
+                encode_arm(builder, arm)
+            }
+        },
+        Expr::If { cond, then_branch, else_branch, span: value_span } => {
+            encode_open(builder, "Expr.If");
+            encode_span(builder, value_span);
+            encode_expr(builder, cond);
+            encode_expr(builder, then_branch);
+            encode_expr(builder, else_branch)
+        },
+        Expr::While { cond, body, span: value_span } => {
+            encode_open(builder, "Expr.While");
+            encode_span(builder, value_span);
+            encode_expr(builder, cond);
+            encode_expr(builder, body)
+        },
+        Expr::For { pat, iterator, body, span: value_span } => {
+            encode_open(builder, "Expr.For");
+            encode_span(builder, value_span);
+            encode_pat(builder, pat);
+            encode_expr(builder, iterator);
+            encode_expr(builder, body)
+        },
+        Expr::Break { span: value_span } => {
+            encode_open(builder, "Expr.Break");
+            encode_span(builder, value_span)
+        },
+        Expr::Continue { span: value_span } => {
+            encode_open(builder, "Expr.Continue");
+            encode_span(builder, value_span)
+        },
+        Expr::Return { expr, span: value_span } => {
+            encode_open(builder, "Expr.Return");
+            encode_span(builder, value_span);
+            match expr {
+                Option::Some(inner) => {
+                    encode_some(builder);
+                    encode_expr(builder, inner)
+                },
+                Option::None => encode_none(builder),
+            }
+        },
+        Expr::Go { expr, span: value_span } => {
+            encode_open(builder, "Expr.Go");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr)
+        },
+        Expr::Call { func, args, span: value_span } => {
+            encode_open(builder, "Expr.Call");
+            encode_span(builder, value_span);
+            encode_expr(builder, func);
+            encode_exprs(builder, args)
+        },
+        Expr::Unary { op, expr, span: value_span } => {
+            encode_open(builder, "Expr.Unary");
+            encode_span(builder, value_span);
+            encode_string_value(builder, unary_name(op));
+            encode_expr(builder, expr)
+        },
+        Expr::Cast { expr, ty, span: value_span } => {
+            encode_open(builder, "Expr.Cast");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr);
+            encode_type(builder, ty)
+        },
+        Expr::Try { expr, span: value_span } => {
+            encode_open(builder, "Expr.Try");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr)
+        },
+        Expr::Range { start, end, span: value_span } => {
+            encode_open(builder, "Expr.Range");
+            encode_span(builder, value_span);
+            encode_expr(builder, start);
+            encode_expr(builder, end)
+        },
+        Expr::Binary { op, lhs, rhs, span: value_span } => {
+            encode_open(builder, "Expr.Binary");
+            encode_span(builder, value_span);
+            encode_string_value(builder, binary_name(op));
+            encode_expr(builder, lhs);
+            encode_expr(builder, rhs)
+        },
+        Expr::Proj { tuple: expr, index, span: value_span } => {
+            encode_open(builder, "Expr.Proj");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr);
+            encode_int_value(builder, index)
+        },
+        Expr::Field { expr, field_name: field, span: value_span } => {
+            encode_open(builder, "Expr.Field");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr);
+            encode_string_value(builder, field)
+        },
+        Expr::Index { base, index, span: value_span } => {
+            encode_open(builder, "Expr.Index");
+            encode_span(builder, value_span);
+            encode_expr(builder, base);
+            encode_expr(builder, index)
+        },
+        Expr::Block { block, span: value_span } => {
+            encode_open(builder, "Expr.Block");
+            encode_span(builder, value_span);
+            encode_block(builder, block)
+        },
+    };
+    encode_close(builder)
+}
+
+fn encode_literal_expr(
+    builder: text::StringBuilder,
+    tag: string,
+    value: string,
+    value_span: Span,
+) -> unit {
+    encode_open(builder, "Expr." + tag);
+    encode_span(builder, value_span);
+    encode_string_value(builder, value)
+}
+
+fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
+    match value {
+        Pat::Var { name, span: value_span } => encode_literal_pat(builder, "Var", name, value_span),
+        Pat::Unit { span: value_span } => {
+            encode_open(builder, "Pat.Unit");
+            encode_span(builder, value_span)
+        },
+        Pat::Bool { value, span: value_span } => {
+            encode_open(builder, "Pat.Bool");
+            encode_span(builder, value_span);
+            encode_bool_value(builder, value)
+        },
+        Pat::Int { value, span: value_span } => encode_literal_pat(builder, "Int", value, value_span),
+        Pat::Float { value, span: value_span } => encode_literal_pat(builder, "Float", value, value_span),
+        Pat::String { value, span: value_span } => encode_literal_pat(builder, "String", value, value_span),
+        Pat::Char { value, span: value_span } => encode_literal_pat(builder, "Char", value, value_span),
+        Pat::Constr { constructor: path, args, span: value_span } => {
+            encode_open(builder, "Pat.Constr");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_pats(builder, args)
+        },
+        Pat::Struct { name: path, fields, has_rest, span: value_span } => {
+            encode_open(builder, "Pat.Struct");
+            encode_span(builder, value_span);
+            encode_path(builder, path);
+            encode_list(builder, fields.len());
+            for field in fields {
+                let (name, pat) = field;
+                encode_open(builder, "PatField");
+                encode_string_value(builder, name);
+                encode_pat(builder, pat);
+                encode_close(builder)
+            };
+            encode_bool_value(builder, has_rest)
+        },
+        Pat::Tuple { items: pats, span: value_span } => {
+            encode_open(builder, "Pat.Tuple");
+            encode_span(builder, value_span);
+            encode_pats(builder, pats)
+        },
+        Pat::Array { prefix, rest, suffix, span: value_span } => {
+            encode_open(builder, "Pat.Array");
+            encode_span(builder, value_span);
+            encode_pats(builder, prefix);
+            match rest {
+                Option::Some(rest_value) => {
+                    encode_some(builder);
+                    encode_open(builder, "PatRest");
+                    encode_span(builder, rest_value.span);
+                    match rest_value.binding {
+                        Option::Some(binding) => {
+                            encode_some(builder);
+                            encode_string_value(builder, binding)
+                        },
+                        Option::None => encode_none(builder),
+                    };
+                    encode_close(builder)
+                },
+                Option::None => encode_none(builder),
+            };
+            encode_pats(builder, suffix)
+        },
+        Pat::Alias { name, pat, span: value_span } => {
+            encode_open(builder, "Pat.Alias");
+            encode_span(builder, value_span);
+            encode_string_value(builder, name);
+            encode_pat(builder, pat)
+        },
+        Pat::Or { pats, span: value_span } => {
+            encode_open(builder, "Pat.Or");
+            encode_span(builder, value_span);
+            encode_pats(builder, pats)
+        },
+        Pat::Range { start, end, inclusive, span: value_span } => {
+            encode_open(builder, "Pat.Range");
+            encode_span(builder, value_span);
+            encode_pat(builder, start);
+            encode_pat(builder, end);
+            encode_bool_value(builder, inclusive)
+        },
+        Pat::Wild { span: value_span } => {
+            encode_open(builder, "Pat.Wild");
+            encode_span(builder, value_span)
+        },
+    };
+    encode_close(builder)
+}
+
+fn encode_literal_pat(
+    builder: text::StringBuilder,
+    tag: string,
+    value: string,
+    value_span: Span,
+) -> unit {
+    encode_open(builder, "Pat." + tag);
+    encode_span(builder, value_span);
+    encode_string_value(builder, value)
+}

@@ -1,0 +1,26 @@
+package main;
+trait Show {
+  fn show(self: Self) -> string;
+}
+
+enum Boxed[T] {
+    One(T)
+}
+
+impl Show for Boxed[int32] {
+  fn show(self: Boxed[int32]) -> string {
+      match self {
+          Boxed::One(value) => value.to_string(),
+      }
+  }
+}
+
+fn render(value: dyn Show) -> string {
+    Show::show(value)
+}
+
+fn main() -> unit {
+    let value: int32 = 42;
+    println(render(Boxed::One(value)))
+}
+

@@ -1,0 +1,23 @@
+package main;
+enum List[T] {
+    Nil,
+    Cons(T, List[T])
+}
+
+fn prepend_with(make: (int32, List[int32]) -> List[int32], value: int32, values: List[int32]) -> List[int32] {
+    make(value, values)
+}
+
+fn sum(values: List[int32]) -> int32 {
+    match values {
+        List::Nil => 0,
+        List::Cons(value, rest) => value + sum(rest),
+    }
+}
+
+fn main() -> unit {
+    let cons: (int32, List[int32]) -> List[int32] = List::Cons;
+    let values = prepend_with(cons, 1, prepend_with(cons, 2, List::Nil));
+    println(sum(values).to_string())
+}
+

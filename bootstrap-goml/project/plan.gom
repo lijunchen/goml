@@ -1,0 +1,695 @@
+package project;
+
+use gomlang::bootstrap_goml::util;
+use std::fs;
+use std::io;
+use std::path;
+use std::process;
+
+fn package_artifact_base(
+    root: string,
+    graph: Graph,
+    package_name: string,
+) -> string {
+    let package_value = match package_by_name(graph, package_name) {
+        Option::Some(value) => value,
+        Option::None => return path::join(root, package_name),
+    };
+    let result = Ref::new(path::join(root, package_value.artifact_prefix));
+    for segment in util::split(package_name, "::") {
+        result.set(path::join(result.get(), segment))
+    };
+    path::join(result.get(), last_segment(package_name))
+}
+
+fn linked_go_output(root: string, graph: Graph, package_name: string) -> string {
+    match path::parent(package_artifact_base(root, graph, package_name)) {
+        Option::Some(value) => path::join(value, "goml_generated.go"),
+        Option::None => path::join(root, "goml_generated.go"),
+    }
+}
+
+fn extension(value: string, suffix: string) -> string {
+    path::with_extension(value, suffix)
+}
+
+fn last_segment(value: string) -> string {
+    let segments = util::split(value, "::");
+    if segments.len() == 0 {
+        value
+    } else {
+        segments.get(segments.len() - 1)
+    }
+}
+
+fn executable_path_for(context: Context, entry_package: string) -> string {
+    let result = Ref::new(path::join(context.artifact_root, "bin"));
+    let module_segments = util::split(context.graph.module_path, "::");
+    let entry_segments = util::split(entry_package, "::");
+    for index in range(module_segments.len(), entry_segments.len()) {
+        result.set(path::join(result.get(), entry_segments.get(index)))
+    };
+    path::join(result.get(), last_segment(entry_package))
+}
+
+fn collect_dependencies(
+    graph: Graph,
+    package_name: string,
+    seen: HashMap[string, bool],
+    result: Vec[string],
+) -> Result[unit, string] {
+    let package_value = match package_by_name(graph, package_name) {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("missing package " + package_name),
+    };
+    for dependency in package_value.imports {
+        if seen.contains(dependency) {
+            ()
+        } else {
+            seen.set(dependency, true);
+            result.push(dependency);
+            match collect_dependencies(graph, dependency, seen, result) {
+                Result::Ok(()) => (),
+                Result::Err(message) => return Result::Err(message),
+            }
+        }
+    };
+    Result::Ok(())
+}
+
+fn dependency_interfaces(
+    graph: Graph,
+    package_name: string,
+    output_root: string,
+) -> Result[Vec[string], string] {
+    let names = Vec::new();
+    match collect_dependencies(
+        graph,
+        package_name,
+        HashMap::new(),
+        names,
+    ) {
+        Result::Ok(()) => (),
+        Result::Err(message) => return Result::Err(message),
+    };
+    let result = Vec::new();
+    for name in util::sorted_unique(names) {
+        result.push(extension(
+            package_artifact_base(output_root, graph, name),
+            "interface",
+        ))
+    };
+    Result::Ok(result)
+}
+
+fn compile_commands(
+    context: Context,
+    output_root: string,
+    entry_command: string,
+    dependency_command: string,
+) -> Result[Vec[Command], string] {
+    let result = Vec::new();
+    for package_name in context.graph.order {
+        let package_value = match package_by_name(context.graph, package_name) {
+            Option::Some(value) => value,
+            Option::None => return Result::Err("missing package " + package_name),
+        };
+        let inputs = Vec::new();
+        for file in package_value.files {
+            inputs.push(module_relative(context.graph.module_dir, file))
+        };
+        let interfaces = match dependency_interfaces(
+            context.graph,
+            package_name,
+            output_root,
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        let relative_interfaces = Vec::new();
+        for value in interfaces {
+            relative_interfaces.push(module_relative(
+                context.graph.module_dir,
+                value,
+            ))
+        };
+        let command = if package_name == context.graph.entry_package {
+            entry_command
+        } else {
+            dependency_command
+        };
+        result.push(Command::Compile {
+            subcommand: command,
+            package_name,
+            input_files: util::sorted(inputs),
+            interface_files: relative_interfaces,
+            output: module_relative(
+                context.graph.module_dir,
+                package_artifact_base(
+                    output_root,
+                    context.graph,
+                    package_name,
+                ),
+            ),
+        })
+    };
+    Result::Ok(result)
+}
+
+fn core_outputs(context: Context, output_root: string) -> Vec[string] {
+    let result = Vec::new();
+    for package_name in context.graph.order {
+        result.push(module_relative(
+            context.graph.module_dir,
+            extension(
+                package_artifact_base(
+                    output_root,
+                    context.graph,
+                    package_name,
+                ),
+                "core",
+            ),
+        ))
+    };
+    result
+}
+
+pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string] {
+    let output_root = path::join(context.artifact_root, "check");
+    let commands = match compile_commands(
+        context,
+        output_root,
+        "check",
+        "check",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    if include_tests {
+        let internal = match internal_test_graphs(context) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        for graph in internal {
+            let target = Context {
+                graph,
+                compiler: context.compiler,
+                artifact_root: context.artifact_root,
+            };
+            let values = match compile_commands(
+                target,
+                output_root,
+                "test-check",
+                "check",
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            for value in values {
+                commands.push(value)
+            }
+        };
+        let external = match external_test_graphs(context) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        for test in external {
+            let target = Context {
+                graph: test.graph,
+                compiler: context.compiler,
+                artifact_root: context.artifact_root,
+            };
+            let values = match compile_commands(
+                target,
+                output_root,
+                "test-check",
+                "check",
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            for value in values {
+                commands.push(value)
+            }
+        }
+    } else {
+        ()
+    };
+    Result::Ok(Plan {
+        commands,
+        executable: Option::None,
+        test_groups: Vec::new(),
+    })
+}
+
+pub fn build_plan(context: Context) -> Result[Plan, string] {
+    let output_root = path::join(context.artifact_root, "build");
+    let commands = match compile_commands(
+        context,
+        output_root,
+        "build",
+        "build",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let entries = Vec::new();
+    for package_name in context.graph.order {
+        let package_value = match package_by_name(context.graph, package_name) {
+            Option::Some(value) => value,
+            Option::None => return Result::Err("missing package " + package_name),
+        };
+        if package_value.declared_name == "main" {
+            entries.push(package_name)
+        } else {
+            ()
+        }
+    };
+    for entry_package in util::sorted(entries) {
+        let main_go = linked_go_output(
+            output_root,
+            context.graph,
+            entry_package,
+        );
+        commands.push(Command::Link {
+            input_cores: core_outputs(context, output_root),
+            entry_package,
+            output: module_relative(context.graph.module_dir, main_go),
+        });
+        let executable = executable_path_for(context, entry_package);
+        commands.push(Command::GoBuild {
+            input: module_relative(context.graph.module_dir, main_go),
+            output: module_relative(context.graph.module_dir, executable),
+        })
+    };
+    Result::Ok(Plan {
+        commands,
+        executable: Option::None,
+        test_groups: Vec::new(),
+    })
+}
+
+pub fn run_plan(context: Context) -> Result[Plan, string] {
+    let output_root = path::join(context.artifact_root, "build");
+    let commands = match compile_commands(
+        context,
+        output_root,
+        "build",
+        "build",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let main_go = linked_go_output(
+        output_root,
+        context.graph,
+        context.graph.entry_package,
+    );
+    commands.push(Command::Link {
+        input_cores: core_outputs(context, output_root),
+        entry_package: context.graph.entry_package,
+        output: module_relative(context.graph.module_dir, main_go),
+    });
+    let executable = executable_path_for(
+        context,
+        context.graph.entry_package,
+    );
+    commands.push(Command::GoBuild {
+        input: module_relative(context.graph.module_dir, main_go),
+        output: module_relative(context.graph.module_dir, executable),
+    });
+    Result::Ok(Plan {
+        commands,
+        executable: Option::Some(executable),
+        test_groups: Vec::new(),
+    })
+}
+
+fn append_test_graph(
+    context: Context,
+    graph: Graph,
+    output_root: string,
+    kind: string,
+    packages: Vec[string],
+    commands: Vec[Command],
+    groups: Vec[TestGroup],
+) -> Result[unit, string] {
+    let target = Context {
+        graph,
+        compiler: context.compiler,
+        artifact_root: context.artifact_root,
+    };
+    let compiled = match compile_commands(
+        target,
+        output_root,
+        "test-build",
+        "build",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    for command in compiled {
+        commands.push(command)
+    };
+    let base = package_artifact_base(
+        output_root,
+        target.graph,
+        target.graph.entry_package,
+    );
+    let main_go = linked_go_output(
+        output_root,
+        target.graph,
+        target.graph.entry_package,
+    );
+    let directory = match path::parent(base) {
+        Option::Some(value) => value,
+        Option::None => output_root,
+    };
+    let manifest = path::join(directory, "tests.json");
+    commands.push(Command::TestLink {
+        input_cores: core_outputs(target, output_root),
+        packages,
+        output: module_relative(context.graph.module_dir, main_go),
+        manifest: module_relative(context.graph.module_dir, manifest),
+    });
+    let runner = path::join(directory, "runner");
+    commands.push(Command::GoBuild {
+        input: module_relative(context.graph.module_dir, main_go),
+        output: module_relative(context.graph.module_dir, runner),
+    });
+    groups.push(TestGroup {
+        kind,
+        manifest,
+        runner,
+    });
+    Result::Ok(())
+}
+
+pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
+    let commands = match check_plan(context, false) {
+        Result::Ok(value) => value.commands,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let groups = Vec::new();
+    let internal = if kind == "internal" || kind == "all" {
+        match internal_test_graphs(context) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        }
+    } else {
+        Vec::new()
+    };
+    let internal_root = path::join(
+        path::join(context.artifact_root, "test"),
+        "internal",
+    );
+    for graph in internal {
+        let package_name = graph.entry_package;
+        match append_test_graph(
+            context,
+            graph,
+            internal_root,
+            "internal",
+            Vec::new().pushed(package_name),
+            commands,
+            groups,
+        ) {
+            Result::Ok(()) => (),
+            Result::Err(message) => return Result::Err(message),
+        }
+    };
+    let external = if kind == "external" || kind == "all" {
+        match external_test_graphs(context) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        }
+    } else {
+        Vec::new()
+    };
+    let external_root = path::join(
+        path::join(context.artifact_root, "test"),
+        "external",
+    );
+    for test in external {
+        let package_name = test.graph.entry_package;
+        match append_test_graph(
+            context,
+            test.graph,
+            external_root,
+            "external",
+            Vec::new()
+                .pushed(package_name)
+                .pushed(test.target_package),
+            commands,
+            groups,
+        ) {
+            Result::Ok(()) => (),
+            Result::Err(message) => return Result::Err(message),
+        }
+    };
+    Result::Ok(Plan {
+        commands,
+        executable: Option::None,
+        test_groups: groups,
+    })
+}
+
+fn display_args(program: string, args: Vec[string]) -> string {
+    let result = Ref::new(program);
+    for argument in args {
+        result.set(result.get() + " " + util::shell_escape(argument))
+    };
+    result.get()
+}
+
+fn command_args(value: Command) -> (string, Vec[string]) {
+    match value {
+        Command::Compile {
+            subcommand,
+            package_name,
+            input_files,
+            interface_files,
+            output,
+        } => {
+            let args = Vec::new();
+            args.push(subcommand);
+            args.push("--package");
+            args.push(package_name);
+            for input in input_files {
+                args.push("--input");
+                args.push(input)
+            };
+            for interface in interface_files {
+                args.push("--interface-path");
+                args.push(interface)
+            };
+            args.push("--output");
+            args.push(output);
+            ("gomlc", args)
+        },
+        Command::Link {
+            input_cores,
+            entry_package,
+            output,
+        } => {
+            let args = Vec::new();
+            args.push("link");
+            args.push("--input");
+            for input in input_cores {
+                args.push(input)
+            };
+            args.push("--output");
+            args.push(output);
+            args.push("--entry");
+            args.push(entry_package);
+            ("gomlc", args)
+        },
+        Command::TestLink {
+            input_cores,
+            packages,
+            output,
+            manifest,
+        } => {
+            let args = Vec::new();
+            args.push("test-link");
+            args.push("--input");
+            for input in input_cores {
+                args.push(input)
+            };
+            args.push("--output");
+            args.push(output);
+            args.push("--manifest");
+            args.push(manifest);
+            for package_name in packages {
+                args.push("--package");
+                args.push(package_name)
+            };
+            ("gomlc", args)
+        },
+        Command::GoBuild { input, output } => (
+            "go",
+            Vec::new()
+                .pushed("build")
+                .pushed("-o")
+                .pushed(output)
+                .pushed(input),
+        ),
+    }
+}
+
+pub fn display_command(value: Command) -> string {
+    let command = command_args(value);
+    display_args(command.0, command.1)
+}
+
+fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
+    let output = match value {
+        Command::Compile { output, .. }
+        | Command::Link { output, .. }
+        | Command::TestLink { output, .. }
+        | Command::GoBuild { output, .. } => output,
+    };
+    let absolute = if path::is_absolute(output) {
+        output
+    } else {
+        path::join(module_dir, output)
+    };
+    match path::parent(absolute) {
+        Option::Some(parent) => fs::create_dir_all(parent),
+        Option::None => Result::Ok(()),
+    }
+}
+
+fn execute_command(
+    context: Context,
+    value: Command,
+) -> Result[unit, string] {
+    match ensure_output_parent(value, context.graph.module_dir) {
+        Result::Ok(()) => (),
+        Result::Err(message) => return Result::Err(message),
+    };
+    let command = command_args(value);
+    let program = if command.0 == "gomlc" {
+        context.compiler
+    } else {
+        command.0
+    };
+    let process = process::Command::new(program)
+        .args(command.1)
+        .current_dir(context.graph.module_dir);
+    if command.0 == "go" {
+        let _ = process.env("GOWORK", "off");
+        let _ = process.env("GO111MODULE", "off");
+    } else {
+        ()
+    };
+    match process.status() {
+        Result::Ok(status) => if process::ExitStatus::success(status) {
+            Result::Ok(())
+        } else {
+            Result::Err(display_command(value) + " failed")
+        },
+        Result::Err(message) => Result::Err(message),
+    }
+}
+
+pub fn execute_plan(
+    context: Context,
+    plan: Plan,
+    dry_run: bool,
+) -> Result[unit, string] {
+    let identity = if dry_run {
+        ""
+    } else {
+        match compiler_digest(context) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        }
+    };
+    for command in plan.commands {
+        if dry_run {
+            io::println(display_command(command))
+        } else {
+            match cache_spec(command) {
+                Option::Some(spec) => {
+                    let fingerprint = match command_fingerprint(
+                        context,
+                        identity,
+                        spec,
+                    ) {
+                        Result::Ok(value) => value,
+                        Result::Err(message) => return Result::Err(message),
+                    };
+                    let fresh = match cache_is_fresh(
+                        context,
+                        spec,
+                        fingerprint,
+                    ) {
+                        Result::Ok(value) => value,
+                        Result::Err(message) => return Result::Err(message),
+                    };
+                    if fresh {
+                        ()
+                    } else {
+                        match prepare_cache_execution(context, spec) {
+                            Result::Ok(()) => (),
+                            Result::Err(message) => return Result::Err(message),
+                        };
+                        match execute_command(context, command) {
+                            Result::Ok(()) => (),
+                            Result::Err(message) => {
+                                let _ = prepare_cache_execution(context, spec);
+                                return Result::Err(message)
+                            },
+                        };
+                        match store_cache(
+                            context,
+                            spec,
+                            identity,
+                            fingerprint,
+                        ) {
+                            Result::Ok(()) => (),
+                            Result::Err(message) => return Result::Err(message),
+                        }
+                    }
+                },
+                Option::None => match execute_command(context, command) {
+                    Result::Ok(()) => (),
+                    Result::Err(message) => return Result::Err(message),
+                },
+            }
+        }
+    };
+    Result::Ok(())
+}
+
+pub fn run_executable(
+    context: Context,
+    executable: string,
+    args: Vec[string],
+    dry_run: bool,
+) -> Result[unit, string] {
+    let relative = module_relative(context.graph.module_dir, executable);
+    if dry_run {
+        io::println(display_args(relative, args));
+        Result::Ok(())
+    } else {
+        match process::Command::new(executable)
+            .args(args)
+            .current_dir(context.graph.module_dir)
+            .status()
+        {
+        Result::Ok(status) => if process::ExitStatus::success(status) {
+                Result::Ok(())
+            } else {
+                match process::ExitStatus::code(status) {
+                    Option::Some(code) => Result::Err(
+                        "program exited with status " + code.to_string(),
+                    ),
+                    Option::None => Result::Err("program terminated by signal"),
+                }
+            },
+            Result::Err(message) => Result::Err(message),
+        }
+    }
+}

@@ -1,0 +1,230 @@
+package pipeline;
+
+use gomlc::anf;
+use gomlc::ast;
+use gomlc::cmd::gomlc as compiler_driver;
+use gomlc::core;
+use gomlc::cst;
+use gomlc::go_backend;
+use gomlc::hir;
+use gomlc::lift;
+use gomlc::mono;
+use gomlc::parser;
+use gomlc::tast;
+use std::env;
+use std::fs;
+use std::path;
+use std::process;
+use std::testing;
+
+pub fn repo_root() -> string {
+    match env::var("GOML_REPO") {
+        Option::Some(value) => value,
+        Option::None => "..",
+    }
+}
+
+pub fn fixture_dir(name: string) -> string {
+    path::join(
+        path::join(repo_root(), "bootstrap/testdata/pipeline"),
+        name,
+    )
+}
+
+pub fn read_snapshot(base: string, extension: string) -> string {
+    let file = path::join(base, "main.gom." + extension);
+    match fs::read_file(file) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail("failed to read " + file + ": " + message);
+            ""
+        },
+    }
+}
+
+fn update_expected() -> bool {
+    match env::var("UPDATE_EXPECT") {
+        Option::Some(_) => true,
+        Option::None => false,
+    }
+}
+
+fn assert_snapshot(base: string, extension: string, actual: string) -> unit {
+    let file = path::join(base, "main.gom." + extension);
+    if update_expected() {
+        match fs::write_file(file, actual) {
+            Result::Ok(()) => (),
+            Result::Err(message) => testing::fail(
+                "failed to write " + file + ": " + message,
+            ),
+        }
+    } else {
+        testing::assert_eq(actual, read_snapshot(base, extension))
+    }
+}
+
+fn go_available() -> bool {
+    match process::Command::new("go").arg("version").output() {
+        Result::Ok(output) => process::ExitStatus::success(process::Output::status(output)),
+        Result::Err(_) => false,
+    }
+}
+
+fn has_out_snapshot(base: string) -> bool {
+    fs::is_file(path::join(base, "main.gom.out"))
+}
+
+fn tmp_dir() -> string {
+    match env::var("TMPDIR") {
+        Option::Some(value) => if value == "" { "/tmp" } else { value },
+        Option::None => "/tmp",
+    }
+}
+
+fn execute_go_and_read_stdout(go_source: string, name: string) -> string {
+    let work_dir = path::join(
+        path::join(tmp_dir(), "gomlc-pipeline-test"),
+        name,
+    );
+    match fs::create_dir_all(work_dir) {
+        Result::Ok(()) => (),
+        Result::Err(message) => {
+            testing::fail("failed to create Go work dir: " + message);
+            return ""
+        },
+    };
+    let main_file = path::join(work_dir, "main.go");
+    match fs::write_file(main_file, go_source) {
+        Result::Ok(()) => (),
+        Result::Err(message) => {
+            testing::fail("failed to write Go source: " + message);
+            return ""
+        },
+    };
+    match process::Command::new("go")
+        .arg("run")
+        .arg("main.go")
+        .current_dir(work_dir)
+        .env("GOWORK", "off")
+        .env("GO111MODULE", "off")
+        .output()
+    {
+        Result::Ok(output) => {
+            if process::ExitStatus::success(process::Output::status(output)) {
+                match process::Output::stdout(output).to_string() {
+                    Result::Ok(value) => value,
+                    Result::Err(message) => {
+                        testing::fail("failed to decode Go stdout: " + message);
+                        ""
+                    },
+                }
+            } else {
+                match process::Output::stderr(output).to_string() {
+                    Result::Ok(value) => {
+                        testing::fail("go run failed: " + value);
+                        ""
+                    },
+                    Result::Err(_) => {
+                        testing::fail("go run failed (non-UTF-8 stderr)");
+                        ""
+                    },
+                }
+            }
+        },
+        Result::Err(message) => {
+            testing::fail("failed to execute go run: " + message);
+            ""
+        },
+    }
+}
+
+pub fn all_pipeline_cases() -> Vec[string] {
+    let result = Vec::new();
+    let root = path::join(
+        repo_root(),
+        "bootstrap/testdata/pipeline",
+    );
+    match fs::read_dir(root) {
+        Result::Ok(names) => for name in names {
+            let directory = path::join(root, name);
+            if fs::is_dir(directory)
+                && fs::is_file(path::join(directory, "main.gom"))
+            {
+                let inserted = Ref::new(false);
+                for index in range(0, result.len()) {
+                    if !(inserted.get()) && name < result.get(index) {
+                        result.insert(index, name);
+                        inserted.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if !(inserted.get()) {
+                    result.push(name)
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            }
+        },
+        Result::Err(message) => {
+            testing::fail("failed to read pipeline fixtures: " + message)
+        },
+    };
+    result
+}
+
+pub fn test_one_case(name: string) -> unit {
+    let base = fixture_dir(name);
+    let source_path = path::join(base, "main.gom");
+    let source = match fs::read_file(source_path) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail("failed to read " + source_path + ": " + message);
+            ""
+        },
+    };
+
+    let parsed = parser::parse(source);
+    assert_snapshot(base, "cst", cst::debug_tree(parsed));
+
+    let compilation = compiler_driver::compile_source(source_path, source);
+
+    assert_snapshot(base, "ast", ast::pretty(compilation.ast_value));
+    assert_snapshot(base, "hir", hir::encode(compilation.hir_value));
+    assert_snapshot(base, "tast", tast::encode(compilation.tast_value));
+    assert_snapshot(base, "core", core::encode(compilation.core_value));
+    assert_snapshot(base, "mono", mono::encode(compilation.mono_value));
+    assert_snapshot(base, "lift", lift::encode(compilation.lift_value));
+    assert_snapshot(base, "anf", anf::encode(compilation.anf_value));
+    assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
+
+    if has_out_snapshot(base) {
+        if go_available() {
+            let go_source = go_backend::encode(compilation.go_value);
+            assert_snapshot(
+                base,
+                "out",
+                execute_go_and_read_stdout(go_source, name),
+            )
+        } else {
+            ()
+        }
+    } else {
+        ()
+    }
+}
+
+pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
+    let index = Ref::new(0);
+    for name in all_pipeline_cases() {
+        let current = index.get();
+        if current % shard_count == shard {
+            test_one_case(name)
+        } else {
+            ()
+        };
+        index.set(current + 1)
+    }
+}

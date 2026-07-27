@@ -1,0 +1,22 @@
+fn main() -> unit {
+    let to_text/0: (int32) -> string = (@runtime(core.int32_to_string) : (int32) -> string);
+    (println : (string) -> unit)((to_text/0 : (int32) -> string)(7));
+    let get/1: (Vec[int32], int) -> int32 = (@intrinsic(vec.get) : (Vec[int32], int) -> int32);
+    let push/2: (Vec[int32], int32) -> unit = (@intrinsic(vec.push) : (Vec[int32], int32) -> unit);
+    let values/3: Vec[int32] = (Vec[int32]::new : () -> Vec[int32])();
+    (push/2 : (Vec[int32], int32) -> unit)((values/3 : Vec[int32]), 11);
+    (push/2 : (Vec[int32], int32) -> unit)((values/3 : Vec[int32]), 22);
+    (println : (int32) -> unit)((get/1 : (Vec[int32], int) -> int32)((values/3 : Vec[int32]), 1));
+    let make_slice/4: (Vec[int32], int, int) -> Slice[int32] = (@intrinsic(slice.new) : (Vec[int32], int, int) -> Slice[int32]);
+    let slice_get_value/5: (Slice[int32], int) -> int32 = (@intrinsic(slice.get) : (Slice[int32], int) -> int32);
+    let view/6: Slice[int32] = (make_slice/4 : (Vec[int32], int, int) -> Slice[int32])((values/3 : Vec[int32]), 0, 2);
+    (println : (int32) -> unit)((slice_get_value/5 : (Slice[int32], int) -> int32)((view/6 : Slice[int32]), 0));
+    let alias/7: Vec[int32] = (values/3 : Vec[int32]);
+    (Vec[int32]::push : (Vec[int32], int32) -> unit)((alias/7 : Vec[int32]), 33);
+    (println : (int) -> unit)((Vec[int32]::len : (Vec[int32]) -> int)((values/3 : Vec[int32])));
+    (Vec[int32]::set : (Vec[int32], int, int32) -> unit)((values/3 : Vec[int32]), 0, 44);
+    (println : (int32) -> unit)((Vec[int32]::get : (Vec[int32], int) -> int32)((alias/7 : Vec[int32]), 0));
+    let copied/8: Vec[int32] = (Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((values/3 : Vec[int32]), 55);
+    (println : (int) -> unit)((Vec[int32]::len : (Vec[int32]) -> int)((values/3 : Vec[int32])));
+    (println : (int) -> unit)((Vec[int32]::len : (Vec[int32]) -> int)((copied/8 : Vec[int32])));
+}

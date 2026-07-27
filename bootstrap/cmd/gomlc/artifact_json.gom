@@ -1,0 +1,199 @@
+package main;
+
+use std::text;
+
+struct ArtifactJsonWriter {
+    builder: text::StringBuilder,
+    pretty: bool,
+    depth: Ref[int],
+    object_scopes: Vec[bool],
+    first_values: Vec[bool],
+    after_name: Ref[bool],
+}
+
+fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
+    ArtifactJsonWriter {
+        builder: text::StringBuilder::new(),
+        pretty,
+        depth: Ref::new(0),
+        object_scopes: Vec::new(),
+        first_values: Vec::new(),
+        after_name: Ref::new(false),
+    }
+}
+
+fn artifact_json_indent(value: ArtifactJsonWriter) -> unit {
+    if value.pretty {
+        for _ in range(0, value.depth.get()) {
+            value.builder.write_string("  ")
+        }
+    } else {
+        ()
+    }
+}
+
+fn artifact_json_line(value: ArtifactJsonWriter) -> unit {
+    if value.pretty {
+        value.builder.write_char('\n');
+        artifact_json_indent(value)
+    } else {
+        ()
+    }
+}
+
+fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
+    if value.after_name.get() {
+        value.after_name.set(false)
+    } else if value.first_values.len() > 0 {
+        let index = value.first_values.len() - 1;
+        if value.first_values.get(index) {
+            value.first_values.set(index, false)
+        } else {
+            value.builder.write_char(',')
+        };
+        artifact_json_line(value)
+    } else {
+        ()
+    }
+}
+
+fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: uint8) -> unit {
+    let digits = "0123456789abcdef";
+    value.builder.write_char(digits.get((byte / 16) as int));
+    value.builder.write_char(digits.get((byte % 16) as int))
+}
+
+fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> unit {
+    let start = Ref::new(0);
+    for index in range(0, input.byte_len()) {
+        let byte = input.byte_get(index);
+        if byte == 34
+            || byte == 92
+            || byte == 8
+            || byte == 9
+            || byte == 10
+            || byte == 12
+            || byte == 13
+            || byte < 32
+        {
+            if start.get() < index {
+                value.builder.write_string(input.byte_slice(start.get(), index))
+            } else {
+                ()
+            };
+            if byte == 34 {
+                value.builder.write_string("\\\"")
+            } else if byte == 92 {
+                value.builder.write_string("\\\\")
+            } else if byte == 8 {
+                value.builder.write_string("\\b")
+            } else if byte == 9 {
+                value.builder.write_string("\\t")
+            } else if byte == 10 {
+                value.builder.write_string("\\n")
+            } else if byte == 12 {
+                value.builder.write_string("\\f")
+            } else if byte == 13 {
+                value.builder.write_string("\\r")
+            } else {
+                value.builder.write_string("\\u00");
+                artifact_json_write_hex(value, byte)
+            };
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    if start.get() < input.byte_len() {
+        value.builder.write_string(input.byte_slice(start.get(), input.byte_len()))
+    } else {
+        ()
+    }
+}
+
+fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> unit {
+    value.builder.write_char('"');
+    artifact_json_write_string_body(value, input);
+    value.builder.write_char('"')
+}
+
+fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
+    artifact_json_before_value(value);
+    value.builder.write_char('{');
+    value.object_scopes.push(true);
+    value.first_values.push(true);
+    value.depth.set(value.depth.get() + 1)
+}
+
+fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
+    value.depth.set(value.depth.get() - 1);
+    let first = value.first_values.remove(value.first_values.len() - 1);
+    let _ = value.object_scopes.remove(value.object_scopes.len() - 1);
+    if !first {
+        artifact_json_line(value)
+    } else {
+        ()
+    };
+    value.builder.write_char('}')
+}
+
+fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
+    artifact_json_before_value(value);
+    value.builder.write_char('[');
+    value.object_scopes.push(false);
+    value.first_values.push(true);
+    value.depth.set(value.depth.get() + 1)
+}
+
+fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
+    value.depth.set(value.depth.get() - 1);
+    let first = value.first_values.remove(value.first_values.len() - 1);
+    let _ = value.object_scopes.remove(value.object_scopes.len() - 1);
+    if !first {
+        artifact_json_line(value)
+    } else {
+        ()
+    };
+    value.builder.write_char(']')
+}
+
+fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
+    let index = value.first_values.len() - 1;
+    if value.first_values.get(index) {
+        value.first_values.set(index, false)
+    } else {
+        value.builder.write_char(',')
+    };
+    artifact_json_line(value);
+    artifact_json_write_quoted(value, name);
+    if value.pretty {
+        value.builder.write_string(": ")
+    } else {
+        value.builder.write_char(':')
+    };
+    value.after_name.set(true)
+}
+
+fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
+    artifact_json_before_value(value);
+    artifact_json_write_quoted(value, input)
+}
+
+fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
+    artifact_json_before_value(value);
+    value.builder.write_string(input)
+}
+
+fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
+    artifact_json_before_value(value);
+    value.builder.write_string(if input { "true" } else { "false" })
+}
+
+fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
+    artifact_json_before_value(value);
+    value.builder.write_string("null")
+}
+
+fn artifact_json_finish(value: ArtifactJsonWriter) -> string {
+    value.builder.finish()
+}

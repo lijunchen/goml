@@ -1,0 +1,6 @@
+fn main() -> unit {
+    let mut x/0: int = 0;
+    let get/1: () -> int = || => (x/0 : int);
+    (x/0 : int) = 41;
+    (println : (string) -> unit)((int::to_string : (int) -> string)((get/1 : () -> int)()));
+}

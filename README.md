@@ -6,7 +6,18 @@ The "ml" in goml nods to the [ML (programming language)](https://en.wikipedia.or
 
 goml aims to empower gophers with a more powerful type system but without leaving the Go ecosystem.
 
-If you want to gain a quick, basic sense of what the goml language looks like, you can explore the test materials inside the [crates/compiler/src/tests/pipeline](crates/compiler/src/tests/pipeline). Files ending in `.gom` contain the original goml source code, `.go` files are the compiled outputs, `.out` files are the program's stdout. You can also visit the project page at [lijunchen.github.io/goml/](https://lijunchen.github.io/goml/), which provides the same content as the test directory but presented in a convenient web‑browsable format.
+The compiler, project driver, tests, and language server are implemented in GoML. The version-controlled Go stage0 sources in `stage0/` make a cold bootstrap possible with only the Go toolchain:
+
+```sh
+just bootstrap
+just test-selfhost
+```
+
+The fixed-point build compiles the stage0 sources, builds stage1 from GoML and stage2 from stage1, then compares the generated compiler and driver artifacts.
+
+Generated executables are published under `bin/stage0`, `bin/stage1`, and `bin/stage2`. The entire `bin` directory is ignored by Git.
+
+Explore [bootstrap/testdata/pipeline](bootstrap/testdata/pipeline) for source programs and every compiler-stage golden file. Use `just verify-golden` to check the corpus or `just update-golden` to regenerate it through the self-hosted compiler.
 
 ## Disclaimer
 

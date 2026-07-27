@@ -1,0 +1,20 @@
+package main;
+trait Measure {
+  fn measure(self: Self) -> int;
+}
+
+impl Measure for Vec[int32] {
+  fn measure(self: Vec[int32]) -> int {
+      self.len()
+  }
+}
+
+fn read_measure(value: T) -> int {
+    Measure::measure(value)
+}
+
+fn main() -> unit {
+    let values = vec_new();
+    println(read_measure(values).to_string())
+}
+

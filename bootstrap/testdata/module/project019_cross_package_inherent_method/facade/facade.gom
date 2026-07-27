@@ -1,0 +1,23 @@
+package facade;
+
+pub struct Item {
+    value: string,
+}
+
+pub fn make(value: string) -> Item {
+    Item { value: value }
+}
+
+impl Item {
+    pub fn touch(self: Item) -> unit {
+        ()
+    }
+
+    pub fn text(self: Item) -> string {
+        self.value
+    }
+
+    pub fn suffix(self: Item, suffix: string) -> string {
+        self.value + suffix
+    }
+}

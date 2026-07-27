@@ -7,6 +7,9 @@
             "include": "#comments"
         },
         {
+            "include": "#attributes"
+        },
+        {
             "include": "#strings"
         },
         {
@@ -16,13 +19,16 @@
             "include": "#numbers"
         },
         {
+            "include": "#declarations"
+        },
+        {
             "include": "#keywords"
         },
         {
-            "include": "#types"
+            "include": "#namespaces"
         },
         {
-            "include": "#namespaces"
+            "include": "#types"
         },
         {
             "include": "#functions"
@@ -37,23 +43,108 @@
                 {
                     "name": "comment.line.double-slash.goml",
                     "match": "//.*$"
+                }
+            ]
+        },
+        "attributes": {
+            "patterns": [
+                {
+                    "name": "meta.attribute.goml",
+                    "begin": "#!?\\[",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.attribute.begin.goml"
+                        }
+                    },
+                    "end": "\\]",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.attribute.end.goml"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#quoted-strings"
+                        },
+                        {
+                            "include": "#numbers"
+                        },
+                        {
+                            "include": "#attribute-brackets"
+                        },
+                        {
+                            "name": "entity.other.attribute-name.goml",
+                            "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+                        }
+                    ]
+                }
+            ]
+        },
+        "attribute-brackets": {
+            "name": "meta.attribute.arguments.goml",
+            "begin": "\\[",
+            "end": "\\]",
+            "patterns": [
+                {
+                    "include": "#quoted-strings"
                 },
                 {
-                    "name": "comment.block.goml",
-                    "begin": "/\\*",
-                    "end": "\\*/"
+                    "include": "#numbers"
+                },
+                {
+                    "include": "#attribute-brackets"
+                },
+                {
+                    "name": "entity.other.attribute-name.goml",
+                    "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
                 }
             ]
         },
         "strings": {
             "patterns": [
                 {
+                    "name": "string.unquoted.multiline.goml",
+                    "begin": "\\\\\\\\",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.goml"
+                        }
+                    },
+                    "while": "^(\\s*)(\\\\\\\\)",
+                    "whileCaptures": {
+                        "2": {
+                            "name": "punctuation.definition.string.begin.goml"
+                        }
+                    }
+                },
+                {
+                    "include": "#quoted-strings"
+                }
+            ]
+        },
+        "quoted-strings": {
+            "patterns": [
+                {
                     "name": "string.quoted.double.goml",
                     "begin": "\"",
-                    "end": "\"",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.goml"
+                        }
+                    },
+                    "end": "\"|(?=$)",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.goml"
+                        }
+                    },
                     "patterns": [
                         {
                             "name": "constant.character.escape.goml",
+                            "match": "\\\\([\"\\\\bnfrt/]|u[a-fA-F0-9]{4})"
+                        },
+                        {
+                            "name": "invalid.illegal.escape.goml",
                             "match": "\\\\."
                         }
                     ]
@@ -65,10 +156,24 @@
                 {
                     "name": "string.quoted.single.goml",
                     "begin": "'",
-                    "end": "'",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.goml"
+                        }
+                    },
+                    "end": "'|(?=$)",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.goml"
+                        }
+                    },
                     "patterns": [
                         {
                             "name": "constant.character.escape.goml",
+                            "match": "\\\\(['\\\\bnfrt/]|u[a-fA-F0-9]{4})"
+                        },
+                        {
+                            "name": "invalid.illegal.escape.goml",
                             "match": "\\\\."
                         }
                     ]
@@ -79,19 +184,41 @@
             "patterns": [
                 {
                     "name": "constant.numeric.float.goml",
-                    "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?(f32|f64)\\b"
+                    "match": "\\b[0-9](?:_?[0-9])*\\.[0-9](?:_?[0-9])*(?:[eE][+-]?[0-9](?:_?[0-9])*)?\\b"
                 },
                 {
                     "name": "constant.numeric.float.goml",
-                    "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?\\b"
+                    "match": "\\b[0-9](?:_?[0-9])*[eE][+-]?[0-9](?:_?[0-9])*\\b"
                 },
                 {
                     "name": "constant.numeric.integer.goml",
-                    "match": "\\b[0-9]+(i8|i16|i32|i64|u8|u16|u32|u64)\\b"
+                    "match": "\\b[0-9](?:_?[0-9])*\\b"
+                }
+            ]
+        },
+        "declarations": {
+            "patterns": [
+                {
+                    "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.declaration.function.goml"
+                        },
+                        "2": {
+                            "name": "entity.name.function.goml"
+                        }
+                    }
                 },
                 {
-                    "name": "constant.numeric.integer.goml",
-                    "match": "\\b[0-9]+\\b"
+                    "match": "\\b(struct|enum|trait|type)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.declaration.type.goml"
+                        },
+                        "2": {
+                            "name": "entity.name.type.goml"
+                        }
+                    }
                 }
             ]
         },
@@ -107,7 +234,7 @@
                 },
                 {
                     "name": "keyword.other.goml",
-                    "match": "\\b(dyn|as|ref|mut|pub|mod)\\b"
+                    "match": "\\b(dyn|as|mut|pub|where)\\b"
                 },
                 {
                     "name": "constant.language.boolean.goml",
@@ -115,7 +242,11 @@
                 },
                 {
                     "name": "variable.language.self.goml",
-                    "match": "\\b(Self)\\b"
+                    "match": "\\bSelf\\b"
+                },
+                {
+                    "name": "variable.language.wildcard.goml",
+                    "match": "(?<![A-Za-z0-9_])_(?![A-Za-z0-9_])"
                 }
             ]
         },
@@ -123,15 +254,15 @@
             "patterns": [
                 {
                     "name": "storage.type.primitive.goml",
-                    "match": "\\b(bool|int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|string|char|unit)\\b"
+                    "match": "\\b(bool|int|int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|string|char|unit)\\b"
                 },
                 {
                     "name": "storage.type.builtin.goml",
-                    "match": "\\b(Vec|Slice|Ref|Option|Result|HashMap|Iterator|FnIterator|MapIterator|FilterIterator|TakeIterator)\\b"
+                    "match": "\\b(Vec|Slice|Ref|Option|Result|HashMap|Channel|Iterator|IntoIterator|FnIterator|MapIterator|FilterIterator|TakeIterator)\\b"
                 },
                 {
                     "name": "entity.name.type.goml",
-                    "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+                    "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
                 }
             ]
         },
@@ -139,7 +270,7 @@
             "patterns": [
                 {
                     "name": "entity.name.namespace.goml",
-                    "match": "\\b[a-z_][a-zA-Z0-9_]*(?=::)"
+                    "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=::)"
                 }
             ]
         },
@@ -147,7 +278,7 @@
             "patterns": [
                 {
                     "name": "entity.name.function.goml",
-                    "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                    "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*(?:\\[[^\\]\\r\\n]*\\])?\\s*\\()"
                 }
             ]
         },
@@ -155,7 +286,7 @@
             "patterns": [
                 {
                     "name": "keyword.operator.goml",
-                    "match": "(->|=>|::|\\+=|-=|\\*=|/=|==|!=|<=|>=|&&|\\|\\||\\+|-|\\*|/|%|<|>|=|!|&|\\|)"
+                    "match": "(\\.\\.=|\\.\\.|->|=>|::|<<|>>|==|!=|<=|>=|&&|\\|\\||\\+|-|\\*|/|%|<|>|=|!|&|\\||\\^|~|\\?|@)"
                 }
             ]
         }

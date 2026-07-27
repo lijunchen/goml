@@ -1,0 +1,336 @@
+package main;
+
+use gomlc::core;
+use gomlc::tast;
+use std::text;
+
+fn artifact_core_type_key(value: tast::Type) -> string {
+    let builder = text::StringBuilder::new();
+    tast::write_type(builder, value);
+    builder.finish()
+}
+
+fn artifact_core_types_equal(left: tast::Type, right: tast::Type) -> bool {
+    artifact_core_type_key(left) == artifact_core_type_key(right)
+}
+
+fn artifact_core_trait_ref_key(value: tast::TraitRef) -> string {
+    let builder = text::StringBuilder::new();
+    tast::write_trait_ref(builder, value);
+    builder.finish()
+}
+
+fn artifact_core_trait_refs_equal(
+    left: tast::TraitRef,
+    right: tast::TraitRef,
+) -> bool {
+    artifact_core_trait_ref_key(left) == artifact_core_trait_ref_key(right)
+}
+
+fn artifact_core_function_matches_scheme(
+    value: core::Function,
+    scheme: ArtifactFnScheme,
+) -> bool {
+    match artifact_function_type_parts(scheme.ty) {
+        Result::Ok(function_type) => if value.params.len() != function_type.params.len()
+            || !artifact_core_types_equal(value.ret_ty, function_type.ret_ty)
+        {
+            false
+        } else {
+            let matches = Ref::new(true);
+            for index in range(0, value.params.len()) {
+                if !artifact_core_types_equal(
+                    value.params.get(index).1,
+                    function_type.params.get(index),
+                ) {
+                    matches.set(false)
+                } else {
+                    ()
+                }
+            };
+            matches.get()
+        },
+        Result::Err(_) => false,
+    }
+}
+
+fn artifact_core_method_name(value: string) -> Option[string] {
+    let separator = Ref::new(-1);
+    for index in range(0, value.byte_len()) {
+        if value.byte_slice(index, index + 1) == "#" {
+            separator.set(index)
+        } else {
+            ()
+        }
+    };
+    if separator.get() < 0 {
+        Option::None
+    } else {
+        Option::Some(value.byte_slice(separator.get() + 1, value.byte_len()))
+    }
+}
+
+fn artifact_core_predicates(
+    inherited: Vec[tast::TypePredicate],
+    own: Vec[tast::TypePredicate],
+) -> Vec[tast::TypePredicate] {
+    let result = Vec::new();
+    for predicate in inherited {
+        result.push(predicate)
+    };
+    for predicate in own {
+        result.push(predicate)
+    };
+    result
+}
+
+fn artifact_prepare_core_function_metadata(
+    value: core::Function,
+    exports: ArtifactPackageExports,
+) -> core::Function {
+    let predicates = Ref::new(value.predicates);
+    for function in exports.functions {
+        if function.name == value.name
+            && artifact_core_function_matches_scheme(value, function)
+        {
+            predicates.set(function.constraints)
+        } else {
+            ()
+        }
+    };
+    let trait_impl = match value.trait_impl {
+        Option::Some(metadata) => {
+            let associated_types = Ref::new(metadata.associated_types);
+            let method_name = artifact_core_method_name(value.name);
+            for implementation in exports.trait_impls {
+                if implementation.definition.valid
+                    && artifact_core_trait_refs_equal(
+                        metadata.trait_ref,
+                        implementation.trait_ref,
+                    )
+                    && artifact_core_types_equal(
+                        metadata.for_ty,
+                        implementation.for_ty,
+                    )
+                {
+                    associated_types.set(implementation.definition.associated_types);
+                    match method_name {
+                        Option::Some(method_name) => for method in implementation.definition.methods {
+                            if method.name == method_name
+                                && artifact_core_function_matches_scheme(value, method)
+                            {
+                                predicates.set(artifact_core_predicates(
+                                    implementation.definition.constraints,
+                                    method.constraints,
+                                ))
+                            } else {
+                                ()
+                            }
+                        },
+                        Option::None => (),
+                    }
+                } else {
+                    ()
+                }
+            };
+            Option::Some(core::TraitImpl {
+                trait_ref: metadata.trait_ref,
+                for_ty: metadata.for_ty,
+                associated_types: associated_types.get(),
+            })
+        },
+        Option::None => {
+            let method_name = artifact_core_method_name(value.name);
+            match method_name {
+                Option::Some(method_name) => for implementation in exports.inherent_impls {
+                    if implementation.definition.valid {
+                        for method in implementation.definition.methods {
+                            if method.name == method_name
+                                && artifact_core_function_matches_scheme(value, method)
+                            {
+                                predicates.set(artifact_core_predicates(
+                                    implementation.definition.constraints,
+                                    method.constraints,
+                                ))
+                            } else {
+                                ()
+                            }
+                        }
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            Option::None
+        },
+    };
+    core::Function {
+        name: value.name,
+        root: value.root,
+        generics: value.generics,
+        predicates: predicates.get(),
+        trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: value.body,
+    }
+}
+
+fn artifact_fill_constructor_fields(
+    value: tast::Constructor,
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    if value.is_struct && value.fields.len() == 0 {
+        for definition in definitions {
+            if definition.name == value.name {
+                for field in definition.fields {
+                    value.fields.push(field.0)
+                }
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    }
+}
+
+fn artifact_prepare_core_exprs(
+    values: Vec[core::Expr],
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    for value in values {
+        artifact_prepare_core_expr(value, definitions)
+    }
+}
+
+fn artifact_prepare_optional_core_expr(
+    value: Option[core::Expr],
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    match value {
+        Option::Some(value) => artifact_prepare_core_expr(value, definitions),
+        Option::None => (),
+    }
+}
+
+fn artifact_prepare_core_block(
+    value: core::Block,
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    for statement in value.stmts {
+        artifact_prepare_core_expr(statement.value, definitions)
+    };
+    artifact_prepare_optional_core_expr(value.tail, definitions)
+}
+
+fn artifact_prepare_core_expr(
+    value: core::Expr,
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    match value {
+        core::Expr::Constr { constructor, args, ty: _ } => {
+            artifact_fill_constructor_fields(constructor, definitions);
+            artifact_prepare_core_exprs(args, definitions)
+        },
+        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
+            artifact_prepare_core_exprs(items, definitions)
+        },
+        core::Expr::Closure { params: _, body, ty: _ } => artifact_prepare_core_expr(body, definitions),
+        core::Expr::Block { block, ty: _ } => artifact_prepare_core_block(block, definitions),
+        core::Expr::Match { expr, arms, default, ty: _ } => {
+            artifact_prepare_core_expr(expr, definitions);
+            for arm in arms {
+                artifact_prepare_core_expr(arm.lhs, definitions);
+                artifact_prepare_core_expr(arm.body, definitions)
+            };
+            artifact_prepare_optional_core_expr(default, definitions)
+        },
+        core::Expr::If { cond, then_branch, else_branch, ty: _ } => {
+            artifact_prepare_core_expr(cond, definitions);
+            artifact_prepare_core_expr(then_branch, definitions);
+            artifact_prepare_core_expr(else_branch, definitions)
+        },
+        core::Expr::While { cond, body, ty: _ } => {
+            artifact_prepare_core_expr(cond, definitions);
+            artifact_prepare_core_expr(body, definitions)
+        },
+        core::Expr::Return { expr, ty: _ } => {
+            artifact_prepare_optional_core_expr(expr, definitions)
+        },
+        core::Expr::Go { expr, ty: _ }
+        | core::Expr::Unary { op: _, expr, ty: _ }
+        | core::Expr::Cast { expr, ty: _ }
+        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => artifact_prepare_core_expr(expr, definitions),
+        core::Expr::ConstrGet { expr, constructor, field_index: _, ty: _ } => {
+            artifact_prepare_core_expr(expr, definitions);
+            artifact_fill_constructor_fields(constructor, definitions)
+        },
+        core::Expr::Binary { op: _, lhs, rhs, ty: _ } => {
+            artifact_prepare_core_expr(lhs, definitions);
+            artifact_prepare_core_expr(rhs, definitions)
+        },
+        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => {
+            artifact_prepare_core_expr(expr, definitions)
+        },
+        core::Expr::Call { func, args, ty: _ } => {
+            artifact_prepare_core_expr(func, definitions);
+            artifact_prepare_core_exprs(args, definitions)
+        },
+        core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
+            artifact_prepare_core_expr(expr, definitions)
+        },
+        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+            artifact_prepare_core_expr(receiver, definitions);
+            artifact_prepare_core_exprs(args, definitions)
+        },
+        core::Expr::Var { name: _, ty: _ }
+        | core::Expr::Callable { callable: _, ty: _ }
+        | core::Expr::Prim { value: _, ty: _ }
+        | core::Expr::Break { ty: _ }
+        | core::Expr::Continue { ty: _ } => (),
+    }
+}
+
+fn artifact_link_struct_definitions(
+    world: PackageWorld,
+    values: Vec[ArtifactCoreUnit],
+) -> Vec[tast::StructDef] {
+    let result = Vec::new();
+    for definition in world.builtins.structs {
+        result.push(definition)
+    };
+    for standard in selected_link_standard_core(
+        world.standard,
+        artifact_core_standard_needs(values),
+    ) {
+        for definition in standard.structs {
+            result.push(definition)
+        }
+    };
+    for value in values {
+        for definition in value.exports.structs {
+            result.push(definition)
+        }
+    };
+    result
+}
+
+fn artifact_prepare_core_units(
+    world: PackageWorld,
+    values: Vec[ArtifactCoreUnit],
+) -> unit {
+    let definitions = artifact_link_struct_definitions(world, values);
+    for value in values {
+        for index in range(0, value.core_ir.functions.len()) {
+            let function = artifact_prepare_core_function_metadata(
+                value.core_ir.functions.get(index),
+                value.exports,
+            );
+            value.core_ir.functions.set(index, function);
+            artifact_prepare_core_block(function.body, definitions)
+        }
+    }
+}

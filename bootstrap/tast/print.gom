@@ -1,0 +1,898 @@
+package tast;
+
+use gomlc::ast;
+use std::text;
+
+fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
+    for _ in range(0, count) {
+        builder.write_char(' ')
+    }
+}
+
+fn newline(builder: text::StringBuilder, indent: int) -> unit {
+    builder.write_char('\n');
+    write_spaces(builder, indent)
+}
+
+fn utf8_width(value: uint8) -> int {
+    if value < 128 {
+        1
+    } else if value < 224 {
+        2
+    } else if value < 240 {
+        3
+    } else {
+        4
+    }
+}
+
+fn hex_digit(value: uint8) -> char {
+    match value {
+        0 => '0',
+        1 => '1',
+        2 => '2',
+        3 => '3',
+        4 => '4',
+        5 => '5',
+        6 => '6',
+        7 => '7',
+        8 => '8',
+        9 => '9',
+        10 => 'a',
+        11 => 'b',
+        12 => 'c',
+        13 => 'd',
+        14 => 'e',
+        _ => 'f',
+    }
+}
+
+fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
+    builder.write_string("\\u{");
+    if value >= 16 {
+        builder.write_char(hex_digit(value / 16))
+    } else {
+        ()
+    };
+    builder.write_char(hex_digit(value % 16));
+    builder.write_char('}')
+}
+
+fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+    builder.write_char('"');
+    let index = Ref::new(0);
+    while index.get() < value.byte_len() {
+        let byte = value.byte_get(index.get());
+        if byte == 34 {
+            builder.write_string("\\\"")
+        } else if byte == 92 {
+            builder.write_string("\\\\")
+        } else if byte == 10 {
+            builder.write_string("\\n")
+        } else if byte == 13 {
+            builder.write_string("\\r")
+        } else if byte == 9 {
+            builder.write_string("\\t")
+        } else if byte == 0 {
+            builder.write_string("\\0")
+        } else if byte < 32 || byte == 127 {
+            write_control_escape(builder, byte)
+        } else {
+            let width = utf8_width(byte);
+            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+        };
+        index.set(index.get() + utf8_width(byte))
+    };
+    builder.write_char('"')
+}
+
+fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
+    builder.write_char('\'');
+    let code = value as uint32;
+    if value == '\'' {
+        builder.write_string("\\'")
+    } else if value == '\\' {
+        builder.write_string("\\\\")
+    } else if value == '\n' {
+        builder.write_string("\\n")
+    } else if value == '\r' {
+        builder.write_string("\\r")
+    } else if value == '\t' {
+        builder.write_string("\\t")
+    } else if code == 0 {
+        builder.write_string("\\0")
+    } else if code < 32 || code == 127 {
+        write_control_escape(builder, code as uint8)
+    } else {
+        builder.write_char(value)
+    };
+    builder.write_char('\'')
+}
+
+fn write_types(builder: text::StringBuilder, values: Vec[Type]) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        write_type(builder, value);
+        index.set(index.get() + 1)
+    }
+}
+
+pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
+    match resolve_type(value) {
+        Type::Unit => builder.write_string("unit"),
+        Type::Never => builder.write_string("never"),
+        Type::Bool => builder.write_string("bool"),
+        Type::Int => builder.write_string("int"),
+        Type::Int8 => builder.write_string("int8"),
+        Type::Int16 => builder.write_string("int16"),
+        Type::Int32 => builder.write_string("int32"),
+        Type::Int64 => builder.write_string("int64"),
+        Type::Uint => builder.write_string("uint"),
+        Type::Uint8 => builder.write_string("uint8"),
+        Type::Uint16 => builder.write_string("uint16"),
+        Type::Uint32 => builder.write_string("uint32"),
+        Type::Uint64 => builder.write_string("uint64"),
+        Type::Float32 => builder.write_string("float32"),
+        Type::Float64 => builder.write_string("float64"),
+        Type::String => builder.write_string("string"),
+        Type::Char => builder.write_string("char"),
+        Type::Tuple { items: values } => {
+            builder.write_char('(');
+            write_types(builder, values);
+            builder.write_char(')')
+        },
+        Type::Con { name } => builder.write_string(name),
+        Type::Dyn { trait_name: name } => {
+            builder.write_string("dyn ");
+            builder.write_string(name)
+        },
+        Type::Projection { for_ty: base, name, trait_ref: _ } => {
+            write_type(builder, base);
+            builder.write_string("::");
+            builder.write_string(name)
+        },
+        Type::App { ty: base, args } => {
+            write_type(builder, base);
+            if args.len() > 0 {
+                builder.write_char('[');
+                write_types(builder, args);
+                builder.write_char(']')
+            } else {
+                ()
+            }
+        },
+        Type::Array { len: length, elem } => {
+            builder.write_char('[');
+            write_type(builder, elem);
+            builder.write_string("; ");
+            builder.write_string(length.to_string());
+            builder.write_char(']')
+        },
+        Type::Slice { elem } => {
+            builder.write_string("Slice[");
+            write_type(builder, elem);
+            builder.write_char(']')
+        },
+        Type::VecType { elem } => {
+            builder.write_string("Vec[");
+            write_type(builder, elem);
+            builder.write_char(']')
+        },
+        Type::RefType { elem } => {
+            builder.write_string("Ref[");
+            write_type(builder, elem);
+            builder.write_char(']')
+        },
+        Type::HashMap { key, value } => {
+            builder.write_string("HashMap[");
+            write_type(builder, key);
+            builder.write_string(", ");
+            write_type(builder, value);
+            builder.write_char(']')
+        },
+        Type::Channel { elem } => {
+            builder.write_string("Channel[");
+            write_type(builder, elem);
+            builder.write_char(']')
+        },
+        Type::Param { name } => builder.write_string(name),
+        Type::Func { params, ret_ty } => {
+            builder.write_char('(');
+            write_types(builder, params);
+            builder.write_string(") -> ");
+            write_type(builder, ret_ty)
+        },
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: index, kind: _ } => {
+                builder.write_string("TypeVar(");
+                builder.write_string(index.to_string());
+                builder.write_char(')')
+            },
+            TypeVar::Link(inner) => write_type(builder, inner),
+        },
+        Type::Error => builder.write_string("<error>"),
+    }
+}
+
+fn type_text(value: Type) -> string {
+    let builder = text::StringBuilder::new();
+    write_type(builder, value);
+    builder.finish()
+}
+
+fn diagnostic_type(value: Type) -> Type {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound { id: _, kind: VarKind::Integer } => Type::Int,
+            TypeVar::Unbound { id: _, kind: VarKind::Float } => Type::Float64,
+            TypeVar::Unbound { id: _, kind: VarKind::Any } => Type::Con { name: "unknown" },
+            TypeVar::Link(inner) => diagnostic_type(inner),
+        },
+        Type::Tuple { items: values } => {
+            let result: Vec[Type] = Vec::new();
+            for value in values {
+                result.push(diagnostic_type(value))
+            };
+            Type::Tuple { items: result }
+        },
+        Type::Projection { for_ty: base, name, trait_ref: qualifier } => {
+            let qualifier = match qualifier {
+                Option::Some(reference) => Option::Some(diagnostic_trait_ref(reference)),
+                Option::None => Option::None,
+            };
+            Type::Projection { for_ty: diagnostic_type(base), name, trait_ref: qualifier }
+        },
+        Type::App { ty: base, args } => {
+            let result: Vec[Type] = Vec::new();
+            for value in args {
+                result.push(diagnostic_type(value))
+            };
+            Type::App { ty: diagnostic_type(base), args: result }
+        },
+        Type::Array { len: length, elem } => Type::Array { len: length, elem: diagnostic_type(elem) },
+        Type::Slice { elem } => Type::Slice { elem: diagnostic_type(elem) },
+        Type::VecType { elem } => Type::VecType { elem: diagnostic_type(elem) },
+        Type::RefType { elem } => Type::RefType { elem: diagnostic_type(elem) },
+        Type::HashMap { key, value } => {
+            Type::HashMap { key: diagnostic_type(key), value: diagnostic_type(value) }
+        },
+        Type::Channel { elem } => Type::Channel { elem: diagnostic_type(elem) },
+        Type::Func { params, ret_ty } => {
+            let result: Vec[Type] = Vec::new();
+            for value in params {
+                result.push(diagnostic_type(value))
+            };
+            Type::Func { params: result, ret_ty: diagnostic_type(ret_ty) }
+        },
+        other => other,
+    }
+}
+
+fn diagnostic_trait_ref(value: TraitRef) -> TraitRef {
+    let args: Vec[Type] = Vec::new();
+    for value in value.args {
+        args.push(diagnostic_type(value))
+    };
+    TraitRef {
+        name: value.name,
+        args,
+    }
+}
+
+pub fn diagnostic_type_text(value: Type) -> string {
+    type_text(diagnostic_type(value))
+}
+
+pub fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
+    builder.write_string(value.name);
+    if value.args.len() > 0 {
+        builder.write_char('[');
+        write_types(builder, value.args);
+        builder.write_char(']')
+    } else {
+        ()
+    }
+}
+
+fn trait_ref_text(value: TraitRef) -> string {
+    let builder = text::StringBuilder::new();
+    write_trait_ref(builder, value);
+    builder.finish()
+}
+
+pub fn write_primitive(builder: text::StringBuilder, value: Primitive) -> unit {
+    match value {
+        Primitive::Unit => builder.write_string("()"),
+        Primitive::Bool { value } => builder.write_string(if value { "true" } else { "false" }),
+        Primitive::Int { value }
+        | Primitive::Int8 { value }
+        | Primitive::Int16 { value }
+        | Primitive::Int32 { value }
+        | Primitive::Int64 { value }
+        | Primitive::Uint { value }
+        | Primitive::Uint8 { value }
+        | Primitive::Uint16 { value }
+        | Primitive::Uint32 { value }
+        | Primitive::Uint64 { value }
+        | Primitive::Float { value }
+        | Primitive::Float32 { value }
+        | Primitive::Float64 { value } => builder.write_string(value),
+        Primitive::String { value } => write_quoted_string(builder, value),
+        Primitive::Char { value } => write_quoted_char(builder, value),
+    }
+}
+
+pub fn unary_symbol(value: ast::UnaryOp) -> string {
+    match value {
+        ast::UnaryOp::Neg => "-",
+        ast::UnaryOp::Not => "!",
+        ast::UnaryOp::BitNot => "~",
+    }
+}
+
+pub fn binary_symbol(value: ast::BinaryOp) -> string {
+    match value {
+        ast::BinaryOp::Add => "+",
+        ast::BinaryOp::Sub => "-",
+        ast::BinaryOp::Mul => "*",
+        ast::BinaryOp::Div => "/",
+        ast::BinaryOp::Rem => "%",
+        ast::BinaryOp::BitAnd => "&",
+        ast::BinaryOp::BitOr => "|",
+        ast::BinaryOp::BitXor => "^",
+        ast::BinaryOp::Shl => "<<",
+        ast::BinaryOp::Shr => ">>",
+        ast::BinaryOp::And => "&&",
+        ast::BinaryOp::Or => "||",
+        ast::BinaryOp::Less => "<",
+        ast::BinaryOp::Greater => ">",
+        ast::BinaryOp::LessEq => "<=",
+        ast::BinaryOp::GreaterEq => ">=",
+        ast::BinaryOp::Eq => "==",
+        ast::BinaryOp::NotEq => "!=",
+    }
+}
+
+fn write_callable(builder: text::StringBuilder, value: Callable) -> unit {
+    match value {
+        Callable::Function(name) => builder.write_string(name),
+        Callable::Runtime(name) => {
+            builder.write_string("@runtime(");
+            builder.write_string(name);
+            builder.write_char(')')
+        },
+        Callable::Intrinsic(name) => {
+            builder.write_string("@intrinsic(");
+            builder.write_string(name);
+            builder.write_char(')')
+        },
+        Callable::TraitMethod { trait_ref: reference, method_name: name } => {
+            write_trait_ref(builder, reference);
+            builder.write_string("::");
+            builder.write_string(name)
+        },
+        Callable::DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {
+            builder.write_string("dyn ");
+            builder.write_string(owner);
+            builder.write_string("::");
+            builder.write_string(name)
+        },
+        Callable::InherentMethod { receiver_ty: owner, method_name: name } => {
+            write_type(builder, owner);
+            builder.write_string("::");
+            builder.write_string(name)
+        },
+    }
+}
+
+fn write_exprs(
+    builder: text::StringBuilder,
+    values: Vec[Expr],
+    indent: int,
+) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        write_expr(builder, value, indent);
+        index.set(index.get() + 1)
+    }
+}
+
+fn write_constructor_expr(
+    builder: text::StringBuilder,
+    constructor: Constructor,
+    args: Vec[Expr],
+    indent: int,
+) -> unit {
+    builder.write_string(constructor.name);
+    if constructor.is_struct {
+        if args.len() == 0 {
+            builder.write_string(" {}")
+        } else {
+            builder.write_string(" { ");
+            for index in range(0, args.len()) {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                if index < constructor.fields.len() {
+                    builder.write_string(constructor.fields.get(index));
+                    builder.write_string(": ")
+                } else {
+                    ()
+                };
+                write_expr(builder, args.get(index), indent)
+            };
+            builder.write_string(" }")
+        }
+    } else if args.len() > 0 {
+        builder.write_char('(');
+        write_exprs(builder, args, indent);
+        builder.write_char(')')
+    } else {
+        ()
+    }
+}
+
+fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
+    if value.stmts.len() == 0 {
+        match value.tail {
+            Option::None => builder.write_string("{}"),
+            Option::Some(tail) => {
+                builder.write_char('{');
+                newline(builder, indent + 4);
+                write_expr(builder, tail, indent + 4);
+                newline(builder, indent);
+                builder.write_char('}')
+            },
+        }
+    } else {
+        builder.write_char('{');
+        for stmt in value.stmts {
+            newline(builder, indent + 4);
+            write_stmt(builder, stmt, indent + 4);
+            builder.write_char(';')
+        };
+        match value.tail {
+            Option::Some(tail) => {
+                newline(builder, indent + 4);
+                write_expr(builder, tail, indent + 4)
+            },
+            Option::None => (),
+        };
+        newline(builder, indent);
+        builder.write_char('}')
+    }
+}
+
+fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
+    match value {
+        Stmt::Let { is_mut, pat, value: expr } => {
+            builder.write_string("let ");
+            if is_mut {
+                builder.write_string("mut ")
+            } else {
+                ()
+            };
+            write_pat(builder, pat, indent);
+            builder.write_string(" = ");
+            write_expr(builder, expr, indent)
+        },
+        Stmt::Assign { target, value } => {
+            write_expr(builder, target, indent);
+            builder.write_string(" = ");
+            write_expr(builder, value, indent)
+        },
+        Stmt::Expr { expr: value } => write_expr(builder, value, indent),
+    }
+}
+
+fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
+    match value {
+        Expr::Var { name, ty } => {
+            builder.write_char('(');
+            builder.write_string(name);
+            builder.write_string(" : ");
+            write_type(builder, ty);
+            builder.write_char(')')
+        },
+        Expr::Callable { callable, ty } => {
+            builder.write_char('(');
+            write_callable(builder, callable);
+            builder.write_string(" : ");
+            write_type(builder, ty);
+            builder.write_char(')')
+        },
+        Expr::Prim { value, ty: _ } => write_primitive(builder, value),
+        Expr::Constr { constructor, args, ty: _ } => {
+            write_constructor_expr(builder, constructor, args, indent)
+        },
+        Expr::Tuple { items: values, ty: _ } => {
+            builder.write_char('(');
+            write_exprs(builder, values, indent);
+            builder.write_char(')')
+        },
+        Expr::Array { items: values, ty: _ } => {
+            builder.write_char('[');
+            write_exprs(builder, values, indent + 2);
+            builder.write_char(']')
+        },
+        Expr::Closure { params, body, ty: _ } => {
+            if params.len() == 0 {
+                builder.write_string("||")
+            } else {
+                builder.write_char('|');
+                for index in range(0, params.len()) {
+                    if index > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    let param = params.get(index);
+                    builder.write_string(param.name);
+                    builder.write_string(": ");
+                    write_type(builder, param.ty)
+                };
+                builder.write_char('|')
+            };
+            builder.write_string(" => ");
+            write_expr(builder, body, indent)
+        },
+        Expr::Block { block, ty: _ } => write_block(builder, block, indent),
+        Expr::Match { expr: source, arms, ty: _ } => {
+            builder.write_string("match ");
+            write_expr(builder, source, indent);
+            builder.write_string(" {");
+            for arm in arms {
+                newline(builder, indent + 4);
+                write_arm(builder, arm, indent + 4)
+            };
+            newline(builder, indent);
+            builder.write_char('}')
+        },
+        Expr::If { cond, then_branch, else_branch, ty: _ } => {
+            builder.write_string("if ");
+            write_expr(builder, cond, indent);
+            builder.write_string(" {");
+            newline(builder, indent + 4);
+            write_expr(builder, then_branch, indent + 4);
+            newline(builder, indent);
+            builder.write_string("} else {");
+            newline(builder, indent + 4);
+            write_expr(builder, else_branch, indent + 4);
+            newline(builder, indent);
+            builder.write_char('}')
+        },
+        Expr::While { cond, body, ty: _ } => {
+            builder.write_string("while ");
+            write_expr(builder, cond, indent);
+            builder.write_string(" {");
+            newline(builder, indent + 4);
+            write_expr(builder, body, indent + 4);
+            newline(builder, indent);
+            builder.write_char('}')
+        },
+        Expr::For {
+            pat,
+            iterator,
+            into_iter_trait_ref: _,
+            iterator_trait_ref: _,
+            iterator_ty: _,
+            body,
+            ty: _,
+        } => {
+            builder.write_string("for ");
+            write_pat(builder, pat, indent);
+            builder.write_string(" in ");
+            write_expr(builder, iterator, indent);
+            builder.write_char(' ');
+            write_expr(builder, body, indent)
+        },
+        Expr::Break { ty: _ } => builder.write_string("break"),
+        Expr::Continue { ty: _ } => builder.write_string("continue"),
+        Expr::Return { expr: value, ty: _ } => {
+            builder.write_string("return");
+            match value {
+                Option::Some(expr) => {
+                    builder.write_char(' ');
+                    write_expr(builder, expr, indent)
+                },
+                Option::None => (),
+            }
+        },
+        Expr::Go { expr: value, ty: _ } => {
+            builder.write_string("go ");
+            write_expr(builder, value, indent)
+        },
+        Expr::Call { func: function, args, ty: _ } => {
+            write_expr(builder, function, indent);
+            builder.write_char('(');
+            write_exprs(builder, args, indent);
+            builder.write_char(')')
+        },
+        Expr::Unary { op, expr: value, ty: _ } => {
+            builder.write_string(unary_symbol(op));
+            write_expr(builder, value, indent)
+        },
+        Expr::Cast { expr: value, ty } => {
+            write_expr(builder, value, indent);
+            builder.write_string(" as ");
+            write_type(builder, ty)
+        },
+        Expr::Proj { tuple: value, index, ty: _ } => {
+            write_expr(builder, value, indent);
+            builder.write_char('.');
+            builder.write_string(index.to_string())
+        },
+        Expr::Field { expr: value, field_name: name, ty: _ } => {
+            write_expr(builder, value, indent);
+            builder.write_char('.');
+            builder.write_string(name)
+        },
+        Expr::Index { base, index, ty: _ } => {
+            write_expr(builder, base, indent);
+            builder.write_char('[');
+            write_expr(builder, index, indent);
+            builder.write_char(']')
+        },
+        Expr::Binary { op, lhs: left, rhs: right, ty: _, resolution: _ } => {
+            write_expr(builder, left, indent);
+            builder.write_char(' ');
+            builder.write_string(binary_symbol(op));
+            builder.write_char(' ');
+            write_expr(builder, right, indent)
+        },
+        Expr::ToDyn { trait_name, for_ty, expr: value, ty: _ } => {
+            builder.write_string("to_dyn[");
+            builder.write_string(trait_name);
+            builder.write_string("]{");
+            write_type(builder, for_ty);
+            builder.write_string("}(");
+            write_expr(builder, value, indent);
+            builder.write_char(')')
+        },
+    }
+}
+
+fn write_pats(builder: text::StringBuilder, values: Vec[Pat], indent: int) -> unit {
+    for index in range(0, values.len()) {
+        if index > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        write_pat(builder, values.get(index), indent)
+    }
+}
+
+fn pat_is_or(value: Pat) -> bool {
+    match value {
+        Pat::Or { pats: _, ty: _ } => true,
+        _ => false,
+    }
+}
+
+fn write_constructor_pat(
+    builder: text::StringBuilder,
+    constructor: Constructor,
+    args: Vec[Pat],
+    indent: int,
+) -> unit {
+    builder.write_string(constructor.name);
+    if constructor.is_struct {
+        if args.len() == 0 {
+            builder.write_string(" {}")
+        } else {
+            builder.write_string(" { ");
+            for index in range(0, args.len()) {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                if index < constructor.fields.len() {
+                    builder.write_string(constructor.fields.get(index));
+                    builder.write_string(": ")
+                } else {
+                    ()
+                };
+                write_pat(builder, args.get(index), indent)
+            };
+            builder.write_string(" }")
+        }
+    } else if args.len() > 0 {
+        builder.write_char('(');
+        write_pats(builder, args, indent);
+        builder.write_char(')')
+    } else {
+        ()
+    }
+}
+
+fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
+    match value {
+        Pat::Var { name, ty } => {
+            builder.write_string(name);
+            builder.write_string(": ");
+            write_type(builder, ty)
+        },
+        Pat::Prim { value, ty: _ } => write_primitive(builder, value),
+        Pat::Constr { constructor, args, ty: _ } => {
+            write_constructor_pat(builder, constructor, args, indent)
+        },
+        Pat::Tuple { items: values, ty: _ } => {
+            builder.write_char('(');
+            write_pats(builder, values, indent);
+            builder.write_char(')')
+        },
+        Pat::Array { prefix, rest, suffix, ty: _ } => {
+            builder.write_char('[');
+            let count = Ref::new(0);
+            for value in prefix {
+                if count.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_pat(builder, value, indent);
+                count.set(count.get() + 1)
+            };
+            match rest {
+                Option::Some(value) => {
+                    if count.get() > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    match value.binding {
+                        Option::Some(name) => {
+                            builder.write_string(name);
+                            builder.write_string(" @ ..")
+                        },
+                        Option::None => builder.write_string(".."),
+                    };
+                    count.set(count.get() + 1)
+                },
+                Option::None => (),
+            };
+            for value in suffix {
+                if count.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_pat(builder, value, indent);
+                count.set(count.get() + 1)
+            };
+            builder.write_char(']')
+        },
+        Pat::Alias { name, pat, ty: _ } => {
+            builder.write_string(name);
+            builder.write_string(" @ ");
+            if pat_is_or(pat) {
+                builder.write_char('(');
+                write_pat(builder, pat, indent);
+                builder.write_char(')')
+            } else {
+                write_pat(builder, pat, indent)
+            }
+        },
+        Pat::Or { pats: values, ty: _ } => {
+            for index in range(0, values.len()) {
+                if index > 0 {
+                    builder.write_string(" | ")
+                } else {
+                    ()
+                };
+                write_pat(builder, values.get(index), indent)
+            }
+        },
+        Pat::Range { start, end, inclusive, ty: _ } => {
+            write_primitive(builder, start);
+            builder.write_string(if inclusive { "..=" } else { ".." });
+            write_primitive(builder, end)
+        },
+        Pat::Wild { ty } => {
+            builder.write_string("_ : ");
+            write_type(builder, ty)
+        },
+    }
+}
+
+fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
+    write_pat(builder, value.pat, indent);
+    match value.guard {
+        Option::Some(guard) => {
+            builder.write_string(" if ");
+            write_expr(builder, guard, indent)
+        },
+        Option::None => (),
+    };
+    builder.write_string(" => ");
+    write_expr(builder, value.body, indent + 2);
+    builder.write_char(',')
+}
+
+fn write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
+    builder.write_string("fn ");
+    builder.write_string(value.name);
+    builder.write_char('(');
+    for index in range(0, value.params.len()) {
+        if index > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        let param = value.params.get(index);
+        builder.write_string(param.0);
+        builder.write_string(": ");
+        write_type(builder, param.1)
+    };
+    builder.write_string(") -> ");
+    write_type(builder, value.ret_ty);
+    builder.write_char(' ');
+    write_block(builder, value.body, indent)
+}
+
+fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
+    builder.write_string("impl ");
+    match value.trait_ref {
+        Option::Some(reference) => {
+            write_trait_ref(builder, reference);
+            builder.write_string(" for ")
+        },
+        Option::None => (),
+    };
+    write_type(builder, value.for_type);
+    builder.write_char('{');
+    for method in value.methods {
+        newline(builder, indent + 2);
+        write_function(builder, method, indent + 2)
+    };
+    newline(builder, indent);
+    builder.write_char('}')
+}
+
+fn write_item(builder: text::StringBuilder, value: Item) -> unit {
+    match value {
+        Item::ImplBlock(value) => write_impl(builder, value, 0),
+        Item::Function(value) => write_function(builder, value, 0),
+    }
+}
+
+fn encode_file(value: File) -> string {
+    let builder = text::StringBuilder::new();
+    for index in range(0, value.items.len()) {
+        if index > 0 {
+            builder.write_string("\n\n")
+        } else {
+            ()
+        };
+        write_item(builder, value.items.get(index))
+    };
+    builder.finish()
+}
+
+pub fn encode(value: CheckResult) -> string {
+    match value.tast {
+        Option::Some(file) => encode_file(file),
+        Option::None => {
+            let builder = text::StringBuilder::new();
+            for diagnostic in value.diagnostics {
+                builder.write_string(diagnostic.message);
+                builder.write_char('\n')
+            };
+            builder.finish()
+        },
+    }
+}

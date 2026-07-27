@@ -1,0 +1,35 @@
+trait Child: Parent {
+    fn child(self: Self) -> unit;
+}
+
+trait Parent {
+    type Item;
+
+    fn get(self: Self) -> Self::Item;
+}
+
+struct Count {
+    value: int32,
+}
+
+impl Parent for Count {
+    type Item = int32;
+
+    fn get(self: Count) -> int32 {
+        self.value
+    }
+}
+
+impl Child for Count {
+    fn child(self: Count) -> unit {
+        ()
+    }
+}
+
+fn get_from_child[C: Child](value: C) -> C::Item {
+    Parent::get(value)
+}
+
+fn main() -> unit {
+    println(get_from_child(Count { value: 42 }));
+}

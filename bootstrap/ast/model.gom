@@ -1,0 +1,358 @@
+package ast;
+
+use gomlc::cst;
+
+pub struct Span {
+    pub start: int,
+    pub end: int,
+}
+
+pub struct PathSegment {
+    pub ident: string,
+    pub span: Span,
+}
+
+pub struct Path {
+    pub segments: Vec[PathSegment],
+}
+
+pub enum TypeExpr {
+    Unit,
+    Bool,
+    Int,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Float32,
+    Float64,
+    String,
+    Char,
+    Tuple { items: Vec[TypeExpr] },
+    Con { path: Path },
+    Dyn { trait_path: Path },
+    App { ty: TypeExpr, args: Vec[TypeExpr] },
+    Array { len: string, elem: TypeExpr },
+    Func { params: Vec[TypeExpr], ret_ty: TypeExpr },
+}
+
+pub struct ClosureParam {
+    pub name: string,
+    pub ty: Option[TypeExpr],
+    pub span: Span,
+}
+
+pub struct Attribute {
+    pub span: Span,
+    pub text: string,
+}
+
+pub struct File {
+    pub package_name: string,
+    pub package_explicit: bool,
+    pub uses: Vec[UseDecl],
+    pub items: Vec[Item],
+    pub invalid_self_type_spans: Vec[Span],
+}
+
+pub struct UseDecl {
+    pub path: Path,
+    pub alias: Option[string],
+}
+
+pub enum Visibility {
+    Private,
+    Public,
+}
+
+pub enum Item {
+    EnumDef(EnumDef),
+    StructDef(StructDef),
+    TraitDef(TraitDef),
+    ImplBlock(ImplBlock),
+    Function(Function),
+    ExternFunction(ExternFunction),
+}
+
+pub struct Function {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(string, TypeExpr)],
+    pub param_type_spans: Vec[Span],
+    pub ret_ty: Option[TypeExpr],
+    pub ret_ty_span: Option[Span],
+    pub body: Block,
+}
+
+pub struct ExternFunction {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(string, TypeExpr)],
+    pub ret_ty: Option[TypeExpr],
+}
+
+pub struct EnumDef {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub variants: Vec[EnumVariant],
+}
+
+pub struct EnumVariant {
+    pub name: string,
+    pub fields: EnumVariantFields,
+    pub field_type_spans: Vec[Span],
+}
+
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec[TypeExpr]),
+    Struct(Vec[(string, TypeExpr)]),
+}
+
+pub struct StructDef {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub fields: Vec[(string, TypeExpr)],
+    pub field_type_spans: Vec[Span],
+    pub public_fields: Vec[string],
+}
+
+pub struct TraitDef {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub supertraits: Vec[TraitRef],
+    pub associated_types: Vec[AssociatedType],
+    pub method_sigs: Vec[TraitMethodSignature],
+}
+
+pub struct AssociatedType {
+    pub name: string,
+    pub bounds: Vec[TraitRef],
+}
+
+pub struct TraitRef {
+    pub path: Path,
+    pub args: Vec[TypeExpr],
+}
+
+pub enum Predicate {
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
+}
+
+pub struct TraitMethodSignature {
+    pub name: string,
+    pub params: Vec[(string, TypeExpr)],
+    pub ret_ty: TypeExpr,
+}
+
+pub struct ImplBlock {
+    pub attrs: Vec[Attribute],
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub associated_types: Vec[(string, TypeExpr)],
+    pub trait_ref: Option[TraitRef],
+    pub for_type: TypeExpr,
+    pub for_type_span: Span,
+    pub methods: Vec[Function],
+}
+
+pub struct Block {
+    pub stmts: Vec[Stmt],
+    pub tail: Option[Expr],
+    pub span: Span,
+}
+
+pub enum Stmt {
+    Let {
+        is_mut: bool,
+        pat: Pat,
+        annotation: Option[TypeExpr],
+        value: Expr,
+        span: Span,
+    },
+    Assign { target: Expr, value: Expr, span: Span },
+    Expr { expr: Expr, span: Span },
+}
+
+pub enum UnaryOp {
+    Neg,
+    Not,
+    BitNot,
+}
+
+pub enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Rem,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
+    And,
+    Or,
+    Less,
+    Greater,
+    LessEq,
+    GreaterEq,
+    Eq,
+    NotEq,
+}
+
+pub enum Expr {
+    Path { path: Path, type_args: Vec[TypeExpr], span: Span },
+    Unit { span: Span },
+    Bool { value: bool, span: Span },
+    Int { value: string, span: Span },
+    Float { value: float64, span: Span },
+    String { value: string, span: Span },
+    Char { value: string, span: Span },
+    ConstructorValue { constructor: Path, span: Span },
+    Constr { constructor: Path, args: Vec[Expr], span: Span },
+    StructLiteral { name: Path, fields: Vec[(string, Expr)], span: Span },
+    Tuple { items: Vec[Expr], span: Span },
+    Array { items: Vec[Expr], span: Span },
+    Closure { params: Vec[ClosureParam], body: Expr, span: Span },
+    Match { expr: Expr, arms: Vec[Arm], span: Span },
+    If { cond: Expr, then_branch: Expr, else_branch: Expr, span: Span },
+    While { cond: Expr, body: Expr, span: Span },
+    For { pat: Pat, iterator: Expr, body: Expr, span: Span },
+    Break { span: Span },
+    Continue { span: Span },
+    Return { expr: Option[Expr], span: Span },
+    Go { expr: Expr, span: Span },
+    Call { func: Expr, args: Vec[Expr], span: Span },
+    Unary { op: UnaryOp, expr: Expr, span: Span },
+    Cast { expr: Expr, ty: TypeExpr, span: Span },
+    Try { expr: Expr, span: Span },
+    Range { start: Expr, end: Expr, span: Span },
+    Binary { op: BinaryOp, lhs: Expr, rhs: Expr, span: Span },
+    Proj { tuple: Expr, index: int, span: Span },
+    Field { expr: Expr, field_name: string, span: Span },
+    Index { base: Expr, index: Expr, span: Span },
+    Block { block: Block, span: Span },
+}
+
+pub struct Arm {
+    pub pat: Pat,
+    pub guard: Option[Expr],
+    pub body: Expr,
+}
+
+pub struct ArrayPatRest {
+    pub binding: Option[string],
+    pub span: Span,
+}
+
+pub enum Pat {
+    Var { name: string, span: Span },
+    Unit { span: Span },
+    Bool { value: bool, span: Span },
+    Int { value: string, span: Span },
+    Float { value: string, span: Span },
+    String { value: string, span: Span },
+    Char { value: string, span: Span },
+    Constr { constructor: Path, args: Vec[Pat], span: Span },
+    Struct { name: Path, fields: Vec[(string, Pat)], has_rest: bool, span: Span },
+    Tuple { items: Vec[Pat], span: Span },
+    Array {
+        prefix: Vec[Pat],
+        rest: Option[ArrayPatRest],
+        suffix: Vec[Pat],
+        span: Span,
+    },
+    Alias { name: string, pat: Pat, span: Span },
+    Or { pats: Vec[Pat], span: Span },
+    Range { start: Pat, end: Pat, inclusive: bool, span: Span },
+    Wild { span: Span },
+}
+
+pub struct LowerResult {
+    pub ast: Option[File],
+    pub diagnostics: Vec[cst::Diagnostic],
+}
+
+pub fn span(start: int, end: int) -> Span {
+    Span { start, end }
+}
+
+pub fn expr_span(value: Expr) -> Span {
+    match value {
+        Expr::Path { span, .. }
+        | Expr::Unit { span }
+        | Expr::Bool { span, .. }
+        | Expr::Int { span, .. }
+        | Expr::Float { span, .. }
+        | Expr::String { span, .. }
+        | Expr::Char { span, .. }
+        | Expr::ConstructorValue { span, .. }
+        | Expr::Constr { span, .. }
+        | Expr::StructLiteral { span, .. }
+        | Expr::Tuple { span, .. }
+        | Expr::Array { span, .. }
+        | Expr::Closure { span, .. }
+        | Expr::Match { span, .. }
+        | Expr::If { span, .. }
+        | Expr::While { span, .. }
+        | Expr::For { span, .. }
+        | Expr::Break { span }
+        | Expr::Continue { span }
+        | Expr::Return { span, .. }
+        | Expr::Go { span, .. }
+        | Expr::Call { span, .. }
+        | Expr::Unary { span, .. }
+        | Expr::Cast { span, .. }
+        | Expr::Try { span, .. }
+        | Expr::Range { span, .. }
+        | Expr::Binary { span, .. }
+        | Expr::Proj { span, .. }
+        | Expr::Field { span, .. }
+        | Expr::Index { span, .. }
+        | Expr::Block { span, .. } => span,
+    }
+}
+
+pub fn pat_span(value: Pat) -> Span {
+    match value {
+        Pat::Var { span, .. }
+        | Pat::Unit { span }
+        | Pat::Bool { span, .. }
+        | Pat::Int { span, .. }
+        | Pat::Float { span, .. }
+        | Pat::String { span, .. }
+        | Pat::Char { span, .. }
+        | Pat::Constr { span, .. }
+        | Pat::Struct { span, .. }
+        | Pat::Tuple { span, .. }
+        | Pat::Array { span, .. }
+        | Pat::Alias { span, .. }
+        | Pat::Or { span, .. }
+        | Pat::Range { span, .. }
+        | Pat::Wild { span } => span,
+    }
+}

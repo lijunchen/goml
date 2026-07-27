@@ -1,0 +1,14 @@
+struct Wrapper[T] {
+    value: T,
+}
+
+impl Wrapper[int32] {
+    fn get(self: Wrapper[int32]) -> int32 {
+        self.value
+    }
+}
+
+fn main() {
+    let w: Wrapper[int32] = Wrapper { value: 42 };
+    println(w.get().to_string());
+}

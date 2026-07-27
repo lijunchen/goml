@@ -1,0 +1,12 @@
+enum Weird[T] {
+    Next(Ref[Weird[(int32) -> int32]]),
+    Done(T),
+}
+
+fn main() -> unit {
+    let x: Weird[int32] = Weird::Done(1);
+    match x {
+        Weird::Done(v) => println(v.to_string()),
+        Weird::Next(_) => println("next"),
+    }
+}

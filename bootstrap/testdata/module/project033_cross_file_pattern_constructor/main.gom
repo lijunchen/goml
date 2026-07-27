@@ -1,0 +1,13 @@
+package main;
+
+fn label(status: Status) -> string {
+    match status {
+        Idle => "idle",
+        Busy(value) => value.to_string(),
+    }
+}
+
+fn main() -> unit {
+    println(label(Idle));
+    println(label(Busy(4)));
+}

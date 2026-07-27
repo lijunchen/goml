@@ -1,0 +1,321 @@
+package parser;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+fn is_pattern_first(kind: lexer::TokenKind) -> bool {
+    match kind {
+        lexer::TokenKind::TrueKeyword
+        | lexer::TokenKind::FalseKeyword
+        | lexer::TokenKind::Ident
+        | lexer::TokenKind::LParen
+        | lexer::TokenKind::LBracket
+        | lexer::TokenKind::WildcardKeyword
+        | lexer::TokenKind::Minus
+        | lexer::TokenKind::IntLit
+        | lexer::TokenKind::Float
+        | lexer::TokenKind::Str
+        | lexer::TokenKind::CharLit => true,
+        _ => false,
+    }
+}
+
+fn pattern(parser: Parser) -> Option[MarkerClosed] {
+    if parser.enter_pattern() == false {
+        Option::None
+    } else {
+        let result = or_pattern(parser);
+        parser.leave_pattern();
+        result
+    }
+}
+
+fn or_pattern(parser: Parser) -> Option[MarkerClosed] {
+    match alias_pattern(parser) {
+        Option::None => Option::None,
+        Option::Some(initial) => {
+            if parser.at(lexer::TokenKind::Pipe) == false {
+                Option::Some(initial)
+            } else {
+                let marker = initial.precede(parser);
+                let parsing = Ref::new(true);
+                while parsing.get() && parser.eat(lexer::TokenKind::Pipe) {
+                    if is_pattern_first(parser.peek()) {
+                        let _ = alias_pattern(parser);
+                    } else {
+                        parser.error("expected a pattern after `|`");
+                        parsing.set(false)
+                    }
+                };
+                Option::Some(marker.completed(parser, cst::NodeKind::PATTERN_OR))
+            }
+        },
+    }
+}
+
+fn alias_pattern(parser: Parser) -> Option[MarkerClosed] {
+    if parser.at_lower_ident() && token_is(parser.nth(1), lexer::TokenKind::At) {
+        let marker = parser.open();
+        parser.expect_lower_ident("pattern binding");
+        parser.expect(lexer::TokenKind::At);
+        if parser.enter_pattern() {
+            if marker_is_none(alias_pattern(parser)) {
+                parser.error("expected a pattern after `@`")
+            } else {
+                ()
+            };
+            parser.leave_pattern()
+        } else {
+            ()
+        };
+        Option::Some(parser.close(marker, cst::NodeKind::PATTERN_ALIAS))
+    } else {
+        range_pattern(parser)
+    }
+}
+
+fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
+    match simple_pattern(parser) {
+        Option::None => Option::None,
+        Option::Some(value) => {
+            let kind = parser.peek();
+            if token_is(kind, lexer::TokenKind::DotDot) == false
+                && token_is(kind, lexer::TokenKind::DotDotEq) == false
+            {
+                Option::Some(value)
+            } else {
+                let marker = value.precede(parser);
+                parser.advance();
+                if marker_is_none(simple_pattern(parser)) {
+                    parser.error("expected a range pattern endpoint")
+                } else {
+                    ()
+                };
+                Option::Some(marker.completed(parser, cst::NodeKind::PATTERN_RANGE))
+            }
+        },
+    }
+}
+
+fn parse_pattern_list(parser: Parser) -> unit {
+    if is_pattern_first(parser.peek()) == false {
+        ()
+    } else {
+        let _ = pattern(parser);
+        let parsing = Ref::new(true);
+        while parsing.get() {
+            if parser.at(lexer::TokenKind::Comma) {
+                parser.expect(lexer::TokenKind::Comma);
+                if parser.at(lexer::TokenKind::RParen) {
+                    parsing.set(false)
+                } else if is_pattern_first(parser.peek()) {
+                    let _ = pattern(parser);
+                } else {
+                    parser.advance_with_error("expected a pattern")
+                }
+            } else if parser.at(lexer::TokenKind::RParen) || parser.eof() {
+                parsing.set(false)
+            } else if is_pattern_first(parser.peek()) {
+                parser.advance_with_error("expected `,` between patterns");
+                let _ = pattern(parser);
+            } else {
+                parser.advance_with_error("expected `,` or `)` in pattern")
+            }
+        }
+    }
+}
+
+fn numeric_pattern(parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
+    let marker = parser.open();
+    parser.advance();
+    parser.close(marker, kind)
+}
+
+fn negative_pattern(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.advance();
+    let kind = match parser.peek() {
+        lexer::TokenKind::IntLit => Option::Some(cst::NodeKind::PATTERN_INT),
+        lexer::TokenKind::Float => Option::Some(cst::NodeKind::PATTERN_FLOAT),
+        _ => Option::None,
+    };
+    match kind {
+        Option::Some(value) => {
+            parser.advance();
+            parser.close(marker, value)
+        },
+        Option::None => {
+            parser.error("expected a numeric literal after '-' in pattern");
+            parser.close(marker, cst::NodeKind::ErrorTree)
+        },
+    }
+}
+
+fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
+    if is_pattern_first(parser.peek()) == false {
+        let marker = parser.open();
+        parser.error("expected a pattern");
+        let _ = parser.close(marker, cst::NodeKind::ErrorTree);
+        Option::None
+    } else {
+        let result = match parser.peek() {
+            lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
+                numeric_pattern(parser, cst::NodeKind::PATTERN_BOOL),
+            lexer::TokenKind::Minus => negative_pattern(parser),
+            lexer::TokenKind::IntLit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT),
+            lexer::TokenKind::Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
+            lexer::TokenKind::Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
+            lexer::TokenKind::CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
+            lexer::TokenKind::WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),
+            lexer::TokenKind::LParen => tuple_pattern(parser),
+            lexer::TokenKind::LBracket => array_pattern(parser),
+            lexer::TokenKind::Ident => ident_pattern(parser),
+            _ => {
+                let marker = parser.open();
+                parser.close(marker, cst::NodeKind::ErrorTree)
+            },
+        };
+        Option::Some(result)
+    }
+}
+
+fn tuple_pattern(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.advance();
+    if parser.at(lexer::TokenKind::RParen) {
+        parser.expect(lexer::TokenKind::RParen);
+        parser.close(marker, cst::NodeKind::PATTERN_UNIT)
+    } else {
+        parse_pattern_list(parser);
+        parser.expect(lexer::TokenKind::RParen);
+        parser.close(marker, cst::NodeKind::PATTERN_TUPLE)
+    }
+}
+
+fn ident_pattern(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    let next = parser.nth(1);
+    let simple = token_is(next, lexer::TokenKind::ColonColon) == false
+        && token_is(next, lexer::TokenKind::LParen) == false
+        && token_is(next, lexer::TokenKind::LBrace) == false;
+    if simple && parser.at_lower_ident() {
+        parser.expect_lower_ident("pattern binding");
+        parser.close(marker, cst::NodeKind::PATTERN_VARIABLE)
+    } else {
+        parse_path_always(parser);
+        if parser.at(lexer::TokenKind::LParen) {
+            parser.expect(lexer::TokenKind::LParen);
+            parse_pattern_list(parser);
+            parser.expect(lexer::TokenKind::RParen)
+        } else if parser.at(lexer::TokenKind::LBrace) {
+            struct_pattern_field_list(parser)
+        } else {
+            ()
+        };
+        parser.close(marker, cst::NodeKind::PATTERN_CONSTR)
+    }
+}
+
+fn array_pattern(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBracket);
+    let has_rest = Ref::new(false);
+    while parser.eof() == false && parser.at(lexer::TokenKind::RBracket) == false {
+        let bound_rest = parser.at(lexer::TokenKind::Ident)
+            && token_is(parser.nth(1), lexer::TokenKind::At)
+            && token_is(parser.nth(2), lexer::TokenKind::DotDot);
+        if parser.at(lexer::TokenKind::DotDot) || bound_rest {
+            if has_rest.get() {
+                parser.error("array pattern can contain at most one `..`")
+            } else {
+                ()
+            };
+            let _ = rest_pattern(parser);
+            has_rest.set(true)
+        } else if is_pattern_first(parser.peek()) {
+            let _ = pattern(parser);
+        } else {
+            parser.advance_with_error("expected an array pattern element")
+        };
+        if parser.eat(lexer::TokenKind::Comma) {
+            ()
+        } else if parser.at(lexer::TokenKind::RBracket) == false {
+            parser.error("expected `,` or `]` in array pattern");
+            if parser.eof() == false {
+                parser.advance()
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    parser.expect(lexer::TokenKind::RBracket);
+    parser.close(marker, cst::NodeKind::PATTERN_ARRAY)
+}
+
+fn rest_pattern(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    if parser.at_lower_ident() {
+        parser.expect_lower_ident("rest pattern binding");
+        parser.expect(lexer::TokenKind::At)
+    } else {
+        ()
+    };
+    parser.expect(lexer::TokenKind::DotDot);
+    parser.close(marker, cst::NodeKind::PATTERN_REST)
+}
+
+fn struct_pattern_field_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBrace);
+    let has_rest = Ref::new(false);
+    while parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
+        if parser.at(lexer::TokenKind::DotDot) {
+            if has_rest.get() {
+                parser.error("struct pattern can contain at most one `..`")
+            } else {
+                ()
+            };
+            let _ = rest_pattern(parser);
+            has_rest.set(true);
+            parser.eat(lexer::TokenKind::Comma);
+            if parser.at(lexer::TokenKind::RBrace) == false {
+                parser.error("`..` must be the last item in a struct pattern")
+            } else {
+                ()
+            }
+        } else if parser.at(lexer::TokenKind::Ident) {
+            struct_pattern_field(parser);
+            if parser.eat(lexer::TokenKind::Comma) {
+                ()
+            } else if parser.at(lexer::TokenKind::RBrace) {
+                ()
+            } else {
+                parser.error("expected `,` between struct pattern fields")
+            }
+        } else {
+            parser.advance_with_error("expected a struct pattern field")
+        }
+    };
+    parser.expect(lexer::TokenKind::RBrace);
+    let _ = parser.close(marker, cst::NodeKind::STRUCT_PATTERN_FIELD_LIST);
+    ()
+}
+
+fn struct_pattern_field(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect_lower_ident("struct pattern field name");
+    if parser.at(lexer::TokenKind::Colon) {
+        parser.expect(lexer::TokenKind::Colon);
+        if is_pattern_first(parser.peek()) {
+            let _ = pattern(parser);
+        } else {
+            parser.advance_with_error("expected a pattern")
+        }
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::STRUCT_PATTERN_FIELD);
+    ()
+}

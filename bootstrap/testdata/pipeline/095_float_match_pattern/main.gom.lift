@@ -1,0 +1,34 @@
+fn classify(x/0: float64) -> string {
+  match x/0 {
+    0 => {
+      "zero"
+    },
+    1 => {
+      "one"
+    },
+    -1 => {
+      "minus one"
+    },
+    3.14 => {
+      "pi"
+    },
+    _ => "other",
+  }
+}
+
+fn main() -> unit {
+  let _wild64 = println__T_string(classify(0)) in
+  let _wild65 = println__T_string(classify(1)) in
+  let _wild66 = println__T_string(classify((-1))) in
+  let _wild67 = println__T_string(classify(3.14)) in
+  let _wild68 = println__T_string(classify(42)) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

@@ -1,0 +1,16 @@
+package api;
+
+pub trait Source {
+    type Item;
+    fn get(self: Self) -> Self::Item;
+}
+
+pub struct Public {}
+struct Hidden {}
+
+impl Source for Public {
+    type Item = Hidden;
+    fn get(self: Public) -> Hidden { Hidden {} }
+}
+
+pub fn make() -> Public { Public {} }

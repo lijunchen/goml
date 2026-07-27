@@ -1,0 +1,27 @@
+impl Parent[T] for Box[T]{
+  fn parent(self/0: Box[T]) -> T {
+      (self/0 : Box[T]).value
+  }
+}
+
+impl Render for Box[T]{
+  fn render(self/1: Box[T]) -> string {
+      ":render"
+  }
+}
+
+impl Child[T] for Box[T]{
+  fn child(self/2: Box[T]) -> string {
+      ":child"
+  }
+}
+
+fn describe(value/3: B) -> string {
+    (ToString::to_string : (T) -> string)((Parent[T]::parent : (B) -> T)((value/3 : B))) + (Render::render : (B) -> string)((value/3 : B)) + (Child[T]::child : (B) -> string)((value/3 : B))
+}
+
+fn main() -> unit {
+    (@runtime(core.string_println) : (string) -> unit)((describe : (Box[int]) -> string)(Box { value: 5 }));
+    let value/4: Box[int32] = Box { value: 6 };
+    (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((Parent[int32]::parent : (Box[int32]) -> int32)((value/4 : Box[int32]))))
+}

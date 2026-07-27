@@ -1,0 +1,27 @@
+package main;
+trait Display {
+  fn show(self: Self) -> string;
+}
+
+impl Display for int32 {
+  fn show(self: int32) -> string {
+      self.to_string()
+  }
+}
+
+fn render(x: dyn Display) -> string {
+    Display::show(x)
+}
+
+fn main() -> unit {
+    let v: Vec[dyn Display] = Vec::new();
+    let first: int32 = 10;
+    let second: int32 = 20;
+    v.push(first);
+    v.push(second);
+    let s: Slice[dyn Display] = v.slice(0, 2);
+    println(render(s[0]));
+    let t = s.sub(1, 2);
+    println(render(t[0]));
+}
+

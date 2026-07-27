@@ -1,0 +1,21 @@
+trait Mark {
+    fn mark(self: Self) -> unit;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl[T: Mark] Mark for Wrap[T] {
+    fn mark(self: Wrap[T]) -> unit { () }
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn use_wrap(value: Wrap[int32]) -> unit {
+    require_mark(value)
+}
+
+fn main() -> unit { () }

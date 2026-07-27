@@ -1,0 +1,93 @@
+package main;
+enum Message[T] {
+    Quit,
+    Write(T),
+    Move { x: int32, y: int32, label: T }
+}
+
+#[derive(ToString, Hash, Eq)]
+enum Key {
+    Empty,
+    Point { x: int32, y: int32 }
+}
+
+impl ToString for Key {
+  fn to_string(self: Key) -> string {
+      match self {
+          Key::Empty => "Key::Empty",
+          Key::Point { x: __field0, y: __field1 } => "Key::Point { " + "x: " + __field0.to_string() + ", " + "y: " + __field1.to_string() + " }",
+      }
+  }
+}
+
+impl Eq for Key {
+  fn eq(self: Key, other: Key) -> bool {
+      match (self, other) {
+          (Key::Empty, Key::Empty) => true,
+          (Key::Point { x: __l1_0, y: __l1_1 }, Key::Point { x: __r1_0, y: __r1_1 }) => true && Eq::eq(__l1_0, __r1_0) && Eq::eq(__l1_1, __r1_1),
+          _ => false,
+      }
+  }
+}
+
+impl Hash for Key {
+  fn hash(self: Key) -> uint64 {
+      match self {
+          Key::Empty => {
+                let h: uint64 = 14695981039346656037 + 1;
+                h
+            },
+          Key::Point { x: __field1_0, y: __field1_1 } => {
+                let h: uint64 = 14695981039346656037 + 2;
+                let h = h * 1099511628211 + Hash::hash(__field1_0);
+                let h = h * 1099511628211 + Hash::hash(__field1_1);
+                h
+            },
+      }
+  }
+}
+
+fn score(value: Message[string]) -> int32 {
+    match value {
+        Message::Quit => 0,
+        Message::Write(_) => 1,
+        Message::Move { x: x, y: vertical, .. } => x + vertical,
+    }
+}
+
+fn label(value: Message[string]) -> string {
+    match value {
+        Message::Move { label: label, x: _, y: _ } => label,
+        Message::Write(text) => text,
+        Message::Quit => "quit",
+    }
+}
+
+fn main() -> unit {
+    let x = 3;
+    let direction = "north";
+    let first = Message::Move {
+        label: direction,
+        y: 4,
+        x: x
+    };
+    let second = Message::Move {
+        x: 3,
+        y: 4,
+        label: "north"
+    };
+    println(score(first));
+    println(label(second));
+    println(Key::Point {
+          x: 1,
+          y: 2
+      }.to_string());
+    println(Eq::eq(Key::Point {
+            x: 1,
+            y: 2
+        }, Key::Point {
+            y: 2,
+            x: 1
+        }));
+}
+

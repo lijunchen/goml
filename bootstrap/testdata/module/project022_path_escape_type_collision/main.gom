@@ -1,0 +1,32 @@
+package main;
+
+use path_escape_type_collision::a;
+
+struct AX3aX3aT {
+    value: int32,
+}
+
+struct Wrap[T, U] {
+    left: T,
+    right: U,
+}
+
+fn make_external() -> Wrap[a::T, (int32, int32)] {
+    Wrap {
+        left: a::make(1),
+        right: (2, 3),
+    }
+}
+
+fn make_plain() -> Wrap[AX3aX3aT, (int32, int32)] {
+    Wrap {
+        left: AX3aX3aT { value: 4 },
+        right: (5, 6),
+    }
+}
+
+fn main() -> unit {
+    let x = make_external();
+    let y = make_plain();
+    println(x.left.value + y.left.value + x.right.0 + y.right.1);
+}

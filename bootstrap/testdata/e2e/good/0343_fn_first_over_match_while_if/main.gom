@@ -1,0 +1,31 @@
+fn first_over(arr: [int32; 5], threshold: int32) -> Option[int32] {
+    let i = Ref::new(0);
+    let found: Ref[Option[int32]] = Ref::new(Option::None);
+    while i.get() < 5 {
+        let val = arr[i.get()];
+        match found.get() {
+            Option::None => {
+                if val > threshold {
+                    found.set(Option::Some(val));
+                } else {
+                    ()
+                }
+            },
+            Option::Some(_) => (),
+        };
+        i.set(i.get() + 1);
+    };
+    found.get()
+}
+
+fn main() {
+    let arr = [1, 5, 3, 8, 2];
+    match first_over(arr, 4) {
+        Option::Some(v) => println("found: " + v.to_string()),
+        Option::None => println("none"),
+    };
+    match first_over(arr, 10) {
+        Option::Some(v) => println("found: " + v.to_string()),
+        Option::None => println("none"),
+    };
+}

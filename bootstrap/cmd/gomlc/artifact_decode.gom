@@ -1,0 +1,554 @@
+package main;
+
+use gomlc::tast;
+
+struct ArtifactDecodeContext {
+    enum_names: Vec[string],
+    struct_names: Vec[string],
+}
+
+fn new_artifact_decode_context() -> ArtifactDecodeContext {
+    ArtifactDecodeContext {
+        enum_names: Vec::new(),
+        struct_names: Vec::new(),
+    }
+}
+
+fn artifact_decode_error(expected: string) -> string {
+    "invalid compiler artifact: expected " + expected
+}
+
+fn artifact_json_object(
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[Vec[(string, ArtifactJsonValue)], string] {
+    match value {
+        ArtifactJsonValue::Object(value) => Result::Ok(value),
+        _ => Result::Err(artifact_decode_error(expected)),
+    }
+}
+
+fn artifact_json_array(
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[Vec[ArtifactJsonValue], string] {
+    match value {
+        ArtifactJsonValue::Array(value) => Result::Ok(value),
+        _ => Result::Err(artifact_decode_error(expected)),
+    }
+}
+
+fn artifact_json_string_value(
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[string, string] {
+    match value {
+        ArtifactJsonValue::String(value) => Result::Ok(value),
+        _ => Result::Err(artifact_decode_error(expected)),
+    }
+}
+
+fn artifact_json_number_value(
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[string, string] {
+    match value {
+        ArtifactJsonValue::Number(value) => Result::Ok(value),
+        _ => Result::Err(artifact_decode_error(expected)),
+    }
+}
+
+fn artifact_json_bool_value(
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[bool, string] {
+    match value {
+        ArtifactJsonValue::Bool(value) => Result::Ok(value),
+        _ => Result::Err(artifact_decode_error(expected)),
+    }
+}
+
+fn artifact_json_required_field(
+    values: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[ArtifactJsonValue, string] {
+    let result: Ref[Option[ArtifactJsonValue]] = Ref::new(Option::None);
+    let count = Ref::new(0);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1));
+            count.set(count.get() + 1)
+        } else {
+            ()
+        }
+    };
+    if count.get() != 1 {
+        Result::Err(artifact_decode_error("field " + name))
+    } else {
+        match result.get() {
+            Option::Some(value) => Result::Ok(value),
+            Option::None => Result::Err(artifact_decode_error("field " + name)),
+        }
+    }
+}
+
+fn artifact_json_optional_field(
+    values: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[Option[ArtifactJsonValue], string] {
+    let result: Ref[Option[ArtifactJsonValue]] = Ref::new(Option::None);
+    let count = Ref::new(0);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1));
+            count.set(count.get() + 1)
+        } else {
+            ()
+        }
+    };
+    if count.get() > 1 {
+        Result::Err(artifact_decode_error("field " + name))
+    } else {
+        Result::Ok(result.get())
+    }
+}
+
+fn artifact_json_field_string(
+    values: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[string, string] {
+    match artifact_json_required_field(values, name) {
+        Result::Ok(value) => artifact_json_string_value(value, "string field " + name),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_json_field_array(
+    values: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[Vec[ArtifactJsonValue], string] {
+    match artifact_json_required_field(values, name) {
+        Result::Ok(value) => artifact_json_array(value, "array field " + name),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_json_field_object(
+    values: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[Vec[(string, ArtifactJsonValue)], string] {
+    match artifact_json_required_field(values, name) {
+        Result::Ok(value) => artifact_json_object(value, "object field " + name),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
+    if value.byte_len() == 0 {
+        Result::Err(artifact_decode_error("nonnegative integer"))
+    } else {
+        let result = Ref::new(0);
+        for index in range(0, value.byte_len()) {
+            let byte = value.byte_get(index);
+            if byte < 48 || byte > 57 {
+                return Result::Err(artifact_decode_error("nonnegative integer"))
+            } else {
+                result.set(result.get() * 10 + (byte - 48) as int64)
+            };
+            if result.get() > 2147483647 {
+                return Result::Err(artifact_decode_error("32-bit integer"))
+            } else {
+                ()
+            }
+        };
+        Result::Ok(result.get() as int)
+    }
+}
+
+fn artifact_decode_string_array(
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[Vec[string], string] {
+    let values = match artifact_json_array(value, expected) {
+        Result::Ok(values) => values,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    for value in values {
+        match artifact_json_string_value(value, expected) {
+            Result::Ok(value) => result.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_decode_type_array(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[Vec[tast::Type], string] {
+    let values = match artifact_json_array(value, expected) {
+        Result::Ok(values) => values,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    for value in values {
+        match artifact_decode_type(context, value) {
+            Result::Ok(value) => result.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_decode_trait_ref(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[tast::TraitRef, string] {
+    let object = match artifact_json_object(value, "trait reference") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let name = match artifact_json_field_string(object, "name") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = match artifact_json_required_field(object, "args") {
+        Result::Ok(value) => match artifact_decode_type_array(context, value, "trait arguments") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    Result::Ok(tast::TraitRef { name, args })
+}
+
+fn artifact_decode_optional_trait_ref(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[Option[tast::TraitRef], string] {
+    match value {
+        ArtifactJsonValue::Null => Result::Ok(Option::None),
+        other => match artifact_decode_trait_ref(context, other) {
+            Result::Ok(value) => Result::Ok(Option::Some(value)),
+            Result::Err(error) => Result::Err(error),
+        },
+    }
+}
+
+fn artifact_decode_named_type(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+    field: string,
+    enum_type: bool,
+) -> Result[tast::Type, string] {
+    let object = match artifact_json_object(value, "named type") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let name = match artifact_json_field_string(object, field) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if enum_type {
+        artifact_add_type_name(context.enum_names, name)
+    } else {
+        artifact_add_type_name(context.struct_names, name)
+    };
+    Result::Ok(tast::Type::Con { name })
+}
+
+fn artifact_decode_element_type(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[tast::Type, string] {
+    let object = match artifact_json_object(value, expected) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    match artifact_json_required_field(object, "elem") {
+        Result::Ok(value) => artifact_decode_type(context, value),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_decode_type(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[tast::Type, string] {
+    match value {
+        ArtifactJsonValue::String(name) => match name {
+            "TUnit" => Result::Ok(tast::Type::Unit),
+            "TNever" => Result::Ok(tast::Type::Never),
+            "TBool" => Result::Ok(tast::Type::Bool),
+            "TInt" => Result::Ok(tast::Type::Int),
+            "TInt8" => Result::Ok(tast::Type::Int8),
+            "TInt16" => Result::Ok(tast::Type::Int16),
+            "TInt32" => Result::Ok(tast::Type::Int32),
+            "TInt64" => Result::Ok(tast::Type::Int64),
+            "TUint" => Result::Ok(tast::Type::Uint),
+            "TUint8" => Result::Ok(tast::Type::Uint8),
+            "TUint16" => Result::Ok(tast::Type::Uint16),
+            "TUint32" => Result::Ok(tast::Type::Uint32),
+            "TUint64" => Result::Ok(tast::Type::Uint64),
+            "TFloat32" => Result::Ok(tast::Type::Float32),
+            "TFloat64" => Result::Ok(tast::Type::Float64),
+            "TString" => Result::Ok(tast::Type::String),
+            "TChar" => Result::Ok(tast::Type::Char),
+            _ => Result::Err(artifact_decode_error("type")),
+        },
+        ArtifactJsonValue::Object(fields) => {
+            if fields.len() != 1 {
+                return Result::Err(artifact_decode_error("type variant"))
+            } else {
+                ()
+            };
+            let kind = fields.get(0).0;
+            let payload = fields.get(0).1;
+            if kind == "TEnum" {
+                artifact_decode_named_type(context, payload, "name", true)
+            } else if kind == "TStruct" {
+                artifact_decode_named_type(context, payload, "name", false)
+            } else if kind == "TDyn" {
+                let object = match artifact_json_object(payload, "dynamic type") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_field_string(object, "trait_name") {
+                    Result::Ok(value) => Result::Ok(tast::Type::Dyn { trait_name: value }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TParam" {
+                let object = match artifact_json_object(payload, "type parameter") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_field_string(object, "name") {
+                    Result::Ok(value) => Result::Ok(tast::Type::Param { name: value }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TTuple" {
+                let object = match artifact_json_object(payload, "tuple type") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_required_field(object, "typs") {
+                    Result::Ok(value) => match artifact_decode_type_array(
+                        context,
+                        value,
+                        "tuple elements",
+                    ) {
+                        Result::Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
+                        Result::Err(error) => Result::Err(error),
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TProjection" {
+                let object = match artifact_json_object(payload, "projection type") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                let trait_ref = match artifact_json_required_field(object, "trait_ref") {
+                    Result::Ok(value) => match artifact_decode_optional_trait_ref(context, value) {
+                        Result::Ok(value) => value,
+                        Result::Err(error) => return Result::Err(error),
+                    },
+                    Result::Err(error) => return Result::Err(error),
+                };
+                let for_ty = match artifact_json_required_field(object, "for_ty") {
+                    Result::Ok(value) => match artifact_decode_type(context, value) {
+                        Result::Ok(value) => value,
+                        Result::Err(error) => return Result::Err(error),
+                    },
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_field_string(object, "name") {
+                    Result::Ok(name) => Result::Ok(tast::Type::Projection {
+                        for_ty,
+                        name,
+                        trait_ref,
+                    }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TApp" {
+                let object = match artifact_json_object(payload, "type application") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                let base = match artifact_json_required_field(object, "ty") {
+                    Result::Ok(value) => match artifact_decode_type(context, value) {
+                        Result::Ok(value) => value,
+                        Result::Err(error) => return Result::Err(error),
+                    },
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_required_field(object, "args") {
+                    Result::Ok(value) => match artifact_decode_type_array(
+                        context,
+                        value,
+                        "type arguments",
+                    ) {
+                        Result::Ok(value) => Result::Ok(tast::Type::App { ty: base, args: value }),
+                        Result::Err(error) => Result::Err(error),
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TArray" {
+                let object = match artifact_json_object(payload, "array type") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                let length = match artifact_json_required_field(object, "len") {
+                    Result::Ok(value) => match artifact_json_number_value(value, "array length") {
+                        Result::Ok(value) => if value == "18446744073709551615" {
+                            -1
+                        } else {
+                            match artifact_parse_nonnegative_int(value) {
+                                Result::Ok(value) => value,
+                                Result::Err(error) => return Result::Err(error),
+                            }
+                        },
+                        Result::Err(error) => return Result::Err(error),
+                    },
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_required_field(object, "elem") {
+                    Result::Ok(value) => match artifact_decode_type(context, value) {
+                        Result::Ok(value) => Result::Ok(tast::Type::Array {
+                            len: length,
+                            elem: value,
+                        }),
+                        Result::Err(error) => Result::Err(error),
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TSlice" {
+                match artifact_decode_element_type(context, payload, "slice type") {
+                    Result::Ok(value) => Result::Ok(tast::Type::Slice { elem: value }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TVec" {
+                match artifact_decode_element_type(context, payload, "vector type") {
+                    Result::Ok(value) => Result::Ok(tast::Type::VecType { elem: value }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TRef" {
+                match artifact_decode_element_type(context, payload, "reference type") {
+                    Result::Ok(value) => Result::Ok(tast::Type::RefType { elem: value }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TChannel" {
+                match artifact_decode_element_type(context, payload, "channel type") {
+                    Result::Ok(value) => Result::Ok(tast::Type::Channel { elem: value }),
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "THashMap" {
+                let object = match artifact_json_object(payload, "hash map type") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                let key = match artifact_json_required_field(object, "key") {
+                    Result::Ok(value) => match artifact_decode_type(context, value) {
+                        Result::Ok(value) => value,
+                        Result::Err(error) => return Result::Err(error),
+                    },
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_required_field(object, "value") {
+                    Result::Ok(value) => match artifact_decode_type(context, value) {
+                        Result::Ok(value) => Result::Ok(tast::Type::HashMap { key, value }),
+                        Result::Err(error) => Result::Err(error),
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else if kind == "TFunc" {
+                let object = match artifact_json_object(payload, "function type") {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                };
+                let params = match artifact_json_required_field(object, "params") {
+                    Result::Ok(value) => match artifact_decode_type_array(
+                        context,
+                        value,
+                        "function parameters",
+                    ) {
+                        Result::Ok(value) => value,
+                        Result::Err(error) => return Result::Err(error),
+                    },
+                    Result::Err(error) => return Result::Err(error),
+                };
+                match artifact_json_required_field(object, "ret_ty") {
+                    Result::Ok(value) => match artifact_decode_type(context, value) {
+                        Result::Ok(value) => Result::Ok(tast::Type::Func { params, ret_ty: value }),
+                        Result::Err(error) => Result::Err(error),
+                    },
+                    Result::Err(error) => Result::Err(error),
+                }
+            } else {
+                Result::Err(artifact_decode_error("supported type variant"))
+            }
+        },
+        _ => Result::Err(artifact_decode_error("type")),
+    }
+}
+
+fn artifact_decode_predicate(
+    context: ArtifactDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[tast::TypePredicate, string] {
+    let fields = match artifact_json_object(value, "type predicate") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if fields.len() != 1 {
+        Result::Err(artifact_decode_error("type predicate variant"))
+    } else if fields.get(0).0 == "Trait" {
+        let payload = match artifact_json_object(fields.get(0).1, "trait predicate") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let for_ty = match artifact_json_required_field(payload, "for_ty") {
+            Result::Ok(value) => match artifact_decode_type(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_json_required_field(payload, "trait_ref") {
+            Result::Ok(value) => match artifact_decode_trait_ref(context, value) {
+                Result::Ok(value) => Result::Ok(tast::TypePredicate::Trait {
+                    for_ty,
+                    trait_ref: value,
+                }),
+                Result::Err(error) => Result::Err(error),
+            },
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if fields.get(0).0 == "Equality" {
+        let payload = match artifact_json_object(fields.get(0).1, "equality predicate") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let left = match artifact_json_required_field(payload, "lhs") {
+            Result::Ok(value) => match artifact_decode_type(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_json_required_field(payload, "rhs") {
+            Result::Ok(value) => match artifact_decode_type(context, value) {
+                Result::Ok(value) => Result::Ok(tast::TypePredicate::Equality {
+                    lhs: left,
+                    rhs: value,
+                }),
+                Result::Err(error) => Result::Err(error),
+            },
+            Result::Err(error) => Result::Err(error),
+        }
+    } else {
+        Result::Err(artifact_decode_error("supported type predicate"))
+    }
+}

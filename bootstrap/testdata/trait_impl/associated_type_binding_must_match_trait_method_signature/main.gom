@@ -1,0 +1,13 @@
+trait Source {
+    type Item;
+    fn get(self: Self) -> Self::Item;
+}
+
+struct Value {}
+
+impl Source for Value {
+    type Item = int32;
+    fn get(self: Value) -> string { "wrong" }
+}
+
+fn main() -> unit { () }

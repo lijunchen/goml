@@ -1,0 +1,400 @@
+package main;
+
+use gomlc::ast;
+use gomlc::anf;
+use gomlc::cst;
+use gomlc::core;
+use gomlc::go_backend;
+use gomlc::hir;
+use gomlc::lexer;
+use gomlc::lift;
+use gomlc::mono;
+use gomlc::parser;
+use gomlc::tast;
+use std::env;
+use std::fs;
+use std::io;
+use std::process;
+
+struct RunArgs {
+    file: string,
+    dump_ast: bool,
+    dump_hir: bool,
+    dump_tast: bool,
+    dump_core: bool,
+    dump_mono: bool,
+    dump_lift: bool,
+    dump_anf: bool,
+    dump_go: bool,
+}
+
+struct CoreStage {
+    file: core::File,
+    counter: Ref[int],
+}
+
+fn fail(message: string) -> unit {
+    io::eprintln(message);
+    process::exit(1)
+}
+
+fn read_source(path: string) -> string {
+    match fs::read_file(path) {
+        Result::Ok(source) => source,
+        Result::Err(_) => {
+            fail("error reading goml file: " + path);
+            ""
+        },
+    }
+}
+
+fn dump_argument(value: string) -> bool {
+    value == "--dump-ast"
+        || value == "--dump-hir"
+        || value == "--dump-tast"
+        || value == "--dump-core"
+        || value == "--dump-mono"
+        || value == "--dump-lift"
+        || value == "--dump-anf"
+        || value == "--dump-go"
+}
+
+fn inline_dump_argument(value: string) -> Option[(string, string)] {
+    let names = Vec::new();
+    names.push("--dump-ast");
+    names.push("--dump-hir");
+    names.push("--dump-tast");
+    names.push("--dump-core");
+    names.push("--dump-mono");
+    names.push("--dump-lift");
+    names.push("--dump-anf");
+    names.push("--dump-go");
+    let result: Ref[Option[(string, string)]] = Ref::new(Option::None);
+    for name in names {
+        match inline_cli_value(value, name) {
+            Option::Some(argument) => result.set(Option::Some((name, argument))),
+            Option::None => (),
+        }
+    };
+    result.get()
+}
+
+fn inline_dump_argument_present(value: Option[(string, string)]) -> bool {
+    match value {
+        Option::Some(_) => true,
+        Option::None => false,
+    }
+}
+
+fn selected_run_usage(used_dumps: Vec[string]) -> string {
+    let usage = Ref::new("gomlc run-single");
+    for argument in used_dumps {
+        usage.set(usage.get() + " " + argument)
+    };
+    usage.get() + " <FILE>"
+}
+
+fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
+    let file: Ref[Option[string]] = Ref::new(Option::None);
+    let dump_ast = Ref::new(false);
+    let dump_hir = Ref::new(false);
+    let dump_tast = Ref::new(false);
+    let dump_core = Ref::new(false);
+    let dump_mono = Ref::new(false);
+    let dump_lift = Ref::new(false);
+    let dump_anf = Ref::new(false);
+    let dump_go = Ref::new(false);
+    let seen: HashMap[string, unit] = HashMap::new();
+    let used_dumps = Vec::new();
+    let positional = Ref::new(false);
+    let index = Ref::new(2);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if positional.get() == false && argument == "--" {
+            positional.set(true);
+            index.set(index.get() + 1)
+        } else if positional.get() == false
+            && cli_help_argument(argument)
+        {
+            return Result::Err(cli_help_signal())
+        } else if positional.get() == false
+            && option_string_present(inline_cli_value(argument, "--help"))
+        {
+            let value = match inline_cli_value(argument, "--help") {
+                Option::Some(value) => value,
+                Option::None => "",
+            };
+            let usage = if used_dumps.len() == 0 {
+                "gomlc run-single --help <FILE>"
+            } else {
+                "gomlc run-single --help <--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go|FILE>"
+            };
+            return Result::Err(unexpected_value_error_with_usage(
+                value,
+                "--help",
+                usage,
+            ))
+        } else if positional.get() == false && dump_argument(argument) {
+            if seen.contains(argument) {
+                return Result::Err(repeated_argument_error(
+                    "run-single",
+                    argument,
+                ))
+            } else {
+                seen.set(argument, ());
+                used_dumps.push(argument);
+                if argument == "--dump-ast" {
+                    dump_ast.set(true)
+                } else if argument == "--dump-hir" {
+                    dump_hir.set(true)
+                } else if argument == "--dump-tast" {
+                    dump_tast.set(true)
+                } else if argument == "--dump-core" {
+                    dump_core.set(true)
+                } else if argument == "--dump-mono" {
+                    dump_mono.set(true)
+                } else if argument == "--dump-lift" {
+                    dump_lift.set(true)
+                } else if argument == "--dump-anf" {
+                    dump_anf.set(true)
+                } else {
+                    dump_go.set(true)
+                };
+                index.set(index.get() + 1)
+            }
+        } else if positional.get() == false
+            && inline_dump_argument_present(inline_dump_argument(argument))
+        {
+            match inline_dump_argument(argument) {
+                Option::Some((name, value)) => return Result::Err(unexpected_value_error(
+                    "run-single",
+                    value,
+                    name,
+                    name + " <FILE>",
+                )),
+                Option::None => (),
+            }
+        } else if positional.get() == false && cli_option(argument) {
+            match similar_cli_argument("run-single", argument) {
+                Option::Some(similar) => {
+                    let usage = if similar == "--help" {
+                        "gomlc run-single --help <FILE>"
+                    } else {
+                        if !seen.contains(similar) {
+                            used_dumps.push(similar)
+                        } else {
+                            ()
+                        };
+                        selected_run_usage(used_dumps)
+                    };
+                    return Result::Err(unexpected_similar_argument_error(
+                        argument,
+                        similar,
+                        usage,
+                    ))
+                },
+                Option::None => (),
+            };
+            let usage = if used_dumps.len() > 0
+                || option_string_present(file.get())
+            {
+                selected_run_usage(used_dumps)
+            } else {
+                command_usage("run-single")
+            };
+            return Result::Err(unexpected_argument_error_with_usage(
+                argument,
+                true,
+                usage,
+            ))
+        } else {
+            match file.get() {
+                Option::Some(_) => return Result::Err(unexpected_argument_error(
+                    "run-single",
+                    argument,
+                    false,
+                )),
+                Option::None => {
+                    file.set(Option::Some(argument));
+                    index.set(index.get() + 1)
+                },
+            }
+        }
+    };
+    match file.get() {
+        Option::Some(value) => Result::Ok(RunArgs {
+            file: value,
+            dump_ast: dump_ast.get(),
+            dump_hir: dump_hir.get(),
+            dump_tast: dump_tast.get(),
+            dump_core: dump_core.get(),
+            dump_mono: dump_mono.get(),
+            dump_lift: dump_lift.get(),
+            dump_anf: dump_anf.get(),
+            dump_go: dump_go.get(),
+        }),
+        Option::None => {
+            let missing = Vec::new();
+            missing.push("<FILE>");
+            Result::Err(missing_required_arguments_error_with_usage(
+                missing,
+                selected_run_usage(used_dumps),
+            ))
+        },
+    }
+}
+
+fn lower_core_stage(source_path: string, source: string) -> CoreStage {
+    let counter = Ref::new(0);
+    let file = core::lower_with_counter(
+        tast::check(hir::lower(
+            ast::lower(parser::parse(source)),
+            source_path,
+        )),
+        counter,
+    );
+    CoreStage { file, counter }
+}
+
+fn canonical_stage_output(stage: string, source_path: string, source: string) -> string {
+    if stage == "lex" {
+        lexer::encode_tokens(lexer::lex(source))
+    } else if stage == "cst" {
+        cst::encode(parser::parse(source))
+    } else if stage == "ast" {
+        ast::encode(ast::lower(parser::parse(source)))
+    } else if stage == "hir" {
+        hir::encode(hir::lower(
+            ast::lower(parser::parse(source)),
+            source_path,
+        ))
+    } else if stage == "tast" {
+        tast::encode(tast::check(hir::lower(
+            ast::lower(parser::parse(source)),
+            source_path,
+        )))
+    } else if stage == "core" {
+        let value = lower_core_stage(source_path, source);
+        core::encode(value.file)
+    } else if stage == "mono" {
+        let value = lower_core_stage(source_path, source);
+        mono::encode(lower_mono_or_fail(value.file))
+    } else if stage == "lift" {
+        let value = lower_core_stage(source_path, source);
+        let mono_value = lower_mono_or_fail(value.file);
+        lift::encode(lift::lower_with_counter(mono_value, value.counter))
+    } else if stage == "anf" {
+        let value = lower_core_stage(source_path, source);
+        let mono_value = lower_mono_or_fail(value.file);
+        let lift_value = lift::lower_with_counter(mono_value, value.counter);
+        anf::encode(anf::lower_with_counter(lift_value, value.counter))
+    } else if stage == "go" {
+        let value = lower_core_stage(source_path, source);
+        let mono_value = lower_mono_or_fail(value.file);
+        let lift_value = lift::lower_with_counter(mono_value, value.counter);
+        let anf_value = anf::lower_with_counter(lift_value, value.counter);
+        go_backend::encode(go_backend::lower(anf_value))
+    } else {
+        fail("unknown mode: " + stage);
+        ""
+    }
+}
+
+fn run_canonical_stage(args: Vec[string]) -> unit {
+    if args.len() != 4 {
+        fail("usage: gomlc __canonical-stage <STAGE> <FILE>")
+    } else {
+        let source_path = args.get(3);
+        io::print(canonical_stage_output(
+            args.get(2),
+            source_path,
+            read_source(source_path),
+        ))
+    }
+}
+
+fn run_stage(args: Vec[string]) -> unit {
+    if args.len() != 3 {
+        fail("usage: gomlc <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <FILE>")
+    } else if args.get(1) == "lex" {
+        io::print(lexer::encode_tokens(lexer::lex(read_source(args.get(2)))))
+    } else {
+        let source_path = args.get(2);
+        io::print(pipeline_stage_output(
+            args.get(1),
+            source_path,
+            read_source(source_path),
+        ))
+    }
+}
+
+fn main() -> unit {
+    let args = env::args();
+    if args.len() == 1 {
+        fail_cli(top_level_help())
+    } else if cli_help_argument(args.get(1)) {
+        print_cli_help(top_level_help())
+    } else if option_string_present(inline_cli_value(args.get(1), "--help")) {
+        let value = match inline_cli_value(args.get(1), "--help") {
+            Option::Some(value) => value,
+            Option::None => "",
+        };
+        fail_cli(unexpected_value_error_with_usage(
+            value,
+            "--help",
+            "gomlc --help <COMMAND>",
+        ))
+    } else if args.get(1) == "--" {
+        if args.len() == 2 {
+            fail_cli(top_level_help())
+        } else {
+            fail_unknown_subcommand(args.get(2))
+        }
+    } else if args.get(1) == "help" {
+        run_help_command(args)
+    } else if args.get(1) == "version" {
+        run_version(args)
+    } else if args.get(1) == "check" {
+        run_package_command(args, false, false)
+    } else if args.get(1) == "test-check" {
+        run_package_command(args, false, true)
+    } else if args.get(1) == "build" {
+        run_package_command(args, true, false)
+    } else if args.get(1) == "test-build" {
+        run_package_command(args, true, true)
+    } else if args.get(1) == "link" {
+        run_link_command(args)
+    } else if args.get(1) == "test-link" {
+        run_test_link_command(args)
+    } else if args.get(1) == "package-info" {
+        run_package_info(args)
+    } else if args.get(1) == "__canonical-stage" {
+        run_canonical_stage(args)
+    } else if args.get(1) == "__builtin-interface" {
+        if args.len() == 2 {
+            io::print(builtin_artifact_json())
+        } else {
+            fail("usage: gomlc __builtin-interface")
+        }
+    } else if args.get(1) == "__test-diagnostics" {
+        run_test_diagnostics(args)
+    } else if args.get(1) == "run-single" {
+        match parse_run_args(args) {
+            Result::Ok(run_args) => run_single(run_args),
+            Result::Err(error) => handle_cli_parse_error("run-single", error),
+        }
+    } else if is_debug_stage(args.get(1)) {
+        run_stage(args)
+    } else if cli_option(args.get(1)) {
+        match similar_cli_argument("", args.get(1)) {
+            Option::Some(similar) => fail_cli(unexpected_similar_argument_error(
+                args.get(1),
+                similar,
+                similar_cli_argument_usage("", similar),
+            )),
+            Option::None => fail_cli(unexpected_argument_error("", args.get(1), false)),
+        }
+    } else {
+        fail_unknown_subcommand(args.get(1))
+    }
+}

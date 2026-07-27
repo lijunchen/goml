@@ -1,0 +1,30 @@
+package parser;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+fn parse_path_always(parser: Parser) -> unit {
+    let marker = parser.open();
+    if parser.at(lexer::TokenKind::Ident) == false {
+        parser.advance_with_error("expected a path segment");
+        let _ = parser.close(marker, cst::NodeKind::PATH);
+        ()
+    } else {
+        parser.advance();
+        let parsing = Ref::new(true);
+        while parsing.get()
+            && parser.at(lexer::TokenKind::ColonColon)
+            && token_is(parser.nth(1), lexer::TokenKind::LBracket) == false
+        {
+            parser.expect(lexer::TokenKind::ColonColon);
+            if parser.at(lexer::TokenKind::Ident) {
+                parser.advance()
+            } else {
+                parser.advance_with_error("expected a path segment after '::'");
+                parsing.set(false)
+            }
+        };
+        let _ = parser.close(marker, cst::NodeKind::PATH);
+        ()
+    }
+}

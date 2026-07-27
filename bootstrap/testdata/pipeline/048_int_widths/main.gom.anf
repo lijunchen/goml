@@ -1,0 +1,72 @@
+fn main() -> unit {
+  join ret65() -> unit {
+    ()
+  } in
+  let start16/0 = 300 in
+  let delta16/1 = 45 in
+  let sum16/2 = (start16/0 + delta16/1) in
+  let flipped16/3 = (-start16/0) in
+  let base32/4 = 100000 in
+  let more32/5 = 200000 in
+  let sum32/6 = (base32/4 + more32/5) in
+  let diff32/7 = (sum32/6 - base32/4) in
+  let big64/8 = 5000000000 in
+  let step64/9 = 2000000000 in
+  let remain64/10 = (big64/8 - step64/9) in
+  let neg64/11 = (-step64/9) in
+  let t66 = trait_impl#ToString#int16#to_string(sum16/2) in
+  let t67 = (t66 + ", ") in
+  let t68 = trait_impl#ToString#int16#to_string(flipped16/3) in
+  let t69 = (t67 + t68) in
+  let t70 = (t69 + "; ") in
+  let t71 = inherent#int32#int32#to_string(diff32/7) in
+  let t72 = (t70 + t71) in
+  let t73 = (t72 + "; ") in
+  let t74 = trait_impl#ToString#int64#to_string(remain64/10) in
+  let t75 = (t73 + t74) in
+  let t76 = (t75 + "; ") in
+  let t77 = trait_impl#ToString#int64#to_string(neg64/11) in
+  let message/12 = (t76 + t77) in
+  let _wild64 = println__T_string(message/12) in
+  jump ret65()
+}
+
+fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  let t80 = @runtime(core.int16_to_string)(self/42) in
+  jump ret78(t80)
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret81(retv82: string) -> string {
+    retv82
+  } in
+  let t83 = @runtime(core.int32_to_string)(self/6) in
+  jump ret81(t83)
+}
+
+fn trait_impl#ToString#int64#to_string(self/44: int64) -> string {
+  join ret84(retv85: string) -> string {
+    retv85
+  } in
+  let t86 = @runtime(core.int64_to_string)(self/44) in
+  jump ret84(t86)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret87() -> unit {
+    ()
+  } in
+  let t88 = trait_impl#ToString#string#to_string(value/1) in
+  let t89 = @runtime(core.string_println)(t88) in
+  jump ret87()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret90(retv91: string) -> string {
+    retv91
+  } in
+  jump ret90(self/38)
+}

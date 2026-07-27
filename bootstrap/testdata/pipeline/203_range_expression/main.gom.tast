@@ -1,0 +1,10 @@
+fn range(start/0: int32, end/1: int32) -> int32 {
+    (start/0 : int32) + (end/1 : int32)
+}
+
+fn main() -> unit {
+    for value/2: int in (__goml_builtin_range : (int, int) -> FnIterator[int])(1, 4) {
+        (println : (int) -> unit)((value/2 : int));
+    };
+    (println : (int32) -> unit)((range : (int32, int32) -> int32)(10, 20));
+}

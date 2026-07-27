@@ -1,0 +1,134 @@
+fn int_list_length(xs/2: List__int32) -> int32 {
+  join ret74(retv75: int32) -> int32 {
+    retv75
+  } in
+  join k76(jp77: int32) -> int32 {
+    jump ret74(jp77)
+  } in
+  match xs/2 {
+    Tag_0 => {
+      jump k76(0)
+    },
+    Tag_1 => {
+      let x66 = List__int32::Cons._0(xs/2) in
+      let x67 = List__int32::Cons._1(xs/2) in
+      let tail/3 = x67 in
+      let t78 = int_list_length(tail/3) in
+      let t79 = (1 + t78) in
+      jump k76(t79)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret80() -> unit {
+    ()
+  } in
+  let x/4 = List__int::Cons(1, Tag_0) in
+  let length/5 = list_length__T_int(x/4) in
+  let mtmp68 = println__T_int32(length/5) in
+  let t81 = List__int::Cons(2, Tag_0) in
+  let x/6 = List__int::Cons(1, t81) in
+  let length/7 = list_length__T_int(x/6) in
+  let mtmp69 = println__T_int32(length/7) in
+  let t82 = List__int32::Cons(2, Tag_0) in
+  let t83 = List__int32::Cons(1, t82) in
+  let x/8 = List__int32::Cons(0, t83) in
+  let length/9 = int_list_length(x/8) in
+  let mtmp70 = println__T_int32(length/9) in
+  let x/10 = List__unit::Cons((), Tag_0) in
+  let length/11 = list_length__T_unit(x/10) in
+  let mtmp71 = println__T_int32(length/11) in
+  let t84 = List__unit::Cons((), Tag_0) in
+  let x/12 = List__unit::Cons((), t84) in
+  let length/13 = list_length__T_unit(x/12) in
+  let mtmp72 = println__T_int32(length/13) in
+  let t85 = List__bool::Cons(false, Tag_0) in
+  let x/14 = List__bool::Cons(true, t85) in
+  let length/15 = list_length__T_bool(x/14) in
+  let mtmp73 = println__T_int32(length/15) in
+  jump ret80()
+}
+
+fn list_length__T_int(xs/0: List__int) -> int32 {
+  join ret86(retv87: int32) -> int32 {
+    retv87
+  } in
+  join k88(jp89: int32) -> int32 {
+    jump ret86(jp89)
+  } in
+  match xs/0 {
+    Tag_0 => {
+      jump k88(0)
+    },
+    Tag_1 => {
+      let x64 = List__int::Cons._0(xs/0) in
+      let x65 = List__int::Cons._1(xs/0) in
+      let tail/1 = x65 in
+      let t90 = list_length__T_int(tail/1) in
+      let t91 = (1 + t90) in
+      jump k88(t91)
+    },
+  }
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret92() -> unit {
+    ()
+  } in
+  let t93 = trait_impl#ToString#int32#to_string(value/1) in
+  let t94 = @runtime(core.string_println)(t93) in
+  jump ret92()
+}
+
+fn list_length__T_unit(xs/0: List__unit) -> int32 {
+  join ret95(retv96: int32) -> int32 {
+    retv96
+  } in
+  join k97(jp98: int32) -> int32 {
+    jump ret95(jp98)
+  } in
+  match xs/0 {
+    Tag_0 => {
+      jump k97(0)
+    },
+    Tag_1 => {
+      let x64 = List__unit::Cons._0(xs/0) in
+      let x65 = List__unit::Cons._1(xs/0) in
+      let tail/1 = x65 in
+      let t99 = list_length__T_unit(tail/1) in
+      let t100 = (1 + t99) in
+      jump k97(t100)
+    },
+  }
+}
+
+fn list_length__T_bool(xs/0: List__bool) -> int32 {
+  join ret101(retv102: int32) -> int32 {
+    retv102
+  } in
+  join k103(jp104: int32) -> int32 {
+    jump ret101(jp104)
+  } in
+  match xs/0 {
+    Tag_0 => {
+      jump k103(0)
+    },
+    Tag_1 => {
+      let x64 = List__bool::Cons._0(xs/0) in
+      let x65 = List__bool::Cons._1(xs/0) in
+      let tail/1 = x65 in
+      let t105 = list_length__T_bool(tail/1) in
+      let t106 = (1 + t105) in
+      jump k103(t106)
+    },
+  }
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  join ret107(retv108: string) -> string {
+    retv108
+  } in
+  let t109 = @runtime(core.int32_to_string)(self/43) in
+  jump ret107(t109)
+}

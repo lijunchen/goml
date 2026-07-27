@@ -1,0 +1,20 @@
+impl Show for Boxed[int32]{
+  fn show(self/0: Boxed[int32]) -> string {
+      match (self/0 : Boxed[int32]) {
+          Boxed::One(value/1: int32) => (int32::to_string : (int32) -> string)((value/1 : int32)),
+      }
+  }
+}
+
+fn make_boxed(value/2: T) -> Boxed[T] {
+    Boxed::One((value/2 : T))
+}
+
+fn render(value/3: dyn Show) -> string {
+    (dyn Show::show : (dyn Show) -> string)((value/3 : dyn Show))
+}
+
+fn main() -> unit {
+    let value/4: int32 = 42;
+    (println : (string) -> unit)((render : (dyn Show) -> string)(to_dyn[Show]{Boxed[int32]}((make_boxed : (int32) -> Boxed[int32])((value/4 : int32)))))
+}

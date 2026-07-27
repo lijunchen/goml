@@ -1,0 +1,17 @@
+fn main() -> unit {
+    let byte: uint8 = 240;
+    println(byte & 15);
+    println(byte | 15);
+    println(byte ^ 255);
+    println(1 << 7);
+    println(byte >> 4);
+    println(~byte);
+    println(-13 % 5);
+    println(511 as uint8);
+    println(-1 as uint8);
+    println(('A' as uint32).to_string());
+    match char_from_uint32(128512) {
+        Option::Some(value) => println(value.to_string()),
+        Option::None => println("invalid"),
+    }
+}

@@ -1,0 +1,59 @@
+package parser;
+
+use gomlc::cst;
+use std::testing;
+use std::text;
+
+fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> unit {
+    for child in cst::node_children(node) {
+        match child {
+            cst::CstElement::Node(inner) => append_source(inner, builder),
+            cst::CstElement::Token(token) => builder.write_string(token.text),
+        }
+    }
+}
+
+fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
+    let count = Ref::new(if cst::node_kind_equal(cst::node_kind(node), kind) { 1 } else { 0 });
+    for child in cst::node_children(node) {
+        match child {
+            cst::CstElement::Node(inner) => count.set(count.get() + count_nodes(inner, kind)),
+            cst::CstElement::Token(_) => (),
+        }
+    };
+    count.get()
+}
+
+#[test]
+fn parses_lossless_precedence_tree() -> unit {
+    let source = "fn main() -> int32 {\n    1 + 2 * 3 // keep\n}\n";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert(cst::node_kind_equal(cst::node_kind(result.root), cst::NodeKind::FILE));
+    testing::assert_eq(cst::node_byte_len(result.root), source.byte_len());
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BINARY), 2);
+    let builder = text::StringBuilder::new();
+    append_source(result.root, builder);
+    testing::assert_eq(builder.finish(), source)
+}
+
+#[test]
+fn reports_recoverable_syntax_errors() -> unit {
+    let source = "fn main( { let value = ; } trailing";
+    let result = parse(source);
+    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(cst::node_kind_equal(cst::node_kind(result.root), cst::NodeKind::FILE));
+    testing::assert_eq(cst::node_byte_len(result.root), source.byte_len())
+}
+
+#[test]
+fn parses_control_flow_patterns_and_types() -> unit {
+    let source = "fn map[T: Eq](value: T, f: (T) -> T) -> T where T: Hash { match value { item if true => f(item), _ => value } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::GENERIC_LIST), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::WHERE_CLAUSE), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::TYPE_FUNC), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::MATCH_ARM), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::MATCH_ARM_GUARD), 1)
+}

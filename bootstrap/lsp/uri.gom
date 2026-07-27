@@ -1,0 +1,90 @@
+package lsp;
+
+use std::path;
+use std::text;
+
+fn uri_unreserved(value: uint8) -> bool {
+    (value >= 65 && value <= 90)
+        || (value >= 97 && value <= 122)
+        || (value >= 48 && value <= 57)
+        || value == 45
+        || value == 46
+        || value == 95
+        || value == 126
+}
+
+fn uri_hex(value: uint8) -> char {
+    "0123456789ABCDEF".get(value as int)
+}
+
+pub fn path_to_uri(value: string) -> string {
+    let absolute = match path::absolute(value) {
+        Result::Ok(result) => result,
+        Result::Err(_) => path::clean(value),
+    };
+    let builder = text::StringBuilder::new();
+    builder.write_string("file://");
+    for index in range(0, absolute.byte_len()) {
+        let byte = absolute.byte_get(index);
+        if uri_unreserved(byte) || byte == 47 || byte == 58 {
+            builder.write_string(absolute.byte_slice(index, index + 1))
+        } else {
+            builder.write_char('%');
+            builder.write_char(uri_hex(byte / 16));
+            builder.write_char(uri_hex(byte % 16))
+        }
+    };
+    builder.finish()
+}
+
+fn uri_hex_value(value: uint8) -> Option[uint8] {
+    if value >= 48 && value <= 57 {
+        Option::Some(value - 48)
+    } else if value >= 65 && value <= 70 {
+        Option::Some(value - 55)
+    } else if value >= 97 && value <= 102 {
+        Option::Some(value - 87)
+    } else {
+        Option::None
+    }
+}
+
+pub fn uri_to_path(value: string) -> Result[string, string] {
+    let prefix = "file://";
+    if value.byte_len() < prefix.byte_len()
+        || value.byte_slice(0, prefix.byte_len()) != prefix
+    {
+        Result::Err("unsupported URI: " + value)
+    } else {
+        let bytes = Vec::new();
+        let index = Ref::new(prefix.byte_len());
+        while index.get() < value.byte_len() {
+            let byte = value.byte_get(index.get());
+            if byte == 37 {
+                if index.get() + 2 >= value.byte_len() {
+                    return Result::Err("invalid URI escape")
+                } else {
+                    match (
+                        uri_hex_value(value.byte_get(index.get() + 1)),
+                        uri_hex_value(value.byte_get(index.get() + 2)),
+                    ) {
+                        (Option::Some(high), Option::Some(low)) => {
+                            bytes.push(high * 16 + low);
+                            index.set(index.get() + 3)
+                        },
+                        _ => return Result::Err("invalid URI escape"),
+                    }
+                }
+            } else {
+                bytes.push(byte);
+                index.set(index.get() + 1)
+            }
+        };
+        let (valid, decoded) = string_from_utf8(bytes);
+        if valid {
+            Result::Ok(path::clean(decoded))
+        } else {
+            Result::Err("URI path is not valid UTF-8")
+        }
+    }
+}

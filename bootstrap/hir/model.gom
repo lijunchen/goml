@@ -1,0 +1,291 @@
+package hir;
+
+use gomlc::ast;
+
+pub struct LocalId {
+    pub pkg: int,
+    pub index: int,
+    pub hint: string,
+}
+
+pub struct DefId {
+    pub pkg: int,
+    pub index: int,
+}
+
+pub struct ImportAlias {
+    pub alias: string,
+    pub package_name: string,
+}
+
+pub enum NameRef {
+    Local(LocalId),
+    Def(DefId),
+    Other(string),
+}
+
+pub enum ConstructorRef {
+    Resolved { enum_def: DefId, variant_index: int },
+    Unresolved(string),
+}
+
+pub enum TypeExpr {
+    Unit,
+    Bool,
+    Int,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Float32,
+    Float64,
+    String,
+    Char,
+    Tuple { items: Vec[TypeExpr] },
+    Con { name: string },
+    Projection { base: TypeExpr, associated: string },
+    Dyn { trait_name: string },
+    App { ty: TypeExpr, args: Vec[TypeExpr] },
+    Array { len: string, elem: TypeExpr },
+    Func { params: Vec[TypeExpr], ret_ty: TypeExpr },
+}
+
+pub struct TraitRef {
+    pub name: string,
+    pub args: Vec[TypeExpr],
+    pub arg_spans: Vec[Option[ast::Span]],
+}
+
+pub enum Predicate {
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
+}
+
+pub struct AssociatedType {
+    pub name: string,
+    pub bounds: Vec[TraitRef],
+}
+
+pub struct TraitMethodSignature {
+    pub name: string,
+    pub params: Vec[TypeExpr],
+    pub ret_ty: TypeExpr,
+    pub ret_ty_span: Option[ast::Span],
+}
+
+pub struct ClosureParam {
+    pub name: LocalId,
+    pub ty: Option[TypeExpr],
+    pub span: ast::Span,
+}
+
+pub struct Function {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub visibility: ast::Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(LocalId, TypeExpr)],
+    pub param_type_spans: Vec[ast::Span],
+    pub ret_ty: Option[TypeExpr],
+    pub ret_ty_span: Option[ast::Span],
+    pub body: Block,
+}
+
+pub struct ExternFunction {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub params: Vec[(string, TypeExpr)],
+    pub ret_ty: Option[TypeExpr],
+}
+
+pub struct EnumDef {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub variants: Vec[EnumVariant],
+}
+
+pub struct EnumVariant {
+    pub name: string,
+    pub fields: EnumVariantFields,
+    pub field_type_spans: Vec[ast::Span],
+}
+
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec[TypeExpr]),
+    Struct(Vec[(string, TypeExpr)]),
+}
+
+pub struct StructDef {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub fields: Vec[(string, TypeExpr)],
+    pub field_type_spans: Vec[ast::Span],
+    pub public_fields: Vec[string],
+}
+
+pub struct TraitDef {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub supertraits: Vec[TraitRef],
+    pub associated_types: Vec[AssociatedType],
+    pub method_sigs: Vec[TraitMethodSignature],
+}
+
+pub struct ImplBlock {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
+    pub associated_types: Vec[(string, TypeExpr)],
+    pub trait_ref: Option[TraitRef],
+    pub for_type: TypeExpr,
+    pub for_type_span: ast::Span,
+    pub methods: Vec[Function],
+}
+
+pub enum Item {
+    EnumDef(EnumDef),
+    StructDef(StructDef),
+    TraitDef(TraitDef),
+    ImplBlock(ImplBlock),
+    Function(Function),
+    ExternFunction(ExternFunction),
+}
+
+pub struct File {
+    pub package_name: string,
+    pub path: string,
+    pub source_path: string,
+    pub imports: Vec[string],
+    pub import_aliases: Vec[ImportAlias],
+    pub use_traits: Vec[string],
+    pub items: Vec[Item],
+    pub invalid_self_type_spans: Vec[ast::Span],
+}
+
+pub struct Block {
+    pub stmts: Vec[Stmt],
+    pub tail: Option[Expr],
+}
+
+pub enum Stmt {
+    Let {
+        is_mut: bool,
+        pat: Pat,
+        annotation: Option[TypeExpr],
+        value: Expr,
+    },
+    Assign { target: Expr, value: Expr },
+    Expr { expr: Expr },
+}
+
+pub struct Expr {
+    pub kind: ExprKind,
+    pub span: ast::Span,
+}
+
+pub enum ExprKind {
+    NameRef { name_ref: NameRef },
+    StaticMember {
+        owner: string,
+        member: string,
+        type_args: Vec[TypeExpr],
+        type_arg_spans: Vec[Option[ast::Span]],
+    },
+    Unit,
+    Bool { value: bool },
+    Int { value: string },
+    Float { value: float64 },
+    String { value: string },
+    Char { value: string },
+    ConstructorValue { constructor: ConstructorRef },
+    Constr { constructor: ConstructorRef, args: Vec[Expr] },
+    StructLiteral { name: string, fields: Vec[(string, Expr)] },
+    Tuple { items: Vec[Expr] },
+    Array { items: Vec[Expr] },
+    Closure { params: Vec[ClosureParam], body: Expr },
+    Match { expr: Expr, arms: Vec[Arm] },
+    If { cond: Expr, then_branch: Expr, else_branch: Expr },
+    While { cond: Expr, body: Expr },
+    For { pat: Pat, iterator: Expr, body: Expr },
+    Break,
+    Continue,
+    Return { expr: Option[Expr] },
+    Go { expr: Expr },
+    Call { func: Expr, args: Vec[Expr] },
+    Unary { op: ast::UnaryOp, expr: Expr },
+    Cast { expr: Expr, ty: TypeExpr },
+    Try { depth: int, expr: Expr },
+    Range { start: Expr, end: Expr },
+    Binary { op: ast::BinaryOp, lhs: Expr, rhs: Expr },
+    Proj { tuple: Expr, index: int },
+    Field { expr: Expr, field_name: string },
+    Index { base: Expr, index: Expr },
+    Block { block: Block },
+}
+
+pub struct Arm {
+    pub pat: Pat,
+    pub guard: Option[Expr],
+    pub body: Expr,
+}
+
+pub struct ArrayPatRest {
+    pub binding: Option[LocalId],
+}
+
+pub struct Pat {
+    pub kind: PatKind,
+    pub span: ast::Span,
+}
+
+pub enum PatKind {
+    Var { name: LocalId },
+    Unit,
+    Bool { value: bool },
+    Int { value: string },
+    Float { value: string },
+    String { value: string },
+    Char { value: string },
+    Constr { constructor: ConstructorRef, args: Vec[Pat] },
+    Struct { name: string, fields: Vec[(string, Pat)], has_rest: bool },
+    Tuple { items: Vec[Pat] },
+    Array { prefix: Vec[Pat], rest: Option[ArrayPatRest], suffix: Vec[Pat] },
+    Alias { name: LocalId, pat: Pat },
+    Or { pats: Vec[Pat] },
+    Range { start: Pat, end: Pat, inclusive: bool },
+    Wild,
+}
+
+pub struct Diagnostic {
+    pub message: string,
+    pub span: Option[ast::Span],
+}
+
+pub struct LowerResult {
+    pub hir: Option[File],
+    pub source_path: string,
+    pub diagnostics: Vec[Diagnostic],
+}

@@ -1,40 +1,91 @@
-clippy:
-    cargo clippy --all-targets --all-features --locked -- -D warnings
+ci: verify-bootstrap test-selfhost vscode-ext
 
-build-wasm:
-    wasm-pack build ./crates/wasm-app
+build-stage0:
+    mkdir -p bin/stage0
+    go build -trimpath -o bin/stage0/gomlc stage0/gomlc.go
+    go build -trimpath -o bin/stage0/goml stage0/goml.go
 
-start:
-    wasm-pack build ./crates/wasm-app
-    cd webapp && rm -rf node_modules && pnpm install && pnpm run dev
+bootstrap-stage1: build-stage0
+    mkdir -p bin/stage1
+    cd bootstrap && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage0/gomlc
+    cp bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc bin/stage1/gomlc
+    cp bootstrap/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp bin/stage1/gomllsp
+    cd bootstrap-goml && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
+    cp bootstrap-goml/_bootstrap/stage1/bin/cmd/goml/goml bin/stage1/goml
 
-ci:
-    cargo check
-    cargo test
-    cargo fmt
-    just clippy
+bootstrap-stage2: bootstrap-stage1
+    mkdir -p bin/stage2
+    cd bootstrap && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
+    cp bootstrap/_bootstrap/stage2/bin/cmd/gomlc/gomlc bin/stage2/gomlc
+    cp bootstrap/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp bin/stage2/gomllsp
+    cd bootstrap-goml && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
+    cp bootstrap-goml/_bootstrap/stage2/bin/cmd/goml/goml bin/stage2/goml
 
-build-lsp:
-    cargo build -p lsp-server
+verify-fixed-point: bootstrap-stage2
+    diff -ru --exclude='*.goml-*-fingerprint' bootstrap/_bootstrap/stage1/build/pkg bootstrap/_bootstrap/stage2/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' bootstrap-goml/_bootstrap/stage1/build/pkg bootstrap-goml/_bootstrap/stage2/build/pkg
 
-install-lsp:
-    cargo build -p lsp-server
+verify-bootstrap: verify-fixed-point
+    cmp stage0/gomlc.go bootstrap/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+    cmp stage0/goml.go bootstrap-goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
+
+bootstrap: verify-bootstrap
+
+regenerate-stage0: bootstrap-stage2
+    cp bootstrap/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc.go
+    cp bootstrap-goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml.go
+    just verify-fixed-point
+
+build-lsp: bootstrap-stage1
+
+install-lsp: bootstrap-stage1
     mkdir -p editors/vscode/bin
-    cp target/debug/goml-lsp editors/vscode/bin/
+    cp bin/stage1/gomllsp editors/vscode/bin/gomllsp
+    cp stdlib/builtin_prelude.gom editors/vscode/bin/builtin_prelude.gom
+    mkdir -p editors/vscode/bin/lib/std
+    cp -R stdlib/std/. editors/vscode/bin/lib/std/
 
-vscode-ext:
-    just install-lsp
-    cd editors/vscode && npm install && npm run compile
+vscode-ext: install-lsp
+    cd editors/vscode && npm install
+    cd editors/vscode && npm run compile
 
-package-vscode-ext:
+package-vscode-ext: vscode-ext
     cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license
 
-install-vscode-ext:
-    cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license && code --install-extension *.vsix
+install-vscode-ext: package-vscode-ext
+    cd editors/vscode && code --install-extension goml-0.1.0.vsix
 
-install:
-    home="${GOML_HOME:-$HOME/.goml}"; cargo install --path ./crates/gomlc --debug --offline --root "$home" --force --locked; cargo install --path ./crates/goml --debug --offline --root "$home" --force --locked; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
+install: bootstrap-stage1
+    mkdir -p "${GOML_HOME:-$HOME/.goml}/bin"
+    cp bin/stage1/gomlc "${GOML_HOME:-$HOME/.goml}/bin/gomlc"
+    cp bin/stage1/goml "${GOML_HOME:-$HOME/.goml}/bin/goml"
+    cp bin/stage1/gomllsp "${GOML_HOME:-$HOME/.goml}/bin/gomllsp"
+    mkdir -p "${GOML_HOME:-$HOME/.goml}/lib/std"
+    cp -R stdlib/std/. "${GOML_HOME:-$HOME/.goml}/lib/std/"
+    cp stdlib/builtin_prelude.gom "${GOML_HOME:-$HOME/.goml}/lib/builtin_prelude.gom"
 
-install-lsp-suite:
-    just install-lsp
-    just install-vscode-ext
+test-selfhost: test-bootstrap-all test-bootstrap-driver
+
+test-bootstrap-all: bootstrap-stage1
+    cd bootstrap && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+
+test-bootstrap-driver: bootstrap-stage1
+    cd bootstrap-goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 1
+
+test-bootstrap-pipeline: bootstrap-stage1
+    cd bootstrap && ../bin/stage1/goml test pipeline_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+
+test-bootstrap-compiler: bootstrap-stage1
+    cd bootstrap && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test compiler_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+
+test-bootstrap-lsp: bootstrap-stage1
+    cd bootstrap && ../bin/stage1/goml test query --compiler ../bin/stage1/gomlc --jobs 1
+    cd bootstrap && ../bin/stage1/goml test lsp --compiler ../bin/stage1/gomlc --jobs 1
+
+update-golden:
+    env UPDATE_EXPECT=1 just test-bootstrap-pipeline
+    env UPDATE_EXPECT=1 just test-bootstrap-compiler
+
+verify-golden:
+    just test-bootstrap-pipeline
+    just test-bootstrap-compiler

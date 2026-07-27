@@ -1,0 +1,19 @@
+fn main() -> unit {
+    let a/0: (bool, bool) = (true, false);
+    let b/1: (bool, bool) = match (a/0 : (bool, bool)) {
+        (false, false) => (true, true),
+        (false, true) => (true, false),
+        (true, false) => (false, true),
+        (true, true) => (false, false),
+    };
+    let b_1/3: bool = match (b/1 : (bool, bool)) {
+        (_ : bool, w/2: bool) => (w/2 : bool),
+    };
+    let c/4: unit = match (true, (b_1/3 : bool)) {
+        (false, false) => (println : (string) -> unit)((int::to_string : (int) -> string)(0)),
+        (false, true) => (println : (string) -> unit)((int::to_string : (int) -> string)(1)),
+        (true, false) => (println : (string) -> unit)((int::to_string : (int) -> string)(2)),
+        (true, true) => (println : (string) -> unit)((int::to_string : (int) -> string)(3)),
+    };
+    (println : (string) -> unit)((ToString::to_string : (unit) -> string)((c/4 : unit)))
+}

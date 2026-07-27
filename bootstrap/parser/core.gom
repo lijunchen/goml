@@ -1,0 +1,548 @@
+package parser;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+enum Event {
+    Open { kind: cst::NodeKind, forward_parent: Option[int] },
+    Close,
+    Advance,
+    Error(string),
+}
+
+struct MarkerOpened {
+    index: int,
+}
+
+struct MarkerClosed {
+    index: int,
+}
+
+struct Parser {
+    tokens: Vec[lexer::Token],
+    cursor: Ref[int],
+    fuel: Ref[int],
+    events: Vec[Event],
+    diagnostics: Vec[cst::Diagnostic],
+    stuck_reported: Ref[bool],
+    depth_limit_hit: Ref[bool],
+    expr_depth: Ref[int],
+    pattern_depth: Ref[int],
+    type_depth: Ref[int],
+    struct_literals_allowed: Ref[bool],
+}
+
+fn event_tombstone() -> Event {
+    Event::Open { kind: cst::NodeKind::TombStone, forward_parent: Option::None }
+}
+
+fn token_is(left: lexer::TokenKind, right: lexer::TokenKind) -> bool {
+    lexer::token_kind_equal(left, right)
+}
+
+fn marker_is_none(value: Option[MarkerClosed]) -> bool {
+    match value {
+        Option::Some(_) => false,
+        Option::None => true,
+    }
+}
+
+fn input_peek_raw(parser: Parser) -> lexer::TokenKind {
+    if parser.cursor.get() < parser.tokens.len() {
+        parser.tokens.get(parser.cursor.get()).kind
+    } else {
+        lexer::TokenKind::Eof
+    }
+}
+
+fn input_eat_trivia(parser: Parser) -> unit {
+    while parser.cursor.get() < parser.tokens.len()
+        && lexer::token_is_trivia(input_peek_raw(parser))
+    {
+        parser.cursor.set(parser.cursor.get() + 1)
+    }
+}
+
+fn input_eof(parser: Parser) -> bool {
+    input_eat_trivia(parser);
+    parser.cursor.get() == parser.tokens.len()
+}
+
+fn input_skip(parser: Parser) -> unit {
+    if input_eof(parser) == false {
+        parser.cursor.set(parser.cursor.get() + 1)
+    } else {
+        ()
+    }
+}
+
+fn input_peek(parser: Parser) -> lexer::TokenKind {
+    input_eat_trivia(parser);
+    input_peek_raw(parser)
+}
+
+fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
+    let index = Ref::new(parser.cursor.get());
+    let remaining = Ref::new(offset);
+    let result = Ref::new(lexer::TokenKind::Eof);
+    let found = Ref::new(false);
+    while found.get() == false && index.get() < parser.tokens.len() {
+        let kind = parser.tokens.get(index.get()).kind;
+        if lexer::token_is_trivia(kind) {
+            ()
+        } else if remaining.get() == 0 {
+            result.set(kind);
+            found.set(true)
+        } else {
+            remaining.set(remaining.get() - 1)
+        };
+        index.set(index.get() + 1)
+    };
+    result.get()
+}
+
+fn input_nth_text(parser: Parser, offset: int) -> string {
+    let index = Ref::new(parser.cursor.get());
+    let remaining = Ref::new(offset);
+    let result = Ref::new("");
+    let found = Ref::new(false);
+    while found.get() == false && index.get() < parser.tokens.len() {
+        let token = parser.tokens.get(index.get());
+        if lexer::token_is_trivia(token.kind) {
+            ()
+        } else if remaining.get() == 0 {
+            result.set(token.text);
+            found.set(true)
+        } else {
+            remaining.set(remaining.get() - 1)
+        };
+        index.set(index.get() + 1)
+    };
+    result.get()
+}
+
+fn input_current_text(parser: Parser) -> string {
+    input_eat_trivia(parser);
+    if parser.cursor.get() < parser.tokens.len() {
+        parser.tokens.get(parser.cursor.get()).text
+    } else {
+        ""
+    }
+}
+
+fn current_range(parser: Parser) -> (int, int) {
+    if parser.cursor.get() < parser.tokens.len() {
+        let token = parser.tokens.get(parser.cursor.get());
+        (token.start, token.end)
+    } else if parser.tokens.len() > 0 {
+        let token = parser.tokens.get(parser.tokens.len() - 1);
+        (token.start, token.end)
+    } else {
+        (0, 0)
+    }
+}
+
+fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
+    Parser {
+        tokens,
+        cursor: Ref::new(0),
+        fuel: Ref::new(256),
+        events: Vec::new(),
+        diagnostics: Vec::new(),
+        stuck_reported: Ref::new(false),
+        depth_limit_hit: Ref::new(false),
+        expr_depth: Ref::new(0),
+        pattern_depth: Ref::new(0),
+        type_depth: Ref::new(0),
+        struct_literals_allowed: Ref::new(true),
+    }
+}
+
+impl Parser {
+    pub fn report_stuck(self: Parser) -> unit {
+        if self.stuck_reported.get() == false {
+            let (start, end) = current_range(self);
+            self.diagnostics.push(cst::diagnostic(
+                "parser did not consume input while parsing",
+                start,
+                end,
+            ));
+            self.stuck_reported.set(true)
+        } else {
+            ()
+        }
+    }
+
+    pub fn peek(self: Parser) -> lexer::TokenKind {
+        if self.depth_limit_hit.get() {
+            lexer::TokenKind::Eof
+        } else if self.fuel.get() == 0 {
+            self.report_stuck();
+            lexer::TokenKind::Eof
+        } else {
+            self.fuel.set(self.fuel.get() - 1);
+            input_peek(self)
+        }
+    }
+
+    pub fn nth(self: Parser, offset: int) -> lexer::TokenKind {
+        if self.depth_limit_hit.get() {
+            lexer::TokenKind::Eof
+        } else if self.fuel.get() == 0 {
+            self.report_stuck();
+            lexer::TokenKind::Eof
+        } else {
+            self.fuel.set(self.fuel.get() - 1);
+            input_nth(self, offset)
+        }
+    }
+
+    pub fn nth_text(self: Parser, offset: int) -> string {
+        if self.depth_limit_hit.get() || self.fuel.get() == 0 {
+            ""
+        } else {
+            self.fuel.set(self.fuel.get() - 1);
+            input_nth_text(self, offset)
+        }
+    }
+
+    pub fn eof(self: Parser) -> bool {
+        self.depth_limit_hit.get() || input_eof(self)
+    }
+
+    pub fn at(self: Parser, kind: lexer::TokenKind) -> bool {
+        lexer::token_kind_equal(self.peek(), kind)
+    }
+
+    pub fn at_contextual(self: Parser, expected: string) -> bool {
+        self.at(lexer::TokenKind::Ident) && input_current_text(self) == expected
+    }
+
+    pub fn at_lower_ident(self: Parser) -> bool {
+        if self.at(lexer::TokenKind::Ident) {
+            let text_value = input_current_text(self);
+            if text_value.byte_len() == 0 {
+                false
+            } else {
+                let first = text_value.byte_get(0);
+                (first >= 97 && first <= 122) || first == 95
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn at_upper_ident(self: Parser) -> bool {
+        if self.at(lexer::TokenKind::Ident) {
+            let text_value = input_current_text(self);
+            if text_value.byte_len() == 0 {
+                false
+            } else {
+                let first = text_value.byte_get(0);
+                first >= 65 && first <= 90
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn expect_lower_ident(self: Parser, role: string) -> unit {
+        if self.at_lower_ident() {
+            self.advance()
+        } else if self.at(lexer::TokenKind::Ident) {
+            self.error(role + " must start with a lowercase letter or `_`");
+            self.advance()
+        } else {
+            self.error("expected " + role)
+        }
+    }
+
+    pub fn expect_upper_ident(self: Parser, role: string) -> unit {
+        if self.at_upper_ident() {
+            self.advance()
+        } else if self.at(lexer::TokenKind::Ident) {
+            self.error(role + " must start with an uppercase letter");
+            self.advance()
+        } else {
+            self.error("expected " + role)
+        }
+    }
+
+    pub fn eat(self: Parser, kind: lexer::TokenKind) -> bool {
+        if self.at(kind) {
+            self.advance();
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn expect(self: Parser, kind: lexer::TokenKind) -> unit {
+        if self.depth_limit_hit.get() {
+            ()
+        } else if self.eat(kind) {
+            ()
+        } else {
+            let actual = self.peek();
+            let message = "expect \""
+                + lexer::token_kind_display(kind)
+                + "\", actual \""
+                + lexer::token_kind_display(actual)
+                + "\"";
+            if self.at(lexer::TokenKind::Eof) || should_consume_on_expect_failure(actual) == false {
+                self.events.push(Event::Error(message))
+            } else {
+                self.advance_with_error(message)
+            }
+        }
+    }
+
+    pub fn advance(self: Parser) -> unit {
+        self.fuel.set(256);
+        input_skip(self);
+        self.stuck_reported.set(false);
+        self.events.push(Event::Advance)
+    }
+
+    pub fn error(self: Parser, message: string) -> unit {
+        self.events.push(Event::Error(message))
+    }
+
+    pub fn advance_with_error(self: Parser, message: string) -> unit {
+        if self.depth_limit_hit.get() {
+            ()
+        } else {
+            let marker = self.open();
+            self.events.push(Event::Error(message));
+            self.advance();
+            let _ = self.close(marker, cst::NodeKind::ErrorTree);
+            ()
+        }
+    }
+
+    pub fn open(self: Parser) -> MarkerOpened {
+        let index = self.events.len();
+        self.events.push(event_tombstone());
+        MarkerOpened { index }
+    }
+
+    pub fn close(self: Parser, marker: MarkerOpened, kind: cst::NodeKind) -> MarkerClosed {
+        self.events.set(marker.index, Event::Open { kind, forward_parent: Option::None });
+        self.events.push(Event::Close);
+        MarkerClosed { index: marker.index }
+    }
+
+    pub fn enter_expr(self: Parser) -> bool {
+        self.enter_depth(self.expr_depth, "expression is too deeply nested")
+    }
+
+    pub fn leave_expr(self: Parser) -> unit {
+        self.expr_depth.set(self.expr_depth.get() - 1)
+    }
+
+    pub fn enter_pattern(self: Parser) -> bool {
+        self.enter_depth(self.pattern_depth, "pattern is too deeply nested")
+    }
+
+    pub fn leave_pattern(self: Parser) -> unit {
+        self.pattern_depth.set(self.pattern_depth.get() - 1)
+    }
+
+    pub fn enter_type(self: Parser) -> bool {
+        self.enter_depth(self.type_depth, "type is too deeply nested")
+    }
+
+    pub fn leave_type(self: Parser) -> unit {
+        self.type_depth.set(self.type_depth.get() - 1)
+    }
+
+    pub fn enter_depth(self: Parser, depth: Ref[int], message: string) -> bool {
+        if depth.get() >= 512 {
+            if self.depth_limit_hit.get() == false {
+                self.error(message);
+                self.depth_limit_hit.set(true)
+            } else {
+                ()
+            };
+            false
+        } else {
+            depth.set(depth.get() + 1);
+            true
+        }
+    }
+
+    pub fn set_struct_literals_allowed(self: Parser, allowed: bool) -> bool {
+        let previous = self.struct_literals_allowed.get();
+        self.struct_literals_allowed.set(allowed);
+        previous
+    }
+}
+
+impl MarkerClosed {
+    pub fn precede(self: MarkerClosed, parser: Parser) -> MarkerOpened {
+        let marker = parser.open();
+        match parser.events.get(self.index) {
+            Event::Open { kind, forward_parent: _ } => parser.events.set(
+                self.index,
+                Event::Open { kind, forward_parent: Option::Some(marker.index - self.index) },
+            ),
+            _ => (),
+        };
+        marker
+    }
+}
+
+impl MarkerOpened {
+    pub fn completed(self: MarkerOpened, parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
+        parser.close(self, kind)
+    }
+}
+
+fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
+    lexer::token_kind_equal(kind, lexer::TokenKind::FnKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::PubKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::ModKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::StructKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::EnumKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::TraitKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::ImplKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::ExternKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::PackageKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::UseKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::ImportKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::LetKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::ReturnKeyword) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::RBrace) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::RParen) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::RBracket) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::Semi) == false
+        && lexer::token_kind_equal(kind, lexer::TokenKind::Comma) == false
+}
+
+fn element_byte_len(element: cst::CstElement) -> int {
+    match element {
+        cst::CstElement::Node(value) => value.byte_len,
+        cst::CstElement::Token(value) => value.text.byte_len(),
+    }
+}
+
+fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
+    match stack.pop() {
+        Option::Some(value) => {
+            let byte_len = Ref::new(0);
+            for child in value.children {
+                byte_len.set(byte_len.get() + element_byte_len(child))
+            };
+            let complete = cst::node(value.kind, value.children, byte_len.get());
+            if stack.len() > 0 {
+                stack.get(stack.len() - 1).children.push(cst::CstElement::Node(complete))
+            } else {
+                roots.push(complete)
+            }
+        },
+        Option::None => (),
+    }
+}
+
+fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
+    if stack.len() > 0 {
+        stack.get(stack.len() - 1).children.push(cst::CstElement::Token(token))
+    } else {
+        ()
+    }
+}
+
+fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
+    match event {
+        Event::Open { kind, forward_parent: parent } => Option::Some((kind, parent)),
+        _ => Option::None,
+    }
+}
+
+fn build_tree(parser: Parser) -> cst::ParseResult {
+    let cursor = Ref::new(0);
+    let stack: Vec[cst::CstNode] = Vec::new();
+    let roots: Vec[cst::CstNode] = Vec::new();
+    let index = Ref::new(0);
+    while index.get() < parser.events.len() {
+        let event = parser.events.get(index.get());
+        parser.events.set(index.get(), event_tombstone());
+        match event {
+            Event::Open { kind, forward_parent } => {
+                let kinds: Vec[cst::NodeKind] = Vec::new();
+                kinds.push(kind);
+                let event_index = Ref::new(index.get());
+                let parent = Ref::new(forward_parent);
+                let following = Ref::new(true);
+                while following.get() {
+                    match parent.get() {
+                        Option::Some(distance) => {
+                            event_index.set(event_index.get() + distance);
+                            let parent_event = parser.events.get(event_index.get());
+                            parser.events.set(event_index.get(), event_tombstone());
+                            match event_open(parent_event) {
+                                Option::Some((parent_kind, next)) => {
+                                    kinds.push(parent_kind);
+                                    parent.set(next)
+                                },
+                                Option::None => following.set(false),
+                            }
+                        },
+                        Option::None => following.set(false),
+                    }
+                };
+                let kind_index = Ref::new(kinds.len() - 1);
+                while kind_index.get() >= 0 {
+                    let current = kinds.get(kind_index.get());
+                    if cst::node_kind_equal(current, cst::NodeKind::TombStone) == false {
+                        stack.push(cst::node(current, Vec::new(), 0))
+                    } else {
+                        ()
+                    };
+                    kind_index.set(kind_index.get() - 1)
+                }
+            },
+            Event::Close => finish_node(stack, roots),
+            Event::Advance => {
+                if cursor.get() < parser.tokens.len() {
+                    push_token(stack, parser.tokens.get(cursor.get()));
+                    cursor.set(cursor.get() + 1)
+                } else {
+                    ()
+                }
+            },
+            Event::Error(message) => {
+                let range = if cursor.get() < parser.tokens.len() {
+                    let token = parser.tokens.get(cursor.get());
+                    (token.start, token.end)
+                } else if parser.tokens.len() > 0 {
+                    let token = parser.tokens.get(parser.tokens.len() - 1);
+                    (token.start, token.end)
+                } else {
+                    (0, 0)
+                };
+                let (start, end) = range;
+                parser.diagnostics.push(cst::diagnostic(message, start, end))
+            },
+        };
+        while cursor.get() < parser.tokens.len()
+            && lexer::token_is_trivia(parser.tokens.get(cursor.get()).kind)
+        {
+            push_token(stack, parser.tokens.get(cursor.get()));
+            cursor.set(cursor.get() + 1)
+        };
+        index.set(index.get() + 1)
+    };
+    let root = if roots.len() > 0 {
+        roots.get(0)
+    } else {
+        cst::node(cst::NodeKind::FILE, Vec::new(), 0)
+    };
+    cst::parse_result(root, parser.diagnostics)
+}
+
+pub fn parse(source: string) -> cst::ParseResult {
+    let parser = new_parser(lexer::lex(source));
+    parse_file(parser);
+    build_tree(parser)
+}

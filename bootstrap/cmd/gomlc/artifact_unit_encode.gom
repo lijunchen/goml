@@ -1,0 +1,86 @@
+package main;
+
+use gomlc::core;
+
+struct ArtifactCoreUnit {
+    package_name: string,
+    interface_unit: ArtifactInterfaceUnit,
+    exports: ArtifactPackageExports,
+    core_ir: core::File,
+    deps: Vec[(string, string)],
+    sources: Vec[string],
+    tests: Vec[TestDescriptor],
+}
+
+fn artifact_json_test_descriptor(
+    writer: ArtifactJsonWriter,
+    value: TestDescriptor,
+) -> unit {
+    artifact_json_begin_object(writer);
+    artifact_json_name(writer, "id");
+    artifact_json_string(writer, value.id);
+    artifact_json_name(writer, "package");
+    artifact_json_string(writer, value.package_name);
+    artifact_json_name(writer, "symbol");
+    artifact_json_string(writer, value.symbol);
+    artifact_json_name(writer, "display_name");
+    artifact_json_string(writer, value.display_name);
+    artifact_json_name(writer, "source_path");
+    artifact_json_string(writer, value.source_path);
+    artifact_json_name(writer, "start");
+    artifact_json_number(writer, value.start.to_string());
+    artifact_json_name(writer, "end");
+    artifact_json_number(writer, value.end.to_string());
+    artifact_json_name(writer, "ignored");
+    artifact_json_bool(writer, value.ignored);
+    artifact_json_name(writer, "ignore_reason");
+    match value.ignore_reason {
+        Option::Some(value) => artifact_json_string(writer, value),
+        Option::None => artifact_json_null(writer),
+    };
+    artifact_json_end_object(writer)
+}
+
+fn artifact_json_tests(
+    writer: ArtifactJsonWriter,
+    values: Vec[TestDescriptor],
+) -> unit {
+    artifact_json_begin_array(writer);
+    for value in values {
+        artifact_json_test_descriptor(writer, value)
+    };
+    artifact_json_end_array(writer)
+}
+
+fn artifact_json_core_unit(
+    writer: ArtifactJsonWriter,
+    value: ArtifactCoreUnit,
+) -> unit {
+    let context = artifact_exports_type_context(value.exports);
+    artifact_json_begin_object(writer);
+    artifact_json_name(writer, "format_version");
+    artifact_json_number(writer, "16");
+    artifact_json_name(writer, "compiler_abi");
+    artifact_json_number(writer, "3");
+    artifact_json_name(writer, "package");
+    artifact_json_string(writer, value.package_name);
+    artifact_json_name(writer, "interface");
+    artifact_json_interface_unit(writer, value.interface_unit);
+    artifact_json_name(writer, "exports");
+    artifact_json_package_exports(writer, context, value.exports);
+    artifact_json_name(writer, "core_ir");
+    artifact_json_core_file(writer, context, value.core_ir);
+    artifact_json_name(writer, "deps");
+    artifact_json_string_map(writer, value.deps);
+    artifact_json_name(writer, "sources");
+    artifact_json_string_array(writer, value.sources);
+    artifact_json_name(writer, "tests");
+    artifact_json_tests(writer, value.tests);
+    artifact_json_end_object(writer)
+}
+
+fn encode_artifact_core_unit(value: ArtifactCoreUnit, pretty: bool) -> string {
+    let writer = new_artifact_json_writer(pretty);
+    artifact_json_core_unit(writer, value);
+    artifact_json_finish(writer)
+}

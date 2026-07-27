@@ -1,0 +1,102 @@
+package lsp;
+
+use std::testing;
+
+#[test]
+fn parses_and_encodes_json_values() -> unit {
+    let input = "{\"name\":\"GoML\\n语言\",\"id\":42,\"ok\":true,\"items\":[null,\"x\"]}";
+    match parse_json(input) {
+        Result::Ok(value) => {
+            match json_field(value, "name") {
+                Option::Some(name) => match json_string(name) {
+                    Option::Some(text) => {
+                        testing::assert_eq(text, "GoML\n语言")
+                    },
+                    Option::None => testing::fail("expected string name"),
+                },
+                Option::None => testing::fail("expected name"),
+            };
+            match parse_json(encode_json(value)) {
+                Result::Ok(roundtrip) => match json_field(roundtrip, "id") {
+                    Option::Some(id) => match json_int(id) {
+                        Option::Some(number) => testing::assert_eq(number, 42),
+                        Option::None => testing::fail("expected integer id"),
+                    },
+                    Option::None => testing::fail("expected id"),
+                },
+                Result::Err(error) => testing::fail(error),
+            }
+        },
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn rejects_invalid_json() -> unit {
+    match parse_json("{\"bad\": [1,]}") {
+        Result::Ok(_) => testing::fail("expected invalid JSON"),
+        Result::Err(_) => (),
+    }
+}
+
+#[test]
+fn converts_utf16_positions_and_file_uris() -> unit {
+    let source = "a😀中\nx";
+    let position = offset_to_position(source, 5);
+    testing::assert_eq(position.line, 0);
+    testing::assert_eq(position.character, 3);
+    testing::assert_eq(position_to_offset(
+        source,
+        Position {
+            line: 0,
+            character: 3,
+        },
+    ), 5);
+    match position_to_offset_checked(
+        source,
+        Position {
+            line: 0,
+            character: 2,
+        },
+    ) {
+        Option::Some(_) => testing::fail("expected invalid surrogate position"),
+        Option::None => (),
+    };
+    let uri = path_to_uri("/tmp/GoML 语言/main.gom");
+    match uri_to_path(uri) {
+        Result::Ok(value) => {
+            testing::assert_eq(value, "/tmp/GoML 语言/main.gom")
+        },
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn frames_and_parses_json_rpc_metadata() -> unit {
+    let message = rpc_success(
+        JsonValue::Number("7"),
+        JsonValue::String("ok"),
+    );
+    let framed = framed_json(message);
+    let body = encode_json(message);
+    testing::assert_eq(
+        framed,
+        "Content-Length: "
+            + body.byte_len().to_string()
+            + "\r\n\r\n"
+            + body,
+    );
+    match content_length("Content-Length: 123\r\n") {
+        Result::Ok(value) => testing::assert_eq(value, 123),
+        Result::Err(error) => testing::fail(error),
+    };
+    match content_length("content-length:\t42\n") {
+        Result::Ok(value) => testing::assert_eq(value, 42),
+        Result::Err(error) => testing::fail(error),
+    };
+    testing::assert(is_content_length_header("Content-Length: 123\r\n"));
+    testing::assert(is_content_length_header("CONTENT-LENGTH: 123\r\n"));
+    testing::assert(!is_content_length_header(
+        "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n",
+    ))
+}

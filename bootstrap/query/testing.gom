@@ -1,0 +1,151 @@
+package query;
+
+use gomlc::ast;
+use gomlc::parser;
+use std::path;
+
+pub enum TestItemKind {
+    Internal,
+    External,
+}
+
+pub struct TestItem {
+    pub name: string,
+    pub span: ast::Span,
+    pub kind: TestItemKind,
+}
+
+fn test_path_ends_with(value: string, suffix: string) -> bool {
+    value.byte_len() >= suffix.byte_len()
+        && value.byte_slice(
+            value.byte_len() - suffix.byte_len(),
+            value.byte_len(),
+        ) == suffix
+}
+
+fn test_path_kind(source_path: string) -> Option[TestItemKind] {
+    let current = Ref::new(path::clean(source_path));
+    let external = Ref::new(false);
+    let done = Ref::new(false);
+    while !(done.get()) {
+        match path::parent(current.get()) {
+            Option::Some(parent) => {
+                match path::file_name(parent) {
+                    Option::Some(name) => if name == "tests" {
+                        external.set(true)
+                    } else {
+                        ()
+                    },
+                    Option::None => (),
+                };
+                if parent == current.get() {
+                    done.set(true)
+                } else {
+                    current.set(parent)
+                }
+            },
+            Option::None => done.set(true),
+        }
+    };
+    if external.get() {
+        Option::Some(TestItemKind::External)
+    } else if test_path_ends_with(source_path, "_test.gom") {
+        Option::Some(TestItemKind::Internal)
+    } else {
+        Option::None
+    }
+}
+
+fn is_test_attribute(value: ast::Attribute) -> bool {
+    let result = Ref::new(false);
+    let index = Ref::new(0);
+    while index.get() + 4 <= value.text.byte_len() {
+        if value.text.byte_slice(index.get(), index.get() + 4) == "test" {
+            result.set(true)
+        } else {
+            ()
+        };
+        index.set(index.get() + 1)
+    };
+    result.get()
+}
+
+fn has_test_attribute(values: Vec[ast::Attribute]) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if is_test_attribute(value) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn function_symbol_span(
+    symbols: SymbolIndex,
+    source_path: string,
+    name: string,
+) -> ast::Span {
+    let result = Ref::new(ast::span(0, 0));
+    for symbol in symbols.symbols {
+        if symbol.source_path == source_path
+            && symbol.name == name
+            && match symbol.kind {
+                SymbolKind::Function => true,
+                _ => false,
+            }
+        {
+            result.set(symbol.span)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
+    let result = Vec::new();
+    match test_path_kind(source_path) {
+        Option::Some(kind) => {
+            let lowered = ast::lower(parser::parse(source));
+            match lowered.ast {
+                Option::Some(file) => {
+                    let source_file = SourceFile {
+                        path: source_path,
+                        source,
+                        package_name: file.package_name,
+                    };
+                    let analysis_sources = Vec::new();
+                    analysis_sources.push(source_file);
+                    let symbols = build_symbol_index_from_sources(
+                        analysis_sources,
+                    );
+                    for item in file.items {
+                        match item {
+                            ast::Item::Function(function) => if has_test_attribute(
+                                function.attrs,
+                            ) {
+                                result.push(TestItem {
+                                    name: function.name,
+                                    span: function_symbol_span(
+                                        symbols,
+                                        source_path,
+                                        function.name,
+                                    ),
+                                    kind,
+                                })
+                            } else {
+                                ()
+                            },
+                            _ => (),
+                        }
+                    }
+                },
+                Option::None => (),
+            }
+        },
+        Option::None => (),
+    };
+    result
+}

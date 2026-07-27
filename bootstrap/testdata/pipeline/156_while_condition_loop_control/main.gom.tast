@@ -1,0 +1,64 @@
+fn main() -> unit {
+    let i/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    let total/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while if (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) == 0 {
+        {
+            (Ref[int]::set : (Ref[int], int) -> unit)((i/0 : Ref[int]), 1);
+            true
+        }
+    } else {
+        if (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) < 4 {
+            {
+                true
+            }
+        } else {
+            {
+                false
+            }
+        }
+    } {
+        {
+            (Ref[int]::set : (Ref[int], int) -> unit)((total/1 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((total/1 : Ref[int])) + (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])));
+            if (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) == 1 {
+                {
+                    (Ref[int]::set : (Ref[int], int) -> unit)((i/0 : Ref[int]), 2);
+                    continue
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            (Ref[int]::set : (Ref[int], int) -> unit)((i/0 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) + 1);
+        }
+    };
+    (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((total/1 : Ref[int])));
+    let j/2: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    let total2/3: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while match (Ref[int]::get : (Ref[int]) -> int)((j/2 : Ref[int])) {
+        0 => {
+              (Ref[int]::set : (Ref[int], int) -> unit)((j/2 : Ref[int]), 1);
+              true
+          },
+        1 => {
+              (Ref[int]::set : (Ref[int], int) -> unit)((j/2 : Ref[int]), 2);
+              true
+          },
+        2 => true,
+        _ : int => false,
+    } {
+        {
+            (Ref[int]::set : (Ref[int], int) -> unit)((total2/3 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((total2/3 : Ref[int])) + (Ref[int]::get : (Ref[int]) -> int)((j/2 : Ref[int])));
+            if (Ref[int]::get : (Ref[int]) -> int)((j/2 : Ref[int])) == 2 {
+                {
+                    break;
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+        }
+    };
+    (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((total2/3 : Ref[int])));
+}

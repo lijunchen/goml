@@ -1,0 +1,18 @@
+fn accepts_array_length(value/0: [int32; 10]) -> unit {
+    let _ : [int32; 10] = (value/0 : [int32; 10]);
+}
+
+fn main() -> unit {
+    let integer/1: int32 = 1000;
+    let unsigned/2: uint64 = 4294967296;
+    let float/3: float64 = 125;
+    let small/4: float32 = 2.5;
+    (println : (int32) -> unit)((integer/1 : int32));
+    (println : (uint64) -> unit)((unsigned/2 : uint64));
+    (println : (float64) -> unit)((float/3 : float64));
+    (println : (float32) -> unit)((small/4 : float32));
+    match (integer/1 : int32) {
+        1000 => (println : (string) -> unit)("matched"),
+        _ : int32 => (println : (string) -> unit)("missed"),
+    }
+}
