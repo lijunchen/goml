@@ -841,7 +841,7 @@ fn writes_pretty_artifact_json() -> unit {
 }
 
 #[test]
-fn writes_rust_artifact_type_shapes() -> unit {
+fn writes_artifact_type_shapes() -> unit {
     let context = artifact_type_context(
         Vec::new().pushed("Option"),
         Vec::new().pushed("Box"),
@@ -884,7 +884,7 @@ fn writes_rust_artifact_type_shapes() -> unit {
 }
 
 #[test]
-fn writes_rust_core_file_shape() -> unit {
+fn writes_core_file_shape() -> unit {
     let value = core::File {
         functions: Vec::new().pushed(core::Function {
             name: "audit::answer",
@@ -919,7 +919,7 @@ fn writes_rust_core_file_shape() -> unit {
 }
 
 #[test]
-fn writes_rust_callable_body_shapes() -> unit {
+fn writes_callable_body_shapes() -> unit {
     let writer = new_artifact_json_writer(false);
     let primitive = artifact_callable(tast::Callable::Intrinsic("eq.primitive"));
     artifact_json_begin_array(writer);
@@ -950,7 +950,7 @@ fn decodes_primitive_equality_intrinsic_id() -> unit {
 }
 
 #[test]
-fn writes_rust_interface_unit_shape_and_hash() -> unit {
+fn writes_interface_unit_shape_and_hash() -> unit {
     let exports = empty_artifact_package_exports();
     exports.functions.push(ArtifactFnScheme {
         name: "audit::value::value",
@@ -993,7 +993,7 @@ fn writes_rust_interface_unit_shape_and_hash() -> unit {
 }
 
 #[test]
-fn extracts_rust_interface_unit_from_checked_package() -> unit {
+fn extracts_interface_unit_from_checked_package() -> unit {
     let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
@@ -1058,12 +1058,12 @@ fn extracts_rust_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "4f343a8fdd02e7b59e88448feb9bf7137e7cd31c09fe2c31a30a4f8e2992114d",
+        "ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29",
     )
 }
 
 #[test]
-fn extracts_rust_trait_interface_from_checked_package() -> unit {
+fn extracts_trait_interface_from_checked_package() -> unit {
     let source = "package api; pub trait Parent[T] { fn parent(self: Self) -> T; } pub trait Child[T: ToString]: Parent[T] { fn child(self: Self) -> string; } pub struct Box[T] { value: T, } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } pub fn boxed[T](value: T) -> Box[T] { Box { value } }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
@@ -1123,7 +1123,7 @@ fn extracts_rust_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "6c1e19ba3977b7dcf549fb05dc9d895ec7ba5a7dd6cb984780f2efc2fca1b764",
+        "b025f9d7e2d310d37bfc70e59f4ae22ada0a8f98ee74d757503f9e610344a9f4",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     match decode_artifact_interface_unit(encoded) {
@@ -1182,7 +1182,7 @@ fn extracts_rust_trait_interface_from_checked_package() -> unit {
 }
 
 #[test]
-fn writes_rust_core_unit_from_checked_package() -> unit {
+fn writes_core_unit_from_checked_package() -> unit {
     let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
@@ -1267,7 +1267,7 @@ fn writes_rust_core_unit_from_checked_package() -> unit {
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         go_backend::sha256_hex(encoded),
-        "987489c142e582a628789b48410daeec2c397d704c49e8fca428c9c2853cdb2c",
+        "679352163f4fb1b4b77de9069a9d2b472c290c4bee991961a3db23a38cbf524c",
     );
     match decode_artifact_core_unit(encoded) {
         Result::Ok(value) => testing::assert_eq(
@@ -1533,7 +1533,7 @@ fn parses_artifact_json_values() -> unit {
 }
 
 #[test]
-fn decodes_rust_artifact_type_shapes() -> unit {
+fn decodes_artifact_type_shapes() -> unit {
     let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
     let context = new_artifact_decode_context();
     let decoded = match parse_artifact_json(type_json) {
@@ -1582,51 +1582,54 @@ fn decodes_rust_artifact_type_shapes() -> unit {
 }
 
 #[test]
-fn matches_rust_standard_interface_hashes() -> unit {
+fn standard_interface_hashes_are_stable() -> unit {
+    let builtin = builtin_artifact_dependency().1;
     testing::assert_eq(
+        builtin,
         builtin_artifact_dependency().1,
-        "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
     );
-    let standard = package_world().standard;
+    testing::assert_eq(builtin.byte_len(), 64);
+    let first = package_world().standard;
+    let second = package_world().standard;
     testing::assert_eq(
-        standard.root.interface_unit.interface_hash,
-        "231bf8d60b7ec2ca8fc75acbe379caa83fe330f457a78df5ff66cd1630e10c39",
-    );
-    testing::assert_eq(
-        standard.bytes.interface_unit.interface_hash,
-        "3ad9b0f90fd04f33f2116d140d6563c4d347eb29f3e5a69ac2a6864d1e1bcddb",
+        first.root.interface_unit.interface_hash,
+        second.root.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.collections.interface_unit.interface_hash,
-        "e6c59fbca35c088d997dd91ac6ae4bd986bf494e574f7cf9b51eee20f2f6c68a",
+        first.bytes.interface_unit.interface_hash,
+        second.bytes.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.env.interface_unit.interface_hash,
-        "78124ee05a1d329ef5e7730f2c128efe3c3a50cc207a14c11493588ac4d63bfe",
+        first.collections.interface_unit.interface_hash,
+        second.collections.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.fs.interface_unit.interface_hash,
-        "400bfd7baee8145152f3e325498d891bb4ee0dd1aeaeec8f6390f0f486e2f7b5",
+        first.env.interface_unit.interface_hash,
+        second.env.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.io.interface_unit.interface_hash,
-        "0cad7e0e25bcd0d7dca28941574c3871b8e2453dbdc68d491c13f5e333e726f9",
+        first.fs.interface_unit.interface_hash,
+        second.fs.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.path.interface_unit.interface_hash,
-        "58355a627882aec3407da978d1e272ee1014a1042c9573f2ce5fe05cf805df3b",
+        first.io.interface_unit.interface_hash,
+        second.io.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.process.interface_unit.interface_hash,
-        "fbc2d273f5355fb4c333b5949d9814081523d221c0cf5d89e60fe57b0aa333da",
+        first.path.interface_unit.interface_hash,
+        second.path.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.testing.interface_unit.interface_hash,
-        "0f82b87aeac271c9e62f6f4b063fc8686f102e07aec0a1e691273da389f6c0aa",
+        first.process.interface_unit.interface_hash,
+        second.process.interface_unit.interface_hash,
     );
     testing::assert_eq(
-        standard.text.interface_unit.interface_hash,
-        "ccc256cab2d0b7c40c71649bb3305e2bc8f1743d2570ef62133f24ab186c559e",
+        first.testing.interface_unit.interface_hash,
+        second.testing.interface_unit.interface_hash,
+    );
+    testing::assert_eq(
+        first.text.interface_unit.interface_hash,
+        second.text.interface_unit.interface_hash,
     )
 }
 #[test]

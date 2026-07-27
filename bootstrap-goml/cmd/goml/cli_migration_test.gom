@@ -2,6 +2,7 @@ package main;
 
 use gomlang::bootstrap_goml::test_support;
 use gomlang::bootstrap_goml::util;
+use std::bytes;
 use std::fs;
 use std::path;
 use std::process;
@@ -123,6 +124,36 @@ fn project_check_checks_module_from_cwd() -> unit {
     testing::assert(fs::is_file(path::join(
         root,
         "_artifact/check/pkg/demo/lib/lib.interface",
+    )))
+}
+
+#[test]
+fn project_check_resolves_compiler_from_path() -> unit {
+    let root = test_support::workspace("compiler_from_path");
+    test_support::write_basic_project(root, "demo");
+    let compiler_dir = match path::parent(test_support::gomlc_binary()) {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("compiler path has no parent");
+            root
+        },
+    };
+    let output = match process::Command::new(test_support::goml_binary())
+        .arg("check")
+        .current_dir(root)
+        .env("PATH", compiler_dir)
+        .output()
+    {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            test_support::run(Vec::new().pushed("version"), root)
+        },
+    };
+    test_support::assert_success(output);
+    testing::assert(fs::is_file(path::join(
+        root,
+        "_artifact/check/pkg/demo/demo.interface",
     )))
 }
 
@@ -314,7 +345,7 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> unit {
         let root = path::join(
             path::join(
                 test_support::repository_root(),
-                "crates/compiler/src/tests/module",
+                "bootstrap/testdata/module",
             ),
             project_name,
         );
@@ -608,6 +639,110 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
 }
 
 #[test]
+fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
+    let root = test_support::workspace("incremental_fingerprints");
+    test_support::write_basic_project(root, "demo");
+    test_support::assert_success(migration_check(root));
+    let artifact = path::join(
+        root,
+        "_artifact/check/pkg/demo/demo.interface",
+    );
+    let fingerprint = path::join(
+        root,
+        "_artifact/check/pkg/demo/demo.goml-check-fingerprint",
+    );
+    testing::assert(fs::is_file(artifact));
+    testing::assert(fs::is_file(fingerprint));
+    let initial = test_support::read_file(fingerprint);
+    test_support::assert_success(migration_check(root));
+    testing::assert_eq(test_support::read_file(fingerprint), initial);
+    test_support::write_file(artifact, "corrupt");
+    test_support::assert_success(migration_check(root));
+    testing::assert(test_support::read_file(artifact) != "corrupt");
+    testing::assert_eq(test_support::read_file(fingerprint), initial);
+    match fs::remove_file(artifact) {
+        Result::Ok(()) => (),
+        Result::Err(message) => testing::fail(message),
+    };
+    test_support::assert_success(migration_check(root));
+    testing::assert(fs::is_file(artifact));
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nfn main() -> unit { println(\"changed\") }\n",
+    );
+    test_support::assert_success(migration_check(root));
+    testing::assert(test_support::read_file(fingerprint) != initial)
+}
+
+#[test]
+fn project_test_supports_nocapture_and_timeouts() -> unit {
+    let root = test_support::workspace("test_timeout");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "checks/checks.gom"),
+        "package checks;\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "checks/checks_test.gom"),
+        "package checks;\n\nuse std::io;\n\n#[test]\nfn output() -> unit { io::println(\"uncaptured marker\") }\n\n#[test]\n#[ignore(\"timeout case\")]\nfn timeout() -> unit { while true { () } }\n",
+    );
+    let captured = test_support::project_command(
+        "test",
+        "",
+        Vec::new().pushed("output"),
+        root,
+    );
+    test_support::assert_success(captured);
+    test_support::assert_not_contains(
+        test_support::stdout(captured),
+        "uncaptured marker",
+    );
+    let uncaptured = test_support::project_command(
+        "test",
+        "",
+        Vec::new().pushed("output").pushed("--nocapture"),
+        root,
+    );
+    test_support::assert_success(uncaptured);
+    test_support::assert_contains(
+        test_support::stdout(uncaptured),
+        "uncaptured marker",
+    );
+    let timed_out = test_support::project_command(
+        "test",
+        "",
+        Vec::new()
+            .pushed("timeout")
+            .pushed("--ignored")
+            .pushed("--timeout")
+            .pushed("20ms"),
+        root,
+    );
+    test_support::assert_failure(timed_out);
+    test_support::assert_contains(
+        test_support::stdout(timed_out),
+        "FAILED (timed out)",
+    );
+    let invalid = test_support::project_command(
+        "test",
+        "",
+        Vec::new()
+            .pushed("--nocapture")
+            .pushed("--format")
+            .pushed("json"),
+        root,
+    );
+    test_support::assert_failure(invalid);
+    test_support::assert_contains(
+        test_support::stderr(invalid),
+        "--nocapture cannot be combined with --format json",
+    )
+}
+
+#[test]
 fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
     let root = test_support::workspace("all_package_tests");
     test_support::write_file(
@@ -843,5 +978,260 @@ fn test_sources_cannot_repair_a_broken_normal_package() -> unit {
     test_support::assert_contains(
         test_support::stderr(checked),
         "test_only_value",
+    )
+}
+
+#[test]
+fn new_creates_a_buildable_project() -> unit {
+    let base = test_support::workspace("new_project_command");
+    let output = test_support::run(
+        Vec::new()
+            .pushed("new")
+            .pushed("hello")
+            .pushed("--path")
+            .pushed(base),
+        test_support::module_root(),
+    );
+    test_support::assert_success(output);
+    let project = path::join(base, "hello");
+    testing::assert(fs::is_file(path::join(project, "goml.toml")));
+    testing::assert(fs::is_file(path::join(project, "main.gom")));
+    testing::assert(fs::is_file(path::join(project, "lib/lib.gom")));
+    test_support::assert_success(test_support::project_command(
+        "check",
+        "",
+        Vec::new(),
+        project,
+    ))
+}
+
+#[test]
+fn home_creates_and_prints_the_layout() -> unit {
+    let root = test_support::workspace("home_command");
+    let home = path::join(root, "home");
+    let output = match process::Command::new(test_support::goml_binary())
+        .arg("home")
+        .env("GOML_HOME", home)
+        .current_dir(root)
+        .output()
+    {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            process::Output {
+                status_value: process::ExitStatus { code_value: -1 },
+                stdout_value: bytes::Bytes::new(),
+                stderr_value: bytes::Bytes::new(),
+            }
+        },
+    };
+    test_support::assert_success(output);
+    test_support::assert_contains(
+        test_support::stdout(output),
+        "GOML_HOME=" + home,
+    );
+    testing::assert(fs::is_dir(path::join(home, "bin")));
+    testing::assert(fs::is_dir(path::join(home, "lib")));
+    testing::assert(fs::is_dir(path::join(home, "cache")))
+}
+
+fn registry_command(
+    program: string,
+    arguments: Vec[string],
+    directory: string,
+) -> unit {
+    let output = match process::Command::new(program)
+        .args(arguments)
+        .current_dir(directory)
+        .output()
+    {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            return
+        },
+    };
+    test_support::assert_success(output)
+}
+
+fn local_registry(root: string) -> string {
+    let registry = path::join(root, "registry");
+    test_support::write_file(
+        path::join(registry, "index.toml"),
+        "[modules.\"alice::http\"]\nlatest = \"1.2.0\"\nversions = [\"1.0.0\", \"1.2.0\"]\n\n[modules.\"alice::appdep\"]\nlatest = \"0.1.0\"\nversions = [\"0.1.0\"]\n",
+    );
+    test_support::write_file(
+        path::join(registry, "alice/http/1.0.0/goml.toml"),
+        "[module]\npath = \"alice::http\"\n",
+    );
+    test_support::write_file(
+        path::join(registry, "alice/http/1.0.0/lib.gom"),
+        "package http;\npub fn version() -> string { \"1.0.0\" }\n",
+    );
+    test_support::write_file(
+        path::join(registry, "alice/http/1.2.0/goml.toml"),
+        "[module]\npath = \"alice::http\"\n",
+    );
+    test_support::write_file(
+        path::join(registry, "alice/http/1.2.0/lib.gom"),
+        "package http;\npub fn version() -> string { \"1.2.0\" }\n",
+    );
+    test_support::write_file(
+        path::join(registry, "alice/appdep/0.1.0/goml.toml"),
+        "[module]\npath = \"alice::appdep\"\n\n[dependencies]\n\"alice::http\" = \"1.2.0\"\n",
+    );
+    test_support::write_file(
+        path::join(registry, "alice/appdep/0.1.0/lib.gom"),
+        "package appdep;\npub fn marker() -> string { \"appdep\" }\n",
+    );
+    registry_command("git", Vec::new().pushed("init"), registry);
+    registry_command(
+        "git",
+        Vec::new()
+            .pushed("-c")
+            .pushed("user.name=goml")
+            .pushed("-c")
+            .pushed("user.email=goml@example.invalid")
+            .pushed("add")
+            .pushed("."),
+        registry,
+    );
+    registry_command(
+        "git",
+        Vec::new()
+            .pushed("-c")
+            .pushed("user.name=goml")
+            .pushed("-c")
+            .pushed("user.email=goml@example.invalid")
+            .pushed("commit")
+            .pushed("--allow-empty")
+            .pushed("-m")
+            .pushed("registry"),
+        registry,
+    );
+    registry
+}
+
+fn run_with_home(
+    arguments: Vec[string],
+    directory: string,
+    home: string,
+) -> process::Output {
+    match process::Command::new(test_support::goml_binary())
+        .args(arguments)
+        .env("GOML_HOME", home)
+        .current_dir(directory)
+        .output()
+    {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            process::Output {
+                status_value: process::ExitStatus { code_value: -1 },
+                stdout_value: bytes::Bytes::new(),
+                stderr_value: bytes::Bytes::new(),
+            }
+        },
+    }
+}
+
+#[test]
+fn registry_commands_update_add_and_remove() -> unit {
+    let root = test_support::workspace("registry_commands");
+    let registry = local_registry(root);
+    let home = path::join(root, "home");
+    let updated = run_with_home(
+        Vec::new()
+            .pushed("update")
+            .pushed("--local-registry")
+            .pushed(registry),
+        root,
+        home,
+    );
+    test_support::assert_success(updated);
+    testing::assert(fs::is_file(path::join(
+        home,
+        "cache/registry/index.toml",
+    )));
+    let project = path::join(root, "project");
+    test_support::write_basic_project(project, "demo");
+    let added = run_with_home(
+        Vec::new()
+            .pushed("add")
+            .pushed("alice::http")
+            .pushed("--local-registry")
+            .pushed(registry),
+        project,
+        home,
+    );
+    test_support::assert_success(added);
+    test_support::assert_contains(
+        test_support::read_file(path::join(project, "goml.toml")),
+        "\"alice::http\" = \"1.2.0\"",
+    );
+    let removed = run_with_home(
+        Vec::new()
+            .pushed("remove")
+            .pushed("alice::http")
+            .pushed("--local-registry")
+            .pushed(registry),
+        project,
+        home,
+    );
+    test_support::assert_success(removed);
+    test_support::assert_not_contains(
+        test_support::read_file(path::join(project, "goml.toml")),
+        "alice::http",
+    )
+}
+
+#[test]
+fn cached_registry_dependencies_build_with_mvs_layout() -> unit {
+    let root = test_support::workspace("registry_dependency_build");
+    let registry = local_registry(root);
+    let home = path::join(root, "home");
+    test_support::assert_success(run_with_home(
+        Vec::new()
+            .pushed("update")
+            .pushed("--local-registry")
+            .pushed(registry),
+        root,
+        home,
+    ));
+    let project = path::join(root, "project");
+    test_support::write_file(
+        path::join(project, "goml.toml"),
+        "[module]\npath = \"demo\"\n\n[dependencies]\n\"alice::http\" = \"1.0.0\"\n\"alice::appdep\" = \"0.1.0\"\n",
+    );
+    test_support::write_file(
+        path::join(project, "main.gom"),
+        "package main;\nuse alice::http;\nuse alice::appdep;\nfn main() -> unit { println(http::version() + \":\" + appdep::marker()) }\n",
+    );
+    let built = run_with_home(
+        Vec::new()
+            .pushed("build")
+            .pushed("--compiler")
+            .pushed(test_support::gomlc_binary()),
+        project,
+        home,
+    );
+    test_support::assert_success(built);
+    testing::assert(fs::is_file(path::join(
+        project,
+        "_artifact/build/deps/alice/http/1.2.0/pkg/alice/http/http.core",
+    )));
+    let execution = match process::Command::new(
+        path::join(project, "_artifact/bin/demo"),
+    ).output() {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            built
+        },
+    };
+    test_support::assert_success(execution);
+    testing::assert_eq(
+        test_support::stdout(execution),
+        "1.2.0:appdep\n",
     )
 }
