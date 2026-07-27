@@ -224,14 +224,11 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.fs.read_bytes");
     hooks.push("std.fs.write_bytes");
     hooks.push("std.fs.create_dir_all");
-    hooks.push("std.fs.remove_file");
-    hooks.push("std.fs.remove_dir_all");
     hooks.push("std.fs.file_exists");
     hooks.push("std.fs.is_file");
     hooks.push("std.fs.is_dir");
     hooks.push("std.fs.canonicalize");
     hooks.push("std.fs.read_dir");
-    hooks.push("std.fs.sha256_file");
     hooks.push("std.io.print");
     hooks.push("std.io.println");
     hooks.push("std.io.eprint");
@@ -249,11 +246,8 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.path.with_extension");
     hooks.push("std.path.absolute");
     hooks.push("std.process.exit");
-    hooks.push("std.process.look_path");
     hooks.push("std.process.output");
-    hooks.push("std.process.output_timeout");
     hooks.push("std.process.status");
-    hooks.push("std.process.status_timeout");
     hooks.push("std.testing.fail");
     hooks
 }
@@ -268,15 +262,12 @@ fn emits_every_standard_runtime_hook() -> unit {
         output,
         "import (\n"
             + "    _goml_bytes \"bytes\"\n"
-            + "    _goml_context \"context\"\n"
             + "    _goml_fmt \"fmt\"\n"
             + "    _goml_io \"io\"\n"
             + "    _goml_os \"os\"\n"
             + "    _goml_exec \"os/exec\"\n"
             + "    _goml_filepath \"path/filepath\"\n"
-            + "    _goml_sha256 \"crypto/sha256\"\n"
             + "    _goml_strings \"strings\"\n"
-            + "    _goml_time \"time\"\n"
             + ")",
     ));
     for key in hooks {
@@ -307,10 +298,6 @@ fn emits_every_standard_runtime_hook() -> unit {
     ));
     testing::assert(string_contains(
         output,
-        "var digest [32]uint8 = _goml_sha256.Sum256(data)",
-    ));
-    testing::assert(string_contains(
-        output,
         "_goml_fmt.Fprint(_goml_os.Stderr, value)",
     ));
     testing::assert(string_contains(
@@ -332,10 +319,6 @@ fn emits_every_standard_runtime_hook() -> unit {
     testing::assert(string_contains(
         output,
         "var cmd *_goml_exec.Cmd = _goml_exec.Command(program, arguments.items...)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "result, err = _goml_exec.LookPath(program)",
     ));
     testing::assert(string_contains(
         output,

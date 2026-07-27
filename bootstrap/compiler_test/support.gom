@@ -23,7 +23,7 @@ pub fn repository_root() -> string {
 }
 
 pub fn compiler_tests_root() -> string {
-    path::join(repository_root(), "bootstrap/testdata")
+    path::join(repository_root(), "crates/compiler/src/tests")
 }
 
 pub fn read_file(file: string) -> string {
@@ -178,26 +178,7 @@ fn execute_go(source: string, suite: string, shard: int, index: int) -> string {
     }
 }
 
-fn update_expected() -> bool {
-    match env::var("UPDATE_EXPECT") {
-        Option::Some(_) => true,
-        Option::None => false,
-    }
-}
-
-fn assert_text(actual: string, expected_path: string, source: string) -> unit {
-    if update_expected() {
-        match fs::write_file(expected_path, actual) {
-            Result::Ok(()) => (),
-            Result::Err(message) => testing::fail(
-                "failed to write " + expected_path + ": " + message,
-            ),
-        };
-        return ()
-    } else {
-        ()
-    };
-    let expected = read_file(expected_path);
+fn assert_text(actual: string, expected: string, source: string) -> unit {
     if actual == expected {
         ()
     } else {
@@ -229,6 +210,7 @@ pub fn assert_e2e_suite(
         index.set(current + 1);
         if current % shard_count == shard {
             let source = read_file(source_path);
+            let expected = read_file(source_path + ".out");
             let diagnostics = compiler_driver::diagnostic_output(
                 source_path,
                 source,
@@ -247,7 +229,7 @@ pub fn assert_e2e_suite(
             } else {
                 diagnostics
             };
-            assert_text(actual, source_path + ".out", source_path)
+            assert_text(actual, expected, source_path)
         } else {
             ()
         }
@@ -274,7 +256,7 @@ pub fn assert_diagnostic_suite(name: string, expected_count: int) -> unit {
             source_path,
             read_file(source_path),
         );
-        assert_text(actual, source_path + ".diag", source_path)
+        assert_text(actual, read_file(source_path + ".diag"), source_path)
     }
 }
 
@@ -387,7 +369,7 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
             assert_command_success(executed, "module run for " + project);
             assert_text(
                 bytes_text(process::Output::stdout(executed)),
-                path::join(source_project, "main.gom.out"),
+                read_file(path::join(source_project, "main.gom.out")),
                 source_project,
             )
         } else {
@@ -564,7 +546,7 @@ pub fn assert_crasher_diagnostic_shard(
                     source_path,
                     read_file(source_path),
                 ),
-                source_path + ".diag",
+                read_file(source_path + ".diag"),
                 source_path,
             )
         } else {
@@ -608,7 +590,7 @@ pub fn assert_crasher_runtime_shard(
                     shard,
                     current,
                 ),
-                source_path + ".out",
+                read_file(source_path + ".out"),
                 source_path,
             )
         } else {

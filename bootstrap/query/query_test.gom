@@ -87,7 +87,7 @@ fn parses_module_paths_and_package_names() -> unit {
 
 #[test]
 fn analyzes_package_files_with_unsaved_overrides() -> unit {
-    let root = "../bootstrap/testdata/module/project033_cross_file_pattern_constructor";
+    let root = "../crates/compiler/src/tests/module/project033_cross_file_pattern_constructor";
     let main_path = root + "/main.gom";
     let types_path = root + "/types.gom";
     let source = "package main; fn answer() -> int32 { helper() }";
@@ -110,7 +110,7 @@ fn analyzes_package_files_with_unsaved_overrides() -> unit {
 
 #[test]
 fn analyzes_local_package_dependencies() -> unit {
-    let root = "../bootstrap/testdata/module/project001";
+    let root = "../crates/compiler/src/tests/module/project001";
     let main_path = root + "/main.gom";
     match fs::read_file(main_path) {
         Result::Ok(source) => {
@@ -124,7 +124,7 @@ fn analyzes_local_package_dependencies() -> unit {
 
 #[test]
 fn analyzes_embedded_standard_library_dependencies() -> unit {
-    let root = "../bootstrap/testdata/module/project032_std_host_api";
+    let root = "../crates/compiler/src/tests/module/project032_std_host_api";
     let main_path = root + "/main.gom";
     let source = "package main; use std::path; fn clean(value: string) -> string { path::clean(value) }";
     let analysis = analyze(main_path, source);
@@ -168,7 +168,7 @@ fn resolves_local_and_function_definitions() -> unit {
 
 #[test]
 fn resolves_definitions_in_local_dependencies() -> unit {
-    let root = "../bootstrap/testdata/module/project001";
+    let root = "../crates/compiler/src/tests/module/project001";
     let main_path = root + "/main.gom";
     match fs::read_file(main_path) {
         Result::Ok(source) => match last_substring(source, "sum_point") {
@@ -204,7 +204,7 @@ fn resolves_definitions_in_local_dependencies() -> unit {
 
 #[test]
 fn resolves_package_type_variant_and_field_definitions() -> unit {
-    let root = "../bootstrap/testdata/module/project001";
+    let root = "../crates/compiler/src/tests/module/project001";
     let main_path = root + "/main.gom";
     let source = match fs::read_file(main_path) {
         Result::Ok(source) => source,
@@ -638,7 +638,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
 
 #[test]
 fn completes_imported_package_namespaces() -> unit {
-    let root = "../bootstrap/testdata/module/project001";
+    let root = "../crates/compiler/src/tests/module/project001";
     let main_path = root + "/main.gom";
     match fs::read_file(main_path) {
         Result::Ok(source) => match last_substring(source, "sum_point") {

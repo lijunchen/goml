@@ -26,7 +26,7 @@ pub fn repo_root() -> string {
 
 pub fn fixture_dir(name: string) -> string {
     path::join(
-        path::join(repo_root(), "bootstrap/testdata/pipeline"),
+        path::join(repo_root(), "crates/compiler/src/tests/pipeline"),
         name,
     )
 }
@@ -39,27 +39,6 @@ pub fn read_snapshot(base: string, extension: string) -> string {
             testing::fail("failed to read " + file + ": " + message);
             ""
         },
-    }
-}
-
-fn update_expected() -> bool {
-    match env::var("UPDATE_EXPECT") {
-        Option::Some(_) => true,
-        Option::None => false,
-    }
-}
-
-fn assert_snapshot(base: string, extension: string, actual: string) -> unit {
-    let file = path::join(base, "main.gom." + extension);
-    if update_expected() {
-        match fs::write_file(file, actual) {
-            Result::Ok(()) => (),
-            Result::Err(message) => testing::fail(
-                "failed to write " + file + ": " + message,
-            ),
-        }
-    } else {
-        testing::assert_eq(actual, read_snapshot(base, extension))
     }
 }
 
@@ -139,7 +118,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
     let result = Vec::new();
     let root = path::join(
         repo_root(),
-        "bootstrap/testdata/pipeline",
+        "crates/compiler/src/tests/pipeline",
     );
     match fs::read_dir(root) {
         Result::Ok(names) => for name in names {
@@ -171,27 +150,23 @@ pub fn test_one_case(name: string) -> unit {
     };
 
     let parsed = parser::parse(source);
-    assert_snapshot(base, "cst", cst::debug_tree(parsed));
+    testing::assert_eq(cst::debug_tree(parsed), read_snapshot(base, "cst"));
 
     let compilation = compiler_driver::compile_source(source_path, source);
 
-    assert_snapshot(base, "ast", ast::pretty(compilation.ast_value));
-    assert_snapshot(base, "hir", hir::encode(compilation.hir_value));
-    assert_snapshot(base, "tast", tast::encode(compilation.tast_value));
-    assert_snapshot(base, "core", core::encode(compilation.core_value));
-    assert_snapshot(base, "mono", mono::encode(compilation.mono_value));
-    assert_snapshot(base, "lift", lift::encode(compilation.lift_value));
-    assert_snapshot(base, "anf", anf::encode(compilation.anf_value));
-    assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
+    testing::assert_eq(ast::pretty(compilation.ast_value), read_snapshot(base, "ast"));
+    testing::assert_eq(hir::encode(compilation.hir_value), read_snapshot(base, "hir"));
+    testing::assert_eq(tast::encode(compilation.tast_value), read_snapshot(base, "tast"));
+    testing::assert_eq(core::encode(compilation.core_value), read_snapshot(base, "core"));
+    testing::assert_eq(mono::encode(compilation.mono_value), read_snapshot(base, "mono"));
+    testing::assert_eq(lift::encode(compilation.lift_value), read_snapshot(base, "lift"));
+    testing::assert_eq(anf::encode(compilation.anf_value), read_snapshot(base, "anf"));
+    testing::assert_eq(go_backend::encode(compilation.go_value), read_snapshot(base, "go"));
 
     if has_out_snapshot(base) {
         if go_available() {
             let go_source = go_backend::encode(compilation.go_value);
-            assert_snapshot(
-                base,
-                "out",
-                execute_go_and_read_stdout(go_source),
-            )
+            testing::assert_eq(execute_go_and_read_stdout(go_source), read_snapshot(base, "out"))
         } else {
             ()
         }

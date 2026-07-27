@@ -1,0 +1,1308 @@
+#[LALR]
+grammar;
+
+use crate::lalr::{CstElement, CstNode, ExpressionNameTail, ParserToken, Postfix, apply_postfix, comma_list, flatten, node, prepend, retag_append, root, token};
+use crate::syntax::MySyntaxKind;
+
+pub File: CstNode = {
+    <package:PackageDecl?> <uses:UseDecl*> <items:Item*> => {
+        let mut children = Vec::new();
+        children.extend(package);
+        children.extend(uses);
+        children.extend(items);
+        root(children)
+    }
+};
+
+pub ExpressionFile: CstNode = {
+    <expr:Expr> => root(vec![expr])
+};
+
+PackageDecl: CstElement = {
+    <package:Tok<"package">> <name:Tok<"lident">> <semi:Tok<";">> =>
+        node(MySyntaxKind::PACKAGE, vec![package, name, semi])
+};
+
+UseDecl: CstElement = {
+    <use_:Tok<"use">> <path:Path> <alias:UseAlias?> <semi:Tok<";">> => {
+        let mut children = vec![use_, path];
+        children.extend(alias);
+        children.push(semi);
+        node(MySyntaxKind::USE, children)
+    }
+};
+
+UseAlias: CstElement = {
+    <as_:Tok<"as">> <name:Tok<"lident">> =>
+        node(MySyntaxKind::TombStone, vec![as_, name])
+};
+
+Item: CstElement = {
+    <prefix:ItemPrefix> <item:ItemBody> => prepend(prefix, item)
+};
+
+ItemPrefix: Vec<CstElement> = {
+    <attributes:AttributeList?> <visibility:Tok<"pub">?> => {
+        let mut children = Vec::new();
+        children.extend(attributes);
+        children.extend(visibility);
+        children
+    }
+};
+
+ItemBody: CstElement = {
+    ExternDecl,
+    Function,
+    EnumDef,
+    StructDef,
+    TraitDef,
+    ImplBlock,
+};
+
+AttributeList: CstElement = {
+    <attributes:Attribute+> => node(MySyntaxKind::ATTRIBUTE_LIST, attributes)
+};
+
+Attribute: CstElement = {
+    <pound:Tok<"#">> <bang:Tok<"!">?> <lbracket:Tok<"[">>
+    <body:AttributeItem*> <rbracket:Tok<"]">> => {
+        let mut children = vec![pound];
+        children.extend(bang);
+        children.push(lbracket);
+        children.extend(flatten(body));
+        children.push(rbracket);
+        node(MySyntaxKind::ATTRIBUTE, children)
+    }
+};
+
+AttributeItem: Vec<CstElement> = {
+    <token:AttributeToken> => vec![token],
+    <lparen:Tok<"(">> <items:AttributeItem*> <rparen:Tok<")">> => {
+        let mut children = vec![lparen];
+        children.extend(flatten(items));
+        children.push(rparen);
+        children
+    },
+    <lbrace:Tok<"{">> <items:AttributeItem*> <rbrace:Tok<"}">> => {
+        let mut children = vec![lbrace];
+        children.extend(flatten(items));
+        children.push(rbrace);
+        children
+    },
+    <lbracket:Tok<"[">> <items:AttributeItem*> <rbracket:Tok<"]">> => {
+        let mut children = vec![lbracket];
+        children.extend(flatten(items));
+        children.push(rbracket);
+        children
+    },
+};
+
+AttributeToken: CstElement = {
+    AnyIdent,
+    Tok<"str">,
+    Tok<"char_lit">,
+    Tok<"int_lit">,
+    Tok<"float">,
+    Tok<",">,
+    Tok<":">,
+    Tok<"::">,
+    Tok<"=">,
+    Tok<"==">,
+    Tok<"+">,
+    Tok<"-">,
+    Tok<"*">,
+    Tok<"/">,
+    Tok<".">,
+    Tok<"!">,
+    Tok<"?">,
+};
+
+ExternDecl: CstElement = {
+    <extern_:Tok<"extern">> <fn_:Tok<"fn">> <name:Tok<"lident">>
+    <generics:GenericListWithBounds?> <params:ParamList>
+    <return_type:ReturnType?> <where_clause:WhereClause?> <semi:Tok<";">> => {
+        let mut children = vec![extern_, fn_, name];
+        children.extend(generics);
+        children.push(params);
+        if let Some((arrow, type_)) = return_type {
+            children.push(arrow);
+            children.push(type_);
+        }
+        children.extend(where_clause);
+        children.push(semi);
+        node(MySyntaxKind::EXTERN, children)
+    }
+};
+
+Function: CstElement = {
+    <fn_:Tok<"fn">> <name:Tok<"lident">>
+    <generics:GenericListWithBounds?> <params:ParamList>
+    <return_type:ReturnType?> <where_clause:WhereClause?> <body:Block> => {
+        let mut children = vec![fn_, name];
+        children.extend(generics);
+        children.push(params);
+        if let Some((arrow, type_)) = return_type {
+            children.push(arrow);
+            children.push(type_);
+        }
+        children.extend(where_clause);
+        children.push(body);
+        node(MySyntaxKind::FN, children)
+    }
+};
+
+ReturnType: (CstElement, CstElement) = {
+    <arrow:Tok<"->">> <type_:TypeExpr> => (arrow, type_)
+};
+
+EnumDef: CstElement = {
+    <enum_:Tok<"enum">> <name:Tok<"uident">>
+    <generics:GenericList?> <variants:VariantList> => {
+        let mut children = vec![enum_, name];
+        children.extend(generics);
+        children.push(variants.0);
+        children.push(variants.1);
+        node(MySyntaxKind::ENUM, children)
+    }
+};
+
+StructDef: CstElement = {
+    <struct_:Tok<"struct">> <name:Tok<"uident">>
+    <generics:GenericList?> <fields:StructFieldList> => {
+        let mut children = vec![struct_, name];
+        children.extend(generics);
+        children.push(fields.0);
+        children.push(fields.1);
+        node(MySyntaxKind::STRUCT, children)
+    }
+};
+
+VariantList: (CstElement, CstElement) = {
+    <lbrace:Tok<"{">> <variants:Comma<Variant>> <rbrace:Tok<"}">> => {
+        let mut children = variants;
+        children.push(rbrace);
+        (lbrace, node(MySyntaxKind::VARIANT_LIST, children))
+    }
+};
+
+Variant: CstElement = {
+    <name:Tok<"uident">> <payload:VariantPayload?> => {
+        let mut children = vec![name];
+        children.extend(payload);
+        node(MySyntaxKind::VARIANT, children)
+    }
+};
+
+VariantPayload: CstElement = {
+    TypeList,
+    <fields:StructFieldList> => {
+        let (lbrace, list) = fields;
+        node(MySyntaxKind::TombStone, vec![lbrace, list])
+    },
+};
+
+StructFieldList: (CstElement, CstElement) = {
+    <lbrace:Tok<"{">> <fields:Comma<StructField>> <rbrace:Tok<"}">> => {
+        let mut children = fields;
+        children.push(rbrace);
+        (lbrace, node(MySyntaxKind::STRUCT_FIELD_LIST, children))
+    }
+};
+
+StructField: CstElement = {
+    <public:Tok<"pub">?> <name:Tok<"lident">> <colon:Tok<":">> <type_:TypeExpr> => {
+        let mut children = Vec::new();
+        children.extend(public);
+        children.push(name);
+        children.push(colon);
+        children.push(type_);
+        node(MySyntaxKind::STRUCT_FIELD, children)
+    }
+};
+
+TraitDef: CstElement = {
+    <trait_:Tok<"trait">> <name:Tok<"uident">>
+    <generics:GenericListWithBounds?> <bounds:TraitBounds?>
+    <where_clause:WhereClause?> <body:TraitBody> => {
+        let mut children = vec![trait_, name];
+        children.extend(generics);
+        if let Some((colon, set)) = bounds {
+            children.push(colon);
+            children.push(set);
+        }
+        children.extend(where_clause);
+        children.push(body.0);
+        children.push(body.1);
+        node(MySyntaxKind::TRAIT, children)
+    }
+};
+
+TraitBounds: (CstElement, CstElement) = {
+    <colon:Tok<":">> <set:TraitSet> => (colon, set)
+};
+
+TraitBody: (CstElement, CstElement) = {
+    <lbrace:Tok<"{">> <members:TraitMember*> <rbrace:Tok<"}">> => {
+        let mut children = flatten(members);
+        children.push(rbrace);
+        (lbrace, node(MySyntaxKind::TRAIT_METHOD_SIG_LIST, children))
+    }
+};
+
+TraitMember: Vec<CstElement> = {
+    <method:TraitMethod> <semi:Tok<";">> => vec![method, semi],
+    <type_:TraitAssociatedType> => vec![type_],
+};
+
+TraitMethod: CstElement = {
+    <fn_:Tok<"fn">> <name:Tok<"lident">> <params:ParamList>
+    <return_type:ReturnType?> => {
+        let mut children = vec![fn_, name, params];
+        if let Some((arrow, type_)) = return_type {
+            children.push(arrow);
+            children.push(type_);
+        }
+        node(MySyntaxKind::TRAIT_METHOD_SIG, children)
+    }
+};
+
+TraitAssociatedType: CstElement = {
+    <type_:Tok<"type">> <name:Tok<"uident">> <bounds:TraitBounds?>
+    <semi:Tok<";">> => {
+        let mut children = vec![type_, name];
+        if let Some((colon, set)) = bounds {
+            children.push(colon);
+            children.push(set);
+        }
+        children.push(semi);
+        node(MySyntaxKind::TRAIT_ASSOCIATED_TYPE, children)
+    }
+};
+
+ImplBlock: CstElement = {
+    <impl_:Tok<"impl">> <generics:GenericListWithBounds?>
+    <first:TypeExpr> <second:ImplFor?> <where_clause:WhereClause?>
+    <lbrace:Tok<"{">> <members:ImplMember*> <rbrace:Tok<"}">> => {
+        let mut children = vec![impl_];
+        children.extend(generics);
+        children.push(first);
+        if let Some((for_, type_)) = second {
+            children.push(for_);
+            children.push(type_);
+        }
+        children.extend(where_clause);
+        children.push(lbrace);
+        children.extend(members);
+        children.push(rbrace);
+        node(MySyntaxKind::IMPL, children)
+    }
+};
+
+ImplFor: (CstElement, CstElement) = {
+    <for_:Tok<"for">> <type_:TypeExpr> => (for_, type_)
+};
+
+ImplMember: CstElement = {
+    ImplFunction,
+    ImplAssociatedType,
+};
+
+ImplFunction: CstElement = {
+    <public:Tok<"pub">?> <fn_:Tok<"fn">> <name:Tok<"lident">>
+    <generics:GenericListWithBounds?> <params:ParamList>
+    <return_type:ReturnType?> <where_clause:WhereClause?> <body:Block> => {
+        let mut children = Vec::new();
+        children.extend(public);
+        children.push(fn_);
+        children.push(name);
+        children.extend(generics);
+        children.push(params);
+        if let Some((arrow, type_)) = return_type {
+            children.push(arrow);
+            children.push(type_);
+        }
+        children.extend(where_clause);
+        children.push(body);
+        node(MySyntaxKind::FN, children)
+    }
+};
+
+ImplAssociatedType: CstElement = {
+    <type_:Tok<"type">> <name:Tok<"uident">> <eq:Tok<"=">>
+    <value:TypeExpr> <semi:Tok<";">> =>
+        node(MySyntaxKind::IMPL_ASSOCIATED_TYPE, vec![type_, name, eq, value, semi])
+};
+
+GenericList: CstElement = {
+    <lbracket:Tok<"[">> <generics:Comma<Generic>> <rbracket:Tok<"]">> => {
+        let mut children = vec![lbracket];
+        children.extend(generics);
+        children.push(rbracket);
+        node(MySyntaxKind::GENERIC_LIST, children)
+    }
+};
+
+Generic: CstElement = {
+    <name:Tok<"uident">> => node(MySyntaxKind::GENERIC, vec![name])
+};
+
+GenericListWithBounds: CstElement = {
+    <lbracket:Tok<"[">> <generics:Comma<GenericWithBounds>>
+    <rbracket:Tok<"]">> => {
+        let mut children = vec![lbracket];
+        children.extend(generics);
+        children.push(rbracket);
+        node(MySyntaxKind::GENERIC_LIST, children)
+    }
+};
+
+GenericWithBounds: CstElement = {
+    <name:Tok<"uident">> <bounds:TraitBounds?> => {
+        let mut children = vec![name];
+        if let Some((colon, set)) = bounds {
+            children.push(colon);
+            children.push(set);
+        }
+        node(MySyntaxKind::GENERIC, children)
+    }
+};
+
+TraitSet: CstElement = {
+    <first:TraitRef> <rest:(<Tok<"+">> <TraitRef>)*> => {
+        let mut children = vec![first];
+        for (plus, trait_) in rest {
+            children.push(plus);
+            children.push(trait_);
+        }
+        node(MySyntaxKind::TRAIT_SET, children)
+    }
+};
+
+TraitRef: CstElement = {
+    <path:Path> <params:TypeParamList?> => {
+        let mut children = vec![path];
+        children.extend(params);
+        node(MySyntaxKind::TYPE_TAPP, children)
+    }
+};
+
+WhereClause: CstElement = {
+    <where_:Tok<"where">> <predicates:CommaOne<WherePredicate>> => {
+        let mut children = vec![where_];
+        children.extend(predicates);
+        node(MySyntaxKind::WHERE_CLAUSE, children)
+    }
+};
+
+WherePredicate: CstElement = {
+    <lhs:TypeExpr> <relation:WhereRelation> => {
+        let mut children = vec![lhs];
+        children.extend(relation);
+        node(MySyntaxKind::WHERE_PREDICATE, children)
+    }
+};
+
+WhereRelation: Vec<CstElement> = {
+    <colon:Tok<":">> <set:TraitSet> => vec![colon, set],
+    <eq:Tok<"=">> <type_:TypeExpr> => vec![eq, type_],
+};
+
+ParamList: CstElement = {
+    <lparen:Tok<"(">> <pairs:ParamWithComma*> <last:ParamLast?>
+    <rparen:Tok<")">> => {
+        let mut children = vec![lparen];
+        children.extend(pairs);
+        children.extend(last);
+        children.push(rparen);
+        node(MySyntaxKind::PARAM_LIST, children)
+    }
+};
+
+ParamWithComma: CstElement = {
+    <name:Tok<"lident">> <colon:Tok<":">> <type_:TypeExpr> <comma:Tok<",">> =>
+        node(MySyntaxKind::PARAM, vec![name, colon, type_, comma]),
+    <name:Tok<"lident">> <comma:Tok<",">> =>
+        node(MySyntaxKind::PARAM, vec![name, comma]),
+};
+
+ParamLast: CstElement = {
+    <name:Tok<"lident">> <colon:Tok<":">> <type_:TypeExpr> =>
+        node(MySyntaxKind::PARAM, vec![name, colon, type_]),
+    <name:Tok<"lident">> => node(MySyntaxKind::PARAM, vec![name]),
+};
+
+TypeExpr: CstElement = {
+    <lhs:EmptyTypeList> <arrow:Tok<"->">> <rhs:TypeExpr> => {
+        let lhs = node(MySyntaxKind::TYPE_TUPLE, vec![lhs]);
+        node(MySyntaxKind::TYPE_FUNC, vec![lhs, arrow, rhs])
+    },
+    <lhs:TypeAtom> <tail:(<Tok<"->">> <TypeExpr>)?> => {
+        if let Some((arrow, rhs)) = tail {
+            node(MySyntaxKind::TYPE_FUNC, vec![lhs, arrow, rhs])
+        } else {
+            lhs
+        }
+    }
+};
+
+TypeAtom: CstElement = {
+    <token:Tok<"unit">> => node(MySyntaxKind::TYPE_UNIT, vec![token]),
+    <token:Tok<"bool">> => node(MySyntaxKind::TYPE_BOOL, vec![token]),
+    <token:Tok<"int">> => node(MySyntaxKind::TYPE_INT, vec![token]),
+    <token:Tok<"int8">> => node(MySyntaxKind::TYPE_INT8, vec![token]),
+    <token:Tok<"int16">> => node(MySyntaxKind::TYPE_INT16, vec![token]),
+    <token:Tok<"int32">> => node(MySyntaxKind::TYPE_INT32, vec![token]),
+    <token:Tok<"int64">> => node(MySyntaxKind::TYPE_INT64, vec![token]),
+    <token:Tok<"uint">> => node(MySyntaxKind::TYPE_UINT, vec![token]),
+    <token:Tok<"uint8">> => node(MySyntaxKind::TYPE_UINT8, vec![token]),
+    <token:Tok<"uint16">> => node(MySyntaxKind::TYPE_UINT16, vec![token]),
+    <token:Tok<"uint32">> => node(MySyntaxKind::TYPE_UINT32, vec![token]),
+    <token:Tok<"uint64">> => node(MySyntaxKind::TYPE_UINT64, vec![token]),
+    <token:Tok<"float32">> => node(MySyntaxKind::TYPE_FLOAT32, vec![token]),
+    <token:Tok<"float64">> => node(MySyntaxKind::TYPE_FLOAT64, vec![token]),
+    <token:Tok<"string">> => node(MySyntaxKind::TYPE_STRING, vec![token]),
+    <token:Tok<"char">> => node(MySyntaxKind::TYPE_CHAR, vec![token]),
+    <list:NonEmptyTypeList> => node(MySyntaxKind::TYPE_TUPLE, vec![list]),
+    <lbracket:Tok<"[">> <element:TypeExpr> <semi:Tok<";">>
+    <length:Tok<"int_lit">> <rbracket:Tok<"]">> =>
+        node(MySyntaxKind::TYPE_ARRAY, vec![lbracket, element, semi, length, rbracket]),
+    <path:Path> <params:TypeParamList?> => {
+        let mut children = vec![path];
+        children.extend(params);
+        node(MySyntaxKind::TYPE_TAPP, children)
+    },
+    <dyn_:Tok<"dyn">> <path:Path> =>
+        node(MySyntaxKind::TYPE_DYN, vec![dyn_, path]),
+};
+
+TypeList: CstElement = {
+    EmptyTypeList,
+    NonEmptyTypeList,
+};
+
+EmptyTypeList: CstElement = {
+    <lparen:Tok<"(">> <rparen:Tok<")">> =>
+        node(MySyntaxKind::TYPE_LIST, vec![lparen, rparen])
+};
+
+NonEmptyTypeList: CstElement = {
+    <lparen:Tok<"(">> <types:CommaOne<TypeExpr>> <rparen:Tok<")">> => {
+        let mut children = vec![lparen];
+        children.extend(types);
+        children.push(rparen);
+        node(MySyntaxKind::TYPE_LIST, children)
+    }
+};
+
+TypeParamList: CstElement = {
+    <lbracket:Tok<"[">> <types:Comma<TypeExpr>> <rbracket:Tok<"]">> => {
+        let mut children = vec![lbracket];
+        children.extend(types);
+        children.push(rbracket);
+        node(MySyntaxKind::TYPE_PARAM_LIST, children)
+    }
+};
+
+Path: CstElement = {
+    <first:AnyIdent> <rest:(<Tok<"::">> <AnyIdent>)*> => {
+        let mut children = vec![first];
+        for (separator, segment) in rest {
+            children.push(separator);
+            children.push(segment);
+        }
+        node(MySyntaxKind::PATH, children)
+    }
+};
+
+Expr: CstElement = {
+    ReturnExpr,
+    GoExpr,
+    ClosureExpr,
+    RangeExpr<Atom>,
+};
+
+ConditionExpr: CstElement = RangeExpr<AtomNoStruct>;
+
+RangeExpr<A>: CstElement = {
+    <start:OrExpr<A>> <dots:Tok<"..">> <end:OrExpr<A>> =>
+        node(MySyntaxKind::EXPR_RANGE, vec![start, dots, end]),
+    OrExpr<A>,
+};
+
+OrExpr<A>: CstElement = {
+    <lhs:OrExpr<A>> <op:Tok<"||">> <rhs:AndExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    AndExpr<A>,
+};
+
+AndExpr<A>: CstElement = {
+    <lhs:AndExpr<A>> <op:Tok<"&&">> <rhs:CompareExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    CompareExpr<A>,
+};
+
+ComparisonOp: CstElement = {
+    Tok<"==">,
+    Tok<"!=">,
+    Tok<"<">,
+    Tok<">">,
+    Tok<"<=">,
+    Tok<">=">,
+};
+
+CompareExpr<A>: CstElement = {
+    <lhs:BitOrExpr<A>> <op:ComparisonOp> <rhs:BitOrExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    BitOrExpr<A>,
+};
+
+BitOrExpr<A>: CstElement = {
+    <lhs:BitOrExpr<A>> <op:Tok<"|">> <rhs:BitXorExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    BitXorExpr<A>,
+};
+
+BitXorExpr<A>: CstElement = {
+    <lhs:BitXorExpr<A>> <op:Tok<"^">> <rhs:BitAndExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    BitAndExpr<A>,
+};
+
+BitAndExpr<A>: CstElement = {
+    <lhs:BitAndExpr<A>> <op:Tok<"&">> <rhs:ShiftExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    ShiftExpr<A>,
+};
+
+ShiftExpr<A>: CstElement = {
+    <lhs:ShiftExpr<A>> <op:ShiftOp> <rhs:AddExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    AddExpr<A>,
+};
+
+ShiftOp: CstElement = {
+    Tok<"<<">,
+    Tok<">>">,
+};
+
+AddExpr<A>: CstElement = {
+    <lhs:AddExpr<A>> <op:AddOp> <rhs:MulExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    MulExpr<A>,
+};
+
+AddOp: CstElement = {
+    Tok<"+">,
+    Tok<"-">,
+};
+
+MulExpr<A>: CstElement = {
+    <lhs:MulExpr<A>> <op:MulOp> <rhs:CastExpr<A>> =>
+        node(MySyntaxKind::EXPR_BINARY, vec![lhs, op, rhs]),
+    CastExpr<A>,
+};
+
+MulOp: CstElement = {
+    Tok<"*">,
+    Tok<"/">,
+    Tok<"%">,
+};
+
+CastExpr<A>: CstElement = {
+    <expr:PostfixExpr<A>> <casts:(<Tok<"as">> <TypeExpr>)*> => {
+        let mut result = expr;
+        for (as_, type_) in casts {
+            result = node(MySyntaxKind::EXPR_CAST, vec![result, as_, type_]);
+        }
+        result
+    }
+};
+
+PostfixExpr<A>: CstElement = {
+    <atom:A> <postfixes:Postfix<A>*> => apply_postfix(atom, postfixes),
+    <op:PrefixOp> <operand:PrefixOperand<A>>
+    <postfixes:PrefixedPostfixes<A>> => {
+        let prefix = node(MySyntaxKind::EXPR_PREFIX, vec![op, operand]);
+        apply_postfix(prefix, postfixes)
+    },
+};
+
+Postfix<A>: Postfix = {
+    NonDotPostfix,
+    <dot:Tok<".">> <rhs:DotRhs<A>> => Postfix::Dot(dot, rhs),
+};
+
+NonDotPostfix: Postfix = {
+    <args:ArgList> => Postfix::Call(args),
+    <lbracket:Tok<"[">> <index:Expr> <rbracket:Tok<"]">> =>
+        Postfix::Index(lbracket, index, rbracket),
+    <question:Tok<"?">> => Postfix::Try(question),
+};
+
+PrefixedPostfixes<A>: Vec<Postfix> = {
+    => Vec::new(),
+    <first:NonDotPostfix> <rest:Postfix<A>*> => {
+        let mut postfixes = vec![first];
+        postfixes.extend(rest);
+        postfixes
+    },
+};
+
+PrefixOperand<A>: CstElement = {
+    <op:PrefixOp> <operand:PrefixOperand<A>> =>
+        node(MySyntaxKind::EXPR_PREFIX, vec![op, operand]),
+    <atom:A> <dots:(<Tok<".">> <DotRhs<A>>)*> => {
+        let mut result = atom;
+        for (dot, rhs) in dots {
+            result = node(MySyntaxKind::EXPR_BINARY, vec![result, dot, rhs]);
+        }
+        result
+    },
+};
+
+DotRhs<A>: CstElement = {
+    <op:PrefixOp> <operand:DotRhs<A>> =>
+        node(MySyntaxKind::EXPR_PREFIX, vec![op, operand]),
+    A,
+};
+
+PrefixOp: CstElement = {
+    Tok<"-">,
+    Tok<"!">,
+    Tok<"~">,
+};
+
+Atom: CstElement = {
+    LiteralAtom,
+    ArrayExpr,
+    ParenExpr,
+    <name:ExprName> <fields:StructLiteralFields> => {
+        retag_append(name, MySyntaxKind::EXPR_STRUCT_LITERAL, fields)
+    },
+    ExprName,
+    IfExpr,
+    MatchExpr,
+    WhileExpr,
+    ForExpr,
+    BreakExpr,
+    ContinueExpr,
+};
+
+AtomNoStruct: CstElement = {
+    LiteralAtom,
+    ArrayExpr,
+    ParenExpr,
+    ExprName,
+    IfExpr,
+    MatchExpr,
+    WhileExpr,
+    ForExpr,
+    BreakExpr,
+    ContinueExpr,
+};
+
+LiteralAtom: CstElement = {
+    <token:Tok<"int_lit">> => node(MySyntaxKind::EXPR_INT, vec![token]),
+    <token:Tok<"float">> => node(MySyntaxKind::EXPR_FLOAT, vec![token]),
+    <token:Tok<"str">> => node(MySyntaxKind::EXPR_STR, vec![token]),
+    <token:Tok<"multiline_str">> =>
+        node(MySyntaxKind::EXPR_MULTILINE_STR, vec![token]),
+    <token:Tok<"char_lit">> => node(MySyntaxKind::EXPR_CHAR, vec![token]),
+    <token:BoolToken> => node(MySyntaxKind::EXPR_BOOL, vec![token]),
+};
+
+BoolToken: CstElement = {
+    Tok<"true">,
+    Tok<"false">,
+};
+
+ArrayExpr: CstElement = {
+    <lbracket:Tok<"[">> <values:Comma<Expr>> <rbracket:Tok<"]">> => {
+        let mut children = vec![lbracket];
+        children.extend(values);
+        children.push(rbracket);
+        node(MySyntaxKind::EXPR_ARRAY_LITERAL, children)
+    }
+};
+
+ParenExpr: CstElement = {
+    <lparen:Tok<"(">> <rparen:Tok<")">> =>
+        node(MySyntaxKind::EXPR_UNIT, vec![lparen, rparen]),
+    <lparen:Tok<"(">> <expr:Expr> <rparen:Tok<")">> =>
+        node(MySyntaxKind::EXPR_PAREN, vec![lparen, expr, rparen]),
+    <lparen:Tok<"(">> <first:Expr> <comma:Tok<",">>
+    <rest:Comma<Expr>> <rparen:Tok<")">> => {
+        let mut children = vec![lparen, first, comma];
+        children.extend(rest);
+        children.push(rparen);
+        node(MySyntaxKind::EXPR_TUPLE, children)
+    },
+};
+
+ExprName: CstElement = {
+    <first:AnyIdent> <tail:ExprNameTail> => {
+        let (path_tail, generic) = tail;
+        let mut path_children = vec![first];
+        path_children.extend(path_tail);
+        let path = node(MySyntaxKind::PATH, path_children);
+        let mut children = Vec::new();
+        if let Some((generic_separator, params, member)) = generic {
+            children.push(node(
+                MySyntaxKind::TYPE_TAPP,
+                vec![path, generic_separator, params],
+            ));
+            if let Some((member_separator, tail)) = member {
+                children.push(member_separator);
+                children.push(tail);
+            }
+        } else {
+            children.push(path);
+        }
+        node(MySyntaxKind::EXPR_IDENT, children)
+    }
+};
+
+ExprNameTail: ExpressionNameTail = {
+    => (Vec::new(), None),
+    <separator:Tok<"::">> <params:TypeParamList>
+    <member:(<Tok<"::">> <Path>)?> => (
+        Vec::new(),
+        Some((separator, params, member)),
+    ),
+    <separator:Tok<"::">> <segment:AnyIdent> <tail:ExprNameTail> => {
+        let (rest, generic) = tail;
+        let mut path = vec![separator, segment];
+        path.extend(rest);
+        (path, generic)
+    },
+};
+
+StructLiteralFields: Vec<CstElement> = {
+    <lbrace:Tok<"{">> <fields:Comma<StructLiteralField>>
+    <rbrace:Tok<"}">> => {
+        let mut children = vec![lbrace];
+        children.extend(fields);
+        children.push(rbrace);
+        vec![node(MySyntaxKind::STRUCT_LITERAL_FIELD_LIST, children)]
+    }
+};
+
+StructLiteralField: CstElement = {
+    <name:Tok<"lident">> <value:(<Tok<":">> <Expr>)?> => {
+        let mut children = vec![name];
+        if let Some((colon, expr)) = value {
+            children.push(colon);
+            children.push(expr);
+        }
+        node(MySyntaxKind::STRUCT_LITERAL_FIELD, children)
+    }
+};
+
+IfExpr: CstElement = {
+    <if_:Tok<"if">> <condition:ConditionExpr> <then_:Block>
+    <else_:ElseBranch?> => {
+        let mut children = vec![
+            if_,
+            node(MySyntaxKind::EXPR_IF_COND, vec![condition]),
+            node(MySyntaxKind::EXPR_IF_THEN, vec![then_]),
+        ];
+        if let Some((else_token, else_expr)) = else_ {
+            children.push(else_token);
+            children.push(node(MySyntaxKind::EXPR_IF_ELSE, vec![else_expr]));
+        }
+        node(MySyntaxKind::EXPR_IF, children)
+    },
+    <if_:Tok<"if">> <let_:Tok<"let">> <pattern:Pattern> <eq:Tok<"=">>
+    <value:ConditionExpr> <then_:Block> <else_:ElseBranch?> => {
+        let condition = node(
+            MySyntaxKind::EXPR_IF_COND,
+            vec![let_, pattern, eq, value],
+        );
+        let mut children = vec![
+            if_,
+            condition,
+            node(MySyntaxKind::EXPR_IF_THEN, vec![then_]),
+        ];
+        if let Some((else_token, else_expr)) = else_ {
+            children.push(else_token);
+            children.push(node(MySyntaxKind::EXPR_IF_ELSE, vec![else_expr]));
+        }
+        node(MySyntaxKind::EXPR_IF, children)
+    },
+};
+
+ElseBranch: (CstElement, CstElement) = {
+    <else_:Tok<"else">> <branch:Block> => (else_, branch),
+    <else_:Tok<"else">> <branch:IfExpr> => (else_, branch),
+};
+
+MatchExpr: CstElement = {
+    <match_:Tok<"match">> <scrutinee:ConditionExpr> <arms:MatchArmList> =>
+        node(MySyntaxKind::EXPR_MATCH, vec![match_, scrutinee, arms])
+};
+
+MatchArmList: CstElement = {
+    <lbrace:Tok<"{">> <arms:Comma<MatchArm>>
+    <rbrace:Tok<"}">> => {
+        let mut children = vec![lbrace];
+        children.extend(arms);
+        children.push(rbrace);
+        node(MySyntaxKind::MATCH_ARM_LIST, children)
+    }
+};
+
+MatchArm: CstElement = {
+    BlockMatchArm,
+    ExprMatchArm,
+};
+
+BlockMatchArm: CstElement = {
+    <prefix:MatchArmPrefix> <body:Block> => {
+        let mut children = prefix;
+        children.push(body);
+        node(MySyntaxKind::MATCH_ARM, children)
+    }
+};
+
+ExprMatchArm: CstElement = {
+    <prefix:MatchArmPrefix> <body:Expr> => {
+        let mut children = prefix;
+        children.push(body);
+        node(MySyntaxKind::MATCH_ARM, children)
+    }
+};
+
+MatchArmPrefix: Vec<CstElement> = {
+    <pattern:Pattern> <guard:MatchGuard?> <arrow:Tok<"=>">> => {
+        let mut children = vec![pattern];
+        children.extend(guard);
+        children.push(arrow);
+        children
+    }
+};
+
+MatchGuard: CstElement = {
+    <if_:Tok<"if">> <expr:Expr> =>
+        node(MySyntaxKind::MATCH_ARM_GUARD, vec![if_, expr])
+};
+
+WhileExpr: CstElement = {
+    <while_:Tok<"while">> <condition:WhileCondition> <body:Block> =>
+        node(
+            MySyntaxKind::EXPR_WHILE,
+            vec![
+                while_,
+                node(MySyntaxKind::EXPR_WHILE_COND, condition),
+                node(MySyntaxKind::EXPR_WHILE_BODY, vec![body]),
+            ],
+        )
+};
+
+WhileCondition: Vec<CstElement> = {
+    <expr:ConditionExpr> => vec![expr],
+    <let_:Tok<"let">> <pattern:Pattern> <eq:Tok<"=">>
+    <expr:ConditionExpr> => vec![let_, pattern, eq, expr],
+};
+
+ForExpr: CstElement = {
+    <for_:Tok<"for">> <pattern:Pattern> <in_:Tok<"in">>
+    <source:ConditionExpr> <body:Block> =>
+        node(MySyntaxKind::EXPR_FOR, vec![for_, pattern, in_, source, body])
+};
+
+BreakExpr: CstElement = {
+    <break_:Tok<"break">> => node(MySyntaxKind::EXPR_BREAK, vec![break_])
+};
+
+ContinueExpr: CstElement = {
+    <continue_:Tok<"continue">> =>
+        node(MySyntaxKind::EXPR_CONTINUE, vec![continue_])
+};
+
+ReturnExpr: CstElement = {
+    <return_:Tok<"return">> <value:Expr?> => {
+        let mut children = vec![return_];
+        children.extend(value);
+        node(MySyntaxKind::EXPR_RETURN, children)
+    },
+};
+
+GoExpr: CstElement = {
+    <go_:Tok<"go">> <value:Expr> =>
+        node(MySyntaxKind::EXPR_GO, vec![go_, value])
+};
+
+ClosureExpr: CstElement = {
+    <params:ClosureParamList> <body:ClosureBody> =>
+        node(MySyntaxKind::EXPR_CLOSURE, vec![params, body])
+};
+
+ClosureParamList: CstElement = {
+    <pipes:Tok<"||">> =>
+        node(MySyntaxKind::CLOSURE_PARAM_LIST, vec![pipes]),
+    <left:Tok<"|">> <params:Comma<ClosureParam>> <right:Tok<"|">> => {
+        let mut children = vec![left];
+        children.extend(params);
+        children.push(right);
+        node(MySyntaxKind::CLOSURE_PARAM_LIST, children)
+    }
+};
+
+ClosureParam: CstElement = {
+    <name:ClosureParamName> <type_:(<Tok<":">> <TypeExpr>)?> => {
+        let mut children = vec![name];
+        if let Some((colon, type_)) = type_ {
+            children.push(colon);
+            children.push(type_);
+        }
+        node(MySyntaxKind::CLOSURE_PARAM, children)
+    }
+};
+
+ClosureParamName: CstElement = {
+    Tok<"lident">,
+    Tok<"_">,
+};
+
+ClosureBody: CstElement = {
+    <body:Block> => node(MySyntaxKind::EXPR_CLOSURE_BODY, vec![body]),
+    <body:Expr> => node(MySyntaxKind::EXPR_CLOSURE_BODY, vec![body]),
+};
+
+ArgList: CstElement = {
+    <lparen:Tok<"(">> <pairs:ArgWithComma*> <last:ArgLast?>
+    <rparen:Tok<")">> => {
+        let mut children = vec![lparen];
+        children.extend(pairs);
+        children.extend(last);
+        children.push(rparen);
+        node(MySyntaxKind::ARG_LIST, children)
+    }
+};
+
+ArgWithComma: CstElement = {
+    <expr:Expr> <comma:Tok<",">> =>
+        node(MySyntaxKind::ARG, vec![expr, comma])
+};
+
+ArgLast: CstElement = {
+    <expr:Expr> => node(MySyntaxKind::ARG, vec![expr])
+};
+
+Block: CstElement = {
+    <lbrace:Tok<"{">> <statements:BlockStatement*> <tail:Expr?>
+    <rbrace:Tok<"}">> => {
+        let mut children = vec![lbrace];
+        children.extend(statements);
+        children.extend(tail);
+        children.push(rbrace);
+        node(MySyntaxKind::BLOCK, children)
+    }
+};
+
+BlockStatement: CstElement = {
+    LetStatement,
+    AssignStatement,
+    ExprStatement,
+    Tok<";">,
+};
+
+LetStatement: CstElement = {
+    <let_:Tok<"let">> <mut_:Tok<"mut">?> <pattern:Pattern>
+    <type_:(<Tok<":">> <TypeExpr>)?> <eq:Tok<"=">>
+    <value:Expr> <semi:Tok<";">> => {
+        let mut children = vec![let_];
+        children.extend(mut_);
+        children.push(pattern);
+        if let Some((colon, type_)) = type_ {
+            children.push(colon);
+            children.push(type_);
+        }
+        children.push(eq);
+        children.push(value);
+        children.push(semi);
+        node(MySyntaxKind::STMT_LET, children)
+    }
+};
+
+AssignStatement: CstElement = {
+    <target:Expr> <eq:Tok<"=">> <value:Expr> <semi:Tok<";">> =>
+        node(MySyntaxKind::STMT_ASSIGN, vec![target, eq, value, semi])
+};
+
+ExprStatement: CstElement = {
+    <expr:Expr> <terminator:StatementTerminator> => {
+        let mut children = vec![expr];
+        children.extend(terminator);
+        node(MySyntaxKind::STMT_EXPR, children)
+    }
+};
+
+StatementTerminator: Option<CstElement> = {
+    <semi:Tok<";">> => Some(semi),
+    <"implicit ;"> => None,
+};
+
+Pattern: CstElement = {
+    <first:AliasPattern> <rest:(<Tok<"|">> <AliasPattern>)+> => {
+        let mut children = vec![first];
+        for (pipe, pattern) in rest {
+            children.push(pipe);
+            children.push(pattern);
+        }
+        node(MySyntaxKind::PATTERN_OR, children)
+    },
+    AliasPattern,
+};
+
+AliasPattern: CstElement = {
+    <name:Tok<"lident">> <at:Tok<"@">> <pattern:AliasPattern> =>
+        node(MySyntaxKind::PATTERN_ALIAS, vec![name, at, pattern]),
+    RangePattern,
+};
+
+RangePattern: CstElement = {
+    <start:SimplePattern> <op:RangeOp> <end:SimplePattern> =>
+        node(MySyntaxKind::PATTERN_RANGE, vec![start, op, end]),
+    SimplePattern,
+};
+
+RangeOp: CstElement = {
+    Tok<"..">,
+    Tok<"..=">,
+};
+
+SimplePattern: CstElement = {
+    <token:BoolToken> => node(MySyntaxKind::PATTERN_BOOL, vec![token]),
+    <minus:Tok<"-">?> <token:Tok<"int_lit">> => {
+        let mut children = Vec::new();
+        children.extend(minus);
+        children.push(token);
+        node(MySyntaxKind::PATTERN_INT, children)
+    },
+    <minus:Tok<"-">?> <token:Tok<"float">> => {
+        let mut children = Vec::new();
+        children.extend(minus);
+        children.push(token);
+        node(MySyntaxKind::PATTERN_FLOAT, children)
+    },
+    <token:Tok<"str">> => node(MySyntaxKind::PATTERN_STRING, vec![token]),
+    <token:Tok<"char_lit">> => node(MySyntaxKind::PATTERN_CHAR, vec![token]),
+    <token:Tok<"_">> => node(MySyntaxKind::PATTERN_WILDCARD, vec![token]),
+    <lparen:Tok<"(">> <rparen:Tok<")">> =>
+        node(MySyntaxKind::PATTERN_UNIT, vec![lparen, rparen]),
+    <lparen:Tok<"(">> <patterns:CommaOne<Pattern>> <rparen:Tok<")">> => {
+        let mut children = vec![lparen];
+        children.extend(patterns);
+        children.push(rparen);
+        node(MySyntaxKind::PATTERN_TUPLE, children)
+    },
+    ArrayPattern,
+    NamePattern,
+};
+
+ArrayPattern: CstElement = {
+    <lbracket:Tok<"[">> <patterns:Comma<ArrayPatternItem>>
+    <rbracket:Tok<"]">> => {
+        let mut children = vec![lbracket];
+        children.extend(patterns);
+        children.push(rbracket);
+        node(MySyntaxKind::PATTERN_ARRAY, children)
+    }
+};
+
+ArrayPatternItem: CstElement = {
+    RestPattern,
+    Pattern,
+};
+
+RestPattern: CstElement = {
+    <dots:Tok<"..">> => node(MySyntaxKind::PATTERN_REST, vec![dots]),
+    <name:Tok<"lident">> <at:Tok<"@">> <dots:Tok<"..">> =>
+        node(MySyntaxKind::PATTERN_REST, vec![name, at, dots]),
+};
+
+NamePattern: CstElement = {
+    <name:Tok<"lident">> =>
+        node(MySyntaxKind::PATTERN_VARIABLE, vec![name]),
+    <path:ConstructorPath> <payload:PatternPayload?> => {
+        let mut children = vec![path];
+        children.extend(payload);
+        node(MySyntaxKind::PATTERN_CONSTR, children)
+    },
+};
+
+ConstructorPath: CstElement = {
+    <prefix:(<AnyIdent> <Tok<"::">>)*> <last:Tok<"uident">> => {
+        let mut children = Vec::new();
+        for (segment, separator) in prefix {
+            children.push(segment);
+            children.push(separator);
+        }
+        children.push(last);
+        node(MySyntaxKind::PATH, children)
+    }
+};
+
+PatternPayload: CstElement = {
+    <lparen:Tok<"(">> <patterns:Comma<Pattern>> <rparen:Tok<")">> => {
+        let mut children = vec![lparen];
+        children.extend(patterns);
+        children.push(rparen);
+        node(MySyntaxKind::TombStone, children)
+    },
+    StructPatternFields,
+};
+
+StructPatternFields: CstElement = {
+    <lbrace:Tok<"{">> <fields:Comma<StructPatternField>>
+    <rbrace:Tok<"}">> => {
+        let mut children = vec![lbrace];
+        children.extend(fields);
+        children.push(rbrace);
+        node(MySyntaxKind::STRUCT_PATTERN_FIELD_LIST, children)
+    }
+};
+
+StructPatternField: CstElement = {
+    RestPattern,
+    <name:Tok<"lident">> <pattern:(<Tok<":">> <Pattern>)?> => {
+        let mut children = vec![name];
+        if let Some((colon, pattern)) = pattern {
+            children.push(colon);
+            children.push(pattern);
+        }
+        node(MySyntaxKind::STRUCT_PATTERN_FIELD, children)
+    },
+};
+
+Comma<T>: Vec<CstElement> = {
+    <pairs:(<T> <Tok<",">>)*> <last:T?> => comma_list(pairs, last)
+};
+
+CommaOne<T>: Vec<CstElement> = {
+    <first:T> <rest:(<Tok<",">> <T>)*> <trailing:Tok<",">?> => {
+        let mut children = vec![first];
+        for (comma, element) in rest {
+            children.push(comma);
+            children.push(element);
+        }
+        children.extend(trailing);
+        children
+    }
+};
+
+Tok<T>: CstElement = {
+    <location:@L> <_value:T> => token(location)
+};
+
+AnyIdent: CstElement = {
+    Tok<"lident">,
+    Tok<"uident">,
+};
+
+extern {
+    type Location = usize;
+    type Error = std::convert::Infallible;
+
+    enum ParserToken {
+        "(" => ParserToken::LParen,
+        ")" => ParserToken::RParen,
+        "{" => ParserToken::LBrace,
+        "}" => ParserToken::RBrace,
+        "[" => ParserToken::LBracket,
+        "]" => ParserToken::RBracket,
+        "=" => ParserToken::Eq,
+        ";" => ParserToken::Semi,
+        "implicit ;" => ParserToken::ImplicitSemi,
+        "," => ParserToken::Comma,
+        "::" => ParserToken::ColonColon,
+        ":" => ParserToken::Colon,
+        "->" => ParserToken::Arrow,
+        "=>" => ParserToken::FatArrow,
+        "+" => ParserToken::Plus,
+        "-" => ParserToken::Minus,
+        "*" => ParserToken::Star,
+        "/" => ParserToken::Slash,
+        "%" => ParserToken::Percent,
+        "." => ParserToken::Dot,
+        "..=" => ParserToken::DotDotEq,
+        ".." => ParserToken::DotDot,
+        "@" => ParserToken::At,
+        "&&" => ParserToken::AndAnd,
+        "&" => ParserToken::Amp,
+        "||" => ParserToken::OrOr,
+        "|" => ParserToken::Pipe,
+        "^" => ParserToken::Caret,
+        "~" => ParserToken::Tilde,
+        "!" => ParserToken::Bang,
+        "<" => ParserToken::Less,
+        "<<" => ParserToken::LessLess,
+        ">" => ParserToken::Greater,
+        ">>" => ParserToken::GreaterGreater,
+        ">=" => ParserToken::GreaterEq,
+        "<=" => ParserToken::LessEq,
+        "==" => ParserToken::EqEq,
+        "!=" => ParserToken::NotEq,
+        "?" => ParserToken::Question,
+        "#" => ParserToken::Pound,
+        "extern" => ParserToken::ExternKeyword,
+        "package" => ParserToken::PackageKeyword,
+        "use" => ParserToken::UseKeyword,
+        "import" => ParserToken::ImportKeyword,
+        "as" => ParserToken::AsKeyword,
+        "pub" => ParserToken::PubKeyword,
+        "mod" => ParserToken::ModKeyword,
+        "crate" => ParserToken::CrateKeyword,
+        "super" => ParserToken::SuperKeyword,
+        "fn" => ParserToken::FnKeyword,
+        "trait" => ParserToken::TraitKeyword,
+        "impl" => ParserToken::ImplKeyword,
+        "for" => ParserToken::ForKeyword,
+        "enum" => ParserToken::EnumKeyword,
+        "struct" => ParserToken::StructKeyword,
+        "type" => ParserToken::TypeKeyword,
+        "where" => ParserToken::WhereKeyword,
+        "match" => ParserToken::MatchKeyword,
+        "if" => ParserToken::IfKeyword,
+        "else" => ParserToken::ElseKeyword,
+        "let" => ParserToken::LetKeyword,
+        "mut" => ParserToken::MutKeyword,
+        "in" => ParserToken::InKeyword,
+        "return" => ParserToken::ReturnKeyword,
+        "go" => ParserToken::GoKeyword,
+        "while" => ParserToken::WhileKeyword,
+        "break" => ParserToken::BreakKeyword,
+        "continue" => ParserToken::ContinueKeyword,
+        "dyn" => ParserToken::DynKeyword,
+        "true" => ParserToken::TrueKeyword,
+        "false" => ParserToken::FalseKeyword,
+        "_" => ParserToken::WildcardKeyword,
+        "unit" => ParserToken::UnitKeyword,
+        "bool" => ParserToken::BoolKeyword,
+        "int" => ParserToken::IntKeyword,
+        "int8" => ParserToken::Int8Keyword,
+        "int16" => ParserToken::Int16Keyword,
+        "int32" => ParserToken::Int32Keyword,
+        "int64" => ParserToken::Int64Keyword,
+        "uint" => ParserToken::UintKeyword,
+        "uint8" => ParserToken::Uint8Keyword,
+        "uint16" => ParserToken::Uint16Keyword,
+        "uint32" => ParserToken::Uint32Keyword,
+        "uint64" => ParserToken::Uint64Keyword,
+        "float32" => ParserToken::Float32Keyword,
+        "float64" => ParserToken::Float64Keyword,
+        "string" => ParserToken::StringKeyword,
+        "char" => ParserToken::CharKeyword,
+        "array" => ParserToken::ArrayKeyword,
+        "ident" => ParserToken::Ident,
+        "lident" => ParserToken::LowerIdent,
+        "uident" => ParserToken::UpperIdent,
+        "float" => ParserToken::Float,
+        "int_lit" => ParserToken::IntLit,
+        "str" => ParserToken::Str,
+        "multiline_str" => ParserToken::MultilineStr,
+        "char_lit" => ParserToken::CharLit,
+        "error" => ParserToken::Error,
+    }
+}

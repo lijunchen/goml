@@ -1,0 +1,2049 @@
+use expect_test::{Expect, expect};
+use std::path::Path;
+use std::sync::{Mutex, OnceLock};
+use tempfile::tempdir;
+
+use crate::query::{
+    colon_colon_completions, dot_completions, hover_type, inlay_hints, signature_help,
+    value_completions,
+};
+
+fn check(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = hover_type(Path::new("dummy"), src, line, col);
+    expected.assert_debug_eq(&result.unwrap_or("<None>".to_string()));
+}
+
+fn check_at(src: &str, needle: &str, delta: usize, expected: Expect) {
+    let offset = src.find(needle).unwrap() + delta;
+    let prefix = &src[..offset];
+    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u32;
+    let col = prefix
+        .rsplit_once('\n')
+        .map_or(prefix.len(), |(_, line)| line.len()) as u32;
+    let result = hover_type(Path::new("dummy"), src, line, col);
+    expected.assert_eq(&result.unwrap_or("<None>".to_string()));
+}
+
+fn check_completions(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = dot_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_completion_labels(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = dot_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    let mut labels = result.into_iter().map(|item| item.name).collect::<Vec<_>>();
+    labels.sort();
+    expected.assert_debug_eq(&labels);
+}
+
+fn check_completions_with_path(path: &Path, src: &str, line: u32, col: u32, expected: Expect) {
+    let result = dot_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_colon_colon_completions(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = colon_colon_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_colon_colon_completion_labels(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = colon_colon_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    let mut labels = result.into_iter().map(|item| item.name).collect::<Vec<_>>();
+    labels.sort();
+    expected.assert_debug_eq(&labels);
+}
+
+fn check_colon_colon_completions_with_path(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    expected: Expect,
+) {
+    let result = colon_colon_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_value_completions(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = value_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_value_completions_with_path(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    expected: Expect,
+) {
+    let result = value_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_signature_help(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = signature_help(Path::new("dummy"), src, line, col);
+    expected.assert_debug_eq(&result);
+}
+
+fn check_inlay_hints(src: &str, expected: Expect) {
+    let result = inlay_hints(Path::new("dummy"), src).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_with_path(path: &Path, src: &str, line: u32, col: u32, expected: Expect) {
+    let result = hover_type(path, src, line, col);
+    expected.assert_debug_eq(&result.unwrap_or("<None>".to_string()));
+}
+
+fn env_lock() -> &'static Mutex<()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+}
+
+fn write_module_manifest(root: &Path, path: &str) {
+    std::fs::write(
+        root.join("goml.toml"),
+        format!("[module]\npath = {path:?}\n"),
+    )
+    .unwrap();
+}
+
+fn with_goml_home<T>(home: &Path, f: impl FnOnce() -> T) -> T {
+    let _guard = env_lock().lock().unwrap();
+    let previous = std::env::var_os("GOML_HOME");
+    unsafe {
+        std::env::set_var("GOML_HOME", home);
+    }
+    let result = f();
+    match previous {
+        Some(value) => unsafe {
+            std::env::set_var("GOML_HOME", value);
+        },
+        None => unsafe {
+            std::env::remove_var("GOML_HOME");
+        },
+    }
+    result
+}
+
+fn write_cached_registry(home: &Path) {
+    let registry = home.join("cache/registry");
+    std::fs::create_dir_all(registry.join("alice/http/1.2.0/client")).unwrap();
+    std::fs::write(
+        registry.join("index.toml"),
+        r#"[modules."alice::http"]
+latest = "1.2.0"
+versions = ["1.2.0"]
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/goml.toml"),
+        r#"[module]
+path = "alice::http"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/lib.gom"),
+        r#"
+package http;
+
+use alice::http::client;
+
+pub fn make_client() -> client::Client {
+    client::Client { name: "alice" }
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/client/client.gom"),
+        r#"
+package client;
+
+pub struct Client {
+    pub name: string,
+}
+
+pub fn tag() -> string {
+    "client"
+}
+"#,
+    )
+    .unwrap();
+}
+
+#[test]
+#[rustfmt::skip]
+fn use_statement_package_completions() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::create_dir_all(dir.path().join("out")).unwrap();
+    std::fs::write(
+        dir.path().join("util/util.gom"),
+        r#"
+package util;
+
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("out/generated.gom"),
+        "package generated;\npub fn generated() -> unit { () }\n",
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+path = "demo"
+
+[build]
+target-dir = "out"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+
+    let src = "\npackage main;\n\nuse \n\nfn main() -> unit {\n    ()\n}\n";
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    with_goml_home(&home, || {
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            3,
+            4,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "alice::http",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ValueCompletionItem {
+                        name: "demo::util",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ValueCompletionItem {
+                        name: "std",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
+}
+
+#[test]
+#[rustfmt::skip]
+fn imported_package_value_completions() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/util.gom"),
+        r#"
+package util;
+
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+path = "demo"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"
+package main;
+
+use demo::util;
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    ut
+    ht
+    cl
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    with_goml_home(&home, || {
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            8,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "util",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            9,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "http",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            10,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
+}
+
+#[test]
+#[rustfmt::skip]
+fn smoke_test() {
+    let src = r#"enum Color { Red, Green, Blue }
+
+fn main() {
+    let a = 1;
+    let a = (true, 2);
+    let a = Green;
+    ()
+}
+"#;
+
+    check(src, 3, 8, expect![[r#"
+        "int"
+    "#]]);
+    check(src, 3, 9, expect![[r#"
+        "int"
+    "#]]);
+    check(src, 3, 10, expect![[r#"
+        "<None>"
+    "#]]);
+
+    check(src, 4, 8, expect![[r#"
+        "(bool, int)"
+    "#]]);
+
+    check(src, 5, 8, expect![[r#"
+        "Color"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_literals() {
+    let src = r#"
+fn main() {
+    let _ = 1;
+    let _ = true;
+    let _ = "x";
+}
+"#;
+
+    check(src, 2, 12, expect![[r#"
+        "int"
+    "#]]);
+    check(src, 3, 12, expect![[r#"
+        "bool"
+    "#]]);
+    check(src, 4, 12, expect![[r#"
+        "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_on_minimal_function_name() {
+    let src = r#"
+
+fn main() {
+}
+"#;
+
+    check(src, 0, 9, expect![[r#"
+        "() -> unit"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_value_completions() {
+    let src = r#"
+fn main() {
+    s
+}
+"#;
+
+    check_value_completions(src, 2, 5, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "slice",
+                kind: Function,
+                detail: Some(
+                    "(Vec[T], int, int) -> Slice[T]",
+                ),
+            },
+            ValueCompletionItem {
+                name: "slice_get",
+                kind: Function,
+                detail: Some(
+                    "(Slice[T], int) -> T",
+                ),
+            },
+            ValueCompletionItem {
+                name: "slice_len",
+                kind: Function,
+                detail: Some(
+                    "(Slice[T]) -> int",
+                ),
+            },
+            ValueCompletionItem {
+                name: "slice_sub",
+                kind: Function,
+                detail: Some(
+                    "(Slice[T], int, int) -> Slice[T]",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_byte_get",
+                kind: Function,
+                detail: Some(
+                    "(string, int) -> uint8",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_byte_slice",
+                kind: Function,
+                detail: Some(
+                    "(string, int, int) -> string",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_concat",
+                kind: Function,
+                detail: Some(
+                    "(Vec[string]) -> string",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_decode_utf8_at",
+                kind: Function,
+                detail: Some(
+                    "(string, int) -> (bool, char, int)",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_from_utf8",
+                kind: Function,
+                detail: Some(
+                    "(Vec[uint8]) -> (bool, string)",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_get",
+                kind: Function,
+                detail: Some(
+                    "(string, int) -> char",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_hash",
+                kind: Function,
+                detail: Some(
+                    "(string) -> uint64",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_is_char_boundary",
+                kind: Function,
+                detail: Some(
+                    "(string, int) -> bool",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_len",
+                kind: Function,
+                detail: Some(
+                    "(string) -> int",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_parse_float32",
+                kind: Function,
+                detail: Some(
+                    "(string) -> (bool, float64)",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_parse_float64",
+                kind: Function,
+                detail: Some(
+                    "(string) -> (bool, float64)",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_print",
+                kind: Function,
+                detail: Some(
+                    "(string) -> unit",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_println",
+                kind: Function,
+                detail: Some(
+                    "(string) -> unit",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_to_bytes",
+                kind: Function,
+                detail: Some(
+                    "(string) -> Vec[uint8]",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string",
+                kind: Keyword,
+                detail: None,
+            },
+            ValueCompletionItem {
+                name: "struct",
+                kind: Keyword,
+                detail: None,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn user_value_completions() {
+    let src = r#"
+fn helper() -> int32 {
+    42
+}
+
+fn main() {
+    hel
+}
+"#;
+
+    check_value_completions(src, 6, 7, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "helper",
+                kind: Function,
+                detail: Some(
+                    "() -> int32",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn local_value_completions() {
+    let src = r#"
+fn main() {
+    let count = 1;
+    cou
+}
+"#;
+
+    check_value_completions(src, 3, 7, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "count",
+                kind: Variable,
+                detail: Some(
+                    "int",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn call_argument_value_completions_are_empty_without_prefix() {
+    let src = r#"
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    takes(
+    )
+}
+"#;
+
+    check_value_completions(src, 8, 10, expect![[r#"
+        []
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn call_argument_value_completions_with_prefix() {
+    let src = r#"
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    takes(count, la)
+}
+"#;
+
+    check_value_completions(src, 8, 19, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "label",
+                kind: Variable,
+                detail: Some(
+                    "string",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn keyword_value_completions() {
+    let src = r#"
+fn main() {
+    le
+}
+"#;
+
+    check_value_completions(src, 2, 6, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "let",
+                kind: Keyword,
+                detail: None,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn keyword_and_function_value_completions() {
+    let src = r#"
+fn map() -> int32 {
+    1
+}
+
+fn main() {
+    ma
+}
+"#;
+
+    check_value_completions(src, 6, 6, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "main",
+                kind: Function,
+                detail: Some(
+                    "() -> unit",
+                ),
+            },
+            ValueCompletionItem {
+                name: "map",
+                kind: Function,
+                detail: Some(
+                    "() -> int32",
+                ),
+            },
+            ValueCompletionItem {
+                name: "match",
+                kind: Keyword,
+                detail: None,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn signature_help_for_function_call() {
+    let src = r#"
+fn add(x: int32, y: string) -> bool {
+    true
+}
+
+fn main() {
+    let _ = add(1, 2);
+}
+"#;
+
+    check_signature_help(src, 6, 16, expect![[r#"
+        Some(
+            SignatureHelpItem {
+                label: "(x: int32, y: string) -> bool",
+                parameters: [
+                    "x: int32",
+                    "y: string",
+                ],
+                active_parameter: 0,
+            },
+        )
+    "#]]);
+
+    check_signature_help(src, 6, 18, expect![[r#"
+        Some(
+            SignatureHelpItem {
+                label: "(x: int32, y: string) -> bool",
+                parameters: [
+                    "x: int32",
+                    "y: string",
+                ],
+                active_parameter: 1,
+            },
+        )
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn signature_help_for_method_call_hides_receiver() {
+    let src = r#"
+fn main() {
+    let x = 1;
+    let _ = x.to_string();
+}
+"#;
+
+    check_signature_help(src, 3, 24, expect![[r#"
+        Some(
+            SignatureHelpItem {
+                label: "() -> string",
+                parameters: [],
+                active_parameter: 0,
+            },
+        )
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn inlay_hints_for_let_bindings() {
+    let src = r#"
+fn main() {
+    let x = 1;
+    let y: int32 = 2;
+    let _ = 3;
+    ()
+}
+"#;
+
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 23,
+                label: ": int",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn inlay_hints_for_closure_params() {
+    let src = r#"
+fn main() {
+    let f = |x| x + 1;
+    ()
+}
+"#;
+
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 23,
+                label: ": (int) -> int",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 27,
+                label: ": int",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_and_inlay_hints_for_for_pattern() {
+    let src = r#"
+fn main() {
+    for value in range(0, 2) {
+        let _ = value;
+    };
+}
+"#;
+
+    check(src, 2, 9, expect![[r#"
+        "int"
+    "#]]);
+    check(src, 3, 17, expect![[r#"
+        "int"
+    "#]]);
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 27,
+                label: ": int",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_and_inlay_hints_for_alias_and_rest_patterns() {
+    let src = r#"
+fn main() {
+    let values = vec_new();
+    vec_push(values, 1);
+    match values {
+        whole @ [first, tail @ ..] => {
+            let _ = whole;
+            let _ = first;
+            let _ = tail;
+        },
+        _ => (),
+    };
+}
+"#;
+
+    check(src, 5, 8, expect![[r#"
+        "Vec[int]"
+    "#]]);
+    check(src, 5, 17, expect![[r#"
+        "int"
+    "#]]);
+    check(src, 5, 24, expect![[r#"
+        "Slice[int]"
+    "#]]);
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 28,
+                label: ": Vec[int]",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 98,
+                label: ": Vec[int]",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 107,
+                label: ": int",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 113,
+                label: ": Slice[int]",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_fn_params() {
+    let src = r#"
+fn f(x: int32, y: string) -> int32 { x }
+"#;
+
+    check(src, 1, 5, expect![[r#"
+        "int32"
+    "#]]);
+    check(src, 1, 15, expect![[r#"
+        "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_closure_params() {
+    let src = r#"
+fn main() {
+    let f = |x| x + 1;
+    ()
+}
+"#;
+
+    check(src, 2, 13, expect![[r#"
+        "int"
+    "#]]);
+}
+
+#[test]
+fn hover_declarations_and_type_positions() {
+    let src = r#"package main;
+
+trait Render {
+    type Output;
+    fn render(self: Self) -> string;
+}
+
+struct Point[T] {
+    x: T,
+    y: string,
+}
+
+enum Choice {
+    Some(int32),
+    None,
+}
+
+impl Render for Point[int32] {
+    type Output = string;
+
+    fn render(self: Point[int32]) -> string {
+        self.y
+    }
+}
+
+impl Point[int32] {
+    fn first(self: Point[int32]) -> int32 {
+        self.x
+    }
+}
+
+fn identity[T](value: T) -> T {
+    value
+}
+
+fn main() -> unit {
+    let point = Point { x: 1, y: "one" };
+    let value: int32 = point.first();
+    let choice = Choice::Some(value);
+    let closure = |item: int32| item + 1;
+    match choice {
+        Choice::Some(item) => closure(item),
+        Choice::None => 0,
+    };
+    ()
+}
+"#;
+
+    check_at(src, "package main", 8, expect!["package main"]);
+    check_at(src, "trait Render", 6, expect!["trait Render"]);
+    check_at(src, "type Output;", 5, expect!["type Output"]);
+    check_at(src, "fn render(self: Self)", 3, expect!["(Self) -> string"]);
+    check_at(src, "struct Point", 7, expect!["struct Point[T]"]);
+    check_at(src, "Point[T]", 6, expect!["T"]);
+    check_at(src, "    x: T", 4, expect!["T"]);
+    check_at(src, "    x: T", 7, expect!["T"]);
+    check_at(src, "enum Choice", 5, expect!["enum Choice"]);
+    check_at(src, "    Some(int32)", 4, expect!["(int32) -> Choice"]);
+    check_at(src, "impl Render", 5, expect!["Render"]);
+    check_at(src, "for Point[int32]", 4, expect!["Point[int32]"]);
+    check_at(src, "type Output =", 5, expect!["string"]);
+    check_at(
+        src,
+        "    fn render(self: Point[int32]",
+        7,
+        expect!["(Point[int32]) -> string"],
+    );
+    check_at(
+        src,
+        "    fn first(self",
+        7,
+        expect!["(Point[int32]) -> int32"],
+    );
+    check_at(src, "fn identity", 3, expect!["(T) -> T"]);
+    check_at(src, "identity[T]", 9, expect!["T"]);
+    check_at(src, "identity[T](value: T) -> T", 25, expect!["T"]);
+    check_at(src, "let value: int32", 11, expect!["int32"]);
+    check_at(src, "Point { x: 1", 8, expect!["int"]);
+    check_at(src, "Choice::Some(value)", 0, expect!["Choice"]);
+    check_at(src, "Choice::Some(value)", 8, expect!["(int32) -> Choice"]);
+    check_at(src, "|item: int32|", 0, expect!["(int32) -> int32"]);
+}
+
+#[test]
+fn hover_use_path_without_a_resolved_package() {
+    let src = "use demo::missing;\n\nfn main() -> unit { () }\n";
+    check_at(src, "demo::missing", 6, expect!["use demo::missing"]);
+}
+
+#[test]
+fn hover_isolated_by_source_file_within_a_package() {
+    let dir = tempdir().unwrap();
+    write_module_manifest(dir.path(), "hover_files");
+    let first =
+        "package main;\n\nfn alphaa() -> unit {\n    let value = 1;\n    let _ = value;\n}\n";
+    let second =
+        "package main;\n\nfn betaaa() -> unit {\n    let value = \"x\";\n    let _ = value;\n}\n";
+    let first_path = dir.path().join("a.gom");
+    let second_path = dir.path().join("b.gom");
+    std::fs::write(&first_path, first).unwrap();
+    std::fs::write(&second_path, second).unwrap();
+
+    check_with_path(
+        &first_path,
+        first,
+        3,
+        8,
+        expect![[r#"
+            "int"
+        "#]],
+    );
+    check_with_path(
+        &second_path,
+        second,
+        3,
+        8,
+        expect![[r#"
+            "string"
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn struct_field_completions() {
+    let src = r#"
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+fn main() {
+    let p = Point { x: 1, y: 2 };
+    p.
+}
+"#;
+
+    check_completions(
+        src,
+        8,
+        6,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "x",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "y",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn struct_field_completion_with_prefix() {
+    let src = r#"
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+fn main() {
+    let p = Point { x: 1, y: 2 };
+    let _ = p.x;
+}
+"#;
+
+    check_completions(
+        src,
+        8,
+        15,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "x",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn inherent_method_completion() {
+    let src = r#"
+fn main() {
+    let value = 3;
+    value.
+}
+"#;
+
+    check_completions(
+        src,
+        3,
+        10,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "eq",
+                    kind: Method,
+                    detail: Some(
+                        "(int, int) -> bool",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "hash",
+                    kind: Method,
+                    detail: Some(
+                        "(int) -> uint64",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "to_string",
+                    kind: Method,
+                    detail: Some(
+                        "(int) -> string",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_vec_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let v: Vec[int32] = Vec::new();
+    v.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        6,
+        expect![[r#"
+            [
+                "capacity",
+                "clear",
+                "extend",
+                "get",
+                "insert",
+                "into_iter",
+                "is_empty",
+                "iter",
+                "last",
+                "len",
+                "new",
+                "pop",
+                "push",
+                "pushed",
+                "remove",
+                "reserve",
+                "reverse",
+                "set",
+                "slice",
+                "swap",
+                "swap_remove",
+                "truncate",
+                "with_capacity",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_hashmap_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let m: HashMap[string, int32] = HashMap::new();
+    m.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        6,
+        expect![[r#"
+            [
+                "contains",
+                "entries",
+                "get",
+                "len",
+                "new",
+                "remove",
+                "set",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_slice_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let v: Vec[int32] = Vec::new();
+    v.push(1);
+    v.push(2);
+    let s: Slice[int32] = v.slice(0, 2);
+    s.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        6,
+        6,
+        expect![[r#"
+            [
+                "get",
+                "into_iter",
+                "iter",
+                "len",
+                "sub",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_iterator_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let iterator = range(0, 2);
+    iterator.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        13,
+        expect![[r#"
+            [
+                "from_fn",
+                "into_iter",
+                "next",
+                "next_fn",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn generic_trait_dot_method_completion() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(self: Self) -> T;
+}
+
+struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+
+fn main() {
+    let token = Token {};
+    token.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        13,
+        10,
+        expect![[r#"
+            [
+                "convert",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_builtin_range() {
+    let src = r#"
+fn main() {
+    let iterator = range(0, 2);
+}
+"#;
+
+    check(src, 2, 21, expect![[r#"
+        "(int, int) -> FnIterator[int]"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn enum_variant_completion() {
+    let src = r#"enum Color { Red, Green }
+
+fn main() {
+    let _ = Color::;
+}
+"#;
+
+    check_colon_colon_completions(
+        src,
+        3,
+        19,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "Green",
+                    kind: Variant,
+                    detail: Some(
+                        "Color",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "Red",
+                    kind: Variant,
+                    detail: Some(
+                        "Color",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_vec_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Vec::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        17,
+        expect![[r#"
+            [
+                "capacity",
+                "clear",
+                "extend",
+                "get",
+                "insert",
+                "is_empty",
+                "iter",
+                "last",
+                "len",
+                "new",
+                "pop",
+                "push",
+                "pushed",
+                "remove",
+                "reserve",
+                "reverse",
+                "set",
+                "slice",
+                "swap",
+                "swap_remove",
+                "truncate",
+                "with_capacity",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_hashmap_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = HashMap::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        21,
+        expect![[r#"
+            [
+                "contains",
+                "entries",
+                "get",
+                "len",
+                "new",
+                "remove",
+                "set",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_slice_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Slice::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        19,
+        expect![[r#"
+            [
+                "get",
+                "iter",
+                "len",
+                "sub",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_iterator_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Iterator::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        22,
+        expect![[r#"
+            [
+                "next",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn multi_package_query() {
+    let dir = tempdir().unwrap();
+    write_module_manifest(dir.path(), "query_test");
+    let lib_dir = dir.path().join("lib");
+    std::fs::create_dir_all(&lib_dir).unwrap();
+
+    let lib_src = r#"
+package lib;
+
+pub enum Color {
+    Red,
+    Green,
+}
+
+pub struct Point {
+    pub x: int32,
+    pub y: int32,
+}
+
+pub fn color_to_int(c: Color) -> int32 {
+    match c {
+        Color::Red => 1,
+        Color::Green => 2,
+    }
+}
+"#;
+    let lib_path = lib_dir.join("main.gom");
+    std::fs::write(&lib_path, lib_src).unwrap();
+
+    let hover_src = r#"
+package main;
+
+use query_test::lib;
+
+fn main() {
+    let f = lib::color_to_int;
+    let i = f(lib::Color::Red);
+    let _ = i;
+    let p = lib::Point { x: 1, y: 2 };
+}
+"#;
+    let completion_src = r#"
+package main;
+
+use query_test::lib;
+
+fn main() {
+    let f = lib::color_to_int;
+    let i = f(lib::Color::Red);
+    let _ = i;
+    let p = lib::Point { x: 1, y: 2 };
+    p.
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, hover_src).unwrap();
+
+    check_with_path(&main_path, hover_src, 6, 17, expect![[r#"
+        "(query_test::lib::Color) -> int32"
+    "#]]);
+
+    check_completions_with_path(
+        &main_path,
+        completion_src,
+        10,
+        6,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "x",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "y",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn multi_package_inherent_method_completion() {
+    let dir = tempdir().unwrap();
+    write_module_manifest(dir.path(), "query_test");
+    let lib_dir = dir.path().join("lib");
+    std::fs::create_dir_all(&lib_dir).unwrap();
+
+    let lib_src = r#"
+package lib;
+
+pub struct Item {
+    pub value: int32,
+}
+
+pub fn make(value: int32) -> Item {
+    Item { value: value }
+}
+
+impl Item {
+    pub fn text(self: Item) -> string {
+        self.value.to_string()
+    }
+
+    pub fn touch(self: Item) -> unit {
+        ()
+    }
+}
+"#;
+    let lib_path = lib_dir.join("main.gom");
+    std::fs::write(&lib_path, lib_src).unwrap();
+
+    let src = r#"
+package main;
+
+use query_test::lib;
+
+fn main() {
+    let item = lib::make(1);
+    item.
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_completions_with_path(
+        &main_path,
+        src,
+        7,
+        9,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "value",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "text",
+                    kind: Method,
+                    detail: Some(
+                        "(query_test::lib::Item) -> string",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "touch",
+                    kind: Method,
+                    detail: Some(
+                        "(query_test::lib::Item) -> unit",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn multi_package_colon_colon_completions() {
+    let dir = tempdir().unwrap();
+    write_module_manifest(dir.path(), "query_test");
+    let lib_dir = dir.path().join("lib");
+    std::fs::create_dir_all(&lib_dir).unwrap();
+
+    let lib_src = r#"
+package lib;
+
+pub enum Color {
+    Red,
+    Green,
+}
+
+pub struct Point {
+    x: int32,
+    y: int32,
+}
+
+pub fn color_to_int(c: Color) -> int32 {
+    match c {
+        Color::Red => 1,
+        Color::Green => 2,
+    }
+}
+"#;
+    let lib_path = lib_dir.join("main.gom");
+    std::fs::write(&lib_path, lib_src).unwrap();
+
+    let src = r#"
+package main;
+
+use query_test::lib;
+
+fn main() {
+    let _ = lib::;
+}
+"#;
+    let src_with_prefix = r#"
+package main;
+
+use query_test::lib;
+
+fn main() {
+    let _ = lib::co;
+}
+"#;
+
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        src,
+        6,
+        17,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "Color",
+                    kind: Type,
+                    detail: Some(
+                        "enum",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "Point",
+                    kind: Type,
+                    detail: Some(
+                        "struct",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "color_to_int",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        src_with_prefix,
+        6,
+        19,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "color_to_int",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn local_import_colon_colon_completions() {
+    let dir = tempdir().unwrap();
+    let util_dir = dir.path().join("util");
+    std::fs::create_dir_all(&util_dir).unwrap();
+    std::fs::write(
+        util_dir.join("util.gom"),
+        r#"
+package util;
+
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+path = "demo"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"
+package main;
+
+use demo::util;
+
+fn main() -> unit {
+    let _ = util::;
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        src,
+        6,
+        18,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "ping",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn declared_package_name_drives_completion_alias() {
+    let dir = tempdir().unwrap();
+    let util_dir = dir.path().join("util");
+    std::fs::create_dir_all(&util_dir).unwrap();
+    std::fs::write(
+        util_dir.join("util.gom"),
+        r#"package actual;
+
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+    write_module_manifest(dir.path(), "demo");
+
+    let src = r#"
+package main;
+
+use demo::util;
+
+fn main() -> unit {
+    let _ = actual::;
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        src,
+        6,
+        20,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "ping",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn std_use_alias_colon_colon_completions() {
+    let src = r#"
+use std::env;
+
+fn main() -> unit {
+    let _ = env::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        4,
+        17,
+        expect![[r#"
+            [
+                "args",
+                "current_dir",
+                "current_exe",
+                "var",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn registry_dependency_hover_and_completion() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    let main_path = dir.path().join("main.gom");
+    let valid_src = r#"
+package main;
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    let client = http::make_client();
+    let _ = client.name;
+}
+"#;
+    let namespace_src = r#"
+package main;
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    let _ = http::;
+}
+"#;
+    let nested_namespace_src = r#"
+package main;
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    let _ = client::;
+}
+"#;
+    let use_namespace_src = r#"
+package main;
+
+use alice::http::
+
+fn main() -> unit {
+    ()
+}
+"#;
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+path = "demo"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+    std::fs::write(&main_path, valid_src).unwrap();
+
+    with_goml_home(&home, || {
+        let (_hir_table, _results, genv, _diagnostics) =
+            crate::pipeline::pipeline::typecheck_with_packages_and_results(&main_path, valid_src)
+                .unwrap();
+        assert!(
+            genv.structs()
+                .contains_key(&crate::tast::TastIdent(
+                    "alice::http::client::Client".to_string()
+                ))
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            namespace_src,
+            7,
+            18,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "make_client",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            nested_namespace_src,
+            7,
+            20,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "Client",
+                        kind: Type,
+                        detail: Some(
+                            "struct",
+                        ),
+                    },
+                    ColonColonCompletionItem {
+                        name: "tag",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            use_namespace_src,
+            3,
+            17,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
+}

@@ -27,12 +27,6 @@ pub extern fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string);
 #[runtime("std.fs.create_dir_all")]
 pub extern fn create_dir_all(path: string) -> (bool, string);
 
-#[runtime("std.fs.remove_file")]
-pub extern fn remove_file(path: string) -> (bool, string);
-
-#[runtime("std.fs.remove_dir_all")]
-pub extern fn remove_dir_all(path: string) -> (bool, string);
-
 #[runtime("std.fs.file_exists")]
 pub extern fn file_exists(path: string) -> bool;
 
@@ -47,9 +41,6 @@ pub extern fn canonicalize(path: string) -> (bool, string, string);
 
 #[runtime("std.fs.read_dir")]
 pub extern fn read_dir(path: string) -> (bool, Vec[string], string);
-
-#[runtime("std.fs.sha256_file")]
-pub extern fn sha256_file(path: string) -> (bool, string, string);
 
 #[runtime("std.io.print")]
 pub extern fn print(value: string) -> unit;
@@ -102,9 +93,6 @@ pub extern fn path_absolute(path: string) -> (bool, string, string);
 #[runtime("std.process.exit")]
 pub extern fn exit(code: int) -> unit;
 
-#[runtime("std.process.look_path")]
-pub extern fn process_look_path(program: string) -> (bool, string, string);
-
 #[runtime("std.process.output")]
 pub extern fn process_output(
     program: string,
@@ -116,18 +104,6 @@ pub extern fn process_output(
     input: Vec[uint8],
 ) -> (bool, int, Vec[uint8], Vec[uint8], string);
 
-#[runtime("std.process.output_timeout")]
-pub extern fn process_output_timeout(
-    program: string,
-    arguments: Vec[string],
-    has_directory: bool,
-    directory: string,
-    environment: Vec[(string, string)],
-    has_input: bool,
-    input: Vec[uint8],
-    timeout_ms: int,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
-
 #[runtime("std.process.status")]
 pub extern fn process_status(
     program: string,
@@ -136,16 +112,6 @@ pub extern fn process_status(
     directory: string,
     environment: Vec[(string, string)],
 ) -> (bool, int, string);
-
-#[runtime("std.process.status_timeout")]
-pub extern fn process_status_timeout(
-    program: string,
-    arguments: Vec[string],
-    has_directory: bool,
-    directory: string,
-    environment: Vec[(string, string)],
-    timeout_ms: int,
-) -> (bool, int, string, bool);
 
 #[runtime("std.testing.fail")]
 pub extern fn test_fail(message: string) -> unit;

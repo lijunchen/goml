@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 suite('GoML Module Tests', () => {
-    const moduleTestDir = path.resolve(__dirname, '../../../../bootstrap/testdata/module');
+    const moduleTestDir = path.resolve(__dirname, '../../../../crates/compiler/src/tests/module');
 
     function getProjectDirs(): string[] {
         return fs.readdirSync(moduleTestDir)

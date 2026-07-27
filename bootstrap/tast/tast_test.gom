@@ -933,7 +933,7 @@ fn validates_declared_types_and_tostring_requirements() -> unit {
 }
 
 #[test]
-fn reports_unimported_package_members_canonically() -> unit {
+fn reports_unimported_package_members_like_the_rust_compiler() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
         "package dep; pub fn value() -> int32 { 1 }",
@@ -963,7 +963,7 @@ fn reports_unimported_package_members_canonically() -> unit {
 }
 
 #[test]
-fn reports_missing_constructor_inference_canonically() -> unit {
+fn reports_missing_constructor_inference_like_the_rust_compiler() -> unit {
     let diagnostics = checked_diagnostics(
         "enum Direction { North } fn main() -> unit { let _ = Direction::Up; }",
     );

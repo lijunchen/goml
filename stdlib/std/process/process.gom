@@ -126,35 +126,6 @@ impl Command {
         }
     }
 
-    pub fn output_timeout(
-        self: Command,
-        timeout_ms: int,
-    ) -> Result[(Output, bool), string] {
-        let (ok, code, stdout, stderr, err, timed_out) =
-            host::process_output_timeout(
-                self.program,
-                self.arguments,
-                self.has_directory,
-                self.directory,
-                self.environment,
-                self.has_input,
-                self.input_value,
-                timeout_ms,
-            );
-        if ok {
-            Result::Ok((
-                Output {
-                    status_value: ExitStatus { code_value: code },
-                    stdout_value: bytes::Bytes::from_vec(stdout),
-                    stderr_value: bytes::Bytes::from_vec(stderr),
-                },
-                timed_out,
-            ))
-        } else {
-            Result::Err(err)
-        }
-    }
-
     pub fn status(self: Command) -> Result[ExitStatus, string] {
         let (ok, code, err) = host::process_status(
             self.program,
@@ -169,36 +140,8 @@ impl Command {
             Result::Err(err)
         }
     }
-
-    pub fn status_timeout(
-        self: Command,
-        timeout_ms: int,
-    ) -> Result[(ExitStatus, bool), string] {
-        let (ok, code, err, timed_out) = host::process_status_timeout(
-            self.program,
-            self.arguments,
-            self.has_directory,
-            self.directory,
-            self.environment,
-            timeout_ms,
-        );
-        if ok {
-            Result::Ok((ExitStatus { code_value: code }, timed_out))
-        } else {
-            Result::Err(err)
-        }
-    }
 }
 
 pub fn exit(code: int) -> unit {
     host::exit(code)
-}
-
-pub fn look_path(program: string) -> Result[string, string] {
-    let (ok, result, err) = host::process_look_path(program);
-    if ok {
-        Result::Ok(result)
-    } else {
-        Result::Err(err)
-    }
 }

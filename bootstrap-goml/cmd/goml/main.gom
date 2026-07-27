@@ -1,6 +1,5 @@
 package main;
 
-use gomlang::bootstrap_goml::commands;
 use gomlang::bootstrap_goml::project;
 use gomlang::bootstrap_goml::runner;
 use gomlang::bootstrap_goml::util;
@@ -22,8 +21,6 @@ struct CliArgs {
     test_ignored: bool,
     test_include_ignored: bool,
     test_json: bool,
-    test_nocapture: bool,
-    test_timeout_ms: int,
     test_kind: string,
 }
 
@@ -33,26 +30,18 @@ fn fail(message: string) -> unit {
 }
 
 fn top_help() -> string {
-    "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
+    "Usage: goml <COMMAND>\n\nCommands:\n  check\n  build\n  run\n  test\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn command_help(command: string) -> string {
-    if command == "new" {
-        "Usage: goml new [OPTIONS] <PROJECT_NAME>\n\nOptions:\n      --path <PATH>  [default: .]\n  -h, --help"
-    } else if command == "check" {
+    if command == "check" {
         "Usage: goml check [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
     } else if command == "build" {
         "Usage: goml build [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "run" {
         "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "test" {
-        "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help"
-    } else if command == "update" {
-        "Usage: goml update [OPTIONS]\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
-    } else if command == "add" {
-        "Usage: goml add [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
-    } else if command == "remove" {
-        "Usage: goml remove [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
+        "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --format <FORMAT>  [default: text] [possible values: text, json]\n      --jobs <JOBS>      [default: 1]\n      --kind <KIND>      [default: all] [possible values: internal, external, all]\n  -h, --help"
     } else {
         top_help()
     }
@@ -99,33 +88,6 @@ fn option_value(
     }
 }
 
-fn parse_duration(value: string) -> Result[int, string] {
-    let number = Ref::new("");
-    let multiplier = Ref::new(0);
-    if util::ends_with(value, "ms") {
-        number.set(value.byte_slice(0, value.byte_len() - 2));
-        multiplier.set(1)
-    } else if util::ends_with(value, "s") {
-        number.set(value.byte_slice(0, value.byte_len() - 1));
-        multiplier.set(1000)
-    } else if util::ends_with(value, "m") {
-        number.set(value.byte_slice(0, value.byte_len() - 1));
-        multiplier.set(60000)
-    } else {
-        return Result::Err("duration must end in ms, s, or m")
-    };
-    let parsed = match util::parse_positive_int(number.get()) {
-        Result::Ok(value) => value,
-        Result::Err(_) => return Result::Err("invalid duration `" + value + "`"),
-    };
-    let duration = parsed * multiplier.get();
-    if duration / multiplier.get() != parsed {
-        Result::Err("duration is too large")
-    } else {
-        Result::Ok(duration)
-    }
-}
-
 fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     if args.len() < 2 {
         return Result::Err(top_help())
@@ -155,8 +117,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     let test_ignored = Ref::new(false);
     let test_include_ignored = Ref::new(false);
     let test_json = Ref::new(false);
-    let test_nocapture = Ref::new(false);
-    let test_timeout_ms = Ref::new(30000);
     let test_kind = Ref::new("all");
     let trailing = Ref::new(false);
     let index = Ref::new(2);
@@ -189,9 +149,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             index.set(index.get() + 1)
         } else if command == "test" && argument == "--include-ignored" {
             test_include_ignored.set(true);
-            index.set(index.get() + 1)
-        } else if command == "test" && argument == "--nocapture" {
-            test_nocapture.set(true);
             index.set(index.get() + 1)
         } else {
             let parsed_target_dir = match option_value(
@@ -238,28 +195,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         compiler.set(parsed_compiler)
                     }
                 } else if command == "test" {
-                    let parsed_timeout = match option_value(
-                        args,
-                        index,
-                        argument,
-                        "--timeout",
-                    ) {
-                        Result::Ok(value) => value,
-                        Result::Err(message) => return Result::Err(message),
-                    };
-                    if match parsed_timeout {
-                        Option::Some(_) => true,
-                        Option::None => false,
-                    } {
-                        let value = match parsed_timeout {
-                            Option::Some(value) => value,
-                            Option::None => "30s",
-                        };
-                        match parse_duration(value) {
-                            Result::Ok(value) => test_timeout_ms.set(value),
-                            Result::Err(message) => return Result::Err(message),
-                        }
-                    } else {
                     let parsed_jobs = match option_value(
                         args,
                         index,
@@ -343,7 +278,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             }
                         }
                     }
-                    }
                 } else if util::starts_with(argument, "-") {
                     return Result::Err("unknown option " + argument)
                 } else if command == "run" && !(target_set.get()) {
@@ -358,8 +292,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     };
     if test_ignored.get() && test_include_ignored.get() {
         Result::Err("--ignored cannot be combined with --include-ignored")
-    } else if test_json.get() && test_nocapture.get() {
-        Result::Err("--nocapture cannot be combined with --format json")
     } else {
         Result::Ok(CliArgs {
             command,
@@ -375,8 +307,6 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             test_ignored: test_ignored.get(),
             test_include_ignored: test_include_ignored.get(),
             test_json: test_json.get(),
-            test_nocapture: test_nocapture.get(),
-            test_timeout_ms: test_timeout_ms.get(),
             test_kind: test_kind.get(),
         })
     }
@@ -442,8 +372,6 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
                 ignored: args.test_ignored,
                 include_ignored: args.test_include_ignored,
                 json: args.test_json,
-                nocapture: args.test_nocapture,
-                timeout_ms: args.test_timeout_ms,
             },
         )
     } else {
@@ -466,51 +394,6 @@ fn main() -> unit {
         }
     } else if args.get(1) == "version" {
         io::println("goml 0.1.0")
-    } else if args.get(1) == "home" {
-        if args.len() == 3
-            && (args.get(2) == "-h" || args.get(2) == "--help")
-        {
-            io::println("Usage: goml home\n\nOptions:\n  -h, --help")
-        } else if args.len() != 2 {
-            fail("unexpected argument " + args.get(2))
-        } else {
-            match commands::print_home() {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
-            }
-        }
-    } else if args.get(1) == "new" {
-        if args.len() >= 3
-            && (args.get(2) == "-h" || args.get(2) == "--help")
-        {
-            io::println(command_help("new"))
-        } else {
-            match commands::parse_new(args) {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
-            }
-        }
-    } else if args.get(1) == "update"
-        || args.get(1) == "add"
-        || args.get(1) == "remove"
-    {
-        if args.len() >= 3
-            && (args.get(2) == "-h" || args.get(2) == "--help")
-        {
-            io::println(command_help(args.get(1)))
-        } else {
-            let result = if args.get(1) == "update" {
-                commands::update_registry(args)
-            } else if args.get(1) == "add" {
-                commands::add_dependency(args)
-            } else {
-                commands::remove_dependency(args)
-            };
-            match result {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
-            }
-        }
     } else {
         match parse_cli(args) {
             Result::Ok(value) => match run_command(value) {

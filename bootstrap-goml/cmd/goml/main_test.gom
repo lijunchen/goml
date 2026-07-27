@@ -16,17 +16,9 @@ fn project_context(entry_package: string) -> project::Context {
             packages: Vec::new().pushed(project::Package {
                 name: entry_package,
                 declared_name: "main",
-                module_name: "alice::demo",
                 directory: ".",
-                artifact_prefix: "pkg",
                 files: Vec::new(),
                 imports: Vec::new(),
-            }),
-            sources: Vec::new().pushed(project::ModuleSource {
-                name: "alice::demo",
-                directory: ".",
-                artifact_prefix: "pkg",
-                dependencies: Vec::new(),
             }),
             order: Vec::new().pushed(entry_package),
         },

@@ -1,0 +1,463 @@
+use std::path::PathBuf;
+
+use crate::{
+    env::format_typer_diagnostics,
+    pipeline::pipeline::{CompilationError, compile, compile_single_file},
+};
+
+fn compile_go(src: &str, name: &str) -> String {
+    let path = PathBuf::from(name);
+    let compilation = compile(&path, src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    compilation.go.to_pretty(&compilation.goenv, 120)
+}
+
+fn compile_single_file_go(path: PathBuf) -> String {
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    compilation.go.to_pretty(&compilation.goenv, 120)
+}
+
+fn assert_ref_identity_impl_overlap(name: &str) {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers")
+        .join(name)
+        .join("main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected overlapping implementation");
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("overlaps with implementation")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
+
+#[test]
+fn mixed_dyn_vec_push_with_distinct_impls_compiles() {
+    let src = r#"
+trait Show {
+    fn show(self: Self) -> string;
+}
+
+struct Wrap {
+    value: string,
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+impl Show for Wrap {
+    fn show(self: Wrap) -> string {
+        self.value
+    }
+}
+
+fn main() -> unit {
+    let v: Vec[dyn Show] = Vec::new();
+    let value: int32 = 10;
+    v.push(value);
+    v.push(Wrap { value: "ok" });
+    let _ = println(Show::show(v[0]));
+    let _ = println(Show::show(v[1]));
+}
+"#;
+
+    let go = compile_go(src, "mixed_dyn_vec_push.gom");
+
+    assert!(go.contains("dyn__Show__vtable__Wrap()"));
+    assert!(go.contains("dyn__Show__vtable__int32()"));
+}
+
+#[test]
+fn implicit_dyn_coercion_from_generic_call_result_compiles() {
+    let src = r#"
+trait Show {
+    fn show(self: Self) -> string;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl Show for Wrap[int32] {
+    fn show(self: Wrap[int32]) -> string {
+        self.value.to_string()
+    }
+}
+
+fn make_wrap[T](x: T) -> Wrap[T] {
+    Wrap { value: x }
+}
+
+fn render(x: dyn Show) -> string {
+    Show::show(x)
+}
+
+fn main() -> unit {
+    let value: int32 = 42;
+    let _ = println(render(make_wrap(value)));
+}
+"#;
+
+    let go = compile_go(src, "implicit_dyn_coercion_from_generic_call_result.gom");
+
+    assert!(go.contains("dyn__Show__vtable__Wrap__int32()"));
+}
+
+#[test]
+fn implicit_dyn_coercion_from_generic_enum_call_result_compiles() {
+    let src = r#"
+trait Show {
+    fn show(self: Self) -> string;
+}
+
+enum Boxed[T] {
+    One(T),
+}
+
+impl Show for Boxed[int32] {
+    fn show(self: Boxed[int32]) -> string {
+        match self {
+            Boxed::One(x) => x.to_string(),
+        }
+    }
+}
+
+fn make_boxed[T](x: T) -> Boxed[T] {
+    Boxed::One(x)
+}
+
+fn render(x: dyn Show) -> string {
+    Show::show(x)
+}
+
+fn main() -> unit {
+    let value: int32 = 42;
+    let _ = println(render(make_boxed(value)));
+}
+"#;
+
+    let go = compile_go(
+        src,
+        "implicit_dyn_coercion_from_generic_enum_call_result.gom",
+    );
+
+    assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
+}
+
+#[test]
+fn implicit_dyn_coercion_from_generic_enum_constructor_compiles() {
+    let src = r#"
+trait Show {
+    fn show(self: Self) -> string;
+}
+
+enum Boxed[T] {
+    One(T),
+}
+
+impl Show for Boxed[int32] {
+    fn show(self: Boxed[int32]) -> string {
+        match self {
+            Boxed::One(x) => x.to_string(),
+        }
+    }
+}
+
+fn render(x: dyn Show) -> string {
+    Show::show(x)
+}
+
+fn main() -> unit {
+    let value: int32 = 42;
+    let _ = println(render(Boxed::One(value)));
+}
+"#;
+
+    let go = compile_go(
+        src,
+        "implicit_dyn_coercion_from_generic_enum_constructor.gom",
+    );
+
+    assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
+}
+
+#[test]
+fn dyn_tostring_builtin_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_tostring_builtin_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "1\n");
+}
+
+#[test]
+fn dyn_tostring_ref_dyn_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_tostring_ref_dyn_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "ref(1)\n");
+}
+
+#[test]
+fn dyn_hash_ref_dyn_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_hash_ref_dyn_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
+fn direct_ref_dyn_show_hash_impl_is_rejected() {
+    assert_ref_identity_impl_overlap("direct_ref_dyn_show_hash_impl");
+}
+
+#[test]
+fn hash_ref_dyn_trait_builtin_ref_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hash_ref_dyn_trait_builtin_ref_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
+fn hashmap_ref_dyn_hash_explicit_eq_is_rejected() {
+    assert_ref_identity_impl_overlap("hashmap_ref_dyn_hash_explicit_eq");
+}
+
+#[test]
+fn hashmap_ref_dyn_hash_builtin_ref_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_ref_dyn_hash_builtin_ref_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
+fn hashmap_ref_dyn_show_explicit_eq_hash_is_rejected() {
+    assert_ref_identity_impl_overlap("hashmap_ref_dyn_show_explicit_eq_hash");
+}
+
+#[test]
+fn hashmap_dyn_hash_explicit_eq_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_dyn_hash_explicit_eq/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_enum_fields_in_early_return_subexpressions() {
+    let src = r#"
+trait Display {
+    fn show(self: Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+enum Boxed {
+    One(dyn Display),
+}
+
+fn build() -> int32 {
+    let _: Boxed = Boxed::One(return 9);
+    0
+}
+
+fn main() -> unit {
+    println(build().to_string())
+}
+"#;
+
+    let go = compile_go(src, "dyn_enum_return_subexpr.gom");
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_tuple_types_are_emitted_for_nested_struct_fields_in_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_nested_tuple_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_12dyn__Display_5int32 struct"),
+        "{go}"
+    );
+}
+
+#[test]
+fn dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_enum_nested_tuple_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_12dyn__Display_5int32 struct"),
+        "{go}"
+    );
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_effect_only_hashmap_set_arguments() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_hashmap_set_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_hashmap_method_set_arguments() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_hashmap_method_set_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_hashmap_method_set_if_return_subexpr_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_hashmap_method_set_if_return_subexpr/main.gom",
+    );
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "7\n");
+}
+
+#[test]
+fn dyn_callable_types_are_emitted_for_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_callable_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Callable struct"), "{go}");
+}
+
+#[test]
+fn dyn_callable_tuple_types_are_emitted_for_nested_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_callable_nested_tuple_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Callable struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_13dyn__Callable_5int32 struct"),
+        "{go}"
+    );
+}
+
+#[test]
+fn dyn_callable_types_are_emitted_for_hashmap_set_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_callable_hashmap_set_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Callable struct"), "{go}");
+}

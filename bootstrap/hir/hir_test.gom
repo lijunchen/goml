@@ -85,7 +85,7 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
 }
 
 #[test]
-fn indents_multiline_calls_canonically() -> unit {
+fn indents_multiline_calls_like_rust() -> unit {
     let source = "struct Box { value: int32 } fn make(value: Box) -> Box { value } fn main() -> unit { let values = Vec::new().pushed(make(Box { value: 1 })).pushed(make(Box { value: 2 })); }";
     testing::assert_eq(
         encode(lower(ast::lower(parser::parse(source)), "main.gom")),

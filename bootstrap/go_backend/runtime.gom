@@ -323,7 +323,6 @@ pub fn emit_runtime_hook_items(
     intrinsics: Vec[string],
 ) -> unit {
     let uses_bytes = Ref::new(false);
-    let uses_context = Ref::new(false);
     let uses_fmt = Ref::new(false);
     let uses_io = Ref::new(false);
     let uses_math = Ref::new(false);
@@ -331,7 +330,6 @@ pub fn emit_runtime_hook_items(
     let uses_exec = Ref::new(false);
     let uses_filepath = Ref::new(false);
     let uses_reflect = Ref::new(false);
-    let uses_sha256 = Ref::new(false);
     let uses_slices = Ref::new(false);
     let uses_strconv = Ref::new(false);
     let uses_strings = Ref::new(false);
@@ -376,16 +374,11 @@ pub fn emit_runtime_hook_items(
                     || (hook.byte_len() >= 8 && hook.byte_slice(0, 8) == "std.env.")
                     || (hook.byte_len() >= 7
                         && hook.byte_slice(0, 7) == "std.fs."
-                        && hook != "std.fs.canonicalize"
-                        && hook != "std.fs.sha256_file")
+                        && hook != "std.fs.canonicalize")
                 {
                     uses_os.set(true)
                 } else if hook == "std.fs.canonicalize" {
                     uses_filepath.set(true)
-                } else if hook == "std.fs.sha256_file" {
-                    uses_fmt.set(true);
-                    uses_os.set(true);
-                    uses_sha256.set(true)
                 } else if hook.byte_len() >= 9
                     && hook.byte_slice(0, 9) == "std.path."
                 {
@@ -403,23 +396,12 @@ pub fn emit_runtime_hook_items(
                     uses_os.set(true)
                 } else if hook == "std.process.exit" {
                     uses_os.set(true)
-                } else if hook == "std.process.look_path" {
-                    uses_exec.set(true)
                 } else if hook == "std.process.output"
                     || hook == "std.process.status"
-                    || hook == "std.process.output_timeout"
-                    || hook == "std.process.status_timeout"
                 {
                     uses_bytes.set(true);
                     uses_os.set(true);
-                    uses_exec.set(true);
-                    if hook == "std.process.output_timeout"
-                        || hook == "std.process.status_timeout"
-                    {
-                        uses_context.set(true)
-                    } else {
-                        ()
-                    }
+                    uses_exec.set(true)
                 } else {
                     ()
                 }
@@ -436,7 +418,6 @@ pub fn emit_runtime_hook_items(
         }
     };
     if uses_bytes.get()
-        || uses_context.get()
         || uses_fmt.get()
         || uses_math.get()
         || uses_io.get()
@@ -444,7 +425,6 @@ pub fn emit_runtime_hook_items(
         || uses_exec.get()
         || uses_filepath.get()
         || uses_reflect.get()
-        || uses_sha256.get()
         || uses_slices.get()
         || uses_strconv.get()
         || uses_strings.get()
@@ -453,11 +433,6 @@ pub fn emit_runtime_hook_items(
         let imports: Vec[(string, string)] = Vec::new();
         if uses_bytes.get() {
             imports.push(("_goml_bytes", "bytes"))
-        } else {
-            ()
-        };
-        if uses_context.get() {
-            imports.push(("_goml_context", "context"))
         } else {
             ()
         };
@@ -496,11 +471,6 @@ pub fn emit_runtime_hook_items(
         } else {
             ()
         };
-        if uses_sha256.get() {
-            imports.push(("_goml_sha256", "crypto/sha256"))
-        } else {
-            ()
-        };
         if uses_slices.get() {
             imports.push(("_goml_slices", "slices"))
         } else {
@@ -513,11 +483,6 @@ pub fn emit_runtime_hook_items(
         };
         if uses_strings.get() {
             imports.push(("_goml_strings", "strings"))
-        } else {
-            ()
-        };
-        if uses_context.get() {
-            imports.push(("_goml_time", "time"))
         } else {
             ()
         };
@@ -583,14 +548,11 @@ pub fn emit_runtime_hook_items(
     ordered.push("std.fs.read_bytes");
     ordered.push("std.fs.write_bytes");
     ordered.push("std.fs.create_dir_all");
-    ordered.push("std.fs.remove_file");
-    ordered.push("std.fs.remove_dir_all");
     ordered.push("std.fs.file_exists");
     ordered.push("std.fs.is_file");
     ordered.push("std.fs.is_dir");
     ordered.push("std.fs.canonicalize");
     ordered.push("std.fs.read_dir");
-    ordered.push("std.fs.sha256_file");
     ordered.push("std.io.print");
     ordered.push("std.io.println");
     ordered.push("std.io.eprint");
@@ -608,11 +570,8 @@ pub fn emit_runtime_hook_items(
     ordered.push("std.path.with_extension");
     ordered.push("std.path.absolute");
     ordered.push("std.process.exit");
-    ordered.push("std.process.look_path");
     ordered.push("std.process.output");
-    ordered.push("std.process.output_timeout");
     ordered.push("std.process.status");
-    ordered.push("std.process.status_timeout");
     ordered.push("std.testing.fail");
     for key in ordered {
         let needed = if key == "internal.string_decode_utf8_at_native" {
