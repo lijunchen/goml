@@ -4,9 +4,15 @@ use gomlang::bootstrap_goml::util;
 use std::fs;
 use std::path;
 
+pub struct Dependency {
+    pub name: string,
+    pub version: string,
+}
+
 pub struct Manifest {
     pub module_path: string,
     pub target_dir: string,
+    pub dependencies: Vec[Dependency],
 }
 
 fn strip_comment(value: string) -> string {
@@ -136,6 +142,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
     let section = Ref::new("");
     let module_path: Ref[Option[string]] = Ref::new(Option::None);
     let target_dir = Ref::new("_artifact");
+    let dependencies = Vec::new();
     for original in util::split_lines(source) {
         let line = util::trim(strip_comment(original));
         if line == "" {
@@ -172,9 +179,11 @@ pub fn load(path: string) -> Result[Manifest, string] {
             } else if section.get() == "build" && key == "target-dir" {
                 target_dir.set(value)
             } else if section.get() == "dependencies" {
-                return Result::Err(
-                    "bootstrap-goml does not support [dependencies] yet",
-                )
+                let name = match parse_string(key) {
+                    Result::Ok(value) => value,
+                    Result::Err(message) => return Result::Err(message),
+                };
+                dependencies.push(Dependency { name, version: value })
             } else {
                 ()
             }
@@ -192,6 +201,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
         Result::Ok(()) => Result::Ok(Manifest {
             module_path,
             target_dir: target_dir.get(),
+            dependencies,
         }),
         Result::Err(message) => Result::Err(message),
     }

@@ -6,16 +6,24 @@ use std::io;
 use std::path;
 use std::process;
 
-fn package_artifact_base(root: string, package_name: string) -> string {
-    let result = Ref::new(path::join(root, "pkg"));
+fn package_artifact_base(
+    root: string,
+    graph: Graph,
+    package_name: string,
+) -> string {
+    let package_value = match package_by_name(graph, package_name) {
+        Option::Some(value) => value,
+        Option::None => return path::join(root, package_name),
+    };
+    let result = Ref::new(path::join(root, package_value.artifact_prefix));
     for segment in util::split(package_name, "::") {
         result.set(path::join(result.get(), segment))
     };
     path::join(result.get(), last_segment(package_name))
 }
 
-fn linked_go_output(root: string, package_name: string) -> string {
-    match path::parent(package_artifact_base(root, package_name)) {
+fn linked_go_output(root: string, graph: Graph, package_name: string) -> string {
+    match path::parent(package_artifact_base(root, graph, package_name)) {
         Option::Some(value) => path::join(value, "goml_generated.go"),
         Option::None => path::join(root, "goml_generated.go"),
     }
@@ -87,7 +95,7 @@ fn dependency_interfaces(
     let result = Vec::new();
     for name in util::sorted_unique(names) {
         result.push(extension(
-            package_artifact_base(output_root, name),
+            package_artifact_base(output_root, graph, name),
             "interface",
         ))
     };
@@ -137,7 +145,11 @@ fn compile_commands(
             interface_files: relative_interfaces,
             output: module_relative(
                 context.graph.module_dir,
-                package_artifact_base(output_root, package_name),
+                package_artifact_base(
+                    output_root,
+                    context.graph,
+                    package_name,
+                ),
             ),
         })
     };
@@ -150,7 +162,11 @@ fn core_outputs(context: Context, output_root: string) -> Vec[string] {
         result.push(module_relative(
             context.graph.module_dir,
             extension(
-                package_artifact_base(output_root, package_name),
+                package_artifact_base(
+                    output_root,
+                    context.graph,
+                    package_name,
+                ),
                 "core",
             ),
         ))
@@ -250,7 +266,11 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         }
     };
     for entry_package in util::sorted(entries) {
-        let main_go = linked_go_output(output_root, entry_package);
+        let main_go = linked_go_output(
+            output_root,
+            context.graph,
+            entry_package,
+        );
         commands.push(Command::Link {
             input_cores: core_outputs(context, output_root),
             entry_package,
@@ -282,6 +302,7 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
     };
     let main_go = linked_go_output(
         output_root,
+        context.graph,
         context.graph.entry_package,
     );
     commands.push(Command::Link {
@@ -332,10 +353,12 @@ fn append_test_graph(
     };
     let base = package_artifact_base(
         output_root,
+        target.graph,
         target.graph.entry_package,
     );
     let main_go = linked_go_output(
         output_root,
+        target.graph,
         target.graph.entry_package,
     );
     let directory = match path::parent(base) {
@@ -575,13 +598,65 @@ pub fn execute_plan(
     plan: Plan,
     dry_run: bool,
 ) -> Result[unit, string] {
+    let identity = if dry_run {
+        ""
+    } else {
+        match compiler_digest(context) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        }
+    };
     for command in plan.commands {
         if dry_run {
             io::println(display_command(command))
         } else {
-            match execute_command(context, command) {
-                Result::Ok(()) => (),
-                Result::Err(message) => return Result::Err(message),
+            match cache_spec(command) {
+                Option::Some(spec) => {
+                    let fingerprint = match command_fingerprint(
+                        context,
+                        identity,
+                        spec,
+                    ) {
+                        Result::Ok(value) => value,
+                        Result::Err(message) => return Result::Err(message),
+                    };
+                    let fresh = match cache_is_fresh(
+                        context,
+                        spec,
+                        fingerprint,
+                    ) {
+                        Result::Ok(value) => value,
+                        Result::Err(message) => return Result::Err(message),
+                    };
+                    if fresh {
+                        ()
+                    } else {
+                        match prepare_cache_execution(context, spec) {
+                            Result::Ok(()) => (),
+                            Result::Err(message) => return Result::Err(message),
+                        };
+                        match execute_command(context, command) {
+                            Result::Ok(()) => (),
+                            Result::Err(message) => {
+                                let _ = prepare_cache_execution(context, spec);
+                                return Result::Err(message)
+                            },
+                        };
+                        match store_cache(
+                            context,
+                            spec,
+                            identity,
+                            fingerprint,
+                        ) {
+                            Result::Ok(()) => (),
+                            Result::Err(message) => return Result::Err(message),
+                        }
+                    }
+                },
+                Option::None => match execute_command(context, command) {
+                    Result::Ok(()) => (),
+                    Result::Err(message) => return Result::Err(message),
+                },
             }
         }
     };
