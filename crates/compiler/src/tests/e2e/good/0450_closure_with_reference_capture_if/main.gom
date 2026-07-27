@@ -1,7 +1,0 @@
-fn main() {
-    let fact = Ref::new(|n: int32| 0);
-    fact.set(|n| {
-        if n <= 1 { 1 } else { n * fact.get()(n - 1) }
-    });
-    println(fact.get()(10).to_string());
-}

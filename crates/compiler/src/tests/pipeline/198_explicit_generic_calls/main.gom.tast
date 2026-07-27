@@ -1,8 +1,0 @@
-fn identity(value/0: T) -> T {
-    (value/0 : T)
-}
-
-fn main() -> unit {
-    (@runtime(core.string_println) : (string) -> unit)((identity : (string) -> string)("direct"));
-    (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((identity : (int32) -> int32)(42)))
-}

@@ -1,9 +1,0 @@
-fn pair(first/0: int32, second/1: string) -> (int32, string) {
-    ((first/0 : int32), (second/1 : string))
-}
-
-fn main() -> unit {
-    let make/2: (int32, string) -> (int32, string) = (pair : (int32, string) -> (int32, string));
-    let value/3: (int32, string) = (make/2 : (int32, string) -> (int32, string))(1, "x");
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((value/3 : (int32, string)).0) + (value/3 : (int32, string)).1)
-}
