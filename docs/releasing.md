@@ -14,6 +14,8 @@ Each release must be one continuous SemVer step from the latest published releas
 
 Skipped steps such as `0.1.0` to `0.1.2` or `0.3.0` are rejected.
 
+During the early bootstrap period, releases are limited to continuous `0.1.x` patch versions.
+
 ## Publish
 
 Set the next version:
@@ -26,8 +28,9 @@ just ci
 Commit and push the version change, then wait for the main branch CI to succeed before creating the tag:
 
 ```sh
+release_sha="$(git rev-parse HEAD)"
 git push origin main
-ci_run_id="$(gh run list --repo lijunchen/goml --workflow CI --branch main --event push --limit 1 --json databaseId --jq '.[0].databaseId')"
+ci_run_id="$(gh run list --repo lijunchen/goml --workflow CI --branch main --commit "$release_sha" --event push --limit 1 --json databaseId --jq '.[0].databaseId')"
 gh run watch "$ci_run_id" --repo lijunchen/goml --exit-status
 git tag -a v0.1.1 -m "goml v0.1.1"
 git push origin v0.1.1

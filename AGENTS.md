@@ -294,13 +294,18 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - The current stage0 must always be able to compile the current `gomlc/` and `goml/` sources. Every pull request must preserve this invariant and pass `just ci`.
 - Implement new syntax, builtins, standard-library APIs, traits, or type-system capabilities without using them in compiler or driver sources. Tests and fixtures may use the new capability immediately.
 - Release the implementation and advance stage0 to that release before using the new capability in compiler or driver sources.
+- Introduce a standard-library capability in two phases. First add its public source, embedded source, dependency selection, navigation, documentation, and external tests while retaining any compiler-owned fallback. After releasing and advancing stage0, migrate compiler and driver consumers and remove the fallback.
 - Syntax removal or incompatible syntax changes require a transition release that accepts both old and new forms. Advance stage0, migrate self-hosted sources, then remove the old form in a later release.
 - Driver protocols, compiler CLI contracts, and other bootstrap-facing interfaces require at least one release of compatibility overlap. A transition release must allow the old stage0 driver to use the new compiler before the old protocol is removed.
 - Artifact formats may change without backward compatibility only when clean stage1 and stage2 builds do not consume artifacts from another compiler version. Cache and external dependency diagnostics must remain recoverable.
 - Do not point stage0 at an unreleased workflow artifact. Only published, checksum-pinned Release archives may become stage0.
+- Keep the stage0 advancement in its own commit. Run `just bootstrap` before that commit, then migrate self-hosted consumers in later commits.
 - Use patch versions for compatible fixes, minor versions for new language features and pre-1.0 breaking changes, and major versions for breaking changes after 1.0.
+- During the early bootstrap period, publish only continuous `0.1.x` patch releases until this restriction is explicitly lifted.
 - Release tags use strict `vX.Y.Z`. The Release workflow requires one continuous SemVer step: patch increments by one, minor increments by one and resets patch to zero, or major increments by one and resets minor and patch to zero.
-- Prepare a release with `just set-version X.Y.Z` and `just ci`, then tag and push `vX.Y.Z`.
+- Prepare a release with `just set-version X.Y.Z` and `just ci`, push the release commit, wait for the exact commit's main CI to succeed, then tag and push `vX.Y.Z`.
+- Version tests must derive expected output from the version module rather than hard-coding a release number. `just set-version` must keep `VERSION`, both GoML version modules, and the VS Code package and lockfile versions synchronized.
+- Main CI owns the fixed-point and complete test suite. Release CI must require a successful main CI for the exact tagged commit, rebuild stage1 for packaging, and retain archive and LSP smoke tests instead of rerunning the complete suite.
 - After publishing, read the archive checksum from `SHA256SUMS`, run `just set-bootstrap-stage0 X.Y.Z <sha256>` and `just bootstrap`, then commit `bootstrap/stage0.env` before relying on new compiler capabilities.
 - See `docs/releasing.md` for the complete release procedure.
 
