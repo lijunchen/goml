@@ -14,7 +14,7 @@ The file extension for goml source files is `.gom`.
 - The self-hosted frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core → Mono → Lift → ANF` before emitting Go.
 - `gomlc/` contains the compiler, query engine, language server, standard-library generator, and compiler tests.
 - `goml/` contains the `goml` project driver, registry client, dependency resolver, and CLI tests.
-- `stage0/` contains version-controlled generated Go sources used only to start a cold bootstrap.
+- `bootstrap/stage0.env` pins the released Linux amd64 binary stage0 used to start a cold bootstrap.
 - Regression fixtures and all generated golden files live in `gomlc/testdata`.
 - `hir/` should only handle AST → HIR lowering and name resolution. `tast/` owns inference, checking, constraints, and type-directed decisions.
 - Ambiguity must produce recoverable diagnostics. Environment and lookup code must return failure values instead of terminating the compiler.
@@ -134,8 +134,8 @@ Key functions in the emitter:
 - Self-hosted compiler module in `gomlc/`.
 - Self-hosted project driver module in `goml/`.
 - Standard-library navigation sources and builtin prelude in `stdlib/`.
-- Cold-bootstrap Go sources in `stage0/`.
-- Ignored executable outputs in `bin/stage0`, `bin/stage1`, and `bin/stage2`.
+- Binary bootstrap scripts and stage0 metadata in `bootstrap/`.
+- Ignored executable outputs in `bin/stage1` and `bin/stage2`.
 - VS Code extension in `editors/vscode/`.
 - CI and development recipes in `.justfile`. Build artifacts are written below `_bootstrap/` and each module's `_artifact/`.
 
@@ -340,7 +340,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Always run tests before notifying the user that a task is complete.
 
 ## Environment & Tooling
-- Requirements: Go 1.25+, Node 20+, npm, and `just`.
+- Requirements: Linux amd64, Go 1.25+, Node 20+, npm, `just`, Bash, curl, tar, and sha256sum.
 
 ## GoML Introduction
 

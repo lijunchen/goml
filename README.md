@@ -6,16 +6,18 @@ The "ml" in goml nods to the [ML (programming language)](https://en.wikipedia.or
 
 goml aims to empower gophers with a more powerful type system but without leaving the Go ecosystem.
 
-The compiler, project driver, tests, and language server are implemented in GoML. The version-controlled Go stage0 sources in `stage0/` make a cold bootstrap possible with only the Go toolchain:
+The compiler, project driver, tests, and language server are implemented in GoML. On Linux amd64, the bootstrap uses Bash, curl, tar, and sha256sum to download the checksum-pinned stage0 compiler recorded in `bootstrap/stage0.env`, then builds the self-hosted stages:
 
 ```sh
 just bootstrap
 just test-selfhost
 ```
 
-The fixed-point build compiles the stage0 sources, builds stage1 from GoML and stage2 from stage1, then compares the generated compiler and driver artifacts.
+The fixed-point build uses the released stage0 to build stage1, builds stage2 from stage1, then compares the generated compiler and driver artifacts. Set `GOML_STAGE0_ARCHIVE` to a previously downloaded stage0 archive for an offline bootstrap.
 
-Generated executables are published under `bin/stage0`, `bin/stage1`, and `bin/stage2`. The entire `bin` directory is ignored by Git.
+Generated executables are published under `bin/stage1` and `bin/stage2`. Downloaded stage0 files and build artifacts are stored under `_bootstrap/`; both directories are ignored by Git.
+
+Release versions and the binary bootstrap chain are documented in [docs/releasing.md](docs/releasing.md).
 
 Explore [gomlc/testdata/pipeline](gomlc/testdata/pipeline) for source programs and every compiler-stage golden file. Use `just verify-golden` to check the corpus or `just update-golden` to regenerate it through the self-hosted compiler.
 

@@ -6,13 +6,13 @@
 lexer → parser → CST → AST → HIR → TAST → Core → Mono → Lift → ANF → Go
 ```
 
-The repository contains version-controlled Go stage0 sources in `stage0/`. A fresh checkout needs only Go:
+On Linux amd64, a fresh checkout downloads the checksum-pinned binary stage0 and builds the self-hosted compiler:
 
 ```sh
 just bootstrap
 ```
 
-This builds the stage0 tools, compiles stage1 and stage2 from the GoML sources, and verifies the fixed point. The stage1 tools are:
+This compiles stage1 and stage2 from the GoML sources and verifies the fixed point. The stage1 tools are:
 
 ```text
 bin/stage1/gomlc
