@@ -7,6 +7,7 @@ use gomlc::hir;
 use gomlc::parser;
 use gomlc::tast;
 use gomlc::version;
+use std::json;
 use std::testing;
 
 fn main_string_contains(value: string, expected: string) -> bool {
@@ -141,7 +142,18 @@ fn tracks_host_api_package_link_needs() -> unit {
     testing::assert(!needs.env);
     testing::assert(!needs.fs);
     testing::assert(!needs.io);
+    testing::assert(!needs.json);
     testing::assert(!needs.text)
+}
+
+#[test]
+fn tracks_json_package_link_needs() -> unit {
+    let source = "package main; use std::json; fn main() -> unit { let _ = json::parse(\"null\"); () }";
+    let needs = source_standard_needs(ast::lower(parser::parse(source)));
+    testing::assert(needs.bytes);
+    testing::assert(needs.json);
+    testing::assert(needs.text);
+    testing::assert(!needs.root)
 }
 
 #[test]
@@ -155,6 +167,7 @@ fn tracks_standard_root_package_needs() -> unit {
     testing::assert(needs.env);
     testing::assert(needs.fs);
     testing::assert(needs.io);
+    testing::assert(needs.json);
     testing::assert(needs.path);
     testing::assert(needs.process);
     testing::assert(!needs.testing);
@@ -1481,55 +1494,55 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
 
 #[test]
 fn parses_artifact_json_values() -> unit {
-    let parsed = match parse_artifact_json(
+    let parsed = match json::parse(
         " { \"text\": \"quote\\\" slash\\\\ zero\\u0000 face\\uD83D\\uDE00 é\", \"nums\": [-12, 1.5e+2], \"ok\": true, \"none\": null } ",
     ) {
         Result::Ok(value) => value,
         Result::Err(error) => {
             testing::fail(error);
-            ArtifactJsonValue::Null
+            json::Value::Null
         },
     };
     match parsed {
-        ArtifactJsonValue::Object(fields) => {
+        json::Value::Object(fields) => {
             testing::assert_eq(fields.len(), 4);
             testing::assert_eq(fields.get(0).0, "text");
             match fields.get(0).1 {
-                ArtifactJsonValue::String(value) => testing::assert_eq(
+                json::Value::String(value) => testing::assert_eq(
                     value,
                     "quote\" slash\\ zero\u0000 face😀 é",
                 ),
                 _ => testing::fail("expected JSON string"),
             };
             match fields.get(1).1 {
-                ArtifactJsonValue::Array(values) => {
+                json::Value::Array(values) => {
                     match values.get(0) {
-                        ArtifactJsonValue::Number(value) => testing::assert_eq(value, "-12"),
+                        json::Value::Number(value) => testing::assert_eq(value, "-12"),
                         _ => testing::fail("expected integer JSON number"),
                     };
                     match values.get(1) {
-                        ArtifactJsonValue::Number(value) => testing::assert_eq(value, "1.5e+2"),
+                        json::Value::Number(value) => testing::assert_eq(value, "1.5e+2"),
                         _ => testing::fail("expected float JSON number"),
                     }
                 },
                 _ => testing::fail("expected JSON array"),
             };
             match fields.get(2).1 {
-                ArtifactJsonValue::Bool(value) => testing::assert(value),
+                json::Value::Bool(value) => testing::assert(value),
                 _ => testing::fail("expected JSON boolean"),
             };
             match fields.get(3).1 {
-                ArtifactJsonValue::Null => (),
+                json::Value::Null => (),
                 _ => testing::fail("expected JSON null"),
             }
         },
         _ => testing::fail("expected JSON object"),
     };
-    match parse_artifact_json("[01]") {
+    match json::parse("[01]") {
         Result::Err(_) => (),
         Result::Ok(_) => testing::fail("expected invalid JSON number"),
     };
-    match parse_artifact_json("{} trailing") {
+    match json::parse("{} trailing") {
         Result::Err(_) => (),
         Result::Ok(_) => testing::fail("expected trailing JSON error"),
     }
@@ -1539,7 +1552,7 @@ fn parses_artifact_json_values() -> unit {
 fn decodes_artifact_type_shapes() -> unit {
     let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
     let context = new_artifact_decode_context();
-    let decoded = match parse_artifact_json(type_json) {
+    let decoded = match json::parse(type_json) {
         Result::Ok(value) => match artifact_decode_type(context, value) {
             Result::Ok(value) => value,
             Result::Err(error) => {
@@ -1562,7 +1575,7 @@ fn decodes_artifact_type_shapes() -> unit {
     testing::assert_eq(context.enum_names.len(), 1);
     testing::assert_eq(context.enum_names.get(0), "Option");
     let predicate_json = "{\"Equality\":{\"lhs\":{\"TStruct\":{\"name\":\"Box\"}},\"rhs\":\"TInt32\"}}";
-    let predicate = match parse_artifact_json(predicate_json) {
+    let predicate = match json::parse(predicate_json) {
         Result::Ok(value) => match artifact_decode_predicate(context, value) {
             Result::Ok(value) => value,
             Result::Err(error) => {

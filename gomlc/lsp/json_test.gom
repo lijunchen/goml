@@ -1,14 +1,15 @@
 package lsp;
 
+use std::json;
 use std::testing;
 
 #[test]
 fn parses_and_encodes_json_values() -> unit {
     let input = "{\"name\":\"GoML\\n语言\",\"id\":42,\"ok\":true,\"items\":[null,\"x\"]}";
-    match parse_json(input) {
+    match json::parse(input) {
         Result::Ok(value) => {
-            match json_field(value, "name") {
-                Option::Some(name) => match json_string(name) {
+            match json::field(value, "name") {
+                Option::Some(name) => match json::as_string(name) {
                     Option::Some(text) => {
                         testing::assert_eq(text, "GoML\n语言")
                     },
@@ -16,9 +17,9 @@ fn parses_and_encodes_json_values() -> unit {
                 },
                 Option::None => testing::fail("expected name"),
             };
-            match parse_json(encode_json(value)) {
-                Result::Ok(roundtrip) => match json_field(roundtrip, "id") {
-                    Option::Some(id) => match json_int(id) {
+            match json::parse(json::encode(value)) {
+                Result::Ok(roundtrip) => match json::field(roundtrip, "id") {
+                    Option::Some(id) => match json::as_int(id) {
                         Option::Some(number) => testing::assert_eq(number, 42),
                         Option::None => testing::fail("expected integer id"),
                     },
@@ -33,9 +34,20 @@ fn parses_and_encodes_json_values() -> unit {
 
 #[test]
 fn rejects_invalid_json() -> unit {
-    match parse_json("{\"bad\": [1,]}") {
+    match json::parse("{\"bad\": [1,]}") {
         Result::Ok(_) => testing::fail("expected invalid JSON"),
         Result::Err(_) => (),
+    };
+    match json::parse("01") {
+        Result::Ok(_) => testing::fail("expected invalid number"),
+        Result::Err(_) => (),
+    };
+    match json::parse("\"\\ud83d\\ude00\"") {
+        Result::Ok(json::Value::String(value)) => {
+            testing::assert_eq(value, "😀")
+        },
+        Result::Ok(_) => testing::fail("expected string"),
+        Result::Err(error) => testing::fail(error),
     }
 }
 
@@ -74,11 +86,11 @@ fn converts_utf16_positions_and_file_uris() -> unit {
 #[test]
 fn frames_and_parses_json_rpc_metadata() -> unit {
     let message = rpc_success(
-        JsonValue::Number("7"),
-        JsonValue::String("ok"),
+        json::Value::Number("7"),
+        json::Value::String("ok"),
     );
     let framed = framed_json(message);
-    let body = encode_json(message);
+    let body = json::encode(message);
     testing::assert_eq(
         framed,
         "Content-Length: "
