@@ -2,6 +2,7 @@ package main;
 
 use gomlang::bootstrap_goml::test_support;
 use gomlang::bootstrap_goml::util;
+use gomlang::bootstrap_goml::version;
 use std::bytes;
 use std::fs;
 use std::path;
@@ -100,7 +101,10 @@ fn version_prints_crate_version() -> unit {
         test_support::module_root(),
     );
     test_support::assert_success(output);
-    testing::assert_eq(test_support::stdout(output), "goml 0.1.0\n")
+    testing::assert_eq(
+        test_support::stdout(output),
+        "goml " + version::current() + "\n",
+    )
 }
 
 #[test]
