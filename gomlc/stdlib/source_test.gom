@@ -75,6 +75,22 @@ fn typechecks_text_source_with_bytes() -> unit {
 }
 
 #[test]
+fn typechecks_json_source_with_text() -> unit {
+    let dependencies = Vec::new();
+    dependencies.push(lowered_standard_hir(
+        text_source(),
+        "string_builder.gom",
+        "std::text",
+    ));
+    assert_standard_typechecks(
+        json_source(),
+        "json.gom",
+        "std::json",
+        dependencies,
+    )
+}
+
+#[test]
 fn typechecks_path_process_and_testing_sources() -> unit {
     let host = lowered_standard_hir(
         host_source(),
