@@ -778,6 +778,20 @@ fn compile_artifact_package(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
+    let production_interface: Ref[Option[ArtifactInterfaceUnit]] = Ref::new(
+        Option::None,
+    );
+    if emit_tests {
+        for interface in provided {
+            if interface.package_name == command.package_name {
+                production_interface.set(Option::Some(interface))
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
     let dependency_units = match artifact_resolve_interface_units(
         world,
         command.package_name,
@@ -903,7 +917,7 @@ fn compile_artifact_package(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    let interface_unit = new_artifact_interface_unit(
+    let generated_interface = new_artifact_interface_unit(
         command.package_name,
         public_exports,
         artifact_package_interface(
@@ -913,6 +927,10 @@ fn compile_artifact_package(
         ),
         deps,
     );
+    let interface_unit = match production_interface.get() {
+        Option::Some(value) => value,
+        Option::None => generated_interface,
+    };
     let core_ir = if build {
         core::lower_with_counter_and_types(
             checked,

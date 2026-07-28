@@ -70,7 +70,7 @@ test-bootstrap-all: bootstrap-stage1
     cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
 
 test-bootstrap-driver: bootstrap-stage1
-    cd goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 1
+    cd goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4
 
 test-bootstrap-pipeline: bootstrap-stage1
     cd gomlc && ../bin/stage1/goml test pipeline_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m

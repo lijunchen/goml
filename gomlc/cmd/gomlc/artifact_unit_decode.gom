@@ -1,30 +1,26 @@
 package main;
 
-fn artifact_string_maps_equal(
-    left: Vec[(string, string)],
-    right: Vec[(string, string)],
+fn artifact_string_map_contains(
+    values: Vec[(string, string)],
+    required: Vec[(string, string)],
 ) -> bool {
-    if left.len() != right.len() {
-        false
-    } else {
-        let matches = Ref::new(0);
-        for left_value in left {
-            let found = Ref::new(false);
-            for right_value in right {
-                if left_value.0 == right_value.0 && left_value.1 == right_value.1 {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            if found.get() {
-                matches.set(matches.get() + 1)
+    let matches = Ref::new(0);
+    for required_value in required {
+        let found = Ref::new(false);
+        for value in values {
+            if value.0 == required_value.0 && value.1 == required_value.1 {
+                found.set(true)
             } else {
                 ()
             }
         };
-        matches.get() == left.len()
-    }
+        if found.get() {
+            matches.set(matches.get() + 1)
+        } else {
+            ()
+        }
+    };
+    matches.get() == required.len()
 }
 
 fn artifact_decode_optional_string(
@@ -208,8 +204,10 @@ fn artifact_decode_core_value(
     };
     if package_name != interface_unit.package_name {
         Result::Err(artifact_decode_error("matching Core package"))
-    } else if !artifact_string_maps_equal(deps, interface_unit.deps) {
-        Result::Err(artifact_decode_error("matching Core dependency hashes"))
+    } else if !artifact_string_map_contains(deps, interface_unit.deps) {
+        Result::Err(artifact_decode_error(
+            "Core dependencies to include interface dependencies",
+        ))
     } else if !artifact_test_descriptors_valid(package_name, tests) {
         Result::Err(artifact_decode_error("valid test descriptors"))
     } else {
