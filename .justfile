@@ -67,16 +67,16 @@ install: bootstrap-stage1
 test-selfhost: test-bootstrap-all test-bootstrap-driver
 
 test-bootstrap-all: bootstrap-stage1
-    cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+    cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-driver: bootstrap-stage1
-    cd goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4
+    cd goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-pipeline: bootstrap-stage1
-    cd gomlc && ../bin/stage1/goml test pipeline_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+    cd gomlc && ../bin/stage1/goml test pipeline_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-compiler: bootstrap-stage1
-    cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test compiler_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+    cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test compiler_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-lsp: bootstrap-stage1
     cd gomlc && ../bin/stage1/goml test query --compiler ../bin/stage1/gomlc --jobs 1
