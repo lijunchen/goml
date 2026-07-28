@@ -3,6 +3,7 @@ package lsp;
 use gomlc::ast;
 use gomlc::query;
 use gomlc::tast;
+use gomlc::version;
 use std::fs;
 
 fn required_field(value: JsonValue, name: string) -> Result[JsonValue, string] {
@@ -170,7 +171,7 @@ fn initialize_result() -> JsonValue {
     push_json_field(
         server_info,
         "version",
-        JsonValue::String("0.1.0"),
+        JsonValue::String(version::current()),
     );
     let result = Vec::new();
     push_json_field(

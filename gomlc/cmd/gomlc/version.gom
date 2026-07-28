@@ -1,5 +1,6 @@
 package main;
 
+use gomlc::version;
 use std::env;
 use std::io;
 use std::process;
@@ -210,16 +211,24 @@ fn version_output_with(
     match format {
         VersionFormat::Text => match (hash, date) {
             (Option::Some(hash), Option::Some(date)) => {
-                "gomlc 0.0.0 (" + hash + " " + date + ")"
+                "gomlc "
+                    + version::current()
+                    + " ("
+                    + hash
+                    + " "
+                    + date
+                    + ")"
             },
-            _ => "gomlc 0.0.0",
+            _ => "gomlc " + version::current(),
         },
         VersionFormat::Json => {
             "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":"
                 + version_json_option(date)
                 + ",\"git_hash\":"
                 + version_json_option(hash)
-                + ",\"tool\":\"gomlc\",\"version\":\"0.0.0\"}"
+                + ",\"tool\":\"gomlc\",\"version\":\""
+                + version::current()
+                + "\"}"
         },
     }
 }

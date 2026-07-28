@@ -229,7 +229,7 @@ fn reports_driver_protocol_version() -> unit {
             Option::None,
             Option::None,
         ),
-        "gomlc 0.0.0",
+        "gomlc 0.1.0",
     );
     testing::assert_eq(
         version_output_with(
@@ -237,7 +237,7 @@ fn reports_driver_protocol_version() -> unit {
             Option::None,
             Option::None,
         ),
-        "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
+        "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.1.0\"}",
     );
     match parse_version_format("yaml") {
         Result::Err(error) => testing::assert_eq(

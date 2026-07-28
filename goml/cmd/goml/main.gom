@@ -4,6 +4,7 @@ use gomlang::bootstrap_goml::commands;
 use gomlang::bootstrap_goml::project;
 use gomlang::bootstrap_goml::runner;
 use gomlang::bootstrap_goml::util;
+use gomlang::bootstrap_goml::version;
 use std::env;
 use std::io;
 use std::process;
@@ -465,7 +466,7 @@ fn main() -> unit {
             io::println(command_help(args.get(2)))
         }
     } else if args.get(1) == "version" {
-        io::println("goml 0.1.0")
+        io::println("goml " + version::current())
     } else if args.get(1) == "home" {
         if args.len() == 3
             && (args.get(2) == "-h" || args.get(2) == "--help")

@@ -1,16 +1,33 @@
-ci: verify-bootstrap test-selfhost vscode-ext
+ci: verify-release-tools verify-version test-bootstrap-stage0 verify-bootstrap test-selfhost vscode-ext
 
-build-stage0:
-    mkdir -p bin/stage0
-    go build -trimpath -o bin/stage0/gomlc stage0/gomlc/gomlc.go
-    go build -trimpath -o bin/stage0/goml stage0/goml/goml.go
+verify-release-tools:
+    bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh
+    bash tools/release/test.sh
 
-bootstrap-stage1: build-stage0
+verify-version:
+    bash tools/release/release.sh check-version "$(cat VERSION)"
+
+set-version version:
+    bash tools/release/release.sh set-version "{{version}}"
+    cd editors/vscode && npm version --no-git-tag-version "{{version}}"
+    just verify-version
+
+set-bootstrap-stage0 version sha256:
+    bash tools/release/release.sh set-stage0 "{{version}}" "{{sha256}}"
+    just bootstrap-stage0
+
+test-bootstrap-stage0:
+    bash -n bootstrap/bootstrap.sh
+
+bootstrap-stage0:
+    bash bootstrap/bootstrap.sh bootstrap/stage0.env _bootstrap/stage0
+
+bootstrap-stage1: bootstrap-stage0
     mkdir -p bin/stage1
-    cd gomlc && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage0/gomlc
+    cd gomlc && ../_bootstrap/stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../_bootstrap/stage0/bin/gomlc
     cp gomlc/_bootstrap/stage1/bin/cmd/gomlc/gomlc bin/stage1/gomlc
     cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp bin/stage1/gomllsp
-    cd goml && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
+    cd goml && ../_bootstrap/stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
     cp goml/_bootstrap/stage1/bin/cmd/goml/goml bin/stage1/goml
 
 bootstrap-stage2: bootstrap-stage1
@@ -26,15 +43,8 @@ verify-fixed-point: bootstrap-stage2
     diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage1/build/pkg goml/_bootstrap/stage2/build/pkg
 
 verify-bootstrap: verify-fixed-point
-    cmp stage0/gomlc/gomlc.go gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
-    cmp stage0/goml/goml.go goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
 
 bootstrap: verify-bootstrap
-
-regenerate-stage0: bootstrap-stage2
-    cp gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc/gomlc.go
-    cp goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml/goml.go
-    just verify-fixed-point
 
 build-lsp: bootstrap-stage1
 
@@ -53,7 +63,7 @@ package-vscode-ext: vscode-ext
     cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license
 
 install-vscode-ext: package-vscode-ext
-    cd editors/vscode && code --install-extension goml-0.1.0.vsix
+    cd editors/vscode && code --install-extension "goml-$(cat ../../VERSION).vsix"
 
 install: bootstrap-stage1
     mkdir -p "${GOML_HOME:-$HOME/.goml}/bin"

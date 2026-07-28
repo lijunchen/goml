@@ -3,21 +3,20 @@ name: Release
 on:
   push:
     tags:
-      - v0.1.0
-  workflow_dispatch:
+      - 'v*.*.*'
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-v0.1.0
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      RELEASE_TAG: v0.1.0
-      RELEASE_VERSION: 0.1.0
+      RELEASE_TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,14 +33,37 @@ jobs:
         with:
           just-version: '1.40.0'
       - name: Install Yaegi interpreter
-        run: go install github.com/traefik/yaegi/cmd/yaegi@latest
-      - name: Verify release tag
+        run: go install github.com/traefik/yaegi/cmd/yaegi@v0.16.1
+      - name: Validate release version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          test "$GITHUB_REF_TYPE" != "tag" || test "$GITHUB_REF_NAME" = "$RELEASE_TAG"
-          test "$(sed -n 's/.*io::println("goml \([^"]*\)").*/\1/p' goml/cmd/goml/main.gom)" = "$RELEASE_VERSION"
+          set -euo pipefail
+          test "$GITHUB_REF_TYPE" = "tag"
+          release_version="${RELEASE_TAG#v}"
+          test "$RELEASE_TAG" = "v$release_version"
+          bash tools/release/release.sh check-version "$release_version"
+          release_tags="$(gh release list \
+            --repo "$GITHUB_REPOSITORY" \
+            --limit 100 \
+            --exclude-drafts \
+            --exclude-pre-releases \
+            --json tagName \
+            --jq '.[].tagName')"
+          previous_tag="$(bash tools/release/release.sh latest $release_tags)"
+          previous_version="${previous_tag#v}"
+          bash tools/release/release.sh check-next "$previous_version" "$release_version"
+          bash tools/release/release.sh check-stage0 "$previous_version"
+          release_state="$(gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json isDraft \
+            --jq .isDraft 2>/dev/null || true)"
+          test "$release_state" != "false"
+          echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
+          echo "PREVIOUS_TAG=$previous_tag" >> "$GITHUB_ENV"
       - name: Test
         run: just ci
-      - name: Build release archives
+      - name: Build release archive
         run: |
           set -euo pipefail
           package="goml-${RELEASE_VERSION}-linux-amd64"
@@ -52,12 +74,26 @@ jobs:
           cp stdlib/builtin_prelude.gom "dist/$package/builtin_prelude.gom"
           cp -R stdlib/std "dist/$package/lib/std"
           test "$(dist/$package/goml version)" = "goml $RELEASE_VERSION"
+          test "$(dist/$package/gomlc version --format json | jq -r .version)" = "$RELEASE_VERSION"
           tar -C dist -czf "dist/$package.tar.gz" "$package"
           cd dist
           sha256sum ./*.tar.gz > SHA256SUMS
+      - name: Smoke test release archive
+        run: |
+          set -euo pipefail
+          package="goml-${RELEASE_VERSION}-linux-amd64"
+          smoke_root="$(mktemp -d)"
+          tar -xzf "dist/$package.tar.gz" -C "$smoke_root"
+          cp -R tools/release/testdata/smoke "$smoke_root/project"
+          cd "$smoke_root/project"
+          "$smoke_root/$package/goml" check
+          "$smoke_root/$package/goml" build
+          test "$("$smoke_root/$package/goml" run)" = "std/works"
+          "$smoke_root/$package/goml" test
+          bash "$GITHUB_WORKSPACE/tools/release/lsp_smoke.sh" "$smoke_root/$package/gomllsp" "$RELEASE_VERSION"
       - uses: actions/upload-artifact@v4
         with:
-          name: goml-v0.1.0
+          name: goml-${{ github.ref_name }}
           path: |
             dist/*.tar.gz
             dist/SHA256SUMS
@@ -66,11 +102,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" dist/*.tar.gz dist/SHA256SUMS --clobber
-          else
-            gh release create "$RELEASE_TAG" dist/*.tar.gz dist/SHA256SUMS \
-              --target "$GITHUB_SHA" \
+          set -euo pipefail
+          release_state="$(gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json isDraft \
+            --jq .isDraft 2>/dev/null || true)"
+          if test "$release_state" = ""; then
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --draft \
               --title "goml $RELEASE_TAG" \
-              --generate-notes
+              --generate-notes \
+              --notes-start-tag "$PREVIOUS_TAG"
           fi
+          gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            dist/*.tar.gz \
+            dist/SHA256SUMS \
+            --clobber
+          gh release edit "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft=false \
+            --latest
