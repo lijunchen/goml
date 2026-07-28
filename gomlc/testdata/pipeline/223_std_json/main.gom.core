@@ -1,0 +1,2506 @@
+fn print(value/0: T) -> unit {
+  @runtime(core.string_print)(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
+}
+
+fn char_from_uint32(value/2: uint32) -> Option[char] {
+  let mtmp0 = @runtime(core.char_from_uint32)(value/2) in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    {
+      let value/4 = x2 in
+      {
+        let valid/3 = x1 in
+        {
+          if valid/3 {
+              {
+                Option::Some(value/4)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  @runtime(core.int_to_string)(self/5)
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  @runtime(core.int32_to_string)(self/6)
+}
+
+fn inherent#char#char#to_string(self/7: char) -> string {
+  @runtime(core.char_to_string)(self/7)
+}
+
+fn inherent#string#string#len(self/8: string) -> int {
+  @runtime(core.string_len)(self/8)
+}
+
+fn inherent#string#string#byte_len(self/9: string) -> int {
+  @runtime(core.string_len)(self/9)
+}
+
+fn inherent#string#string#get(self/10: string, index/11: int) -> char {
+  @runtime(core.string_get)(self/10, index/11)
+}
+
+fn inherent#string#string#byte_get(self/12: string, index/13: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/12, index/13)
+}
+
+fn inherent#string#string#byte_slice(self/14: string, start/15: int, end/16: int) -> string {
+  @runtime(core.string_byte_slice)(self/14, start/15, end/16)
+}
+
+fn inherent#string#string#is_char_boundary(self/17: string, index/18: int) -> bool {
+  @runtime(core.string_is_char_boundary)(self/17, index/18)
+}
+
+fn inherent#string#string#decode_at(self/19: string, index/20: int) -> Option[(char, int)] {
+  let mtmp3 = @runtime(core.string_decode_utf8_at)(self/19, index/20) in
+  {
+    let x4 = mtmp3.0 in
+    let x5 = mtmp3.1 in
+    let x6 = mtmp3.2 in
+    {
+      let width/23 = x6 in
+      {
+        let value/22 = x5 in
+        {
+          let valid/21 = x4 in
+          {
+            if valid/21 {
+                {
+                  Option::Some((value/22, width/23))
+                }
+            } else {
+                {
+                  Option::None
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/24)
+}
+
+fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
+  let index/26 = inherent#Ref#Ref[int]#new(0) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    {
+      let mtmp7 = inherent#string#string#decode_at(self/25, inherent#Ref#Ref[int]#get(index/26)) in
+      match mtmp7 {
+        Option::None => {
+          Option::None
+        },
+        Option::Some(x8) => {
+          {
+            let x8 = Option::Some._0(mtmp7) in
+            {
+              let decoded/27 = x8 in
+              {
+                let mtmp9 = decoded/27 in
+                {
+                  let x10 = mtmp9.0 in
+                  let x11 = mtmp9.1 in
+                  {
+                    let width/29 = x11 in
+                    {
+                      let value/28 = x10 in
+                      {
+                        let _wild12 = inherent#Ref#Ref[int]#set(index/26, (inherent#Ref#Ref[int]#get(index/26) + width/29)) in
+                        Option::Some(value/28)
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+      }
+    }
+  })
+}
+
+fn inherent#string#string#char_indices(self/30: string) -> FnIterator[(int, char)] {
+  let index/31 = inherent#Ref#Ref[int]#new(0) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    let current/32 = inherent#Ref#Ref[int]#get(index/31) in
+    {
+      let mtmp13 = inherent#string#string#decode_at(self/30, current/32) in
+      match mtmp13 {
+        Option::None => {
+          Option::None
+        },
+        Option::Some(x14) => {
+          {
+            let x14 = Option::Some._0(mtmp13) in
+            {
+              let decoded/33 = x14 in
+              {
+                let mtmp15 = decoded/33 in
+                {
+                  let x16 = mtmp15.0 in
+                  let x17 = mtmp15.1 in
+                  {
+                    let width/35 = x17 in
+                    {
+                      let value/34 = x16 in
+                      {
+                        let _wild18 = inherent#Ref#Ref[int]#set(index/31, (current/32 + width/35)) in
+                        Option::Some((current/32, value/34))
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+      }
+    }
+  })
+}
+
+fn trait_impl#ToString#unit#to_string(self/36: unit) -> string {
+  @runtime(core.unit_to_string)(self/36)
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#ToString#char#to_string(self/39: char) -> string {
+  @runtime(core.char_to_string)(self/39)
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
+}
+
+fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
+  @runtime(core.int8_to_string)(self/41)
+}
+
+fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
+  @runtime(core.int16_to_string)(self/42)
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  @runtime(core.int32_to_string)(self/43)
+}
+
+fn trait_impl#ToString#int64#to_string(self/44: int64) -> string {
+  @runtime(core.int64_to_string)(self/44)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/45)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/46: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/46)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/47)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/48)
+}
+
+fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
+  @runtime(core.float32_to_string)(self/49)
+}
+
+fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
+  @runtime(core.float64_to_string)(self/50)
+}
+
+fn trait_impl#Eq#unit#eq(self/51: unit, other/52: unit) -> bool {
+  true
+}
+
+fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
+  @intrinsic(eq.primitive)(self/53, other/54)
+}
+
+fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
+  @intrinsic(eq.primitive)(self/55, other/56)
+}
+
+fn trait_impl#Eq#char#eq(self/57: char, other/58: char) -> bool {
+  @intrinsic(eq.primitive)(self/57, other/58)
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  @intrinsic(eq.primitive)(self/59, other/60)
+}
+
+fn trait_impl#Eq#int8#eq(self/61: int8, other/62: int8) -> bool {
+  @intrinsic(eq.primitive)(self/61, other/62)
+}
+
+fn trait_impl#Eq#int16#eq(self/63: int16, other/64: int16) -> bool {
+  @intrinsic(eq.primitive)(self/63, other/64)
+}
+
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  @intrinsic(eq.primitive)(self/65, other/66)
+}
+
+fn trait_impl#Eq#int64#eq(self/67: int64, other/68: int64) -> bool {
+  @intrinsic(eq.primitive)(self/67, other/68)
+}
+
+fn trait_impl#Eq#uint8#eq(self/69: uint8, other/70: uint8) -> bool {
+  @intrinsic(eq.primitive)(self/69, other/70)
+}
+
+fn trait_impl#Eq#uint16#eq(self/71: uint16, other/72: uint16) -> bool {
+  @intrinsic(eq.primitive)(self/71, other/72)
+}
+
+fn trait_impl#Eq#uint32#eq(self/73: uint32, other/74: uint32) -> bool {
+  @intrinsic(eq.primitive)(self/73, other/74)
+}
+
+fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
+  @intrinsic(eq.primitive)(self/75, other/76)
+}
+
+fn trait_impl#Eq#float32#eq(self/77: float32, other/78: float32) -> bool {
+  @intrinsic(eq.primitive)(self/77, other/78)
+}
+
+fn trait_impl#Eq#float64#eq(self/79: float64, other/80: float64) -> bool {
+  @intrinsic(eq.primitive)(self/79, other/80)
+}
+
+fn trait_impl#Hash#unit#hash(self/81: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
+  if self/82 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}
+
+fn trait_impl#Hash#string#hash(self/83: string) -> uint64 {
+  @runtime(core.string_hash)(self/83)
+}
+
+fn trait_impl#Hash#char#hash(self/84: char) -> uint64 {
+  @runtime(core.char_hash)(self/84)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  @runtime(core.int_hash)(self/85)
+}
+
+fn trait_impl#Hash#int8#hash(self/86: int8) -> uint64 {
+  @runtime(core.int8_hash)(self/86)
+}
+
+fn trait_impl#Hash#int16#hash(self/87: int16) -> uint64 {
+  @runtime(core.int16_hash)(self/87)
+}
+
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/88)
+}
+
+fn trait_impl#Hash#int64#hash(self/89: int64) -> uint64 {
+  @runtime(core.int64_hash)(self/89)
+}
+
+fn trait_impl#Hash#uint8#hash(self/90: uint8) -> uint64 {
+  @runtime(core.uint8_hash)(self/90)
+}
+
+fn trait_impl#Hash#uint16#hash(self/91: uint16) -> uint64 {
+  @runtime(core.uint16_hash)(self/91)
+}
+
+fn trait_impl#Hash#uint32#hash(self/92: uint32) -> uint64 {
+  @runtime(core.uint32_hash)(self/92)
+}
+
+fn trait_impl#Hash#uint64#hash(self/93: uint64) -> uint64 {
+  self/93
+}
+
+fn trait_impl#Hash#float32#hash(self/94: float32) -> uint64 {
+  @runtime(core.float32_hash)(self/94)
+}
+
+fn trait_impl#Hash#float64#hash(self/95: float64) -> uint64 {
+  @runtime(core.float64_hash)(self/95)
+}
+
+fn trait_impl#Eq#Ref[T]#eq(self/96: Ref[T], other/97: Ref[T]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/96, other/97)
+}
+
+fn trait_impl#Hash#Ref[T]#hash(self/98: Ref[T]) -> uint64 {
+  @intrinsic(ref.ptr_hash)(self/98)
+}
+
+fn trait_impl#ToString#Ref[T]#to_string(self/99: Ref[T]) -> string {
+  let v/100 = inherent#Ref#Ref[T]#get(self/99) in
+  (("ref(" + trait_call[ToString::to_string](v/100)) + ")")
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn(next_fn/101: () -> Option[T]) -> FnIterator[T] {
+  FnIterator { next_fn: next_fn/101 }
+}
+
+fn trait_impl#Iterator#FnIterator[T]#next(self/102: FnIterator[T]) -> Option[T] {
+  FnIterator.next_fn(self/102)()
+}
+
+fn trait_impl#Iterator#MapIterator[A,B,I]#next(self/103: MapIterator[A, B, I]) -> Option[B] {
+  {
+    let mtmp19 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
+    match mtmp19 {
+      Option::None => {
+        Option::None
+      },
+      Option::Some(x20) => {
+        {
+          let x20 = Option::Some._0(mtmp19) in
+          {
+            let value/104 = x20 in
+            Option::Some(MapIterator.map_fn(self/103)(value/104))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn trait_impl#Iterator#FilterIterator[T,I]#next(self/105: FilterIterator[T, I]) -> Option[T] {
+  let _wild24 = while true {
+      {
+        let _wild23 = {
+          let mtmp21 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
+          match mtmp21 {
+            Option::None => {
+              return Option::None
+            },
+            Option::Some(x22) => {
+              {
+                let x22 = Option::Some._0(mtmp21) in
+                {
+                  let value/106 = x22 in
+                  if FilterIterator.predicate(self/105)(value/106) {
+                      {
+                        return Option::Some(value/106)
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  }
+                }
+              }
+            },
+          }
+        } in
+      }
+  } in
+  Option::None
+}
+
+fn trait_impl#Iterator#TakeIterator[I]#next(self/107: TakeIterator[I]) -> Option[I::Item] {
+  let remaining/108 = inherent#Ref#Ref[int]#get(TakeIterator.remaining(self/107)) in
+  if (remaining/108 > 0) {
+      {
+        let _wild25 = inherent#Ref#Ref[int]#set(TakeIterator.remaining(self/107), (remaining/108 - 1)) in
+        trait_call[Iterator::next](TakeIterator.iterator(self/107))
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn trait_impl#IntoIterator#I#into_iter(self/109: I) -> I {
+  self/109
+}
+
+fn iterator_map(iterator/110: I, map_fn/111: (A) -> B) -> MapIterator[A, B, I] {
+  MapIterator { iterator: iterator/110, map_fn: map_fn/111 }
+}
+
+fn iterator_filter(iterator/112: I, predicate/113: (T) -> bool) -> FilterIterator[T, I] {
+  FilterIterator { iterator: iterator/112, predicate: predicate/113 }
+}
+
+fn iterator_take(iterator/114: I, count/115: int) -> TakeIterator[I] {
+  let remaining/116 = if (count/115 > 0) {
+      {
+        count/115
+      }
+  } else {
+      {
+        0
+      }
+  } in
+  TakeIterator { iterator: iterator/114, remaining: inherent#Ref#Ref[int]#new(remaining/116) }
+}
+
+fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A {
+  let accumulator/120 = inherent#Ref#Ref[A]#new(initial/118) in
+  let running/121 = inherent#Ref#Ref[bool]#new(true) in
+  let _wild29 = while inherent#Ref#Ref[bool]#get(running/121) {
+      {
+        let _wild28 = {
+          let mtmp26 = trait_call[Iterator::next](iterator/117) in
+          match mtmp26 {
+            Option::None => {
+              inherent#Ref#Ref[bool]#set(running/121, false)
+            },
+            Option::Some(x27) => {
+              {
+                let x27 = Option::Some._0(mtmp26) in
+                {
+                  let value/122 = x27 in
+                  inherent#Ref#Ref[A]#set(accumulator/120, combine/119(inherent#Ref#Ref[A]#get(accumulator/120), value/122))
+                }
+              }
+            },
+          }
+        } in
+      }
+  } in
+  inherent#Ref#Ref[A]#get(accumulator/120)
+}
+
+fn iterator_collect(iterator/123: I) -> Vec[T] {
+  let values/124 = inherent#Vec#Vec[T]#new() in
+  let running/125 = inherent#Ref#Ref[bool]#new(true) in
+  let _wild33 = while inherent#Ref#Ref[bool]#get(running/125) {
+      {
+        let _wild32 = {
+          let mtmp30 = trait_call[Iterator::next](iterator/123) in
+          match mtmp30 {
+            Option::None => {
+              inherent#Ref#Ref[bool]#set(running/125, false)
+            },
+            Option::Some(x31) => {
+              {
+                let x31 = Option::Some._0(mtmp30) in
+                {
+                  let value/126 = x31 in
+                  inherent#Vec#Vec[T]#push(values/124, value/126)
+                }
+              }
+            },
+          }
+        } in
+      }
+  } in
+  values/124
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#with_capacity(capacity/127: int) -> Vec[T] {
+  @intrinsic(vec.with_capacity)(capacity/127)
+}
+
+fn inherent#Vec#Vec[T]#push(self/128: Vec[T], elem/129: T) -> unit {
+  @intrinsic(vec.push)(self/128, elem/129)
+}
+
+fn inherent#Vec#Vec[T]#pushed(self/130: Vec[T], elem/131: T) -> Vec[T] {
+  let result/132 = inherent#Vec#Vec[T]#new() in
+  let index/133 = inherent#Ref#Ref[int]#new(0) in
+  let _wild36 = while (inherent#Ref#Ref[int]#get(index/133) < inherent#Vec#Vec[T]#len(self/130)) {
+      {
+        let _wild34 = inherent#Vec#Vec[T]#push(result/132, inherent#Vec#Vec[T]#get(self/130, inherent#Ref#Ref[int]#get(index/133))) in
+        let _wild35 = inherent#Ref#Ref[int]#set(index/133, (inherent#Ref#Ref[int]#get(index/133) + 1)) in
+      }
+  } in
+  let _wild37 = inherent#Vec#Vec[T]#push(result/132, elem/131) in
+  result/132
+}
+
+fn inherent#Vec#Vec[T]#get(self/134: Vec[T], index/135: int) -> T {
+  @intrinsic(vec.get)(self/134, index/135)
+}
+
+fn inherent#Vec#Vec[T]#set(self/136: Vec[T], index/137: int, elem/138: T) -> unit {
+  @intrinsic(vec.set)(self/136, index/137, elem/138)
+}
+
+fn inherent#Vec#Vec[T]#len(self/139: Vec[T]) -> int {
+  @intrinsic(vec.len)(self/139)
+}
+
+fn inherent#Vec#Vec[T]#capacity(self/140: Vec[T]) -> int {
+  @intrinsic(vec.capacity)(self/140)
+}
+
+fn inherent#Vec#Vec[T]#is_empty(self/141: Vec[T]) -> bool {
+  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len(self/141), 0)
+}
+
+fn inherent#Vec#Vec[T]#reserve(self/142: Vec[T], additional/143: int) -> unit {
+  @intrinsic(vec.reserve)(self/142, additional/143)
+}
+
+fn inherent#Vec#Vec[T]#truncate(self/144: Vec[T], len/145: int) -> unit {
+  @intrinsic(vec.truncate)(self/144, len/145)
+}
+
+fn inherent#Vec#Vec[T]#clear(self/146: Vec[T]) -> unit {
+  inherent#Vec#Vec[T]#truncate(self/146, 0)
+}
+
+fn inherent#Vec#Vec[T]#last(self/147: Vec[T]) -> Option[T] {
+  let len/148 = inherent#Vec#Vec[T]#len(self/147) in
+  if trait_impl#Eq#int#eq(len/148, 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        Option::Some(inherent#Vec#Vec[T]#get(self/147, (len/148 - 1)))
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#pop(self/149: Vec[T]) -> Option[T] {
+  let len/150 = inherent#Vec#Vec[T]#len(self/149) in
+  if trait_impl#Eq#int#eq(len/150, 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let value/151 = inherent#Vec#Vec[T]#get(self/149, (len/150 - 1)) in
+        let _wild38 = inherent#Vec#Vec[T]#truncate(self/149, (len/150 - 1)) in
+        Option::Some(value/151)
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#swap(self/152: Vec[T], left/153: int, right/154: int) -> unit {
+  let value/155 = inherent#Vec#Vec[T]#get(self/152, left/153) in
+  let _wild39 = inherent#Vec#Vec[T]#set(self/152, left/153, inherent#Vec#Vec[T]#get(self/152, right/154)) in
+  inherent#Vec#Vec[T]#set(self/152, right/154, value/155)
+}
+
+fn inherent#Vec#Vec[T]#swap_remove(self/156: Vec[T], index/157: int) -> T {
+  let len/158 = inherent#Vec#Vec[T]#len(self/156) in
+  let value/159 = inherent#Vec#Vec[T]#get(self/156, index/157) in
+  let _wild41 = if ((index/157 + 1) < len/158) {
+      {
+        let _wild40 = inherent#Vec#Vec[T]#set(self/156, index/157, inherent#Vec#Vec[T]#get(self/156, (len/158 - 1))) in
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let _wild42 = inherent#Vec#Vec[T]#truncate(self/156, (len/158 - 1)) in
+  value/159
+}
+
+fn inherent#Vec#Vec[T]#insert(self/160: Vec[T], index/161: int, value/162: T) -> unit {
+  let len/163 = inherent#Vec#Vec[T]#len(self/160) in
+  if trait_impl#Eq#int#eq(index/161, len/163) {
+      {
+        inherent#Vec#Vec[T]#push(self/160, value/162)
+      }
+  } else {
+      {
+        let mtmp43 = inherent#Vec#Vec[T]#get(self/160, index/161) in
+        {
+          let _wild44 = inherent#Vec#Vec[T]#push(self/160, inherent#Vec#Vec[T]#get(self/160, (len/163 - 1))) in
+          let current/164 = inherent#Ref#Ref[int]#new((len/163 - 1)) in
+          let _wild47 = while (inherent#Ref#Ref[int]#get(current/164) > index/161) {
+              {
+                let _wild45 = inherent#Vec#Vec[T]#set(self/160, inherent#Ref#Ref[int]#get(current/164), inherent#Vec#Vec[T]#get(self/160, (inherent#Ref#Ref[int]#get(current/164) - 1))) in
+                let _wild46 = inherent#Ref#Ref[int]#set(current/164, (inherent#Ref#Ref[int]#get(current/164) - 1)) in
+              }
+          } in
+          inherent#Vec#Vec[T]#set(self/160, index/161, value/162)
+        }
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#remove(self/165: Vec[T], index/166: int) -> T {
+  let len/167 = inherent#Vec#Vec[T]#len(self/165) in
+  let value/168 = inherent#Vec#Vec[T]#get(self/165, index/166) in
+  let current/169 = inherent#Ref#Ref[int]#new(index/166) in
+  let _wild50 = while ((inherent#Ref#Ref[int]#get(current/169) + 1) < len/167) {
+      {
+        let _wild48 = inherent#Vec#Vec[T]#set(self/165, inherent#Ref#Ref[int]#get(current/169), inherent#Vec#Vec[T]#get(self/165, (inherent#Ref#Ref[int]#get(current/169) + 1))) in
+        let _wild49 = inherent#Ref#Ref[int]#set(current/169, (inherent#Ref#Ref[int]#get(current/169) + 1)) in
+      }
+  } in
+  let _wild51 = inherent#Vec#Vec[T]#truncate(self/165, (len/167 - 1)) in
+  value/168
+}
+
+fn inherent#Vec#Vec[T]#reverse(self/170: Vec[T]) -> unit {
+  let left/171 = inherent#Ref#Ref[int]#new(0) in
+  let right/172 = inherent#Ref#Ref[int]#new((inherent#Vec#Vec[T]#len(self/170) - 1)) in
+  while (inherent#Ref#Ref[int]#get(left/171) < inherent#Ref#Ref[int]#get(right/172)) {
+      {
+        let _wild52 = inherent#Vec#Vec[T]#swap(self/170, inherent#Ref#Ref[int]#get(left/171), inherent#Ref#Ref[int]#get(right/172)) in
+        let _wild53 = inherent#Ref#Ref[int]#set(left/171, (inherent#Ref#Ref[int]#get(left/171) + 1)) in
+        let _wild54 = inherent#Ref#Ref[int]#set(right/172, (inherent#Ref#Ref[int]#get(right/172) - 1)) in
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#extend(self/173: Vec[T], other/174: Vec[T]) -> unit {
+  let len/175 = inherent#Vec#Vec[T]#len(other/174) in
+  let _wild55 = inherent#Vec#Vec[T]#reserve(self/173, len/175) in
+  let index/176 = inherent#Ref#Ref[int]#new(0) in
+  while (inherent#Ref#Ref[int]#get(index/176) < len/175) {
+      {
+        let _wild56 = inherent#Vec#Vec[T]#push(self/173, inherent#Vec#Vec[T]#get(other/174, inherent#Ref#Ref[int]#get(index/176))) in
+        let _wild57 = inherent#Ref#Ref[int]#set(index/176, (inherent#Ref#Ref[int]#get(index/176) + 1)) in
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#slice(self/177: Vec[T], start/178: int, end/179: int) -> Slice[T] {
+  @intrinsic(slice.new)(self/177, start/178, end/179)
+}
+
+fn inherent#Vec#Vec[T]#iter(self/180: Vec[T]) -> FnIterator[T] {
+  let index/181 = inherent#Ref#Ref[int]#new(0) in
+  let len/182 = inherent#Vec#Vec[T]#len(self/180) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    let current/183 = inherent#Ref#Ref[int]#get(index/181) in
+    if (current/183 < len/182) {
+        {
+          let value/184 = inherent#Vec#Vec[T]#get(self/180, current/183) in
+          let _wild58 = inherent#Ref#Ref[int]#set(index/181, (current/183 + 1)) in
+          Option::Some(value/184)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
+}
+
+fn trait_impl#IntoIterator#Vec[T]#into_iter(self/185: Vec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(self/185)
+}
+
+fn inherent#Slice#Slice[T]#get(self/186: Slice[T], index/187: int) -> T {
+  @intrinsic(slice.get)(self/186, index/187)
+}
+
+fn inherent#Slice#Slice[T]#len(self/188: Slice[T]) -> int {
+  @intrinsic(slice.len)(self/188)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/189: Slice[T], start/190: int, end/191: int) -> Slice[T] {
+  @intrinsic(slice.sub)(self/189, start/190, end/191)
+}
+
+fn inherent#Slice#Slice[T]#iter(self/192: Slice[T]) -> FnIterator[T] {
+  let index/193 = inherent#Ref#Ref[int]#new(0) in
+  let len/194 = inherent#Slice#Slice[T]#len(self/192) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    let current/195 = inherent#Ref#Ref[int]#get(index/193) in
+    if (current/195 < len/194) {
+        {
+          let value/196 = inherent#Slice#Slice[T]#get(self/192, current/195) in
+          let _wild59 = inherent#Ref#Ref[int]#set(index/193, (current/195 + 1)) in
+          Option::Some(value/196)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
+}
+
+fn trait_impl#IntoIterator#Slice[T]#into_iter(self/197: Slice[T]) -> FnIterator[T] {
+  inherent#Slice#Slice[T]#iter(self/197)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get(self/198: HashMap[K, V], key/199: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/198, key/199)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set(self/200: HashMap[K, V], key/201: K, value/202: V) -> unit {
+  @intrinsic(hashmap.set)(self/200, key/201, value/202)
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove(self/203: HashMap[K, V], key/204: K) -> unit {
+  @intrinsic(hashmap.remove)(self/203, key/204)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len(self/205: HashMap[K, V]) -> int {
+  @intrinsic(hashmap.len)(self/205)
+}
+
+fn inherent#HashMap#HashMap[K,V]#contains(self/206: HashMap[K, V], key/207: K) -> bool {
+  @intrinsic(hashmap.contains)(self/206, key/207)
+}
+
+fn inherent#HashMap#HashMap[K,V]#entries(self/208: HashMap[K, V]) -> Vec[(K, V)] {
+  @intrinsic(hashmap.entries)(self/208)
+}
+
+fn inherent#Ref#Ref[T]#new(value/209: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/209)
+}
+
+fn inherent#Ref#Ref[T]#get(self/210: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/210)
+}
+
+fn inherent#Ref#Ref[T]#set(self/211: Ref[T], value/212: T) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
+}
+
+fn inherent#Channel#Channel[T]#new(capacity/213: int) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/213)
+}
+
+fn inherent#Channel#Channel[T]#send(self/214: Channel[T], value/215: T) -> unit {
+  @intrinsic(channel.send)(self/214, value/215)
+}
+
+fn inherent#Channel#Channel[T]#recv(self/216: Channel[T]) -> Option[T] {
+  let mtmp60 = @intrinsic(channel.recv)(self/216) in
+  {
+    let x61 = mtmp60.0 in
+    let x62 = mtmp60.1 in
+    {
+      let ok/218 = x62 in
+      {
+        let value/217 = x61 in
+        {
+          if ok/218 {
+              {
+                Option::Some(value/217)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Channel#Channel[T]#close(self/219: Channel[T]) -> unit {
+  @intrinsic(channel.close)(self/219)
+}
+
+fn __goml_builtin_range(start/220: int, end/221: int) -> FnIterator[int] {
+  let current/222 = inherent#Ref#Ref[int]#new(start/220) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    let value/223 = inherent#Ref#Ref[int]#get(current/222) in
+    if (value/223 < end/221) {
+        {
+          let _wild63 = inherent#Ref#Ref[int]#set(current/222, (value/223 + 1)) in
+          Option::Some(value/223)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
+}
+
+fn range(start/224: int, end/225: int) -> FnIterator[int] {
+  __goml_builtin_range(start/224, end/225)
+}
+
+fn trait_impl#ToString#uint#to_string(self/226: uint) -> string {
+  @runtime(core.uint_to_string)(self/226)
+}
+
+fn trait_impl#Eq#uint#eq(self/227: uint, other/228: uint) -> bool {
+  @intrinsic(eq.primitive)(self/227, other/228)
+}
+
+fn trait_impl#Hash#uint#hash(self/229: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/229)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#Vec#Vec[uint8]#new() }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#Vec#Vec[uint8]#with_capacity(capacity/0) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: values/1 }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
+  inherent#Vec#Vec[uint8]#len(std::bytes::Bytes.values(self/3))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
+  inherent#Vec#Vec[uint8]#capacity(std::bytes::Bytes.values(self/4))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
+  inherent#Vec#Vec[uint8]#is_empty(std::bytes::Bytes.values(self/5))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
+  inherent#Vec#Vec[uint8]#get(std::bytes::Bytes.values(self/6), index/7)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
+  inherent#Vec#Vec[uint8]#set(std::bytes::Bytes.values(self/8), index/9, value/10)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
+  inherent#Vec#Vec[uint8]#push(std::bytes::Bytes.values(self/11), value/12)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option[uint8] {
+  inherent#Vec#Vec[uint8]#pop(std::bytes::Bytes.values(self/13))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
+  inherent#Vec#Vec[uint8]#reserve(std::bytes::Bytes.values(self/14), additional/15)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
+  inherent#Vec#Vec[uint8]#truncate(std::bytes::Bytes.values(self/16), len/17)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
+  inherent#Vec#Vec[uint8]#clear(std::bytes::Bytes.values(self/18))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
+  inherent#Vec#Vec[uint8]#slice(std::bytes::Bytes.values(self/19), start/20, end/21)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+  std::bytes::Bytes.values(self/22)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result[string, string] {
+  let mtmp0 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    {
+      let value/25 = x2 in
+      {
+        let valid/24 = x1 in
+        {
+          if valid/24 {
+              {
+                Result::Ok(value/25)
+              }
+          } else {
+              {
+                Result::Err("invalid UTF-8")
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
+  std::text::StringBuilder { parts: inherent#Vec#Vec[string]#new(), byte_len: inherent#Ref#Ref[int]#new(0) }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(part_capacity/0: int) -> std::text::StringBuilder {
+  std::text::StringBuilder { parts: inherent#Vec#Vec[string]#with_capacity(part_capacity/0), byte_len: inherent#Ref#Ref[int]#new(0) }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#len(self/1: std::text::StringBuilder) -> int {
+  inherent#Ref#Ref[int]#get(std::text::StringBuilder.byte_len(self/1))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(self/2: std::text::StringBuilder) -> bool {
+  trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(std::text::StringBuilder.byte_len(self/2)), 0)
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/3: std::text::StringBuilder, value/4: string) -> unit {
+  let _wild0 = inherent#Vec#Vec[string]#push(std::text::StringBuilder.parts(self/3), value/4) in
+  inherent#Ref#Ref[int]#set(std::text::StringBuilder.byte_len(self/3), (inherent#Ref#Ref[int]#get(std::text::StringBuilder.byte_len(self/3)) + inherent#string#string#byte_len(value/4)))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/5: std::text::StringBuilder, value/6: char) -> unit {
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/5, inherent#char#char#to_string(value/6))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/7: std::text::StringBuilder, value/8: std::bytes::Bytes) -> Result[unit, string] {
+  {
+    let mtmp1 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/8) in
+    match mtmp1 {
+      Result::Ok(x2) => {
+        {
+          let x2 = Result::Ok._0(mtmp1) in
+          {
+            let text/9 = x2 in
+            {
+              let _wild4 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/7, text/9) in
+              Result::Ok(())
+            }
+          }
+        }
+      },
+      Result::Err(x3) => {
+        {
+          let x3 = Result::Err._0(mtmp1) in
+          {
+            let error/10 = x3 in
+            Result::Err(error/10)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(self/11: std::text::StringBuilder, value/12: string) -> unit {
+  let _wild5 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/11, value/12) in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/11, "\n")
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/13: std::text::StringBuilder) -> unit {
+  let _wild6 = inherent#Vec#Vec[string]#clear(std::text::StringBuilder.parts(self/13)) in
+  inherent#Ref#Ref[int]#set(std::text::StringBuilder.byte_len(self/13), 0)
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/14: std::text::StringBuilder) -> string {
+  @runtime(core.string_concat)(std::text::StringBuilder.parts(self/14))
+}
+
+fn trait_impl#ToString#std::text::StringBuilder#to_string(self/15: std::text::StringBuilder) -> string {
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/15)
+}
+
+fn std::json::json_parser(input/0: string) -> std::json::JsonParser {
+  std::json::JsonParser { input: input/0, index: inherent#Ref#Ref[int]#new(0) }
+}
+
+fn std::json::json_error(value/1: std::json::JsonParser, message/2: string) -> string {
+  ((message/2 + " at byte ") + inherent#int#int#to_string(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/1))))
+}
+
+fn std::json::json_whitespace(value/3: uint8) -> bool {
+  if if if trait_impl#Eq#uint8#eq(value/3, 9) {
+      true
+  } else {
+      trait_impl#Eq#uint8#eq(value/3, 10)
+  } {
+      true
+  } else {
+      trait_impl#Eq#uint8#eq(value/3, 13)
+  } {
+      true
+  } else {
+      trait_impl#Eq#uint8#eq(value/3, 32)
+  }
+}
+
+fn std::json::skip_json_whitespace(value/4: std::json::JsonParser) -> unit {
+  while if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/4)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/4))) {
+      std::json::json_whitespace(inherent#string#string#byte_get(std::json::JsonParser.input(value/4), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/4))))
+  } else {
+      false
+  } {
+      {
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/4), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/4)) + 1))
+      }
+  }
+}
+
+fn std::json::hex_digit(value/5: uint8) -> Option[uint32] {
+  if if (value/5 >= 48) {
+      (value/5 <= 57)
+  } else {
+      false
+  } {
+      {
+        Option::Some(((value/5 - 48) as uint32))
+      }
+  } else {
+      if if (value/5 >= 65) {
+          (value/5 <= 70)
+      } else {
+          false
+      } {
+          {
+            Option::Some(((value/5 - 55) as uint32))
+          }
+      } else {
+          if if (value/5 >= 97) {
+              (value/5 <= 102)
+          } else {
+              false
+          } {
+              {
+                Option::Some(((value/5 - 87) as uint32))
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+      }
+  }
+}
+
+fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result[uint32, string] {
+  if ((inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/6)) + 4) > inherent#string#string#byte_len(std::json::JsonParser.input(value/6))) {
+      {
+        Result::Err(std::json::json_error(value/6, "incomplete unicode escape"))
+      }
+  } else {
+      {
+        let result/7 = inherent#Ref#Ref[uint32]#new((0 as uint32)) in
+        let _wild5 = {
+          let for_iter0 = trait_call[IntoIterator::into_iter](range(0, 4)) in
+          while true {
+              {
+                let for_next1 = trait_call[Iterator::next](for_iter0) in
+                match for_next1 {
+                  Option::None => {
+                    break
+                  },
+                  Option::Some(x2) => {
+                    {
+                      let x2 = Option::Some._0(for_next1) in
+                      {
+                        let offset/8 = x2 in
+                        {
+                          {
+                            let mtmp3 = std::json::hex_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/6), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/6)) + offset/8))) in
+                            match mtmp3 {
+                              Option::None => {
+                                {
+                                  return Result::Err(std::json::json_error(value/6, "invalid unicode escape"))
+                                }
+                              },
+                              Option::Some(x4) => {
+                                {
+                                  let x4 = Option::Some._0(mtmp3) in
+                                  {
+                                    let digit/9 = x4 in
+                                    {
+                                      inherent#Ref#Ref[uint32]#set(result/7, ((inherent#Ref#Ref[uint32]#get(result/7) * 16) + digit/9))
+                                    }
+                                  }
+                                }
+                              },
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                }
+              }
+          }
+        } in
+        let _wild6 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/6), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/6)) + 4)) in
+        Result::Ok(inherent#Ref#Ref[uint32]#get(result/7))
+      }
+  }
+}
+
+fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::text::StringBuilder, codepoint/12: uint32) -> Result[unit, string] {
+  {
+    let mtmp7 = char_from_uint32(codepoint/12) in
+    match mtmp7 {
+      Option::None => {
+        Result::Err(std::json::json_error(value/10, "invalid unicode codepoint"))
+      },
+      Option::Some(x8) => {
+        {
+          let x8 = Option::Some._0(mtmp7) in
+          {
+            let character/13 = x8 in
+            {
+              let _wild9 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/11, character/13) in
+              Result::Ok(())
+            }
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: std::text::StringBuilder) -> Result[unit, string] {
+  let first/18 = {
+    let mtmp10 = std::json::parse_hex_quad(value/14) in
+    match mtmp10 {
+      Result::Ok(x11) => {
+        {
+          let x11 = Result::Ok._0(mtmp10) in
+          {
+            let codepoint/16 = x11 in
+            codepoint/16
+          }
+        }
+      },
+      Result::Err(x12) => {
+        {
+          let x12 = Result::Err._0(mtmp10) in
+          {
+            let error/17 = x12 in
+            return Result::Err(error/17)
+          }
+        }
+      },
+    }
+  } in
+  if if (first/18 >= 55296) {
+      (first/18 <= 56319)
+  } else {
+      false
+  } {
+      {
+        if if if ((inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/14)) + 2) > inherent#string#string#byte_len(std::json::JsonParser.input(value/14))) {
+            true
+        } else {
+            (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/14), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/14))), 92))
+        } {
+            true
+        } else {
+            (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/14), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/14)) + 1)), 117))
+        } {
+            {
+              Result::Err(std::json::json_error(value/14, "missing low surrogate"))
+            }
+        } else {
+            {
+              let _wild13 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/14), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/14)) + 2)) in
+              let second/21 = {
+                let mtmp14 = std::json::parse_hex_quad(value/14) in
+                match mtmp14 {
+                  Result::Ok(x15) => {
+                    {
+                      let x15 = Result::Ok._0(mtmp14) in
+                      {
+                        let codepoint/19 = x15 in
+                        codepoint/19
+                      }
+                    }
+                  },
+                  Result::Err(x16) => {
+                    {
+                      let x16 = Result::Err._0(mtmp14) in
+                      {
+                        let error/20 = x16 in
+                        return Result::Err(error/20)
+                      }
+                    }
+                  },
+                }
+              } in
+              if if (second/21 < 56320) {
+                  true
+              } else {
+                  (second/21 > 57343)
+              } {
+                  {
+                    Result::Err(std::json::json_error(value/14, "invalid low surrogate"))
+                  }
+              } else {
+                  {
+                    std::json::write_codepoint(value/14, builder/15, (((65536 + ((first/18 - 55296) * 1024)) + second/21) - 56320))
+                  }
+              }
+            }
+        }
+      }
+  } else {
+      if if (first/18 >= 56320) {
+          (first/18 <= 57343)
+      } else {
+          false
+      } {
+          {
+            Result::Err(std::json::json_error(value/14, "unexpected low surrogate"))
+          }
+      } else {
+          {
+            std::json::write_codepoint(value/14, builder/15, first/18)
+          }
+      }
+  }
+}
+
+fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result[string, string] {
+  let _wild17 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/22))) {
+      true
+  } else {
+      (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))), 34))
+  } {
+      {
+        return Result::Err(std::json::json_error(value/22, "expected string"))
+      }
+  } else {
+      {
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1))
+      }
+  } in
+  let builder/23 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
+  let segment/24 = inherent#Ref#Ref[int]#new(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) in
+  let _wild32 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/22))) {
+      {
+        let byte/25 = inherent#string#string#byte_get(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) in
+        if trait_impl#Eq#uint8#eq(byte/25, 34) {
+            {
+              let _wild18 = if (inherent#Ref#Ref[int]#get(segment/24) < inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) {
+                  {
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, inherent#string#string#byte_slice(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(segment/24), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))))
+                  }
+              } else {
+                  {
+                    ()
+                  }
+              } in
+              let _wild19 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1)) in
+              return Result::Ok(inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/23))
+            }
+        } else {
+            if trait_impl#Eq#uint8#eq(byte/25, 92) {
+                {
+                  let _wild20 = if (inherent#Ref#Ref[int]#get(segment/24) < inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) {
+                      {
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, inherent#string#string#byte_slice(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(segment/24), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))))
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                  let _wild21 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1)) in
+                  let _wild22 = if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/22))) {
+                      {
+                        return Result::Err(std::json::json_error(value/22, "incomplete escape"))
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                  let escape/26 = inherent#string#string#byte_get(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) in
+                  let _wild23 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1)) in
+                  let _wild31 = if trait_impl#Eq#uint8#eq(escape/26, 34) {
+                      {
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '"')
+                      }
+                  } else {
+                      if trait_impl#Eq#uint8#eq(escape/26, 92) {
+                          {
+                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\\')
+                          }
+                      } else {
+                          if trait_impl#Eq#uint8#eq(escape/26, 47) {
+                              {
+                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '/')
+                              }
+                          } else {
+                              if trait_impl#Eq#uint8#eq(escape/26, 98) {
+                                  {
+                                    {
+                                      let mtmp24 = char_from_uint32(8) in
+                                      match mtmp24 {
+                                        Option::None => {
+                                          ()
+                                        },
+                                        Option::Some(x25) => {
+                                          {
+                                            let x25 = Option::Some._0(mtmp24) in
+                                            {
+                                              let character/27 = x25 in
+                                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/27)
+                                            }
+                                          }
+                                        },
+                                      }
+                                    }
+                                  }
+                              } else {
+                                  if trait_impl#Eq#uint8#eq(escape/26, 102) {
+                                      {
+                                        {
+                                          let mtmp26 = char_from_uint32(12) in
+                                          match mtmp26 {
+                                            Option::None => {
+                                              ()
+                                            },
+                                            Option::Some(x27) => {
+                                              {
+                                                let x27 = Option::Some._0(mtmp26) in
+                                                {
+                                                  let character/28 = x27 in
+                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/28)
+                                                }
+                                              }
+                                            },
+                                          }
+                                        }
+                                      }
+                                  } else {
+                                      if trait_impl#Eq#uint8#eq(escape/26, 110) {
+                                          {
+                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\n')
+                                          }
+                                      } else {
+                                          if trait_impl#Eq#uint8#eq(escape/26, 114) {
+                                              {
+                                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\r')
+                                              }
+                                          } else {
+                                              if trait_impl#Eq#uint8#eq(escape/26, 116) {
+                                                  {
+                                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\t')
+                                                  }
+                                              } else {
+                                                  if trait_impl#Eq#uint8#eq(escape/26, 117) {
+                                                      {
+                                                        {
+                                                          let mtmp28 = std::json::parse_unicode_escape(value/22, builder/23) in
+                                                          match mtmp28 {
+                                                            Result::Ok(x29) => {
+                                                              {
+                                                                let x29 = Result::Ok._0(mtmp28) in
+                                                                match x29 {
+                                                                  () => {
+                                                                    ()
+                                                                  },
+                                                                }
+                                                              }
+                                                            },
+                                                            Result::Err(x30) => {
+                                                              {
+                                                                let x30 = Result::Err._0(mtmp28) in
+                                                                {
+                                                                  let error/29 = x30 in
+                                                                  return Result::Err(error/29)
+                                                                }
+                                                              }
+                                                            },
+                                                          }
+                                                        }
+                                                      }
+                                                  } else {
+                                                      {
+                                                        return Result::Err(std::json::json_error(value/22, "invalid escape"))
+                                                      }
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  } in
+                  inherent#Ref#Ref[int]#set(segment/24, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)))
+                }
+            } else {
+                if (byte/25 < 32) {
+                    {
+                      return Result::Err(std::json::json_error(value/22, "unescaped control character"))
+                    }
+                } else {
+                    {
+                      inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1))
+                    }
+                }
+            }
+        }
+      }
+  } in
+  Result::Err(std::json::json_error(value/22, "unterminated string"))
+}
+
+fn std::json::json_digit(value/30: uint8) -> bool {
+  if (value/30 >= 48) {
+      (value/30 <= 57)
+  } else {
+      false
+  }
+}
+
+fn std::json::parse_digits(value/31: std::json::JsonParser) -> bool {
+  let start/32 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) in
+  let _wild33 = while if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/31))) {
+      std::json::json_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/31), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31))))
+  } else {
+      false
+  } {
+      {
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/31), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) + 1))
+      }
+  } in
+  (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) > start/32)
+}
+
+fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let start/34 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) in
+  let _wild34 = if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 45) {
+      {
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1))
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let _wild36 = if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+      {
+        return Result::Err(std::json::json_error(value/33, "incomplete number"))
+      }
+  } else {
+      if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 48) {
+          {
+            let _wild35 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+            if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+                std::json::json_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))))
+            } else {
+                false
+            } {
+                {
+                  return Result::Err(std::json::json_error(value/33, "invalid leading zero"))
+                }
+            } else {
+                {
+                  ()
+                }
+            }
+          }
+      } else {
+          if (!std::json::parse_digits(value/33)) {
+              {
+                return Result::Err(std::json::json_error(value/33, "expected number"))
+              }
+          } else {
+              {
+                ()
+              }
+          }
+      }
+  } in
+  let _wild38 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 46)
+  } else {
+      false
+  } {
+      {
+        let _wild37 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+        if (!std::json::parse_digits(value/33)) {
+            {
+              return Result::Err(std::json::json_error(value/33, "missing fraction digits"))
+            }
+        } else {
+            {
+              ()
+            }
+        }
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let _wild41 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+      if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 101) {
+          true
+      } else {
+          trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 69)
+      }
+  } else {
+      false
+  } {
+      {
+        let _wild39 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+        let _wild40 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 43) {
+                true
+            } else {
+                trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 45)
+            }
+        } else {
+            false
+        } {
+            {
+              inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1))
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        if (!std::json::parse_digits(value/33)) {
+            {
+              return Result::Err(std::json::json_error(value/33, "missing exponent digits"))
+            }
+        } else {
+            {
+              ()
+            }
+        }
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  Result::Ok(std::json::Value::Number(inherent#string#string#byte_slice(std::json::JsonParser.input(value/33), start/34, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)))))
+}
+
+fn std::json::parse_json_literal(value/35: std::json::JsonParser, expected/36: string, result/37: std::json::Value) -> Result[std::json::Value, string] {
+  if if ((inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)) + inherent#string#string#byte_len(expected/36)) <= inherent#string#string#byte_len(std::json::JsonParser.input(value/35))) {
+      trait_impl#Eq#string#eq(inherent#string#string#byte_slice(std::json::JsonParser.input(value/35), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)) + inherent#string#string#byte_len(expected/36))), expected/36)
+  } else {
+      false
+  } {
+      {
+        let _wild42 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/35), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)) + inherent#string#string#byte_len(expected/36))) in
+        Result::Ok(result/37)
+      }
+  } else {
+      {
+        Result::Err(std::json::json_error(value/35, "invalid literal"))
+      }
+  }
+}
+
+fn std::json::parse_json_array(value/38: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let _wild43 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
+  let _wild44 = std::json::skip_json_whitespace(value/38) in
+  let result/39 = inherent#Vec#Vec[std::json::Value]#new() in
+  let _wild46 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/38))) {
+      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/38), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38))), 93)
+  } else {
+      false
+  } {
+      {
+        let _wild45 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
+        return Result::Ok(std::json::Value::Array(result/39))
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let _wild54 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/38))) {
+      {
+        let _wild50 = {
+          let mtmp47 = std::json::parse_json_value(value/38) in
+          match mtmp47 {
+            Result::Ok(x48) => {
+              {
+                let x48 = Result::Ok._0(mtmp47) in
+                {
+                  let item/40 = x48 in
+                  inherent#Vec#Vec[std::json::Value]#push(result/39, item/40)
+                }
+              }
+            },
+            Result::Err(x49) => {
+              {
+                let x49 = Result::Err._0(mtmp47) in
+                {
+                  let error/41 = x49 in
+                  return Result::Err(error/41)
+                }
+              }
+            },
+          }
+        } in
+        let _wild51 = std::json::skip_json_whitespace(value/38) in
+        if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/38))) {
+            {
+              return Result::Err(std::json::json_error(value/38, "unterminated array"))
+            }
+        } else {
+            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/38), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38))), 93) {
+                {
+                  let _wild52 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
+                  return Result::Ok(std::json::Value::Array(result/39))
+                }
+            } else {
+                if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/38), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38))), 44) {
+                    {
+                      let _wild53 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
+                      std::json::skip_json_whitespace(value/38)
+                    }
+                } else {
+                    {
+                      return Result::Err(std::json::json_error(value/38, "expected array separator"))
+                    }
+                }
+            }
+        }
+      }
+  } in
+  Result::Err(std::json::json_error(value/38, "unterminated array"))
+}
+
+fn std::json::parse_json_object(value/42: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let _wild55 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
+  let _wild56 = std::json::skip_json_whitespace(value/42) in
+  let result/43 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
+  let _wild58 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 125)
+  } else {
+      false
+  } {
+      {
+        let _wild57 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
+        return Result::Ok(std::json::Value::Object(result/43))
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let _wild72 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+      {
+        let name/46 = {
+          let mtmp59 = std::json::parse_json_string(value/42) in
+          match mtmp59 {
+            Result::Ok(x60) => {
+              {
+                let x60 = Result::Ok._0(mtmp59) in
+                {
+                  let name/44 = x60 in
+                  name/44
+                }
+              }
+            },
+            Result::Err(x61) => {
+              {
+                let x61 = Result::Err._0(mtmp59) in
+                {
+                  let error/45 = x61 in
+                  return Result::Err(error/45)
+                }
+              }
+            },
+          }
+        } in
+        let _wild62 = std::json::skip_json_whitespace(value/42) in
+        let _wild63 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+            true
+        } else {
+            (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 58))
+        } {
+            {
+              return Result::Err(std::json::json_error(value/42, "expected object colon"))
+            }
+        } else {
+            {
+              inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1))
+            }
+        } in
+        let _wild64 = std::json::skip_json_whitespace(value/42) in
+        let _wild68 = {
+          let mtmp65 = std::json::parse_json_value(value/42) in
+          match mtmp65 {
+            Result::Ok(x66) => {
+              {
+                let x66 = Result::Ok._0(mtmp65) in
+                {
+                  let item/47 = x66 in
+                  inherent#Vec#Vec[(string,std::json::Value)]#push(result/43, (name/46, item/47))
+                }
+              }
+            },
+            Result::Err(x67) => {
+              {
+                let x67 = Result::Err._0(mtmp65) in
+                {
+                  let error/48 = x67 in
+                  return Result::Err(error/48)
+                }
+              }
+            },
+          }
+        } in
+        let _wild69 = std::json::skip_json_whitespace(value/42) in
+        if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+            {
+              return Result::Err(std::json::json_error(value/42, "unterminated object"))
+            }
+        } else {
+            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 125) {
+                {
+                  let _wild70 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
+                  return Result::Ok(std::json::Value::Object(result/43))
+                }
+            } else {
+                if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 44) {
+                    {
+                      let _wild71 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
+                      std::json::skip_json_whitespace(value/42)
+                    }
+                } else {
+                    {
+                      return Result::Err(std::json::json_error(value/42, "expected object separator"))
+                    }
+                }
+            }
+        }
+      }
+  } in
+  Result::Err(std::json::json_error(value/42, "unterminated object"))
+}
+
+fn std::json::parse_json_value(value/49: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let _wild73 = std::json::skip_json_whitespace(value/49) in
+  if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/49)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/49))) {
+      {
+        Result::Err(std::json::json_error(value/49, "expected JSON value"))
+      }
+  } else {
+      {
+        {
+          let mtmp74 = inherent#string#string#byte_get(std::json::JsonParser.input(value/49), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/49))) in
+          match mtmp74 {
+            123 => {
+              std::json::parse_json_object(value/49)
+            },
+            91 => {
+              std::json::parse_json_array(value/49)
+            },
+            34 => {
+              {
+                let mtmp75 = std::json::parse_json_string(value/49) in
+                match mtmp75 {
+                  Result::Ok(x76) => {
+                    {
+                      let x76 = Result::Ok._0(mtmp75) in
+                      {
+                        let text/50 = x76 in
+                        Result::Ok(std::json::Value::String(text/50))
+                      }
+                    }
+                  },
+                  Result::Err(x77) => {
+                    {
+                      let x77 = Result::Err._0(mtmp75) in
+                      {
+                        let error/51 = x77 in
+                        Result::Err(error/51)
+                      }
+                    }
+                  },
+                }
+              }
+            },
+            116 => {
+              std::json::parse_json_literal(value/49, "true", std::json::Value::Bool(true))
+            },
+            102 => {
+              std::json::parse_json_literal(value/49, "false", std::json::Value::Bool(false))
+            },
+            110 => {
+              std::json::parse_json_literal(value/49, "null", std::json::Value::Null)
+            },
+            _ => {
+              let byte/52 = mtmp74 in
+              if if trait_impl#Eq#uint8#eq(byte/52, 45) {
+                  true
+              } else {
+                  std::json::json_digit(byte/52)
+              } {
+                  {
+                    std::json::parse_json_number(value/49)
+                  }
+              } else {
+                  {
+                    Result::Err(std::json::json_error(value/49, "unexpected JSON token"))
+                  }
+              }
+            },
+          }
+        }
+      }
+  }
+}
+
+fn std::json::parse(input/53: string) -> Result[std::json::Value, string] {
+  let parser/54 = std::json::json_parser(input/53) in
+  let result/57 = {
+    let mtmp78 = std::json::parse_json_value(parser/54) in
+    match mtmp78 {
+      Result::Ok(x79) => {
+        {
+          let x79 = Result::Ok._0(mtmp78) in
+          {
+            let value/55 = x79 in
+            value/55
+          }
+        }
+      },
+      Result::Err(x80) => {
+        {
+          let x80 = Result::Err._0(mtmp78) in
+          {
+            let error/56 = x80 in
+            return Result::Err(error/56)
+          }
+        }
+      },
+    }
+  } in
+  let _wild81 = std::json::skip_json_whitespace(parser/54) in
+  if trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(parser/54)), inherent#string#string#byte_len(input/53)) {
+      {
+        Result::Ok(result/57)
+      }
+  } else {
+      {
+        Result::Err(std::json::json_error(parser/54, "trailing JSON data"))
+      }
+  }
+}
+
+fn std::json::json_hex_digit(value/58: uint8) -> char {
+  inherent#string#string#get("0123456789abcdef", (value/58 as int))
+}
+
+fn std::json::write_json_string(builder/59: std::text::StringBuilder, value/60: string) -> unit {
+  let _wild82 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"') in
+  let start/61 = inherent#Ref#Ref[int]#new(0) in
+  let _wild90 = {
+    let for_iter83 = trait_call[IntoIterator::into_iter](range(0, inherent#string#string#byte_len(value/60))) in
+    while true {
+        {
+          let for_next84 = trait_call[Iterator::next](for_iter83) in
+          match for_next84 {
+            Option::None => {
+              break
+            },
+            Option::Some(x85) => {
+              {
+                let x85 = Option::Some._0(for_next84) in
+                {
+                  let index/62 = x85 in
+                  {
+                    let byte/63 = inherent#string#string#byte_get(value/60, index/62) in
+                    if if if if if if if if trait_impl#Eq#uint8#eq(byte/63, 34) {
+                        true
+                    } else {
+                        trait_impl#Eq#uint8#eq(byte/63, 92)
+                    } {
+                        true
+                    } else {
+                        trait_impl#Eq#uint8#eq(byte/63, 8)
+                    } {
+                        true
+                    } else {
+                        trait_impl#Eq#uint8#eq(byte/63, 9)
+                    } {
+                        true
+                    } else {
+                        trait_impl#Eq#uint8#eq(byte/63, 10)
+                    } {
+                        true
+                    } else {
+                        trait_impl#Eq#uint8#eq(byte/63, 12)
+                    } {
+                        true
+                    } else {
+                        trait_impl#Eq#uint8#eq(byte/63, 13)
+                    } {
+                        true
+                    } else {
+                        (byte/63 < 32)
+                    } {
+                        {
+                          let _wild86 = if (inherent#Ref#Ref[int]#get(start/61) < index/62) {
+                              {
+                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, inherent#string#string#byte_slice(value/60, inherent#Ref#Ref[int]#get(start/61), index/62))
+                              }
+                          } else {
+                              {
+                                ()
+                              }
+                          } in
+                          let _wild89 = if trait_impl#Eq#uint8#eq(byte/63, 34) {
+                              {
+                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\"")
+                              }
+                          } else {
+                              if trait_impl#Eq#uint8#eq(byte/63, 92) {
+                                  {
+                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\\")
+                                  }
+                              } else {
+                                  if trait_impl#Eq#uint8#eq(byte/63, 8) {
+                                      {
+                                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\b")
+                                      }
+                                  } else {
+                                      if trait_impl#Eq#uint8#eq(byte/63, 9) {
+                                          {
+                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\t")
+                                          }
+                                      } else {
+                                          if trait_impl#Eq#uint8#eq(byte/63, 10) {
+                                              {
+                                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\n")
+                                              }
+                                          } else {
+                                              if trait_impl#Eq#uint8#eq(byte/63, 12) {
+                                                  {
+                                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\f")
+                                                  }
+                                              } else {
+                                                  if trait_impl#Eq#uint8#eq(byte/63, 13) {
+                                                      {
+                                                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\r")
+                                                      }
+                                                  } else {
+                                                      {
+                                                        let _wild87 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\u00") in
+                                                        let _wild88 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, std::json::json_hex_digit((byte/63 / 16))) in
+                                                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, std::json::json_hex_digit((byte/63 % 16)))
+                                                      }
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                              }
+                          } in
+                          inherent#Ref#Ref[int]#set(start/61, (index/62 + 1))
+                        }
+                    } else {
+                        {
+                          ()
+                        }
+                    }
+                  }
+                }
+              }
+            },
+          }
+        }
+    }
+  } in
+  let _wild91 = if (inherent#Ref#Ref[int]#get(start/61) < inherent#string#string#byte_len(value/60)) {
+      {
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, inherent#string#string#byte_slice(value/60, inherent#Ref#Ref[int]#get(start/61), inherent#string#string#byte_len(value/60)))
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"')
+}
+
+fn std::json::write_json_value(builder/64: std::text::StringBuilder, value/65: std::json::Value) -> unit {
+  match value/65 {
+    std::json::Value::Object(x92) => {
+      {
+        let x92 = std::json::Value::Object._0(value/65) in
+        {
+          let fields/66 = x92 in
+          {
+            let _wild97 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '{') in
+            let index/67 = inherent#Ref#Ref[int]#new(0) in
+            let _wild105 = {
+              let for_iter98 = trait_call[IntoIterator::into_iter](fields/66) in
+              while true {
+                  {
+                    let for_next99 = trait_call[Iterator::next](for_iter98) in
+                    match for_next99 {
+                      Option::None => {
+                        break
+                      },
+                      Option::Some(x100) => {
+                        {
+                          let x100 = Option::Some._0(for_next99) in
+                          {
+                            let field/68 = x100 in
+                            {
+                              let _wild101 = if (inherent#Ref#Ref[int]#get(index/67) > 0) {
+                                  {
+                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',')
+                                  }
+                              } else {
+                                  {
+                                    ()
+                                  }
+                              } in
+                              let _wild102 = std::json::write_json_string(builder/64, field/68.0) in
+                              let _wild103 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ':') in
+                              let _wild104 = std::json::write_json_value(builder/64, field/68.1) in
+                              inherent#Ref#Ref[int]#set(index/67, (inherent#Ref#Ref[int]#get(index/67) + 1))
+                            }
+                          }
+                        }
+                      },
+                    }
+                  }
+              }
+            } in
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '}')
+          }
+        }
+      }
+    },
+    std::json::Value::Array(x93) => {
+      {
+        let x93 = std::json::Value::Array._0(value/65) in
+        {
+          let items/69 = x93 in
+          {
+            let _wild106 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '[') in
+            let index/70 = inherent#Ref#Ref[int]#new(0) in
+            let _wild112 = {
+              let for_iter107 = trait_call[IntoIterator::into_iter](items/69) in
+              while true {
+                  {
+                    let for_next108 = trait_call[Iterator::next](for_iter107) in
+                    match for_next108 {
+                      Option::None => {
+                        break
+                      },
+                      Option::Some(x109) => {
+                        {
+                          let x109 = Option::Some._0(for_next108) in
+                          {
+                            let item/71 = x109 in
+                            {
+                              let _wild110 = if (inherent#Ref#Ref[int]#get(index/70) > 0) {
+                                  {
+                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',')
+                                  }
+                              } else {
+                                  {
+                                    ()
+                                  }
+                              } in
+                              let _wild111 = std::json::write_json_value(builder/64, item/71) in
+                              inherent#Ref#Ref[int]#set(index/70, (inherent#Ref#Ref[int]#get(index/70) + 1))
+                            }
+                          }
+                        }
+                      },
+                    }
+                  }
+              }
+            } in
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ']')
+          }
+        }
+      }
+    },
+    std::json::Value::String(x94) => {
+      {
+        let x94 = std::json::Value::String._0(value/65) in
+        {
+          let text/72 = x94 in
+          std::json::write_json_string(builder/64, text/72)
+        }
+      }
+    },
+    std::json::Value::Number(x95) => {
+      {
+        let x95 = std::json::Value::Number._0(value/65) in
+        {
+          let number/73 = x95 in
+          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, number/73)
+        }
+      }
+    },
+    std::json::Value::Bool(x96) => {
+      {
+        let x96 = std::json::Value::Bool._0(value/65) in
+        {
+          let value/74 = x96 in
+          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, if value/74 {
+              {
+                "true"
+              }
+          } else {
+              {
+                "false"
+              }
+          })
+        }
+      }
+    },
+    std::json::Value::Null => {
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, "null")
+    },
+  }
+}
+
+fn std::json::encode(value/75: std::json::Value) -> string {
+  let builder/76 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
+  let _wild113 = std::json::write_json_value(builder/76, value/75) in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/76)
+}
+
+fn std::json::field(value/77: std::json::Value, name/78: string) -> Option[std::json::Value] {
+  match value/77 {
+    std::json::Value::Object(x114) => {
+      {
+        let x114 = std::json::Value::Object._0(value/77) in
+        {
+          let fields/79 = x114 in
+          {
+            let result/80 = inherent#Ref#Ref[Option[std::json::Value]]#new(Option::None) in
+            let _wild122 = {
+              let for_iter119 = trait_call[IntoIterator::into_iter](fields/79) in
+              while true {
+                  {
+                    let for_next120 = trait_call[Iterator::next](for_iter119) in
+                    match for_next120 {
+                      Option::None => {
+                        break
+                      },
+                      Option::Some(x121) => {
+                        {
+                          let x121 = Option::Some._0(for_next120) in
+                          {
+                            let field/81 = x121 in
+                            {
+                              if trait_impl#Eq#string#eq(field/81.0, name/78) {
+                                  {
+                                    inherent#Ref#Ref[Option[std::json::Value]]#set(result/80, Option::Some(field/81.1))
+                                  }
+                              } else {
+                                  {
+                                    ()
+                                  }
+                              }
+                            }
+                          }
+                        }
+                      },
+                    }
+                  }
+              }
+            } in
+            inherent#Ref#Ref[Option[std::json::Value]]#get(result/80)
+          }
+        }
+      }
+    },
+    _ => Option::None,
+  }
+}
+
+fn std::json::as_string(value/82: std::json::Value) -> Option[string] {
+  match value/82 {
+    std::json::Value::String(x125) => {
+      {
+        let x125 = std::json::Value::String._0(value/82) in
+        {
+          let text/83 = x125 in
+          Option::Some(text/83)
+        }
+      }
+    },
+    _ => Option::None,
+  }
+}
+
+fn std::json::parse_json_int_text(value/84: string) -> Option[int] {
+  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(value/84), 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let negative/85 = trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(value/84, 0), 45) in
+        let index/86 = inherent#Ref#Ref[int]#new(if negative/85 {
+            {
+              1
+            }
+        } else {
+            {
+              0
+            }
+        }) in
+        let result/87 = inherent#Ref#Ref[int]#new(0) in
+        let _wild128 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(index/86), inherent#string#string#byte_len(value/84)) {
+            {
+              return Option::None
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let _wild130 = while (inherent#Ref#Ref[int]#get(index/86) < inherent#string#string#byte_len(value/84)) {
+            {
+              let byte/88 = inherent#string#string#byte_get(value/84, inherent#Ref#Ref[int]#get(index/86)) in
+              let _wild129 = if if (byte/88 < 48) {
+                  true
+              } else {
+                  (byte/88 > 57)
+              } {
+                  {
+                    return Option::None
+                  }
+              } else {
+                  {
+                    inherent#Ref#Ref[int]#set(result/87, ((inherent#Ref#Ref[int]#get(result/87) * 10) + ((byte/88 - 48) as int)))
+                  }
+              } in
+              inherent#Ref#Ref[int]#set(index/86, (inherent#Ref#Ref[int]#get(index/86) + 1))
+            }
+        } in
+        Option::Some(if negative/85 {
+            {
+              (0 - inherent#Ref#Ref[int]#get(result/87))
+            }
+        } else {
+            {
+              inherent#Ref#Ref[int]#get(result/87)
+            }
+        })
+      }
+  }
+}
+
+fn std::json::as_int(value/89: std::json::Value) -> Option[int] {
+  match value/89 {
+    std::json::Value::Number(x134) => {
+      {
+        let x134 = std::json::Value::Number._0(value/89) in
+        {
+          let number/90 = x134 in
+          std::json::parse_json_int_text(number/90)
+        }
+      }
+    },
+    _ => Option::None,
+  }
+}
+
+fn std::json::as_bool(value/91: std::json::Value) -> Option[bool] {
+  match value/91 {
+    std::json::Value::Bool(x140) => {
+      {
+        let x140 = std::json::Value::Bool._0(value/91) in
+        {
+          let result/92 = x140 in
+          Option::Some(result/92)
+        }
+      }
+    },
+    _ => Option::None,
+  }
+}
+
+fn std::json::as_array(value/93: std::json::Value) -> Option[Vec[std::json::Value]] {
+  match value/93 {
+    std::json::Value::Array(x142) => {
+      {
+        let x142 = std::json::Value::Array._0(value/93) in
+        {
+          let items/94 = x142 in
+          Option::Some(items/94)
+        }
+      }
+    },
+    _ => Option::None,
+  }
+}
+
+fn std::json::object(fields/95: Vec[(string, std::json::Value)]) -> std::json::Value {
+  std::json::Value::Object(fields/95)
+}
+
+fn main() -> unit {
+  let value/2 = {
+    let mtmp64 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
+    match mtmp64 {
+      Result::Ok(x65) => {
+        {
+          let x65 = Result::Ok._0(mtmp64) in
+          {
+            let value/0 = x65 in
+            value/0
+          }
+        }
+      },
+      Result::Err(x66) => {
+        {
+          let x66 = Result::Err._0(mtmp64) in
+          {
+            let error/1 = x66 in
+            {
+              let _wild67 = println(error/1) in
+              return
+            }
+          }
+        }
+      },
+    }
+  } in
+  let _wild72 = {
+    let mtmp68 = std::json::field(value/2, "name") in
+    match mtmp68 {
+      Option::None => {
+        println("missing name")
+      },
+      Option::Some(x69) => {
+        {
+          let x69 = Option::Some._0(mtmp68) in
+          {
+            let field/3 = x69 in
+            {
+              let mtmp70 = std::json::as_string(field/3) in
+              match mtmp70 {
+                Option::None => {
+                  println("invalid name")
+                },
+                Option::Some(x71) => {
+                  {
+                    let x71 = Option::Some._0(mtmp70) in
+                    {
+                      let name/4 = x71 in
+                      println(name/4)
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+    }
+  } in
+  let _wild77 = {
+    let mtmp73 = std::json::field(value/2, "version") in
+    match mtmp73 {
+      Option::None => {
+        println("missing version")
+      },
+      Option::Some(x74) => {
+        {
+          let x74 = Option::Some._0(mtmp73) in
+          {
+            let field/5 = x74 in
+            {
+              let mtmp75 = std::json::as_int(field/5) in
+              match mtmp75 {
+                Option::None => {
+                  println("invalid version")
+                },
+                Option::Some(x76) => {
+                  {
+                    let x76 = Option::Some._0(mtmp75) in
+                    {
+                      let version/6 = x76 in
+                      println(version/6)
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+    }
+  } in
+  let _wild82 = {
+    let mtmp78 = std::json::field(value/2, "stable") in
+    match mtmp78 {
+      Option::None => {
+        println("missing stable")
+      },
+      Option::Some(x79) => {
+        {
+          let x79 = Option::Some._0(mtmp78) in
+          {
+            let field/7 = x79 in
+            {
+              let mtmp80 = std::json::as_bool(field/7) in
+              match mtmp80 {
+                Option::None => {
+                  println("invalid stable")
+                },
+                Option::Some(x81) => {
+                  {
+                    let x81 = Option::Some._0(mtmp80) in
+                    {
+                      let stable/8 = x81 in
+                      println(stable/8)
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+    }
+  } in
+  println(std::json::encode(value/2))
+}

@@ -1,0 +1,31 @@
+fn main() -> unit {
+    let value/2: std::json::Value = match (std::json::parse : (string) -> Result[std::json::Value, string])("{\"name\":\"goml\",\"version\":1,\"stable\":true}") {
+        Result::Ok(value/0: std::json::Value) => (value/0 : std::json::Value),
+        Result::Err(error/1: string) => {
+              (println : (string) -> unit)((error/1 : string));
+              return
+          },
+    };
+    match (std::json::field : (std::json::Value, string) -> Option[std::json::Value])((value/2 : std::json::Value), "name") {
+        Option::Some(field/3: std::json::Value) => match (std::json::as_string : (std::json::Value) -> Option[string])((field/3 : std::json::Value)) {
+              Option::Some(name/4: string) => (println : (string) -> unit)((name/4 : string)),
+              Option::None => (println : (string) -> unit)("invalid name"),
+          },
+        Option::None => (println : (string) -> unit)("missing name"),
+    };
+    match (std::json::field : (std::json::Value, string) -> Option[std::json::Value])((value/2 : std::json::Value), "version") {
+        Option::Some(field/5: std::json::Value) => match (std::json::as_int : (std::json::Value) -> Option[int])((field/5 : std::json::Value)) {
+              Option::Some(version/6: int) => (println : (int) -> unit)((version/6 : int)),
+              Option::None => (println : (string) -> unit)("invalid version"),
+          },
+        Option::None => (println : (string) -> unit)("missing version"),
+    };
+    match (std::json::field : (std::json::Value, string) -> Option[std::json::Value])((value/2 : std::json::Value), "stable") {
+        Option::Some(field/7: std::json::Value) => match (std::json::as_bool : (std::json::Value) -> Option[bool])((field/7 : std::json::Value)) {
+              Option::Some(stable/8: bool) => (println : (bool) -> unit)((stable/8 : bool)),
+              Option::None => (println : (string) -> unit)("invalid stable"),
+          },
+        Option::None => (println : (string) -> unit)("missing stable"),
+    };
+    (println : (string) -> unit)((std::json::encode : (std::json::Value) -> string)((value/2 : std::json::Value)))
+}
