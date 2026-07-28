@@ -1,5 +1,7 @@
 package main;
 
+use std::json;
+
 fn artifact_string_map_contains(
     values: Vec[(string, string)],
     required: Vec[(string, string)],
@@ -24,11 +26,11 @@ fn artifact_string_map_contains(
 }
 
 fn artifact_decode_optional_string(
-    value: ArtifactJsonValue,
+    value: json::Value,
     expected: string,
 ) -> Result[Option[string], string] {
     match value {
-        ArtifactJsonValue::Null => Result::Ok(Option::None),
+        json::Value::Null => Result::Ok(Option::None),
         other => match artifact_json_string_value(other, expected) {
             Result::Ok(value) => Result::Ok(Option::Some(value)),
             Result::Err(error) => Result::Err(error),
@@ -37,7 +39,7 @@ fn artifact_decode_optional_string(
 }
 
 fn artifact_decode_test_descriptor(
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[TestDescriptor, string] {
     let object = match artifact_json_object(value, "test descriptor") {
         Result::Ok(value) => value,
@@ -99,7 +101,7 @@ fn artifact_decode_test_descriptor(
 }
 
 fn artifact_decode_tests(
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[Vec[TestDescriptor], string] {
     let values = match artifact_json_array(value, "test descriptors") {
         Result::Ok(value) => value,
@@ -140,7 +142,7 @@ fn artifact_test_descriptors_valid(
 }
 
 fn artifact_decode_core_value(
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[ArtifactCoreUnit, string] {
     let object = match artifact_json_object(value, "Core unit") {
         Result::Ok(value) => value,
@@ -224,7 +226,7 @@ fn artifact_decode_core_value(
 }
 
 fn decode_artifact_core_unit(input: string) -> Result[ArtifactCoreUnit, string] {
-    match parse_artifact_json(input) {
+    match json::parse(input) {
         Result::Ok(value) => artifact_decode_core_value(value),
         Result::Err(error) => Result::Err(error),
     }

@@ -3,6 +3,7 @@ package main;
 use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
+use std::json;
 
 struct ArtifactCoreDecodeContext {
     types: ArtifactDecodeContext,
@@ -50,8 +51,8 @@ fn artifact_decode_struct_fields(
 }
 
 fn artifact_decode_primitive_payload(
-    value: ArtifactJsonValue,
-) -> Result[ArtifactJsonValue, string] {
+    value: json::Value,
+) -> Result[json::Value, string] {
     let object = match artifact_json_object(value, "primitive payload") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
@@ -61,7 +62,7 @@ fn artifact_decode_primitive_payload(
 
 fn artifact_decode_numeric_primitive(
     kind: string,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[tast::Primitive, string] {
     let value = match artifact_decode_primitive_payload(value) {
         Result::Ok(value) => match artifact_json_number_value(value, "numeric primitive") {
@@ -87,7 +88,7 @@ fn artifact_decode_numeric_primitive(
     }
 }
 
-fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive, string] {
+fn artifact_decode_primitive(value: json::Value) -> Result[tast::Primitive, string] {
     let object = match artifact_json_object(value, "primitive") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
@@ -101,7 +102,7 @@ fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive
     let payload = object.get(0).1;
     if kind == "Unit" {
         match artifact_decode_primitive_payload(payload) {
-            Result::Ok(ArtifactJsonValue::Null) => Result::Ok(tast::Primitive::Unit),
+            Result::Ok(json::Value::Null) => Result::Ok(tast::Primitive::Unit),
             Result::Ok(_) => Result::Err(artifact_decode_error("unit primitive")),
             Result::Err(error) => Result::Err(error),
         }
@@ -141,7 +142,7 @@ fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive
 
 fn artifact_decode_constructor(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[tast::Constructor, string] {
     let object = match artifact_json_object(value, "constructor") {
         Result::Ok(value) => value,
