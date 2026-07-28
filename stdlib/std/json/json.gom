@@ -1,10 +1,10 @@
-package lsp;
+package json;
 
 use std::text;
 
-pub enum JsonValue {
-    Object(Vec[(string, JsonValue)]),
-    Array(Vec[JsonValue]),
+pub enum Value {
+    Object(Vec[(string, Value)]),
+    Array(Vec[Value]),
     String(string),
     Number(string),
     Bool(bool),
@@ -225,7 +225,7 @@ fn parse_digits(value: JsonParser) -> bool {
     value.index.get() > start
 }
 
-fn parse_json_number(value: JsonParser) -> Result[JsonValue, string] {
+fn parse_json_number(value: JsonParser) -> Result[Value, string] {
     let start = value.index.get();
     if value.input.byte_get(value.index.get()) == 45 {
         value.index.set(value.index.get() + 1)
@@ -287,7 +287,7 @@ fn parse_json_number(value: JsonParser) -> Result[JsonValue, string] {
     } else {
         ()
     };
-    Result::Ok(JsonValue::Number(value.input.byte_slice(
+    Result::Ok(Value::Number(value.input.byte_slice(
         start,
         value.index.get(),
     )))
@@ -296,8 +296,8 @@ fn parse_json_number(value: JsonParser) -> Result[JsonValue, string] {
 fn parse_json_literal(
     value: JsonParser,
     expected: string,
-    result: JsonValue,
-) -> Result[JsonValue, string] {
+    result: Value,
+) -> Result[Value, string] {
     if value.index.get() + expected.byte_len() <= value.input.byte_len()
         && value.input.byte_slice(
             value.index.get(),
@@ -311,7 +311,7 @@ fn parse_json_literal(
     }
 }
 
-fn parse_json_array(value: JsonParser) -> Result[JsonValue, string] {
+fn parse_json_array(value: JsonParser) -> Result[Value, string] {
     value.index.set(value.index.get() + 1);
     skip_json_whitespace(value);
     let result = Vec::new();
@@ -319,7 +319,7 @@ fn parse_json_array(value: JsonParser) -> Result[JsonValue, string] {
         && value.input.byte_get(value.index.get()) == 93
     {
         value.index.set(value.index.get() + 1);
-        return Result::Ok(JsonValue::Array(result))
+        return Result::Ok(Value::Array(result))
     } else {
         ()
     };
@@ -333,7 +333,7 @@ fn parse_json_array(value: JsonParser) -> Result[JsonValue, string] {
             return Result::Err(json_error(value, "unterminated array"))
         } else if value.input.byte_get(value.index.get()) == 93 {
             value.index.set(value.index.get() + 1);
-            return Result::Ok(JsonValue::Array(result))
+            return Result::Ok(Value::Array(result))
         } else if value.input.byte_get(value.index.get()) == 44 {
             value.index.set(value.index.get() + 1);
             skip_json_whitespace(value)
@@ -347,7 +347,7 @@ fn parse_json_array(value: JsonParser) -> Result[JsonValue, string] {
     Result::Err(json_error(value, "unterminated array"))
 }
 
-fn parse_json_object(value: JsonParser) -> Result[JsonValue, string] {
+fn parse_json_object(value: JsonParser) -> Result[Value, string] {
     value.index.set(value.index.get() + 1);
     skip_json_whitespace(value);
     let result = Vec::new();
@@ -355,7 +355,7 @@ fn parse_json_object(value: JsonParser) -> Result[JsonValue, string] {
         && value.input.byte_get(value.index.get()) == 125
     {
         value.index.set(value.index.get() + 1);
-        return Result::Ok(JsonValue::Object(result))
+        return Result::Ok(Value::Object(result))
     } else {
         ()
     };
@@ -382,7 +382,7 @@ fn parse_json_object(value: JsonParser) -> Result[JsonValue, string] {
             return Result::Err(json_error(value, "unterminated object"))
         } else if value.input.byte_get(value.index.get()) == 125 {
             value.index.set(value.index.get() + 1);
-            return Result::Ok(JsonValue::Object(result))
+            return Result::Ok(Value::Object(result))
         } else if value.input.byte_get(value.index.get()) == 44 {
             value.index.set(value.index.get() + 1);
             skip_json_whitespace(value)
@@ -396,7 +396,7 @@ fn parse_json_object(value: JsonParser) -> Result[JsonValue, string] {
     Result::Err(json_error(value, "unterminated object"))
 }
 
-fn parse_json_value(value: JsonParser) -> Result[JsonValue, string] {
+fn parse_json_value(value: JsonParser) -> Result[Value, string] {
     skip_json_whitespace(value);
     if value.index.get() >= value.input.byte_len() {
         Result::Err(json_error(value, "expected JSON value"))
@@ -405,12 +405,12 @@ fn parse_json_value(value: JsonParser) -> Result[JsonValue, string] {
             123 => parse_json_object(value),
             91 => parse_json_array(value),
             34 => match parse_json_string(value) {
-                Result::Ok(text) => Result::Ok(JsonValue::String(text)),
+                Result::Ok(text) => Result::Ok(Value::String(text)),
                 Result::Err(error) => Result::Err(error),
             },
-            116 => parse_json_literal(value, "true", JsonValue::Bool(true)),
-            102 => parse_json_literal(value, "false", JsonValue::Bool(false)),
-            110 => parse_json_literal(value, "null", JsonValue::Null),
+            116 => parse_json_literal(value, "true", Value::Bool(true)),
+            102 => parse_json_literal(value, "false", Value::Bool(false)),
+            110 => parse_json_literal(value, "null", Value::Null),
             byte => if byte == 45 || json_digit(byte) {
                 parse_json_number(value)
             } else {
@@ -420,7 +420,7 @@ fn parse_json_value(value: JsonParser) -> Result[JsonValue, string] {
     }
 }
 
-pub fn parse_json(input: string) -> Result[JsonValue, string] {
+pub fn parse(input: string) -> Result[Value, string] {
     let parser = json_parser(input);
     let result = match parse_json_value(parser) {
         Result::Ok(value) => value,
@@ -492,9 +492,9 @@ fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn write_json_value(builder: text::StringBuilder, value: JsonValue) -> unit {
+fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
     match value {
-        JsonValue::Object(fields) => {
+        Value::Object(fields) => {
             builder.write_char('{');
             let index = Ref::new(0);
             for field in fields {
@@ -510,7 +510,7 @@ fn write_json_value(builder: text::StringBuilder, value: JsonValue) -> unit {
             };
             builder.write_char('}')
         },
-        JsonValue::Array(items) => {
+        Value::Array(items) => {
             builder.write_char('[');
             let index = Ref::new(0);
             for item in items {
@@ -524,26 +524,26 @@ fn write_json_value(builder: text::StringBuilder, value: JsonValue) -> unit {
             };
             builder.write_char(']')
         },
-        JsonValue::String(text) => write_json_string(builder, text),
-        JsonValue::Number(number) => builder.write_string(number),
-        JsonValue::Bool(value) => builder.write_string(if value {
+        Value::String(text) => write_json_string(builder, text),
+        Value::Number(number) => builder.write_string(number),
+        Value::Bool(value) => builder.write_string(if value {
             "true"
         } else {
             "false"
         }),
-        JsonValue::Null => builder.write_string("null"),
+        Value::Null => builder.write_string("null"),
     }
 }
 
-pub fn encode_json(value: JsonValue) -> string {
+pub fn encode(value: Value) -> string {
     let builder = text::StringBuilder::new();
     write_json_value(builder, value);
     builder.finish()
 }
 
-pub fn json_field(value: JsonValue, name: string) -> Option[JsonValue] {
+pub fn field(value: Value, name: string) -> Option[Value] {
     match value {
-        JsonValue::Object(fields) => {
+        Value::Object(fields) => {
             let result = Ref::new(Option::None);
             for field in fields {
                 if field.0 == name {
@@ -558,9 +558,9 @@ pub fn json_field(value: JsonValue, name: string) -> Option[JsonValue] {
     }
 }
 
-pub fn json_string(value: JsonValue) -> Option[string] {
+pub fn as_string(value: Value) -> Option[string] {
     match value {
-        JsonValue::String(text) => Option::Some(text),
+        Value::String(text) => Option::Some(text),
         _ => Option::None,
     }
 }
@@ -590,27 +590,27 @@ fn parse_json_int_text(value: string) -> Option[int] {
     }
 }
 
-pub fn json_int(value: JsonValue) -> Option[int] {
+pub fn as_int(value: Value) -> Option[int] {
     match value {
-        JsonValue::Number(number) => parse_json_int_text(number),
+        Value::Number(number) => parse_json_int_text(number),
         _ => Option::None,
     }
 }
 
-pub fn json_bool(value: JsonValue) -> Option[bool] {
+pub fn as_bool(value: Value) -> Option[bool] {
     match value {
-        JsonValue::Bool(result) => Option::Some(result),
+        Value::Bool(result) => Option::Some(result),
         _ => Option::None,
     }
 }
 
-pub fn json_array(value: JsonValue) -> Option[Vec[JsonValue]] {
+pub fn as_array(value: Value) -> Option[Vec[Value]] {
     match value {
-        JsonValue::Array(items) => Option::Some(items),
+        Value::Array(items) => Option::Some(items),
         _ => Option::None,
     }
 }
 
-pub fn json_object(fields: Vec[(string, JsonValue)]) -> JsonValue {
-    JsonValue::Object(fields)
+pub fn object(fields: Vec[(string, Value)]) -> Value {
+    Value::Object(fields)
 }

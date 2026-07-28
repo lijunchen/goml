@@ -52,6 +52,7 @@ struct StandardLibrary {
     env: PackageCompilation,
     fs: PackageCompilation,
     io: PackageCompilation,
+    json: PackageCompilation,
     path: PackageCompilation,
     process: PackageCompilation,
     testing: PackageCompilation,
@@ -580,6 +581,20 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         builtins,
         standard_artifact_deps(Vec::new().pushed(bytes)),
     );
+    let json_hir_dependencies: Vec[hir::File] = Vec::new();
+    json_hir_dependencies.push(text.hir_file);
+    let json_core_dependencies: Vec[core::File] = Vec::new();
+    json_core_dependencies.push(text.core_value);
+    let json = compile_standard_package(
+        stdlib::json_source(),
+        "json.gom",
+        "std::json",
+        "json",
+        json_hir_dependencies,
+        json_core_dependencies,
+        builtins,
+        standard_artifact_deps(Vec::new().pushed(text)),
+    );
     let root_hir_dependencies = Vec::new()
         .pushed(bytes.hir_file)
         .pushed(collections.hir_file)
@@ -588,7 +603,8 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         .pushed(io.hir_file)
         .pushed(path.hir_file)
         .pushed(process.hir_file)
-        .pushed(text.hir_file);
+        .pushed(text.hir_file)
+        .pushed(json.hir_file);
     let root_core_dependencies = Vec::new()
         .pushed(bytes.core_value)
         .pushed(collections.core_value)
@@ -597,7 +613,8 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         .pushed(io.core_value)
         .pushed(path.core_value)
         .pushed(process.core_value)
-        .pushed(text.core_value);
+        .pushed(text.core_value)
+        .pushed(json.core_value);
     let root = compile_standard_package(
         stdlib::root_source(),
         "lib.gom",
@@ -615,7 +632,8 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
                 .pushed(io)
                 .pushed(path)
                 .pushed(process)
-                .pushed(text),
+                .pushed(text)
+                .pushed(json),
         ),
     );
     StandardLibrary {
@@ -626,6 +644,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         env,
         fs,
         io,
+        json,
         path,
         process,
         testing,
@@ -641,7 +660,10 @@ fn selected_standard_hir(
     let needs_fs = needs_root || imports_package(ast_value, "std::fs");
     let needs_io = needs_root || imports_package(ast_value, "std::io");
     let needs_process = needs_root || imports_package(ast_value, "std::process");
-    let needs_text = needs_root || imports_package(ast_value, "std::text");
+    let needs_json = needs_root || imports_package(ast_value, "std::json");
+    let needs_text = needs_root
+        || needs_json
+        || imports_package(ast_value, "std::text");
     let needs_bytes = imports_package(ast_value, "std::bytes")
         || needs_root
         || needs_fs
@@ -694,6 +716,11 @@ fn selected_standard_hir(
     } else {
         ()
     };
+    if needs_json {
+        result.push(standard.json.hir_file)
+    } else {
+        ()
+    };
     if needs_root {
         result.push(standard.root.hir_file)
     } else {
@@ -710,7 +737,10 @@ fn selected_standard_core(
     let needs_fs = needs_root || imports_package(ast_value, "std::fs");
     let needs_io = needs_root || imports_package(ast_value, "std::io");
     let needs_process = needs_root || imports_package(ast_value, "std::process");
-    let needs_text = needs_root || imports_package(ast_value, "std::text");
+    let needs_json = needs_root || imports_package(ast_value, "std::json");
+    let needs_text = needs_root
+        || needs_json
+        || imports_package(ast_value, "std::text");
     let needs_bytes = imports_package(ast_value, "std::bytes")
         || needs_root
         || needs_fs
@@ -760,6 +790,11 @@ fn selected_standard_core(
     };
     if needs_text {
         result.push(standard.text.core_value)
+    } else {
+        ()
+    };
+    if needs_json {
+        result.push(standard.json.core_value)
     } else {
         ()
     };

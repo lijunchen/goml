@@ -2,6 +2,7 @@ package lsp;
 
 use std::bytes;
 use std::io;
+use std::json;
 
 fn read_stdin_line() -> Result[bytes::Bytes, string] {
     let data = bytes::Bytes::new();
@@ -62,6 +63,6 @@ pub fn read_rpc_payload() -> Result[string, string] {
     }
 }
 
-pub fn write_rpc_message(value: JsonValue) -> Result[unit, string] {
+pub fn write_rpc_message(value: json::Value) -> Result[unit, string] {
     io::write_stdout(bytes::Bytes::from_string(framed_json(value)))
 }

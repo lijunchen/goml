@@ -4,20 +4,21 @@ use gomlc::ast;
 use gomlc::query;
 use gomlc::tast;
 use std::fs;
+use std::json;
 
-fn required_field(value: JsonValue, name: string) -> Result[JsonValue, string] {
-    match json_field(value, name) {
+fn required_field(value: json::Value, name: string) -> Result[json::Value, string] {
+    match json::field(value, name) {
         Option::Some(field) => Result::Ok(field),
         Option::None => Result::Err("missing field " + name),
     }
 }
 
 fn required_string_field(
-    value: JsonValue,
+    value: json::Value,
     name: string,
 ) -> Result[string, string] {
     match required_field(value, name) {
-        Result::Ok(field) => match json_string(field) {
+        Result::Ok(field) => match json::as_string(field) {
             Option::Some(text) => Result::Ok(text),
             Option::None => Result::Err("field " + name + " must be a string"),
         },
@@ -25,9 +26,9 @@ fn required_string_field(
     }
 }
 
-fn optional_int_field(value: JsonValue, name: string, fallback: int) -> int {
-    match json_field(value, name) {
-        Option::Some(field) => match json_int(field) {
+fn optional_int_field(value: json::Value, name: string, fallback: int) -> int {
+    match json::field(value, name) {
+        Option::Some(field) => match json::as_int(field) {
             Option::Some(number) => number,
             Option::None => fallback,
         },
@@ -35,11 +36,11 @@ fn optional_int_field(value: JsonValue, name: string, fallback: int) -> int {
     }
 }
 
-fn text_document(value: JsonValue) -> Result[JsonValue, string] {
+fn text_document(value: json::Value) -> Result[json::Value, string] {
     required_field(value, "textDocument")
 }
 
-fn text_document_uri(value: JsonValue) -> Result[string, string] {
+fn text_document_uri(value: json::Value) -> Result[string, string] {
     match text_document(value) {
         Result::Ok(document) => required_string_field(document, "uri"),
         Result::Err(error) => Result::Err(error),
@@ -48,7 +49,7 @@ fn text_document_uri(value: JsonValue) -> Result[string, string] {
 
 fn request_document(
     server: Server,
-    params: JsonValue,
+    params: json::Value,
 ) -> Result[Document, string] {
     let uri = match text_document_uri(params) {
         Result::Ok(uri) => uri,
@@ -60,7 +61,7 @@ fn request_document(
     }
 }
 
-fn request_position(params: JsonValue) -> Result[Position, string] {
+fn request_position(params: json::Value) -> Result[Position, string] {
     match required_field(params, "position") {
         Result::Ok(position) => parse_position(position),
         Result::Err(error) => Result::Err(error),
@@ -77,113 +78,113 @@ fn request_offset(
     }
 }
 
-fn initialize_result() -> JsonValue {
+fn initialize_result() -> json::Value {
     let triggers = Vec::new();
-    triggers.push(JsonValue::String("."));
-    triggers.push(JsonValue::String(":"));
-    triggers.push(JsonValue::String(" "));
+    triggers.push(json::Value::String("."));
+    triggers.push(json::Value::String(":"));
+    triggers.push(json::Value::String(" "));
     let completion = Vec::new();
     push_json_field(
         completion,
         "triggerCharacters",
-        JsonValue::Array(triggers),
+        json::Value::Array(triggers),
     );
     push_json_field(
         completion,
         "resolveProvider",
-        JsonValue::Bool(false),
+        json::Value::Bool(false),
     );
     let signature_triggers = Vec::new();
-    signature_triggers.push(JsonValue::String("("));
-    signature_triggers.push(JsonValue::String(","));
+    signature_triggers.push(json::Value::String("("));
+    signature_triggers.push(json::Value::String(","));
     let retriggers = Vec::new();
-    retriggers.push(JsonValue::String(","));
+    retriggers.push(json::Value::String(","));
     let signature = Vec::new();
     push_json_field(
         signature,
         "triggerCharacters",
-        JsonValue::Array(signature_triggers),
+        json::Value::Array(signature_triggers),
     );
     push_json_field(
         signature,
         "retriggerCharacters",
-        JsonValue::Array(retriggers),
+        json::Value::Array(retriggers),
     );
     let capabilities = Vec::new();
     push_json_field(
         capabilities,
         "positionEncoding",
-        JsonValue::String("utf-16"),
+        json::Value::String("utf-16"),
     );
     push_json_field(
         capabilities,
         "textDocumentSync",
-        JsonValue::Number("1"),
+        json::Value::Number("1"),
     );
     push_json_field(
         capabilities,
         "hoverProvider",
-        JsonValue::Bool(true),
+        json::Value::Bool(true),
     );
     push_json_field(
         capabilities,
         "completionProvider",
-        JsonValue::Object(completion),
+        json::Value::Object(completion),
     );
     push_json_field(
         capabilities,
         "signatureHelpProvider",
-        JsonValue::Object(signature),
+        json::Value::Object(signature),
     );
     push_json_field(
         capabilities,
         "inlayHintProvider",
-        JsonValue::Bool(true),
+        json::Value::Bool(true),
     );
     push_json_field(
         capabilities,
         "definitionProvider",
-        JsonValue::Bool(true),
+        json::Value::Bool(true),
     );
     let code_lens = Vec::new();
     push_json_field(
         code_lens,
         "resolveProvider",
-        JsonValue::Bool(false),
+        json::Value::Bool(false),
     );
     push_json_field(
         capabilities,
         "codeLensProvider",
-        JsonValue::Object(code_lens),
+        json::Value::Object(code_lens),
     );
     push_json_field(
         capabilities,
         "codeActionProvider",
-        JsonValue::Bool(true),
+        json::Value::Bool(true),
     );
     let server_info = Vec::new();
     push_json_field(
         server_info,
         "name",
-        JsonValue::String("gomllsp"),
+        json::Value::String("gomllsp"),
     );
     push_json_field(
         server_info,
         "version",
-        JsonValue::String("0.1.0"),
+        json::Value::String("0.1.0"),
     );
     let result = Vec::new();
     push_json_field(
         result,
         "capabilities",
-        JsonValue::Object(capabilities),
+        json::Value::Object(capabilities),
     );
     push_json_field(
         result,
         "serverInfo",
-        JsonValue::Object(server_info),
+        json::Value::Object(server_info),
     );
-    JsonValue::Object(result)
+    json::Value::Object(result)
 }
 
 fn source_for_path(
@@ -280,8 +281,8 @@ fn join_strings(values: Vec[string], separator: string) -> string {
 
 fn hover_response(
     server: Server,
-    params: JsonValue,
-) -> Result[JsonValue, string] {
+    params: json::Value,
+) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -332,26 +333,26 @@ fn hover_response(
         ()
     };
     if sections.len() == 0 {
-        Result::Ok(JsonValue::Null)
+        Result::Ok(json::Value::Null)
     } else {
         let contents = Vec::new();
         push_json_field(
             contents,
             "kind",
-            JsonValue::String("markdown"),
+            json::Value::String("markdown"),
         );
         push_json_field(
             contents,
             "value",
-            JsonValue::String(join_strings(sections, "\n\n")),
+            json::Value::String(join_strings(sections, "\n\n")),
         );
         let result = Vec::new();
         push_json_field(
             result,
             "contents",
-            JsonValue::Object(contents),
+            json::Value::Object(contents),
         );
-        Result::Ok(JsonValue::Object(result))
+        Result::Ok(json::Value::Object(result))
     }
 }
 
@@ -372,8 +373,8 @@ fn completion_kind(value: query::CompletionKind) -> int {
 
 fn completion_response(
     server: Server,
-    params: JsonValue,
-) -> Result[JsonValue, string] {
+    params: json::Value,
+) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -393,27 +394,27 @@ fn completion_response(
         push_json_field(
             fields,
             "label",
-            JsonValue::String(item.label),
+            json::Value::String(item.label),
         );
         push_json_field(
             fields,
             "detail",
-            JsonValue::String(item.detail),
+            json::Value::String(item.detail),
         );
         push_json_field(
             fields,
             "kind",
-            JsonValue::Number(completion_kind(item.kind).to_string()),
+            json::Value::Number(completion_kind(item.kind).to_string()),
         );
-        result.push(JsonValue::Object(fields))
+        result.push(json::Value::Object(fields))
     };
-    Result::Ok(JsonValue::Array(result))
+    Result::Ok(json::Value::Array(result))
 }
 
 fn signature_response(
     server: Server,
-    params: JsonValue,
-) -> Result[JsonValue, string] {
+    params: json::Value,
+) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -435,51 +436,51 @@ fn signature_response(
                 push_json_field(
                     fields,
                     "label",
-                    JsonValue::String(parameter),
+                    json::Value::String(parameter),
                 );
-                parameters.push(JsonValue::Object(fields))
+                parameters.push(json::Value::Object(fields))
             };
             let item = Vec::new();
             push_json_field(
                 item,
                 "label",
-                JsonValue::String(signature.label),
+                json::Value::String(signature.label),
             );
             push_json_field(
                 item,
                 "parameters",
-                JsonValue::Array(parameters),
+                json::Value::Array(parameters),
             );
             let signatures = Vec::new();
-            signatures.push(JsonValue::Object(item));
+            signatures.push(json::Value::Object(item));
             let result = Vec::new();
             push_json_field(
                 result,
                 "signatures",
-                JsonValue::Array(signatures),
+                json::Value::Array(signatures),
             );
             push_json_field(
                 result,
                 "activeSignature",
-                JsonValue::Number("0"),
+                json::Value::Number("0"),
             );
             push_json_field(
                 result,
                 "activeParameter",
-                JsonValue::Number(
+                json::Value::Number(
                     signature.active_parameter.to_string(),
                 ),
             );
-            Result::Ok(JsonValue::Object(result))
+            Result::Ok(json::Value::Object(result))
         },
-        Option::None => Result::Ok(JsonValue::Null),
+        Option::None => Result::Ok(json::Value::Null),
     }
 }
 
 fn inlay_response(
     server: Server,
-    params: JsonValue,
-) -> Result[JsonValue, string] {
+    params: json::Value,
+) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -525,26 +526,26 @@ fn inlay_response(
             push_json_field(
                 fields,
                 "label",
-                JsonValue::String(hint.label),
+                json::Value::String(hint.label),
             );
-            push_json_field(fields, "kind", JsonValue::Number("1"));
+            push_json_field(fields, "kind", json::Value::Number("1"));
             push_json_field(
                 fields,
                 "paddingRight",
-                JsonValue::Bool(true),
+                json::Value::Bool(true),
             );
-            result.push(JsonValue::Object(fields))
+            result.push(json::Value::Object(fields))
         } else {
             ()
         }
     };
-    Result::Ok(JsonValue::Array(result))
+    Result::Ok(json::Value::Array(result))
 }
 
 fn definition_response(
     server: Server,
-    params: JsonValue,
-) -> Result[JsonValue, string] {
+    params: json::Value,
+) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -566,7 +567,7 @@ fn definition_response(
                 push_json_field(
                     location,
                     "uri",
-                    JsonValue::String(path_to_uri(
+                    json::Value::String(path_to_uri(
                         definition.source_path,
                     )),
                 );
@@ -579,17 +580,17 @@ fn definition_response(
                         definition.span.end,
                     )),
                 );
-                locations.push(JsonValue::Object(location))
+                locations.push(json::Value::Object(location))
             },
             Option::None => (),
         }
     };
     if locations.len() == 0 {
-        Result::Ok(JsonValue::Null)
+        Result::Ok(json::Value::Null)
     } else if locations.len() == 1 {
         Result::Ok(locations.get(0))
     } else {
-        Result::Ok(JsonValue::Array(locations))
+        Result::Ok(json::Value::Array(locations))
     }
 }
 
@@ -602,8 +603,8 @@ fn test_kind_name(value: query::TestItemKind) -> string {
 
 fn code_lens_response(
     server: Server,
-    params: JsonValue,
-) -> Result[JsonValue, string] {
+    params: json::Value,
+) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -611,24 +612,24 @@ fn code_lens_response(
     let result = Vec::new();
     for item in query::test_items(document.path, document.text) {
         let arguments = Vec::new();
-        arguments.push(JsonValue::String(document.uri));
-        arguments.push(JsonValue::String(item.name));
-        arguments.push(JsonValue::String(test_kind_name(item.kind)));
+        arguments.push(json::Value::String(document.uri));
+        arguments.push(json::Value::String(item.name));
+        arguments.push(json::Value::String(test_kind_name(item.kind)));
         let command = Vec::new();
         push_json_field(
             command,
             "title",
-            JsonValue::String("Run Test"),
+            json::Value::String("Run Test"),
         );
         push_json_field(
             command,
             "command",
-            JsonValue::String("goml.runTest"),
+            json::Value::String("goml.runTest"),
         );
         push_json_field(
             command,
             "arguments",
-            JsonValue::Array(arguments),
+            json::Value::Array(arguments),
         );
         let lens = Vec::new();
         push_json_field(
@@ -643,44 +644,44 @@ fn code_lens_response(
         push_json_field(
             lens,
             "command",
-            JsonValue::Object(command),
+            json::Value::Object(command),
         );
-        result.push(JsonValue::Object(lens))
+        result.push(json::Value::Object(lens))
     };
-    Result::Ok(JsonValue::Array(result))
+    Result::Ok(json::Value::Array(result))
 }
 
 fn fix_action(
-    diagnostic: JsonValue,
-    fix: JsonValue,
-) -> Option[JsonValue] {
-    let uri = match json_field(fix, "uri") {
-        Option::Some(value) => match json_string(value) {
+    diagnostic: json::Value,
+    fix: json::Value,
+) -> Option[json::Value] {
+    let uri = match json::field(fix, "uri") {
+        Option::Some(value) => match json::as_string(value) {
             Option::Some(value) => value,
             Option::None => return Option::None,
         },
         Option::None => return Option::None,
     };
-    let range = match json_field(fix, "range") {
+    let range = match json::field(fix, "range") {
         Option::Some(value) => value,
         Option::None => return Option::None,
     };
-    let replacement = match json_field(fix, "replacement") {
-        Option::Some(value) => match json_string(value) {
+    let replacement = match json::field(fix, "replacement") {
+        Option::Some(value) => match json::as_string(value) {
             Option::Some(value) => value,
             Option::None => return Option::None,
         },
         Option::None => return Option::None,
     };
-    let title = match json_field(fix, "title") {
-        Option::Some(value) => match json_string(value) {
+    let title = match json::field(fix, "title") {
+        Option::Some(value) => match json::as_string(value) {
             Option::Some(value) => value,
             Option::None => "Apply suggested fix",
         },
         Option::None => "Apply suggested fix",
     };
-    let preferred = match json_field(fix, "preferred") {
-        Option::Some(JsonValue::Bool(value)) => value,
+    let preferred = match json::field(fix, "preferred") {
+        Option::Some(json::Value::Bool(value)) => value,
         _ => false,
     };
     let edit = Vec::new();
@@ -688,52 +689,52 @@ fn fix_action(
     push_json_field(
         edit,
         "newText",
-        JsonValue::String(replacement),
+        json::Value::String(replacement),
     );
     let edits = Vec::new();
-    edits.push(JsonValue::Object(edit));
+    edits.push(json::Value::Object(edit));
     let changes = Vec::new();
-    changes.push((uri, JsonValue::Array(edits)));
+    changes.push((uri, json::Value::Array(edits)));
     let workspace_edit = Vec::new();
     push_json_field(
         workspace_edit,
         "changes",
-        JsonValue::Object(changes),
+        json::Value::Object(changes),
     );
     let diagnostics = Vec::new();
     diagnostics.push(diagnostic);
     let action = Vec::new();
-    push_json_field(action, "title", JsonValue::String(title));
+    push_json_field(action, "title", json::Value::String(title));
     push_json_field(
         action,
         "kind",
-        JsonValue::String("quickfix"),
+        json::Value::String("quickfix"),
     );
     push_json_field(
         action,
         "diagnostics",
-        JsonValue::Array(diagnostics),
+        json::Value::Array(diagnostics),
     );
     push_json_field(
         action,
         "edit",
-        JsonValue::Object(workspace_edit),
+        json::Value::Object(workspace_edit),
     );
     push_json_field(
         action,
         "isPreferred",
-        JsonValue::Bool(preferred),
+        json::Value::Bool(preferred),
     );
-    Option::Some(JsonValue::Object(action))
+    Option::Some(json::Value::Object(action))
 }
 
-fn code_action_response(params: JsonValue) -> Result[JsonValue, string] {
+fn code_action_response(params: json::Value) -> Result[json::Value, string] {
     let context = match required_field(params, "context") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
     let diagnostics = match required_field(context, "diagnostics") {
-        Result::Ok(JsonValue::Array(values)) => values,
+        Result::Ok(json::Value::Array(values)) => values,
         Result::Ok(_) => return Result::Err(
             "field diagnostics must be an array",
         ),
@@ -741,9 +742,9 @@ fn code_action_response(params: JsonValue) -> Result[JsonValue, string] {
     };
     let actions = Vec::new();
     for diagnostic in diagnostics {
-        match json_field(diagnostic, "data") {
-            Option::Some(data) => match json_field(data, "fixes") {
-                Option::Some(JsonValue::Array(fixes)) => for fix in fixes {
+        match json::field(diagnostic, "data") {
+            Option::Some(data) => match json::field(data, "fixes") {
+                Option::Some(json::Value::Array(fixes)) => for fix in fixes {
                     match fix_action(diagnostic, fix) {
                         Option::Some(action) => actions.push(action),
                         Option::None => (),
@@ -755,9 +756,9 @@ fn code_action_response(params: JsonValue) -> Result[JsonValue, string] {
         }
     };
     if actions.len() == 0 {
-        Result::Ok(JsonValue::Null)
+        Result::Ok(json::Value::Null)
     } else {
-        Result::Ok(JsonValue::Array(actions))
+        Result::Ok(json::Value::Array(actions))
     }
 }
 
@@ -772,7 +773,7 @@ fn diagnostic_json(
     document: Document,
     analysis: query::Analysis,
     value: tast::Diagnostic,
-) -> JsonValue {
+) -> json::Value {
     let span = match value.span {
         Option::Some(span) => span,
         Option::None => ast::span(0, 0),
@@ -790,17 +791,17 @@ fn diagnostic_json(
     push_json_field(
         fields,
         "severity",
-        JsonValue::Number(diagnostic_severity(value.severity).to_string()),
+        json::Value::Number(diagnostic_severity(value.severity).to_string()),
     );
     push_json_field(
         fields,
         "source",
-        JsonValue::String("goml"),
+        json::Value::String("goml"),
     );
     push_json_field(
         fields,
         "message",
-        JsonValue::String(diagnostic_text(value)),
+        json::Value::String(diagnostic_text(value)),
     );
     let related = Vec::new();
     for label in value.secondary_labels {
@@ -810,7 +811,7 @@ fn diagnostic_json(
                 push_json_field(
                     location,
                     "uri",
-                    JsonValue::String(path_to_uri(label.source_path)),
+                    json::Value::String(path_to_uri(label.source_path)),
                 );
                 push_json_field(
                     location,
@@ -825,14 +826,14 @@ fn diagnostic_json(
                 push_json_field(
                     information,
                     "location",
-                    JsonValue::Object(location),
+                    json::Value::Object(location),
                 );
                 push_json_field(
                     information,
                     "message",
-                    JsonValue::String(label.message),
+                    json::Value::String(label.message),
                 );
-                related.push(JsonValue::Object(information))
+                related.push(json::Value::Object(information))
             },
             Option::None => (),
         }
@@ -841,15 +842,15 @@ fn diagnostic_json(
         push_json_field(
             fields,
             "relatedInformation",
-            JsonValue::Array(related),
+            json::Value::Array(related),
         )
     } else {
         ()
     };
-    JsonValue::Object(fields)
+    json::Value::Object(fields)
 }
 
-fn publish_diagnostics(server: Server, document: Document) -> JsonValue {
+fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     let analysis = document_analysis(server, document);
     let diagnostics = Vec::new();
     for diagnostic in analysis.checked.diagnostics {
@@ -869,25 +870,25 @@ fn publish_diagnostics(server: Server, document: Document) -> JsonValue {
     push_json_field(
         params,
         "uri",
-        JsonValue::String(document.uri),
+        json::Value::String(document.uri),
     );
     push_json_field(
         params,
         "version",
-        JsonValue::Number(document.version.to_string()),
+        json::Value::Number(document.version.to_string()),
     );
     push_json_field(
         params,
         "diagnostics",
-        JsonValue::Array(diagnostics),
+        json::Value::Array(diagnostics),
     );
     rpc_notification(
         "textDocument/publishDiagnostics",
-        JsonValue::Object(params),
+        json::Value::Object(params),
     )
 }
 
-fn publish_all_diagnostics(server: Server) -> Vec[JsonValue] {
+fn publish_all_diagnostics(server: Server) -> Vec[json::Value] {
     let result = Vec::new();
     for document in server.documents {
         result.push(publish_diagnostics(server, document))
@@ -895,7 +896,7 @@ fn publish_all_diagnostics(server: Server) -> Vec[JsonValue] {
     result
 }
 
-fn did_open(server: Server, params: JsonValue) -> Result[JsonValue, string] {
+fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] {
     let text_document = match text_document(params) {
         Result::Ok(document) => document,
         Result::Err(error) => return Result::Err(error),
@@ -922,7 +923,7 @@ fn did_open(server: Server, params: JsonValue) -> Result[JsonValue, string] {
     Result::Ok(publish_diagnostics(server, document))
 }
 
-fn did_change(server: Server, params: JsonValue) -> Result[JsonValue, string] {
+fn did_change(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = match text_document_uri(params) {
         Result::Ok(uri) => uri,
         Result::Err(error) => return Result::Err(error),
@@ -933,7 +934,7 @@ fn did_change(server: Server, params: JsonValue) -> Result[JsonValue, string] {
     };
     let version = optional_int_field(text_document, "version", 0);
     let changes = match required_field(params, "contentChanges") {
-        Result::Ok(changes) => match json_array(changes) {
+        Result::Ok(changes) => match json::as_array(changes) {
             Option::Some(changes) => changes,
             Option::None => {
                 return Result::Err("contentChanges must be an array")
@@ -962,7 +963,7 @@ fn did_change(server: Server, params: JsonValue) -> Result[JsonValue, string] {
     }
 }
 
-fn did_close(server: Server, params: JsonValue) -> Result[JsonValue, string] {
+fn did_close(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = match text_document_uri(params) {
         Result::Ok(uri) => uri,
         Result::Err(error) => return Result::Err(error),
@@ -972,20 +973,20 @@ fn did_close(server: Server, params: JsonValue) -> Result[JsonValue, string] {
     push_json_field(
         diagnostic_params,
         "uri",
-        JsonValue::String(uri),
+        json::Value::String(uri),
     );
     push_json_field(
         diagnostic_params,
         "diagnostics",
-        JsonValue::Array(Vec::new()),
+        json::Value::Array(Vec::new()),
     );
     Result::Ok(rpc_notification(
         "textDocument/publishDiagnostics",
-        JsonValue::Object(diagnostic_params),
+        json::Value::Object(diagnostic_params),
     ))
 }
 
-fn did_save(server: Server, params: JsonValue) -> Result[unit, string] {
+fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
     let uri = match text_document_uri(params) {
         Result::Ok(uri) => uri,
         Result::Err(error) => return Result::Err(error),
@@ -1002,12 +1003,12 @@ fn did_save(server: Server, params: JsonValue) -> Result[unit, string] {
 fn request_result(
     server: Server,
     message: RpcMessage,
-) -> Result[JsonValue, string] {
+) -> Result[json::Value, string] {
     if message.method == "initialize" {
         Result::Ok(initialize_result())
     } else if message.method == "shutdown" {
         server.shutdown.set(true);
-        Result::Ok(JsonValue::Null)
+        Result::Ok(json::Value::Null)
     } else if message.method == "textDocument/hover" {
         hover_response(server, message.params)
     } else if message.method == "textDocument/completion" {
@@ -1027,7 +1028,7 @@ fn request_result(
     }
 }
 
-pub fn handle_json(server: Server, value: JsonValue) -> Vec[JsonValue] {
+pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
     let output = Vec::new();
     match parse_rpc_message(value) {
         Result::Ok(message) => if server.shutdown.get()
@@ -1102,7 +1103,7 @@ pub fn handle_json(server: Server, value: JsonValue) -> Vec[JsonValue] {
             }
         },
         Result::Err(error) => output.push(rpc_error(
-            JsonValue::Null,
+            json::Value::Null,
             -32600,
             error,
         )),
@@ -1113,11 +1114,11 @@ pub fn handle_json(server: Server, value: JsonValue) -> Vec[JsonValue] {
 pub fn handle_payload(
     server: Server,
     payload: string,
-) -> Result[Vec[JsonValue], string] {
-    match parse_json(payload) {
+) -> Result[Vec[json::Value], string] {
+    match json::parse(payload) {
         Result::Ok(value) => Result::Ok(handle_json(server, value)),
         Result::Err(error) => Result::Ok(Vec::new().pushed(rpc_error(
-            JsonValue::Null,
+            json::Value::Null,
             -32700,
             error,
         ))),

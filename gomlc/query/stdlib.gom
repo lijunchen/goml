@@ -54,6 +54,7 @@ fn standard_library_children(package_name: string) -> Vec[string] {
             .pushed("fs")
             .pushed("internal")
             .pushed("io")
+            .pushed("json")
             .pushed("path")
             .pushed("process")
             .pushed("testing")
@@ -107,6 +108,12 @@ fn standard_library_source(package_name: string) -> Option[SourceFile] {
             path: standard_source_path("io/io.gom"),
             source: stdlib::io_source(),
             package_name: "std::io",
+        })
+    } else if package_name == "std::json" {
+        Option::Some(SourceFile {
+            path: standard_source_path("json/json.gom"),
+            source: stdlib::json_source(),
+            package_name: "std::json",
         })
     } else if package_name == "std::path" {
         Option::Some(SourceFile {

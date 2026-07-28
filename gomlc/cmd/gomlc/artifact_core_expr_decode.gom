@@ -2,10 +2,11 @@ package main;
 
 use gomlc::core;
 use gomlc::tast;
+use std::json;
 
 fn artifact_decode_core_type_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactJsonValue)],
+    object: Vec[(string, json::Value)],
     name: string,
 ) -> Result[tast::Type, string] {
     match artifact_json_required_field(object, name) {
@@ -16,7 +17,7 @@ fn artifact_decode_core_type_field(
 
 fn artifact_decode_core_expr_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactJsonValue)],
+    object: Vec[(string, json::Value)],
     name: string,
 ) -> Result[core::Expr, string] {
     match artifact_json_required_field(object, name) {
@@ -27,7 +28,7 @@ fn artifact_decode_core_expr_field(
 
 fn artifact_decode_core_exprs(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
     expected: string,
 ) -> Result[Vec[core::Expr], string] {
     let values = match artifact_json_array(value, expected) {
@@ -46,7 +47,7 @@ fn artifact_decode_core_exprs(
 
 fn artifact_decode_core_expr_array_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactJsonValue)],
+    object: Vec[(string, json::Value)],
     name: string,
 ) -> Result[Vec[core::Expr], string] {
     match artifact_json_required_field(object, name) {
@@ -57,10 +58,10 @@ fn artifact_decode_core_expr_array_field(
 
 fn artifact_decode_optional_core_expr(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[Option[core::Expr], string] {
     match value {
-        ArtifactJsonValue::Null => Result::Ok(Option::None),
+        json::Value::Null => Result::Ok(Option::None),
         other => match artifact_decode_core_expr(context, other) {
             Result::Ok(value) => Result::Ok(Option::Some(value)),
             Result::Err(error) => Result::Err(error),
@@ -70,7 +71,7 @@ fn artifact_decode_optional_core_expr(
 
 fn artifact_decode_closure_params(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[Vec[tast::ClosureParam], string] {
     let values = match artifact_json_array(value, "closure parameters") {
         Result::Ok(value) => value,
@@ -97,7 +98,7 @@ fn artifact_decode_closure_params(
 
 fn artifact_decode_core_arms(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[Vec[core::Arm], string] {
     let values = match artifact_json_array(value, "match arms") {
         Result::Ok(value) => value,
@@ -124,7 +125,7 @@ fn artifact_decode_core_arms(
 
 fn artifact_decode_core_expr(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[core::Expr, string] {
     let variant = match artifact_json_object(value, "Core expression") {
         Result::Ok(value) => value,
@@ -323,7 +324,7 @@ fn artifact_decode_core_expr(
 }
 
 fn artifact_decode_core_index_field(
-    object: Vec[(string, ArtifactJsonValue)],
+    object: Vec[(string, json::Value)],
     name: string,
 ) -> Result[int, string] {
     match artifact_json_required_field(object, name) {
@@ -338,7 +339,7 @@ fn artifact_decode_core_index_field(
 fn artifact_decode_core_expr_tail(
     context: ArtifactCoreDecodeContext,
     kind: string,
-    object: Vec[(string, ArtifactJsonValue)],
+    object: Vec[(string, json::Value)],
 ) -> Result[core::Expr, string] {
     if kind == "EConstrGet" {
         let expr = match artifact_decode_core_expr_field(context, object, "expr") {
@@ -534,7 +535,7 @@ fn artifact_decode_core_expr_tail(
 
 fn artifact_decode_core_block(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[core::Block, string] {
     let object = match artifact_json_object(value, "Core block") {
         Result::Ok(value) => value,
@@ -576,10 +577,10 @@ fn artifact_decode_core_block(
 
 fn artifact_decode_core_trait_impl(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[Option[core::TraitImpl], string] {
     match value {
-        ArtifactJsonValue::Null => Result::Ok(Option::None),
+        json::Value::Null => Result::Ok(Option::None),
         other => {
             let object = match artifact_json_object(other, "Core trait implementation") {
                 Result::Ok(value) => value,
@@ -607,7 +608,7 @@ fn artifact_decode_core_trait_impl(
 
 fn artifact_decode_core_params(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[Vec[(string, tast::Type)], string] {
     let values = match artifact_json_array(value, "Core function parameters") {
         Result::Ok(value) => value,
@@ -639,7 +640,7 @@ fn artifact_decode_core_params(
 
 fn artifact_decode_core_function(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[core::Function, string] {
     let object = match artifact_json_object(value, "Core function") {
         Result::Ok(value) => value,
@@ -702,7 +703,7 @@ fn artifact_decode_core_function(
 
 fn artifact_decode_core_file(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactJsonValue,
+    value: json::Value,
 ) -> Result[core::File, string] {
     let object = match artifact_json_object(value, "Core file") {
         Result::Ok(value) => value,
