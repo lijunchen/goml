@@ -18,6 +18,7 @@ struct StandardNeeds {
     env: bool,
     fs: bool,
     io: bool,
+    json: bool,
     path: bool,
     process: bool,
     testing: bool,
@@ -44,6 +45,7 @@ fn no_standard_needs() -> StandardNeeds {
         env: false,
         fs: false,
         io: false,
+        json: false,
         path: false,
         process: false,
         testing: false,
@@ -56,7 +58,10 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
     let needs_fs = needs_root || imports_package(value, "std::fs");
     let needs_io = needs_root || imports_package(value, "std::io");
     let needs_process = needs_root || imports_package(value, "std::process");
-    let needs_text = needs_root || imports_package(value, "std::text");
+    let needs_json = needs_root || imports_package(value, "std::json");
+    let needs_text = needs_root
+        || needs_json
+        || imports_package(value, "std::text");
     StandardNeeds {
         root: needs_root,
         bytes: imports_package(value, "std::bytes")
@@ -69,6 +74,7 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
         env: needs_root || imports_package(value, "std::env"),
         fs: needs_fs,
         io: needs_io,
+        json: needs_json,
         path: needs_root || imports_package(value, "std::path"),
         process: needs_process,
         testing: imports_package(value, "std::testing"),
@@ -84,6 +90,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
+        json: left.json || right.json,
         path: left.path || right.path,
         process: left.process || right.process,
         testing: left.testing || right.testing,
@@ -747,6 +754,11 @@ fn selected_standard_hir_for_needs(
     } else {
         ()
     };
+    if needs.json {
+        result.push(standard.json.hir_file)
+    } else {
+        ()
+    };
     if needs.root {
         result.push(standard.root.hir_file)
     } else {
@@ -907,6 +919,11 @@ fn selected_link_standard_core(
     };
     if needs.text {
         result.push(standard.text.core_value)
+    } else {
+        ()
+    };
+    if needs.json {
+        result.push(standard.json.core_value)
     } else {
         ()
     };

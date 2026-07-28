@@ -1582,6 +1582,7 @@ use std::collections;
 use std::env;
 use std::fs;
 use std::io;
+use std::json;
 use std::path;
 use std::process;
 use std::testing;
@@ -1595,6 +1596,7 @@ Current public entrances include:
 - `env::args`, `current_dir`, `current_exe`, and `var`
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
+- `json::Value`, `parse`, `encode`, `field`, and typed `as_*` accessors
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
