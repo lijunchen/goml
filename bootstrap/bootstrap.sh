@@ -25,16 +25,12 @@ fi
 
 printf '%s  %s\n' "$GOML_STAGE0_SHA256" "$stage0_archive" | sha256sum --check --status
 
-for stage0_binary in goml gomlc; do
-    stage0_member="$(tar -tzf "$stage0_archive" | grep -E "/$stage0_binary$")"
-    test "$(printf '%s\n' "$stage0_member" | wc -l)" = 1
-    stage0_temporary="$(mktemp "$stage0_output/bin/$stage0_binary.XXXXXX")"
-    trap 'rm -f "$stage0_temporary"' EXIT
-    tar -xOzf "$stage0_archive" "$stage0_member" > "$stage0_temporary"
-    chmod 755 "$stage0_temporary"
-    mv "$stage0_temporary" "$stage0_output/bin/$stage0_binary"
-    trap - EXIT
-done
+tar -xzf "$stage0_archive" --strip-components=1 -C "$stage0_output/bin"
+test -x "$stage0_output/bin/goml"
+test -x "$stage0_output/bin/gomlc"
+test -x "$stage0_output/bin/gomllsp"
+test -f "$stage0_output/bin/builtin_prelude.gom"
+test -f "$stage0_output/bin/lib/std/goml.toml"
 
 stage0_version="${GOML_STAGE0_RELEASE_TAG#v}"
 test "$("$stage0_output/bin/goml" version)" = "goml $stage0_version"
