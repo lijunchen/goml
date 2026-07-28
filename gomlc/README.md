@@ -1,6 +1,6 @@
 # gomlc
 
-`bootstrap` is the complete self-hosted GoML compiler and language server. It implements:
+`gomlc` is the complete self-hosted GoML compiler and language server. It implements:
 
 ```text
 lexer → parser → CST → AST → HIR → TAST → Core → Mono → Lift → ANF → Go
@@ -28,7 +28,7 @@ bin/stage1/gomlc anf file.gom
 bin/stage1/gomlc run-single --dump-go file.gom
 ```
 
-The regression corpus and every generated golden file live in `bootstrap/testdata`. Verify or update them with:
+The regression corpus and every generated golden file live in `gomlc/testdata`. Verify or update them with:
 
 ```sh
 just verify-golden

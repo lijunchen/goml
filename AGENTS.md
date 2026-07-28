@@ -12,17 +12,17 @@ The file extension for goml source files is `.gom`.
 
 ## Project Snapshot
 - The self-hosted frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core → Mono → Lift → ANF` before emitting Go.
-- `bootstrap/` contains the compiler, query engine, language server, standard-library generator, and compiler tests.
-- `bootstrap-goml/` contains the `goml` project driver, registry client, dependency resolver, and CLI tests.
+- `gomlc/` contains the compiler, query engine, language server, standard-library generator, and compiler tests.
+- `goml/` contains the `goml` project driver, registry client, dependency resolver, and CLI tests.
 - `stage0/` contains version-controlled generated Go sources used only to start a cold bootstrap.
-- Regression fixtures and all generated golden files live in `bootstrap/testdata`.
+- Regression fixtures and all generated golden files live in `gomlc/testdata`.
 - `hir/` should only handle AST → HIR lowering and name resolution. `tast/` owns inference, checking, constraints, and type-directed decisions.
 - Ambiguity must produce recoverable diagnostics. Environment and lookup code must return failure values instead of terminating the compiler.
 
 
 ## ANF IR and Join Points
 
-The ANF (A-Normal Form) IR is the last intermediate representation before Go code generation. It lives in `bootstrap/anf/` and is produced from Lift IR.
+The ANF (A-Normal Form) IR is the last intermediate representation before Go code generation. It lives in `gomlc/anf/` and is produced from Lift IR.
 
 ### Core Data Types
 
@@ -105,7 +105,7 @@ joinrec {
 jump loop()
 ```
 
-### Go Code Generation from ANF (`bootstrap/go_backend/`)
+### Go Code Generation from ANF (`gomlc/go_backend/`)
 
 The Go emitter produces structured code (if/else, switch, for) — never goto/label. It works by recognizing patterns in the ANF:
 
@@ -128,11 +128,11 @@ Key functions in the emitter:
 - The `JoinEnv` is a flat `HashMap<JoinId, JoinBind>` built once per function. While-loop `JoinRec` members are NOT in `JoinEnv` — they are compiled directly by `compile_while_loop`.
 - `continue_targets: HashSet<JoinId>` tracks which `JoinId`s represent the current enclosing while loop. A `Jump` to a continue target emits nothing (the `for` loop naturally continues).
 - Join bodies form a DAG (except `JoinRec` which is handled specially). The emitter inlines join bodies at their use sites, which is safe because each non-recursive join is used at most once in the continuation position and any remaining uses are in tail position.
-- DCE (`bootstrap/go_backend/dce.gom`) runs on the Go AST after emission. Since the structured emitter produces no goto/label, DCE is always enabled.
+- DCE (`gomlc/go_backend/dce.gom`) runs on the Go AST after emission. Since the structured emitter produces no goto/label, DCE is always enabled.
 
 ## Project Structure & Module Organization
-- Self-hosted compiler module in `bootstrap/`.
-- Self-hosted project driver module in `bootstrap-goml/`.
+- Self-hosted compiler module in `gomlc/`.
+- Self-hosted project driver module in `goml/`.
 - Standard-library navigation sources and builtin prelude in `stdlib/`.
 - Cold-bootstrap Go sources in `stage0/`.
 - Ignored executable outputs in `bin/stage0`, `bin/stage1`, and `bin/stage2`.
@@ -258,7 +258,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ## VS Code LSP Extension
 
 ### Design Philosophy
-- Reuse the self-hosted query infrastructure in `bootstrap/query/`.
+- Reuse the self-hosted query infrastructure in `gomlc/query/`.
 - Full compilation on every request: no incremental/salsa-based caching yet; each hover/completion triggers a full typecheck of the target package and its dependencies.
 - Module/package aware: the LSP discovers directory packages from `[module]`, honors file-scoped aliases, and resolves definitions using canonical package identities.
 
@@ -300,17 +300,17 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures when relevant.
 
 ### Single-File Pipeline Tests
-- Each pipeline test case is in its own directory under `bootstrap/testdata/pipeline/`. Directory names follow the pattern `NNN/` (e.g., `000/`, `001/`) or `NNN_description/` (e.g., `007_expr_pattern_matching/`, `025_missing_match/`).
+- Each pipeline test case is in its own directory under `gomlc/testdata/pipeline/`. Directory names follow the pattern `NNN/` (e.g., `000/`, `001/`) or `NNN_description/` (e.g., `007_expr_pattern_matching/`, `025_missing_match/`).
 - Each test directory contains:
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `bin/stage1/gomlc run-single bootstrap/testdata/pipeline/001/main.gom`
+- You can quick check a test case with: `bin/stage1/gomlc run-single gomlc/testdata/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running `just update-golden`.
-- When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `bootstrap/testdata/pipeline/` with a `main.gom` file, then run `just update-golden` to generate the expected outputs.
+- When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `gomlc/testdata/pipeline/` with a `main.gom` file, then run `just update-golden` to generate the expected outputs.
 
 ### Multi-Package Tests
-- Multi-package tests are located in `bootstrap/testdata/module/`. They test module manifests, directory packages, file-scoped imports, visibility, separate compilation, and linking.
+- Multi-package tests are located in `gomlc/testdata/module/`. They test module manifests, directory packages, file-scoped imports, visibility, separate compilation, and linking.
 - Each project directory follows the pattern `projectNNN/` (e.g., `project001/`, `project002/`) or `projectNNN_description/`.
 - Structure of a multi-package project:
   - `goml.toml` - module configuration with `[module] path = "..."`
@@ -325,7 +325,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   - Cross-package references use an imported alias, such as `math::Pair`.
   - Trait method syntax `x.method(...)` for non-`dyn` values is enabled by `use alias::Trait` after importing the package; builtin traits like `Show` are in the prelude.
 - To add a new multi-package test:
-  1. Create a new directory under `bootstrap/testdata/module/` (e.g., `project011/`)
+  1. Create a new directory under `gomlc/testdata/module/` (e.g., `project011/`)
   2. Create `goml.toml` with a `[module]` section
   3. Create the entry package file with `package main;`, imports, and `fn main()`
   4. Create child package files under their package directories
@@ -480,8 +480,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Testing / snapshots gotchas
 
 * Adding or changing builtins changes the `builtin` interface hash; regenerate affected artifacts and snapshots with `just update-golden`.
-* Pipeline tests under `bootstrap/testdata/pipeline/` must only be updated via `just update-golden` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
-* Visibility fixtures live under `bootstrap/testdata/module_diagnostics/`; prefer focused projects there when checking `pub`/private module API behavior.
+* Pipeline tests under `gomlc/testdata/pipeline/` must only be updated via `just update-golden` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
+* Visibility fixtures live under `gomlc/testdata/module_diagnostics/`; prefer focused projects there when checking `pub`/private module API behavior.
 
 ### Name collisions
 

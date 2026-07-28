@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v0.1.0
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-v0.1.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: v0.1.0
+      RELEASE_VERSION: 0.1.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - uses: extractions/setup-just@v2
+        with:
+          just-version: '1.40.0'
+      - name: Install Yaegi interpreter
+        run: go install github.com/traefik/yaegi/cmd/yaegi@latest
+      - name: Verify release tag
+        run: |
+          test "$GITHUB_REF_TYPE" != "tag" || test "$GITHUB_REF_NAME" = "$RELEASE_TAG"
+          test "$(sed -n 's/.*io::println("goml \([^"]*\)").*/\1/p' goml/cmd/goml/main.gom)" = "$RELEASE_VERSION"
+      - name: Test
+        run: just ci
+      - name: Build release archives
+        run: |
+          set -euo pipefail
+          package="goml-${RELEASE_VERSION}-linux-amd64"
+          mkdir -p "dist/$package/lib"
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/goml" goml/_bootstrap/stage1/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomlc" gomlc/_bootstrap/stage1/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomllsp" gomlc/_bootstrap/stage1/build/pkg/gomlc/cmd/gomllsp/goml_generated.go
+          cp stdlib/builtin_prelude.gom "dist/$package/builtin_prelude.gom"
+          cp -R stdlib/std "dist/$package/lib/std"
+          test "$(dist/$package/goml version)" = "goml $RELEASE_VERSION"
+          tar -C dist -czf "dist/$package.tar.gz" "$package"
+          cd dist
+          sha256sum ./*.tar.gz > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goml-v0.1.0
+          path: |
+            dist/*.tar.gz
+            dist/SHA256SUMS
+          if-no-files-found: error
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/*.tar.gz dist/SHA256SUMS --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/*.tar.gz dist/SHA256SUMS \
+              --target "$GITHUB_SHA" \
+              --title "goml $RELEASE_TAG" \
+              --generate-notes
+          fi

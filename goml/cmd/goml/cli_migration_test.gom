@@ -345,7 +345,7 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> unit {
         let root = path::join(
             path::join(
                 test_support::repository_root(),
-                "bootstrap/testdata/module",
+                "gomlc/testdata/module",
             ),
             project_name,
         );
@@ -526,7 +526,7 @@ fn project_build_and_test_use_safe_generated_go_filename() -> unit {
     test_support::assert_success(tested);
     testing::assert(fs::is_file(path::join(
         root,
-        "_artifact/test/internal/pkg/demo/compiler_test/goml_generated.go",
+        "_artifact/test/internal/goml_generated.go",
     )));
     test_support::assert_contains(
         test_support::stdout(tested),
@@ -675,6 +675,46 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
 }
 
 #[test]
+fn project_commands_report_build_progress_on_stderr() -> unit {
+    let root = test_support::workspace("build_progress");
+    test_support::write_basic_project(root, "demo");
+    let checked = migration_check(root);
+    test_support::assert_success(checked);
+    test_support::assert_contains(
+        test_support::stderr(checked),
+        "[--------------------] 0/1 checking demo",
+    );
+    test_support::assert_contains(
+        test_support::stderr(checked),
+        "[####################] 1/1 finished",
+    );
+    let built = migration_build(root);
+    test_support::assert_success(built);
+    test_support::assert_contains(
+        test_support::stderr(built),
+        "[--------------------] 0/3 compiling demo",
+    );
+    test_support::assert_contains(
+        test_support::stderr(built),
+        "[####################] 3/3 finished",
+    );
+    let cached = migration_build(root);
+    test_support::assert_success(cached);
+    test_support::assert_contains(
+        test_support::stderr(cached),
+        "[####################] 3/3 finished",
+    );
+    let dry_run = test_support::project_command(
+        "build",
+        "",
+        Vec::new().pushed("--dry-run"),
+        root,
+    );
+    test_support::assert_success(dry_run);
+    testing::assert_eq(test_support::stderr(dry_run), "")
+}
+
+#[test]
 fn project_test_supports_nocapture_and_timeouts() -> unit {
     let root = test_support::workspace("test_timeout");
     test_support::write_file(
@@ -759,7 +799,7 @@ fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
     );
     test_support::write_file(
         path::join(root, "b/b.gom"),
-        "package b;\npub fn value() -> int32 { 2 }\n",
+        "package b;\nuse demo::a;\npub fn value() -> int32 { a::value() + 1 }\n",
     );
     test_support::write_file(
         path::join(root, "b/b_test.gom"),
@@ -768,6 +808,31 @@ fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
     test_support::write_file(
         path::join(root, "b/tests/b_test.gom"),
         "package tests;\nuse demo::b;\nuse std::testing;\n#[test]\nfn external_b() -> unit { testing::assert_eq(b::value(), 2) }\n",
+    );
+    let planned = test_support::project_command(
+        "test",
+        "",
+        Vec::new().pushed("--dry-run"),
+        root,
+    );
+    test_support::assert_success(planned);
+    let plan = test_support::stdout(planned);
+    test_support::assert_not_contains(plan, "_artifact/check/");
+    test_support::assert_contains(
+        plan,
+        "gomlc build --package demo::a --input a/a.gom --output _artifact/test/base/pkg/demo/a/a",
+    );
+    test_support::assert_contains(
+        plan,
+        "gomlc build --package demo::b --input b/b.gom --interface-path _artifact/test/base/pkg/demo/a/a.interface --output _artifact/test/base/pkg/demo/b/b",
+    );
+    test_support::assert_contains(
+        plan,
+        "gomlc test-link --input _artifact/test/internal/pkg/demo/a/a.core _artifact/test/internal/pkg/demo/b/b.core",
+    );
+    test_support::assert_contains(
+        plan,
+        "go build -o _artifact/test/internal/runner _artifact/test/internal/goml_generated.go",
     );
     let tested = test_support::project_command(
         "test",

@@ -1,14 +1,36 @@
 # Go bootstrap stage0
 
-`gomlc.go` and `goml.go` are generated Go sources for the self-hosted compiler
-and project driver. A fresh checkout builds them with the Go toolchain, then
-uses those stage0 binaries to compile the GoML sources into stage1 and stage2.
+`stage0/gomlc/gomlc.go` and `stage0/goml/goml.go` are generated Go sources for
+the self-hosted compiler and project driver.
+
+The initial compiler seed was produced while the Rust implementation still
+existed. Its generating commit records this recipe:
+
+```sh
+just generate-stage0-compiler-from-rust
+```
+
+The recipe builds the GoML compiler with Rust, recompiles it twice with the
+generated compiler, verifies the self-hosted fixed point, and writes
+`stage0/gomlc/gomlc.go`. It is committed immediately before the generated compiler
+seed, so that historical checkout remains reproducible.
+
+After the required standard-library host hooks became available, the generated
+compiler produced the driver seed with the next recorded recipe:
+
+```sh
+just generate-stage0-driver-from-compiler
+```
+
+That recipe is likewise committed immediately before `stage0/goml/goml.go`.
+Once both files are checked in, a cold bootstrap only needs Go:
+
+```sh
+just bootstrap
+```
+
 Generated executables are published under `bin/stage0`, `bin/stage1`, and
 `bin/stage2`; none of them are tracked by Git.
 
-Run `just bootstrap` to build both stages and verify that their compiler,
-driver, and language-server artifacts are identical.
-
-Run `just regenerate-stage0` after an intentional compiler or driver change.
-The command first completes the fixed-point build, then replaces stage0 with
-the verified stage2 output.
+The cold bootstrap builds stage1 and stage2 and verifies that their compiler
+and driver artifacts are identical to each other and to stage0.

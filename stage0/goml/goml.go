@@ -8,6 +8,7 @@ import (
     _goml_exec "os/exec"
     _goml_filepath "path/filepath"
     _goml_sha256 "crypto/sha256"
+    _goml_slices "slices"
     _goml_strings "strings"
     _goml_time "time"
     _goml_utf8 "unicode/utf8"
@@ -696,6 +697,12 @@ type _goml_vec_string struct {
 func vec_new__Vec_6string() *_goml_vec_string {
     return &_goml_vec_string{
         items: nil,
+    }
+}
+
+func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
+    return &_goml_vec_string{
+        items: _goml_slices.Grow([]string{}, int(capacity)),
     }
 }
 
@@ -2782,6 +2789,22 @@ type _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______strin
 
 func (_ _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err) is_goml_m_Result____Vec_l_goml_h3a021144968e688118a441a140d00098_nd_r_____string() {}
 
+type _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string interface {
+    is_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string()
+}
+
+type _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok struct {
+    _0 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+}
+
+func (_ _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok) is_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string() {}
+
+type _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err struct {
+    _0 string
+}
+
+func (_ _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err) is_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string() {}
+
 type _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string interface {
     is_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string()
 }
@@ -3748,6 +3771,18 @@ func _goml_m_inherent_i_std_p_text_p_StringBuilder_i_std_p_text_p_StringBuilder_
     }
     retv434 = t437
     return retv434
+}
+
+func _goml_m_inherent_i_std_p_text__hf0a3ebbcd83d8d9fece84707f01d0c24__with__capacity(part_capacity__0 int) _goml_m_std_p_text_p_StringBuilder {
+    var retv439 _goml_m_std_p_text_p_StringBuilder
+    var t440 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__string(part_capacity__0)
+    var t441 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
+    var t442 _goml_m_std_p_text_p_StringBuilder = _goml_m_std_p_text_p_StringBuilder{
+        parts: t440,
+        byte_len: t441,
+    }
+    retv439 = t442
+    return retv439
 }
 
 func _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__string(self__3 _goml_m_std_p_text_p_StringBuilder, value__4 string) struct{} {
@@ -16112,116 +16147,37 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__52
             case Option__string_Some:
                 var x594 string = for_next593.(Option__string_Some)._0
                 var package_name__528 string = x594
-                var t4352 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                var mtmp595 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__by__name(t4352, package_name__528)
-                var jp4354 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
+                var t4361 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
+                var t4362 string = t4361.entry_package
+                var t4363 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(package_name__528, t4362)
+                var jp4353 string
+                if t4363 {
+                    jp4353 = entry_command__525
+                } else {
+                    jp4353 = dependency_command__526
+                }
+                var command__529 string = jp4353
+                var t4354 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
+                var t4355 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
+                var t4356 string = t4355.module_dir
+                var mtmp595 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__package__command(t4354, t4356, package_name__528, output_root__524, output_root__524, command__529)
+                var jp4358 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
                 switch mtmp595.(type) {
-                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_None:
-                    var t4387 string = "missing package " + package_name__528
-                    var t4388 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err{
-                        _0: t4387,
+                case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok:
+                    var x596 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp595.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok)._0
+                    var value__530 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x596
+                    jp4358 = value__530
+                    var compiled__532 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4358
+                    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(result__527, compiled__532)
+                    continue
+                case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err:
+                    var x597 string = mtmp595.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err)._0
+                    var message__531 string = x597
+                    var t4360 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err{
+                        _0: message__531,
                     }
-                    retv4345 = t4388
+                    retv4345 = t4360
                     return retv4345
-                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some:
-                    var x596 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = mtmp595.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some)._0
-                    var value__529 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = x596
-                    jp4354 = value__529
-                    var package_value__530 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = jp4354
-                    var inputs__531 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                    var t4355 *_goml_vec_string = package_value__530.files
-                    var for_iter597 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4355)
-                    Loop_loop4381:
-                    for {
-                        if true {
-                            var for_next598 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter597)
-                            switch for_next598.(type) {
-                            case Option__string_None:
-                                break Loop_loop4381
-                            case Option__string_Some:
-                                var x599 string = for_next598.(Option__string_Some)._0
-                                var file__532 string = x599
-                                var t4383 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                                var t4384 string = t4383.module_dir
-                                var t4385 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4384, file__532)
-                                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(inputs__531, t4385)
-                                continue
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                        } else {
-                            break Loop_loop4381
-                        }
-                    }
-                    var t4357 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                    var mtmp601 _goml_m_Result____Vec_l_string_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_dependency__interfaces(t4357, package_name__528, output_root__524)
-                    var jp4359 *_goml_vec_string
-                    switch mtmp601.(type) {
-                    case _goml_m_Result____Vec_l_string_r_____string_Ok:
-                        var x602 *_goml_vec_string = mtmp601.(_goml_m_Result____Vec_l_string_r_____string_Ok)._0
-                        var value__533 *_goml_vec_string = x602
-                        jp4359 = value__533
-                        var interfaces__535 *_goml_vec_string = jp4359
-                        var relative_interfaces__536 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                        var for_iter604 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(interfaces__535)
-                        Loop_loop4374:
-                        for {
-                            if true {
-                                var for_next605 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter604)
-                                switch for_next605.(type) {
-                                case Option__string_None:
-                                    break Loop_loop4374
-                                case Option__string_Some:
-                                    var x606 string = for_next605.(Option__string_Some)._0
-                                    var value__537 string = x606
-                                    var t4376 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                                    var t4377 string = t4376.module_dir
-                                    var t4378 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4377, value__537)
-                                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(relative_interfaces__536, t4378)
-                                    continue
-                                default:
-                                    panic("non-exhaustive match")
-                                }
-                            } else {
-                                break Loop_loop4374
-                            }
-                        }
-                        var t4371 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                        var t4372 string = t4371.entry_package
-                        var t4373 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(package_name__528, t4372)
-                        var jp4362 string
-                        if t4373 {
-                            jp4362 = entry_command__525
-                        } else {
-                            jp4362 = dependency_command__526
-                        }
-                        var command__538 string = jp4362
-                        var t4363 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_sorted(inputs__531)
-                        var t4364 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                        var t4365 string = t4364.module_dir
-                        var t4366 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__523.graph
-                        var t4367 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(output_root__524, t4366, package_name__528)
-                        var t4368 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4365, t4367)
-                        var t4369 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Compile{
-                            _0: command__538,
-                            _1: package_name__528,
-                            _2: t4363,
-                            _3: relative_interfaces__536,
-                            _4: t4368,
-                        }
-                        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(result__527, t4369)
-                        continue
-                    case _goml_m_Result____Vec_l_string_r_____string_Err:
-                        var x603 string = mtmp601.(_goml_m_Result____Vec_l_string_r_____string_Err)._0
-                        var message__534 string = x603
-                        var t4380 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err{
-                            _0: message__534,
-                        }
-                        retv4345 = t4380
-                        return retv4345
-                    default:
-                        panic("non-exhaustive match")
-                    }
                 default:
                     panic("non-exhaustive match")
                 }
@@ -16239,117 +16195,279 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__52
     return retv4345
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(context__539 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, output_root__540 string) *_goml_vec_string {
-    var retv4390 *_goml_vec_string
-    var result__541 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-    var t4391 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__539.graph
-    var t4392 *_goml_vec_string = t4391.order
-    var for_iter609 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4392)
-    Loop_loop4394:
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__package__command(graph__533 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, module_dir__534 string, package_name__535 string, interface_root__536 string, output_root__537 string, command__538 string) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string {
+    var retv4365 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string
+    var mtmp599 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__by__name(graph__533, package_name__535)
+    var jp4367 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
+    switch mtmp599.(type) {
+    case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_None:
+        var t4387 string = "missing package " + package_name__535
+        var t4388 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err{
+            _0: t4387,
+        }
+        retv4365 = t4388
+        return retv4365
+    case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some:
+        var x600 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = mtmp599.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some)._0
+        var value__539 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = x600
+        jp4367 = value__539
+        var package_value__540 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = jp4367
+        var inputs__541 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+        var t4368 *_goml_vec_string = package_value__540.files
+        var for_iter601 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4368)
+        Loop_loop4383:
+        for {
+            if true {
+                var for_next602 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter601)
+                switch for_next602.(type) {
+                case Option__string_None:
+                    break Loop_loop4383
+                case Option__string_Some:
+                    var x603 string = for_next602.(Option__string_Some)._0
+                    var file__542 string = x603
+                    var t4385 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(module_dir__534, file__542)
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(inputs__541, t4385)
+                    continue
+                default:
+                    panic("non-exhaustive match")
+                }
+            } else {
+                break Loop_loop4383
+            }
+        }
+        var mtmp605 _goml_m_Result____Vec_l_string_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_dependency__interfaces(graph__533, package_name__535, interface_root__536)
+        var jp4371 *_goml_vec_string
+        switch mtmp605.(type) {
+        case _goml_m_Result____Vec_l_string_r_____string_Ok:
+            var x606 *_goml_vec_string = mtmp605.(_goml_m_Result____Vec_l_string_r_____string_Ok)._0
+            var value__543 *_goml_vec_string = x606
+            jp4371 = value__543
+            var interfaces__545 *_goml_vec_string = jp4371
+            var relative_interfaces__546 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+            var for_iter608 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(interfaces__545)
+            Loop_loop4378:
+            for {
+                if true {
+                    var for_next609 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter608)
+                    switch for_next609.(type) {
+                    case Option__string_None:
+                        break Loop_loop4378
+                    case Option__string_Some:
+                        var x610 string = for_next609.(Option__string_Some)._0
+                        var value__547 string = x610
+                        var t4380 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(module_dir__534, value__547)
+                        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(relative_interfaces__546, t4380)
+                        continue
+                    default:
+                        panic("non-exhaustive match")
+                    }
+                } else {
+                    break Loop_loop4378
+                }
+            }
+            var t4373 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_sorted(inputs__541)
+            var t4374 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(output_root__537, graph__533, package_name__535)
+            var t4375 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(module_dir__534, t4374)
+            var t4376 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Compile{
+                _0: command__538,
+                _1: package_name__535,
+                _2: t4373,
+                _3: relative_interfaces__546,
+                _4: t4375,
+            }
+            var t4377 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok{
+                _0: t4376,
+            }
+            retv4365 = t4377
+            return retv4365
+        case _goml_m_Result____Vec_l_string_r_____string_Err:
+            var x607 string = mtmp605.(_goml_m_Result____Vec_l_string_r_____string_Err)._0
+            var message__544 string = x607
+            var t4382 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err{
+                _0: message__544,
+            }
+            retv4365 = t4382
+            return retv4365
+        default:
+            panic("non-exhaustive match")
+        }
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__test__package__command(graph__548 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, module_dir__549 string, package_name__550 string, dependency_root__551 string, output_root__552 string, production_interface__553 bool) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string {
+    var retv4390 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string
+    var mtmp612 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__package__command(graph__548, module_dir__549, package_name__550, dependency_root__551, output_root__552, "test-build")
+    var jp4392 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    switch mtmp612.(type) {
+    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok:
+        var x613 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp612.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok)._0
+        var value__554 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x613
+        jp4392 = value__554
+        var compiled__556 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4392
+        var jp4394 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string
+        switch compiled__556.(type) {
+        case Compile:
+            var x615 string = compiled__556.(Compile)._0
+            var x616 string = compiled__556.(Compile)._1
+            var x617 *_goml_vec_string = compiled__556.(Compile)._2
+            var x618 *_goml_vec_string = compiled__556.(Compile)._3
+            var x619 string = compiled__556.(Compile)._4
+            var output__561 string = x619
+            var interface_files__560 *_goml_vec_string = x618
+            var input_files__559 *_goml_vec_string = x617
+            var package_name__558 string = x616
+            var subcommand__557 string = x615
+            if production_interface__553 {
+                var t4398 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(dependency_root__551, graph__548, package_name__558)
+                var t4399 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_extension(t4398, "interface")
+                var t4400 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(module_dir__549, t4399)
+                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(interface_files__560, t4400)
+            } else {}
+            var t4396 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Compile{
+                _0: subcommand__557,
+                _1: package_name__558,
+                _2: input_files__559,
+                _3: interface_files__560,
+                _4: output__561,
+            }
+            var t4397 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok{
+                _0: t4396,
+            }
+            jp4394 = t4397
+        default:
+            var t4402 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err{
+                _0: "test package did not produce a compile command",
+            }
+            jp4394 = t4402
+        }
+        retv4390 = jp4394
+        return retv4390
+    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err:
+        var x614 string = mtmp612.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err)._0
+        var message__555 string = x614
+        var t4403 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err{
+            _0: message__555,
+        }
+        retv4390 = t4403
+        return retv4390
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(context__562 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, output_root__563 string) *_goml_vec_string {
+    var retv4405 *_goml_vec_string
+    var result__564 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+    var t4406 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__562.graph
+    var t4407 *_goml_vec_string = t4406.order
+    var for_iter630 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4407)
+    Loop_loop4409:
     for {
         if true {
-            var for_next610 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter609)
-            switch for_next610.(type) {
+            var for_next631 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter630)
+            switch for_next631.(type) {
             case Option__string_None:
-                break Loop_loop4394
+                break Loop_loop4409
             case Option__string_Some:
-                var x611 string = for_next610.(Option__string_Some)._0
-                var package_name__542 string = x611
-                var t4396 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__539.graph
-                var t4397 string = t4396.module_dir
-                var t4398 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__539.graph
-                var t4399 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(output_root__540, t4398, package_name__542)
-                var t4400 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_extension(t4399, "core")
-                var t4401 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4397, t4400)
-                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(result__541, t4401)
+                var x632 string = for_next631.(Option__string_Some)._0
+                var package_name__565 string = x632
+                var t4411 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__562.graph
+                var t4412 string = t4411.module_dir
+                var t4413 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__562.graph
+                var t4414 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(output_root__563, t4413, package_name__565)
+                var t4415 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_extension(t4414, "core")
+                var t4416 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4412, t4415)
+                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(result__564, t4416)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop4394
+            break Loop_loop4409
         }
     }
-    retv4390 = result__541
-    return retv4390
+    retv4405 = result__564
+    return retv4405
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__543 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, include_tests__544 bool) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
-    var retv4404 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-    var t4405 string = context__543.artifact_root
-    var output_root__545 string = _goml_m_std_p_path_p_join(t4405, "check")
-    var mtmp613 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__543, output_root__545, "check", "check")
-    var jp4407 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    switch mtmp613.(type) {
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__566 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, include_tests__567 bool) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
+    var retv4419 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+    var t4420 string = context__566.artifact_root
+    var output_root__568 string = _goml_m_std_p_path_p_join(t4420, "check")
+    var mtmp634 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__566, output_root__568, "check", "check")
+    var jp4422 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    switch mtmp634.(type) {
     case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
-        var x614 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp613.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
-        var value__546 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x614
-        jp4407 = value__546
-        var commands__548 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4407
-        if include_tests__544 {
-            var mtmp616 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_project_p_Graph_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_internal__test__graphs(context__543)
-            var jp4413 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
-            switch mtmp616.(type) {
+        var x635 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp634.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
+        var value__569 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x635
+        jp4422 = value__569
+        var commands__571 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4422
+        if include_tests__567 {
+            var mtmp637 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_project_p_Graph_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_internal__test__graphs(context__566)
+            var jp4428 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
+            switch mtmp637.(type) {
             case _goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok:
-                var x617 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = mtmp616.(_goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok)._0
-                var value__549 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x617
-                jp4413 = value__549
-                var internal__551 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = jp4413
-                var for_iter619 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(internal__551)
-                Loop_loop4431:
+                var x638 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = mtmp637.(_goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok)._0
+                var value__572 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x638
+                jp4428 = value__572
+                var internal__574 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = jp4428
+                var for_iter640 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(internal__574)
+                Loop_loop4446:
                 for {
                     if true {
-                        var for_next620 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter619)
-                        switch for_next620.(type) {
+                        var for_next641 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter640)
+                        switch for_next641.(type) {
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
-                            break Loop_loop4431
+                            break Loop_loop4446
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
-                            var x621 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next620.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
-                            var graph__552 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x621
-                            var t4433 string = context__543.compiler
-                            var t4434 string = context__543.artifact_root
-                            var target__553 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context{
-                                graph: graph__552,
-                                compiler: t4433,
-                                artifact_root: t4434,
+                            var x642 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next641.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
+                            var graph__575 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x642
+                            var t4448 string = context__566.compiler
+                            var t4449 string = context__566.artifact_root
+                            var target__576 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context{
+                                graph: graph__575,
+                                compiler: t4448,
+                                artifact_root: t4449,
                             }
-                            var mtmp622 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(target__553, output_root__545, "test-check", "check")
-                            var jp4436 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-                            switch mtmp622.(type) {
+                            var mtmp643 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(target__576, output_root__568, "test-check", "check")
+                            var jp4451 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+                            switch mtmp643.(type) {
                             case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
-                                var x623 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp622.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
-                                var value__554 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x623
-                                jp4436 = value__554
-                                var values__556 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4436
-                                var for_iter625 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(values__556)
-                                Loop_loop4438:
+                                var x644 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp643.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
+                                var value__577 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x644
+                                jp4451 = value__577
+                                var values__579 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4451
+                                var for_iter646 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(values__579)
+                                Loop_loop4453:
                                 for {
                                     if true {
-                                        var for_next626 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter625)
-                                        switch for_next626.(type) {
+                                        var for_next647 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter646)
+                                        switch for_next647.(type) {
                                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None:
-                                            break Loop_loop4438
+                                            break Loop_loop4453
                                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some:
-                                            var x627 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next626.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
-                                            var value__557 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x627
-                                            _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__548, value__557)
+                                            var x648 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next647.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
+                                            var value__580 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x648
+                                            _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__571, value__580)
                                             continue
                                         default:
                                             panic("non-exhaustive match")
                                         }
                                     } else {
-                                        break Loop_loop4438
+                                        break Loop_loop4453
                                     }
                                 }
                                 continue
                             case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
-                                var x624 string = mtmp622.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
-                                var message__555 string = x624
-                                var t4441 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                    _0: message__555,
+                                var x645 string = mtmp643.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
+                                var message__578 string = x645
+                                var t4456 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                    _0: message__578,
                                 }
-                                retv4404 = t4441
-                                return retv4404
+                                retv4419 = t4456
+                                return retv4419
                             default:
                                 panic("non-exhaustive match")
                             }
@@ -16357,73 +16475,73 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__543 _gom
                             panic("non-exhaustive match")
                         }
                     } else {
-                        break Loop_loop4431
+                        break Loop_loop4446
                     }
                 }
-                var mtmp629 _goml_m_Result____Vec_l_gomlan_hd4da0b341390914aa29d8e456d059110_st_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_external__test__graphs(context__543)
-                var jp4416 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-                switch mtmp629.(type) {
+                var mtmp650 _goml_m_Result____Vec_l_gomlan_hd4da0b341390914aa29d8e456d059110_st_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_external__test__graphs(context__566)
+                var jp4431 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+                switch mtmp650.(type) {
                 case _goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok:
-                    var x630 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = mtmp629.(_goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok)._0
-                    var value__558 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x630
-                    jp4416 = value__558
-                    var external__560 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4416
-                    var for_iter632 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__560)
-                    Loop_loop4418:
+                    var x651 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = mtmp650.(_goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok)._0
+                    var value__581 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x651
+                    jp4431 = value__581
+                    var external__583 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4431
+                    var for_iter653 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__583)
+                    Loop_loop4433:
                     for {
                         if true {
-                            var for_next633 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter632)
-                            switch for_next633.(type) {
+                            var for_next654 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter653)
+                            switch for_next654.(type) {
                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
-                                break Loop_loop4418
+                                break Loop_loop4433
                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
-                                var x634 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next633.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
-                                var test__561 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x634
-                                var t4420 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__561.graph
-                                var t4421 string = context__543.compiler
-                                var t4422 string = context__543.artifact_root
-                                var target__562 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context{
-                                    graph: t4420,
-                                    compiler: t4421,
-                                    artifact_root: t4422,
+                                var x655 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next654.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
+                                var test__584 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x655
+                                var t4435 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__584.graph
+                                var t4436 string = context__566.compiler
+                                var t4437 string = context__566.artifact_root
+                                var target__585 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context{
+                                    graph: t4435,
+                                    compiler: t4436,
+                                    artifact_root: t4437,
                                 }
-                                var mtmp635 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(target__562, output_root__545, "test-check", "check")
-                                var jp4424 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-                                switch mtmp635.(type) {
+                                var mtmp656 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(target__585, output_root__568, "test-check", "check")
+                                var jp4439 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+                                switch mtmp656.(type) {
                                 case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
-                                    var x636 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp635.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
-                                    var value__563 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x636
-                                    jp4424 = value__563
-                                    var values__565 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4424
-                                    var for_iter638 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(values__565)
-                                    Loop_loop4426:
+                                    var x657 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp656.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
+                                    var value__586 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x657
+                                    jp4439 = value__586
+                                    var values__588 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4439
+                                    var for_iter659 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(values__588)
+                                    Loop_loop4441:
                                     for {
                                         if true {
-                                            var for_next639 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter638)
-                                            switch for_next639.(type) {
+                                            var for_next660 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter659)
+                                            switch for_next660.(type) {
                                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None:
-                                                break Loop_loop4426
+                                                break Loop_loop4441
                                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some:
-                                                var x640 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next639.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
-                                                var value__566 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x640
-                                                _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__548, value__566)
+                                                var x661 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next660.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
+                                                var value__589 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x661
+                                                _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__571, value__589)
                                                 continue
                                             default:
                                                 panic("non-exhaustive match")
                                             }
                                         } else {
-                                            break Loop_loop4426
+                                            break Loop_loop4441
                                         }
                                     }
                                     continue
                                 case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
-                                    var x637 string = mtmp635.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
-                                    var message__564 string = x637
-                                    var t4429 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                        _0: message__564,
+                                    var x658 string = mtmp656.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
+                                    var message__587 string = x658
+                                    var t4444 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                        _0: message__587,
                                     }
-                                    retv4404 = t4429
-                                    return retv4404
+                                    retv4419 = t4444
+                                    return retv4419
                                 default:
                                     panic("non-exhaustive match")
                                 }
@@ -16431,114 +16549,114 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__543 _gom
                                 panic("non-exhaustive match")
                             }
                         } else {
-                            break Loop_loop4418
+                            break Loop_loop4433
                         }
                     }
-                    var t4409 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
-                    var t4410 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-                        commands: commands__548,
+                    var t4424 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
+                    var t4425 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+                        commands: commands__571,
                         executable: Option__string_None{},
-                        test_groups: t4409,
+                        test_groups: t4424,
                     }
-                    var t4411 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-                        _0: t4410,
+                    var t4426 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+                        _0: t4425,
                     }
-                    retv4404 = t4411
-                    return retv4404
+                    retv4419 = t4426
+                    return retv4419
                 case _goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err:
-                    var x631 string = mtmp629.(_goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err)._0
-                    var message__559 string = x631
-                    var t4430 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                        _0: message__559,
+                    var x652 string = mtmp650.(_goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err)._0
+                    var message__582 string = x652
+                    var t4445 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                        _0: message__582,
                     }
-                    retv4404 = t4430
-                    return retv4404
+                    retv4419 = t4445
+                    return retv4419
                 default:
                     panic("non-exhaustive match")
                 }
             case _goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err:
-                var x618 string = mtmp616.(_goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err)._0
-                var message__550 string = x618
-                var t4442 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                    _0: message__550,
+                var x639 string = mtmp637.(_goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err)._0
+                var message__573 string = x639
+                var t4457 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                    _0: message__573,
                 }
-                retv4404 = t4442
-                return retv4404
+                retv4419 = t4457
+                return retv4419
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            var t4409 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
-            var t4410 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-                commands: commands__548,
+            var t4424 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
+            var t4425 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+                commands: commands__571,
                 executable: Option__string_None{},
-                test_groups: t4409,
+                test_groups: t4424,
             }
-            var t4411 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-                _0: t4410,
+            var t4426 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+                _0: t4425,
             }
-            retv4404 = t4411
-            return retv4404
+            retv4419 = t4426
+            return retv4419
         }
     case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
-        var x615 string = mtmp613.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
-        var message__547 string = x615
-        var t4443 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-            _0: message__547,
+        var x636 string = mtmp634.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
+        var message__570 string = x636
+        var t4458 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+            _0: message__570,
         }
-        retv4404 = t4443
-        return retv4404
+        retv4419 = t4458
+        return retv4419
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_build__plan(context__567 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
-    var retv4445 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-    var t4446 string = context__567.artifact_root
-    var output_root__568 string = _goml_m_std_p_path_p_join(t4446, "build")
-    var mtmp642 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__567, output_root__568, "build", "build")
-    var jp4448 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    switch mtmp642.(type) {
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_build__plan(context__590 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
+    var retv4460 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+    var t4461 string = context__590.artifact_root
+    var output_root__591 string = _goml_m_std_p_path_p_join(t4461, "build")
+    var mtmp663 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__590, output_root__591, "build", "build")
+    var jp4463 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    switch mtmp663.(type) {
     case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
-        var x643 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp642.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
-        var value__569 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x643
-        jp4448 = value__569
-        var commands__571 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4448
-        var entries__572 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-        var t4449 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__567.graph
-        var t4450 *_goml_vec_string = t4449.order
-        var for_iter645 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4450)
-        Loop_loop4473:
+        var x664 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp663.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
+        var value__592 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x664
+        jp4463 = value__592
+        var commands__594 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4463
+        var entries__595 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+        var t4464 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__590.graph
+        var t4465 *_goml_vec_string = t4464.order
+        var for_iter666 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4465)
+        Loop_loop4488:
         for {
             if true {
-                var for_next646 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter645)
-                switch for_next646.(type) {
+                var for_next667 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter666)
+                switch for_next667.(type) {
                 case Option__string_None:
-                    break Loop_loop4473
+                    break Loop_loop4488
                 case Option__string_Some:
-                    var x647 string = for_next646.(Option__string_Some)._0
-                    var package_name__573 string = x647
-                    var t4475 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__567.graph
-                    var mtmp648 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__by__name(t4475, package_name__573)
-                    var jp4477 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
-                    switch mtmp648.(type) {
+                    var x668 string = for_next667.(Option__string_Some)._0
+                    var package_name__596 string = x668
+                    var t4490 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__590.graph
+                    var mtmp669 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__by__name(t4490, package_name__596)
+                    var jp4492 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
+                    switch mtmp669.(type) {
                     case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_None:
-                        var t4482 string = "missing package " + package_name__573
-                        var t4483 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                            _0: t4482,
+                        var t4497 string = "missing package " + package_name__596
+                        var t4498 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                            _0: t4497,
                         }
-                        retv4445 = t4483
-                        return retv4445
+                        retv4460 = t4498
+                        return retv4460
                     case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some:
-                        var x649 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = mtmp648.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some)._0
-                        var value__574 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = x649
-                        jp4477 = value__574
-                        var package_value__575 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = jp4477
-                        var t4479 string = package_value__575.declared_name
-                        var t4480 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t4479, "main")
-                        if t4480 {
-                            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(entries__572, package_name__573)
+                        var x670 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = mtmp669.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some)._0
+                        var value__597 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = x670
+                        jp4492 = value__597
+                        var package_value__598 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = jp4492
+                        var t4494 string = package_value__598.declared_name
+                        var t4495 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t4494, "main")
+                        if t4495 {
+                            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(entries__595, package_name__596)
                         } else {}
                         continue
                     default:
@@ -16548,694 +16666,251 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_build__plan(context__567 _gom
                     panic("non-exhaustive match")
                 }
             } else {
-                break Loop_loop4473
+                break Loop_loop4488
             }
         }
-        var t4452 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_sorted(entries__572)
-        var for_iter651 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4452)
-        Loop_loop4457:
+        var t4467 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_sorted(entries__595)
+        var for_iter672 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4467)
+        Loop_loop4472:
         for {
             if true {
-                var for_next652 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter651)
-                switch for_next652.(type) {
+                var for_next673 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter672)
+                switch for_next673.(type) {
                 case Option__string_None:
-                    break Loop_loop4457
+                    break Loop_loop4472
                 case Option__string_Some:
-                    var x653 string = for_next652.(Option__string_Some)._0
-                    var entry_package__576 string = x653
-                    var t4459 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__567.graph
-                    var main_go__577 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_linked__go__output(output_root__568, t4459, entry_package__576)
-                    var t4460 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(context__567, output_root__568)
-                    var t4461 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__567.graph
-                    var t4462 string = t4461.module_dir
-                    var t4463 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4462, main_go__577)
-                    var t4464 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Link{
-                        _0: t4460,
-                        _1: entry_package__576,
-                        _2: t4463,
+                    var x674 string = for_next673.(Option__string_Some)._0
+                    var entry_package__599 string = x674
+                    var t4474 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__590.graph
+                    var main_go__600 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_linked__go__output(output_root__591, t4474, entry_package__599)
+                    var t4475 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(context__590, output_root__591)
+                    var t4476 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__590.graph
+                    var t4477 string = t4476.module_dir
+                    var t4478 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4477, main_go__600)
+                    var t4479 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Link{
+                        _0: t4475,
+                        _1: entry_package__599,
+                        _2: t4478,
                     }
-                    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__571, t4464)
-                    var executable__578 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_executable__path__for(context__567, entry_package__576)
-                    var t4465 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__567.graph
-                    var t4466 string = t4465.module_dir
-                    var t4467 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4466, main_go__577)
-                    var t4468 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__567.graph
-                    var t4469 string = t4468.module_dir
-                    var t4470 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4469, executable__578)
-                    var t4471 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = GoBuild{
-                        _0: t4467,
-                        _1: t4470,
+                    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__594, t4479)
+                    var executable__601 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_executable__path__for(context__590, entry_package__599)
+                    var t4480 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__590.graph
+                    var t4481 string = t4480.module_dir
+                    var t4482 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4481, main_go__600)
+                    var t4483 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__590.graph
+                    var t4484 string = t4483.module_dir
+                    var t4485 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4484, executable__601)
+                    var t4486 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = GoBuild{
+                        _0: t4482,
+                        _1: t4485,
                     }
-                    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__571, t4471)
+                    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__594, t4486)
                     continue
                 default:
                     panic("non-exhaustive match")
                 }
             } else {
-                break Loop_loop4457
+                break Loop_loop4472
             }
         }
-        var t4454 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
-        var t4455 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-            commands: commands__571,
+        var t4469 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
+        var t4470 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+            commands: commands__594,
             executable: Option__string_None{},
-            test_groups: t4454,
+            test_groups: t4469,
         }
-        var t4456 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-            _0: t4455,
+        var t4471 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+            _0: t4470,
         }
-        retv4445 = t4456
-        return retv4445
+        retv4460 = t4471
+        return retv4460
     case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
-        var x644 string = mtmp642.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
-        var message__570 string = x644
-        var t4484 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-            _0: message__570,
+        var x665 string = mtmp663.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
+        var message__593 string = x665
+        var t4499 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+            _0: message__593,
         }
-        retv4445 = t4484
-        return retv4445
+        retv4460 = t4499
+        return retv4460
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__plan(context__579 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
-    var retv4486 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-    var t4487 string = context__579.artifact_root
-    var output_root__580 string = _goml_m_std_p_path_p_join(t4487, "build")
-    var mtmp656 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__579, output_root__580, "build", "build")
-    var jp4489 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    switch mtmp656.(type) {
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__plan(context__602 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
+    var retv4501 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+    var t4502 string = context__602.artifact_root
+    var output_root__603 string = _goml_m_std_p_path_p_join(t4502, "build")
+    var mtmp677 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__602, output_root__603, "build", "build")
+    var jp4504 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    switch mtmp677.(type) {
     case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
-        var x657 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp656.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
-        var value__581 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x657
-        jp4489 = value__581
-        var commands__583 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4489
-        var t4490 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4491 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4492 string = t4491.entry_package
-        var main_go__584 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_linked__go__output(output_root__580, t4490, t4492)
-        var t4493 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(context__579, output_root__580)
-        var t4494 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4495 string = t4494.entry_package
-        var t4496 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4497 string = t4496.module_dir
-        var t4498 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4497, main_go__584)
-        var t4499 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Link{
-            _0: t4493,
-            _1: t4495,
-            _2: t4498,
+        var x678 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp677.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
+        var value__604 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x678
+        jp4504 = value__604
+        var commands__606 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4504
+        var t4505 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4506 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4507 string = t4506.entry_package
+        var main_go__607 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_linked__go__output(output_root__603, t4505, t4507)
+        var t4508 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(context__602, output_root__603)
+        var t4509 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4510 string = t4509.entry_package
+        var t4511 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4512 string = t4511.module_dir
+        var t4513 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4512, main_go__607)
+        var t4514 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = Link{
+            _0: t4508,
+            _1: t4510,
+            _2: t4513,
         }
-        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__583, t4499)
-        var t4500 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4501 string = t4500.entry_package
-        var executable__585 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_executable__path__for(context__579, t4501)
-        var t4502 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4503 string = t4502.module_dir
-        var t4504 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4503, main_go__584)
-        var t4505 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__579.graph
-        var t4506 string = t4505.module_dir
-        var t4507 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4506, executable__585)
-        var t4508 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = GoBuild{
-            _0: t4504,
-            _1: t4507,
+        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__606, t4514)
+        var t4515 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4516 string = t4515.entry_package
+        var executable__608 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_executable__path__for(context__602, t4516)
+        var t4517 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4518 string = t4517.module_dir
+        var t4519 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4518, main_go__607)
+        var t4520 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__602.graph
+        var t4521 string = t4520.module_dir
+        var t4522 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4521, executable__608)
+        var t4523 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = GoBuild{
+            _0: t4519,
+            _1: t4522,
         }
-        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__583, t4508)
-        var t4509 Option__string = Option__string_Some{
-            _0: executable__585,
+        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__606, t4523)
+        var t4524 Option__string = Option__string_Some{
+            _0: executable__608,
         }
-        var t4510 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
-        var t4511 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-            commands: commands__583,
-            executable: t4509,
-            test_groups: t4510,
+        var t4525 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
+        var t4526 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+            commands: commands__606,
+            executable: t4524,
+            test_groups: t4525,
         }
-        var t4512 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-            _0: t4511,
+        var t4527 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+            _0: t4526,
         }
-        retv4486 = t4512
-        return retv4486
+        retv4501 = t4527
+        return retv4501
     case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
-        var x658 string = mtmp656.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
-        var message__582 string = x658
-        var t4513 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-            _0: message__582,
+        var x679 string = mtmp677.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
+        var message__605 string = x679
+        var t4528 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+            _0: message__605,
         }
-        retv4486 = t4513
-        return retv4486
+        retv4501 = t4528
+        return retv4501
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__586 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, graph__587 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, output_root__588 string, kind__589 string, packages__590 *_goml_vec_string, commands__591 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command, groups__592 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup) Result__unit__string {
-    var retv4515 Result__unit__string
-    var t4516 string = context__586.compiler
-    var t4517 string = context__586.artifact_root
-    var target__593 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context{
-        graph: graph__587,
-        compiler: t4516,
-        artifact_root: t4517,
-    }
-    var mtmp661 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(target__593, output_root__588, "test-build", "build")
-    var jp4519 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    switch mtmp661.(type) {
-    case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
-        var x662 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp661.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
-        var value__594 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x662
-        jp4519 = value__594
-        var compiled__596 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4519
-        var for_iter664 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(compiled__596)
-        Loop_loop4546:
-        for {
-            if true {
-                var for_next665 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter664)
-                switch for_next665.(type) {
-                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None:
-                    break Loop_loop4546
-                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some:
-                    var x666 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next665.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
-                    var command__597 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x666
-                    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__591, command__597)
-                    continue
-                default:
-                    panic("non-exhaustive match")
-                }
-            } else {
-                break Loop_loop4546
-            }
-        }
-        var t4521 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = target__593.graph
-        var t4522 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = target__593.graph
-        var t4523 string = t4522.entry_package
-        var base__598 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(output_root__588, t4521, t4523)
-        var t4524 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = target__593.graph
-        var t4525 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = target__593.graph
-        var t4526 string = t4525.entry_package
-        var main_go__599 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_linked__go__output(output_root__588, t4524, t4526)
-        var mtmp668 Option__string = _goml_m_std_p_path_p_parent(base__598)
-        var jp4528 string
-        switch mtmp668.(type) {
-        case Option__string_None:
-            jp4528 = output_root__588
-        case Option__string_Some:
-            var x669 string = mtmp668.(Option__string_Some)._0
-            var value__600 string = x669
-            jp4528 = value__600
-        default:
-            panic("non-exhaustive match")
-        }
-        var directory__601 string = jp4528
-        var manifest__602 string = _goml_m_std_p_path_p_join(directory__601, "tests.json")
-        var t4529 *_goml_vec_string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_core__outputs(target__593, output_root__588)
-        var t4530 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__586.graph
-        var t4531 string = t4530.module_dir
-        var t4532 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4531, main_go__599)
-        var t4533 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__586.graph
-        var t4534 string = t4533.module_dir
-        var t4535 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4534, manifest__602)
-        var t4536 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = TestLink{
-            _0: t4529,
-            _1: packages__590,
-            _2: t4532,
-            _3: t4535,
-        }
-        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__591, t4536)
-        var runner__603 string = _goml_m_std_p_path_p_join(directory__601, "runner")
-        var t4537 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__586.graph
-        var t4538 string = t4537.module_dir
-        var t4539 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4538, main_go__599)
-        var t4540 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__586.graph
-        var t4541 string = t4540.module_dir
-        var t4542 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4541, runner__603)
-        var t4543 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = GoBuild{
-            _0: t4539,
-            _1: t4542,
-        }
-        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__591, t4543)
-        var t4544 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup{
-            kind: kind__589,
-            manifest: manifest__602,
-            runner: runner__603,
-        }
-        _goml_m_inherent_i_Vec_i_Vec_l_h8d171ccd15f36d64e71454244e0235e8_ect_p_TestGroup(groups__592, t4544)
-        var t4545 Result__unit__string = Result__unit__string_Ok{
-            _0: struct{}{},
-        }
-        retv4515 = t4545
-        return retv4515
-    case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
-        var x663 string = mtmp661.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
-        var message__595 string = x663
-        var t4549 Result__unit__string = Result__unit__string_Err{
-            _0: message__595,
-        }
-        retv4515 = t4549
-        return retv4515
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_test__plan(context__604 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, kind__605 string) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
-    var retv4551 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-    var mtmp673 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__604, false)
-    var jp4553 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    switch mtmp673.(type) {
-    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok:
-        var x674 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = mtmp673.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok)._0
-        var value__606 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = x674
-        var t4600 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = value__606.commands
-        jp4553 = t4600
-        var commands__608 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4553
-        var groups__609 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
-        var t4598 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__605, "internal")
-        var jp4593 bool
-        if t4598 {
-            jp4593 = true
-        } else {
-            var t4599 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__605, "all")
-            jp4593 = t4599
-        }
-        var jp4555 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
-        if jp4593 {
-            var mtmp676 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_project_p_Graph_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_internal__test__graphs(context__604)
-            var jp4595 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
-            switch mtmp676.(type) {
-            case _goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok:
-                var x677 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = mtmp676.(_goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok)._0
-                var value__610 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x677
-                jp4595 = value__610
-                jp4555 = jp4595
-                var internal__612 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = jp4555
-                var t4556 string = context__604.artifact_root
-                var t4557 string = _goml_m_std_p_path_p_join(t4556, "test")
-                var internal_root__613 string = _goml_m_std_p_path_p_join(t4557, "internal")
-                var for_iter679 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(internal__612)
-                Loop_loop4585:
-                for {
-                    if true {
-                        var for_next680 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter679)
-                        switch for_next680.(type) {
-                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
-                            break Loop_loop4585
-                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
-                            var x681 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next680.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
-                            var graph__614 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x681
-                            var package_name__615 string = graph__614.entry_package
-                            var t4587 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                            var t4588 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4587, package_name__615)
-                            var mtmp682 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__604, graph__614, internal_root__613, "internal", t4588, commands__608, groups__609)
-                            switch mtmp682.(type) {
-                            case Result__unit__string_Ok:
-                                continue
-                            case Result__unit__string_Err:
-                                var x684 string = mtmp682.(Result__unit__string_Err)._0
-                                var message__616 string = x684
-                                var t4591 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                    _0: message__616,
-                                }
-                                retv4551 = t4591
-                                return retv4551
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                        default:
-                            panic("non-exhaustive match")
-                        }
-                    } else {
-                        break Loop_loop4585
-                    }
-                }
-                var t4583 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__605, "external")
-                var jp4578 bool
-                if t4583 {
-                    jp4578 = true
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__609 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, graph__610 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, dependency_root__611 string, output_root__612 string, compiled_dependencies__613 *hashmap_string_bool_x, commands__614 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) Result__unit__string {
+    var retv4530 Result__unit__string
+    var t4531 *_goml_vec_string = graph__610.order
+    var for_iter682 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4531)
+    Loop_loop4542:
+    for {
+        if true {
+            var for_next683 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter682)
+            switch for_next683.(type) {
+            case Option__string_None:
+                break Loop_loop4542
+            case Option__string_Some:
+                var x684 string = for_next683.(Option__string_Some)._0
+                var package_name__615 string = x684
+                var t4553 string = graph__610.entry_package
+                var t4554 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(package_name__615, t4553)
+                var jp4546 bool
+                if t4554 {
+                    jp4546 = true
                 } else {
-                    var t4584 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__605, "all")
-                    jp4578 = t4584
+                    var t4555 bool = _goml_m_inherent_i_HashMap_i_H_hdbf81e0e38a4960c760aeed8f2c2a6b4_ring____V__bool(compiled_dependencies__613, package_name__615)
+                    jp4546 = t4555
                 }
-                var jp4560 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-                if jp4578 {
-                    var mtmp686 _goml_m_Result____Vec_l_gomlan_hd4da0b341390914aa29d8e456d059110_st_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_external__test__graphs(context__604)
-                    var jp4580 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-                    switch mtmp686.(type) {
-                    case _goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok:
-                        var x687 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = mtmp686.(_goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok)._0
-                        var value__617 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x687
-                        jp4580 = value__617
-                        jp4560 = jp4580
-                        var external__619 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4560
-                        var t4561 string = context__604.artifact_root
-                        var t4562 string = _goml_m_std_p_path_p_join(t4561, "test")
-                        var external_root__620 string = _goml_m_std_p_path_p_join(t4562, "external")
-                        var for_iter689 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__619)
-                        Loop_loop4566:
-                        for {
-                            if true {
-                                var for_next690 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter689)
-                                switch for_next690.(type) {
-                                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
-                                    break Loop_loop4566
-                                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
-                                    var x691 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next690.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
-                                    var test__621 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x691
-                                    var t4568 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                                    var package_name__622 string = t4568.entry_package
-                                    var t4569 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                                    var t4570 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                                    var t4571 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4570, package_name__622)
-                                    var t4572 string = test__621.target_package
-                                    var t4573 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4571, t4572)
-                                    var mtmp692 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__604, t4569, external_root__620, "external", t4573, commands__608, groups__609)
-                                    switch mtmp692.(type) {
-                                    case Result__unit__string_Ok:
-                                        continue
-                                    case Result__unit__string_Err:
-                                        var x694 string = mtmp692.(Result__unit__string_Err)._0
-                                        var message__623 string = x694
-                                        var t4576 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                            _0: message__623,
-                                        }
-                                        retv4551 = t4576
-                                        return retv4551
-                                    default:
-                                        panic("non-exhaustive match")
-                                    }
-                                default:
-                                    panic("non-exhaustive match")
-                                }
-                            } else {
-                                break Loop_loop4566
-                            }
+                if jp4546 {
+                    continue
+                } else {
+                    var t4547 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__609.graph
+                    var t4548 string = t4547.module_dir
+                    var mtmp685 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__package__command(graph__610, t4548, package_name__615, dependency_root__611, dependency_root__611, "build")
+                    var jp4550 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+                    switch mtmp685.(type) {
+                    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok:
+                        var x686 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp685.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok)._0
+                        var value__616 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x686
+                        jp4550 = value__616
+                        var compiled__618 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4550
+                        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__614, compiled__618)
+                        _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bool(compiled_dependencies__613, package_name__615, true)
+                        continue
+                    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err:
+                        var x687 string = mtmp685.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err)._0
+                        var message__617 string = x687
+                        var t4552 Result__unit__string = Result__unit__string_Err{
+                            _0: message__617,
                         }
-                        var t4564 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-                            commands: commands__608,
-                            executable: Option__string_None{},
-                            test_groups: groups__609,
-                        }
-                        var t4565 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-                            _0: t4564,
-                        }
-                        retv4551 = t4565
-                        return retv4551
-                    case _goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err:
-                        var x688 string = mtmp686.(_goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err)._0
-                        var message__618 string = x688
-                        var t4581 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                            _0: message__618,
-                        }
-                        retv4551 = t4581
-                        return retv4551
+                        retv4530 = t4552
+                        return retv4530
                     default:
                         panic("non-exhaustive match")
                     }
-                } else {
-                    var t4582 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_hfe94218a24de949b7857b26e0738757f__p_ExternalTest()
-                    jp4560 = t4582
-                    var external__619 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4560
-                    var t4561 string = context__604.artifact_root
-                    var t4562 string = _goml_m_std_p_path_p_join(t4561, "test")
-                    var external_root__620 string = _goml_m_std_p_path_p_join(t4562, "external")
-                    var for_iter689 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__619)
-                    Loop_loop4566__2:
-                    for {
-                        if true {
-                            var for_next690 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter689)
-                            switch for_next690.(type) {
-                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
-                                break Loop_loop4566__2
-                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
-                                var x691 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next690.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
-                                var test__621 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x691
-                                var t4568 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                                var package_name__622 string = t4568.entry_package
-                                var t4569 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                                var t4570 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                                var t4571 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4570, package_name__622)
-                                var t4572 string = test__621.target_package
-                                var t4573 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4571, t4572)
-                                var mtmp692 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__604, t4569, external_root__620, "external", t4573, commands__608, groups__609)
-                                switch mtmp692.(type) {
-                                case Result__unit__string_Ok:
-                                    continue
-                                case Result__unit__string_Err:
-                                    var x694 string = mtmp692.(Result__unit__string_Err)._0
-                                    var message__623 string = x694
-                                    var t4576 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                        _0: message__623,
-                                    }
-                                    retv4551 = t4576
-                                    return retv4551
-                                default:
-                                    panic("non-exhaustive match")
-                                }
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                        } else {
-                            break Loop_loop4566__2
-                        }
-                    }
-                    var t4564 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-                        commands: commands__608,
-                        executable: Option__string_None{},
-                        test_groups: groups__609,
-                    }
-                    var t4565 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-                        _0: t4564,
-                    }
-                    retv4551 = t4565
-                    return retv4551
                 }
-            case _goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err:
-                var x678 string = mtmp676.(_goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err)._0
-                var message__611 string = x678
-                var t4596 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                    _0: message__611,
-                }
-                retv4551 = t4596
-                return retv4551
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            var t4597 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
-            jp4555 = t4597
-            var internal__612 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = jp4555
-            var t4556 string = context__604.artifact_root
-            var t4557 string = _goml_m_std_p_path_p_join(t4556, "test")
-            var internal_root__613 string = _goml_m_std_p_path_p_join(t4557, "internal")
-            var for_iter679 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(internal__612)
-            Loop_loop4585__2:
-            for {
-                if true {
-                    var for_next680 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter679)
-                    switch for_next680.(type) {
-                    case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
-                        break Loop_loop4585__2
-                    case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
-                        var x681 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next680.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
-                        var graph__614 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x681
-                        var package_name__615 string = graph__614.entry_package
-                        var t4587 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                        var t4588 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4587, package_name__615)
-                        var mtmp682 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__604, graph__614, internal_root__613, "internal", t4588, commands__608, groups__609)
-                        switch mtmp682.(type) {
-                        case Result__unit__string_Ok:
-                            continue
-                        case Result__unit__string_Err:
-                            var x684 string = mtmp682.(Result__unit__string_Err)._0
-                            var message__616 string = x684
-                            var t4591 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                _0: message__616,
-                            }
-                            retv4551 = t4591
-                            return retv4551
-                        default:
-                            panic("non-exhaustive match")
-                        }
-                    default:
-                        panic("non-exhaustive match")
-                    }
-                } else {
-                    break Loop_loop4585__2
-                }
-            }
-            var t4583 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__605, "external")
-            var jp4578 bool
-            if t4583 {
-                jp4578 = true
-            } else {
-                var t4584 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__605, "all")
-                jp4578 = t4584
-            }
-            var jp4560 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-            if jp4578 {
-                var mtmp686 _goml_m_Result____Vec_l_gomlan_hd4da0b341390914aa29d8e456d059110_st_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_external__test__graphs(context__604)
-                var jp4580 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-                switch mtmp686.(type) {
-                case _goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok:
-                    var x687 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = mtmp686.(_goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok)._0
-                    var value__617 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x687
-                    jp4580 = value__617
-                    jp4560 = jp4580
-                    var external__619 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4560
-                    var t4561 string = context__604.artifact_root
-                    var t4562 string = _goml_m_std_p_path_p_join(t4561, "test")
-                    var external_root__620 string = _goml_m_std_p_path_p_join(t4562, "external")
-                    var for_iter689 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__619)
-                    Loop_loop4566__3:
-                    for {
-                        if true {
-                            var for_next690 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter689)
-                            switch for_next690.(type) {
-                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
-                                break Loop_loop4566__3
-                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
-                                var x691 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next690.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
-                                var test__621 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x691
-                                var t4568 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                                var package_name__622 string = t4568.entry_package
-                                var t4569 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                                var t4570 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                                var t4571 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4570, package_name__622)
-                                var t4572 string = test__621.target_package
-                                var t4573 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4571, t4572)
-                                var mtmp692 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__604, t4569, external_root__620, "external", t4573, commands__608, groups__609)
-                                switch mtmp692.(type) {
-                                case Result__unit__string_Ok:
-                                    continue
-                                case Result__unit__string_Err:
-                                    var x694 string = mtmp692.(Result__unit__string_Err)._0
-                                    var message__623 string = x694
-                                    var t4576 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                        _0: message__623,
-                                    }
-                                    retv4551 = t4576
-                                    return retv4551
-                                default:
-                                    panic("non-exhaustive match")
-                                }
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                        } else {
-                            break Loop_loop4566__3
-                        }
-                    }
-                    var t4564 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-                        commands: commands__608,
-                        executable: Option__string_None{},
-                        test_groups: groups__609,
-                    }
-                    var t4565 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-                        _0: t4564,
-                    }
-                    retv4551 = t4565
-                    return retv4551
-                case _goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err:
-                    var x688 string = mtmp686.(_goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err)._0
-                    var message__618 string = x688
-                    var t4581 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                        _0: message__618,
-                    }
-                    retv4551 = t4581
-                    return retv4551
-                default:
-                    panic("non-exhaustive match")
-                }
-            } else {
-                var t4582 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_hfe94218a24de949b7857b26e0738757f__p_ExternalTest()
-                jp4560 = t4582
-                var external__619 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4560
-                var t4561 string = context__604.artifact_root
-                var t4562 string = _goml_m_std_p_path_p_join(t4561, "test")
-                var external_root__620 string = _goml_m_std_p_path_p_join(t4562, "external")
-                var for_iter689 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__619)
-                Loop_loop4566__4:
-                for {
-                    if true {
-                        var for_next690 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter689)
-                        switch for_next690.(type) {
-                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
-                            break Loop_loop4566__4
-                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
-                            var x691 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next690.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
-                            var test__621 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x691
-                            var t4568 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                            var package_name__622 string = t4568.entry_package
-                            var t4569 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__621.graph
-                            var t4570 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-                            var t4571 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4570, package_name__622)
-                            var t4572 string = test__621.target_package
-                            var t4573 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4571, t4572)
-                            var mtmp692 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__graph(context__604, t4569, external_root__620, "external", t4573, commands__608, groups__609)
-                            switch mtmp692.(type) {
-                            case Result__unit__string_Ok:
-                                continue
-                            case Result__unit__string_Err:
-                                var x694 string = mtmp692.(Result__unit__string_Err)._0
-                                var message__623 string = x694
-                                var t4576 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-                                    _0: message__623,
-                                }
-                                retv4551 = t4576
-                                return retv4551
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                        default:
-                            panic("non-exhaustive match")
-                        }
-                    } else {
-                        break Loop_loop4566__4
-                    }
-                }
-                var t4564 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
-                    commands: commands__608,
-                    executable: Option__string_None{},
-                    test_groups: groups__609,
-                }
-                var t4565 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
-                    _0: t4564,
-                }
-                retv4551 = t4565
-                return retv4551
-            }
+            break Loop_loop4542
         }
-    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err:
-        var x675 string = mtmp673.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err)._0
-        var message__607 string = x675
-        var t4601 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
-            _0: message__607,
+    }
+    var t4533 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__609.graph
+    var t4534 string = t4533.module_dir
+    var t4535 string = graph__610.entry_package
+    var t4536 string = graph__610.entry_package
+    var t4537 bool = _goml_m_inherent_i_HashMap_i_H_hdbf81e0e38a4960c760aeed8f2c2a6b4_ring____V__bool(compiled_dependencies__613, t4536)
+    var mtmp690 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__test__package__command(graph__610, t4534, t4535, dependency_root__611, output_root__612, t4537)
+    var jp4539 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    switch mtmp690.(type) {
+    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok:
+        var x691 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp690.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Ok)._0
+        var value__619 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x691
+        jp4539 = value__619
+        var compiled__621 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4539
+        _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__614, compiled__621)
+        var t4540 Result__unit__string = Result__unit__string_Ok{
+            _0: struct{}{},
         }
-        retv4551 = t4601
-        return retv4551
+        retv4530 = t4540
+        return retv4530
+    case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err:
+        var x692 string = mtmp690.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Command____string_Err)._0
+        var message__620 string = x692
+        var t4541 Result__unit__string = Result__unit__string_Err{
+            _0: message__620,
+        }
+        retv4530 = t4541
+        return retv4530
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(program__624 string, args__625 *_goml_vec_string) string {
-    var retv4603 string
-    var result__626 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(program__624)
-    var for_iter696 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(args__625)
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__622 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, graphs__623 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, dependency_root__624 string, output_root__625 string, kind__626 string, packages__627 *_goml_vec_string, commands__628 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command, groups__629 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup) struct{} {
+    var test_packages__630 *hashmap_string_bool_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__bool()
+    var for_iter694 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(graphs__623)
     Loop_loop4606:
     for {
         if true {
-            var for_next697 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter696)
-            switch for_next697.(type) {
-            case Option__string_None:
+            var for_next695 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter694)
+            switch for_next695.(type) {
+            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
                 break Loop_loop4606
-            case Option__string_Some:
-                var x698 string = for_next697.(Option__string_Some)._0
-                var argument__627 string = x698
-                var t4608 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__626)
-                var t4609 string = t4608 + " "
-                var t4610 string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_shell__escape(argument__627)
-                var t4611 string = t4609 + t4610
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__626, t4611)
+            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
+                var x696 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next695.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
+                var graph__631 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x696
+                var t4608 string = graph__631.entry_package
+                _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bool(test_packages__630, t4608, true)
                 continue
             default:
                 panic("non-exhaustive match")
@@ -17244,476 +16919,1265 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(program__624 st
             break Loop_loop4606
         }
     }
-    var t4605 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__626)
-    retv4603 = t4605
-    return retv4603
+    var input_cores__632 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+    var added__633 *hashmap_string_bool_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__bool()
+    var t4558 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+    var t4559 *_goml_vec_string = t4558.order
+    var for_iter698 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4559)
+    Loop_loop4594:
+    for {
+        if true {
+            var for_next699 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter698)
+            switch for_next699.(type) {
+            case Option__string_None:
+                break Loop_loop4594
+            case Option__string_Some:
+                var x700 string = for_next699.(Option__string_Some)._0
+                var package_name__634 string = x700
+                var t4605 bool = _goml_m_inherent_i_HashMap_i_H_hdbf81e0e38a4960c760aeed8f2c2a6b4_ring____V__bool(test_packages__630, package_name__634)
+                var jp4597 string
+                if t4605 {
+                    jp4597 = output_root__625
+                } else {
+                    jp4597 = dependency_root__624
+                }
+                var root__635 string = jp4597
+                var t4598 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+                var t4599 string = t4598.module_dir
+                var t4600 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+                var t4601 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(root__635, t4600, package_name__634)
+                var t4602 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_extension(t4601, "core")
+                var t4603 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4599, t4602)
+                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(input_cores__632, t4603)
+                _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bool(added__633, package_name__634, true)
+                continue
+            default:
+                panic("non-exhaustive match")
+            }
+        } else {
+            break Loop_loop4594
+        }
+    }
+    var for_iter703 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(graphs__623)
+    Loop_loop4577:
+    for {
+        if true {
+            var for_next704 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter703)
+            switch for_next704.(type) {
+            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
+                break Loop_loop4577
+            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
+                var x705 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next704.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
+                var graph__636 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x705
+                var t4579 *_goml_vec_string = graph__636.order
+                var for_iter706 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4579)
+                Loop_loop4581:
+                for {
+                    if true {
+                        var for_next707 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter706)
+                        switch for_next707.(type) {
+                        case Option__string_None:
+                            break Loop_loop4581
+                        case Option__string_Some:
+                            var x708 string = for_next707.(Option__string_Some)._0
+                            var package_name__637 string = x708
+                            var t4584 bool = _goml_m_inherent_i_HashMap_i_H_hdbf81e0e38a4960c760aeed8f2c2a6b4_ring____V__bool(added__633, package_name__637)
+                            if t4584 {} else {
+                                var t4593 bool = _goml_m_inherent_i_HashMap_i_H_hdbf81e0e38a4960c760aeed8f2c2a6b4_ring____V__bool(test_packages__630, package_name__637)
+                                var jp4586 string
+                                if t4593 {
+                                    jp4586 = output_root__625
+                                } else {
+                                    jp4586 = dependency_root__624
+                                }
+                                var root__638 string = jp4586
+                                var t4587 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+                                var t4588 string = t4587.module_dir
+                                var t4589 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_package__artifact__base(root__638, graph__636, package_name__637)
+                                var t4590 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_extension(t4589, "core")
+                                var t4591 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4588, t4590)
+                                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(input_cores__632, t4591)
+                                _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bool(added__633, package_name__637, true)
+                            }
+                            continue
+                        default:
+                            panic("non-exhaustive match")
+                        }
+                    } else {
+                        break Loop_loop4581
+                    }
+                }
+                continue
+            default:
+                panic("non-exhaustive match")
+            }
+        } else {
+            break Loop_loop4577
+        }
+    }
+    var main_go__639 string = _goml_m_std_p_path_p_join(output_root__625, "goml_generated.go")
+    var manifest__640 string = _goml_m_std_p_path_p_join(output_root__625, "tests.json")
+    var t4562 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+    var t4563 string = t4562.module_dir
+    var t4564 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4563, main_go__639)
+    var t4565 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+    var t4566 string = t4565.module_dir
+    var t4567 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4566, manifest__640)
+    var t4568 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = TestLink{
+        _0: input_cores__632,
+        _1: packages__627,
+        _2: t4564,
+        _3: t4567,
+    }
+    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__628, t4568)
+    var runner__641 string = _goml_m_std_p_path_p_join(output_root__625, "runner")
+    var t4569 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+    var t4570 string = t4569.module_dir
+    var t4571 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4570, main_go__639)
+    var t4572 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__622.graph
+    var t4573 string = t4572.module_dir
+    var t4574 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4573, runner__641)
+    var t4575 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = GoBuild{
+        _0: t4571,
+        _1: t4574,
+    }
+    _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(commands__628, t4575)
+    var t4576 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup{
+        kind: kind__626,
+        manifest: manifest__640,
+        runner: runner__641,
+    }
+    _goml_m_inherent_i_Vec_i_Vec_l_h8d171ccd15f36d64e71454244e0235e8_ect_p_TestGroup(groups__629, t4576)
+    return struct{}{}
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__args(value__628 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) Tuple2_6string_11Vec_6string {
-    var retv4614 Tuple2_6string_11Vec_6string
-    var jp4616 Tuple2_6string_11Vec_6string
-    switch value__628.(type) {
-    case Compile:
-        var x700 string = value__628.(Compile)._0
-        var x701 string = value__628.(Compile)._1
-        var x702 *_goml_vec_string = value__628.(Compile)._2
-        var x703 *_goml_vec_string = value__628.(Compile)._3
-        var x704 string = value__628.(Compile)._4
-        var output__633 string = x704
-        var interface_files__632 *_goml_vec_string = x703
-        var input_files__631 *_goml_vec_string = x702
-        var package_name__630 string = x701
-        var subcommand__629 string = x700
-        var args__634 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, subcommand__629)
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, "--package")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, package_name__630)
-        var for_iter717 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(input_files__631)
-        Loop_loop4623:
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_test__plan(context__642 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, kind__643 string) _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string {
+    var retv4611 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+    var t4612 string = context__642.artifact_root
+    var t4613 string = _goml_m_std_p_path_p_join(t4612, "test")
+    var dependency_root__644 string = _goml_m_std_p_path_p_join(t4613, "base")
+    var mtmp714 _goml_m_Result____Vec_l_gomlan_h87ce76a0e854e1f12d6142acdad653df_nd_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compile__commands(context__642, dependency_root__644, "build", "build")
+    var jp4615 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    switch mtmp714.(type) {
+    case _goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok:
+        var x715 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = mtmp714.(_goml_m_Result____Vec_l_gomlan_h57c64786fbfbb55dc2efc1c017b6d4d4_r_____string_Ok)._0
+        var value__645 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x715
+        jp4615 = value__645
+        var commands__647 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = jp4615
+        var compiled_dependencies__648 *hashmap_string_bool_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__bool()
+        var t4616 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__642.graph
+        var t4617 *_goml_vec_string = t4616.order
+        var for_iter717 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(t4617)
+        Loop_loop4671:
         for {
             if true {
                 var for_next718 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter717)
                 switch for_next718.(type) {
                 case Option__string_None:
-                    break Loop_loop4623
+                    break Loop_loop4671
                 case Option__string_Some:
                     var x719 string = for_next718.(Option__string_Some)._0
-                    var input__635 string = x719
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, "--input")
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, input__635)
+                    var package_name__649 string = x719
+                    _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bool(compiled_dependencies__648, package_name__649, true)
                     continue
                 default:
                     panic("non-exhaustive match")
                 }
             } else {
-                break Loop_loop4623
+                break Loop_loop4671
             }
         }
-        var for_iter722 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(interface_files__632)
-        Loop_loop4620:
-        for {
-            if true {
-                var for_next723 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter722)
-                switch for_next723.(type) {
-                case Option__string_None:
-                    break Loop_loop4620
-                case Option__string_Some:
-                    var x724 string = for_next723.(Option__string_Some)._0
-                    var interface__636 string = x724
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, "--interface-path")
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, interface__636)
-                    continue
-                default:
-                    panic("non-exhaustive match")
-                }
-            } else {
-                break Loop_loop4620
-            }
-        }
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, "--output")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__634, output__633)
-        var t4619 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
-            _0: "gomlc",
-            _1: args__634,
-        }
-        jp4616 = t4619
-        retv4614 = jp4616
-        return retv4614
-    case Link:
-        var x705 *_goml_vec_string = value__628.(Link)._0
-        var x706 string = value__628.(Link)._1
-        var x707 string = value__628.(Link)._2
-        var output__639 string = x707
-        var entry_package__638 string = x706
-        var input_cores__637 *_goml_vec_string = x705
-        var args__640 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, "link")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, "--input")
-        var for_iter731 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(input_cores__637)
-        Loop_loop4628:
-        for {
-            if true {
-                var for_next732 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter731)
-                switch for_next732.(type) {
-                case Option__string_None:
-                    break Loop_loop4628
-                case Option__string_Some:
-                    var x733 string = for_next732.(Option__string_Some)._0
-                    var input__641 string = x733
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, input__641)
-                    continue
-                default:
-                    panic("non-exhaustive match")
-                }
-            } else {
-                break Loop_loop4628
-            }
-        }
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, "--output")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, output__639)
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, "--entry")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__640, entry_package__638)
-        var t4627 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
-            _0: "gomlc",
-            _1: args__640,
-        }
-        jp4616 = t4627
-        retv4614 = jp4616
-        return retv4614
-    case TestLink:
-        var x708 *_goml_vec_string = value__628.(TestLink)._0
-        var x709 *_goml_vec_string = value__628.(TestLink)._1
-        var x710 string = value__628.(TestLink)._2
-        var x711 string = value__628.(TestLink)._3
-        var manifest__645 string = x711
-        var output__644 string = x710
-        var packages__643 *_goml_vec_string = x709
-        var input_cores__642 *_goml_vec_string = x708
-        var args__646 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, "test-link")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, "--input")
-        var for_iter741 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(input_cores__642)
-        Loop_loop4637:
-        for {
-            if true {
-                var for_next742 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter741)
-                switch for_next742.(type) {
-                case Option__string_None:
-                    break Loop_loop4637
-                case Option__string_Some:
-                    var x743 string = for_next742.(Option__string_Some)._0
-                    var input__647 string = x743
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, input__647)
-                    continue
-                default:
-                    panic("non-exhaustive match")
-                }
-            } else {
-                break Loop_loop4637
-            }
-        }
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, "--output")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, output__644)
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, "--manifest")
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, manifest__645)
-        var for_iter749 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(packages__643)
-        Loop_loop4634:
-        for {
-            if true {
-                var for_next750 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter749)
-                switch for_next750.(type) {
-                case Option__string_None:
-                    break Loop_loop4634
-                case Option__string_Some:
-                    var x751 string = for_next750.(Option__string_Some)._0
-                    var package_name__648 string = x751
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, "--package")
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__646, package_name__648)
-                    continue
-                default:
-                    panic("non-exhaustive match")
-                }
-            } else {
-                break Loop_loop4634
-            }
-        }
-        var t4633 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
-            _0: "gomlc",
-            _1: args__646,
-        }
-        jp4616 = t4633
-        retv4614 = jp4616
-        return retv4614
-    case GoBuild:
-        var x712 string = value__628.(GoBuild)._0
-        var x713 string = value__628.(GoBuild)._1
-        var output__650 string = x713
-        var input__649 string = x712
-        var t4640 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
-        var t4641 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4640, "build")
-        var t4642 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4641, "-o")
-        var t4643 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4642, output__650)
-        var t4644 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4643, input__649)
-        var t4645 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
-            _0: "go",
-            _1: t4644,
-        }
-        jp4616 = t4645
-        retv4614 = jp4616
-        return retv4614
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(value__651 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) string {
-    var retv4647 string
-    var command__652 Tuple2_6string_11Vec_6string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__args(value__651)
-    var t4648 string = command__652._0
-    var t4649 *_goml_vec_string = command__652._1
-    var t4650 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(t4648, t4649)
-    retv4647 = t4650
-    return retv4647
-}
-
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_ensure__output__parent(value__653 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command, module_dir__654 string) Result__unit__string {
-    var retv4652 Result__unit__string
-    var jp4654 string
-    switch value__653.(type) {
-    case Compile:
-        var x758 string = value__653.(Compile)._4
-        var output__655 string = x758
-        jp4654 = output__655
-    case Link:
-        var x761 string = value__653.(Link)._2
-        var output__655 string = x761
-        jp4654 = output__655
-    case TestLink:
-        var x764 string = value__653.(TestLink)._2
-        var output__655 string = x764
-        jp4654 = output__655
-    case GoBuild:
-        var x767 string = value__653.(GoBuild)._1
-        var output__655 string = x767
-        jp4654 = output__655
-    default:
-        panic("non-exhaustive match")
-    }
-    var output__656 string = jp4654
-    var t4661 bool = _goml_m_std_p_path_p_is__absolute(output__656)
-    var jp4656 string
-    if t4661 {
-        jp4656 = output__656
-    } else {
-        var t4662 string = _goml_m_std_p_path_p_join(module_dir__654, output__656)
-        jp4656 = t4662
-    }
-    var absolute__657 string = jp4656
-    var mtmp768 Option__string = _goml_m_std_p_path_p_parent(absolute__657)
-    var jp4658 Result__unit__string
-    switch mtmp768.(type) {
-    case Option__string_None:
-        var t4659 Result__unit__string = Result__unit__string_Ok{
-            _0: struct{}{},
-        }
-        jp4658 = t4659
-    case Option__string_Some:
-        var x769 string = mtmp768.(Option__string_Some)._0
-        var parent__658 string = x769
-        var t4660 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all(parent__658)
-        jp4658 = t4660
-    default:
-        panic("non-exhaustive match")
-    }
-    retv4652 = jp4658
-    return retv4652
-}
-
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__659 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, value__660 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) Result__unit__string {
-    var retv4664 Result__unit__string
-    var t4665 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__659.graph
-    var t4666 string = t4665.module_dir
-    var mtmp770 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_ensure__output__parent(value__660, t4666)
-    switch mtmp770.(type) {
-    case Result__unit__string_Ok:
-        var command__662 Tuple2_6string_11Vec_6string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__args(value__660)
-        var t4688 string = command__662._0
-        var t4689 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t4688, "gomlc")
-        var jp4669 string
-        if t4689 {
-            var t4690 string = context__659.compiler
-            jp4669 = t4690
+        var groups__650 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup()
+        var t4669 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__643, "internal")
+        var jp4664 bool
+        if t4669 {
+            jp4664 = true
         } else {
-            var t4691 string = command__662._0
-            jp4669 = t4691
+            var t4670 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__643, "all")
+            jp4664 = t4670
         }
-        var program__663 string = jp4669
-        var t4670 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_new(program__663)
-        var t4671 *_goml_vec_string = command__662._1
-        var t4672 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_args(t4670, t4671)
-        var t4673 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__659.graph
-        var t4674 string = t4673.module_dir
-        var process__664 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_proce_he5cdac0306b860454965a02455d27d39__i_current__dir(t4672, t4674)
-        var t4686 string = command__662._0
-        var t4687 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t4686, "go")
-        if t4687 {
-            _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_env(process__664, "GOWORK", "off")
-            _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_env(process__664, "GO111MODULE", "off")
-        } else {}
-        var mtmp777 _goml_m_Result____std_p_process_p_ExitStatus____string = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_status(process__664)
-        var jp4677 Result__unit__string
-        switch mtmp777.(type) {
-        case _goml_m_Result____std_p_process_p_ExitStatus____string_Ok:
-            var x778 _goml_m_std_p_process_p_ExitStatus = mtmp777.(_goml_m_Result____std_p_process_p_ExitStatus____string_Ok)._0
-            var status__665 _goml_m_std_p_process_p_ExitStatus = x778
-            var t4680 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(status__665)
-            var jp4679 Result__unit__string
-            if t4680 {
-                var t4681 Result__unit__string = Result__unit__string_Ok{
-                    _0: struct{}{},
+        var jp4620 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
+        if jp4664 {
+            var mtmp721 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_project_p_Graph_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_internal__test__graphs(context__642)
+            var jp4666 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
+            switch mtmp721.(type) {
+            case _goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok:
+                var x722 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = mtmp721.(_goml_m_Result____Vec_l_gomlan_he1be6f60529909f93c86d92dae55c501_r_____string_Ok)._0
+                var value__651 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x722
+                jp4666 = value__651
+                jp4620 = jp4666
+                var internal__653 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = jp4620
+                var t4621 string = context__642.artifact_root
+                var t4622 string = _goml_m_std_p_path_p_join(t4621, "test")
+                var internal_root__654 string = _goml_m_std_p_path_p_join(t4622, "internal")
+                var internal_graphs__655 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+                var internal_packages__656 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+                var for_iter724 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(internal__653)
+                Loop_loop4657:
+                for {
+                    if true {
+                        var for_next725 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter724)
+                        switch for_next725.(type) {
+                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
+                            break Loop_loop4657
+                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
+                            var x726 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next725.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
+                            var graph__657 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x726
+                            var package_name__658 string = graph__657.entry_package
+                            var mtmp727 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__642, graph__657, dependency_root__644, internal_root__654, compiled_dependencies__648, commands__647)
+                            switch mtmp727.(type) {
+                            case Result__unit__string_Ok:
+                                _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(internal_graphs__655, graph__657)
+                                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(internal_packages__656, package_name__658)
+                                continue
+                            case Result__unit__string_Err:
+                                var x729 string = mtmp727.(Result__unit__string_Err)._0
+                                var message__659 string = x729
+                                var t4662 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                    _0: message__659,
+                                }
+                                retv4611 = t4662
+                                return retv4611
+                            default:
+                                panic("non-exhaustive match")
+                            }
+                        default:
+                            panic("non-exhaustive match")
+                        }
+                    } else {
+                        break Loop_loop4657
+                    }
                 }
-                jp4679 = t4681
+                var t4654 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(internal_graphs__655)
+                var t4655 bool = t4654 > 0
+                if t4655 {
+                    _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__642, internal_graphs__655, dependency_root__644, internal_root__654, "internal", internal_packages__656, commands__647, groups__650)
+                } else {}
+                var t4652 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__643, "external")
+                var jp4647 bool
+                if t4652 {
+                    jp4647 = true
+                } else {
+                    var t4653 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__643, "all")
+                    jp4647 = t4653
+                }
+                var jp4626 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+                if jp4647 {
+                    var mtmp733 _goml_m_Result____Vec_l_gomlan_hd4da0b341390914aa29d8e456d059110_st_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_external__test__graphs(context__642)
+                    var jp4649 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+                    switch mtmp733.(type) {
+                    case _goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok:
+                        var x734 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = mtmp733.(_goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok)._0
+                        var value__660 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x734
+                        jp4649 = value__660
+                        jp4626 = jp4649
+                        var external__662 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4626
+                        var t4627 string = context__642.artifact_root
+                        var t4628 string = _goml_m_std_p_path_p_join(t4627, "test")
+                        var external_root__663 string = _goml_m_std_p_path_p_join(t4628, "external")
+                        var external_graphs__664 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+                        var external_packages__665 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+                        var for_iter736 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__662)
+                        Loop_loop4636:
+                        for {
+                            if true {
+                                var for_next737 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter736)
+                                switch for_next737.(type) {
+                                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
+                                    break Loop_loop4636
+                                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
+                                    var x738 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next737.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
+                                    var test__666 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x738
+                                    var t4638 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                    var package_name__667 string = t4638.entry_package
+                                    var t4639 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                    var mtmp739 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__642, t4639, dependency_root__644, external_root__663, compiled_dependencies__648, commands__647)
+                                    switch mtmp739.(type) {
+                                    case Result__unit__string_Ok:
+                                        var t4642 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                        _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(external_graphs__664, t4642)
+                                        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, package_name__667)
+                                        var t4643 string = test__666.target_package
+                                        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, t4643)
+                                        continue
+                                    case Result__unit__string_Err:
+                                        var x741 string = mtmp739.(Result__unit__string_Err)._0
+                                        var message__668 string = x741
+                                        var t4645 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                            _0: message__668,
+                                        }
+                                        retv4611 = t4645
+                                        return retv4611
+                                    default:
+                                        panic("non-exhaustive match")
+                                    }
+                                default:
+                                    panic("non-exhaustive match")
+                                }
+                            } else {
+                                break Loop_loop4636
+                            }
+                        }
+                        var t4633 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(external_graphs__664)
+                        var t4634 bool = t4633 > 0
+                        if t4634 {
+                            _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__642, external_graphs__664, dependency_root__644, external_root__663, "external", external_packages__665, commands__647, groups__650)
+                        } else {}
+                        var t4631 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+                            commands: commands__647,
+                            executable: Option__string_None{},
+                            test_groups: groups__650,
+                        }
+                        var t4632 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+                            _0: t4631,
+                        }
+                        retv4611 = t4632
+                        return retv4611
+                    case _goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err:
+                        var x735 string = mtmp733.(_goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err)._0
+                        var message__661 string = x735
+                        var t4650 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                            _0: message__661,
+                        }
+                        retv4611 = t4650
+                        return retv4611
+                    default:
+                        panic("non-exhaustive match")
+                    }
+                } else {
+                    var t4651 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_hfe94218a24de949b7857b26e0738757f__p_ExternalTest()
+                    jp4626 = t4651
+                    var external__662 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4626
+                    var t4627 string = context__642.artifact_root
+                    var t4628 string = _goml_m_std_p_path_p_join(t4627, "test")
+                    var external_root__663 string = _goml_m_std_p_path_p_join(t4628, "external")
+                    var external_graphs__664 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+                    var external_packages__665 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+                    var for_iter736 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__662)
+                    Loop_loop4636__2:
+                    for {
+                        if true {
+                            var for_next737 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter736)
+                            switch for_next737.(type) {
+                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
+                                break Loop_loop4636__2
+                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
+                                var x738 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next737.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
+                                var test__666 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x738
+                                var t4638 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                var package_name__667 string = t4638.entry_package
+                                var t4639 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                var mtmp739 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__642, t4639, dependency_root__644, external_root__663, compiled_dependencies__648, commands__647)
+                                switch mtmp739.(type) {
+                                case Result__unit__string_Ok:
+                                    var t4642 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                    _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(external_graphs__664, t4642)
+                                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, package_name__667)
+                                    var t4643 string = test__666.target_package
+                                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, t4643)
+                                    continue
+                                case Result__unit__string_Err:
+                                    var x741 string = mtmp739.(Result__unit__string_Err)._0
+                                    var message__668 string = x741
+                                    var t4645 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                        _0: message__668,
+                                    }
+                                    retv4611 = t4645
+                                    return retv4611
+                                default:
+                                    panic("non-exhaustive match")
+                                }
+                            default:
+                                panic("non-exhaustive match")
+                            }
+                        } else {
+                            break Loop_loop4636__2
+                        }
+                    }
+                    var t4633 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(external_graphs__664)
+                    var t4634 bool = t4633 > 0
+                    if t4634 {
+                        _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__642, external_graphs__664, dependency_root__644, external_root__663, "external", external_packages__665, commands__647, groups__650)
+                    } else {}
+                    var t4631 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+                        commands: commands__647,
+                        executable: Option__string_None{},
+                        test_groups: groups__650,
+                    }
+                    var t4632 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+                        _0: t4631,
+                    }
+                    retv4611 = t4632
+                    return retv4611
+                }
+            case _goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err:
+                var x723 string = mtmp721.(_goml_m_Result____Vec_l_gomlan_h23979152fedeb02cf33869c4a7f03bad______string_Err)._0
+                var message__652 string = x723
+                var t4667 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                    _0: message__652,
+                }
+                retv4611 = t4667
+                return retv4611
+            default:
+                panic("non-exhaustive match")
+            }
+        } else {
+            var t4668 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+            jp4620 = t4668
+            var internal__653 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = jp4620
+            var t4621 string = context__642.artifact_root
+            var t4622 string = _goml_m_std_p_path_p_join(t4621, "test")
+            var internal_root__654 string = _goml_m_std_p_path_p_join(t4622, "internal")
+            var internal_graphs__655 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+            var internal_packages__656 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+            var for_iter724 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(internal__653)
+            Loop_loop4657__2:
+            for {
+                if true {
+                    var for_next725 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(for_iter724)
+                    switch for_next725.(type) {
+                    case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None:
+                        break Loop_loop4657__2
+                    case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some:
+                        var x726 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = for_next725.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some)._0
+                        var graph__657 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = x726
+                        var package_name__658 string = graph__657.entry_package
+                        var mtmp727 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__642, graph__657, dependency_root__644, internal_root__654, compiled_dependencies__648, commands__647)
+                        switch mtmp727.(type) {
+                        case Result__unit__string_Ok:
+                            _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(internal_graphs__655, graph__657)
+                            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(internal_packages__656, package_name__658)
+                            continue
+                        case Result__unit__string_Err:
+                            var x729 string = mtmp727.(Result__unit__string_Err)._0
+                            var message__659 string = x729
+                            var t4662 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                _0: message__659,
+                            }
+                            retv4611 = t4662
+                            return retv4611
+                        default:
+                            panic("non-exhaustive match")
+                        }
+                    default:
+                        panic("non-exhaustive match")
+                    }
+                } else {
+                    break Loop_loop4657__2
+                }
+            }
+            var t4654 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(internal_graphs__655)
+            var t4655 bool = t4654 > 0
+            if t4655 {
+                _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__642, internal_graphs__655, dependency_root__644, internal_root__654, "internal", internal_packages__656, commands__647, groups__650)
+            } else {}
+            var t4652 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__643, "external")
+            var jp4647 bool
+            if t4652 {
+                jp4647 = true
             } else {
-                var t4682 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(value__660)
-                var t4683 string = t4682 + " failed"
-                var t4684 Result__unit__string = Result__unit__string_Err{
-                    _0: t4683,
+                var t4653 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(kind__643, "all")
+                jp4647 = t4653
+            }
+            var jp4626 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+            if jp4647 {
+                var mtmp733 _goml_m_Result____Vec_l_gomlan_hd4da0b341390914aa29d8e456d059110_st_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_external__test__graphs(context__642)
+                var jp4649 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+                switch mtmp733.(type) {
+                case _goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok:
+                    var x734 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = mtmp733.(_goml_m_Result____Vec_l_gomlan_hdf3366a5ecfc00c6e94a45fd3cbdb941_r_____string_Ok)._0
+                    var value__660 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x734
+                    jp4649 = value__660
+                    jp4626 = jp4649
+                    var external__662 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4626
+                    var t4627 string = context__642.artifact_root
+                    var t4628 string = _goml_m_std_p_path_p_join(t4627, "test")
+                    var external_root__663 string = _goml_m_std_p_path_p_join(t4628, "external")
+                    var external_graphs__664 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+                    var external_packages__665 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+                    var for_iter736 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__662)
+                    Loop_loop4636__3:
+                    for {
+                        if true {
+                            var for_next737 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter736)
+                            switch for_next737.(type) {
+                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
+                                break Loop_loop4636__3
+                            case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
+                                var x738 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next737.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
+                                var test__666 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x738
+                                var t4638 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                var package_name__667 string = t4638.entry_package
+                                var t4639 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                var mtmp739 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__642, t4639, dependency_root__644, external_root__663, compiled_dependencies__648, commands__647)
+                                switch mtmp739.(type) {
+                                case Result__unit__string_Ok:
+                                    var t4642 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                    _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(external_graphs__664, t4642)
+                                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, package_name__667)
+                                    var t4643 string = test__666.target_package
+                                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, t4643)
+                                    continue
+                                case Result__unit__string_Err:
+                                    var x741 string = mtmp739.(Result__unit__string_Err)._0
+                                    var message__668 string = x741
+                                    var t4645 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                        _0: message__668,
+                                    }
+                                    retv4611 = t4645
+                                    return retv4611
+                                default:
+                                    panic("non-exhaustive match")
+                                }
+                            default:
+                                panic("non-exhaustive match")
+                            }
+                        } else {
+                            break Loop_loop4636__3
+                        }
+                    }
+                    var t4633 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(external_graphs__664)
+                    var t4634 bool = t4633 > 0
+                    if t4634 {
+                        _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__642, external_graphs__664, dependency_root__644, external_root__663, "external", external_packages__665, commands__647, groups__650)
+                    } else {}
+                    var t4631 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+                        commands: commands__647,
+                        executable: Option__string_None{},
+                        test_groups: groups__650,
+                    }
+                    var t4632 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+                        _0: t4631,
+                    }
+                    retv4611 = t4632
+                    return retv4611
+                case _goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err:
+                    var x735 string = mtmp733.(_goml_m_Result____Vec_l_gomlan_hc3f2381a4756719b33d1f1a4e5182b94______string_Err)._0
+                    var message__661 string = x735
+                    var t4650 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                        _0: message__661,
+                    }
+                    retv4611 = t4650
+                    return retv4611
+                default:
+                    panic("non-exhaustive match")
                 }
-                jp4679 = t4684
+            } else {
+                var t4651 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_hfe94218a24de949b7857b26e0738757f__p_ExternalTest()
+                jp4626 = t4651
+                var external__662 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = jp4626
+                var t4627 string = context__642.artifact_root
+                var t4628 string = _goml_m_std_p_path_p_join(t4627, "test")
+                var external_root__663 string = _goml_m_std_p_path_p_join(t4628, "external")
+                var external_graphs__664 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph()
+                var external_packages__665 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+                var for_iter736 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(external__662)
+                Loop_loop4636__4:
+                for {
+                    if true {
+                        var for_next737 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(for_iter736)
+                        switch for_next737.(type) {
+                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None:
+                            break Loop_loop4636__4
+                        case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some:
+                            var x738 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = for_next737.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some)._0
+                            var test__666 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = x738
+                            var t4638 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                            var package_name__667 string = t4638.entry_package
+                            var t4639 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                            var mtmp739 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__package(context__642, t4639, dependency_root__644, external_root__663, compiled_dependencies__648, commands__647)
+                            switch mtmp739.(type) {
+                            case Result__unit__string_Ok:
+                                var t4642 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = test__666.graph
+                                _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(external_graphs__664, t4642)
+                                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, package_name__667)
+                                var t4643 string = test__666.target_package
+                                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(external_packages__665, t4643)
+                                continue
+                            case Result__unit__string_Err:
+                                var x741 string = mtmp739.(Result__unit__string_Err)._0
+                                var message__668 string = x741
+                                var t4645 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+                                    _0: message__668,
+                                }
+                                retv4611 = t4645
+                                return retv4611
+                            default:
+                                panic("non-exhaustive match")
+                            }
+                        default:
+                            panic("non-exhaustive match")
+                        }
+                    } else {
+                        break Loop_loop4636__4
+                    }
+                }
+                var t4633 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(external_graphs__664)
+                var t4634 bool = t4633 > 0
+                if t4634 {
+                    _goml_m_gomlang_p_bootstrap__goml_p_project_p_append__test__group(context__642, external_graphs__664, dependency_root__644, external_root__663, "external", external_packages__665, commands__647, groups__650)
+                } else {}
+                var t4631 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan{
+                    commands: commands__647,
+                    executable: Option__string_None{},
+                    test_groups: groups__650,
+                }
+                var t4632 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok{
+                    _0: t4631,
+                }
+                retv4611 = t4632
+                return retv4611
             }
-            jp4677 = jp4679
-        case _goml_m_Result____std_p_process_p_ExitStatus____string_Err:
-            var x779 string = mtmp777.(_goml_m_Result____std_p_process_p_ExitStatus____string_Err)._0
-            var message__666 string = x779
-            var t4685 Result__unit__string = Result__unit__string_Err{
-                _0: message__666,
-            }
-            jp4677 = t4685
-        default:
-            panic("non-exhaustive match")
         }
-        retv4664 = jp4677
-        return retv4664
-    case Result__unit__string_Err:
-        var x772 string = mtmp770.(Result__unit__string_Err)._0
-        var message__661 string = x772
-        var t4693 Result__unit__string = Result__unit__string_Err{
-            _0: message__661,
+    case _goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err:
+        var x716 string = mtmp714.(_goml_m_Result____Vec_l_gomlan_h85e60c8beb0867319c88172c9df07185______string_Err)._0
+        var message__646 string = x716
+        var t4674 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err{
+            _0: message__646,
         }
-        retv4664 = t4693
-        return retv4664
+        retv4611 = t4674
+        return retv4611
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__plan(context__667 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, plan__668 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan, dry_run__669 bool) Result__unit__string {
-    var retv4695 Result__unit__string
-    var jp4697 string
-    if dry_run__669 {
-        jp4697 = ""
-        var identity__672 string = jp4697
-        var t4698 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = plan__668.commands
-        var for_iter783 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(t4698)
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(program__669 string, args__670 *_goml_vec_string) string {
+    var retv4676 string
+    var result__671 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(program__669)
+    var for_iter746 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(args__670)
+    Loop_loop4679:
+    for {
+        if true {
+            var for_next747 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter746)
+            switch for_next747.(type) {
+            case Option__string_None:
+                break Loop_loop4679
+            case Option__string_Some:
+                var x748 string = for_next747.(Option__string_Some)._0
+                var argument__672 string = x748
+                var t4681 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__671)
+                var t4682 string = t4681 + " "
+                var t4683 string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_shell__escape(argument__672)
+                var t4684 string = t4682 + t4683
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__671, t4684)
+                continue
+            default:
+                panic("non-exhaustive match")
+            }
+        } else {
+            break Loop_loop4679
+        }
+    }
+    var t4678 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__671)
+    retv4676 = t4678
+    return retv4676
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__args(value__673 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) Tuple2_6string_11Vec_6string {
+    var retv4687 Tuple2_6string_11Vec_6string
+    var jp4689 Tuple2_6string_11Vec_6string
+    switch value__673.(type) {
+    case Compile:
+        var x750 string = value__673.(Compile)._0
+        var x751 string = value__673.(Compile)._1
+        var x752 *_goml_vec_string = value__673.(Compile)._2
+        var x753 *_goml_vec_string = value__673.(Compile)._3
+        var x754 string = value__673.(Compile)._4
+        var output__678 string = x754
+        var interface_files__677 *_goml_vec_string = x753
+        var input_files__676 *_goml_vec_string = x752
+        var package_name__675 string = x751
+        var subcommand__674 string = x750
+        var args__679 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, subcommand__674)
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, "--package")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, package_name__675)
+        var for_iter767 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(input_files__676)
+        Loop_loop4696:
+        for {
+            if true {
+                var for_next768 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter767)
+                switch for_next768.(type) {
+                case Option__string_None:
+                    break Loop_loop4696
+                case Option__string_Some:
+                    var x769 string = for_next768.(Option__string_Some)._0
+                    var input__680 string = x769
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, "--input")
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, input__680)
+                    continue
+                default:
+                    panic("non-exhaustive match")
+                }
+            } else {
+                break Loop_loop4696
+            }
+        }
+        var for_iter772 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(interface_files__677)
+        Loop_loop4693:
+        for {
+            if true {
+                var for_next773 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter772)
+                switch for_next773.(type) {
+                case Option__string_None:
+                    break Loop_loop4693
+                case Option__string_Some:
+                    var x774 string = for_next773.(Option__string_Some)._0
+                    var interface__681 string = x774
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, "--interface-path")
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, interface__681)
+                    continue
+                default:
+                    panic("non-exhaustive match")
+                }
+            } else {
+                break Loop_loop4693
+            }
+        }
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, "--output")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__679, output__678)
+        var t4692 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
+            _0: "gomlc",
+            _1: args__679,
+        }
+        jp4689 = t4692
+        retv4687 = jp4689
+        return retv4687
+    case Link:
+        var x755 *_goml_vec_string = value__673.(Link)._0
+        var x756 string = value__673.(Link)._1
+        var x757 string = value__673.(Link)._2
+        var output__684 string = x757
+        var entry_package__683 string = x756
+        var input_cores__682 *_goml_vec_string = x755
+        var args__685 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, "link")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, "--input")
+        var for_iter781 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(input_cores__682)
         Loop_loop4701:
         for {
             if true {
-                var for_next784 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter783)
-                switch for_next784.(type) {
-                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None:
+                var for_next782 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter781)
+                switch for_next782.(type) {
+                case Option__string_None:
                     break Loop_loop4701
+                case Option__string_Some:
+                    var x783 string = for_next782.(Option__string_Some)._0
+                    var input__686 string = x783
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, input__686)
+                    continue
+                default:
+                    panic("non-exhaustive match")
+                }
+            } else {
+                break Loop_loop4701
+            }
+        }
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, "--output")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, output__684)
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, "--entry")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__685, entry_package__683)
+        var t4700 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
+            _0: "gomlc",
+            _1: args__685,
+        }
+        jp4689 = t4700
+        retv4687 = jp4689
+        return retv4687
+    case TestLink:
+        var x758 *_goml_vec_string = value__673.(TestLink)._0
+        var x759 *_goml_vec_string = value__673.(TestLink)._1
+        var x760 string = value__673.(TestLink)._2
+        var x761 string = value__673.(TestLink)._3
+        var manifest__690 string = x761
+        var output__689 string = x760
+        var packages__688 *_goml_vec_string = x759
+        var input_cores__687 *_goml_vec_string = x758
+        var args__691 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, "test-link")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, "--input")
+        var for_iter791 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(input_cores__687)
+        Loop_loop4710:
+        for {
+            if true {
+                var for_next792 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter791)
+                switch for_next792.(type) {
+                case Option__string_None:
+                    break Loop_loop4710
+                case Option__string_Some:
+                    var x793 string = for_next792.(Option__string_Some)._0
+                    var input__692 string = x793
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, input__692)
+                    continue
+                default:
+                    panic("non-exhaustive match")
+                }
+            } else {
+                break Loop_loop4710
+            }
+        }
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, "--output")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, output__689)
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, "--manifest")
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, manifest__690)
+        var for_iter799 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(packages__688)
+        Loop_loop4707:
+        for {
+            if true {
+                var for_next800 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter799)
+                switch for_next800.(type) {
+                case Option__string_None:
+                    break Loop_loop4707
+                case Option__string_Some:
+                    var x801 string = for_next800.(Option__string_Some)._0
+                    var package_name__693 string = x801
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, "--package")
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(args__691, package_name__693)
+                    continue
+                default:
+                    panic("non-exhaustive match")
+                }
+            } else {
+                break Loop_loop4707
+            }
+        }
+        var t4706 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
+            _0: "gomlc",
+            _1: args__691,
+        }
+        jp4689 = t4706
+        retv4687 = jp4689
+        return retv4687
+    case GoBuild:
+        var x762 string = value__673.(GoBuild)._0
+        var x763 string = value__673.(GoBuild)._1
+        var output__695 string = x763
+        var input__694 string = x762
+        var t4713 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+        var t4714 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4713, "build")
+        var t4715 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4714, "-o")
+        var t4716 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4715, output__695)
+        var t4717 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t4716, input__694)
+        var t4718 Tuple2_6string_11Vec_6string = Tuple2_6string_11Vec_6string{
+            _0: "go",
+            _1: t4717,
+        }
+        jp4689 = t4718
+        retv4687 = jp4689
+        return retv4687
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(value__696 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) string {
+    var retv4720 string
+    var command__697 Tuple2_6string_11Vec_6string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__args(value__696)
+    var t4721 string = command__697._0
+    var t4722 *_goml_vec_string = command__697._1
+    var t4723 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(t4721, t4722)
+    retv4720 = t4723
+    return retv4720
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_progress__label(value__698 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) string {
+    var retv4725 string
+    var jp4727 string
+    switch value__698.(type) {
+    case Compile:
+        var x804 string = value__698.(Compile)._0
+        var x805 string = value__698.(Compile)._1
+        var package_name__700 string = x805
+        var subcommand__699 string = x804
+        var t4730 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(subcommand__699, "check")
+        var jp4729 string
+        if t4730 {
+            var t4731 string = "checking " + package_name__700
+            jp4729 = t4731
+        } else {
+            var t4734 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(subcommand__699, "build")
+            var jp4733 string
+            if t4734 {
+                var t4735 string = "compiling " + package_name__700
+                jp4733 = t4735
+            } else {
+                var t4738 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(subcommand__699, "test-check")
+                var jp4737 string
+                if t4738 {
+                    var t4739 string = "checking tests for " + package_name__700
+                    jp4737 = t4739
+                } else {
+                    var t4742 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(subcommand__699, "test-build")
+                    var jp4741 string
+                    if t4742 {
+                        var t4743 string = "compiling tests for " + package_name__700
+                        jp4741 = t4743
+                    } else {
+                        var t4744 string = subcommand__699 + " "
+                        var t4745 string = t4744 + package_name__700
+                        jp4741 = t4745
+                    }
+                    jp4737 = jp4741
+                }
+                jp4733 = jp4737
+            }
+            jp4729 = jp4733
+        }
+        jp4727 = jp4729
+    case Link:
+        var x810 string = value__698.(Link)._1
+        var entry_package__701 string = x810
+        var t4746 string = "linking " + entry_package__701
+        jp4727 = t4746
+    case TestLink:
+        jp4727 = "linking test runner"
+    case GoBuild:
+        jp4727 = "building executable"
+    default:
+        panic("non-exhaustive match")
+    }
+    retv4725 = jp4727
+    return retv4725
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_progress__bar(completed__702 int, total__703 int) string {
+    var retv4748 string
+    var width__704 int = 20
+    var t4761 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(total__703, 0)
+    var jp4750 int
+    if t4761 {
+        jp4750 = width__704
+    } else {
+        var t4762 int = completed__702 * width__704
+        var t4763 int = t4762 / total__703
+        jp4750 = t4763
+    }
+    var filled__705 int = jp4750
+    var t4751 int = width__704 + 2
+    var builder__706 _goml_m_std_p_text_p_StringBuilder = _goml_m_inherent_i_std_p_text__hf0a3ebbcd83d8d9fece84707f01d0c24__with__capacity(t4751)
+    _goml_m_inherent_i_std_p_text__he83b4afafc069a3c24c64018b13ca033_r_i_write__char(builder__706, 91)
+    var t4752 FnIterator__int = _goml_m_range(0, width__704)
+    var for_iter819 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t4752)
+    Loop_loop4755:
+    for {
+        if true {
+            var for_next820 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter819)
+            switch for_next820.(type) {
+            case Option__int_None:
+                break Loop_loop4755
+            case Option__int_Some:
+                var x821 int = for_next820.(Option__int_Some)._0
+                var index__707 int = x821
+                var t4760 bool = index__707 < filled__705
+                var jp4758 rune
+                if t4760 {
+                    jp4758 = 35
+                } else {
+                    jp4758 = 45
+                }
+                _goml_m_inherent_i_std_p_text__he83b4afafc069a3c24c64018b13ca033_r_i_write__char(builder__706, jp4758)
+                continue
+            default:
+                panic("non-exhaustive match")
+            }
+        } else {
+            break Loop_loop4755
+        }
+    }
+    _goml_m_inherent_i_std_p_text__he83b4afafc069a3c24c64018b13ca033_r_i_write__char(builder__706, 93)
+    var t4754 string = _goml_m_inherent_i_std_p_text__h38fb10d4bc2f951b3d4bba4675c0c32c_uilder_i_finish(builder__706)
+    retv4748 = t4754
+    return retv4748
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__progress(completed__708 int, total__709 int, label__710 string) struct{} {
+    var t4765 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_progress__bar(completed__708, total__709)
+    var t4766 string = t4765 + " "
+    var t4767 string = _goml_m_inherent_i_int_i_int_i_to__string(completed__708)
+    var t4768 string = t4766 + t4767
+    var t4769 string = t4768 + "/"
+    var t4770 string = _goml_m_inherent_i_int_i_int_i_to__string(total__709)
+    var t4771 string = t4769 + t4770
+    var t4772 string = t4771 + " "
+    var t4773 string = t4772 + label__710
+    _goml_m_std_p_io_p_eprintln____T__string(t4773)
+    return struct{}{}
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_ensure__output__parent(value__711 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command, module_dir__712 string) Result__unit__string {
+    var retv4776 Result__unit__string
+    var jp4778 string
+    switch value__711.(type) {
+    case Compile:
+        var x828 string = value__711.(Compile)._4
+        var output__713 string = x828
+        jp4778 = output__713
+    case Link:
+        var x831 string = value__711.(Link)._2
+        var output__713 string = x831
+        jp4778 = output__713
+    case TestLink:
+        var x834 string = value__711.(TestLink)._2
+        var output__713 string = x834
+        jp4778 = output__713
+    case GoBuild:
+        var x837 string = value__711.(GoBuild)._1
+        var output__713 string = x837
+        jp4778 = output__713
+    default:
+        panic("non-exhaustive match")
+    }
+    var output__714 string = jp4778
+    var t4785 bool = _goml_m_std_p_path_p_is__absolute(output__714)
+    var jp4780 string
+    if t4785 {
+        jp4780 = output__714
+    } else {
+        var t4786 string = _goml_m_std_p_path_p_join(module_dir__712, output__714)
+        jp4780 = t4786
+    }
+    var absolute__715 string = jp4780
+    var mtmp838 Option__string = _goml_m_std_p_path_p_parent(absolute__715)
+    var jp4782 Result__unit__string
+    switch mtmp838.(type) {
+    case Option__string_None:
+        var t4783 Result__unit__string = Result__unit__string_Ok{
+            _0: struct{}{},
+        }
+        jp4782 = t4783
+    case Option__string_Some:
+        var x839 string = mtmp838.(Option__string_Some)._0
+        var parent__716 string = x839
+        var t4784 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all(parent__716)
+        jp4782 = t4784
+    default:
+        panic("non-exhaustive match")
+    }
+    retv4776 = jp4782
+    return retv4776
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__717 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, value__718 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) Result__unit__string {
+    var retv4788 Result__unit__string
+    var t4789 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__717.graph
+    var t4790 string = t4789.module_dir
+    var mtmp840 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_ensure__output__parent(value__718, t4790)
+    switch mtmp840.(type) {
+    case Result__unit__string_Ok:
+        var command__720 Tuple2_6string_11Vec_6string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__args(value__718)
+        var t4812 string = command__720._0
+        var t4813 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t4812, "gomlc")
+        var jp4793 string
+        if t4813 {
+            var t4814 string = context__717.compiler
+            jp4793 = t4814
+        } else {
+            var t4815 string = command__720._0
+            jp4793 = t4815
+        }
+        var program__721 string = jp4793
+        var t4794 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_new(program__721)
+        var t4795 *_goml_vec_string = command__720._1
+        var t4796 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_args(t4794, t4795)
+        var t4797 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__717.graph
+        var t4798 string = t4797.module_dir
+        var process__722 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_proce_he5cdac0306b860454965a02455d27d39__i_current__dir(t4796, t4798)
+        var t4810 string = command__720._0
+        var t4811 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t4810, "go")
+        if t4811 {
+            _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_env(process__722, "GOWORK", "off")
+            _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_env(process__722, "GO111MODULE", "off")
+        } else {}
+        var mtmp847 _goml_m_Result____std_p_process_p_ExitStatus____string = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_status(process__722)
+        var jp4801 Result__unit__string
+        switch mtmp847.(type) {
+        case _goml_m_Result____std_p_process_p_ExitStatus____string_Ok:
+            var x848 _goml_m_std_p_process_p_ExitStatus = mtmp847.(_goml_m_Result____std_p_process_p_ExitStatus____string_Ok)._0
+            var status__723 _goml_m_std_p_process_p_ExitStatus = x848
+            var t4804 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(status__723)
+            var jp4803 Result__unit__string
+            if t4804 {
+                var t4805 Result__unit__string = Result__unit__string_Ok{
+                    _0: struct{}{},
+                }
+                jp4803 = t4805
+            } else {
+                var t4806 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(value__718)
+                var t4807 string = t4806 + " failed"
+                var t4808 Result__unit__string = Result__unit__string_Err{
+                    _0: t4807,
+                }
+                jp4803 = t4808
+            }
+            jp4801 = jp4803
+        case _goml_m_Result____std_p_process_p_ExitStatus____string_Err:
+            var x849 string = mtmp847.(_goml_m_Result____std_p_process_p_ExitStatus____string_Err)._0
+            var message__724 string = x849
+            var t4809 Result__unit__string = Result__unit__string_Err{
+                _0: message__724,
+            }
+            jp4801 = t4809
+        default:
+            panic("non-exhaustive match")
+        }
+        retv4788 = jp4801
+        return retv4788
+    case Result__unit__string_Err:
+        var x842 string = mtmp840.(Result__unit__string_Err)._0
+        var message__719 string = x842
+        var t4817 Result__unit__string = Result__unit__string_Err{
+            _0: message__719,
+        }
+        retv4788 = t4817
+        return retv4788
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__plan(context__725 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, plan__726 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan, dry_run__727 bool) Result__unit__string {
+    var retv4819 Result__unit__string
+    var t4820 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = plan__726.commands
+    var total__728 int = _goml_m_inherent_i_Vec_i_Vec_l_h94bf5d1608e9efb4ddb1fda6404362b9_oject_p_Command(t4820)
+    var completed__729 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
+    var jp4822 string
+    if dry_run__727 {
+        jp4822 = ""
+        var identity__732 string = jp4822
+        var t4823 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = plan__726.commands
+        var for_iter853 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(t4823)
+        Loop_loop4829:
+        for {
+            if true {
+                var for_next854 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter853)
+                switch for_next854.(type) {
+                case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None:
+                    break Loop_loop4829
                 case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some:
-                    var x785 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next784.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
-                    var command__673 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x785
-                    if dry_run__669 {
-                        var t4704 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(command__673)
-                        _goml_m_std_p_io_p_println____T__string(t4704)
+                    var x855 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next854.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
+                    var command__733 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x855
+                    if dry_run__727 {
+                        var t4832 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(command__733)
+                        _goml_m_std_p_io_p_println____T__string(t4832)
                         continue
                     } else {
-                        var mtmp786 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__spec(command__673)
-                        switch mtmp786.(type) {
+                        var t4834 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                        var t4835 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_progress__label(command__733)
+                        _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__progress(t4834, total__728, t4835)
+                        var mtmp857 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__spec(command__733)
+                        switch mtmp857.(type) {
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_None:
-                            var mtmp788 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__667, command__673)
-                            switch mtmp788.(type) {
+                            var mtmp859 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__725, command__733)
+                            switch mtmp859.(type) {
                             case Result__unit__string_Ok:
+                                var t4837 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                                var t4838 int = t4837 + 1
+                                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(completed__729, t4838)
                                 continue
                             case Result__unit__string_Err:
-                                var x790 string = mtmp788.(Result__unit__string_Err)._0
-                                var message__684 string = x790
-                                var t4709 Result__unit__string = Result__unit__string_Err{
-                                    _0: message__684,
+                                var x861 string = mtmp859.(Result__unit__string_Err)._0
+                                var message__744 string = x861
+                                var t4842 Result__unit__string = Result__unit__string_Err{
+                                    _0: message__744,
                                 }
-                                retv4695 = t4709
-                                return retv4695
+                                retv4819 = t4842
+                                return retv4819
                             default:
                                 panic("non-exhaustive match")
                             }
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_Some:
-                            var x787 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = mtmp786.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_Some)._0
-                            var spec__674 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = x787
-                            var mtmp791 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__fingerprint(context__667, identity__672, spec__674)
-                            var jp4711 string
-                            switch mtmp791.(type) {
+                            var x858 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = mtmp857.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_Some)._0
+                            var spec__734 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = x858
+                            var mtmp862 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__fingerprint(context__725, identity__732, spec__734)
+                            var jp4844 string
+                            switch mtmp862.(type) {
                             case Result__string__string_Ok:
-                                var x792 string = mtmp791.(Result__string__string_Ok)._0
-                                var value__675 string = x792
-                                jp4711 = value__675
-                                var fingerprint__677 string = jp4711
-                                var mtmp794 Result__bool__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__is__fresh(context__667, spec__674, fingerprint__677)
-                                var jp4713 bool
-                                switch mtmp794.(type) {
+                                var x863 string = mtmp862.(Result__string__string_Ok)._0
+                                var value__735 string = x863
+                                jp4844 = value__735
+                                var fingerprint__737 string = jp4844
+                                var mtmp865 Result__bool__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__is__fresh(context__725, spec__734, fingerprint__737)
+                                var jp4846 bool
+                                switch mtmp865.(type) {
                                 case Result__bool__string_Ok:
-                                    var x795 bool = mtmp794.(Result__bool__string_Ok)._0
-                                    var value__678 bool = x795
-                                    jp4713 = value__678
-                                    var fresh__680 bool = jp4713
-                                    if fresh__680 {
+                                    var x866 bool = mtmp865.(Result__bool__string_Ok)._0
+                                    var value__738 bool = x866
+                                    jp4846 = value__738
+                                    var fresh__740 bool = jp4846
+                                    if fresh__740 {
+                                        var t4837 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                                        var t4838 int = t4837 + 1
+                                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(completed__729, t4838)
                                         continue
                                     } else {
-                                        var mtmp797 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__667, spec__674)
-                                        switch mtmp797.(type) {
+                                        var mtmp868 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__725, spec__734)
+                                        switch mtmp868.(type) {
                                         case Result__unit__string_Ok:
-                                            var mtmp801 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__667, command__673)
-                                            switch mtmp801.(type) {
+                                            var mtmp872 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__725, command__733)
+                                            switch mtmp872.(type) {
                                             case Result__unit__string_Ok:
-                                                var mtmp806 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_store__cache(context__667, spec__674, identity__672, fingerprint__677)
-                                                switch mtmp806.(type) {
+                                                var mtmp877 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_store__cache(context__725, spec__734, identity__732, fingerprint__737)
+                                                switch mtmp877.(type) {
                                                 case Result__unit__string_Ok:
+                                                    var t4837 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                                                    var t4838 int = t4837 + 1
+                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(completed__729, t4838)
                                                     continue
                                                 case Result__unit__string_Err:
-                                                    var x808 string = mtmp806.(Result__unit__string_Err)._0
-                                                    var message__683 string = x808
-                                                    var t4719 Result__unit__string = Result__unit__string_Err{
-                                                        _0: message__683,
+                                                    var x879 string = mtmp877.(Result__unit__string_Err)._0
+                                                    var message__743 string = x879
+                                                    var t4852 Result__unit__string = Result__unit__string_Err{
+                                                        _0: message__743,
                                                     }
-                                                    retv4695 = t4719
-                                                    return retv4695
+                                                    retv4819 = t4852
+                                                    return retv4819
                                                 default:
                                                     panic("non-exhaustive match")
                                                 }
                                             case Result__unit__string_Err:
-                                                var x803 string = mtmp801.(Result__unit__string_Err)._0
-                                                var message__682 string = x803
-                                                _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__667, spec__674)
-                                                var t4721 Result__unit__string = Result__unit__string_Err{
-                                                    _0: message__682,
+                                                var x874 string = mtmp872.(Result__unit__string_Err)._0
+                                                var message__742 string = x874
+                                                _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__725, spec__734)
+                                                var t4854 Result__unit__string = Result__unit__string_Err{
+                                                    _0: message__742,
                                                 }
-                                                retv4695 = t4721
-                                                return retv4695
+                                                retv4819 = t4854
+                                                return retv4819
                                             default:
                                                 panic("non-exhaustive match")
                                             }
                                         case Result__unit__string_Err:
-                                            var x799 string = mtmp797.(Result__unit__string_Err)._0
-                                            var message__681 string = x799
-                                            var t4723 Result__unit__string = Result__unit__string_Err{
-                                                _0: message__681,
+                                            var x870 string = mtmp868.(Result__unit__string_Err)._0
+                                            var message__741 string = x870
+                                            var t4856 Result__unit__string = Result__unit__string_Err{
+                                                _0: message__741,
                                             }
-                                            retv4695 = t4723
-                                            return retv4695
+                                            retv4819 = t4856
+                                            return retv4819
                                         default:
                                             panic("non-exhaustive match")
                                         }
                                     }
                                 case Result__bool__string_Err:
-                                    var x796 string = mtmp794.(Result__bool__string_Err)._0
-                                    var message__679 string = x796
-                                    var t4724 Result__unit__string = Result__unit__string_Err{
-                                        _0: message__679,
+                                    var x867 string = mtmp865.(Result__bool__string_Err)._0
+                                    var message__739 string = x867
+                                    var t4857 Result__unit__string = Result__unit__string_Err{
+                                        _0: message__739,
                                     }
-                                    retv4695 = t4724
-                                    return retv4695
+                                    retv4819 = t4857
+                                    return retv4819
                                 default:
                                     panic("non-exhaustive match")
                                 }
                             case Result__string__string_Err:
-                                var x793 string = mtmp791.(Result__string__string_Err)._0
-                                var message__676 string = x793
-                                var t4725 Result__unit__string = Result__unit__string_Err{
-                                    _0: message__676,
+                                var x864 string = mtmp862.(Result__string__string_Err)._0
+                                var message__736 string = x864
+                                var t4858 Result__unit__string = Result__unit__string_Err{
+                                    _0: message__736,
                                 }
-                                retv4695 = t4725
-                                return retv4695
+                                retv4819 = t4858
+                                return retv4819
                             default:
                                 panic("non-exhaustive match")
                             }
@@ -17725,145 +18189,161 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__plan(context__667 _g
                     panic("non-exhaustive match")
                 }
             } else {
-                break Loop_loop4701
+                break Loop_loop4829
             }
         }
-        var t4700 Result__unit__string = Result__unit__string_Ok{
+        if dry_run__727 {} else {
+            var t4827 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+            _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__progress(t4827, total__728, "finished")
+        }
+        var t4826 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        retv4695 = t4700
-        return retv4695
+        retv4819 = t4826
+        return retv4819
     } else {
-        var mtmp780 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compiler__digest(context__667)
-        var jp4727 string
-        switch mtmp780.(type) {
+        var mtmp850 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_compiler__digest(context__725)
+        var jp4860 string
+        switch mtmp850.(type) {
         case Result__string__string_Ok:
-            var x781 string = mtmp780.(Result__string__string_Ok)._0
-            var value__670 string = x781
-            jp4727 = value__670
-            jp4697 = jp4727
-            var identity__672 string = jp4697
-            var t4698 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = plan__668.commands
-            var for_iter783 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(t4698)
-            Loop_loop4701__2:
+            var x851 string = mtmp850.(Result__string__string_Ok)._0
+            var value__730 string = x851
+            jp4860 = value__730
+            jp4822 = jp4860
+            var identity__732 string = jp4822
+            var t4823 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = plan__726.commands
+            var for_iter853 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(t4823)
+            Loop_loop4829__2:
             for {
                 if true {
-                    var for_next784 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter783)
-                    switch for_next784.(type) {
+                    var for_next854 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(for_iter853)
+                    switch for_next854.(type) {
                     case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None:
-                        break Loop_loop4701__2
+                        break Loop_loop4829__2
                     case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some:
-                        var x785 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next784.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
-                        var command__673 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x785
-                        if dry_run__669 {
-                            var t4704 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(command__673)
-                            _goml_m_std_p_io_p_println____T__string(t4704)
+                        var x855 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = for_next854.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some)._0
+                        var command__733 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = x855
+                        if dry_run__727 {
+                            var t4832 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__command(command__733)
+                            _goml_m_std_p_io_p_println____T__string(t4832)
                             continue
                         } else {
-                            var mtmp786 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__spec(command__673)
-                            switch mtmp786.(type) {
+                            var t4834 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                            var t4835 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_progress__label(command__733)
+                            _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__progress(t4834, total__728, t4835)
+                            var mtmp857 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__spec(command__733)
+                            switch mtmp857.(type) {
                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_None:
-                                var mtmp788 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__667, command__673)
-                                switch mtmp788.(type) {
+                                var mtmp859 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__725, command__733)
+                                switch mtmp859.(type) {
                                 case Result__unit__string_Ok:
+                                    var t4837 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                                    var t4838 int = t4837 + 1
+                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(completed__729, t4838)
                                     continue
                                 case Result__unit__string_Err:
-                                    var x790 string = mtmp788.(Result__unit__string_Err)._0
-                                    var message__684 string = x790
-                                    var t4709 Result__unit__string = Result__unit__string_Err{
-                                        _0: message__684,
+                                    var x861 string = mtmp859.(Result__unit__string_Err)._0
+                                    var message__744 string = x861
+                                    var t4842 Result__unit__string = Result__unit__string_Err{
+                                        _0: message__744,
                                     }
-                                    retv4695 = t4709
-                                    return retv4695
+                                    retv4819 = t4842
+                                    return retv4819
                                 default:
                                     panic("non-exhaustive match")
                                 }
                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_Some:
-                                var x787 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = mtmp786.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_Some)._0
-                                var spec__674 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = x787
-                                var mtmp791 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__fingerprint(context__667, identity__672, spec__674)
-                                var jp4711 string
-                                switch mtmp791.(type) {
+                                var x858 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = mtmp857.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_CacheSpec_Some)._0
+                                var spec__734 _goml_m_gomlang_p_bootstrap__goml_p_project_p_CacheSpec = x858
+                                var mtmp862 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_command__fingerprint(context__725, identity__732, spec__734)
+                                var jp4844 string
+                                switch mtmp862.(type) {
                                 case Result__string__string_Ok:
-                                    var x792 string = mtmp791.(Result__string__string_Ok)._0
-                                    var value__675 string = x792
-                                    jp4711 = value__675
-                                    var fingerprint__677 string = jp4711
-                                    var mtmp794 Result__bool__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__is__fresh(context__667, spec__674, fingerprint__677)
-                                    var jp4713 bool
-                                    switch mtmp794.(type) {
+                                    var x863 string = mtmp862.(Result__string__string_Ok)._0
+                                    var value__735 string = x863
+                                    jp4844 = value__735
+                                    var fingerprint__737 string = jp4844
+                                    var mtmp865 Result__bool__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_cache__is__fresh(context__725, spec__734, fingerprint__737)
+                                    var jp4846 bool
+                                    switch mtmp865.(type) {
                                     case Result__bool__string_Ok:
-                                        var x795 bool = mtmp794.(Result__bool__string_Ok)._0
-                                        var value__678 bool = x795
-                                        jp4713 = value__678
-                                        var fresh__680 bool = jp4713
-                                        if fresh__680 {
+                                        var x866 bool = mtmp865.(Result__bool__string_Ok)._0
+                                        var value__738 bool = x866
+                                        jp4846 = value__738
+                                        var fresh__740 bool = jp4846
+                                        if fresh__740 {
+                                            var t4837 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                                            var t4838 int = t4837 + 1
+                                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(completed__729, t4838)
                                             continue
                                         } else {
-                                            var mtmp797 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__667, spec__674)
-                                            switch mtmp797.(type) {
+                                            var mtmp868 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__725, spec__734)
+                                            switch mtmp868.(type) {
                                             case Result__unit__string_Ok:
-                                                var mtmp801 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__667, command__673)
-                                                switch mtmp801.(type) {
+                                                var mtmp872 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__command(context__725, command__733)
+                                                switch mtmp872.(type) {
                                                 case Result__unit__string_Ok:
-                                                    var mtmp806 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_store__cache(context__667, spec__674, identity__672, fingerprint__677)
-                                                    switch mtmp806.(type) {
+                                                    var mtmp877 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_store__cache(context__725, spec__734, identity__732, fingerprint__737)
+                                                    switch mtmp877.(type) {
                                                     case Result__unit__string_Ok:
+                                                        var t4837 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                                                        var t4838 int = t4837 + 1
+                                                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(completed__729, t4838)
                                                         continue
                                                     case Result__unit__string_Err:
-                                                        var x808 string = mtmp806.(Result__unit__string_Err)._0
-                                                        var message__683 string = x808
-                                                        var t4719 Result__unit__string = Result__unit__string_Err{
-                                                            _0: message__683,
+                                                        var x879 string = mtmp877.(Result__unit__string_Err)._0
+                                                        var message__743 string = x879
+                                                        var t4852 Result__unit__string = Result__unit__string_Err{
+                                                            _0: message__743,
                                                         }
-                                                        retv4695 = t4719
-                                                        return retv4695
+                                                        retv4819 = t4852
+                                                        return retv4819
                                                     default:
                                                         panic("non-exhaustive match")
                                                     }
                                                 case Result__unit__string_Err:
-                                                    var x803 string = mtmp801.(Result__unit__string_Err)._0
-                                                    var message__682 string = x803
-                                                    _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__667, spec__674)
-                                                    var t4721 Result__unit__string = Result__unit__string_Err{
-                                                        _0: message__682,
+                                                    var x874 string = mtmp872.(Result__unit__string_Err)._0
+                                                    var message__742 string = x874
+                                                    _goml_m_gomlang_p_bootstrap__goml_p_project_p_prepare__cache__execution(context__725, spec__734)
+                                                    var t4854 Result__unit__string = Result__unit__string_Err{
+                                                        _0: message__742,
                                                     }
-                                                    retv4695 = t4721
-                                                    return retv4695
+                                                    retv4819 = t4854
+                                                    return retv4819
                                                 default:
                                                     panic("non-exhaustive match")
                                                 }
                                             case Result__unit__string_Err:
-                                                var x799 string = mtmp797.(Result__unit__string_Err)._0
-                                                var message__681 string = x799
-                                                var t4723 Result__unit__string = Result__unit__string_Err{
-                                                    _0: message__681,
+                                                var x870 string = mtmp868.(Result__unit__string_Err)._0
+                                                var message__741 string = x870
+                                                var t4856 Result__unit__string = Result__unit__string_Err{
+                                                    _0: message__741,
                                                 }
-                                                retv4695 = t4723
-                                                return retv4695
+                                                retv4819 = t4856
+                                                return retv4819
                                             default:
                                                 panic("non-exhaustive match")
                                             }
                                         }
                                     case Result__bool__string_Err:
-                                        var x796 string = mtmp794.(Result__bool__string_Err)._0
-                                        var message__679 string = x796
-                                        var t4724 Result__unit__string = Result__unit__string_Err{
-                                            _0: message__679,
+                                        var x867 string = mtmp865.(Result__bool__string_Err)._0
+                                        var message__739 string = x867
+                                        var t4857 Result__unit__string = Result__unit__string_Err{
+                                            _0: message__739,
                                         }
-                                        retv4695 = t4724
-                                        return retv4695
+                                        retv4819 = t4857
+                                        return retv4819
                                     default:
                                         panic("non-exhaustive match")
                                     }
                                 case Result__string__string_Err:
-                                    var x793 string = mtmp791.(Result__string__string_Err)._0
-                                    var message__676 string = x793
-                                    var t4725 Result__unit__string = Result__unit__string_Err{
-                                        _0: message__676,
+                                    var x864 string = mtmp862.(Result__string__string_Err)._0
+                                    var message__736 string = x864
+                                    var t4858 Result__unit__string = Result__unit__string_Err{
+                                        _0: message__736,
                                     }
-                                    retv4695 = t4725
-                                    return retv4695
+                                    retv4819 = t4858
+                                    return retv4819
                                 default:
                                     panic("non-exhaustive match")
                                 }
@@ -17875,325 +18355,329 @@ func _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__plan(context__667 _g
                         panic("non-exhaustive match")
                     }
                 } else {
-                    break Loop_loop4701__2
+                    break Loop_loop4829__2
                 }
             }
-            var t4700 Result__unit__string = Result__unit__string_Ok{
+            if dry_run__727 {} else {
+                var t4827 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(completed__729)
+                _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__progress(t4827, total__728, "finished")
+            }
+            var t4826 Result__unit__string = Result__unit__string_Ok{
                 _0: struct{}{},
             }
-            retv4695 = t4700
-            return retv4695
+            retv4819 = t4826
+            return retv4819
         case Result__string__string_Err:
-            var x782 string = mtmp780.(Result__string__string_Err)._0
-            var message__671 string = x782
-            var t4728 Result__unit__string = Result__unit__string_Err{
-                _0: message__671,
+            var x852 string = mtmp850.(Result__string__string_Err)._0
+            var message__731 string = x852
+            var t4861 Result__unit__string = Result__unit__string_Err{
+                _0: message__731,
             }
-            retv4695 = t4728
-            return retv4695
+            retv4819 = t4861
+            return retv4819
         default:
             panic("non-exhaustive match")
         }
     }
 }
 
-func _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__executable(context__685 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, executable__686 string, args__687 *_goml_vec_string, dry_run__688 bool) Result__unit__string {
-    var retv4730 Result__unit__string
-    var t4731 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__685.graph
-    var t4732 string = t4731.module_dir
-    var relative__689 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4732, executable__686)
-    var jp4734 Result__unit__string
-    if dry_run__688 {
-        var t4735 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(relative__689, args__687)
-        _goml_m_std_p_io_p_println____T__string(t4735)
-        var t4736 Result__unit__string = Result__unit__string_Ok{
+func _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__executable(context__745 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context, executable__746 string, args__747 *_goml_vec_string, dry_run__748 bool) Result__unit__string {
+    var retv4863 Result__unit__string
+    var t4864 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__745.graph
+    var t4865 string = t4864.module_dir
+    var relative__749 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_module__relative(t4865, executable__746)
+    var jp4867 Result__unit__string
+    if dry_run__748 {
+        var t4868 string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_display__args(relative__749, args__747)
+        _goml_m_std_p_io_p_println____T__string(t4868)
+        var t4869 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp4734 = t4736
+        jp4867 = t4869
     } else {
-        var t4737 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_new(executable__686)
-        var t4738 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_args(t4737, args__687)
-        var t4739 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__685.graph
-        var t4740 string = t4739.module_dir
-        var t4741 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_proce_he5cdac0306b860454965a02455d27d39__i_current__dir(t4738, t4740)
-        var mtmp811 _goml_m_Result____std_p_process_p_ExitStatus____string = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_status(t4741)
-        var jp4743 Result__unit__string
-        switch mtmp811.(type) {
+        var t4870 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_new(executable__746)
+        var t4871 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_args(t4870, args__747)
+        var t4872 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__745.graph
+        var t4873 string = t4872.module_dir
+        var t4874 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_proce_he5cdac0306b860454965a02455d27d39__i_current__dir(t4871, t4873)
+        var mtmp884 _goml_m_Result____std_p_process_p_ExitStatus____string = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_status(t4874)
+        var jp4876 Result__unit__string
+        switch mtmp884.(type) {
         case _goml_m_Result____std_p_process_p_ExitStatus____string_Ok:
-            var x812 _goml_m_std_p_process_p_ExitStatus = mtmp811.(_goml_m_Result____std_p_process_p_ExitStatus____string_Ok)._0
-            var status__690 _goml_m_std_p_process_p_ExitStatus = x812
-            var t4746 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(status__690)
-            var jp4745 Result__unit__string
-            if t4746 {
-                var t4747 Result__unit__string = Result__unit__string_Ok{
+            var x885 _goml_m_std_p_process_p_ExitStatus = mtmp884.(_goml_m_Result____std_p_process_p_ExitStatus____string_Ok)._0
+            var status__750 _goml_m_std_p_process_p_ExitStatus = x885
+            var t4879 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(status__750)
+            var jp4878 Result__unit__string
+            if t4879 {
+                var t4880 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
-                jp4745 = t4747
+                jp4878 = t4880
             } else {
-                var mtmp814 Option__int = _goml_m_inherent_i_std_p_proce_hf476795eb31cc7fada500d317ccf572e_itStatus_i_code(status__690)
-                var jp4749 Result__unit__string
-                switch mtmp814.(type) {
+                var mtmp887 Option__int = _goml_m_inherent_i_std_p_proce_hf476795eb31cc7fada500d317ccf572e_itStatus_i_code(status__750)
+                var jp4882 Result__unit__string
+                switch mtmp887.(type) {
                 case Option__int_None:
-                    var t4750 Result__unit__string = Result__unit__string_Err{
+                    var t4883 Result__unit__string = Result__unit__string_Err{
                         _0: "program terminated by signal",
                     }
-                    jp4749 = t4750
+                    jp4882 = t4883
                 case Option__int_Some:
-                    var x815 int = mtmp814.(Option__int_Some)._0
-                    var code__691 int = x815
-                    var t4751 string = _goml_m_inherent_i_int_i_int_i_to__string(code__691)
-                    var t4752 string = "program exited with status " + t4751
-                    var t4753 Result__unit__string = Result__unit__string_Err{
-                        _0: t4752,
+                    var x888 int = mtmp887.(Option__int_Some)._0
+                    var code__751 int = x888
+                    var t4884 string = _goml_m_inherent_i_int_i_int_i_to__string(code__751)
+                    var t4885 string = "program exited with status " + t4884
+                    var t4886 Result__unit__string = Result__unit__string_Err{
+                        _0: t4885,
                     }
-                    jp4749 = t4753
+                    jp4882 = t4886
                 default:
                     panic("non-exhaustive match")
                 }
-                jp4745 = jp4749
+                jp4878 = jp4882
             }
-            jp4743 = jp4745
+            jp4876 = jp4878
         case _goml_m_Result____std_p_process_p_ExitStatus____string_Err:
-            var x813 string = mtmp811.(_goml_m_Result____std_p_process_p_ExitStatus____string_Err)._0
-            var message__692 string = x813
-            var t4754 Result__unit__string = Result__unit__string_Err{
-                _0: message__692,
+            var x886 string = mtmp884.(_goml_m_Result____std_p_process_p_ExitStatus____string_Err)._0
+            var message__752 string = x886
+            var t4887 Result__unit__string = Result__unit__string_Err{
+                _0: message__752,
             }
-            jp4743 = t4754
+            jp4876 = t4887
         default:
             panic("non-exhaustive match")
         }
-        jp4734 = jp4743
+        jp4867 = jp4876
     }
-    retv4730 = jp4734
-    return retv4730
+    retv4863 = jp4867
+    return retv4863
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_bytes__text(value__0 _goml_m_std_p_bytes_p_Bytes) string {
-    var retv4756 string
+    var retv4889 string
     var mtmp0 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(value__0)
-    var jp4758 string
+    var jp4891 string
     switch mtmp0.(type) {
     case Result__string__string_Ok:
         var x1 string = mtmp0.(Result__string__string_Ok)._0
         var value__1 string = x1
-        jp4758 = value__1
+        jp4891 = value__1
     case Result__string__string_Err:
-        jp4758 = "<non-UTF-8 output>"
+        jp4891 = "<non-UTF-8 output>"
     default:
         panic("non-exhaustive match")
     }
-    retv4756 = jp4758
-    return retv4756
+    retv4889 = jp4891
+    return retv4889
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_required__string(value__2 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value, name__3 string) Result__string__string {
-    var retv4760 Result__string__string
+    var retv4893 Result__string__string
     var mtmp3 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_gomlang_p_bootstrap__goml_p_json_p_field(value__2, name__3)
-    var jp4762 Result__string__string
+    var jp4895 Result__string__string
     switch mtmp3.(type) {
     case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_None:
-        var t4763 string = "test manifest omitted " + name__3
-        var t4764 Result__string__string = Result__string__string_Err{
-            _0: t4763,
+        var t4896 string = "test manifest omitted " + name__3
+        var t4897 Result__string__string = Result__string__string_Err{
+            _0: t4896,
         }
-        jp4762 = t4764
+        jp4895 = t4897
     case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some:
         var x4 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = mtmp3.(_goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some)._0
         var value__4 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = x4
         var mtmp5 Option__string = _goml_m_gomlang_p_bootstrap__goml_p_json_p_as__string(value__4)
-        var jp4766 Result__string__string
+        var jp4899 Result__string__string
         switch mtmp5.(type) {
         case Option__string_None:
-            var t4767 string = name__3 + " must be a string"
-            var t4768 Result__string__string = Result__string__string_Err{
-                _0: t4767,
+            var t4900 string = name__3 + " must be a string"
+            var t4901 Result__string__string = Result__string__string_Err{
+                _0: t4900,
             }
-            jp4766 = t4768
+            jp4899 = t4901
         case Option__string_Some:
             var x6 string = mtmp5.(Option__string_Some)._0
             var value__5 string = x6
-            var t4769 Result__string__string = Result__string__string_Ok{
+            var t4902 Result__string__string = Result__string__string_Ok{
                 _0: value__5,
             }
-            jp4766 = t4769
+            jp4899 = t4902
         default:
             panic("non-exhaustive match")
         }
-        jp4762 = jp4766
+        jp4895 = jp4899
     default:
         panic("non-exhaustive match")
     }
-    retv4760 = jp4762
-    return retv4760
+    retv4893 = jp4895
+    return retv4893
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_required__bool(value__6 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value, name__7 string) Result__bool__string {
-    var retv4771 Result__bool__string
+    var retv4904 Result__bool__string
     var mtmp7 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_gomlang_p_bootstrap__goml_p_json_p_field(value__6, name__7)
-    var jp4773 Result__bool__string
+    var jp4906 Result__bool__string
     switch mtmp7.(type) {
     case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_None:
-        var t4774 string = "test manifest omitted " + name__7
-        var t4775 Result__bool__string = Result__bool__string_Err{
-            _0: t4774,
+        var t4907 string = "test manifest omitted " + name__7
+        var t4908 Result__bool__string = Result__bool__string_Err{
+            _0: t4907,
         }
-        jp4773 = t4775
+        jp4906 = t4908
     case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some:
         var x8 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = mtmp7.(_goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some)._0
         var value__8 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = x8
         var mtmp9 Option__bool = _goml_m_gomlang_p_bootstrap__goml_p_json_p_bool__value(value__8)
-        var jp4777 Result__bool__string
+        var jp4910 Result__bool__string
         switch mtmp9.(type) {
         case Option__bool_None:
-            var t4778 string = name__7 + " must be boolean"
-            var t4779 Result__bool__string = Result__bool__string_Err{
-                _0: t4778,
+            var t4911 string = name__7 + " must be boolean"
+            var t4912 Result__bool__string = Result__bool__string_Err{
+                _0: t4911,
             }
-            jp4777 = t4779
+            jp4910 = t4912
         case Option__bool_Some:
             var x10 bool = mtmp9.(Option__bool_Some)._0
             var value__9 bool = x10
-            var t4780 Result__bool__string = Result__bool__string_Ok{
+            var t4913 Result__bool__string = Result__bool__string_Ok{
                 _0: value__9,
             }
-            jp4777 = t4780
+            jp4910 = t4913
         default:
             panic("non-exhaustive match")
         }
-        jp4773 = jp4777
+        jp4906 = jp4910
     default:
         panic("non-exhaustive match")
     }
-    retv4771 = jp4773
-    return retv4771
+    retv4904 = jp4906
+    return retv4904
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_load__tests(group__10 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group) _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string {
-    var retv4782 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string
-    var t4783 string = group__10.manifest_path
-    var mtmp11 Result__string__string = _goml_m_std_p_fs_p_read__file(t4783)
-    var jp4785 string
+    var retv4915 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string
+    var t4916 string = group__10.manifest_path
+    var mtmp11 Result__string__string = _goml_m_std_p_fs_p_read__file(t4916)
+    var jp4918 string
     switch mtmp11.(type) {
     case Result__string__string_Ok:
         var x12 string = mtmp11.(Result__string__string_Ok)._0
         var value__11 string = x12
-        jp4785 = value__11
-        var source__13 string = jp4785
+        jp4918 = value__11
+        var source__13 string = jp4918
         var mtmp14 _goml_m_Result____gomlang_p_bootstrap__goml_p_json_p_Value____string = _goml_m_gomlang_p_bootstrap__goml_p_json_p_parse(source__13)
-        var jp4787 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
+        var jp4920 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
         switch mtmp14.(type) {
         case _goml_m_Result____gomlang_p_bootstrap__goml_p_json_p_Value____string_Ok:
             var x15 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = mtmp14.(_goml_m_Result____gomlang_p_bootstrap__goml_p_json_p_Value____string_Ok)._0
             var value__14 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = x15
-            jp4787 = value__14
-            var root__16 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = jp4787
+            jp4920 = value__14
+            var root__16 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = jp4920
             var mtmp17 _goml_m_Option____Vec_l_gomlang_p_bootstrap__goml_p_json_p_Value_r_ = _goml_m_gomlang_p_bootstrap__goml_p_json_p_as__array(root__16)
-            var jp4789 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
+            var jp4922 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
             switch mtmp17.(type) {
             case _goml_m_Option____Vec_l_gomlang_p_bootstrap__goml_p_json_p_Value_r__None:
-                var t4810 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
+                var t4943 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
                     _0: "test manifest must be an array",
                 }
-                retv4782 = t4810
-                return retv4782
+                retv4915 = t4943
+                return retv4915
             case _goml_m_Option____Vec_l_gomlang_p_bootstrap__goml_p_json_p_Value_r__Some:
                 var x18 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = mtmp17.(_goml_m_Option____Vec_l_gomlang_p_bootstrap__goml_p_json_p_Value_r__Some)._0
                 var value__17 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = x18
-                jp4789 = value__17
-                var values__18 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = jp4789
+                jp4922 = value__17
+                var values__18 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = jp4922
                 var result__19 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_hfed801dc0c6ca177f5456b9e692b4ea3_p_runner_p_Test()
                 var for_iter19 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_trait__impl_i_IntoIter_hb437af9cddd935341e10e7b33f5e3ad8_r__i_into__iter(values__18)
-                Loop_loop4792:
+                Loop_loop4925:
                 for {
                     if true {
                         var for_next20 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_trait__impl_i_Iterator_hb9a7f57c83f25ac89861ba8956f482dd__p_Value_i_next(for_iter19)
                         switch for_next20.(type) {
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_None:
-                            break Loop_loop4792
+                            break Loop_loop4925
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some:
                             var x21 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = for_next20.(_goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some)._0
                             var value__20 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = x21
                             var mtmp22 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_required__string(value__20, "id")
-                            var jp4795 string
+                            var jp4928 string
                             switch mtmp22.(type) {
                             case Result__string__string_Ok:
                                 var x23 string = mtmp22.(Result__string__string_Ok)._0
                                 var value__21 string = x23
-                                jp4795 = value__21
-                                var id__23 string = jp4795
+                                jp4928 = value__21
+                                var id__23 string = jp4928
                                 var mtmp25 Result__string__string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_required__string(value__20, "display_name")
-                                var jp4797 string
+                                var jp4930 string
                                 switch mtmp25.(type) {
                                 case Result__string__string_Ok:
                                     var x26 string = mtmp25.(Result__string__string_Ok)._0
                                     var value__24 string = x26
-                                    jp4797 = value__24
-                                    var display_name__26 string = jp4797
+                                    jp4930 = value__24
+                                    var display_name__26 string = jp4930
                                     var mtmp28 Result__bool__string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_required__bool(value__20, "ignored")
-                                    var jp4799 bool
+                                    var jp4932 bool
                                     switch mtmp28.(type) {
                                     case Result__bool__string_Ok:
                                         var x29 bool = mtmp28.(Result__bool__string_Ok)._0
                                         var value__27 bool = x29
-                                        jp4799 = value__27
-                                        var ignored__29 bool = jp4799
+                                        jp4932 = value__27
+                                        var ignored__29 bool = jp4932
                                         var mtmp31 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_gomlang_p_bootstrap__goml_p_json_p_field(value__20, "ignore_reason")
-                                        var jp4801 Option__string
+                                        var jp4934 Option__string
                                         switch mtmp31.(type) {
                                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_None:
-                                            jp4801 = Option__string_None{}
+                                            jp4934 = Option__string_None{}
                                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some:
                                             var x32 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = mtmp31.(_goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some)._0
                                             var value__30 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = x32
-                                            var t4806 Option__string = _goml_m_gomlang_p_bootstrap__goml_p_json_p_optional__string(value__30)
-                                            jp4801 = t4806
+                                            var t4939 Option__string = _goml_m_gomlang_p_bootstrap__goml_p_json_p_optional__string(value__30)
+                                            jp4934 = t4939
                                         default:
                                             panic("non-exhaustive match")
                                         }
-                                        var ignore_reason__31 Option__string = jp4801
-                                        var t4802 string = group__10.kind
-                                        var t4803 string = group__10.executable
-                                        var t4804 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test{
+                                        var ignore_reason__31 Option__string = jp4934
+                                        var t4935 string = group__10.kind
+                                        var t4936 string = group__10.executable
+                                        var t4937 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test{
                                             id: id__23,
                                             display_name: display_name__26,
                                             ignored: ignored__29,
                                             ignore_reason: ignore_reason__31,
-                                            kind: t4802,
-                                            executable: t4803,
+                                            kind: t4935,
+                                            executable: t4936,
                                         }
-                                        _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(result__19, t4804)
+                                        _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(result__19, t4937)
                                         continue
                                     case Result__bool__string_Err:
                                         var x30 string = mtmp28.(Result__bool__string_Err)._0
                                         var message__28 string = x30
-                                        var t4807 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
+                                        var t4940 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
                                             _0: message__28,
                                         }
-                                        retv4782 = t4807
-                                        return retv4782
+                                        retv4915 = t4940
+                                        return retv4915
                                     default:
                                         panic("non-exhaustive match")
                                     }
                                 case Result__string__string_Err:
                                     var x27 string = mtmp25.(Result__string__string_Err)._0
                                     var message__25 string = x27
-                                    var t4808 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
+                                    var t4941 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
                                         _0: message__25,
                                     }
-                                    retv4782 = t4808
-                                    return retv4782
+                                    retv4915 = t4941
+                                    return retv4915
                                 default:
                                     panic("non-exhaustive match")
                                 }
                             case Result__string__string_Err:
                                 var x24 string = mtmp22.(Result__string__string_Err)._0
                                 var message__22 string = x24
-                                var t4809 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
+                                var t4942 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
                                     _0: message__22,
                                 }
-                                retv4782 = t4809
-                                return retv4782
+                                retv4915 = t4942
+                                return retv4915
                             default:
                                 panic("non-exhaustive match")
                             }
@@ -18201,118 +18685,118 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_load__tests(group__10 _goml_m_
                             panic("non-exhaustive match")
                         }
                     } else {
-                        break Loop_loop4792
+                        break Loop_loop4925
                     }
                 }
-                var t4791 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he1e27bf3130b906334ecc9cd468e0d04_r_____string_Ok{
+                var t4924 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he1e27bf3130b906334ecc9cd468e0d04_r_____string_Ok{
                     _0: result__19,
                 }
-                retv4782 = t4791
-                return retv4782
+                retv4915 = t4924
+                return retv4915
             default:
                 panic("non-exhaustive match")
             }
         case _goml_m_Result____gomlang_p_bootstrap__goml_p_json_p_Value____string_Err:
             var x16 string = mtmp14.(_goml_m_Result____gomlang_p_bootstrap__goml_p_json_p_Value____string_Err)._0
             var message__15 string = x16
-            var t4811 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
+            var t4944 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
                 _0: message__15,
             }
-            retv4782 = t4811
-            return retv4782
+            retv4915 = t4944
+            return retv4915
         default:
             panic("non-exhaustive match")
         }
     case Result__string__string_Err:
         var x13 string = mtmp11.(Result__string__string_Err)._0
         var message__12 string = x13
-        var t4812 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
+        var t4945 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err{
             _0: message__12,
         }
-        retv4782 = t4812
-        return retv4782
+        retv4915 = t4945
+        return retv4915
     default:
         panic("non-exhaustive match")
     }
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_selected(test__32 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, options__33 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options) bool {
-    var retv4814 bool
+    var retv4947 bool
     var mtmp34 Option__string = options__33.filter
-    var jp4816 bool
+    var jp4949 bool
     switch mtmp34.(type) {
     case Option__string_None:
-        jp4816 = true
+        jp4949 = true
     case Option__string_Some:
         var x35 string = mtmp34.(Option__string_Some)._0
         var value__34 string = x35
-        var t4824 string = test__32.display_name
-        var t4825 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_contains(t4824, value__34)
-        jp4816 = t4825
+        var t4957 string = test__32.display_name
+        var t4958 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_contains(t4957, value__34)
+        jp4949 = t4958
     default:
         panic("non-exhaustive match")
     }
-    var filter_matches__35 bool = jp4816
-    var jp4818 bool
+    var filter_matches__35 bool = jp4949
+    var jp4951 bool
     if filter_matches__35 {
-        var t4821 bool = options__33.ignored
-        var t4822 bool = !t4821
-        var jp4820 bool
-        if t4822 {
-            jp4820 = true
+        var t4954 bool = options__33.ignored
+        var t4955 bool = !t4954
+        var jp4953 bool
+        if t4955 {
+            jp4953 = true
         } else {
-            var t4823 bool = test__32.ignored
-            jp4820 = t4823
+            var t4956 bool = test__32.ignored
+            jp4953 = t4956
         }
-        jp4818 = jp4820
+        jp4951 = jp4953
     } else {
-        jp4818 = false
+        jp4951 = false
     }
-    retv4814 = jp4818
-    return retv4814
+    retv4947 = jp4951
+    return retv4947
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_sorted__tests(values__36 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv4827 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
+    var retv4960 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
     var result__37 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_hfed801dc0c6ca177f5456b9e692b4ea3_p_runner_p_Test()
     var for_iter36 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_IntoIter_h132df2bfc14ac4981c63e3cd18d69fc5_r__i_into__iter(values__36)
-    Loop_loop4829:
+    Loop_loop4962:
     for {
         if true {
             var for_next37 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_Iterator_h8a8f9268fdcfd525d244a4a2c3087318_r_p_Test_i_next(for_iter36)
             switch for_next37.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_None:
-                break Loop_loop4829
+                break Loop_loop4962
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some:
                 var x38 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = for_next37.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some)._0
                 var value__38 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x38
                 var inserted__39 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
-                var t4831 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(result__37)
-                var t4832 FnIterator__int = _goml_m_range(0, t4831)
-                var for_iter39 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t4832)
-                Loop_loop4838:
+                var t4964 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(result__37)
+                var t4965 FnIterator__int = _goml_m_range(0, t4964)
+                var for_iter39 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t4965)
+                Loop_loop4971:
                 for {
                     if true {
                         var for_next40 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter39)
                         switch for_next40.(type) {
                         case Option__int_None:
-                            break Loop_loop4838
+                            break Loop_loop4971
                         case Option__int_Some:
                             var x41 int = for_next40.(Option__int_Some)._0
                             var index__40 int = x41
-                            var t4844 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__39)
-                            var t4845 bool = !t4844
-                            var jp4842 bool
-                            if t4845 {
-                                var t4846 string = value__38.display_name
-                                var t4847 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(result__37, index__40)
-                                var t4848 string = t4847.display_name
-                                var t4849 bool = t4846 < t4848
-                                jp4842 = t4849
+                            var t4977 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__39)
+                            var t4978 bool = !t4977
+                            var jp4975 bool
+                            if t4978 {
+                                var t4979 string = value__38.display_name
+                                var t4980 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(result__37, index__40)
+                                var t4981 string = t4980.display_name
+                                var t4982 bool = t4979 < t4981
+                                jp4975 = t4982
                             } else {
-                                jp4842 = false
+                                jp4975 = false
                             }
-                            if jp4842 {
+                            if jp4975 {
                                 _goml_m_inherent_i_Vec_i_Vec_l_hba33565d3653361387073d15b9539e6f_p_runner_p_Test(result__37, index__40, value__38)
                                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(inserted__39, true)
                             } else {}
@@ -18321,12 +18805,12 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_sorted__tests(values__36 *_gom
                             panic("non-exhaustive match")
                         }
                     } else {
-                        break Loop_loop4838
+                        break Loop_loop4971
                     }
                 }
-                var t4835 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__39)
-                var t4836 bool = !t4835
-                if t4836 {
+                var t4968 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__39)
+                var t4969 bool = !t4968
+                if t4969 {
                     _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(result__37, value__38)
                 } else {}
                 continue
@@ -18334,65 +18818,65 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_sorted__tests(values__36 *_gom
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop4829
+            break Loop_loop4962
         }
     }
-    retv4827 = result__37
-    return retv4827
+    retv4960 = result__37
+    return retv4960
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(value__41 string) string {
-    var retv4851 string
+    var retv4984 string
     var result__42 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("")
-    var t4852 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__41)
-    var t4853 FnIterator__int = _goml_m_range(0, t4852)
-    var for_iter45 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t4853)
-    Loop_loop4856:
+    var t4985 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__41)
+    var t4986 FnIterator__int = _goml_m_range(0, t4985)
+    var for_iter45 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t4986)
+    Loop_loop4989:
     for {
         if true {
             var for_next46 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter45)
             switch for_next46.(type) {
             case Option__int_None:
-                break Loop_loop4856
+                break Loop_loop4989
             case Option__int_Some:
                 var x47 int = for_next46.(Option__int_Some)._0
                 var index__43 int = x47
                 var byte__44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__41, index__43)
-                var t4859 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 34)
-                if t4859 {
-                    var t4860 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-                    var t4861 string = t4860 + "\\\""
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4861)
+                var t4992 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 34)
+                if t4992 {
+                    var t4993 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+                    var t4994 string = t4993 + "\\\""
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4994)
                 } else {
-                    var t4864 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 92)
-                    if t4864 {
-                        var t4865 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-                        var t4866 string = t4865 + "\\\\"
-                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4866)
+                    var t4997 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 92)
+                    if t4997 {
+                        var t4998 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+                        var t4999 string = t4998 + "\\\\"
+                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4999)
                     } else {
-                        var t4869 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 10)
-                        if t4869 {
-                            var t4870 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-                            var t4871 string = t4870 + "\\n"
-                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4871)
+                        var t5002 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 10)
+                        if t5002 {
+                            var t5003 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+                            var t5004 string = t5003 + "\\n"
+                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t5004)
                         } else {
-                            var t4874 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 13)
-                            if t4874 {
-                                var t4875 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-                                var t4876 string = t4875 + "\\r"
-                                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4876)
+                            var t5007 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 13)
+                            if t5007 {
+                                var t5008 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+                                var t5009 string = t5008 + "\\r"
+                                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t5009)
                             } else {
-                                var t4879 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 9)
-                                if t4879 {
-                                    var t4880 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-                                    var t4881 string = t4880 + "\\t"
-                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4881)
+                                var t5012 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__44, 9)
+                                if t5012 {
+                                    var t5013 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+                                    var t5014 string = t5013 + "\\t"
+                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t5014)
                                 } else {
-                                    var t4883 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-                                    var t4884 int = index__43 + 1
-                                    var t4885 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__41, index__43, t4884)
-                                    var t4886 string = t4883 + t4885
-                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t4886)
+                                    var t5016 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+                                    var t5017 int = index__43 + 1
+                                    var t5018 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__41, index__43, t5017)
+                                    var t5019 string = t5016 + t5018
+                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(result__42, t5019)
                                 }
                             }
                         }
@@ -18403,68 +18887,68 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(value__41 string)
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop4856
+            break Loop_loop4989
         }
     }
-    var t4855 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
-    retv4851 = t4855
-    return retv4851
+    var t4988 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(result__42)
+    retv4984 = t4988
+    return retv4984
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_print__list(tests__45 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, options__46 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options) struct{} {
     var for_iter49 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_IntoIter_h132df2bfc14ac4981c63e3cd18d69fc5_r__i_into__iter(tests__45)
-    Loop_loop4890:
+    Loop_loop5023:
     for {
         if true {
             var for_next50 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_Iterator_h8a8f9268fdcfd525d244a4a2c3087318_r_p_Test_i_next(for_iter49)
             switch for_next50.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_None:
-                break Loop_loop4890
+                break Loop_loop5023
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some:
                 var x51 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = for_next50.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some)._0
                 var test__47 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x51
-                var t4893 bool = options__46.json
-                if t4893 {
+                var t5026 bool = options__46.json
+                if t5026 {
                     var mtmp52 Option__string = test__47.ignore_reason
-                    var jp4895 string
+                    var jp5028 string
                     switch mtmp52.(type) {
                     case Option__string_None:
-                        jp4895 = "null"
+                        jp5028 = "null"
                     case Option__string_Some:
                         var x53 string = mtmp52.(Option__string_Some)._0
                         var value__48 string = x53
-                        var t4911 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(value__48)
-                        var t4912 string = "\"" + t4911
-                        var t4913 string = t4912 + "\""
-                        jp4895 = t4913
+                        var t5044 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(value__48)
+                        var t5045 string = "\"" + t5044
+                        var t5046 string = t5045 + "\""
+                        jp5028 = t5046
                     default:
                         panic("non-exhaustive match")
                     }
-                    var reason__49 string = jp4895
-                    var t4896 bool = test__47.ignored
-                    var t4897 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t4896)
-                    var t4898 string = "{\"event\":\"test\",\"ignored\":" + t4897
-                    var t4899 string = t4898 + ",\"kind\":\""
-                    var t4900 string = test__47.kind
-                    var t4901 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(t4900)
-                    var t4902 string = t4899 + t4901
-                    var t4903 string = t4902 + "\",\"name\":\""
-                    var t4904 string = test__47.display_name
-                    var t4905 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(t4904)
-                    var t4906 string = t4903 + t4905
-                    var t4907 string = t4906 + "\",\"reason\":"
-                    var t4908 string = t4907 + reason__49
-                    var t4909 string = t4908 + "}"
-                    _goml_m_std_p_io_p_println____T__string(t4909)
+                    var reason__49 string = jp5028
+                    var t5029 bool = test__47.ignored
+                    var t5030 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t5029)
+                    var t5031 string = "{\"event\":\"test\",\"ignored\":" + t5030
+                    var t5032 string = t5031 + ",\"kind\":\""
+                    var t5033 string = test__47.kind
+                    var t5034 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(t5033)
+                    var t5035 string = t5032 + t5034
+                    var t5036 string = t5035 + "\",\"name\":\""
+                    var t5037 string = test__47.display_name
+                    var t5038 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(t5037)
+                    var t5039 string = t5036 + t5038
+                    var t5040 string = t5039 + "\",\"reason\":"
+                    var t5041 string = t5040 + reason__49
+                    var t5042 string = t5041 + "}"
+                    _goml_m_std_p_io_p_println____T__string(t5042)
                 } else {
-                    var t4915 bool = test__47.ignored
-                    if t4915 {
-                        var t4916 string = test__47.display_name
-                        var t4917 string = t4916 + ": ignored"
-                        _goml_m_std_p_io_p_println____T__string(t4917)
+                    var t5048 bool = test__47.ignored
+                    if t5048 {
+                        var t5049 string = test__47.display_name
+                        var t5050 string = t5049 + ": ignored"
+                        _goml_m_std_p_io_p_println____T__string(t5050)
                     } else {
-                        var t4919 string = test__47.display_name
-                        _goml_m_std_p_io_p_println____T__string(t4919)
+                        var t5052 string = test__47.display_name
+                        _goml_m_std_p_io_p_println____T__string(t5052)
                     }
                 }
                 continue
@@ -18472,198 +18956,198 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_print__list(tests__45 *_goml_v
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop4890
+            break Loop_loop5023
         }
     }
     return struct{}{}
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run__one(module_dir__50 string, index__51 int, test__52 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, options__53 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options) _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv4922 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t4978 bool = test__52.ignored
-    var jp4975 bool
-    if t4978 {
-        var t4979 bool = options__53.ignored
-        var t4980 bool = !t4979
-        jp4975 = t4980
+    var retv5055 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t5111 bool = test__52.ignored
+    var jp5108 bool
+    if t5111 {
+        var t5112 bool = options__53.ignored
+        var t5113 bool = !t5112
+        jp5108 = t5113
     } else {
-        jp4975 = false
+        jp5108 = false
     }
-    var jp4926 bool
-    if jp4975 {
-        var t4976 bool = options__53.include_ignored
-        var t4977 bool = !t4976
-        jp4926 = t4977
+    var jp5059 bool
+    if jp5108 {
+        var t5109 bool = options__53.include_ignored
+        var t5110 bool = !t5109
+        jp5059 = t5110
     } else {
-        jp4926 = false
+        jp5059 = false
     }
-    var jp4924 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
-    if jp4926 {
-        var t4927 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
+    var jp5057 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+    if jp5059 {
+        var t5060 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
             index: index__51,
             test: test__52,
             status: Ignored{},
             stdout: "",
             stderr: "",
         }
-        jp4924 = t4927
+        jp5057 = t5060
     } else {
-        var t4928 string = test__52.executable
-        var t4929 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_new(t4928)
-        var t4930 string = test__52.id
-        var t4931 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_arg(t4929, t4930)
-        var t4932 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_proce_he5cdac0306b860454965a02455d27d39__i_current__dir(t4931, module_dir__50)
-        var command__54 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_env(t4932, "TZ", "UTC")
-        var t4935 bool = options__53.nocapture
-        var jp4934 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
-        if t4935 {
-            var t4936 int = options__53.timeout_ms
-            var mtmp54 _goml_m_Result_____o_std_p_process_p_ExitStatus_c_bool_q_____string = _goml_m_inherent_i_std_p_proce_hd3a11ee5565544a161d56f7982508d2f_status__timeout(command__54, t4936)
-            var jp4938 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+        var t5061 string = test__52.executable
+        var t5062 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_new(t5061)
+        var t5063 string = test__52.id
+        var t5064 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_arg(t5062, t5063)
+        var t5065 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_proce_he5cdac0306b860454965a02455d27d39__i_current__dir(t5064, module_dir__50)
+        var command__54 _goml_m_std_p_process_p_Command = _goml_m_inherent_i_std_p_process_p_Command_i_std_p_process_p_Command_i_env(t5065, "TZ", "UTC")
+        var t5068 bool = options__53.nocapture
+        var jp5067 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+        if t5068 {
+            var t5069 int = options__53.timeout_ms
+            var mtmp54 _goml_m_Result_____o_std_p_process_p_ExitStatus_c_bool_q_____string = _goml_m_inherent_i_std_p_proce_hd3a11ee5565544a161d56f7982508d2f_status__timeout(command__54, t5069)
+            var jp5071 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
             switch mtmp54.(type) {
             case _goml_m_Result_____o_std_p_process_p_ExitStatus_c_bool_q_____string_Ok:
                 var x55 Tuple2_34_goml_m_std_p_process_p_ExitStatus_4bool = mtmp54.(_goml_m_Result_____o_std_p_process_p_ExitStatus_c_bool_q_____string_Ok)._0
                 var result__55 Tuple2_34_goml_m_std_p_process_p_ExitStatus_4bool = x55
-                var t4942 bool = result__55._1
-                var jp4940 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
-                if t4942 {
-                    jp4940 = TimedOut{}
+                var t5075 bool = result__55._1
+                var jp5073 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
+                if t5075 {
+                    jp5073 = TimedOut{}
                 } else {
-                    var t4945 _goml_m_std_p_process_p_ExitStatus = result__55._0
-                    var t4946 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(t4945)
-                    var jp4944 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
-                    if t4946 {
-                        jp4944 = Passed{}
+                    var t5078 _goml_m_std_p_process_p_ExitStatus = result__55._0
+                    var t5079 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(t5078)
+                    var jp5077 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
+                    if t5079 {
+                        jp5077 = Passed{}
                     } else {
-                        var t4947 _goml_m_std_p_process_p_ExitStatus = result__55._0
-                        var mtmp57 Option__int = _goml_m_inherent_i_std_p_proce_hf476795eb31cc7fada500d317ccf572e_itStatus_i_code(t4947)
-                        var jp4949 int
+                        var t5080 _goml_m_std_p_process_p_ExitStatus = result__55._0
+                        var mtmp57 Option__int = _goml_m_inherent_i_std_p_proce_hf476795eb31cc7fada500d317ccf572e_itStatus_i_code(t5080)
+                        var jp5082 int
                         switch mtmp57.(type) {
                         case Option__int_None:
-                            jp4949 = -1
+                            jp5082 = -1
                         case Option__int_Some:
                             var x58 int = mtmp57.(Option__int_Some)._0
                             var value__56 int = x58
-                            jp4949 = value__56
+                            jp5082 = value__56
                         default:
                             panic("non-exhaustive match")
                         }
-                        var t4950 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
-                            _0: jp4949,
+                        var t5083 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
+                            _0: jp5082,
                         }
-                        jp4944 = t4950
+                        jp5077 = t5083
                     }
-                    jp4940 = jp4944
+                    jp5073 = jp5077
                 }
-                var t4941 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
+                var t5074 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
                     index: index__51,
                     test: test__52,
-                    status: jp4940,
+                    status: jp5073,
                     stdout: "",
                     stderr: "",
                 }
-                jp4938 = t4941
+                jp5071 = t5074
             case _goml_m_Result_____o_std_p_process_p_ExitStatus_c_bool_q_____string_Err:
                 var x56 string = mtmp54.(_goml_m_Result_____o_std_p_process_p_ExitStatus_c_bool_q_____string_Err)._0
                 var message__57 string = x56
-                var t4951 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
+                var t5084 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
                     _0: -1,
                 }
-                var t4952 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
+                var t5085 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
                     index: index__51,
                     test: test__52,
-                    status: t4951,
+                    status: t5084,
                     stdout: "",
                     stderr: message__57,
                 }
-                jp4938 = t4952
+                jp5071 = t5085
             default:
                 panic("non-exhaustive match")
             }
-            jp4934 = jp4938
+            jp5067 = jp5071
         } else {
-            var t4953 int = options__53.timeout_ms
-            var mtmp59 _goml_m_Result_____o_std_p_process_p_Output_c_bool_q_____string = _goml_m_inherent_i_std_p_proce_h456b372231b1d9aa7dcf4e77cf645746_output__timeout(command__54, t4953)
-            var jp4955 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+            var t5086 int = options__53.timeout_ms
+            var mtmp59 _goml_m_Result_____o_std_p_process_p_Output_c_bool_q_____string = _goml_m_inherent_i_std_p_proce_h456b372231b1d9aa7dcf4e77cf645746_output__timeout(command__54, t5086)
+            var jp5088 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
             switch mtmp59.(type) {
             case _goml_m_Result_____o_std_p_process_p_Output_c_bool_q_____string_Ok:
                 var x60 Tuple2_30_goml_m_std_p_process_p_Output_4bool = mtmp59.(_goml_m_Result_____o_std_p_process_p_Output_c_bool_q_____string_Ok)._0
                 var result__58 Tuple2_30_goml_m_std_p_process_p_Output_4bool = x60
                 var output__59 _goml_m_std_p_process_p_Output = result__58._0
-                var t4963 bool = result__58._1
-                var jp4957 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
-                if t4963 {
-                    jp4957 = TimedOut{}
+                var t5096 bool = result__58._1
+                var jp5090 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
+                if t5096 {
+                    jp5090 = TimedOut{}
                 } else {
-                    var t4966 _goml_m_std_p_process_p_ExitStatus = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_status(output__59)
-                    var t4967 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(t4966)
-                    var jp4965 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
-                    if t4967 {
-                        jp4965 = Passed{}
+                    var t5099 _goml_m_std_p_process_p_ExitStatus = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_status(output__59)
+                    var t5100 bool = _goml_m_inherent_i_std_p_proce_h46c878f77e64f41fa95a1f46144c23a2_tatus_i_success(t5099)
+                    var jp5098 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status
+                    if t5100 {
+                        jp5098 = Passed{}
                     } else {
-                        var t4968 _goml_m_std_p_process_p_ExitStatus = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_status(output__59)
-                        var mtmp62 Option__int = _goml_m_inherent_i_std_p_proce_hf476795eb31cc7fada500d317ccf572e_itStatus_i_code(t4968)
-                        var jp4970 int
+                        var t5101 _goml_m_std_p_process_p_ExitStatus = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_status(output__59)
+                        var mtmp62 Option__int = _goml_m_inherent_i_std_p_proce_hf476795eb31cc7fada500d317ccf572e_itStatus_i_code(t5101)
+                        var jp5103 int
                         switch mtmp62.(type) {
                         case Option__int_None:
-                            jp4970 = -1
+                            jp5103 = -1
                         case Option__int_Some:
                             var x63 int = mtmp62.(Option__int_Some)._0
                             var value__60 int = x63
-                            jp4970 = value__60
+                            jp5103 = value__60
                         default:
                             panic("non-exhaustive match")
                         }
-                        var t4971 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
-                            _0: jp4970,
+                        var t5104 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
+                            _0: jp5103,
                         }
-                        jp4965 = t4971
+                        jp5098 = t5104
                     }
-                    jp4957 = jp4965
+                    jp5090 = jp5098
                 }
-                var t4958 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_stdout(output__59)
-                var t4959 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_bytes__text(t4958)
-                var t4960 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_stderr(output__59)
-                var t4961 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_bytes__text(t4960)
-                var t4962 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
+                var t5091 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_stdout(output__59)
+                var t5092 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_bytes__text(t5091)
+                var t5093 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_process_p_Output_i_std_p_process_p_Output_i_stderr(output__59)
+                var t5094 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_bytes__text(t5093)
+                var t5095 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
                     index: index__51,
                     test: test__52,
-                    status: jp4957,
-                    stdout: t4959,
-                    stderr: t4961,
+                    status: jp5090,
+                    stdout: t5092,
+                    stderr: t5094,
                 }
-                jp4955 = t4962
+                jp5088 = t5095
             case _goml_m_Result_____o_std_p_process_p_Output_c_bool_q_____string_Err:
                 var x61 string = mtmp59.(_goml_m_Result_____o_std_p_process_p_Output_c_bool_q_____string_Err)._0
                 var message__61 string = x61
-                var t4972 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
+                var t5105 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = Failed{
                     _0: -1,
                 }
-                var t4973 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
+                var t5106 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution{
                     index: index__51,
                     test: test__52,
-                    status: t4972,
+                    status: t5105,
                     stdout: "",
                     stderr: message__61,
                 }
-                jp4955 = t4973
+                jp5088 = t5106
             default:
                 panic("non-exhaustive match")
             }
-            jp4934 = jp4955
+            jp5067 = jp5088
         }
-        jp4924 = jp4934
+        jp5057 = jp5067
     }
-    retv4922 = jp4924
-    return retv4922
+    retv5055 = jp5057
+    return retv5055
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_worker(module_dir__62 string, options__63 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options, work__64 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, results__65 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) struct{} {
     var running__66 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(true)
-    Loop_loop4983:
+    Loop_loop5116:
     for {
-        var t4984 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(running__66)
-        if t4984 {
+        var t5117 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(running__66)
+        if t5117 {
             var mtmp64 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_ = _goml_m_inherent_i_Channel_i_C_h2bb41a8d5e8242221170f6c711900ade_unner_p_Test_q_(work__64)
             switch mtmp64.(type) {
             case _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__None:
@@ -18671,62 +19155,62 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_worker(module_dir__62 string, 
             case _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__Some:
                 var x65 Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = mtmp64.(_goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__Some)._0
                 var item__67 Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x65
-                var t4987 int = item__67._0
-                var t4988 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = item__67._1
-                var t4989 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run__one(module_dir__62, t4987, t4988, options__63)
-                _goml_m_inherent_i_Channel_i_C_h69e38c5c703e24a46774049819e8bfb4_ner_p_Execution(results__65, t4989)
+                var t5120 int = item__67._0
+                var t5121 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = item__67._1
+                var t5122 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run__one(module_dir__62, t5120, t5121, options__63)
+                _goml_m_inherent_i_Channel_i_C_h69e38c5c703e24a46774049819e8bfb4_ner_p_Execution(results__65, t5122)
             default:
                 panic("non-exhaustive match")
             }
             continue
         } else {
-            break Loop_loop4983
+            break Loop_loop5116
         }
     }
     return struct{}{}
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(values__68 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv4992 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var retv5125 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
     var result__69 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_hcf9e110a405d493870920b6a90b6602c_ner_p_Execution()
     var for_iter66 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_trait__impl_i_IntoIter_h1eb4d5bd5e6758700f5b4770323bf623_r__i_into__iter(values__68)
-    Loop_loop4994:
+    Loop_loop5127:
     for {
         if true {
             var for_next67 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_trait__impl_i_Iterator_hf52b01cf91b00481831e573a7be0220a_xecution_i_next(for_iter66)
             switch for_next67.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None:
-                break Loop_loop4994
+                break Loop_loop5127
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some:
                 var x68 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = for_next67.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some)._0
                 var value__70 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = x68
                 var inserted__71 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
-                var t4996 int = _goml_m_inherent_i_Vec_i_Vec_l_h943cdc01ec526356f12b63dd9ffd2d4d_ner_p_Execution(result__69)
-                var t4997 FnIterator__int = _goml_m_range(0, t4996)
-                var for_iter69 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t4997)
-                Loop_loop5003:
+                var t5129 int = _goml_m_inherent_i_Vec_i_Vec_l_h943cdc01ec526356f12b63dd9ffd2d4d_ner_p_Execution(result__69)
+                var t5130 FnIterator__int = _goml_m_range(0, t5129)
+                var for_iter69 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5130)
+                Loop_loop5136:
                 for {
                     if true {
                         var for_next70 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter69)
                         switch for_next70.(type) {
                         case Option__int_None:
-                            break Loop_loop5003
+                            break Loop_loop5136
                         case Option__int_Some:
                             var x71 int = for_next70.(Option__int_Some)._0
                             var index__72 int = x71
-                            var t5009 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__71)
-                            var t5010 bool = !t5009
-                            var jp5007 bool
-                            if t5010 {
-                                var t5011 int = value__70.index
-                                var t5012 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(result__69, index__72)
-                                var t5013 int = t5012.index
-                                var t5014 bool = t5011 < t5013
-                                jp5007 = t5014
+                            var t5142 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__71)
+                            var t5143 bool = !t5142
+                            var jp5140 bool
+                            if t5143 {
+                                var t5144 int = value__70.index
+                                var t5145 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(result__69, index__72)
+                                var t5146 int = t5145.index
+                                var t5147 bool = t5144 < t5146
+                                jp5140 = t5147
                             } else {
-                                jp5007 = false
+                                jp5140 = false
                             }
-                            if jp5007 {
+                            if jp5140 {
                                 _goml_m_inherent_i_Vec_i_Vec_l_h68b40c05f65375a74962c54d8a1be229_ner_p_Execution(result__69, index__72, value__70)
                                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(inserted__71, true)
                             } else {}
@@ -18735,12 +19219,12 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(values__68
                             panic("non-exhaustive match")
                         }
                     } else {
-                        break Loop_loop5003
+                        break Loop_loop5136
                     }
                 }
-                var t5000 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__71)
-                var t5001 bool = !t5000
-                if t5001 {
+                var t5133 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(inserted__71)
+                var t5134 bool = !t5133
+                if t5134 {
                     _goml_m_inherent_i_Vec_i_Vec_l_h309fd1ca99753465fbe12065bed86f59_ner_p_Execution(result__69, value__70)
                 } else {}
                 continue
@@ -18748,162 +19232,162 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(values__68
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop4994
+            break Loop_loop5127
         }
     }
-    retv4992 = result__69
-    return retv4992
+    retv5125 = result__69
+    return retv5125
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__text(values__73 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) int {
-    var retv5016 int
+    var retv5149 int
     var passed__74 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var failed__75 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var ignored__76 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var for_iter75 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_trait__impl_i_IntoIter_h1eb4d5bd5e6758700f5b4770323bf623_r__i_into__iter(values__73)
-    Loop_loop5037:
+    Loop_loop5170:
     for {
         if true {
             var for_next76 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_trait__impl_i_Iterator_hf52b01cf91b00481831e573a7be0220a_xecution_i_next(for_iter75)
             switch for_next76.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None:
-                break Loop_loop5037
+                break Loop_loop5170
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some:
                 var x77 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = for_next76.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some)._0
                 var value__77 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = x77
                 var mtmp78 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = value__77.status
                 switch mtmp78.(type) {
                 case Passed:
-                    var t5040 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(passed__74)
-                    var t5041 int = t5040 + 1
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(passed__74, t5041)
-                    var t5042 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
-                    var t5043 string = t5042.display_name
-                    var t5044 string = "test " + t5043
-                    var t5045 string = t5044 + " ... ok"
-                    _goml_m_std_p_io_p_println____T__string(t5045)
+                    var t5173 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(passed__74)
+                    var t5174 int = t5173 + 1
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(passed__74, t5174)
+                    var t5175 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
+                    var t5176 string = t5175.display_name
+                    var t5177 string = "test " + t5176
+                    var t5178 string = t5177 + " ... ok"
+                    _goml_m_std_p_io_p_println____T__string(t5178)
                 case Failed:
-                    var t5047 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
-                    var t5048 int = t5047 + 1
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__75, t5048)
+                    var t5180 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
+                    var t5181 int = t5180 + 1
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__75, t5181)
                     var mtmp82 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = value__77.status
-                    var jp5050 string
+                    var jp5183 string
                     switch mtmp82.(type) {
                     case Failed:
                         var x83 int = mtmp82.(Failed)._0
                         var code__79 int = x83
-                        var t5070 bool = code__79 < 0
-                        var jp5069 string
-                        if t5070 {
-                            jp5069 = "FAILED (terminated by signal)"
+                        var t5203 bool = code__79 < 0
+                        var jp5202 string
+                        if t5203 {
+                            jp5202 = "FAILED (terminated by signal)"
                         } else {
-                            var t5071 string = _goml_m_inherent_i_int_i_int_i_to__string(code__79)
-                            var t5072 string = "FAILED (exit code " + t5071
-                            var t5073 string = t5072 + ")"
-                            jp5069 = t5073
+                            var t5204 string = _goml_m_inherent_i_int_i_int_i_to__string(code__79)
+                            var t5205 string = "FAILED (exit code " + t5204
+                            var t5206 string = t5205 + ")"
+                            jp5202 = t5206
                         }
-                        jp5050 = jp5069
+                        jp5183 = jp5202
                     case TimedOut:
-                        jp5050 = "FAILED (timed out)"
+                        jp5183 = "FAILED (timed out)"
                     default:
-                        jp5050 = "FAILED"
+                        jp5183 = "FAILED"
                     }
-                    var status__80 string = jp5050
-                    var t5051 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
-                    var t5052 string = t5051.display_name
-                    var t5053 string = "test " + t5052
-                    var t5054 string = t5053 + " ... "
-                    var t5055 string = t5054 + status__80
-                    _goml_m_std_p_io_p_println____T__string(t5055)
-                    var t5063 string = value__77.stdout
-                    var t5064 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5063, "")
-                    var t5065 bool = !t5064
-                    if t5065 {
+                    var status__80 string = jp5183
+                    var t5184 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
+                    var t5185 string = t5184.display_name
+                    var t5186 string = "test " + t5185
+                    var t5187 string = t5186 + " ... "
+                    var t5188 string = t5187 + status__80
+                    _goml_m_std_p_io_p_println____T__string(t5188)
+                    var t5196 string = value__77.stdout
+                    var t5197 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5196, "")
+                    var t5198 bool = !t5197
+                    if t5198 {
                         _goml_m_std_p_io_p_println____T__string("---- stdout ----")
-                        var t5066 string = value__77.stdout
-                        _goml_m_std_p_io_p_print____T__string(t5066)
+                        var t5199 string = value__77.stdout
+                        _goml_m_std_p_io_p_print____T__string(t5199)
                     } else {}
-                    var t5058 string = value__77.stderr
-                    var t5059 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5058, "")
-                    var t5060 bool = !t5059
-                    if t5060 {
+                    var t5191 string = value__77.stderr
+                    var t5192 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5191, "")
+                    var t5193 bool = !t5192
+                    if t5193 {
                         _goml_m_std_p_io_p_println____T__string("---- stderr ----")
-                        var t5061 string = value__77.stderr
-                        _goml_m_std_p_io_p_print____T__string(t5061)
+                        var t5194 string = value__77.stderr
+                        _goml_m_std_p_io_p_print____T__string(t5194)
                     } else {}
                 case TimedOut:
-                    var t5074 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
-                    var t5075 int = t5074 + 1
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__75, t5075)
+                    var t5207 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
+                    var t5208 int = t5207 + 1
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__75, t5208)
                     var mtmp89 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = value__77.status
-                    var jp5077 string
+                    var jp5210 string
                     switch mtmp89.(type) {
                     case Failed:
                         var x90 int = mtmp89.(Failed)._0
                         var code__79 int = x90
-                        var t5097 bool = code__79 < 0
-                        var jp5096 string
-                        if t5097 {
-                            jp5096 = "FAILED (terminated by signal)"
+                        var t5230 bool = code__79 < 0
+                        var jp5229 string
+                        if t5230 {
+                            jp5229 = "FAILED (terminated by signal)"
                         } else {
-                            var t5098 string = _goml_m_inherent_i_int_i_int_i_to__string(code__79)
-                            var t5099 string = "FAILED (exit code " + t5098
-                            var t5100 string = t5099 + ")"
-                            jp5096 = t5100
+                            var t5231 string = _goml_m_inherent_i_int_i_int_i_to__string(code__79)
+                            var t5232 string = "FAILED (exit code " + t5231
+                            var t5233 string = t5232 + ")"
+                            jp5229 = t5233
                         }
-                        jp5077 = jp5096
+                        jp5210 = jp5229
                     case TimedOut:
-                        jp5077 = "FAILED (timed out)"
+                        jp5210 = "FAILED (timed out)"
                     default:
-                        jp5077 = "FAILED"
+                        jp5210 = "FAILED"
                     }
-                    var status__80 string = jp5077
-                    var t5078 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
-                    var t5079 string = t5078.display_name
-                    var t5080 string = "test " + t5079
-                    var t5081 string = t5080 + " ... "
-                    var t5082 string = t5081 + status__80
-                    _goml_m_std_p_io_p_println____T__string(t5082)
-                    var t5090 string = value__77.stdout
-                    var t5091 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5090, "")
-                    var t5092 bool = !t5091
-                    if t5092 {
+                    var status__80 string = jp5210
+                    var t5211 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
+                    var t5212 string = t5211.display_name
+                    var t5213 string = "test " + t5212
+                    var t5214 string = t5213 + " ... "
+                    var t5215 string = t5214 + status__80
+                    _goml_m_std_p_io_p_println____T__string(t5215)
+                    var t5223 string = value__77.stdout
+                    var t5224 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5223, "")
+                    var t5225 bool = !t5224
+                    if t5225 {
                         _goml_m_std_p_io_p_println____T__string("---- stdout ----")
-                        var t5093 string = value__77.stdout
-                        _goml_m_std_p_io_p_print____T__string(t5093)
+                        var t5226 string = value__77.stdout
+                        _goml_m_std_p_io_p_print____T__string(t5226)
                     } else {}
-                    var t5085 string = value__77.stderr
-                    var t5086 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5085, "")
-                    var t5087 bool = !t5086
-                    if t5087 {
+                    var t5218 string = value__77.stderr
+                    var t5219 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5218, "")
+                    var t5220 bool = !t5219
+                    if t5220 {
                         _goml_m_std_p_io_p_println____T__string("---- stderr ----")
-                        var t5088 string = value__77.stderr
-                        _goml_m_std_p_io_p_print____T__string(t5088)
+                        var t5221 string = value__77.stderr
+                        _goml_m_std_p_io_p_print____T__string(t5221)
                     } else {}
                 case Ignored:
-                    var t5101 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(ignored__76)
-                    var t5102 int = t5101 + 1
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(ignored__76, t5102)
-                    var t5107 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
-                    var t5108 string = t5107.display_name
-                    var t5109 string = "test " + t5108
-                    var t5110 string = t5109 + " ... "
-                    var t5111 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
-                    var mtmp96 Option__string = t5111.ignore_reason
-                    var jp5113 string
+                    var t5234 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(ignored__76)
+                    var t5235 int = t5234 + 1
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(ignored__76, t5235)
+                    var t5240 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
+                    var t5241 string = t5240.display_name
+                    var t5242 string = "test " + t5241
+                    var t5243 string = t5242 + " ... "
+                    var t5244 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__77.test
+                    var mtmp96 Option__string = t5244.ignore_reason
+                    var jp5246 string
                     switch mtmp96.(type) {
                     case Option__string_None:
-                        jp5113 = "ignored"
+                        jp5246 = "ignored"
                     case Option__string_Some:
                         var x97 string = mtmp96.(Option__string_Some)._0
                         var reason__78 string = x97
-                        var t5116 string = "ignored: " + reason__78
-                        jp5113 = t5116
+                        var t5249 string = "ignored: " + reason__78
+                        jp5246 = t5249
                     default:
                         panic("non-exhaustive match")
                     }
-                    var t5114 string = t5110 + jp5113
-                    _goml_m_std_p_io_p_println____T__string(t5114)
+                    var t5247 string = t5243 + jp5246
+                    _goml_m_std_p_io_p_println____T__string(t5247)
                 default:
                     panic("non-exhaustive match")
                 }
@@ -18912,123 +19396,123 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__text(values__73 *_goml
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop5037
+            break Loop_loop5170
         }
     }
-    var t5035 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
-    var t5036 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5035, 0)
-    var jp5019 string
-    if t5036 {
-        jp5019 = "ok"
+    var t5168 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
+    var t5169 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5168, 0)
+    var jp5152 string
+    if t5169 {
+        jp5152 = "ok"
     } else {
-        jp5019 = "FAILED"
+        jp5152 = "FAILED"
     }
-    var t5020 string = "\ntest result: " + jp5019
-    var t5021 string = t5020 + ". "
-    var t5022 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(passed__74)
-    var t5023 string = _goml_m_inherent_i_int_i_int_i_to__string(t5022)
-    var t5024 string = t5021 + t5023
-    var t5025 string = t5024 + " passed; "
-    var t5026 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
-    var t5027 string = _goml_m_inherent_i_int_i_int_i_to__string(t5026)
-    var t5028 string = t5025 + t5027
-    var t5029 string = t5028 + " failed; "
-    var t5030 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(ignored__76)
-    var t5031 string = _goml_m_inherent_i_int_i_int_i_to__string(t5030)
-    var t5032 string = t5029 + t5031
-    var t5033 string = t5032 + " ignored"
-    _goml_m_std_p_io_p_println____T__string(t5033)
-    var t5034 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
-    retv5016 = t5034
-    return retv5016
+    var t5153 string = "\ntest result: " + jp5152
+    var t5154 string = t5153 + ". "
+    var t5155 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(passed__74)
+    var t5156 string = _goml_m_inherent_i_int_i_int_i_to__string(t5155)
+    var t5157 string = t5154 + t5156
+    var t5158 string = t5157 + " passed; "
+    var t5159 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
+    var t5160 string = _goml_m_inherent_i_int_i_int_i_to__string(t5159)
+    var t5161 string = t5158 + t5160
+    var t5162 string = t5161 + " failed; "
+    var t5163 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(ignored__76)
+    var t5164 string = _goml_m_inherent_i_int_i_int_i_to__string(t5163)
+    var t5165 string = t5162 + t5164
+    var t5166 string = t5165 + " ignored"
+    _goml_m_std_p_io_p_println____T__string(t5166)
+    var t5167 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__75)
+    retv5149 = t5167
+    return retv5149
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__json(values__81 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) int {
-    var retv5118 int
+    var retv5251 int
     var failed__82 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var for_iter100 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_trait__impl_i_IntoIter_h1eb4d5bd5e6758700f5b4770323bf623_r__i_into__iter(values__81)
-    Loop_loop5121:
+    Loop_loop5254:
     for {
         if true {
             var for_next101 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_trait__impl_i_Iterator_hf52b01cf91b00481831e573a7be0220a_xecution_i_next(for_iter100)
             switch for_next101.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None:
-                break Loop_loop5121
+                break Loop_loop5254
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some:
                 var x102 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = for_next101.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some)._0
                 var value__83 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = x102
                 var mtmp103 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Status = value__83.status
-                var jp5124 string
+                var jp5257 string
                 switch mtmp103.(type) {
                 case Passed:
-                    jp5124 = "ok"
+                    jp5257 = "ok"
                 case Failed:
-                    var t5133 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__82)
-                    var t5134 int = t5133 + 1
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__82, t5134)
-                    jp5124 = "failed"
+                    var t5266 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__82)
+                    var t5267 int = t5266 + 1
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__82, t5267)
+                    jp5257 = "failed"
                 case TimedOut:
-                    var t5135 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__82)
-                    var t5136 int = t5135 + 1
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__82, t5136)
-                    jp5124 = "timed_out"
+                    var t5268 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__82)
+                    var t5269 int = t5268 + 1
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(failed__82, t5269)
+                    jp5257 = "timed_out"
                 case Ignored:
-                    jp5124 = "ignored"
+                    jp5257 = "ignored"
                 default:
                     panic("non-exhaustive match")
                 }
-                var event__84 string = jp5124
-                var t5125 string = "{\"event\":\"" + event__84
-                var t5126 string = t5125 + "\",\"name\":\""
-                var t5127 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__83.test
-                var t5128 string = t5127.display_name
-                var t5129 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(t5128)
-                var t5130 string = t5126 + t5129
-                var t5131 string = t5130 + "\"}"
-                _goml_m_std_p_io_p_println____T__string(t5131)
+                var event__84 string = jp5257
+                var t5258 string = "{\"event\":\"" + event__84
+                var t5259 string = t5258 + "\",\"name\":\""
+                var t5260 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = value__83.test
+                var t5261 string = t5260.display_name
+                var t5262 string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_escape__json(t5261)
+                var t5263 string = t5259 + t5262
+                var t5264 string = t5263 + "\"}"
+                _goml_m_std_p_io_p_println____T__string(t5264)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop5121
+            break Loop_loop5254
         }
     }
-    var t5120 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__82)
-    retv5118 = t5120
-    return retv5118
+    var t5253 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(failed__82)
+    retv5251 = t5253
+    return retv5251
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(module_dir__85 string, groups__86 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group, options__87 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options) Result__unit__string {
-    var retv5138 Result__unit__string
+    var retv5271 Result__unit__string
     var loaded__88 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_hfed801dc0c6ca177f5456b9e692b4ea3_p_runner_p_Test()
     var for_iter108 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_trait__impl_i_IntoIter_h0a2657b1f9c5aa5937d9deb37cc6d10e_r__i_into__iter(groups__86)
-    Loop_loop5211:
+    Loop_loop5344:
     for {
         if true {
             var for_next109 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_trait__impl_i_Iterator_hd1d43708b51280fc0b6b58c783b2f59c__p_Group_i_next(for_iter108)
             switch for_next109.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_None:
-                break Loop_loop5211
+                break Loop_loop5344
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_Some:
                 var x110 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = for_next109.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_Some)._0
                 var group__89 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = x110
                 var mtmp111 _goml_m_Result____Vec_l_gomlang_p_bootstrap__goml_p_runner_p_Test_r_____string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_load__tests(group__89)
-                var jp5214 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
+                var jp5347 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
                 switch mtmp111.(type) {
                 case _goml_m_Result____Vec_l_gomlan_he1e27bf3130b906334ecc9cd468e0d04_r_____string_Ok:
                     var x112 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = mtmp111.(_goml_m_Result____Vec_l_gomlan_he1e27bf3130b906334ecc9cd468e0d04_r_____string_Ok)._0
                     var value__90 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x112
-                    jp5214 = value__90
-                    var values__92 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = jp5214
+                    jp5347 = value__90
+                    var values__92 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = jp5347
                     var for_iter114 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_IntoIter_h132df2bfc14ac4981c63e3cd18d69fc5_r__i_into__iter(values__92)
-                    Loop_loop5216:
+                    Loop_loop5349:
                     for {
                         if true {
                             var for_next115 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_Iterator_h8a8f9268fdcfd525d244a4a2c3087318_r_p_Test_i_next(for_iter114)
                             switch for_next115.(type) {
                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_None:
-                                break Loop_loop5216
+                                break Loop_loop5349
                             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some:
                                 var x116 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = for_next115.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some)._0
                                 var value__93 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x116
@@ -19038,18 +19522,18 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(module_dir__85 string, gro
                                 panic("non-exhaustive match")
                             }
                         } else {
-                            break Loop_loop5216
+                            break Loop_loop5349
                         }
                     }
                     continue
                 case _goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err:
                     var x113 string = mtmp111.(_goml_m_Result____Vec_l_gomlan_he7622e887046bd4a48aa60cec8741424______string_Err)._0
                     var message__91 string = x113
-                    var t5219 Result__unit__string = Result__unit__string_Err{
+                    var t5352 Result__unit__string = Result__unit__string_Err{
                         _0: message__91,
                     }
-                    retv5138 = t5219
-                    return retv5138
+                    retv5271 = t5352
+                    return retv5271
                 default:
                     panic("non-exhaustive match")
                 }
@@ -19057,24 +19541,24 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(module_dir__85 string, gro
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop5211
+            break Loop_loop5344
         }
     }
     var selected_tests__94 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_hfed801dc0c6ca177f5456b9e692b4ea3_p_runner_p_Test()
-    var t5140 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_sorted__tests(loaded__88)
-    var for_iter118 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_IntoIter_h132df2bfc14ac4981c63e3cd18d69fc5_r__i_into__iter(t5140)
-    Loop_loop5206:
+    var t5273 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_sorted__tests(loaded__88)
+    var for_iter118 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_IntoIter_h132df2bfc14ac4981c63e3cd18d69fc5_r__i_into__iter(t5273)
+    Loop_loop5339:
     for {
         if true {
             var for_next119 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_trait__impl_i_Iterator_h8a8f9268fdcfd525d244a4a2c3087318_r_p_Test_i_next(for_iter118)
             switch for_next119.(type) {
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_None:
-                break Loop_loop5206
+                break Loop_loop5339
             case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some:
                 var x120 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = for_next119.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some)._0
                 var test__95 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x120
-                var t5209 bool = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_selected(test__95, options__87)
-                if t5209 {
+                var t5342 bool = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_selected(test__95, options__87)
+                if t5342 {
                     _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(selected_tests__94, test__95)
                 } else {}
                 continue
@@ -19082,130 +19566,130 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(module_dir__85 string, gro
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop5206
+            break Loop_loop5339
         }
     }
-    var t5196 bool = options__87.list
-    if t5196 {
+    var t5329 bool = options__87.list
+    if t5329 {
         _goml_m_gomlang_p_bootstrap__goml_p_runner_p_print__list(selected_tests__94, options__87)
-        var t5197 Result__unit__string = Result__unit__string_Ok{
+        var t5330 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        retv5138 = t5197
-        return retv5138
+        retv5271 = t5330
+        return retv5271
     } else {
-        var t5199 bool = options__87.json
-        var t5200 bool = !t5199
-        if t5200 {
-            var t5201 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-            var t5202 string = _goml_m_inherent_i_int_i_int_i_to__string(t5201)
-            var t5203 string = "running " + t5202
-            var t5204 string = t5203 + " tests\n"
-            _goml_m_std_p_io_p_println____T__string(t5204)
+        var t5332 bool = options__87.json
+        var t5333 bool = !t5332
+        if t5333 {
+            var t5334 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+            var t5335 string = _goml_m_inherent_i_int_i_int_i_to__string(t5334)
+            var t5336 string = "running " + t5335
+            var t5337 string = t5336 + " tests\n"
+            _goml_m_std_p_io_p_println____T__string(t5337)
         } else {}
-        var t5189 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-        var t5190 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5189, 0)
-        if t5190 {
-            var t5193 bool = options__87.json
-            var t5194 bool = !t5193
-            if t5194 {
+        var t5322 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+        var t5323 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5322, 0)
+        if t5323 {
+            var t5326 bool = options__87.json
+            var t5327 bool = !t5326
+            if t5327 {
                 _goml_m_std_p_io_p_println____T__string("test result: ok. 0 passed; 0 failed; 0 ignored")
             } else {}
-            var t5192 Result__unit__string = Result__unit__string_Ok{
+            var t5325 Result__unit__string = Result__unit__string_Ok{
                 _0: struct{}{},
             }
-            retv5138 = t5192
-            return retv5138
+            retv5271 = t5325
+            return retv5271
         } else {
-            var t5144 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-            var work__96 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Channel_i_C_haa0063835c5423f3f47632c11c48848a_unner_p_Test_q_(t5144)
-            var t5145 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-            var results__97 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Channel_i_C_h58cea74ead29ae253618b5b04285ec9c_ner_p_Execution(t5145)
-            var t5146 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-            var t5147 FnIterator__int = _goml_m_range(0, t5146)
-            var for_iter126 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5147)
-            Loop_loop5184:
+            var t5277 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+            var work__96 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Channel_i_C_haa0063835c5423f3f47632c11c48848a_unner_p_Test_q_(t5277)
+            var t5278 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+            var results__97 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Channel_i_C_h58cea74ead29ae253618b5b04285ec9c_ner_p_Execution(t5278)
+            var t5279 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+            var t5280 FnIterator__int = _goml_m_range(0, t5279)
+            var for_iter126 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5280)
+            Loop_loop5317:
             for {
                 if true {
                     var for_next127 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter126)
                     switch for_next127.(type) {
                     case Option__int_None:
-                        break Loop_loop5184
+                        break Loop_loop5317
                     case Option__int_Some:
                         var x128 int = for_next127.(Option__int_Some)._0
                         var index__98 int = x128
-                        var t5186 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(selected_tests__94, index__98)
-                        var t5187 Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test{
+                        var t5319 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(selected_tests__94, index__98)
+                        var t5320 Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test{
                             _0: index__98,
-                            _1: t5186,
+                            _1: t5319,
                         }
-                        _goml_m_inherent_i_Channel_i_C_hf8b93659bdab443b04473547cfd344eb_unner_p_Test_q_(work__96, t5187)
+                        _goml_m_inherent_i_Channel_i_C_hf8b93659bdab443b04473547cfd344eb_unner_p_Test_q_(work__96, t5320)
                         continue
                     default:
                         panic("non-exhaustive match")
                     }
                 } else {
-                    break Loop_loop5184
+                    break Loop_loop5317
                 }
             }
             _goml_m_inherent_i_Channel_i_C_h0f86dfa93ea87efd1b313df5410283b1_unner_p_Test_q_(work__96)
-            var t5179 int = options__87.jobs
-            var t5180 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-            var t5181 bool = t5179 < t5180
-            var jp5150 int
-            if t5181 {
-                var t5182 int = options__87.jobs
-                jp5150 = t5182
+            var t5312 int = options__87.jobs
+            var t5313 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+            var t5314 bool = t5312 < t5313
+            var jp5283 int
+            if t5314 {
+                var t5315 int = options__87.jobs
+                jp5283 = t5315
             } else {
-                var t5183 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-                jp5150 = t5183
+                var t5316 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+                jp5283 = t5316
             }
-            var worker_count__99 int = jp5150
-            var t5151 FnIterator__int = _goml_m_range(0, worker_count__99)
-            var for_iter131 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5151)
-            Loop_loop5175:
+            var worker_count__99 int = jp5283
+            var t5284 FnIterator__int = _goml_m_range(0, worker_count__99)
+            var for_iter131 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5284)
+            Loop_loop5308:
             for {
                 if true {
                     var for_next132 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter131)
                     switch for_next132.(type) {
                     case Option__int_None:
-                        break Loop_loop5175
+                        break Loop_loop5308
                     case Option__int_Some:
-                        var t5177 closure_env_gomlang_bootstrap_goml_runner_run_1 = closure_env_gomlang_bootstrap_goml_runner_run_1{
+                        var t5310 closure_env_gomlang_bootstrap_goml_runner_run_1 = closure_env_gomlang_bootstrap_goml_runner_run_1{
                             module_dir_0: module_dir__85,
                             options_1: options__87,
                             work_2: work__96,
                             results_3: results__97,
                         }
-                        go _goml_m_inherent_i_closure__en_h3fba66fe7fdbefdb963c927efd9fa580__run__1_i_apply(t5177)
+                        go _goml_m_inherent_i_closure__en_h3fba66fe7fdbefdb963c927efd9fa580__run__1_i_apply(t5310)
                         continue
                     default:
                         panic("non-exhaustive match")
                     }
                 } else {
-                    break Loop_loop5175
+                    break Loop_loop5308
                 }
             }
             var executions__100 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_hcf9e110a405d493870920b6a90b6602c_ner_p_Execution()
-            var t5153 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
-            var t5154 FnIterator__int = _goml_m_range(0, t5153)
-            var for_iter135 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5154)
-            Loop_loop5170:
+            var t5286 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(selected_tests__94)
+            var t5287 FnIterator__int = _goml_m_range(0, t5286)
+            var for_iter135 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t5287)
+            Loop_loop5303:
             for {
                 if true {
                     var for_next136 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(for_iter135)
                     switch for_next136.(type) {
                     case Option__int_None:
-                        break Loop_loop5170
+                        break Loop_loop5303
                     case Option__int_Some:
                         var mtmp138 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Channel_i_C_hdb36da7a823ee5896f42c8127668b4b2_ner_p_Execution(results__97)
                         switch mtmp138.(type) {
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None:
-                            var t5173 Result__unit__string = Result__unit__string_Err{
+                            var t5306 Result__unit__string = Result__unit__string_Err{
                                 _0: "test result channel closed early",
                             }
-                            retv5138 = t5173
-                            return retv5138
+                            retv5271 = t5306
+                            return retv5271
                         case _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some:
                             var x139 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = mtmp138.(_goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some)._0
                             var value__101 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = x139
@@ -19218,417 +19702,417 @@ func _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(module_dir__85 string, gro
                         panic("non-exhaustive match")
                     }
                 } else {
-                    break Loop_loop5170
+                    break Loop_loop5303
                 }
             }
             _goml_m_inherent_i_Channel_i_C_h057644221e870317113b2f39363c4257_ner_p_Execution(results__97)
-            var t5165 bool = options__87.json
-            var jp5157 int
-            if t5165 {
-                var t5166 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(executions__100)
-                var t5167 int = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__json(t5166)
-                jp5157 = t5167
+            var t5298 bool = options__87.json
+            var jp5290 int
+            if t5298 {
+                var t5299 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(executions__100)
+                var t5300 int = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__json(t5299)
+                jp5290 = t5300
             } else {
-                var t5168 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(executions__100)
-                var t5169 int = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__text(t5168)
-                jp5157 = t5169
+                var t5301 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_ordered__executions(executions__100)
+                var t5302 int = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_report__text(t5301)
+                jp5290 = t5302
             }
-            var failures__102 int = jp5157
-            var t5160 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(failures__102, 0)
-            var jp5159 Result__unit__string
-            if t5160 {
-                var t5161 Result__unit__string = Result__unit__string_Ok{
+            var failures__102 int = jp5290
+            var t5293 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(failures__102, 0)
+            var jp5292 Result__unit__string
+            if t5293 {
+                var t5294 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
-                jp5159 = t5161
+                jp5292 = t5294
             } else {
-                var t5162 string = _goml_m_inherent_i_int_i_int_i_to__string(failures__102)
-                var t5163 string = t5162 + " test(s) failed"
-                var t5164 Result__unit__string = Result__unit__string_Err{
-                    _0: t5163,
+                var t5295 string = _goml_m_inherent_i_int_i_int_i_to__string(failures__102)
+                var t5296 string = t5295 + " test(s) failed"
+                var t5297 Result__unit__string = Result__unit__string_Err{
+                    _0: t5296,
                 }
-                jp5159 = t5164
+                jp5292 = t5297
             }
-            retv5138 = jp5159
-            return retv5138
+            retv5271 = jp5292
+            return retv5271
         }
     }
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_fail(message__0 string) struct{} {
-    var t5221 string = "error: " + message__0
-    _goml_m_std_p_io_p_eprintln____T__string(t5221)
+    var t5354 string = "error: " + message__0
+    _goml_m_std_p_io_p_eprintln____T__string(t5354)
     _goml_m_std_p_process_p_exit(1)
     return struct{}{}
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help() string {
-    var retv5224 string
-    retv5224 = "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
-    return retv5224
+    var retv5357 string
+    retv5357 = "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
+    return retv5357
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(command__1 string) string {
-    var retv5226 string
-    var t5229 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "new")
-    var jp5228 string
-    if t5229 {
-        jp5228 = "Usage: goml new [OPTIONS] <PROJECT_NAME>\n\nOptions:\n      --path <PATH>  [default: .]\n  -h, --help"
+    var retv5359 string
+    var t5362 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "new")
+    var jp5361 string
+    if t5362 {
+        jp5361 = "Usage: goml new [OPTIONS] <PROJECT_NAME>\n\nOptions:\n      --path <PATH>  [default: .]\n  -h, --help"
     } else {
-        var t5232 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "check")
-        var jp5231 string
-        if t5232 {
-            jp5231 = "Usage: goml check [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
+        var t5365 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "check")
+        var jp5364 string
+        if t5365 {
+            jp5364 = "Usage: goml check [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --tests\n  -h, --help"
         } else {
-            var t5235 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "build")
-            var jp5234 string
-            if t5235 {
-                jp5234 = "Usage: goml build [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
+            var t5368 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "build")
+            var jp5367 string
+            if t5368 {
+                jp5367 = "Usage: goml build [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
             } else {
-                var t5238 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "run")
-                var jp5237 string
-                if t5238 {
-                    jp5237 = "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
+                var t5371 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "run")
+                var jp5370 string
+                if t5371 {
+                    jp5370 = "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
                 } else {
-                    var t5241 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "test")
-                    var jp5240 string
-                    if t5241 {
-                        jp5240 = "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help"
+                    var t5374 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "test")
+                    var jp5373 string
+                    if t5374 {
+                        jp5373 = "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help"
                     } else {
-                        var t5244 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "update")
-                        var jp5243 string
-                        if t5244 {
-                            jp5243 = "Usage: goml update [OPTIONS]\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
+                        var t5377 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "update")
+                        var jp5376 string
+                        if t5377 {
+                            jp5376 = "Usage: goml update [OPTIONS]\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
                         } else {
-                            var t5247 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "add")
-                            var jp5246 string
-                            if t5247 {
-                                jp5246 = "Usage: goml add [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
+                            var t5380 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "add")
+                            var jp5379 string
+                            if t5380 {
+                                jp5379 = "Usage: goml add [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
                             } else {
-                                var t5250 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "remove")
-                                var jp5249 string
-                                if t5250 {
-                                    jp5249 = "Usage: goml remove [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
+                                var t5383 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__1, "remove")
+                                var jp5382 string
+                                if t5383 {
+                                    jp5382 = "Usage: goml remove [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
                                 } else {
-                                    var t5251 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
-                                    jp5249 = t5251
+                                    var t5384 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
+                                    jp5382 = t5384
                                 }
-                                jp5246 = jp5249
+                                jp5379 = jp5382
                             }
-                            jp5243 = jp5246
+                            jp5376 = jp5379
                         }
-                        jp5240 = jp5243
+                        jp5373 = jp5376
                     }
-                    jp5237 = jp5240
+                    jp5370 = jp5373
                 }
-                jp5234 = jp5237
+                jp5367 = jp5370
             }
-            jp5231 = jp5234
+            jp5364 = jp5367
         }
-        jp5228 = jp5231
+        jp5361 = jp5364
     }
-    retv5226 = jp5228
-    return retv5226
+    retv5359 = jp5361
+    return retv5359
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_inline__value(argument__2 string, name__3 string) Option__string {
-    var retv5253 Option__string
+    var retv5386 Option__string
     var prefix__4 string = name__3 + "="
-    var t5256 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_starts__with(argument__2, prefix__4)
-    var jp5255 Option__string
-    if t5256 {
-        var t5257 int = _goml_m_inherent_i_string_i_string_i_byte__len(prefix__4)
-        var t5258 int = _goml_m_inherent_i_string_i_string_i_byte__len(argument__2)
-        var t5259 string = _goml_m_inherent_i_string_i_string_i_byte__slice(argument__2, t5257, t5258)
-        var t5260 Option__string = Option__string_Some{
-            _0: t5259,
+    var t5389 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_starts__with(argument__2, prefix__4)
+    var jp5388 Option__string
+    if t5389 {
+        var t5390 int = _goml_m_inherent_i_string_i_string_i_byte__len(prefix__4)
+        var t5391 int = _goml_m_inherent_i_string_i_string_i_byte__len(argument__2)
+        var t5392 string = _goml_m_inherent_i_string_i_string_i_byte__slice(argument__2, t5390, t5391)
+        var t5393 Option__string = Option__string_Some{
+            _0: t5392,
         }
-        jp5255 = t5260
+        jp5388 = t5393
     } else {
-        jp5255 = Option__string_None{}
+        jp5388 = Option__string_None{}
     }
-    retv5253 = jp5255
-    return retv5253
+    retv5386 = jp5388
+    return retv5386
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__5 *_goml_vec_string, index__6 *ref_int_x, argument__7 string, name__8 string) Result__Option__string__string {
-    var retv5262 Result__Option__string__string
-    var t5265 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__7, name__8)
-    var jp5264 Result__Option__string__string
-    if t5265 {
-        var t5268 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
-        var t5269 int = t5268 + 1
-        var t5270 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__5)
-        var t5271 bool = t5269 >= t5270
-        var jp5267 Result__Option__string__string
-        if t5271 {
-            var t5272 string = name__8 + " requires a value"
-            var t5273 Result__Option__string__string = Result__Option__string__string_Err{
-                _0: t5272,
+    var retv5395 Result__Option__string__string
+    var t5398 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__7, name__8)
+    var jp5397 Result__Option__string__string
+    if t5398 {
+        var t5401 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
+        var t5402 int = t5401 + 1
+        var t5403 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__5)
+        var t5404 bool = t5402 >= t5403
+        var jp5400 Result__Option__string__string
+        if t5404 {
+            var t5405 string = name__8 + " requires a value"
+            var t5406 Result__Option__string__string = Result__Option__string__string_Err{
+                _0: t5405,
             }
-            jp5267 = t5273
+            jp5400 = t5406
         } else {
-            var t5274 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
-            var t5275 int = t5274 + 1
-            var value__9 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__5, t5275)
-            var t5276 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
-            var t5277 int = t5276 + 2
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__6, t5277)
-            var t5278 Option__string = Option__string_Some{
+            var t5407 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
+            var t5408 int = t5407 + 1
+            var value__9 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__5, t5408)
+            var t5409 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
+            var t5410 int = t5409 + 2
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__6, t5410)
+            var t5411 Option__string = Option__string_Some{
                 _0: value__9,
             }
-            var t5279 Result__Option__string__string = Result__Option__string__string_Ok{
-                _0: t5278,
+            var t5412 Result__Option__string__string = Result__Option__string__string_Ok{
+                _0: t5411,
             }
-            jp5267 = t5279
+            jp5400 = t5412
         }
-        jp5264 = jp5267
+        jp5397 = jp5400
     } else {
         var mtmp2 Option__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_inline__value(argument__7, name__8)
-        var jp5281 Result__Option__string__string
+        var jp5414 Result__Option__string__string
         switch mtmp2.(type) {
         case Option__string_None:
-            var t5282 Result__Option__string__string = Result__Option__string__string_Ok{
+            var t5415 Result__Option__string__string = Result__Option__string__string_Ok{
                 _0: Option__string_None{},
             }
-            jp5281 = t5282
+            jp5414 = t5415
         case Option__string_Some:
             var x3 string = mtmp2.(Option__string_Some)._0
             var value__10 string = x3
-            var t5283 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
-            var t5284 int = t5283 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__6, t5284)
-            var t5287 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__10, "")
-            var jp5286 Result__Option__string__string
-            if t5287 {
-                var t5288 string = name__8 + " requires a value"
-                var t5289 Result__Option__string__string = Result__Option__string__string_Err{
-                    _0: t5288,
+            var t5416 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__6)
+            var t5417 int = t5416 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__6, t5417)
+            var t5420 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__10, "")
+            var jp5419 Result__Option__string__string
+            if t5420 {
+                var t5421 string = name__8 + " requires a value"
+                var t5422 Result__Option__string__string = Result__Option__string__string_Err{
+                    _0: t5421,
                 }
-                jp5286 = t5289
+                jp5419 = t5422
             } else {
-                var t5290 Option__string = Option__string_Some{
+                var t5423 Option__string = Option__string_Some{
                     _0: value__10,
                 }
-                var t5291 Result__Option__string__string = Result__Option__string__string_Ok{
-                    _0: t5290,
+                var t5424 Result__Option__string__string = Result__Option__string__string_Ok{
+                    _0: t5423,
                 }
-                jp5286 = t5291
+                jp5419 = t5424
             }
-            jp5281 = jp5286
+            jp5414 = jp5419
         default:
             panic("non-exhaustive match")
         }
-        jp5264 = jp5281
+        jp5397 = jp5414
     }
-    retv5262 = jp5264
-    return retv5262
+    retv5395 = jp5397
+    return retv5395
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__duration(value__11 string) Result__int__string {
-    var retv5293 Result__int__string
+    var retv5426 Result__int__string
     var number__12 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("")
     var multiplier__13 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    var t5310 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_ends__with(value__11, "ms")
-    if t5310 {
-        var t5311 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__11)
-        var t5312 int = t5311 - 2
-        var t5313 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__11, 0, t5312)
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(number__12, t5313)
+    var t5443 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_ends__with(value__11, "ms")
+    if t5443 {
+        var t5444 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__11)
+        var t5445 int = t5444 - 2
+        var t5446 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__11, 0, t5445)
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(number__12, t5446)
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(multiplier__13, 1)
-        var t5295 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(number__12)
-        var mtmp9 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(t5295)
-        var jp5297 int
+        var t5428 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(number__12)
+        var mtmp9 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(t5428)
+        var jp5430 int
         switch mtmp9.(type) {
         case Result__int__string_Ok:
             var x10 int = mtmp9.(Result__int__string_Ok)._0
             var value__14 int = x10
-            jp5297 = value__14
-            var parsed__15 int = jp5297
-            var t5298 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
-            var duration__16 int = parsed__15 * t5298
-            var t5301 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
-            var t5302 int = duration__16 / t5301
-            var t5303 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5302, parsed__15)
-            var t5304 bool = !t5303
-            var jp5300 Result__int__string
-            if t5304 {
-                var t5305 Result__int__string = Result__int__string_Err{
+            jp5430 = value__14
+            var parsed__15 int = jp5430
+            var t5431 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
+            var duration__16 int = parsed__15 * t5431
+            var t5434 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
+            var t5435 int = duration__16 / t5434
+            var t5436 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5435, parsed__15)
+            var t5437 bool = !t5436
+            var jp5433 Result__int__string
+            if t5437 {
+                var t5438 Result__int__string = Result__int__string_Err{
                     _0: "duration is too large",
                 }
-                jp5300 = t5305
+                jp5433 = t5438
             } else {
-                var t5306 Result__int__string = Result__int__string_Ok{
+                var t5439 Result__int__string = Result__int__string_Ok{
                     _0: duration__16,
                 }
-                jp5300 = t5306
+                jp5433 = t5439
             }
-            retv5293 = jp5300
-            return retv5293
+            retv5426 = jp5433
+            return retv5426
         case Result__int__string_Err:
-            var t5307 string = "invalid duration `" + value__11
-            var t5308 string = t5307 + "`"
-            var t5309 Result__int__string = Result__int__string_Err{
-                _0: t5308,
+            var t5440 string = "invalid duration `" + value__11
+            var t5441 string = t5440 + "`"
+            var t5442 Result__int__string = Result__int__string_Err{
+                _0: t5441,
             }
-            retv5293 = t5309
-            return retv5293
+            retv5426 = t5442
+            return retv5426
         default:
             panic("non-exhaustive match")
         }
     } else {
-        var t5316 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_ends__with(value__11, "s")
-        if t5316 {
-            var t5317 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__11)
-            var t5318 int = t5317 - 1
-            var t5319 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__11, 0, t5318)
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(number__12, t5319)
+        var t5449 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_ends__with(value__11, "s")
+        if t5449 {
+            var t5450 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__11)
+            var t5451 int = t5450 - 1
+            var t5452 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__11, 0, t5451)
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(number__12, t5452)
             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(multiplier__13, 1000)
-            var t5295 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(number__12)
-            var mtmp9 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(t5295)
-            var jp5297 int
+            var t5428 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(number__12)
+            var mtmp9 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(t5428)
+            var jp5430 int
             switch mtmp9.(type) {
             case Result__int__string_Ok:
                 var x10 int = mtmp9.(Result__int__string_Ok)._0
                 var value__14 int = x10
-                jp5297 = value__14
-                var parsed__15 int = jp5297
-                var t5298 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
-                var duration__16 int = parsed__15 * t5298
-                var t5301 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
-                var t5302 int = duration__16 / t5301
-                var t5303 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5302, parsed__15)
-                var t5304 bool = !t5303
-                var jp5300 Result__int__string
-                if t5304 {
-                    var t5305 Result__int__string = Result__int__string_Err{
+                jp5430 = value__14
+                var parsed__15 int = jp5430
+                var t5431 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
+                var duration__16 int = parsed__15 * t5431
+                var t5434 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
+                var t5435 int = duration__16 / t5434
+                var t5436 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5435, parsed__15)
+                var t5437 bool = !t5436
+                var jp5433 Result__int__string
+                if t5437 {
+                    var t5438 Result__int__string = Result__int__string_Err{
                         _0: "duration is too large",
                     }
-                    jp5300 = t5305
+                    jp5433 = t5438
                 } else {
-                    var t5306 Result__int__string = Result__int__string_Ok{
+                    var t5439 Result__int__string = Result__int__string_Ok{
                         _0: duration__16,
                     }
-                    jp5300 = t5306
+                    jp5433 = t5439
                 }
-                retv5293 = jp5300
-                return retv5293
+                retv5426 = jp5433
+                return retv5426
             case Result__int__string_Err:
-                var t5307 string = "invalid duration `" + value__11
-                var t5308 string = t5307 + "`"
-                var t5309 Result__int__string = Result__int__string_Err{
-                    _0: t5308,
+                var t5440 string = "invalid duration `" + value__11
+                var t5441 string = t5440 + "`"
+                var t5442 Result__int__string = Result__int__string_Err{
+                    _0: t5441,
                 }
-                retv5293 = t5309
-                return retv5293
+                retv5426 = t5442
+                return retv5426
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            var t5322 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_ends__with(value__11, "m")
-            if t5322 {
-                var t5323 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__11)
-                var t5324 int = t5323 - 1
-                var t5325 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__11, 0, t5324)
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(number__12, t5325)
+            var t5455 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_ends__with(value__11, "m")
+            if t5455 {
+                var t5456 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__11)
+                var t5457 int = t5456 - 1
+                var t5458 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__11, 0, t5457)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(number__12, t5458)
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(multiplier__13, 60000)
-                var t5295 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(number__12)
-                var mtmp9 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(t5295)
-                var jp5297 int
+                var t5428 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(number__12)
+                var mtmp9 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(t5428)
+                var jp5430 int
                 switch mtmp9.(type) {
                 case Result__int__string_Ok:
                     var x10 int = mtmp9.(Result__int__string_Ok)._0
                     var value__14 int = x10
-                    jp5297 = value__14
-                    var parsed__15 int = jp5297
-                    var t5298 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
-                    var duration__16 int = parsed__15 * t5298
-                    var t5301 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
-                    var t5302 int = duration__16 / t5301
-                    var t5303 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5302, parsed__15)
-                    var t5304 bool = !t5303
-                    var jp5300 Result__int__string
-                    if t5304 {
-                        var t5305 Result__int__string = Result__int__string_Err{
+                    jp5430 = value__14
+                    var parsed__15 int = jp5430
+                    var t5431 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
+                    var duration__16 int = parsed__15 * t5431
+                    var t5434 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(multiplier__13)
+                    var t5435 int = duration__16 / t5434
+                    var t5436 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5435, parsed__15)
+                    var t5437 bool = !t5436
+                    var jp5433 Result__int__string
+                    if t5437 {
+                        var t5438 Result__int__string = Result__int__string_Err{
                             _0: "duration is too large",
                         }
-                        jp5300 = t5305
+                        jp5433 = t5438
                     } else {
-                        var t5306 Result__int__string = Result__int__string_Ok{
+                        var t5439 Result__int__string = Result__int__string_Ok{
                             _0: duration__16,
                         }
-                        jp5300 = t5306
+                        jp5433 = t5439
                     }
-                    retv5293 = jp5300
-                    return retv5293
+                    retv5426 = jp5433
+                    return retv5426
                 case Result__int__string_Err:
-                    var t5307 string = "invalid duration `" + value__11
-                    var t5308 string = t5307 + "`"
-                    var t5309 Result__int__string = Result__int__string_Err{
-                        _0: t5308,
+                    var t5440 string = "invalid duration `" + value__11
+                    var t5441 string = t5440 + "`"
+                    var t5442 Result__int__string = Result__int__string_Err{
+                        _0: t5441,
                     }
-                    retv5293 = t5309
-                    return retv5293
+                    retv5426 = t5442
+                    return retv5426
                 default:
                     panic("non-exhaustive match")
                 }
             } else {
-                var t5327 Result__int__string = Result__int__string_Err{
+                var t5460 Result__int__string = Result__int__string_Err{
                     _0: "duration must end in ms, s, or m",
                 }
-                retv5293 = t5327
-                return retv5293
+                retv5426 = t5460
+                return retv5426
             }
         }
     }
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml_vec_string) _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string {
-    var retv5329 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string
-    var t5553 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__17)
-    var t5554 bool = t5553 < 2
-    if t5554 {
-        var t5555 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
-        var t5556 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-            _0: t5555,
+    var retv5462 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string
+    var t5686 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__17)
+    var t5687 bool = t5686 < 2
+    if t5687 {
+        var t5688 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
+        var t5689 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+            _0: t5688,
         }
-        retv5329 = t5556
-        return retv5329
+        retv5462 = t5689
+        return retv5462
     } else {
         var command__18 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__17, 1)
-        var t5549 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "check")
-        var t5550 bool = !t5549
-        var jp5546 bool
-        if t5550 {
-            var t5551 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "build")
-            var t5552 bool = !t5551
-            jp5546 = t5552
+        var t5682 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "check")
+        var t5683 bool = !t5682
+        var jp5679 bool
+        if t5683 {
+            var t5684 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "build")
+            var t5685 bool = !t5684
+            jp5679 = t5685
         } else {
-            jp5546 = false
+            jp5679 = false
         }
-        var jp5542 bool
-        if jp5546 {
-            var t5547 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "run")
-            var t5548 bool = !t5547
-            jp5542 = t5548
+        var jp5675 bool
+        if jp5679 {
+            var t5680 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "run")
+            var t5681 bool = !t5680
+            jp5675 = t5681
         } else {
-            jp5542 = false
+            jp5675 = false
         }
-        var jp5538 bool
-        if jp5542 {
-            var t5543 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
-            var t5544 bool = !t5543
-            jp5538 = t5544
+        var jp5671 bool
+        if jp5675 {
+            var t5676 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
+            var t5677 bool = !t5676
+            jp5671 = t5677
         } else {
-            jp5538 = false
+            jp5671 = false
         }
-        if jp5538 {
-            var t5539 string = "unknown command " + command__18
-            var t5540 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-                _0: t5539,
+        if jp5671 {
+            var t5672 string = "unknown command " + command__18
+            var t5673 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                _0: t5672,
             }
-            retv5329 = t5540
-            return retv5329
+            retv5462 = t5673
+            return retv5462
         } else {
             var target__19 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(".")
             var target_set__20 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
@@ -19648,247 +20132,247 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
             var test_kind__34 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("all")
             var trailing__35 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
             var index__36 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(2)
-            Loop_loop5363:
+            Loop_loop5496:
             for {
-                var t5364 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                var t5365 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__17)
-                var t5366 bool = t5364 < t5365
-                if t5366 {
-                    var t5367 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                    var argument__37 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__17, t5367)
-                    var t5369 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(trailing__35)
-                    if t5369 {
-                        var t5371 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "run")
-                        if t5371 {
+                var t5497 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                var t5498 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__17)
+                var t5499 bool = t5497 < t5498
+                if t5499 {
+                    var t5500 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                    var argument__37 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__17, t5500)
+                    var t5502 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(trailing__35)
+                    if t5502 {
+                        var t5504 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "run")
+                        if t5504 {
                             _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(program_args__25, argument__37)
-                            var t5372 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                            var t5373 int = t5372 + 1
-                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5373)
+                            var t5505 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                            var t5506 int = t5505 + 1
+                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5506)
                             continue
                         } else {
-                            var t5375 string = "unexpected argument " + argument__37
-                            var t5376 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-                                _0: t5375,
+                            var t5508 string = "unexpected argument " + argument__37
+                            var t5509 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                _0: t5508,
                             }
-                            retv5329 = t5376
-                            return retv5329
+                            retv5462 = t5509
+                            return retv5462
                         }
                     } else {
-                        var t5378 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--")
-                        if t5378 {
+                        var t5511 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--")
+                        if t5511 {
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(trailing__35, true)
-                            var t5379 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                            var t5380 int = t5379 + 1
-                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5380)
+                            var t5512 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                            var t5513 int = t5512 + 1
+                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5513)
                             continue
                         } else {
-                            var t5535 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "-h")
-                            var jp5384 bool
-                            if t5535 {
-                                jp5384 = true
+                            var t5668 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "-h")
+                            var jp5517 bool
+                            if t5668 {
+                                jp5517 = true
                             } else {
-                                var t5536 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--help")
-                                jp5384 = t5536
+                                var t5669 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--help")
+                                jp5517 = t5669
                             }
-                            if jp5384 {
-                                var t5385 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(command__18)
-                                _goml_m_std_p_io_p_println____T__string(t5385)
+                            if jp5517 {
+                                var t5518 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(command__18)
+                                _goml_m_std_p_io_p_println____T__string(t5518)
                                 _goml_m_std_p_process_p_exit(0)
                                 continue
                             } else {
-                                var t5388 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--dry-run")
-                                if t5388 {
+                                var t5521 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--dry-run")
+                                if t5521 {
                                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(dry_run__23, true)
-                                    var t5389 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                    var t5390 int = t5389 + 1
-                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5390)
+                                    var t5522 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                    var t5523 int = t5522 + 1
+                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5523)
                                     continue
                                 } else {
-                                    var t5533 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "check")
-                                    var jp5394 bool
-                                    if t5533 {
-                                        var t5534 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--tests")
-                                        jp5394 = t5534
+                                    var t5666 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "check")
+                                    var jp5527 bool
+                                    if t5666 {
+                                        var t5667 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--tests")
+                                        jp5527 = t5667
                                     } else {
-                                        jp5394 = false
+                                        jp5527 = false
                                     }
-                                    if jp5394 {
+                                    if jp5527 {
                                         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(include_tests__24, true)
-                                        var t5395 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                        var t5396 int = t5395 + 1
-                                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5396)
+                                        var t5528 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                        var t5529 int = t5528 + 1
+                                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5529)
                                         continue
                                     } else {
-                                        var t5531 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
-                                        var jp5400 bool
-                                        if t5531 {
-                                            var t5532 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--list")
-                                            jp5400 = t5532
+                                        var t5664 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
+                                        var jp5533 bool
+                                        if t5664 {
+                                            var t5665 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--list")
+                                            jp5533 = t5665
                                         } else {
-                                            jp5400 = false
+                                            jp5533 = false
                                         }
-                                        if jp5400 {
+                                        if jp5533 {
                                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(test_list__28, true)
-                                            var t5401 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                            var t5402 int = t5401 + 1
-                                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5402)
+                                            var t5534 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                            var t5535 int = t5534 + 1
+                                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5535)
                                             continue
                                         } else {
-                                            var t5529 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
-                                            var jp5406 bool
-                                            if t5529 {
-                                                var t5530 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--ignored")
-                                                jp5406 = t5530
+                                            var t5662 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
+                                            var jp5539 bool
+                                            if t5662 {
+                                                var t5663 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--ignored")
+                                                jp5539 = t5663
                                             } else {
-                                                jp5406 = false
+                                                jp5539 = false
                                             }
-                                            if jp5406 {
+                                            if jp5539 {
                                                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(test_ignored__29, true)
-                                                var t5407 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                                var t5408 int = t5407 + 1
-                                                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5408)
+                                                var t5540 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                                var t5541 int = t5540 + 1
+                                                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5541)
                                                 continue
                                             } else {
-                                                var t5527 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
-                                                var jp5412 bool
-                                                if t5527 {
-                                                    var t5528 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--include-ignored")
-                                                    jp5412 = t5528
+                                                var t5660 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
+                                                var jp5545 bool
+                                                if t5660 {
+                                                    var t5661 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--include-ignored")
+                                                    jp5545 = t5661
                                                 } else {
-                                                    jp5412 = false
+                                                    jp5545 = false
                                                 }
-                                                if jp5412 {
+                                                if jp5545 {
                                                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(test_include_ignored__30, true)
-                                                    var t5413 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                                    var t5414 int = t5413 + 1
-                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5414)
+                                                    var t5546 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                                    var t5547 int = t5546 + 1
+                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5547)
                                                     continue
                                                 } else {
-                                                    var t5525 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
-                                                    var jp5418 bool
-                                                    if t5525 {
-                                                        var t5526 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--nocapture")
-                                                        jp5418 = t5526
+                                                    var t5658 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
+                                                    var jp5551 bool
+                                                    if t5658 {
+                                                        var t5659 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(argument__37, "--nocapture")
+                                                        jp5551 = t5659
                                                     } else {
-                                                        jp5418 = false
+                                                        jp5551 = false
                                                     }
-                                                    if jp5418 {
+                                                    if jp5551 {
                                                         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(test_nocapture__32, true)
-                                                        var t5419 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                                        var t5420 int = t5419 + 1
-                                                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5420)
+                                                        var t5552 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                                        var t5553 int = t5552 + 1
+                                                        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5553)
                                                         continue
                                                     } else {
                                                         var mtmp23 Result__Option__string__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__17, index__36, argument__37, "--target-dir")
-                                                        var jp5423 Option__string
+                                                        var jp5556 Option__string
                                                         switch mtmp23.(type) {
                                                         case Result__Option__string__string_Ok:
                                                             var x24 Option__string = mtmp23.(Result__Option__string__string_Ok)._0
                                                             var value__38 Option__string = x24
-                                                            jp5423 = value__38
-                                                            var parsed_target_dir__40 Option__string = jp5423
-                                                            var jp5426 bool
+                                                            jp5556 = value__38
+                                                            var parsed_target_dir__40 Option__string = jp5556
+                                                            var jp5559 bool
                                                             switch parsed_target_dir__40.(type) {
                                                             case Option__string_None:
-                                                                jp5426 = false
+                                                                jp5559 = false
                                                             case Option__string_Some:
-                                                                jp5426 = true
+                                                                jp5559 = true
                                                             default:
                                                                 panic("non-exhaustive match")
                                                             }
-                                                            if jp5426 {
+                                                            if jp5559 {
                                                                 var mtmp27 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(target_dir__21)
-                                                                var jp5429 bool
+                                                                var jp5562 bool
                                                                 switch mtmp27.(type) {
                                                                 case Option__string_None:
-                                                                    jp5429 = false
+                                                                    jp5562 = false
                                                                 case Option__string_Some:
-                                                                    jp5429 = true
+                                                                    jp5562 = true
                                                                 default:
                                                                     panic("non-exhaustive match")
                                                                 }
-                                                                if jp5429 {
-                                                                    var t5430 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                if jp5562 {
+                                                                    var t5563 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                         _0: "--target-dir cannot be repeated",
                                                                     }
-                                                                    retv5329 = t5430
-                                                                    return retv5329
+                                                                    retv5462 = t5563
+                                                                    return retv5462
                                                                 } else {
                                                                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_string_r_(target_dir__21, parsed_target_dir__40)
                                                                     continue
                                                                 }
                                                             } else {
                                                                 var mtmp29 Result__Option__string__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__17, index__36, argument__37, "--compiler")
-                                                                var jp5433 Option__string
+                                                                var jp5566 Option__string
                                                                 switch mtmp29.(type) {
                                                                 case Result__Option__string__string_Ok:
                                                                     var x30 Option__string = mtmp29.(Result__Option__string__string_Ok)._0
                                                                     var value__41 Option__string = x30
-                                                                    jp5433 = value__41
-                                                                    var parsed_compiler__43 Option__string = jp5433
-                                                                    var jp5436 bool
+                                                                    jp5566 = value__41
+                                                                    var parsed_compiler__43 Option__string = jp5566
+                                                                    var jp5569 bool
                                                                     switch parsed_compiler__43.(type) {
                                                                     case Option__string_None:
-                                                                        jp5436 = false
+                                                                        jp5569 = false
                                                                     case Option__string_Some:
-                                                                        jp5436 = true
+                                                                        jp5569 = true
                                                                     default:
                                                                         panic("non-exhaustive match")
                                                                     }
-                                                                    if jp5436 {
+                                                                    if jp5569 {
                                                                         var mtmp33 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(compiler__22)
-                                                                        var jp5439 bool
+                                                                        var jp5572 bool
                                                                         switch mtmp33.(type) {
                                                                         case Option__string_None:
-                                                                            jp5439 = false
+                                                                            jp5572 = false
                                                                         case Option__string_Some:
-                                                                            jp5439 = true
+                                                                            jp5572 = true
                                                                         default:
                                                                             panic("non-exhaustive match")
                                                                         }
-                                                                        if jp5439 {
-                                                                            var t5440 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                        if jp5572 {
+                                                                            var t5573 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                 _0: "--compiler cannot be repeated",
                                                                             }
-                                                                            retv5329 = t5440
-                                                                            return retv5329
+                                                                            retv5462 = t5573
+                                                                            return retv5462
                                                                         } else {
                                                                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_string_r_(compiler__22, parsed_compiler__43)
                                                                             continue
                                                                         }
                                                                     } else {
-                                                                        var t5443 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
-                                                                        if t5443 {
+                                                                        var t5576 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "test")
+                                                                        if t5576 {
                                                                             var mtmp35 Result__Option__string__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__17, index__36, argument__37, "--timeout")
-                                                                            var jp5445 Option__string
+                                                                            var jp5578 Option__string
                                                                             switch mtmp35.(type) {
                                                                             case Result__Option__string__string_Ok:
                                                                                 var x36 Option__string = mtmp35.(Result__Option__string__string_Ok)._0
                                                                                 var value__44 Option__string = x36
-                                                                                jp5445 = value__44
-                                                                                var parsed_timeout__46 Option__string = jp5445
-                                                                                var jp5448 bool
+                                                                                jp5578 = value__44
+                                                                                var parsed_timeout__46 Option__string = jp5578
+                                                                                var jp5581 bool
                                                                                 switch parsed_timeout__46.(type) {
                                                                                 case Option__string_None:
-                                                                                    jp5448 = false
+                                                                                    jp5581 = false
                                                                                 case Option__string_Some:
-                                                                                    jp5448 = true
+                                                                                    jp5581 = true
                                                                                 default:
                                                                                     panic("non-exhaustive match")
                                                                                 }
-                                                                                if jp5448 {
-                                                                                    var jp5450 string
+                                                                                if jp5581 {
+                                                                                    var jp5583 string
                                                                                     switch parsed_timeout__46.(type) {
                                                                                     case Option__string_None:
-                                                                                        jp5450 = "30s"
+                                                                                        jp5583 = "30s"
                                                                                     case Option__string_Some:
                                                                                         var x39 string = parsed_timeout__46.(Option__string_Some)._0
                                                                                         var value__47 string = x39
-                                                                                        jp5450 = value__47
+                                                                                        jp5583 = value__47
                                                                                     default:
                                                                                         panic("non-exhaustive match")
                                                                                     }
-                                                                                    var value__48 string = jp5450
+                                                                                    var value__48 string = jp5583
                                                                                     var mtmp40 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__duration(value__48)
                                                                                     switch mtmp40.(type) {
                                                                                     case Result__int__string_Ok:
@@ -19899,45 +20383,45 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                                     case Result__int__string_Err:
                                                                                         var x42 string = mtmp40.(Result__int__string_Err)._0
                                                                                         var message__50 string = x42
-                                                                                        var t5453 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                        var t5586 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                             _0: message__50,
                                                                                         }
-                                                                                        retv5329 = t5453
-                                                                                        return retv5329
+                                                                                        retv5462 = t5586
+                                                                                        return retv5462
                                                                                     default:
                                                                                         panic("non-exhaustive match")
                                                                                     }
                                                                                 } else {
                                                                                     var mtmp43 Result__Option__string__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__17, index__36, argument__37, "--jobs")
-                                                                                    var jp5455 Option__string
+                                                                                    var jp5588 Option__string
                                                                                     switch mtmp43.(type) {
                                                                                     case Result__Option__string__string_Ok:
                                                                                         var x44 Option__string = mtmp43.(Result__Option__string__string_Ok)._0
                                                                                         var value__51 Option__string = x44
-                                                                                        jp5455 = value__51
-                                                                                        var parsed_jobs__53 Option__string = jp5455
-                                                                                        var jp5458 bool
+                                                                                        jp5588 = value__51
+                                                                                        var parsed_jobs__53 Option__string = jp5588
+                                                                                        var jp5591 bool
                                                                                         switch parsed_jobs__53.(type) {
                                                                                         case Option__string_None:
-                                                                                            jp5458 = false
+                                                                                            jp5591 = false
                                                                                         case Option__string_Some:
-                                                                                            jp5458 = true
+                                                                                            jp5591 = true
                                                                                         default:
                                                                                             panic("non-exhaustive match")
                                                                                         }
-                                                                                        if jp5458 {
-                                                                                            var jp5460 string
+                                                                                        if jp5591 {
+                                                                                            var jp5593 string
                                                                                             switch parsed_jobs__53.(type) {
                                                                                             case Option__string_None:
-                                                                                                jp5460 = "1"
+                                                                                                jp5593 = "1"
                                                                                             case Option__string_Some:
                                                                                                 var x47 string = parsed_jobs__53.(Option__string_Some)._0
                                                                                                 var value__54 string = x47
-                                                                                                jp5460 = value__54
+                                                                                                jp5593 = value__54
                                                                                             default:
                                                                                                 panic("non-exhaustive match")
                                                                                             }
-                                                                                            var value__55 string = jp5460
+                                                                                            var value__55 string = jp5593
                                                                                             var mtmp48 Result__int__string = _goml_m_gomlang_p_bootstrap__goml_p_util_p_parse__positive__int(value__55)
                                                                                             switch mtmp48.(type) {
                                                                                             case Result__int__string_Ok:
@@ -19948,136 +20432,136 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                                             case Result__int__string_Err:
                                                                                                 var x50 string = mtmp48.(Result__int__string_Err)._0
                                                                                                 var message__57 string = x50
-                                                                                                var t5463 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                var t5596 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                                     _0: message__57,
                                                                                                 }
-                                                                                                retv5329 = t5463
-                                                                                                return retv5329
+                                                                                                retv5462 = t5596
+                                                                                                return retv5462
                                                                                             default:
                                                                                                 panic("non-exhaustive match")
                                                                                             }
                                                                                         } else {
                                                                                             var mtmp51 Result__Option__string__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__17, index__36, argument__37, "--kind")
-                                                                                            var jp5465 Option__string
+                                                                                            var jp5598 Option__string
                                                                                             switch mtmp51.(type) {
                                                                                             case Result__Option__string__string_Ok:
                                                                                                 var x52 Option__string = mtmp51.(Result__Option__string__string_Ok)._0
                                                                                                 var value__58 Option__string = x52
-                                                                                                jp5465 = value__58
-                                                                                                var parsed_kind__60 Option__string = jp5465
-                                                                                                var jp5468 bool
+                                                                                                jp5598 = value__58
+                                                                                                var parsed_kind__60 Option__string = jp5598
+                                                                                                var jp5601 bool
                                                                                                 switch parsed_kind__60.(type) {
                                                                                                 case Option__string_None:
-                                                                                                    jp5468 = false
+                                                                                                    jp5601 = false
                                                                                                 case Option__string_Some:
-                                                                                                    jp5468 = true
+                                                                                                    jp5601 = true
                                                                                                 default:
                                                                                                     panic("non-exhaustive match")
                                                                                                 }
-                                                                                                if jp5468 {
-                                                                                                    var jp5470 string
+                                                                                                if jp5601 {
+                                                                                                    var jp5603 string
                                                                                                     switch parsed_kind__60.(type) {
                                                                                                     case Option__string_None:
-                                                                                                        jp5470 = "all"
+                                                                                                        jp5603 = "all"
                                                                                                     case Option__string_Some:
                                                                                                         var x55 string = parsed_kind__60.(Option__string_Some)._0
                                                                                                         var value__61 string = x55
-                                                                                                        jp5470 = value__61
+                                                                                                        jp5603 = value__61
                                                                                                     default:
                                                                                                         panic("non-exhaustive match")
                                                                                                     }
-                                                                                                    var value__62 string = jp5470
-                                                                                                    var t5479 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__62, "internal")
-                                                                                                    var jp5477 bool
-                                                                                                    if t5479 {
-                                                                                                        jp5477 = true
+                                                                                                    var value__62 string = jp5603
+                                                                                                    var t5612 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__62, "internal")
+                                                                                                    var jp5610 bool
+                                                                                                    if t5612 {
+                                                                                                        jp5610 = true
                                                                                                     } else {
-                                                                                                        var t5480 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__62, "external")
-                                                                                                        jp5477 = t5480
+                                                                                                        var t5613 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__62, "external")
+                                                                                                        jp5610 = t5613
                                                                                                     }
-                                                                                                    var jp5473 bool
-                                                                                                    if jp5477 {
-                                                                                                        jp5473 = true
+                                                                                                    var jp5606 bool
+                                                                                                    if jp5610 {
+                                                                                                        jp5606 = true
                                                                                                     } else {
-                                                                                                        var t5478 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__62, "all")
-                                                                                                        jp5473 = t5478
+                                                                                                        var t5611 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__62, "all")
+                                                                                                        jp5606 = t5611
                                                                                                     }
-                                                                                                    if jp5473 {
+                                                                                                    if jp5606 {
                                                                                                         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(test_kind__34, value__62)
                                                                                                         continue
                                                                                                     } else {
-                                                                                                        var t5475 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                        var t5608 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                                             _0: "--kind must be internal, external, or all",
                                                                                                         }
-                                                                                                        retv5329 = t5475
-                                                                                                        return retv5329
+                                                                                                        retv5462 = t5608
+                                                                                                        return retv5462
                                                                                                     }
                                                                                                 } else {
                                                                                                     var mtmp56 Result__Option__string__string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_option__value(args__17, index__36, argument__37, "--format")
-                                                                                                    var jp5482 Option__string
+                                                                                                    var jp5615 Option__string
                                                                                                     switch mtmp56.(type) {
                                                                                                     case Result__Option__string__string_Ok:
                                                                                                         var x57 Option__string = mtmp56.(Result__Option__string__string_Ok)._0
                                                                                                         var value__63 Option__string = x57
-                                                                                                        jp5482 = value__63
-                                                                                                        var parsed_format__65 Option__string = jp5482
+                                                                                                        jp5615 = value__63
+                                                                                                        var parsed_format__65 Option__string = jp5615
                                                                                                         switch parsed_format__65.(type) {
                                                                                                         case Option__string_None:
-                                                                                                            var t5485 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_starts__with(argument__37, "-")
-                                                                                                            if t5485 {
-                                                                                                                var t5486 string = "unknown option " + argument__37
-                                                                                                                var t5487 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-                                                                                                                    _0: t5486,
+                                                                                                            var t5618 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_starts__with(argument__37, "-")
+                                                                                                            if t5618 {
+                                                                                                                var t5619 string = "unknown option " + argument__37
+                                                                                                                var t5620 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                                    _0: t5619,
                                                                                                                 }
-                                                                                                                retv5329 = t5487
-                                                                                                                return retv5329
+                                                                                                                retv5462 = t5620
+                                                                                                                return retv5462
                                                                                                             } else {
                                                                                                                 var mtmp60 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(test_filter__26)
-                                                                                                                var jp5490 bool
+                                                                                                                var jp5623 bool
                                                                                                                 switch mtmp60.(type) {
                                                                                                                 case Option__string_None:
-                                                                                                                    jp5490 = false
+                                                                                                                    jp5623 = false
                                                                                                                 case Option__string_Some:
-                                                                                                                    jp5490 = true
+                                                                                                                    jp5623 = true
                                                                                                                 default:
                                                                                                                     panic("non-exhaustive match")
                                                                                                                 }
-                                                                                                                if jp5490 {
-                                                                                                                    var t5491 string = "unexpected argument " + argument__37
-                                                                                                                    var t5492 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-                                                                                                                        _0: t5491,
+                                                                                                                if jp5623 {
+                                                                                                                    var t5624 string = "unexpected argument " + argument__37
+                                                                                                                    var t5625 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                                        _0: t5624,
                                                                                                                     }
-                                                                                                                    retv5329 = t5492
-                                                                                                                    return retv5329
+                                                                                                                    retv5462 = t5625
+                                                                                                                    return retv5462
                                                                                                                 } else {
-                                                                                                                    var t5493 Option__string = Option__string_Some{
+                                                                                                                    var t5626 Option__string = Option__string_Some{
                                                                                                                         _0: argument__37,
                                                                                                                     }
-                                                                                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_string_r_(test_filter__26, t5493)
-                                                                                                                    var t5494 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                                                                                                    var t5495 int = t5494 + 1
-                                                                                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5495)
+                                                                                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_string_r_(test_filter__26, t5626)
+                                                                                                                    var t5627 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                                                                                                    var t5628 int = t5627 + 1
+                                                                                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5628)
                                                                                                                     continue
                                                                                                                 }
                                                                                                             }
                                                                                                         case Option__string_Some:
                                                                                                             var x59 string = parsed_format__65.(Option__string_Some)._0
                                                                                                             var value__66 string = x59
-                                                                                                            var t5498 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__66, "json")
-                                                                                                            if t5498 {
+                                                                                                            var t5631 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__66, "json")
+                                                                                                            if t5631 {
                                                                                                                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(test_json__31, true)
                                                                                                                 continue
                                                                                                             } else {
-                                                                                                                var t5501 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__66, "text")
-                                                                                                                if t5501 {
+                                                                                                                var t5634 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(value__66, "text")
+                                                                                                                if t5634 {
                                                                                                                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(test_json__31, false)
                                                                                                                     continue
                                                                                                                 } else {
-                                                                                                                    var t5503 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                                    var t5636 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                                                         _0: "--format must be text or json",
                                                                                                                     }
-                                                                                                                    retv5329 = t5503
-                                                                                                                    return retv5329
+                                                                                                                    retv5462 = t5636
+                                                                                                                    return retv5462
                                                                                                                 }
                                                                                                             }
                                                                                                         default:
@@ -20086,11 +20570,11 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                                                     case Result__Option__string__string_Err:
                                                                                                         var x58 string = mtmp56.(Result__Option__string__string_Err)._0
                                                                                                         var message__64 string = x58
-                                                                                                        var t5504 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                        var t5637 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                                             _0: message__64,
                                                                                                         }
-                                                                                                        retv5329 = t5504
-                                                                                                        return retv5329
+                                                                                                        retv5462 = t5637
+                                                                                                        return retv5462
                                                                                                     default:
                                                                                                         panic("non-exhaustive match")
                                                                                                     }
@@ -20098,11 +20582,11 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                                             case Result__Option__string__string_Err:
                                                                                                 var x53 string = mtmp51.(Result__Option__string__string_Err)._0
                                                                                                 var message__59 string = x53
-                                                                                                var t5505 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                                var t5638 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                                     _0: message__59,
                                                                                                 }
-                                                                                                retv5329 = t5505
-                                                                                                return retv5329
+                                                                                                retv5462 = t5638
+                                                                                                return retv5462
                                                                                             default:
                                                                                                 panic("non-exhaustive match")
                                                                                             }
@@ -20110,11 +20594,11 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                                     case Result__Option__string__string_Err:
                                                                                         var x45 string = mtmp43.(Result__Option__string__string_Err)._0
                                                                                         var message__52 string = x45
-                                                                                        var t5506 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                        var t5639 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                             _0: message__52,
                                                                                         }
-                                                                                        retv5329 = t5506
-                                                                                        return retv5329
+                                                                                        retv5462 = t5639
+                                                                                        return retv5462
                                                                                     default:
                                                                                         panic("non-exhaustive match")
                                                                                     }
@@ -20122,47 +20606,47 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                             case Result__Option__string__string_Err:
                                                                                 var x37 string = mtmp35.(Result__Option__string__string_Err)._0
                                                                                 var message__45 string = x37
-                                                                                var t5507 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                var t5640 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                                     _0: message__45,
                                                                                 }
-                                                                                retv5329 = t5507
-                                                                                return retv5329
+                                                                                retv5462 = t5640
+                                                                                return retv5462
                                                                             default:
                                                                                 panic("non-exhaustive match")
                                                                             }
                                                                         } else {
-                                                                            var t5509 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_starts__with(argument__37, "-")
-                                                                            if t5509 {
-                                                                                var t5510 string = "unknown option " + argument__37
-                                                                                var t5511 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-                                                                                    _0: t5510,
+                                                                            var t5642 bool = _goml_m_gomlang_p_bootstrap__goml_p_util_p_starts__with(argument__37, "-")
+                                                                            if t5642 {
+                                                                                var t5643 string = "unknown option " + argument__37
+                                                                                var t5644 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                    _0: t5643,
                                                                                 }
-                                                                                retv5329 = t5511
-                                                                                return retv5329
+                                                                                retv5462 = t5644
+                                                                                return retv5462
                                                                             } else {
-                                                                                var t5520 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "run")
-                                                                                var jp5514 bool
-                                                                                if t5520 {
-                                                                                    var t5521 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(target_set__20)
-                                                                                    var t5522 bool = !t5521
-                                                                                    jp5514 = t5522
+                                                                                var t5653 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(command__18, "run")
+                                                                                var jp5647 bool
+                                                                                if t5653 {
+                                                                                    var t5654 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(target_set__20)
+                                                                                    var t5655 bool = !t5654
+                                                                                    jp5647 = t5655
                                                                                 } else {
-                                                                                    jp5514 = false
+                                                                                    jp5647 = false
                                                                                 }
-                                                                                if jp5514 {
+                                                                                if jp5647 {
                                                                                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(target__19, argument__37)
                                                                                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(target_set__20, true)
-                                                                                    var t5515 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
-                                                                                    var t5516 int = t5515 + 1
-                                                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5516)
+                                                                                    var t5648 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__36)
+                                                                                    var t5649 int = t5648 + 1
+                                                                                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__36, t5649)
                                                                                     continue
                                                                                 } else {
-                                                                                    var t5518 string = "unexpected argument " + argument__37
-                                                                                    var t5519 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
-                                                                                        _0: t5518,
+                                                                                    var t5651 string = "unexpected argument " + argument__37
+                                                                                    var t5652 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                                        _0: t5651,
                                                                                     }
-                                                                                    retv5329 = t5519
-                                                                                    return retv5329
+                                                                                    retv5462 = t5652
+                                                                                    return retv5462
                                                                                 }
                                                                             }
                                                                         }
@@ -20170,11 +20654,11 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                                 case Result__Option__string__string_Err:
                                                                     var x31 string = mtmp29.(Result__Option__string__string_Err)._0
                                                                     var message__42 string = x31
-                                                                    var t5523 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                                    var t5656 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                         _0: message__42,
                                                                     }
-                                                                    retv5329 = t5523
-                                                                    return retv5329
+                                                                    retv5462 = t5656
+                                                                    return retv5462
                                                                 default:
                                                                     panic("non-exhaustive match")
                                                                 }
@@ -20182,11 +20666,11 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                                                         case Result__Option__string__string_Err:
                                                             var x25 string = mtmp23.(Result__Option__string__string_Err)._0
                                                             var message__39 string = x25
-                                                            var t5524 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                                                            var t5657 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                                                                 _0: message__39,
                                                             }
-                                                            retv5329 = t5524
-                                                            return retv5329
+                                                            retv5462 = t5657
+                                                            return retv5462
                                                         default:
                                                             panic("non-exhaustive match")
                                                         }
@@ -20200,284 +20684,284 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_parse__cli(args__17 *_goml
                         }
                     }
                 } else {
-                    break Loop_loop5363
+                    break Loop_loop5496
                 }
             }
-            var t5361 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_ignored__29)
-            var jp5336 bool
-            if t5361 {
-                var t5362 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_include_ignored__30)
-                jp5336 = t5362
+            var t5494 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_ignored__29)
+            var jp5469 bool
+            if t5494 {
+                var t5495 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_include_ignored__30)
+                jp5469 = t5495
             } else {
-                jp5336 = false
+                jp5469 = false
             }
-            var jp5334 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string
-            if jp5336 {
-                var t5337 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+            var jp5467 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string
+            if jp5469 {
+                var t5470 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                     _0: "--ignored cannot be combined with --include-ignored",
                 }
-                jp5334 = t5337
+                jp5467 = t5470
             } else {
-                var t5359 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_json__31)
-                var jp5341 bool
-                if t5359 {
-                    var t5360 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_nocapture__32)
-                    jp5341 = t5360
+                var t5492 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_json__31)
+                var jp5474 bool
+                if t5492 {
+                    var t5493 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_nocapture__32)
+                    jp5474 = t5493
                 } else {
-                    jp5341 = false
+                    jp5474 = false
                 }
-                var jp5339 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string
-                if jp5341 {
-                    var t5342 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
+                var jp5472 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string
+                if jp5474 {
+                    var t5475 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Err{
                         _0: "--nocapture cannot be combined with --format json",
                     }
-                    jp5339 = t5342
+                    jp5472 = t5475
                 } else {
-                    var t5343 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(target__19)
-                    var t5344 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(target_dir__21)
-                    var t5345 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(compiler__22)
-                    var t5346 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(dry_run__23)
-                    var t5347 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(include_tests__24)
-                    var t5348 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(test_filter__26)
-                    var t5349 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(test_jobs__27)
-                    var t5350 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_list__28)
-                    var t5351 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_ignored__29)
-                    var t5352 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_include_ignored__30)
-                    var t5353 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_json__31)
-                    var t5354 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_nocapture__32)
-                    var t5355 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(test_timeout_ms__33)
-                    var t5356 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(test_kind__34)
-                    var t5357 _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs{
+                    var t5476 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(target__19)
+                    var t5477 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(target_dir__21)
+                    var t5478 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(compiler__22)
+                    var t5479 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(dry_run__23)
+                    var t5480 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(include_tests__24)
+                    var t5481 Option__string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(test_filter__26)
+                    var t5482 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(test_jobs__27)
+                    var t5483 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_list__28)
+                    var t5484 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_ignored__29)
+                    var t5485 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_include_ignored__30)
+                    var t5486 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_json__31)
+                    var t5487 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(test_nocapture__32)
+                    var t5488 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(test_timeout_ms__33)
+                    var t5489 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(test_kind__34)
+                    var t5490 _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs{
                         command: command__18,
-                        target: t5343,
-                        target_dir: t5344,
-                        compiler: t5345,
-                        dry_run: t5346,
-                        include_tests: t5347,
+                        target: t5476,
+                        target_dir: t5477,
+                        compiler: t5478,
+                        dry_run: t5479,
+                        include_tests: t5480,
                         program_args: program_args__25,
-                        test_filter: t5348,
-                        test_jobs: t5349,
-                        test_list: t5350,
-                        test_ignored: t5351,
-                        test_include_ignored: t5352,
-                        test_json: t5353,
-                        test_nocapture: t5354,
-                        test_timeout_ms: t5355,
-                        test_kind: t5356,
+                        test_filter: t5481,
+                        test_jobs: t5482,
+                        test_list: t5483,
+                        test_ignored: t5484,
+                        test_include_ignored: t5485,
+                        test_json: t5486,
+                        test_nocapture: t5487,
+                        test_timeout_ms: t5488,
+                        test_kind: t5489,
                     }
-                    var t5358 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Ok{
-                        _0: t5357,
+                    var t5491 _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string = _goml_m_Result____gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs____string_Ok{
+                        _0: t5490,
                     }
-                    jp5339 = t5358
+                    jp5472 = t5491
                 }
-                jp5334 = jp5339
+                jp5467 = jp5472
             }
-            retv5329 = jp5334
-            return retv5329
+            retv5462 = jp5467
+            return retv5462
         }
     }
 }
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_run__command(args__67 _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_CliArgs) Result__unit__string {
-    var retv5558 Result__unit__string
-    var t5629 string = args__67.command
-    var t5630 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5629, "run")
-    var jp5560 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string
-    if t5630 {
-        var t5631 string = args__67.target
-        var t5632 Option__string = args__67.target_dir
-        var t5633 Option__string = args__67.compiler
-        var t5634 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_load__target__context(t5631, t5632, t5633)
-        jp5560 = t5634
+    var retv5691 Result__unit__string
+    var t5762 string = args__67.command
+    var t5763 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5762, "run")
+    var jp5693 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string
+    if t5763 {
+        var t5764 string = args__67.target
+        var t5765 Option__string = args__67.target_dir
+        var t5766 Option__string = args__67.compiler
+        var t5767 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_load__target__context(t5764, t5765, t5766)
+        jp5693 = t5767
     } else {
-        var t5635 Option__string = args__67.target_dir
-        var t5636 Option__string = args__67.compiler
-        var t5637 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_load__context(t5635, t5636)
-        jp5560 = t5637
+        var t5768 Option__string = args__67.target_dir
+        var t5769 Option__string = args__67.compiler
+        var t5770 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_load__context(t5768, t5769)
+        jp5693 = t5770
     }
-    var context_result__68 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string = jp5560
-    var jp5562 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context
+    var context_result__68 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string = jp5693
+    var jp5695 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context
     switch context_result__68.(type) {
     case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string_Ok:
         var x66 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = context_result__68.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string_Ok)._0
         var value__69 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = x66
-        jp5562 = value__69
-        var context__71 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = jp5562
-        var t5612 string = args__67.command
-        var t5613 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5612, "check")
-        var jp5564 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-        if t5613 {
-            var t5614 bool = args__67.include_tests
-            var t5615 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__71, t5614)
-            jp5564 = t5615
+        jp5695 = value__69
+        var context__71 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Context = jp5695
+        var t5745 string = args__67.command
+        var t5746 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5745, "check")
+        var jp5697 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+        if t5746 {
+            var t5747 bool = args__67.include_tests
+            var t5748 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_check__plan(context__71, t5747)
+            jp5697 = t5748
         } else {
-            var t5618 string = args__67.command
-            var t5619 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5618, "build")
-            var jp5617 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-            if t5619 {
-                var t5620 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_build__plan(context__71)
-                jp5617 = t5620
+            var t5751 string = args__67.command
+            var t5752 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5751, "build")
+            var jp5750 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+            if t5752 {
+                var t5753 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_build__plan(context__71)
+                jp5750 = t5753
             } else {
-                var t5623 string = args__67.command
-                var t5624 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5623, "run")
-                var jp5622 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
-                if t5624 {
-                    var t5625 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__plan(context__71)
-                    jp5622 = t5625
+                var t5756 string = args__67.command
+                var t5757 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5756, "run")
+                var jp5755 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string
+                if t5757 {
+                    var t5758 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__plan(context__71)
+                    jp5755 = t5758
                 } else {
-                    var t5626 string = args__67.test_kind
-                    var t5627 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_test__plan(context__71, t5626)
-                    jp5622 = t5627
+                    var t5759 string = args__67.test_kind
+                    var t5760 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_test__plan(context__71, t5759)
+                    jp5755 = t5760
                 }
-                jp5617 = jp5622
+                jp5750 = jp5755
             }
-            jp5564 = jp5617
+            jp5697 = jp5750
         }
-        var plan__72 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = jp5564
-        var jp5566 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan
+        var plan__72 _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string = jp5697
+        var jp5699 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan
         switch plan__72.(type) {
         case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok:
             var x68 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = plan__72.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Ok)._0
             var value__73 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = x68
-            jp5566 = value__73
-            var plan__75 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = jp5566
-            var t5567 bool = args__67.dry_run
-            var mtmp70 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__plan(context__71, plan__75, t5567)
+            jp5699 = value__73
+            var plan__75 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Plan = jp5699
+            var t5700 bool = args__67.dry_run
+            var mtmp70 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_execute__plan(context__71, plan__75, t5700)
             switch mtmp70.(type) {
             case Result__unit__string_Ok:
-                var t5571 string = args__67.command
-                var t5572 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5571, "run")
-                var jp5570 Result__unit__string
-                if t5572 {
+                var t5704 string = args__67.command
+                var t5705 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5704, "run")
+                var jp5703 Result__unit__string
+                if t5705 {
                     var mtmp74 Option__string = plan__75.executable
-                    var jp5574 Result__unit__string
+                    var jp5707 Result__unit__string
                     switch mtmp74.(type) {
                     case Option__string_None:
-                        var t5575 Result__unit__string = Result__unit__string_Err{
+                        var t5708 Result__unit__string = Result__unit__string_Err{
                             _0: "build plan omitted executable",
                         }
-                        jp5574 = t5575
+                        jp5707 = t5708
                     case Option__string_Some:
                         var x75 string = mtmp74.(Option__string_Some)._0
                         var executable__77 string = x75
-                        var t5576 *_goml_vec_string = args__67.program_args
-                        var t5577 bool = args__67.dry_run
-                        var t5578 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__executable(context__71, executable__77, t5576, t5577)
-                        jp5574 = t5578
+                        var t5709 *_goml_vec_string = args__67.program_args
+                        var t5710 bool = args__67.dry_run
+                        var t5711 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_project_p_run__executable(context__71, executable__77, t5709, t5710)
+                        jp5707 = t5711
                     default:
                         panic("non-exhaustive match")
                     }
-                    jp5570 = jp5574
-                    retv5558 = jp5570
-                    return retv5558
+                    jp5703 = jp5707
+                    retv5691 = jp5703
+                    return retv5691
                 } else {
-                    var t5605 string = args__67.command
-                    var t5606 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5605, "test")
-                    var jp5582 bool
-                    if t5606 {
-                        var t5607 bool = args__67.dry_run
-                        var t5608 bool = !t5607
-                        jp5582 = t5608
+                    var t5738 string = args__67.command
+                    var t5739 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5738, "test")
+                    var jp5715 bool
+                    if t5739 {
+                        var t5740 bool = args__67.dry_run
+                        var t5741 bool = !t5740
+                        jp5715 = t5741
                     } else {
-                        jp5582 = false
+                        jp5715 = false
                     }
-                    var jp5580 Result__unit__string
-                    if jp5582 {
+                    var jp5713 Result__unit__string
+                    if jp5715 {
                         var groups__78 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_inherent_i_Vec_i_Vec_l_hddcbbd25196eff23995c988ff5beaa6e__runner_p_Group()
-                        var t5583 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = plan__75.test_groups
-                        var for_iter76 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_trait__impl_i_IntoIter_h0e38c77493aeb18966029147e552e6f5_r__i_into__iter(t5583)
-                        Loop_loop5597:
+                        var t5716 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = plan__75.test_groups
+                        var for_iter76 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_trait__impl_i_IntoIter_h0e38c77493aeb18966029147e552e6f5_r__i_into__iter(t5716)
+                        Loop_loop5730:
                         for {
                             if true {
                                 var for_next77 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_trait__impl_i_Iterator_h694578a8077333ce468c29ccc39f801d_estGroup_i_next(for_iter76)
                                 switch for_next77.(type) {
                                 case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_None:
-                                    break Loop_loop5597
+                                    break Loop_loop5730
                                 case _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_Some:
                                     var x78 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = for_next77.(_goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_Some)._0
                                     var group__79 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = x78
-                                    var t5599 string = group__79.kind
-                                    var t5600 string = group__79.runner
-                                    var t5601 string = group__79.manifest
-                                    var t5602 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group{
-                                        kind: t5599,
-                                        executable: t5600,
-                                        manifest_path: t5601,
+                                    var t5732 string = group__79.kind
+                                    var t5733 string = group__79.runner
+                                    var t5734 string = group__79.manifest
+                                    var t5735 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group{
+                                        kind: t5732,
+                                        executable: t5733,
+                                        manifest_path: t5734,
                                     }
-                                    _goml_m_inherent_i_Vec_i_Vec_l_h30ea9c6f8921b2565d5d6d4687f361d9__runner_p_Group(groups__78, t5602)
+                                    _goml_m_inherent_i_Vec_i_Vec_l_h30ea9c6f8921b2565d5d6d4687f361d9__runner_p_Group(groups__78, t5735)
                                     continue
                                 default:
                                     panic("non-exhaustive match")
                                 }
                             } else {
-                                break Loop_loop5597
+                                break Loop_loop5730
                             }
                         }
-                        var t5585 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__71.graph
-                        var t5586 string = t5585.module_dir
-                        var t5587 Option__string = args__67.test_filter
-                        var t5588 int = args__67.test_jobs
-                        var t5589 bool = args__67.test_list
-                        var t5590 bool = args__67.test_ignored
-                        var t5591 bool = args__67.test_include_ignored
-                        var t5592 bool = args__67.test_json
-                        var t5593 bool = args__67.test_nocapture
-                        var t5594 int = args__67.test_timeout_ms
-                        var t5595 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options{
-                            filter: t5587,
-                            jobs: t5588,
-                            list: t5589,
-                            ignored: t5590,
-                            include_ignored: t5591,
-                            json: t5592,
-                            nocapture: t5593,
-                            timeout_ms: t5594,
+                        var t5718 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = context__71.graph
+                        var t5719 string = t5718.module_dir
+                        var t5720 Option__string = args__67.test_filter
+                        var t5721 int = args__67.test_jobs
+                        var t5722 bool = args__67.test_list
+                        var t5723 bool = args__67.test_ignored
+                        var t5724 bool = args__67.test_include_ignored
+                        var t5725 bool = args__67.test_json
+                        var t5726 bool = args__67.test_nocapture
+                        var t5727 int = args__67.test_timeout_ms
+                        var t5728 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Options{
+                            filter: t5720,
+                            jobs: t5721,
+                            list: t5722,
+                            ignored: t5723,
+                            include_ignored: t5724,
+                            json: t5725,
+                            nocapture: t5726,
+                            timeout_ms: t5727,
                         }
-                        var t5596 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(t5586, groups__78, t5595)
-                        jp5580 = t5596
-                        jp5570 = jp5580
-                        retv5558 = jp5570
-                        return retv5558
+                        var t5729 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_runner_p_run(t5719, groups__78, t5728)
+                        jp5713 = t5729
+                        jp5703 = jp5713
+                        retv5691 = jp5703
+                        return retv5691
                     } else {
-                        var t5604 Result__unit__string = Result__unit__string_Ok{
+                        var t5737 Result__unit__string = Result__unit__string_Ok{
                             _0: struct{}{},
                         }
-                        jp5580 = t5604
-                        jp5570 = jp5580
-                        retv5558 = jp5570
-                        return retv5558
+                        jp5713 = t5737
+                        jp5703 = jp5713
+                        retv5691 = jp5703
+                        return retv5691
                     }
                 }
             case Result__unit__string_Err:
                 var x72 string = mtmp70.(Result__unit__string_Err)._0
                 var message__76 string = x72
-                var t5610 Result__unit__string = Result__unit__string_Err{
+                var t5743 Result__unit__string = Result__unit__string_Err{
                     _0: message__76,
                 }
-                retv5558 = t5610
-                return retv5558
+                retv5691 = t5743
+                return retv5691
             default:
                 panic("non-exhaustive match")
             }
         case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err:
             var x69 string = plan__72.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Plan____string_Err)._0
             var message__74 string = x69
-            var t5611 Result__unit__string = Result__unit__string_Err{
+            var t5744 Result__unit__string = Result__unit__string_Err{
                 _0: message__74,
             }
-            retv5558 = t5611
-            return retv5558
+            retv5691 = t5744
+            return retv5691
         default:
             panic("non-exhaustive match")
         }
     case _goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string_Err:
         var x67 string = context_result__68.(_goml_m_Result____gomlang_p_bootstrap__goml_p_project_p_Context____string_Err)._0
         var message__70 string = x67
-        var t5628 Result__unit__string = Result__unit__string_Err{
+        var t5761 Result__unit__string = Result__unit__string_Err{
             _0: message__70,
         }
-        retv5558 = t5628
-        return retv5558
+        retv5691 = t5761
+        return retv5691
     default:
         panic("non-exhaustive match")
     }
@@ -20485,77 +20969,77 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_run__command(args__67 _gom
 
 func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_main() struct{} {
     var args__80 *_goml_vec_string = _goml_m_std_p_env_p_args()
-    var t5640 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
-    var t5641 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5640, 1)
-    if t5641 {
-        var t5642 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
-        _goml_m_std_p_io_p_eprintln____T__string(t5642)
+    var t5773 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
+    var t5774 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5773, 1)
+    if t5774 {
+        var t5775 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
+        _goml_m_std_p_io_p_eprintln____T__string(t5775)
         _goml_m_std_p_process_p_exit(2)
     } else {
-        var t5752 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-        var t5753 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5752, "-h")
-        var jp5646 bool
-        if t5753 {
-            jp5646 = true
+        var t5885 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+        var t5886 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5885, "-h")
+        var jp5779 bool
+        if t5886 {
+            jp5779 = true
         } else {
-            var t5754 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-            var t5755 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5754, "--help")
-            jp5646 = t5755
+            var t5887 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+            var t5888 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5887, "--help")
+            jp5779 = t5888
         }
-        if jp5646 {
-            var t5647 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
-            _goml_m_std_p_io_p_println____T__string(t5647)
+        if jp5779 {
+            var t5780 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
+            _goml_m_std_p_io_p_println____T__string(t5780)
         } else {
-            var t5650 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-            var t5651 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5650, "help")
-            if t5651 {
-                var t5653 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
-                var t5654 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5653, 2)
-                if t5654 {
-                    var t5655 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
-                    _goml_m_std_p_io_p_println____T__string(t5655)
+            var t5783 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+            var t5784 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5783, "help")
+            if t5784 {
+                var t5786 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
+                var t5787 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5786, 2)
+                if t5787 {
+                    var t5788 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_top__help()
+                    _goml_m_std_p_io_p_println____T__string(t5788)
                 } else {
-                    var t5657 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                    var t5658 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(t5657)
-                    _goml_m_std_p_io_p_println____T__string(t5658)
+                    var t5790 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                    var t5791 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(t5790)
+                    _goml_m_std_p_io_p_println____T__string(t5791)
                 }
             } else {
-                var t5661 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                var t5662 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5661, "version")
-                if t5662 {
+                var t5794 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                var t5795 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5794, "version")
+                if t5795 {
                     _goml_m_std_p_io_p_println____T__string("goml 0.1.0")
                 } else {
-                    var t5665 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                    var t5666 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5665, "home")
-                    if t5666 {
-                        var t5681 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
-                        var t5682 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5681, 3)
-                        var jp5669 bool
-                        if t5682 {
-                            var t5685 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                            var t5686 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5685, "-h")
-                            var jp5684 bool
-                            if t5686 {
-                                jp5684 = true
+                    var t5798 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                    var t5799 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5798, "home")
+                    if t5799 {
+                        var t5814 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
+                        var t5815 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5814, 3)
+                        var jp5802 bool
+                        if t5815 {
+                            var t5818 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                            var t5819 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5818, "-h")
+                            var jp5817 bool
+                            if t5819 {
+                                jp5817 = true
                             } else {
-                                var t5687 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                                var t5688 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5687, "--help")
-                                jp5684 = t5688
+                                var t5820 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                                var t5821 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5820, "--help")
+                                jp5817 = t5821
                             }
-                            jp5669 = jp5684
+                            jp5802 = jp5817
                         } else {
-                            jp5669 = false
+                            jp5802 = false
                         }
-                        if jp5669 {
+                        if jp5802 {
                             _goml_m_std_p_io_p_println____T__string("Usage: goml home\n\nOptions:\n  -h, --help")
                         } else {
-                            var t5672 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
-                            var t5673 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5672, 2)
-                            var t5674 bool = !t5673
-                            if t5674 {
-                                var t5675 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                                var t5676 string = "unexpected argument " + t5675
-                                _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_fail(t5676)
+                            var t5805 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
+                            var t5806 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t5805, 2)
+                            var t5807 bool = !t5806
+                            if t5807 {
+                                var t5808 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                                var t5809 string = "unexpected argument " + t5808
+                                _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_fail(t5809)
                             } else {
                                 var mtmp81 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_print__home()
                                 switch mtmp81.(type) {
@@ -20570,30 +21054,30 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_main() struct{} {
                             }
                         }
                     } else {
-                        var t5690 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                        var t5691 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5690, "new")
-                        if t5691 {
-                            var t5700 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
-                            var t5701 bool = t5700 >= 3
-                            var jp5694 bool
-                            if t5701 {
-                                var t5704 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                                var t5705 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5704, "-h")
-                                var jp5703 bool
-                                if t5705 {
-                                    jp5703 = true
+                        var t5823 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                        var t5824 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5823, "new")
+                        if t5824 {
+                            var t5833 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
+                            var t5834 bool = t5833 >= 3
+                            var jp5827 bool
+                            if t5834 {
+                                var t5837 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                                var t5838 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5837, "-h")
+                                var jp5836 bool
+                                if t5838 {
+                                    jp5836 = true
                                 } else {
-                                    var t5706 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                                    var t5707 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5706, "--help")
-                                    jp5703 = t5707
+                                    var t5839 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                                    var t5840 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5839, "--help")
+                                    jp5836 = t5840
                                 }
-                                jp5694 = jp5703
+                                jp5827 = jp5836
                             } else {
-                                jp5694 = false
+                                jp5827 = false
                             }
-                            if jp5694 {
-                                var t5695 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help("new")
-                                _goml_m_std_p_io_p_println____T__string(t5695)
+                            if jp5827 {
+                                var t5828 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help("new")
+                                _goml_m_std_p_io_p_println____T__string(t5828)
                             } else {
                                 var mtmp84 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_parse__new(args__80)
                                 switch mtmp84.(type) {
@@ -20607,68 +21091,68 @@ func _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_main() struct{} {
                                 }
                             }
                         } else {
-                            var t5748 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                            var t5749 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5748, "update")
-                            var jp5745 bool
-                            if t5749 {
-                                jp5745 = true
+                            var t5881 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                            var t5882 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5881, "update")
+                            var jp5878 bool
+                            if t5882 {
+                                jp5878 = true
                             } else {
-                                var t5750 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                                var t5751 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5750, "add")
-                                jp5745 = t5751
+                                var t5883 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                                var t5884 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5883, "add")
+                                jp5878 = t5884
                             }
-                            var jp5710 bool
-                            if jp5745 {
-                                jp5710 = true
+                            var jp5843 bool
+                            if jp5878 {
+                                jp5843 = true
                             } else {
-                                var t5746 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                                var t5747 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5746, "remove")
-                                jp5710 = t5747
+                                var t5879 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                                var t5880 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5879, "remove")
+                                jp5843 = t5880
                             }
-                            if jp5710 {
-                                var t5731 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
-                                var t5732 bool = t5731 >= 3
-                                var jp5713 bool
-                                if t5732 {
-                                    var t5735 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                                    var t5736 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5735, "-h")
-                                    var jp5734 bool
-                                    if t5736 {
-                                        jp5734 = true
+                            if jp5843 {
+                                var t5864 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(args__80)
+                                var t5865 bool = t5864 >= 3
+                                var jp5846 bool
+                                if t5865 {
+                                    var t5868 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                                    var t5869 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5868, "-h")
+                                    var jp5867 bool
+                                    if t5869 {
+                                        jp5867 = true
                                     } else {
-                                        var t5737 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
-                                        var t5738 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5737, "--help")
-                                        jp5734 = t5738
+                                        var t5870 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 2)
+                                        var t5871 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5870, "--help")
+                                        jp5867 = t5871
                                     }
-                                    jp5713 = jp5734
+                                    jp5846 = jp5867
                                 } else {
-                                    jp5713 = false
+                                    jp5846 = false
                                 }
-                                if jp5713 {
-                                    var t5714 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                                    var t5715 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(t5714)
-                                    _goml_m_std_p_io_p_println____T__string(t5715)
+                                if jp5846 {
+                                    var t5847 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                                    var t5848 string = _goml_m_gomlang_p_bootstrap__goml_p_cmd_p_goml_p_command__help(t5847)
+                                    _goml_m_std_p_io_p_println____T__string(t5848)
                                 } else {
-                                    var t5722 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                                    var t5723 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5722, "update")
-                                    var jp5718 Result__unit__string
-                                    if t5723 {
-                                        var t5724 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_update__registry(args__80)
-                                        jp5718 = t5724
+                                    var t5855 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                                    var t5856 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5855, "update")
+                                    var jp5851 Result__unit__string
+                                    if t5856 {
+                                        var t5857 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_update__registry(args__80)
+                                        jp5851 = t5857
                                     } else {
-                                        var t5727 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
-                                        var t5728 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5727, "add")
-                                        var jp5726 Result__unit__string
-                                        if t5728 {
-                                            var t5729 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_add__dependency(args__80)
-                                            jp5726 = t5729
+                                        var t5860 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(args__80, 1)
+                                        var t5861 bool = _goml_m_trait__impl_i_Eq_i_string_i_eq(t5860, "add")
+                                        var jp5859 Result__unit__string
+                                        if t5861 {
+                                            var t5862 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_add__dependency(args__80)
+                                            jp5859 = t5862
                                         } else {
-                                            var t5730 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_remove__dependency(args__80)
-                                            jp5726 = t5730
+                                            var t5863 Result__unit__string = _goml_m_gomlang_p_bootstrap__goml_p_commands_p_remove__dependency(args__80)
+                                            jp5859 = t5863
                                         }
-                                        jp5718 = jp5726
+                                        jp5851 = jp5859
                                     }
-                                    var result__83 Result__unit__string = jp5718
+                                    var result__83 Result__unit__string = jp5851
                                     switch result__83.(type) {
                                     case Result__unit__string_Ok:
                                     case Result__unit__string_Err:
@@ -20718,52 +21202,52 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__uint8() *_goml_vec_uint8 {
-    var retv5759 *_goml_vec_uint8
-    var t5760 *_goml_vec_uint8 = vec_new__Vec_5uint8()
-    retv5759 = t5760
-    return retv5759
+    var retv5892 *_goml_vec_uint8
+    var t5893 *_goml_vec_uint8 = vec_new__Vec_5uint8()
+    retv5892 = t5893
+    return retv5892
 }
 
 func _goml_m_inherent_i_string_i_string_i_to__bytes(self__24 string) *_goml_vec_uint8 {
-    var retv5765 *_goml_vec_uint8
-    var t5766 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(self__24)
-    retv5765 = t5766
-    return retv5765
+    var retv5898 *_goml_vec_uint8
+    var t5899 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(self__24)
+    retv5898 = t5899
+    return retv5898
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__139 *_goml_vec_uint8) int {
-    var retv5768 int
-    var t5769 int = vec_len__Vec_5uint8(self__139)
-    retv5768 = t5769
-    return retv5768
+    var retv5901 int
+    var t5902 int = vec_len__Vec_5uint8(self__139)
+    retv5901 = t5902
+    return retv5901
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__uint8(self__134 *_goml_vec_uint8, index__135 int) uint8 {
-    var retv5778 uint8
-    var t5779 uint8 = vec_get__Vec_5uint8(self__134, index__135)
-    retv5778 = t5779
-    return retv5778
+    var retv5911 uint8
+    var t5912 uint8 = vec_get__Vec_5uint8(self__134, index__135)
+    retv5911 = t5912
+    return retv5911
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv5802 bool
-    var t5803 bool = self__59 == other__60
-    retv5802 = t5803
-    return retv5802
+    var retv5935 bool
+    var t5936 bool = self__59 == other__60
+    retv5935 = t5936
+    return retv5935
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string() *_goml_vec_string {
-    var retv5805 *_goml_vec_string
-    var t5806 *_goml_vec_string = vec_new__Vec_6string()
-    retv5805 = t5806
-    return retv5805
+    var retv5938 *_goml_vec_string
+    var t5939 *_goml_vec_string = vec_new__Vec_6string()
+    retv5938 = t5939
+    return retv5938
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T___o_string_c_string_q_() *_goml_vec_Tuple2_6string_6string {
-    var retv5808 *_goml_vec_Tuple2_6string_6string
-    var t5809 *_goml_vec_Tuple2_6string_6string = vec_new__Vec_22Tuple2_6string_6string()
-    retv5808 = t5809
-    return retv5808
+    var retv5941 *_goml_vec_Tuple2_6string_6string
+    var t5942 *_goml_vec_Tuple2_6string_6string = vec_new__Vec_22Tuple2_6string_6string()
+    retv5941 = t5942
+    return retv5941
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__128 *_goml_vec_string, elem__129 string) struct{} {
@@ -20772,18 +21256,18 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__128 *_goml_ve
 }
 
 func _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(self__185 *_goml_vec_string) FnIterator__string {
-    var retv5813 FnIterator__string
-    var t5814 FnIterator__string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__string(self__185)
-    retv5813 = t5814
-    return retv5813
+    var retv5946 FnIterator__string
+    var t5947 FnIterator__string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__string(self__185)
+    retv5946 = t5947
+    return retv5946
 }
 
 func _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(self__102 FnIterator__string) Option__string {
-    var retv5816 Option__string
-    var t5817 func() Option__string = self__102.next_fn
-    var t5818 Option__string = t5817()
-    retv5816 = t5818
-    return retv5816
+    var retv5949 Option__string
+    var t5950 func() Option__string = self__102.next_fn
+    var t5951 Option__string = t5950()
+    retv5949 = t5951
+    return retv5949
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___o_string_c_string_q_(self__128 *_goml_vec_Tuple2_6string_6string, elem__129 Tuple2_6string_6string) struct{} {
@@ -20792,24 +21276,31 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___o_string_c_string_q_(self
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__209 int) *ref_int_x {
-    var retv5822 *ref_int_x
-    var t5823 *ref_int_x = ref__Ref_3int(value__209)
-    retv5822 = t5823
-    return retv5822
+    var retv5955 *ref_int_x
+    var t5956 *ref_int_x = ref__Ref_3int(value__209)
+    retv5955 = t5956
+    return retv5955
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__string(capacity__127 int) *_goml_vec_string {
+    var retv5958 *_goml_vec_string
+    var t5959 *_goml_vec_string = vec_with_capacity__Vec_6string(capacity__127)
+    retv5958 = t5959
+    return retv5958
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__210 *ref_int_x) int {
-    var retv5828 int
-    var t5829 int = ref_get__Ref_3int(self__210)
-    retv5828 = t5829
-    return retv5828
+    var retv5961 int
+    var t5962 int = ref_get__Ref_3int(self__210)
+    retv5961 = t5962
+    return retv5961
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__len(self__9 string) int {
-    var retv5831 int
-    var t5832 int = _goml_runtime_core_string_len(self__9)
-    retv5831 = t5832
-    return retv5831
+    var retv5964 int
+    var t5965 int = _goml_runtime_core_string_len(self__9)
+    retv5964 = t5965
+    return retv5964
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__211 *ref_int_x, value__212 int) struct{} {
@@ -20818,80 +21309,80 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__211 *ref_int_x, v
 }
 
 func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var retv5836 string
-    var t5837 string = _goml_runtime_core_char_to_string(self__7)
-    retv5836 = t5837
-    return retv5836
+    var retv5969 string
+    var t5970 string = _goml_runtime_core_char_to_string(self__7)
+    retv5969 = t5970
+    return retv5969
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__slice(self__14 string, start__15 int, end__16 int) string {
-    var retv5841 string
-    var t5842 string = _goml_runtime_core_string_byte_slice(self__14, start__15, end__16)
-    retv5841 = t5842
-    return retv5841
+    var retv5974 string
+    var t5975 string = _goml_runtime_core_string_byte_slice(self__14, start__15, end__16)
+    retv5974 = t5975
+    return retv5974
 }
 
 func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__55 string, other__56 string) bool {
-    var retv5844 bool
-    var t5845 bool = self__55 == other__56
-    retv5844 = t5845
-    return retv5844
+    var retv5977 bool
+    var t5978 bool = self__55 == other__56
+    retv5977 = t5978
+    return retv5977
 }
 
 func _goml_m_trait__impl_i_Eq_i_uint8_i_eq(self__69 uint8, other__70 uint8) bool {
-    var retv5847 bool
-    var t5848 bool = self__69 == other__70
-    retv5847 = t5848
-    return retv5847
+    var retv5980 bool
+    var t5981 bool = self__69 == other__70
+    retv5980 = t5981
+    return retv5980
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__get(self__12 string, index__13 int) uint8 {
-    var retv5850 uint8
-    var t5851 uint8 = _goml_runtime_core_string_byte_get(self__12, index__13)
-    retv5850 = t5851
-    return retv5850
+    var retv5983 uint8
+    var t5984 uint8 = _goml_runtime_core_string_byte_get(self__12, index__13)
+    retv5983 = t5984
+    return retv5983
 }
 
 func _goml_m_range(start__224 int, end__225 int) FnIterator__int {
-    var retv5853 FnIterator__int
-    var t5854 FnIterator__int = __goml_builtin_range(start__224, end__225)
-    retv5853 = t5854
-    return retv5853
+    var retv5986 FnIterator__int
+    var t5987 FnIterator__int = __goml_builtin_range(start__224, end__225)
+    retv5986 = t5987
+    return retv5986
 }
 
 func _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(self__109 FnIterator__int) FnIterator__int {
-    var retv5856 FnIterator__int
-    retv5856 = self__109
-    return retv5856
+    var retv5989 FnIterator__int
+    retv5989 = self__109
+    return retv5989
 }
 
 func _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(self__102 FnIterator__int) Option__int {
-    var retv5858 Option__int
-    var t5859 func() Option__int = self__102.next_fn
-    var t5860 Option__int = t5859()
-    retv5858 = t5860
-    return retv5858
+    var retv5991 Option__int
+    var t5992 func() Option__int = self__102.next_fn
+    var t5993 Option__int = t5992()
+    retv5991 = t5993
+    return retv5991
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__209 string) *ref_string_x {
-    var retv5862 *ref_string_x
-    var t5863 *ref_string_x = ref__Ref_6string(value__209)
-    retv5862 = t5863
-    return retv5862
+    var retv5995 *ref_string_x
+    var t5996 *ref_string_x = ref__Ref_6string(value__209)
+    retv5995 = t5996
+    return retv5995
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__139 *_goml_vec_string) int {
-    var retv5865 int
-    var t5866 int = vec_len__Vec_6string(self__139)
-    retv5865 = t5866
-    return retv5865
+    var retv5998 int
+    var t5999 int = vec_len__Vec_6string(self__139)
+    retv5998 = t5999
+    return retv5998
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__210 *ref_string_x) string {
-    var retv5868 string
-    var t5869 string = ref_get__Ref_6string(self__210)
-    retv5868 = t5869
-    return retv5868
+    var retv6001 string
+    var t6002 string = ref_get__Ref_6string(self__210)
+    retv6001 = t6002
+    return retv6001
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__211 *ref_string_x, value__212 string) struct{} {
@@ -20900,55 +21391,55 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__211 *ref_strin
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__134 *_goml_vec_string, index__135 int) string {
-    var retv5873 string
-    var t5874 string = vec_get__Vec_6string(self__134, index__135)
-    retv5873 = t5874
-    return retv5873
+    var retv6006 string
+    var t6007 string = vec_get__Vec_6string(self__134, index__135)
+    retv6006 = t6007
+    return retv6006
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__209 bool) *ref_bool_x {
-    var retv5876 *ref_bool_x
-    var t5877 *ref_bool_x = ref__Ref_4bool(value__209)
-    retv5876 = t5877
-    return retv5876
+    var retv6009 *ref_bool_x
+    var t6010 *ref_bool_x = ref__Ref_4bool(value__209)
+    retv6009 = t6010
+    return retv6009
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__210 *ref_bool_x) bool {
-    var retv5879 bool
-    var t5880 bool = ref_get__Ref_4bool(self__210)
-    retv5879 = t5880
-    return retv5879
+    var retv6012 bool
+    var t6013 bool = ref_get__Ref_4bool(self__210)
+    retv6012 = t6013
+    return retv6012
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_insert____T__string(self__160 *_goml_vec_string, index__161 int, value__162 string) struct{} {
     var len__163 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__160)
-    var t5883 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(index__161, len__163)
-    if t5883 {
+    var t6016 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(index__161, len__163)
+    if t6016 {
         _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__160, value__162)
         return struct{}{}
     } else {
         _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__160, index__161)
-        var t5885 int = len__163 - 1
-        var t5886 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__160, t5885)
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__160, t5886)
-        var t5887 int = len__163 - 1
-        var current__164 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t5887)
-        Loop_loop5890:
+        var t6018 int = len__163 - 1
+        var t6019 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__160, t6018)
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__160, t6019)
+        var t6020 int = len__163 - 1
+        var current__164 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t6020)
+        Loop_loop6023:
         for {
-            var t5891 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-            var t5892 bool = t5891 > index__161
-            if t5892 {
-                var t5893 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t5894 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t5895 int = t5894 - 1
-                var t5896 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__160, t5895)
-                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__160, t5893, t5896)
-                var t5897 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t5898 int = t5897 - 1
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__164, t5898)
+            var t6024 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+            var t6025 bool = t6024 > index__161
+            if t6025 {
+                var t6026 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6027 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6028 int = t6027 - 1
+                var t6029 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__160, t6028)
+                _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__160, t6026, t6029)
+                var t6030 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6031 int = t6030 - 1
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__164, t6031)
                 continue
             } else {
-                break Loop_loop5890
+                break Loop_loop6023
             }
         }
         _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__160, index__161, value__162)
@@ -20962,24 +21453,24 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__211 *ref_bool_x,
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv5902 string
-    var t5903 string = _goml_runtime_core_int_to_string(self__5)
-    retv5902 = t5903
-    return retv5902
+    var retv6035 string
+    var t6036 string = _goml_runtime_core_int_to_string(self__5)
+    retv6035 = t6036
+    return retv6035
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__209 uint32) *ref_uint32_x {
-    var retv5905 *ref_uint32_x
-    var t5906 *ref_uint32_x = ref__Ref_6uint32(value__209)
-    retv5905 = t5906
-    return retv5905
+    var retv6038 *ref_uint32_x
+    var t6039 *ref_uint32_x = ref__Ref_6uint32(value__209)
+    retv6038 = t6039
+    return retv6038
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__210 *ref_uint32_x) uint32 {
-    var retv5908 uint32
-    var t5909 uint32 = ref_get__Ref_6uint32(self__210)
-    retv5908 = t5909
-    return retv5908
+    var retv6041 uint32
+    var t6042 uint32 = ref_get__Ref_6uint32(self__210)
+    retv6041 = t6042
+    return retv6041
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__uint32(self__211 *ref_uint32_x, value__212 uint32) struct{} {
@@ -20988,27 +21479,27 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__uint32(self__211 *ref_uint3
 }
 
 func char_from_uint32(value__2 uint32) Option__char {
-    var retv5913 Option__char
+    var retv6046 Option__char
     var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__2)
     var x1 bool = mtmp0._0
     var x2 rune = mtmp0._1
     var value__4 rune = x2
     var valid__3 bool = x1
-    var jp5915 Option__char
+    var jp6048 Option__char
     if valid__3 {
-        var t5916 Option__char = Option__char_Some{
+        var t6049 Option__char = Option__char_Some{
             _0: value__4,
         }
-        jp5915 = t5916
+        jp6048 = t6049
     } else {
-        jp5915 = Option__char_None{}
+        jp6048 = Option__char_None{}
     }
-    retv5913 = jp5915
-    return retv5913
+    retv6046 = jp6048
+    return retv6046
 }
 
 func _goml_m_inherent_i_string_i_string_i_decode__at(self__19 string, index__20 int) _goml_m_Option_____o_char_c_int_q_ {
-    var retv5918 _goml_m_Option_____o_char_c_int_q_
+    var retv6051 _goml_m_Option_____o_char_c_int_q_
     var mtmp3 Tuple3_4bool_4char_3int = _goml_runtime_core_string_decode_utf8_at(self__19, index__20)
     var x4 bool = mtmp3._0
     var x5 rune = mtmp3._1
@@ -21016,28 +21507,28 @@ func _goml_m_inherent_i_string_i_string_i_decode__at(self__19 string, index__20 
     var width__23 int = x6
     var value__22 rune = x5
     var valid__21 bool = x4
-    var jp5920 _goml_m_Option_____o_char_c_int_q_
+    var jp6053 _goml_m_Option_____o_char_c_int_q_
     if valid__21 {
-        var t5921 Tuple2_4char_3int = Tuple2_4char_3int{
+        var t6054 Tuple2_4char_3int = Tuple2_4char_3int{
             _0: value__22,
             _1: width__23,
         }
-        var t5922 _goml_m_Option_____o_char_c_int_q_ = _goml_m_Option_____o_char_c_int_q__Some{
-            _0: t5921,
+        var t6055 _goml_m_Option_____o_char_c_int_q_ = _goml_m_Option_____o_char_c_int_q__Some{
+            _0: t6054,
         }
-        jp5920 = t5922
+        jp6053 = t6055
     } else {
-        jp5920 = _goml_m_Option_____o_char_c_int_q__None{}
+        jp6053 = _goml_m_Option_____o_char_c_int_q__None{}
     }
-    retv5918 = jp5920
-    return retv5918
+    retv6051 = jp6053
+    return retv6051
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h84f041bc14f58d64cc1bb959fd516f05__p_json_p_Value() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv5924 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
-    var t5925 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = vec_new___goml_m_Vec__36gomlang_p_bootstrap__goml_p_json_p_Value()
-    retv5924 = t5925
-    return retv5924
+    var retv6057 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6058 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = vec_new___goml_m_Vec__36gomlang_p_bootstrap__goml_p_json_p_Value()
+    retv6057 = t6058
+    return retv6057
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h2261193ab23506e930f0ef07040066f3__p_json_p_Value(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value) struct{} {
@@ -21046,10 +21537,10 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h2261193ab23506e930f0ef07040066f3__p_json_p_
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_he0259062b10fae76279d9dc37b78bd53_json_p_Value_q_() *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv5929 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value
-    var t5930 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value = vec_new___goml_m_Vec__53Tuple2_h8c808dcf310b8574692f5da535b1f4f9__p_json_p_Value()
-    retv5929 = t5930
-    return retv5929
+    var retv6062 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6063 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value = vec_new___goml_m_Vec__53Tuple2_h8c808dcf310b8574692f5da535b1f4f9__p_json_p_Value()
+    retv6062 = t6063
+    return retv6062
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h7ca4a646493c57127d73875c78d47f23_json_p_Value_q_(self__128 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value, elem__129 Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value) struct{} {
@@ -21058,32 +21549,32 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h7ca4a646493c57127d73875c78d47f23_json_p_Val
 }
 
 func _goml_m_trait__impl_i_IntoIter_h698c91e5bd294ce6c839bce4e193d189_r__i_into__iter(self__185 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value) _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
-    var retv5934 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
-    var t5935 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_inherent_i_Vec_i_Vec_l_hd6299ab70c21b8cb71d02a4f67632f14_json_p_Value_q_(self__185)
-    retv5934 = t5935
-    return retv5934
+    var retv6067 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
+    var t6068 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_inherent_i_Vec_i_Vec_l_hd6299ab70c21b8cb71d02a4f67632f14_json_p_Value_q_(self__185)
+    retv6067 = t6068
+    return retv6067
 }
 
 func _goml_m_trait__impl_i_Iterator_h05e2d69794a98360f0668c988967e090_Value_q__i_next(self__102 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_) _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
-    var retv5937 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
-    var t5938 func() _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = self__102.next_fn
-    var t5939 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = t5938()
-    retv5937 = t5939
-    return retv5937
+    var retv6070 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
+    var t6071 func() _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = self__102.next_fn
+    var t6072 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = t6071()
+    retv6070 = t6072
+    return retv6070
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_string_r_(value__209 Option__string) *ref_Option__string_x {
-    var retv5941 *ref_Option__string_x
-    var t5942 *ref_Option__string_x = ref__Ref_14Option__string(value__209)
-    retv5941 = t5942
-    return retv5941
+    var retv6074 *ref_Option__string_x
+    var t6075 *ref_Option__string_x = ref__Ref_14Option__string(value__209)
+    retv6074 = t6075
+    return retv6074
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hac308d6908ce7fe9c8cdbfd735b16ca6_st_p_Dependency() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv5944 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency
-    var t5945 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency = vec_new___goml_m_Vec__45gomlang_p_bootstrap__goml_p_manifest_p_Dependency()
-    retv5944 = t5945
-    return retv5944
+    var retv6077 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var t6078 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency = vec_new___goml_m_Vec__45gomlang_p_bootstrap__goml_p_manifest_p_Dependency()
+    retv6077 = t6078
+    return retv6077
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_string_r_(self__211 *ref_Option__string_x, value__212 Option__string) struct{} {
@@ -21097,24 +21588,24 @@ func _goml_m_inherent_i_Vec_i_Vec_l_ha9a23b721565655711a04a779bf1df4c_st_p_Depen
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_string_r_(self__210 *ref_Option__string_x) Option__string {
-    var retv5951 Option__string
-    var t5952 Option__string = ref_get__Ref_14Option__string(self__210)
-    retv5951 = t5952
-    return retv5951
+    var retv6084 Option__string
+    var t6085 Option__string = ref_get__Ref_14Option__string(self__210)
+    retv6084 = t6085
+    return retv6084
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_int_r_(value__209 Option__int) *ref_Option__int_x {
-    var retv5954 *ref_Option__int_x
-    var t5955 *ref_Option__int_x = ref__Ref_11Option__int(value__209)
-    retv5954 = t5955
-    return retv5954
+    var retv6087 *ref_Option__int_x
+    var t6088 *ref_Option__int_x = ref__Ref_11Option__int(value__209)
+    retv6087 = t6088
+    return retv6087
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_int_r_(self__210 *ref_Option__int_x) Option__int {
-    var retv5957 Option__int
-    var t5958 Option__int = ref_get__Ref_11Option__int(self__210)
-    retv5957 = t5958
-    return retv5957
+    var retv6090 Option__int
+    var t6091 Option__int = ref_get__Ref_11Option__int(self__210)
+    retv6090 = t6091
+    return retv6090
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_int_r_(self__211 *ref_Option__int_x, value__212 Option__int) struct{} {
@@ -21123,10 +21614,10 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_int_r_(self__211 *
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h635926f3000679c6fb2bd440fe767aab_p_RegistryEntry() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv5962 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
-    var t5963 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = vec_new___goml_m_Vec__48gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry()
-    retv5962 = t5963
-    return retv5962
+    var retv6095 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var t6096 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = vec_new___goml_m_Vec__48gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry()
+    retv6095 = t6096
+    return retv6095
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h8a93416b1566b4267dadeb2e298706ab_p_RegistryEntry(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) struct{} {
@@ -21135,17 +21626,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h8a93416b1566b4267dadeb2e298706ab_p_Registry
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h237dba6fe66cf882b33a3e720311bdcf_p_RegistryEntry(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) int {
-    var retv5967 int
-    var t5968 int = vec_len___goml_m_Vec__48gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry(self__139)
-    retv5967 = t5968
-    return retv5967
+    var retv6100 int
+    var t6101 int = vec_len___goml_m_Vec__48gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry(self__139)
+    retv6100 = t6101
+    return retv6100
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hafd0c674457a43fb194824467cbd8cf9_p_RegistryEntry(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv5970 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
-    var t5971 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = vec_get___goml_m_Vec__48gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry(self__134, index__135)
-    retv5970 = t5971
-    return retv5970
+    var retv6103 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var t6104 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = vec_get___goml_m_Vec__48gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry(self__134, index__135)
+    retv6103 = t6104
+    return retv6103
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hafcc4e0f766c1769f037940c61e50067_p_RegistryEntry(self__136 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry, index__137 int, elem__138 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) struct{} {
@@ -21154,32 +21645,32 @@ func _goml_m_inherent_i_Vec_i_Vec_l_hafcc4e0f766c1769f037940c61e50067_p_Registry
 }
 
 func _goml_m_trait__impl_i_IntoIter_hfb00dadd995bf48bcd9dc71a1839622c_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv5975 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
-    var t5976 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_inherent_i_Vec_i_Vec_l_h34a57e87dcd3dfd6e82e08bcd478aa67_p_RegistryEntry(self__185)
-    retv5975 = t5976
-    return retv5975
+    var retv6108 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var t6109 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_inherent_i_Vec_i_Vec_l_h34a57e87dcd3dfd6e82e08bcd478aa67_p_RegistryEntry(self__185)
+    retv6108 = t6109
+    return retv6108
 }
 
 func _goml_m_trait__impl_i_Iterator_hafe303bf48444dc808853ff0fb2f6b4a_tryEntry_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv5978 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
-    var t5979 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = self__102.next_fn
-    var t5980 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = t5979()
-    retv5978 = t5980
-    return retv5978
+    var retv6111 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var t6112 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = self__102.next_fn
+    var t6113 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = t6112()
+    retv6111 = t6113
+    return retv6111
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_ha675874da2c5586ef292b8e9ddb2c077_p_SemVersion_r_(value__209 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion) *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x {
-    var retv5982 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x
-    var t5983 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x = ref___goml_m_Ref__53Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion(value__209)
-    retv5982 = t5983
-    return retv5982
+    var retv6115 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x
+    var t6116 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x = ref___goml_m_Ref__53Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion(value__209)
+    retv6115 = t6116
+    return retv6115
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_hbe0078c25b43159cd191199726ee60f0_p_SemVersion_r_(self__210 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x) _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion {
-    var retv5985 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion
-    var t5986 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion = ref_get___goml_m_Ref__53Option_h9d3d58ff8a8b431ff3bf7b0a6b130e2e_ry_p_SemVersion(self__210)
-    retv5985 = t5986
-    return retv5985
+    var retv6118 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion
+    var t6119 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion = ref_get___goml_m_Ref__53Option_h9d3d58ff8a8b431ff3bf7b0a6b130e2e_ry_p_SemVersion(self__210)
+    retv6118 = t6119
+    return retv6118
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_h779085fe950b65f2c646017175745093_p_SemVersion_r_(self__211 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion_x, value__212 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_SemVersion) struct{} {
@@ -21188,38 +21679,38 @@ func _goml_m_inherent_i_Ref_i_Ref_l_h779085fe950b65f2c646017175745093_p_SemVersi
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hf75b5c980dbb7e22188d65bfb03937d9__ResolvedModule(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule) int {
-    var retv5990 int
-    var t5991 int = vec_len___goml_m_Vec__49gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule(self__139)
-    retv5990 = t5991
-    return retv5990
+    var retv6123 int
+    var t6124 int = vec_len___goml_m_Vec__49gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule(self__139)
+    retv6123 = t6124
+    return retv6123
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h13852d7828789e8fadb7c82e42cf13e3__ResolvedModule(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv5993 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
-    var t5994 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = vec_get___goml_m_Vec__49gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule(self__134, index__135)
-    retv5993 = t5994
-    return retv5993
+    var retv6126 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var t6127 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = vec_get___goml_m_Vec__49gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule(self__134, index__135)
+    retv6126 = t6127
+    return retv6126
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h56c97df43deb69fcacd0773ab35182c1__ResolvedModule() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv5996 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
-    var t5997 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = vec_new___goml_m_Vec__49gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule()
-    retv5996 = t5997
-    return retv5996
+    var retv6129 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var t6130 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = vec_new___goml_m_Vec__49gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule()
+    retv6129 = t6130
+    return retv6129
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h898d5d60006351e784c9d303369921f5_st_p_Dependency(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency) int {
-    var retv5999 int
-    var t6000 int = vec_len___goml_m_Vec__45gomlang_p_bootstrap__goml_p_manifest_p_Dependency(self__139)
-    retv5999 = t6000
-    return retv5999
+    var retv6132 int
+    var t6133 int = vec_len___goml_m_Vec__45gomlang_p_bootstrap__goml_p_manifest_p_Dependency(self__139)
+    retv6132 = t6133
+    return retv6132
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h8c525512aa327a110388305852b9a33f_st_p_Dependency(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv6002 _goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency
-    var t6003 _goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency = vec_get___goml_m_Vec__45gomlang_p_bootstrap__goml_p_manifest_p_Dependency(self__134, index__135)
-    retv6002 = t6003
-    return retv6002
+    var retv6135 _goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var t6136 _goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency = vec_get___goml_m_Vec__45gomlang_p_bootstrap__goml_p_manifest_p_Dependency(self__134, index__135)
+    retv6135 = t6136
+    return retv6135
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h419b8f9b587776a2d6011034966e096e__ResolvedModule(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule) struct{} {
@@ -21233,94 +21724,94 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h7e3bd4b93cf32dcdcc49f3da6179eb12__ResolvedM
 }
 
 func _goml_m_trait__impl_i_IntoIter_he59f63e46e923564c6090437de1def77_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv6009 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
-    var t6010 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_inherent_i_Vec_i_Vec_l_he1ec2b517ed3d491dc5ff1df9971edbe_st_p_Dependency(self__185)
-    retv6009 = t6010
-    return retv6009
+    var retv6142 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var t6143 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_inherent_i_Vec_i_Vec_l_he1ec2b517ed3d491dc5ff1df9971edbe_st_p_Dependency(self__185)
+    retv6142 = t6143
+    return retv6142
 }
 
 func _goml_m_trait__impl_i_Iterator_h3946e5fe036f5accc465a638241336b7_pendency_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency) _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv6012 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
-    var t6013 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = self__102.next_fn
-    var t6014 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = t6013()
-    retv6012 = t6014
-    return retv6012
+    var retv6145 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var t6146 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = self__102.next_fn
+    var t6147 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = t6146()
+    retv6145 = t6147
+    return retv6145
 }
 
 func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
-    var t6016 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_std_io_println(t6016)
+    var t6149 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_std_io_println(t6149)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(self__130 *_goml_vec_string, elem__131 string) *_goml_vec_string {
-    var retv6019 *_goml_vec_string
+    var retv6152 *_goml_vec_string
     var result__132 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
     var index__133 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop6021:
+    Loop_loop6154:
     for {
-        var t6022 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__133)
-        var t6023 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__130)
-        var t6024 bool = t6022 < t6023
-        if t6024 {
-            var t6025 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__133)
-            var t6026 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__130, t6025)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(result__132, t6026)
-            var t6027 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__133)
-            var t6028 int = t6027 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__133, t6028)
+        var t6155 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__133)
+        var t6156 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__130)
+        var t6157 bool = t6155 < t6156
+        if t6157 {
+            var t6158 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__133)
+            var t6159 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__130, t6158)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(result__132, t6159)
+            var t6160 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__133)
+            var t6161 int = t6160 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__133, t6161)
             continue
         } else {
-            break Loop_loop6021
+            break Loop_loop6154
         }
     }
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(result__132, elem__131)
-    retv6019 = result__132
-    return retv6019
+    retv6152 = result__132
+    return retv6152
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_remove____T__string(self__165 *_goml_vec_string, index__166 int) string {
-    var retv6030 string
+    var retv6163 string
     var len__167 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__165)
     var value__168 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__165, index__166)
     var current__169 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(index__166)
-    Loop_loop6033:
+    Loop_loop6166:
     for {
-        var t6034 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
-        var t6035 int = t6034 + 1
-        var t6036 bool = t6035 < len__167
-        if t6036 {
-            var t6037 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
-            var t6038 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
-            var t6039 int = t6038 + 1
-            var t6040 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__165, t6039)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__165, t6037, t6040)
-            var t6041 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
-            var t6042 int = t6041 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__169, t6042)
+        var t6167 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
+        var t6168 int = t6167 + 1
+        var t6169 bool = t6168 < len__167
+        if t6169 {
+            var t6170 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
+            var t6171 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
+            var t6172 int = t6171 + 1
+            var t6173 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__165, t6172)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__165, t6170, t6173)
+            var t6174 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__169)
+            var t6175 int = t6174 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__169, t6175)
             continue
         } else {
-            break Loop_loop6033
+            break Loop_loop6166
         }
     }
-    var t6032 int = len__167 - 1
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__string(self__165, t6032)
-    retv6030 = value__168
-    return retv6030
+    var t6165 int = len__167 - 1
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__string(self__165, t6165)
+    retv6163 = value__168
+    return retv6163
 }
 
 func _goml_m_inherent_i_string_i_string_i_get(self__10 string, index__11 int) rune {
-    var retv6044 rune
-    var t6045 rune = _goml_runtime_core_string_get(self__10, index__11)
-    retv6044 = t6045
-    return retv6044
+    var retv6177 rune
+    var t6178 rune = _goml_runtime_core_string_get(self__10, index__11)
+    retv6177 = t6178
+    return retv6177
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__uint32() *_goml_vec_uint32 {
-    var retv6047 *_goml_vec_uint32
-    var t6048 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-    retv6047 = t6048
-    return retv6047
+    var retv6180 *_goml_vec_uint32
+    var t6181 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+    retv6180 = t6181
+    return retv6180
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint32(self__128 *_goml_vec_uint32, elem__129 uint32) struct{} {
@@ -21329,39 +21820,39 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint32(self__128 *_goml_ve
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__uint32(self__134 *_goml_vec_uint32, index__135 int) uint32 {
-    var retv6052 uint32
-    var t6053 uint32 = vec_get__Vec_6uint32(self__134, index__135)
-    retv6052 = t6053
-    return retv6052
+    var retv6185 uint32
+    var t6186 uint32 = vec_get__Vec_6uint32(self__134, index__135)
+    retv6185 = t6186
+    return retv6185
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h4c92fdaef4f9494c59ff50be8f18abd6_PackageInfoFile() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6055 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
-    var t6056 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = vec_new___goml_m_Vec__49gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile()
-    retv6055 = t6056
-    return retv6055
+    var retv6188 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var t6189 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = vec_new___goml_m_Vec__49gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile()
+    retv6188 = t6189
+    return retv6188
 }
 
 func _goml_m_trait__impl_i_IntoIter_hb437af9cddd935341e10e7b33f5e3ad8_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6058 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value
-    var t6059 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_h7ac29217c0a95292d354ed83e619498f__p_json_p_Value(self__185)
-    retv6058 = t6059
-    return retv6058
+    var retv6191 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6192 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_h7ac29217c0a95292d354ed83e619498f__p_json_p_Value(self__185)
+    retv6191 = t6192
+    return retv6191
 }
 
 func _goml_m_trait__impl_i_Iterator_hb9a7f57c83f25ac89861ba8956f482dd__p_Value_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value) _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6061 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value
-    var t6062 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = self__102.next_fn
-    var t6063 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = t6062()
-    retv6061 = t6063
-    return retv6061
+    var retv6194 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6195 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = self__102.next_fn
+    var t6196 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = t6195()
+    retv6194 = t6196
+    return retv6194
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h75777ca66701eaff0e61ad866bba0304__PackageInfoUse() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6065 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
-    var t6066 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = vec_new___goml_m_Vec__48gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse()
-    retv6065 = t6066
-    return retv6065
+    var retv6198 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var t6199 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = vec_new___goml_m_Vec__48gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse()
+    retv6198 = t6199
+    return retv6198
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h18334364f9b865b5fd2768715b54883a__PackageInfoUse(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse) struct{} {
@@ -21375,32 +21866,32 @@ func _goml_m_inherent_i_Vec_i_Vec_l_hb32906e9e408c9a618367dd5b7c65628_PackageInf
 }
 
 func _goml_m_trait__impl_i_IntoIter_h680d0f8c93a63fb673e42a7de5999a91_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6072 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    var t6073 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_inherent_i_Vec_i_Vec_l_hcd48a0e4661d772417689ba85234445a__p_ModuleSource(self__185)
-    retv6072 = t6073
-    return retv6072
+    var retv6205 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var t6206 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_inherent_i_Vec_i_Vec_l_hcd48a0e4661d772417689ba85234445a__p_ModuleSource(self__185)
+    retv6205 = t6206
+    return retv6205
 }
 
 func _goml_m_trait__impl_i_Iterator_ha12cec02b91296f1e9f4a6fdc223ece8_leSource_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6075 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    var t6076 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = self__102.next_fn
-    var t6077 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = t6076()
-    retv6075 = t6077
-    return retv6075
+    var retv6208 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var t6209 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = self__102.next_fn
+    var t6210 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = t6209()
+    retv6208 = t6210
+    return retv6208
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_hf5b7bb332338998bbafd22e8b818d82a_ModuleSource_r_(value__209 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource) *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x {
-    var retv6079 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x
-    var t6080 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x = ref___goml_m_Ref__54Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource(value__209)
-    retv6079 = t6080
-    return retv6079
+    var retv6212 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x
+    var t6213 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x = ref___goml_m_Ref__54Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource(value__209)
+    retv6212 = t6213
+    return retv6212
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_h207107829b54eb5bee8ae14baee2694b_ModuleSource_r_(self__210 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6082 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    var t6083 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = ref_get___goml_m_Ref__54Option_h6d782143f965a39efac7d82090eeb566__p_ModuleSource(self__210)
-    retv6082 = t6083
-    return retv6082
+    var retv6215 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var t6216 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = ref_get___goml_m_Ref__54Option_h6d782143f965a39efac7d82090eeb566__p_ModuleSource(self__210)
+    retv6215 = t6216
+    return retv6215
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_hb54ecab350286a83b92ddb3f9140c1bf_ModuleSource_r_(self__211 *ref__goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_x, value__212 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource) struct{} {
@@ -21409,10 +21900,10 @@ func _goml_m_inherent_i_Ref_i_Ref_l_hb54ecab350286a83b92ddb3f9140c1bf_ModuleSour
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h7f65138fd979a4818a5bdb7d2d0c033a__p_ModuleSource() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6087 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    var t6088 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource = vec_new___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ModuleSource()
-    retv6087 = t6088
-    return retv6087
+    var retv6220 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var t6221 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource = vec_new___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ModuleSource()
+    retv6220 = t6221
+    return retv6220
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h548edbef0305eae6ae51369aa32ea9ce__p_ModuleSource(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource) struct{} {
@@ -21421,70 +21912,70 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h548edbef0305eae6ae51369aa32ea9ce__p_ModuleS
 }
 
 func _goml_m_trait__impl_i_IntoIter_hbb24c3c08c0e0eda73bbd2ed7ab959f5_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv6092 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
-    var t6093 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_inherent_i_Vec_i_Vec_l_hb30d35c5d71f0a421543b44ff5789d94__ResolvedModule(self__185)
-    retv6092 = t6093
-    return retv6092
+    var retv6225 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var t6226 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_inherent_i_Vec_i_Vec_l_hb30d35c5d71f0a421543b44ff5789d94__ResolvedModule(self__185)
+    retv6225 = t6226
+    return retv6225
 }
 
 func _goml_m_trait__impl_i_Iterator_h82a5e86743a27d7667760a9599e55be6_edModule_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule) _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv6095 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
-    var t6096 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = self__102.next_fn
-    var t6097 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = t6096()
-    retv6095 = t6097
-    return retv6095
+    var retv6228 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var t6229 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = self__102.next_fn
+    var t6230 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = t6229()
+    retv6228 = t6230
+    return retv6228
 }
 
 func _goml_m_trait__impl_i_IntoIter_hca479d67700dd21b47af22b98f16caad_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6099 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
-    var t6100 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_inherent_i_Vec_i_Vec_l_ha863470d08010671530ddc5e132dff25_PackageInfoFile(self__185)
-    retv6099 = t6100
-    return retv6099
+    var retv6232 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var t6233 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_inherent_i_Vec_i_Vec_l_ha863470d08010671530ddc5e132dff25_PackageInfoFile(self__185)
+    retv6232 = t6233
+    return retv6232
 }
 
 func _goml_m_trait__impl_i_Iterator_h8367a41b9e843a21d4b93d77018733ec_InfoFile_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6102 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
-    var t6103 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = self__102.next_fn
-    var t6104 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = t6103()
-    retv6102 = t6104
-    return retv6102
+    var retv6235 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var t6236 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = self__102.next_fn
+    var t6237 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = t6236()
+    retv6235 = t6237
+    return retv6235
 }
 
 func _goml_m_trait__impl_i_IntoIter_h2d1fbd559cbff6a9b17b68b5ecbeeb13_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6106 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
-    var t6107 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_inherent_i_Vec_i_Vec_l_hfbf172183a60b7e74041eac8d98ce667__PackageInfoUse(self__185)
-    retv6106 = t6107
-    return retv6106
+    var retv6239 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var t6240 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_inherent_i_Vec_i_Vec_l_hfbf172183a60b7e74041eac8d98ce667__PackageInfoUse(self__185)
+    retv6239 = t6240
+    return retv6239
 }
 
 func _goml_m_trait__impl_i_Iterator_h1e573d9ad0f55dba76f342a9189b1d79_eInfoUse_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6109 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
-    var t6110 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = self__102.next_fn
-    var t6111 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = t6110()
-    retv6109 = t6111
-    return retv6109
+    var retv6242 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var t6243 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = self__102.next_fn
+    var t6244 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = t6243()
+    retv6242 = t6244
+    return retv6242
 }
 
 func _goml_m_trait__impl_i_IntoIter_h8283ab011ea0c7292549bae3c993fa7c_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6113 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package
-    var t6114 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_inherent_i_Vec_i_Vec_l_h9233563de546b12964fa01391c452b6f_oject_p_Package(self__185)
-    retv6113 = t6114
-    return retv6113
+    var retv6246 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package
+    var t6247 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_inherent_i_Vec_i_Vec_l_h9233563de546b12964fa01391c452b6f_oject_p_Package(self__185)
+    retv6246 = t6247
+    return retv6246
 }
 
 func _goml_m_trait__impl_i_Iterator_h4f2ec7787b4824e4a849af6145a0285d__Package_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6116 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package
-    var t6117 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = self__102.next_fn
-    var t6118 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = t6117()
-    retv6116 = t6118
-    return retv6116
+    var retv6249 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package
+    var t6250 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = self__102.next_fn
+    var t6251 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = t6250()
+    retv6249 = t6251
+    return retv6249
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int(self__198 *hashmap_string_int_x, key__199 string) Option__int {
-    var retv6120 Option__int
-    var t6121 Option__int = hashmap_get__HashMap_6string_3int(self__198, key__199)
-    retv6120 = t6121
-    return retv6120
+    var retv6253 Option__int
+    var t6254 Option__int = hashmap_get__HashMap_6string_3int(self__198, key__199)
+    retv6253 = t6254
+    return retv6253
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int(self__200 *hashmap_string_int_x, key__201 string, value__202 int) struct{} {
@@ -21493,17 +21984,17 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__in
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__int() *hashmap_string_int_x {
-    var retv6125 *hashmap_string_int_x
-    var t6126 *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
-    retv6125 = t6126
-    return retv6125
+    var retv6258 *hashmap_string_int_x
+    var t6259 *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
+    retv6258 = t6259
+    return retv6258
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hdce239ba03933a930edcc90afc1bf2fa_oject_p_Package() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
-    var t6129 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = vec_new___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Package()
-    retv6128 = t6129
-    return retv6128
+    var retv6261 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
+    var t6262 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = vec_new___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Package()
+    retv6261 = t6262
+    return retv6261
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h30d3cd802528ff7f2e72eb8509c3f21a_oject_p_Package(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package) struct{} {
@@ -21512,17 +22003,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h30d3cd802528ff7f2e72eb8509c3f21a_oject_p_Pa
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__bool() *hashmap_string_bool_x {
-    var retv6133 *hashmap_string_bool_x
-    var t6134 *hashmap_string_bool_x = hashmap_new__HashMap_6string_4bool()
-    retv6133 = t6134
-    return retv6133
+    var retv6266 *hashmap_string_bool_x
+    var t6267 *hashmap_string_bool_x = hashmap_new__HashMap_6string_4bool()
+    retv6266 = t6267
+    return retv6266
 }
 
 func _goml_m_inherent_i_HashMap_i_H_hdbf81e0e38a4960c760aeed8f2c2a6b4_ring____V__bool(self__206 *hashmap_string_bool_x, key__207 string) bool {
-    var retv6136 bool
-    var t6137 bool = hashmap_contains__HashMap_6string_4bool(self__206, key__207)
-    retv6136 = t6137
-    return retv6136
+    var retv6269 bool
+    var t6270 bool = hashmap_contains__HashMap_6string_4bool(self__206, key__207)
+    retv6269 = t6270
+    return retv6269
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bool(self__200 *hashmap_string_bool_x, key__201 string, value__202 bool) struct{} {
@@ -21531,10 +22022,10 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__bo
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hf7ec0c6411ced6c5c194b74d2cedabce_project_p_Graph() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6141 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
-    var t6142 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = vec_new___goml_m_Vec__39gomlang_p_bootstrap__goml_p_project_p_Graph()
-    retv6141 = t6142
-    return retv6141
+    var retv6274 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
+    var t6275 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = vec_new___goml_m_Vec__39gomlang_p_bootstrap__goml_p_project_p_Graph()
+    retv6274 = t6275
+    return retv6274
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_Graph(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph) struct{} {
@@ -21543,10 +22034,10 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h25295679e462ffa7c000950961415c3c_project_p_
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hfe94218a24de949b7857b26e0738757f__p_ExternalTest() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6146 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-    var t6147 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = vec_new___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ExternalTest()
-    retv6146 = t6147
-    return retv6146
+    var retv6279 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var t6280 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = vec_new___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ExternalTest()
+    retv6279 = t6280
+    return retv6279
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_he5efbaa2e82bb5ea71260ea573a55be7__p_ExternalTest(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest) struct{} {
@@ -21555,10 +22046,10 @@ func _goml_m_inherent_i_Vec_i_Vec_l_he5efbaa2e82bb5ea71260ea573a55be7__p_Externa
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h21d443e37fb75951cbb9f60b0749c91c_oject_p_Command() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6151 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    var t6152 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = vec_new___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Command()
-    retv6151 = t6152
-    return retv6151
+    var retv6284 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    var t6285 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = vec_new___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Command()
+    retv6284 = t6285
+    return retv6284
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Command(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) struct{} {
@@ -21567,55 +22058,55 @@ func _goml_m_inherent_i_Vec_i_Vec_l_hd6b6ac5673e788aa90c3842818c6cb9e_oject_p_Co
 }
 
 func _goml_m_trait__impl_i_IntoIter_hafb6f46d3e6d3fc080a21b6006bb1847_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6156 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph
-    var t6157 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_had07d017bee9a8c0d7de4ef35faabec7_project_p_Graph(self__185)
-    retv6156 = t6157
-    return retv6156
+    var retv6289 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph
+    var t6290 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_had07d017bee9a8c0d7de4ef35faabec7_project_p_Graph(self__185)
+    retv6289 = t6290
+    return retv6289
 }
 
 func _goml_m_trait__impl_i_Iterator_h49bc8b09451d5def09bc99d53fe8c2aa__p_Graph_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6159 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph
-    var t6160 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = self__102.next_fn
-    var t6161 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = t6160()
-    retv6159 = t6161
-    return retv6159
+    var retv6292 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph
+    var t6293 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = self__102.next_fn
+    var t6294 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = t6293()
+    retv6292 = t6294
+    return retv6292
 }
 
 func _goml_m_trait__impl_i_IntoIter_h5c5ddac581f9043aebd485dffd168351_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6163 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command
-    var t6164 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_inherent_i_Vec_i_Vec_l_heb12a958f7857677dabb4872249779ae_oject_p_Command(self__185)
-    retv6163 = t6164
-    return retv6163
+    var retv6296 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command
+    var t6297 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_inherent_i_Vec_i_Vec_l_heb12a958f7857677dabb4872249779ae_oject_p_Command(self__185)
+    retv6296 = t6297
+    return retv6296
 }
 
 func _goml_m_trait__impl_i_Iterator_h9bb37d2490117b5d6228287c3645199f__Command_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6166 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command
-    var t6167 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = self__102.next_fn
-    var t6168 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = t6167()
-    retv6166 = t6168
-    return retv6166
+    var retv6299 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command
+    var t6300 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = self__102.next_fn
+    var t6301 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = t6300()
+    retv6299 = t6301
+    return retv6299
 }
 
 func _goml_m_trait__impl_i_IntoIter_h147089efc8656850ee96f9eeaf5def7c_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6170 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-    var t6171 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_h29a9fb600914a1f63ba0cfea61d63461__p_ExternalTest(self__185)
-    retv6170 = t6171
-    return retv6170
+    var retv6303 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var t6304 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_h29a9fb600914a1f63ba0cfea61d63461__p_ExternalTest(self__185)
+    retv6303 = t6304
+    return retv6303
 }
 
 func _goml_m_trait__impl_i_Iterator_hefefc48932a3d016b6d02e84cb4f765c_rnalTest_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6173 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-    var t6174 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = self__102.next_fn
-    var t6175 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = t6174()
-    retv6173 = t6175
-    return retv6173
+    var retv6306 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var t6307 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = self__102.next_fn
+    var t6308 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = t6307()
+    retv6306 = t6308
+    return retv6306
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hd066bbccdc62fc1960994f11dd51816f_ect_p_TestGroup() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6177 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup
-    var t6178 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = vec_new___goml_m_Vec__43gomlang_p_bootstrap__goml_p_project_p_TestGroup()
-    retv6177 = t6178
-    return retv6177
+    var retv6310 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var t6311 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = vec_new___goml_m_Vec__43gomlang_p_bootstrap__goml_p_project_p_TestGroup()
+    retv6310 = t6311
+    return retv6310
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h8d171ccd15f36d64e71454244e0235e8_ect_p_TestGroup(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup) struct{} {
@@ -21623,11 +22114,32 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h8d171ccd15f36d64e71454244e0235e8_ect_p_Test
     return struct{}{}
 }
 
+func _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph) int {
+    var retv6315 int
+    var t6316 int = vec_len___goml_m_Vec__39gomlang_p_bootstrap__goml_p_project_p_Graph(self__139)
+    retv6315 = t6316
+    return retv6315
+}
+
+func _goml_m_std_p_io_p_eprintln____T__string(value__3 string) struct{} {
+    var t6318 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__3)
+    var t6319 string = t6318 + "\n"
+    _goml_runtime_std_io_eprint(t6319)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_h94bf5d1608e9efb4ddb1fda6404362b9_oject_p_Command(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) int {
+    var retv6322 int
+    var t6323 int = vec_len___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Command(self__139)
+    retv6322 = t6323
+    return retv6322
+}
+
 func _goml_m_inherent_i_Vec_i_Vec_l_hfed801dc0c6ca177f5456b9e692b4ea3_p_runner_p_Test() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6182 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
-    var t6183 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = vec_new___goml_m_Vec__37gomlang_p_bootstrap__goml_p_runner_p_Test()
-    retv6182 = t6183
-    return retv6182
+    var retv6325 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
+    var t6326 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = vec_new___goml_m_Vec__37gomlang_p_bootstrap__goml_p_runner_p_Test()
+    retv6325 = t6326
+    return retv6325
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) struct{} {
@@ -21636,63 +22148,63 @@ func _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p
 }
 
 func _goml_m_trait__impl_i_IntoIter_h132df2bfc14ac4981c63e3cd18d69fc5_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6187 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test
-    var t6188 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h3cdd45f712736ab319c4aab4af04af26_p_runner_p_Test(self__185)
-    retv6187 = t6188
-    return retv6187
+    var retv6330 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test
+    var t6331 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h3cdd45f712736ab319c4aab4af04af26_p_runner_p_Test(self__185)
+    retv6330 = t6331
+    return retv6330
 }
 
 func _goml_m_trait__impl_i_Iterator_h8a8f9268fdcfd525d244a4a2c3087318_r_p_Test_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6190 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test
-    var t6191 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = self__102.next_fn
-    var t6192 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = t6191()
-    retv6190 = t6192
-    return retv6190
+    var retv6333 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test
+    var t6334 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = self__102.next_fn
+    var t6335 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = t6334()
+    retv6333 = t6335
+    return retv6333
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) int {
-    var retv6194 int
-    var t6195 int = vec_len___goml_m_Vec__37gomlang_p_bootstrap__goml_p_runner_p_Test(self__139)
-    retv6194 = t6195
-    return retv6194
+    var retv6337 int
+    var t6338 int = vec_len___goml_m_Vec__37gomlang_p_bootstrap__goml_p_runner_p_Test(self__139)
+    retv6337 = t6338
+    return retv6337
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6197 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
-    var t6198 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = vec_get___goml_m_Vec__37gomlang_p_bootstrap__goml_p_runner_p_Test(self__134, index__135)
-    retv6197 = t6198
-    return retv6197
+    var retv6340 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
+    var t6341 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = vec_get___goml_m_Vec__37gomlang_p_bootstrap__goml_p_runner_p_Test(self__134, index__135)
+    retv6340 = t6341
+    return retv6340
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hba33565d3653361387073d15b9539e6f_p_runner_p_Test(self__160 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, index__161 int, value__162 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) struct{} {
     var len__163 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(self__160)
-    var t6201 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(index__161, len__163)
-    if t6201 {
+    var t6344 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(index__161, len__163)
+    if t6344 {
         _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(self__160, value__162)
         return struct{}{}
     } else {
         _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__160, index__161)
-        var t6203 int = len__163 - 1
-        var t6204 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__160, t6203)
-        _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(self__160, t6204)
-        var t6205 int = len__163 - 1
-        var current__164 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t6205)
-        Loop_loop6208:
+        var t6346 int = len__163 - 1
+        var t6347 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__160, t6346)
+        _goml_m_inherent_i_Vec_i_Vec_l_hca454216b4cdcd892009bf3e405b7e6e_p_runner_p_Test(self__160, t6347)
+        var t6348 int = len__163 - 1
+        var current__164 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t6348)
+        Loop_loop6351:
         for {
-            var t6209 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-            var t6210 bool = t6209 > index__161
-            if t6210 {
-                var t6211 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t6212 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t6213 int = t6212 - 1
-                var t6214 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__160, t6213)
-                _goml_m_inherent_i_Vec_i_Vec_l_h74c6fb8377c9f4e1f09522198c016869_p_runner_p_Test(self__160, t6211, t6214)
-                var t6215 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t6216 int = t6215 - 1
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__164, t6216)
+            var t6352 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+            var t6353 bool = t6352 > index__161
+            if t6353 {
+                var t6354 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6355 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6356 int = t6355 - 1
+                var t6357 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__160, t6356)
+                _goml_m_inherent_i_Vec_i_Vec_l_h74c6fb8377c9f4e1f09522198c016869_p_runner_p_Test(self__160, t6354, t6357)
+                var t6358 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6359 int = t6358 - 1
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__164, t6359)
                 continue
             } else {
-                break Loop_loop6208
+                break Loop_loop6351
             }
         }
         _goml_m_inherent_i_Vec_i_Vec_l_h74c6fb8377c9f4e1f09522198c016869_p_runner_p_Test(self__160, index__161, value__162)
@@ -21701,14 +22213,14 @@ func _goml_m_inherent_i_Vec_i_Vec_l_hba33565d3653361387073d15b9539e6f_p_runner_p
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv6218 string
-    var t6219 string = _goml_runtime_core_bool_to_string(self__37)
-    retv6218 = t6219
-    return retv6218
+    var retv6361 string
+    var t6362 string = _goml_runtime_core_bool_to_string(self__37)
+    retv6361 = t6362
+    return retv6361
 }
 
 func _goml_m_inherent_i_Channel_i_C_h2bb41a8d5e8242221170f6c711900ade_unner_p_Test_q_(self__216 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_ {
-    var retv6221 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_
+    var retv6364 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_
     var mtmp60 Tuple2_63Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test_4bool = func(p0 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) Tuple2_63Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test_4bool {
         var value Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
         var ok bool
@@ -21722,17 +22234,17 @@ func _goml_m_inherent_i_Channel_i_C_h2bb41a8d5e8242221170f6c711900ade_unner_p_Te
     var x62 bool = mtmp60._1
     var ok__218 bool = x62
     var value__217 Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = x61
-    var jp6223 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_
+    var jp6366 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_
     if ok__218 {
-        var t6224 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_ = _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__Some{
+        var t6367 _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q_ = _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__Some{
             _0: value__217,
         }
-        jp6223 = t6224
+        jp6366 = t6367
     } else {
-        jp6223 = _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__None{}
+        jp6366 = _goml_m_Option_____o_int_c_gomlang_p_bootstrap__goml_p_runner_p_Test_q__None{}
     }
-    retv6221 = jp6223
-    return retv6221
+    retv6364 = jp6366
+    return retv6364
 }
 
 func _goml_m_inherent_i_Channel_i_C_h69e38c5c703e24a46774049819e8bfb4_ner_p_Execution(self__214 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution, value__215 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) struct{} {
@@ -21744,70 +22256,70 @@ func _goml_m_inherent_i_Channel_i_C_h69e38c5c703e24a46774049819e8bfb4_ner_p_Exec
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hcf9e110a405d493870920b6a90b6602c_ner_p_Execution() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6228 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t6229 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = vec_new___goml_m_Vec__42gomlang_p_bootstrap__goml_p_runner_p_Execution()
-    retv6228 = t6229
-    return retv6228
+    var retv6371 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t6372 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = vec_new___goml_m_Vec__42gomlang_p_bootstrap__goml_p_runner_p_Execution()
+    retv6371 = t6372
+    return retv6371
 }
 
 func _goml_m_trait__impl_i_IntoIter_h1eb4d5bd5e6758700f5b4770323bf623_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6231 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t6232 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h4ee9afb6492dee9d42782008518acd44_ner_p_Execution(self__185)
-    retv6231 = t6232
-    return retv6231
+    var retv6374 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t6375 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h4ee9afb6492dee9d42782008518acd44_ner_p_Execution(self__185)
+    retv6374 = t6375
+    return retv6374
 }
 
 func _goml_m_trait__impl_i_Iterator_hf52b01cf91b00481831e573a7be0220a_xecution_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6234 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t6235 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = self__102.next_fn
-    var t6236 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = t6235()
-    retv6234 = t6236
-    return retv6234
+    var retv6377 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t6378 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = self__102.next_fn
+    var t6379 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = t6378()
+    retv6377 = t6379
+    return retv6377
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h943cdc01ec526356f12b63dd9ffd2d4d_ner_p_Execution(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) int {
-    var retv6238 int
-    var t6239 int = vec_len___goml_m_Vec__42gomlang_p_bootstrap__goml_p_runner_p_Execution(self__139)
-    retv6238 = t6239
-    return retv6238
+    var retv6381 int
+    var t6382 int = vec_len___goml_m_Vec__42gomlang_p_bootstrap__goml_p_runner_p_Execution(self__139)
+    retv6381 = t6382
+    return retv6381
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6241 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t6242 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = vec_get___goml_m_Vec__42gomlang_p_bootstrap__goml_p_runner_p_Execution(self__134, index__135)
-    retv6241 = t6242
-    return retv6241
+    var retv6384 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t6385 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = vec_get___goml_m_Vec__42gomlang_p_bootstrap__goml_p_runner_p_Execution(self__134, index__135)
+    retv6384 = t6385
+    return retv6384
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h68b40c05f65375a74962c54d8a1be229_ner_p_Execution(self__160 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution, index__161 int, value__162 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) struct{} {
     var len__163 int = _goml_m_inherent_i_Vec_i_Vec_l_h943cdc01ec526356f12b63dd9ffd2d4d_ner_p_Execution(self__160)
-    var t6245 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(index__161, len__163)
-    if t6245 {
+    var t6388 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(index__161, len__163)
+    if t6388 {
         _goml_m_inherent_i_Vec_i_Vec_l_h309fd1ca99753465fbe12065bed86f59_ner_p_Execution(self__160, value__162)
         return struct{}{}
     } else {
         _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__160, index__161)
-        var t6247 int = len__163 - 1
-        var t6248 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__160, t6247)
-        _goml_m_inherent_i_Vec_i_Vec_l_h309fd1ca99753465fbe12065bed86f59_ner_p_Execution(self__160, t6248)
-        var t6249 int = len__163 - 1
-        var current__164 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t6249)
-        Loop_loop6252:
+        var t6390 int = len__163 - 1
+        var t6391 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__160, t6390)
+        _goml_m_inherent_i_Vec_i_Vec_l_h309fd1ca99753465fbe12065bed86f59_ner_p_Execution(self__160, t6391)
+        var t6392 int = len__163 - 1
+        var current__164 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t6392)
+        Loop_loop6395:
         for {
-            var t6253 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-            var t6254 bool = t6253 > index__161
-            if t6254 {
-                var t6255 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t6256 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t6257 int = t6256 - 1
-                var t6258 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__160, t6257)
-                _goml_m_inherent_i_Vec_i_Vec_l_h0cf2240b8746b56f3fbd075cdbd14008_ner_p_Execution(self__160, t6255, t6258)
-                var t6259 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
-                var t6260 int = t6259 - 1
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__164, t6260)
+            var t6396 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+            var t6397 bool = t6396 > index__161
+            if t6397 {
+                var t6398 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6399 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6400 int = t6399 - 1
+                var t6401 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__160, t6400)
+                _goml_m_inherent_i_Vec_i_Vec_l_h0cf2240b8746b56f3fbd075cdbd14008_ner_p_Execution(self__160, t6398, t6401)
+                var t6402 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__164)
+                var t6403 int = t6402 - 1
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__164, t6403)
                 continue
             } else {
-                break Loop_loop6252
+                break Loop_loop6395
             }
         }
         _goml_m_inherent_i_Vec_i_Vec_l_h0cf2240b8746b56f3fbd075cdbd14008_ner_p_Execution(self__160, index__161, value__162)
@@ -21821,42 +22333,42 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h309fd1ca99753465fbe12065bed86f59_ner_p_Exec
 }
 
 func _goml_m_std_p_io_p_print____T__string(value__0 string) struct{} {
-    var t6264 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_std_io_print(t6264)
+    var t6407 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_std_io_print(t6407)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_IntoIter_h0a2657b1f9c5aa5937d9deb37cc6d10e_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6267 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group
-    var t6268 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_inherent_i_Vec_i_Vec_l_h64067069e9300d64fae86216141cd167__runner_p_Group(self__185)
-    retv6267 = t6268
-    return retv6267
+    var retv6410 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group
+    var t6411 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_inherent_i_Vec_i_Vec_l_h64067069e9300d64fae86216141cd167__runner_p_Group(self__185)
+    retv6410 = t6411
+    return retv6410
 }
 
 func _goml_m_trait__impl_i_Iterator_hd1d43708b51280fc0b6b58c783b2f59c__p_Group_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6270 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group
-    var t6271 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = self__102.next_fn
-    var t6272 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = t6271()
-    retv6270 = t6272
-    return retv6270
+    var retv6413 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group
+    var t6414 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = self__102.next_fn
+    var t6415 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = t6414()
+    retv6413 = t6415
+    return retv6413
 }
 
 func _goml_m_inherent_i_Channel_i_C_haa0063835c5423f3f47632c11c48848a_unner_p_Test_q_(capacity__213 int) chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6274 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
-    var t6275 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = func(p0 int) chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test {
+    var retv6417 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test
+    var t6418 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = func(p0 int) chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test {
         return make(chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, p0)
     }(capacity__213)
-    retv6274 = t6275
-    return retv6274
+    retv6417 = t6418
+    return retv6417
 }
 
 func _goml_m_inherent_i_Channel_i_C_h58cea74ead29ae253618b5b04285ec9c_ner_p_Execution(capacity__213 int) chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6277 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t6278 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = func(p0 int) chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
+    var retv6420 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t6421 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = func(p0 int) chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution {
         return make(chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution, p0)
     }(capacity__213)
-    retv6277 = t6278
-    return retv6277
+    retv6420 = t6421
+    return retv6420
 }
 
 func _goml_m_inherent_i_Channel_i_C_hf8b93659bdab443b04473547cfd344eb_unner_p_Test_q_(self__214 chan Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, value__215 Tuple2_3int_49_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) struct{} {
@@ -21876,7 +22388,7 @@ func _goml_m_inherent_i_Channel_i_C_h0f86dfa93ea87efd1b313df5410283b1_unner_p_Te
 }
 
 func _goml_m_inherent_i_Channel_i_C_hdb36da7a823ee5896f42c8127668b4b2_ner_p_Execution(self__216 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6284 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var retv6427 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
     var mtmp60 Tuple2_54_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution_4bool = func(p0 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) Tuple2_54_goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution_4bool {
         var value _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution
         var ok bool
@@ -21890,17 +22402,17 @@ func _goml_m_inherent_i_Channel_i_C_hdb36da7a823ee5896f42c8127668b4b2_ner_p_Exec
     var x62 bool = mtmp60._1
     var ok__218 bool = x62
     var value__217 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = x61
-    var jp6286 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var jp6429 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
     if ok__218 {
-        var t6287 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some{
+        var t6430 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some{
             _0: value__217,
         }
-        jp6286 = t6287
+        jp6429 = t6430
     } else {
-        jp6286 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None{}
+        jp6429 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None{}
     }
-    retv6284 = jp6286
-    return retv6284
+    retv6427 = jp6429
+    return retv6427
 }
 
 func _goml_m_inherent_i_Channel_i_C_h057644221e870317113b2f39363c4257_ner_p_Execution(self__219 chan _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) struct{} {
@@ -21911,33 +22423,26 @@ func _goml_m_inherent_i_Channel_i_C_h057644221e870317113b2f39363c4257_ner_p_Exec
     return struct{}{}
 }
 
-func _goml_m_std_p_io_p_eprintln____T__string(value__3 string) struct{} {
-    var t6291 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__3)
-    var t6292 string = t6291 + "\n"
-    _goml_runtime_std_io_eprint(t6292)
-    return struct{}{}
-}
-
 func _goml_m_inherent_i_Vec_i_Vec_l_hddcbbd25196eff23995c988ff5beaa6e__runner_p_Group() *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6295 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group
-    var t6296 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = vec_new___goml_m_Vec__38gomlang_p_bootstrap__goml_p_runner_p_Group()
-    retv6295 = t6296
-    return retv6295
+    var retv6434 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group
+    var t6435 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = vec_new___goml_m_Vec__38gomlang_p_bootstrap__goml_p_runner_p_Group()
+    retv6434 = t6435
+    return retv6434
 }
 
 func _goml_m_trait__impl_i_IntoIter_h0e38c77493aeb18966029147e552e6f5_r__i_into__iter(self__185 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6298 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup
-    var t6299 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_h975ccda0d78e54af173adcab5a8b3cae_ect_p_TestGroup(self__185)
-    retv6298 = t6299
-    return retv6298
+    var retv6437 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var t6438 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_h975ccda0d78e54af173adcab5a8b3cae_ect_p_TestGroup(self__185)
+    retv6437 = t6438
+    return retv6437
 }
 
 func _goml_m_trait__impl_i_Iterator_h694578a8077333ce468c29ccc39f801d_estGroup_i_next(self__102 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6301 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup
-    var t6302 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = self__102.next_fn
-    var t6303 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = t6302()
-    retv6301 = t6303
-    return retv6301
+    var retv6440 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var t6441 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = self__102.next_fn
+    var t6442 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = t6441()
+    retv6440 = t6442
+    return retv6440
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h30ea9c6f8921b2565d5d6d4687f361d9__runner_p_Group(self__128 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group, elem__129 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group) struct{} {
@@ -21946,19 +22451,19 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h30ea9c6f8921b2565d5d6d4687f361d9__runner_p_
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__string(self__180 *_goml_vec_string) FnIterator__string {
-    var retv6307 FnIterator__string
+    var retv6446 FnIterator__string
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__180)
-    var t6308 closure_env_inherent_Vec_Vec_T_iter_T_string_2 = closure_env_inherent_Vec_Vec_T_iter_T_string_2{
+    var t6447 closure_env_inherent_Vec_Vec_T_iter_T_string_2 = closure_env_inherent_Vec_Vec_T_iter_T_string_2{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6309 FnIterator__string = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(func() Option__string {
-        return _goml_m_inherent_i_closure__en_h8e11f798326c46bb5922448656372d4d_ring__2_i_apply(t6308)
+    var t6448 FnIterator__string = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(func() Option__string {
+        return _goml_m_inherent_i_closure__en_h8e11f798326c46bb5922448656372d4d_ring__2_i_apply(t6447)
     })
-    retv6307 = t6309
-    return retv6307
+    retv6446 = t6448
+    return retv6446
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__string(self__144 *_goml_vec_string, len__145 int) struct{} {
@@ -21967,17 +22472,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__string(self__144 *_gom
 }
 
 func __goml_builtin_range(start__220 int, end__221 int) FnIterator__int {
-    var retv6313 FnIterator__int
+    var retv6452 FnIterator__int
     var current__222 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(start__220)
-    var t6314 closure_env_goml_builtin_range_3 = closure_env_goml_builtin_range_3{
+    var t6453 closure_env_goml_builtin_range_3 = closure_env_goml_builtin_range_3{
         current_0: current__222,
         end_1: end__221,
     }
-    var t6315 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
-        return _goml_m_inherent_i_closure__en_hb6a3fa4977aa88291cbefd0dae616b54_ange__3_i_apply(t6314)
+    var t6454 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
+        return _goml_m_inherent_i_closure__en_hb6a3fa4977aa88291cbefd0dae616b54_ange__3_i_apply(t6453)
     })
-    retv6313 = t6315
-    return retv6313
+    retv6452 = t6454
+    return retv6452
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__136 *_goml_vec_string, index__137 int, elem__138 string) struct{} {
@@ -21986,217 +22491,217 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_set____T__string(self__136 *_goml_vec
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hd6299ab70c21b8cb71d02a4f67632f14_json_p_Value_q_(self__180 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value) _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
-    var retv6319 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
+    var retv6458 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_had39c6e4c830136a3e0ceade059a4a58_json_p_Value_q_(self__180)
-    var t6320 closure_env_inherent_Vec_Vec_T_iter_T_string_gomlang_bootstrap_goml_json_Value_4 = closure_env_inherent_Vec_Vec_T_iter_T_string_gomlang_bootstrap_goml_json_Value_4{
+    var t6459 closure_env_inherent_Vec_Vec_T_iter_T_string_gomlang_bootstrap_goml_json_Value_4 = closure_env_inherent_Vec_Vec_T_iter_T_string_gomlang_bootstrap_goml_json_Value_4{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6321 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_inherent_i_FnIterator__h802946e69ca67769f2b9b026369afd4a_json_p_Value_q_(func() _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
-        return _goml_m_inherent_i_closure__en_hc3bc61f1271a9f77c0211d63c0dd936c_alue__4_i_apply(t6320)
+    var t6460 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_inherent_i_FnIterator__h802946e69ca67769f2b9b026369afd4a_json_p_Value_q_(func() _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
+        return _goml_m_inherent_i_closure__en_hc3bc61f1271a9f77c0211d63c0dd936c_alue__4_i_apply(t6459)
     })
-    retv6319 = t6321
-    return retv6319
+    retv6458 = t6460
+    return retv6458
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h34a57e87dcd3dfd6e82e08bcd478aa67_p_RegistryEntry(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv6323 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var retv6462 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_h237dba6fe66cf882b33a3e720311bdcf_p_RegistryEntry(self__180)
-    var t6324 closure_env_inherent_Vec_Vec_T_h2bec200912db2bd20b5dd0d3d3cc8c69_RegistryEntry_5 = closure_env_inherent_Vec_Vec_T_h2bec200912db2bd20b5dd0d3d3cc8c69_RegistryEntry_5{
+    var t6463 closure_env_inherent_Vec_Vec_T_h2bec200912db2bd20b5dd0d3d3cc8c69_RegistryEntry_5 = closure_env_inherent_Vec_Vec_T_h2bec200912db2bd20b5dd0d3d3cc8c69_RegistryEntry_5{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6325 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_inherent_i_FnIterator__h7ef1e9f1cc9eaff756fe3712115c9bbf_p_RegistryEntry(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-        return _goml_m_inherent_i_closure__en_h88fd4752985147119a1c568a0d2c2616_ntry__5_i_apply(t6324)
+    var t6464 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_inherent_i_FnIterator__h7ef1e9f1cc9eaff756fe3712115c9bbf_p_RegistryEntry(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
+        return _goml_m_inherent_i_closure__en_h88fd4752985147119a1c568a0d2c2616_ntry__5_i_apply(t6463)
     })
-    retv6323 = t6325
-    return retv6323
+    retv6462 = t6464
+    return retv6462
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_he1ec2b517ed3d491dc5ff1df9971edbe_st_p_Dependency(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv6327 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var retv6466 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_h898d5d60006351e784c9d303369921f5_st_p_Dependency(self__180)
-    var t6328 closure_env_inherent_Vec_Vec_T_ha0f1fda9659165b3ab312aef256e99a1_st_Dependency_6 = closure_env_inherent_Vec_Vec_T_ha0f1fda9659165b3ab312aef256e99a1_st_Dependency_6{
+    var t6467 closure_env_inherent_Vec_Vec_T_ha0f1fda9659165b3ab312aef256e99a1_st_Dependency_6 = closure_env_inherent_Vec_Vec_T_ha0f1fda9659165b3ab312aef256e99a1_st_Dependency_6{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6329 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_inherent_i_FnIterator__ha9b7241f98b1eb4bf433ea3c13001972_st_p_Dependency(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-        return _goml_m_inherent_i_closure__en_h5e5e5c4b4ea831561e573f061ee3530b_ency__6_i_apply(t6328)
+    var t6468 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_inherent_i_FnIterator__ha9b7241f98b1eb4bf433ea3c13001972_st_p_Dependency(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
+        return _goml_m_inherent_i_closure__en_h5e5e5c4b4ea831561e573f061ee3530b_ency__6_i_apply(t6467)
     })
-    retv6327 = t6329
-    return retv6327
+    retv6466 = t6468
+    return retv6466
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv6331 string
-    retv6331 = self__38
-    return retv6331
+    var retv6470 string
+    retv6470 = self__38
+    return retv6470
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h7ac29217c0a95292d354ed83e619498f__p_json_p_Value(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6333 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value
+    var retv6472 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hdb820ab9715c01fd8bf553e21a0b3135__p_json_p_Value(self__180)
-    var t6334 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_json_Value_7 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_json_Value_7{
+    var t6473 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_json_Value_7 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_json_Value_7{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6335 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_inherent_i_FnIterator__h41868e24d323f02bad91622b379c3cc4__p_json_p_Value(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value {
-        return _goml_m_inherent_i_closure__en_ha6f3d78e2f3c348e1ce94db743819ac3_alue__7_i_apply(t6334)
+    var t6474 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_inherent_i_FnIterator__h41868e24d323f02bad91622b379c3cc4__p_json_p_Value(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value {
+        return _goml_m_inherent_i_closure__en_ha6f3d78e2f3c348e1ce94db743819ac3_alue__7_i_apply(t6473)
     })
-    retv6333 = t6335
-    return retv6333
+    retv6472 = t6474
+    return retv6472
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hcd48a0e4661d772417689ba85234445a__p_ModuleSource(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6337 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var retv6476 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_he45bcfb65e477287a5a6f8d65032cd0b__p_ModuleSource(self__180)
-    var t6338 closure_env_inherent_Vec_Vec_T_ha54ba2838822131817046cc89c025882__ModuleSource_8 = closure_env_inherent_Vec_Vec_T_ha54ba2838822131817046cc89c025882__ModuleSource_8{
+    var t6477 closure_env_inherent_Vec_Vec_T_ha54ba2838822131817046cc89c025882__ModuleSource_8 = closure_env_inherent_Vec_Vec_T_ha54ba2838822131817046cc89c025882__ModuleSource_8{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6339 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_inherent_i_FnIterator__h9bad1637299c87c5895fcee864932819__p_ModuleSource(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-        return _goml_m_inherent_i_closure__en_h9cc6d8fc4e069fba60b555318da6ce9c_urce__8_i_apply(t6338)
+    var t6478 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_inherent_i_FnIterator__h9bad1637299c87c5895fcee864932819__p_ModuleSource(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
+        return _goml_m_inherent_i_closure__en_h9cc6d8fc4e069fba60b555318da6ce9c_urce__8_i_apply(t6477)
     })
-    retv6337 = t6339
-    return retv6337
+    retv6476 = t6478
+    return retv6476
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hb30d35c5d71f0a421543b44ff5789d94__ResolvedModule(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv6341 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var retv6480 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hf75b5c980dbb7e22188d65bfb03937d9__ResolvedModule(self__180)
-    var t6342 closure_env_inherent_Vec_Vec_T_hde3a1a98cefb14bea01536e4f7006ce7_esolvedModule_9 = closure_env_inherent_Vec_Vec_T_hde3a1a98cefb14bea01536e4f7006ce7_esolvedModule_9{
+    var t6481 closure_env_inherent_Vec_Vec_T_hde3a1a98cefb14bea01536e4f7006ce7_esolvedModule_9 = closure_env_inherent_Vec_Vec_T_hde3a1a98cefb14bea01536e4f7006ce7_esolvedModule_9{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6343 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_inherent_i_FnIterator__ha5c7aea1bd877dcaba20bf87475c6140__ResolvedModule(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-        return _goml_m_inherent_i_closure__en_h6dad3ffe674382991b3ee6a1e6cb4230_dule__9_i_apply(t6342)
+    var t6482 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_inherent_i_FnIterator__ha5c7aea1bd877dcaba20bf87475c6140__ResolvedModule(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
+        return _goml_m_inherent_i_closure__en_h6dad3ffe674382991b3ee6a1e6cb4230_dule__9_i_apply(t6481)
     })
-    retv6341 = t6343
-    return retv6341
+    retv6480 = t6482
+    return retv6480
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_ha863470d08010671530ddc5e132dff25_PackageInfoFile(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6345 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var retv6484 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hb87fa1b24356e8adbd150ab0daa31f95_PackageInfoFile(self__180)
-    var t6346 closure_env_inherent_Vec_Vec_T_h2946f01e552480341244230205a66733_kageInfoFile_10 = closure_env_inherent_Vec_Vec_T_h2946f01e552480341244230205a66733_kageInfoFile_10{
+    var t6485 closure_env_inherent_Vec_Vec_T_h2946f01e552480341244230205a66733_kageInfoFile_10 = closure_env_inherent_Vec_Vec_T_h2946f01e552480341244230205a66733_kageInfoFile_10{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6347 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_inherent_i_FnIterator__h635f4a3cf994de017414184f78b9c178_PackageInfoFile(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-        return _goml_m_inherent_i_closure__en_h24af0c2fd98118786d9f526069ea9744_ile__10_i_apply(t6346)
+    var t6486 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_inherent_i_FnIterator__h635f4a3cf994de017414184f78b9c178_PackageInfoFile(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
+        return _goml_m_inherent_i_closure__en_h24af0c2fd98118786d9f526069ea9744_ile__10_i_apply(t6485)
     })
-    retv6345 = t6347
-    return retv6345
+    retv6484 = t6486
+    return retv6484
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hfbf172183a60b7e74041eac8d98ce667__PackageInfoUse(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6349 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var retv6488 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hc328dddf098570be85f77cba54a743ed__PackageInfoUse(self__180)
-    var t6350 closure_env_inherent_Vec_Vec_T_h93efabdcf5cc65603e1b27dd63d8e487_ckageInfoUse_11 = closure_env_inherent_Vec_Vec_T_h93efabdcf5cc65603e1b27dd63d8e487_ckageInfoUse_11{
+    var t6489 closure_env_inherent_Vec_Vec_T_h93efabdcf5cc65603e1b27dd63d8e487_ckageInfoUse_11 = closure_env_inherent_Vec_Vec_T_h93efabdcf5cc65603e1b27dd63d8e487_ckageInfoUse_11{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6351 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_inherent_i_FnIterator__h5851bd545c563be2da60e101cd10d630__PackageInfoUse(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-        return _goml_m_inherent_i_closure__en_h86d35a63406f21885591445a9ad3d625_Use__11_i_apply(t6350)
+    var t6490 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_inherent_i_FnIterator__h5851bd545c563be2da60e101cd10d630__PackageInfoUse(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
+        return _goml_m_inherent_i_closure__en_h86d35a63406f21885591445a9ad3d625_Use__11_i_apply(t6489)
     })
-    retv6349 = t6351
-    return retv6349
+    retv6488 = t6490
+    return retv6488
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h9233563de546b12964fa01391c452b6f_oject_p_Package(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6353 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package
+    var retv6492 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_h3a076594506fbdc0e24a7fb1aac02ede_oject_p_Package(self__180)
-    var t6354 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Package_12 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Package_12{
+    var t6493 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Package_12 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Package_12{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6355 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_inherent_i_FnIterator__h0068a9b4527b6f606bde8682ba6f85b9_oject_p_Package(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package {
-        return _goml_m_inherent_i_closure__en_hc94ed31b7ec98254e0198bcc03f804b2_age__12_i_apply(t6354)
+    var t6494 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_inherent_i_FnIterator__h0068a9b4527b6f606bde8682ba6f85b9_oject_p_Package(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package {
+        return _goml_m_inherent_i_closure__en_hc94ed31b7ec98254e0198bcc03f804b2_age__12_i_apply(t6493)
     })
-    retv6353 = t6355
-    return retv6353
+    retv6492 = t6494
+    return retv6492
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_had07d017bee9a8c0d7de4ef35faabec7_project_p_Graph(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6357 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph
+    var retv6496 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(self__180)
-    var t6358 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Graph_13 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Graph_13{
+    var t6497 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Graph_13 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Graph_13{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6359 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_FnIterator__h0f12f76d223ed30acdc86365ecf40b08_project_p_Graph(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph {
-        return _goml_m_inherent_i_closure__en_hd009d821c74983445a298aaf1546afdf_aph__13_i_apply(t6358)
+    var t6498 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_FnIterator__h0f12f76d223ed30acdc86365ecf40b08_project_p_Graph(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph {
+        return _goml_m_inherent_i_closure__en_hd009d821c74983445a298aaf1546afdf_aph__13_i_apply(t6497)
     })
-    retv6357 = t6359
-    return retv6357
+    retv6496 = t6498
+    return retv6496
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_heb12a958f7857677dabb4872249779ae_oject_p_Command(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6361 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command
+    var retv6500 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_h94bf5d1608e9efb4ddb1fda6404362b9_oject_p_Command(self__180)
-    var t6362 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Command_14 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Command_14{
+    var t6501 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Command_14 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Command_14{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6363 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_inherent_i_FnIterator__h69d9645b1df6c6e74d9681d8a9d1883b_oject_p_Command(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command {
-        return _goml_m_inherent_i_closure__en_hd7f59b55638e2a286dbcecc899f7c081_and__14_i_apply(t6362)
+    var t6502 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_inherent_i_FnIterator__h69d9645b1df6c6e74d9681d8a9d1883b_oject_p_Command(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command {
+        return _goml_m_inherent_i_closure__en_hd7f59b55638e2a286dbcecc899f7c081_and__14_i_apply(t6501)
     })
-    retv6361 = t6363
-    return retv6361
+    retv6500 = t6502
+    return retv6500
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h29a9fb600914a1f63ba0cfea61d63461__p_ExternalTest(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6365 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var retv6504 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hf4ee23c5b2d64247ed4d8b309c3b41fa__p_ExternalTest(self__180)
-    var t6366 closure_env_inherent_Vec_Vec_T_hb794517a349b105cb4b877ffe0a6609b_ExternalTest_15 = closure_env_inherent_Vec_Vec_T_hb794517a349b105cb4b877ffe0a6609b_ExternalTest_15{
+    var t6505 closure_env_inherent_Vec_Vec_T_hb794517a349b105cb4b877ffe0a6609b_ExternalTest_15 = closure_env_inherent_Vec_Vec_T_hb794517a349b105cb4b877ffe0a6609b_ExternalTest_15{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6367 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_FnIterator__hba6ac84cb7722826ebd99ca6f719ee76__p_ExternalTest(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-        return _goml_m_inherent_i_closure__en_h9c0029e40a46cf36b339e3924b32ced6_est__15_i_apply(t6366)
+    var t6506 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_FnIterator__hba6ac84cb7722826ebd99ca6f719ee76__p_ExternalTest(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
+        return _goml_m_inherent_i_closure__en_h9c0029e40a46cf36b339e3924b32ced6_est__15_i_apply(t6505)
     })
-    retv6365 = t6367
-    return retv6365
+    retv6504 = t6506
+    return retv6504
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h3cdd45f712736ab319c4aab4af04af26_p_runner_p_Test(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6369 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test
+    var retv6508 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_ha6bfca810d3fca5b41f9752c5d5972e7_p_runner_p_Test(self__180)
-    var t6370 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Test_16 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Test_16{
+    var t6509 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Test_16 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Test_16{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6371 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_FnIterator__h9f96643e29992de3cea53b300ee8bd50_p_runner_p_Test(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test {
-        return _goml_m_inherent_i_closure__en_h10b61ac04cb2870ba317f94f8909b8fa_est__16_i_apply(t6370)
+    var t6510 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_FnIterator__h9f96643e29992de3cea53b300ee8bd50_p_runner_p_Test(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test {
+        return _goml_m_inherent_i_closure__en_h10b61ac04cb2870ba317f94f8909b8fa_est__16_i_apply(t6509)
     })
-    retv6369 = t6371
-    return retv6369
+    retv6508 = t6510
+    return retv6508
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h74c6fb8377c9f4e1f09522198c016869_p_runner_p_Test(self__136 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test, index__137 int, elem__138 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test) struct{} {
@@ -22205,19 +22710,19 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h74c6fb8377c9f4e1f09522198c016869_p_runner_p
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h4ee9afb6492dee9d42782008518acd44_ner_p_Execution(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6375 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var retv6514 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_h943cdc01ec526356f12b63dd9ffd2d4d_ner_p_Execution(self__180)
-    var t6376 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Execution_17 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Execution_17{
+    var t6515 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Execution_17 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Execution_17{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6377 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_FnIterator__h1cc86341ca0c017408971ba10b1ee398_ner_p_Execution(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-        return _goml_m_inherent_i_closure__en_h068ca8faf744ae8bd7762f5efb8c54fd_ion__17_i_apply(t6376)
+    var t6516 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_FnIterator__h1cc86341ca0c017408971ba10b1ee398_ner_p_Execution(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution {
+        return _goml_m_inherent_i_closure__en_h068ca8faf744ae8bd7762f5efb8c54fd_ion__17_i_apply(t6515)
     })
-    retv6375 = t6377
-    return retv6375
+    retv6514 = t6516
+    return retv6514
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h0cf2240b8746b56f3fbd075cdbd14008_ner_p_Execution(self__136 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution, index__137 int, elem__138 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution) struct{} {
@@ -22226,373 +22731,359 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h0cf2240b8746b56f3fbd075cdbd14008_ner_p_Exec
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h64067069e9300d64fae86216141cd167__runner_p_Group(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6381 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group
+    var retv6520 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_hadd984dc0c367f2a44474d22a70e5bc4__runner_p_Group(self__180)
-    var t6382 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Group_18 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Group_18{
+    var t6521 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Group_18 = closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Group_18{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6383 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_inherent_i_FnIterator__h1706746a87b1e185adeee67f6b07f96a__runner_p_Group(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group {
-        return _goml_m_inherent_i_closure__en_h0b1bad0ddbfda144bf82691de1c83564_oup__18_i_apply(t6382)
+    var t6522 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_inherent_i_FnIterator__h1706746a87b1e185adeee67f6b07f96a__runner_p_Group(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group {
+        return _goml_m_inherent_i_closure__en_h0b1bad0ddbfda144bf82691de1c83564_oup__18_i_apply(t6521)
     })
-    retv6381 = t6383
-    return retv6381
+    retv6520 = t6522
+    return retv6520
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h975ccda0d78e54af173adcab5a8b3cae_ect_p_TestGroup(self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6385 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var retv6524 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup
     var index__181 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var len__182 int = _goml_m_inherent_i_Vec_i_Vec_l_he4e5dad2c82d20d58b46f7f6583d10f6_ect_p_TestGroup(self__180)
-    var t6386 closure_env_inherent_Vec_Vec_T_h6ad173f306d8b94911674a7e9a357576_ct_TestGroup_19 = closure_env_inherent_Vec_Vec_T_h6ad173f306d8b94911674a7e9a357576_ct_TestGroup_19{
+    var t6525 closure_env_inherent_Vec_Vec_T_h6ad173f306d8b94911674a7e9a357576_ct_TestGroup_19 = closure_env_inherent_Vec_Vec_T_h6ad173f306d8b94911674a7e9a357576_ct_TestGroup_19{
         index_0: index__181,
         len_1: len__182,
         self_2: self__180,
     }
-    var t6387 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_FnIterator__h9bfcccd4a58a01094f3c8e752d693a92_ect_p_TestGroup(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-        return _goml_m_inherent_i_closure__en_h3856a1c2496a34bf51e8c89a79674f6b_oup__19_i_apply(t6386)
+    var t6526 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_FnIterator__h9bfcccd4a58a01094f3c8e752d693a92_ect_p_TestGroup(func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
+        return _goml_m_inherent_i_closure__en_h3856a1c2496a34bf51e8c89a79674f6b_oup__19_i_apply(t6525)
     })
-    retv6385 = t6387
-    return retv6385
+    retv6524 = t6526
+    return retv6524
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(next_fn__101 func() Option__string) FnIterator__string {
-    var retv6389 FnIterator__string
-    var t6390 FnIterator__string = FnIterator__string{
+    var retv6528 FnIterator__string
+    var t6529 FnIterator__string = FnIterator__string{
         next_fn: next_fn__101,
     }
-    retv6389 = t6390
-    return retv6389
+    retv6528 = t6529
+    return retv6528
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__101 func() Option__int) FnIterator__int {
-    var retv6392 FnIterator__int
-    var t6393 FnIterator__int = FnIterator__int{
+    var retv6531 FnIterator__int
+    var t6532 FnIterator__int = FnIterator__int{
         next_fn: next_fn__101,
     }
-    retv6392 = t6393
-    return retv6392
+    retv6531 = t6532
+    return retv6531
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_had39c6e4c830136a3e0ceade059a4a58_json_p_Value_q_(self__139 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value) int {
-    var retv6395 int
-    var t6396 int = vec_len___goml_m_Vec__53Tuple2_hff7b3bf52b0b1749158184fb0f48146c__p_json_p_Value(self__139)
-    retv6395 = t6396
-    return retv6395
+    var retv6534 int
+    var t6535 int = vec_len___goml_m_Vec__53Tuple2_hff7b3bf52b0b1749158184fb0f48146c__p_json_p_Value(self__139)
+    retv6534 = t6535
+    return retv6534
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h1e4c059f5f77bc2b34d3b924799cd38d_json_p_Value_q_(self__134 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value, index__135 int) Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6398 Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
-    var t6399 Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = vec_get___goml_m_Vec__53Tuple2_h59afacedaef7294a678b83b6f25d54df__p_json_p_Value(self__134, index__135)
-    retv6398 = t6399
-    return retv6398
+    var retv6537 Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6538 Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = vec_get___goml_m_Vec__53Tuple2_h59afacedaef7294a678b83b6f25d54df__p_json_p_Value(self__134, index__135)
+    retv6537 = t6538
+    return retv6537
 }
 
 func _goml_m_inherent_i_FnIterator__h802946e69ca67769f2b9b026369afd4a_json_p_Value_q_(next_fn__101 func() _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_) _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
-    var retv6401 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
-    var t6402 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_{
+    var retv6540 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
+    var t6541 _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_FnIterator_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_{
         next_fn: next_fn__101,
     }
-    retv6401 = t6402
-    return retv6401
+    retv6540 = t6541
+    return retv6540
 }
 
 func _goml_m_inherent_i_FnIterator__h7ef1e9f1cc9eaff756fe3712115c9bbf_p_RegistryEntry(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv6404 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
-    var t6405 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry{
+    var retv6543 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var t6544 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry{
         next_fn: next_fn__101,
     }
-    retv6404 = t6405
-    return retv6404
+    retv6543 = t6544
+    return retv6543
 }
 
 func _goml_m_inherent_i_FnIterator__ha9b7241f98b1eb4bf433ea3c13001972_st_p_Dependency(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv6407 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
-    var t6408 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency{
+    var retv6546 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var t6547 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_manifest_p_Dependency{
         next_fn: next_fn__101,
     }
-    retv6407 = t6408
-    return retv6407
+    retv6546 = t6547
+    return retv6546
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hdb820ab9715c01fd8bf553e21a0b3135__p_json_p_Value(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value) int {
-    var retv6410 int
-    var t6411 int = vec_len___goml_m_Vec__36gomlang_p_bootstrap__goml_p_json_p_Value(self__139)
-    retv6410 = t6411
-    return retv6410
+    var retv6549 int
+    var t6550 int = vec_len___goml_m_Vec__36gomlang_p_bootstrap__goml_p_json_p_Value(self__139)
+    retv6549 = t6550
+    return retv6549
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hbe64ee5de55dd9ad8c392d19161fc04c__p_json_p_Value(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6413 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
-    var t6414 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = vec_get___goml_m_Vec__36gomlang_p_bootstrap__goml_p_json_p_Value(self__134, index__135)
-    retv6413 = t6414
-    return retv6413
+    var retv6552 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6553 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = vec_get___goml_m_Vec__36gomlang_p_bootstrap__goml_p_json_p_Value(self__134, index__135)
+    retv6552 = t6553
+    return retv6552
 }
 
 func _goml_m_inherent_i_FnIterator__h41868e24d323f02bad91622b379c3cc4__p_json_p_Value(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6416 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value
-    var t6417 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value{
+    var retv6555 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value
+    var t6556 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_json_p_Value{
         next_fn: next_fn__101,
     }
-    retv6416 = t6417
-    return retv6416
+    retv6555 = t6556
+    return retv6555
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_he45bcfb65e477287a5a6f8d65032cd0b__p_ModuleSource(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource) int {
-    var retv6419 int
-    var t6420 int = vec_len___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ModuleSource(self__139)
-    retv6419 = t6420
-    return retv6419
+    var retv6558 int
+    var t6559 int = vec_len___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ModuleSource(self__139)
+    retv6558 = t6559
+    return retv6558
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h51363f6d296a2f7d526541b6e55288c7__p_ModuleSource(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6422 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    var t6423 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource = vec_get___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ModuleSource(self__134, index__135)
-    retv6422 = t6423
-    return retv6422
+    var retv6561 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var t6562 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource = vec_get___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ModuleSource(self__134, index__135)
+    retv6561 = t6562
+    return retv6561
 }
 
 func _goml_m_inherent_i_FnIterator__h9bad1637299c87c5895fcee864932819__p_ModuleSource(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6425 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    var t6426 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource{
+    var retv6564 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var t6565 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ModuleSource{
         next_fn: next_fn__101,
     }
-    retv6425 = t6426
-    return retv6425
+    retv6564 = t6565
+    return retv6564
 }
 
 func _goml_m_inherent_i_FnIterator__ha5c7aea1bd877dcaba20bf87475c6140__ResolvedModule(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv6428 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
-    var t6429 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule{
+    var retv6567 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var t6568 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule{
         next_fn: next_fn__101,
     }
-    retv6428 = t6429
-    return retv6428
+    retv6567 = t6568
+    return retv6567
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hb87fa1b24356e8adbd150ab0daa31f95_PackageInfoFile(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile) int {
-    var retv6431 int
-    var t6432 int = vec_len___goml_m_Vec__49gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile(self__139)
-    retv6431 = t6432
-    return retv6431
+    var retv6570 int
+    var t6571 int = vec_len___goml_m_Vec__49gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile(self__139)
+    retv6570 = t6571
+    return retv6570
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h97c2fb6b3f437b174d87ac81b43d5a36_PackageInfoFile(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6434 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
-    var t6435 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = vec_get___goml_m_Vec__49gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile(self__134, index__135)
-    retv6434 = t6435
-    return retv6434
+    var retv6573 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var t6574 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = vec_get___goml_m_Vec__49gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile(self__134, index__135)
+    retv6573 = t6574
+    return retv6573
 }
 
 func _goml_m_inherent_i_FnIterator__h635f4a3cf994de017414184f78b9c178_PackageInfoFile(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6437 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
-    var t6438 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile{
+    var retv6576 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var t6577 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile{
         next_fn: next_fn__101,
     }
-    retv6437 = t6438
-    return retv6437
+    retv6576 = t6577
+    return retv6576
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hc328dddf098570be85f77cba54a743ed__PackageInfoUse(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse) int {
-    var retv6440 int
-    var t6441 int = vec_len___goml_m_Vec__48gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse(self__139)
-    retv6440 = t6441
-    return retv6440
+    var retv6579 int
+    var t6580 int = vec_len___goml_m_Vec__48gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse(self__139)
+    retv6579 = t6580
+    return retv6579
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h8b3e9ed1b3e3996e332486bd909af23f__PackageInfoUse(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6443 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
-    var t6444 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = vec_get___goml_m_Vec__48gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse(self__134, index__135)
-    retv6443 = t6444
-    return retv6443
+    var retv6582 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var t6583 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = vec_get___goml_m_Vec__48gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse(self__134, index__135)
+    retv6582 = t6583
+    return retv6582
 }
 
 func _goml_m_inherent_i_FnIterator__h5851bd545c563be2da60e101cd10d630__PackageInfoUse(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6446 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
-    var t6447 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse{
+    var retv6585 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var t6586 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse{
         next_fn: next_fn__101,
     }
-    retv6446 = t6447
-    return retv6446
+    retv6585 = t6586
+    return retv6585
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h3a076594506fbdc0e24a7fb1aac02ede_oject_p_Package(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package) int {
-    var retv6449 int
-    var t6450 int = vec_len___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Package(self__139)
-    retv6449 = t6450
-    return retv6449
+    var retv6588 int
+    var t6589 int = vec_len___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Package(self__139)
+    retv6588 = t6589
+    return retv6588
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h28046ca26465f3c1e222b699ae5afd8d_oject_p_Package(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6452 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
-    var t6453 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = vec_get___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Package(self__134, index__135)
-    retv6452 = t6453
-    return retv6452
+    var retv6591 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package
+    var t6592 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = vec_get___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Package(self__134, index__135)
+    retv6591 = t6592
+    return retv6591
 }
 
 func _goml_m_inherent_i_FnIterator__h0068a9b4527b6f606bde8682ba6f85b9_oject_p_Package(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6455 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package
-    var t6456 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package{
+    var retv6594 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package
+    var t6595 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Package{
         next_fn: next_fn__101,
     }
-    retv6455 = t6456
-    return retv6455
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_hce2347250e546136434fdf0b638cf049_project_p_Graph(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph) int {
-    var retv6458 int
-    var t6459 int = vec_len___goml_m_Vec__39gomlang_p_bootstrap__goml_p_project_p_Graph(self__139)
-    retv6458 = t6459
-    return retv6458
+    retv6594 = t6595
+    return retv6594
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_he749e57e79caf5e6b78f8dea851d9fd4_project_p_Graph(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6461 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
-    var t6462 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = vec_get___goml_m_Vec__39gomlang_p_bootstrap__goml_p_project_p_Graph(self__134, index__135)
-    retv6461 = t6462
-    return retv6461
+    var retv6597 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph
+    var t6598 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = vec_get___goml_m_Vec__39gomlang_p_bootstrap__goml_p_project_p_Graph(self__134, index__135)
+    retv6597 = t6598
+    return retv6597
 }
 
 func _goml_m_inherent_i_FnIterator__h0f12f76d223ed30acdc86365ecf40b08_project_p_Graph(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6464 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph
-    var t6465 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph{
+    var retv6600 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph
+    var t6601 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Graph{
         next_fn: next_fn__101,
     }
-    retv6464 = t6465
-    return retv6464
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_h94bf5d1608e9efb4ddb1fda6404362b9_oject_p_Command(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command) int {
-    var retv6467 int
-    var t6468 int = vec_len___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Command(self__139)
-    retv6467 = t6468
-    return retv6467
+    retv6600 = t6601
+    return retv6600
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h12a5b127dab309706aa58add81c4ebeb_oject_p_Command(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6470 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
-    var t6471 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = vec_get___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Command(self__134, index__135)
-    retv6470 = t6471
-    return retv6470
+    var retv6603 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command
+    var t6604 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = vec_get___goml_m_Vec__41gomlang_p_bootstrap__goml_p_project_p_Command(self__134, index__135)
+    retv6603 = t6604
+    return retv6603
 }
 
 func _goml_m_inherent_i_FnIterator__h69d9645b1df6c6e74d9681d8a9d1883b_oject_p_Command(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6473 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command
-    var t6474 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command{
+    var retv6606 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command
+    var t6607 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_Command{
         next_fn: next_fn__101,
     }
-    retv6473 = t6474
-    return retv6473
+    retv6606 = t6607
+    return retv6606
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hf4ee23c5b2d64247ed4d8b309c3b41fa__p_ExternalTest(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest) int {
-    var retv6476 int
-    var t6477 int = vec_len___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ExternalTest(self__139)
-    retv6476 = t6477
-    return retv6476
+    var retv6609 int
+    var t6610 int = vec_len___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ExternalTest(self__139)
+    retv6609 = t6610
+    return retv6609
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h69011f095e7eca45d28706f4e97a776c__p_ExternalTest(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6479 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-    var t6480 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = vec_get___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ExternalTest(self__134, index__135)
-    retv6479 = t6480
-    return retv6479
+    var retv6612 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var t6613 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = vec_get___goml_m_Vec__46gomlang_p_bootstrap__goml_p_project_p_ExternalTest(self__134, index__135)
+    retv6612 = t6613
+    return retv6612
 }
 
 func _goml_m_inherent_i_FnIterator__hba6ac84cb7722826ebd99ca6f719ee76__p_ExternalTest(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6482 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-    var t6483 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest{
+    var retv6615 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var t6616 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_ExternalTest{
         next_fn: next_fn__101,
     }
-    retv6482 = t6483
-    return retv6482
+    retv6615 = t6616
+    return retv6615
 }
 
 func _goml_m_inherent_i_FnIterator__h9f96643e29992de3cea53b300ee8bd50_p_runner_p_Test(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6485 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test
-    var t6486 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test{
+    var retv6618 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test
+    var t6619 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Test{
         next_fn: next_fn__101,
     }
-    retv6485 = t6486
-    return retv6485
+    retv6618 = t6619
+    return retv6618
 }
 
 func _goml_m_inherent_i_FnIterator__h1cc86341ca0c017408971ba10b1ee398_ner_p_Execution(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6488 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution
-    var t6489 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution{
+    var retv6621 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var t6622 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Execution{
         next_fn: next_fn__101,
     }
-    retv6488 = t6489
-    return retv6488
+    retv6621 = t6622
+    return retv6621
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_hadd984dc0c367f2a44474d22a70e5bc4__runner_p_Group(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group) int {
-    var retv6491 int
-    var t6492 int = vec_len___goml_m_Vec__38gomlang_p_bootstrap__goml_p_runner_p_Group(self__139)
-    retv6491 = t6492
-    return retv6491
+    var retv6624 int
+    var t6625 int = vec_len___goml_m_Vec__38gomlang_p_bootstrap__goml_p_runner_p_Group(self__139)
+    retv6624 = t6625
+    return retv6624
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h2ed5b3062bb64a94355a38cb16dc7044__runner_p_Group(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6494 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group
-    var t6495 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = vec_get___goml_m_Vec__38gomlang_p_bootstrap__goml_p_runner_p_Group(self__134, index__135)
-    retv6494 = t6495
-    return retv6494
+    var retv6627 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group
+    var t6628 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = vec_get___goml_m_Vec__38gomlang_p_bootstrap__goml_p_runner_p_Group(self__134, index__135)
+    retv6627 = t6628
+    return retv6627
 }
 
 func _goml_m_inherent_i_FnIterator__h1706746a87b1e185adeee67f6b07f96a__runner_p_Group(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6497 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group
-    var t6498 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group{
+    var retv6630 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group
+    var t6631 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_runner_p_Group{
         next_fn: next_fn__101,
     }
-    retv6497 = t6498
-    return retv6497
+    retv6630 = t6631
+    return retv6630
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_he4e5dad2c82d20d58b46f7f6583d10f6_ect_p_TestGroup(self__139 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup) int {
-    var retv6500 int
-    var t6501 int = vec_len___goml_m_Vec__43gomlang_p_bootstrap__goml_p_project_p_TestGroup(self__139)
-    retv6500 = t6501
-    return retv6500
+    var retv6633 int
+    var t6634 int = vec_len___goml_m_Vec__43gomlang_p_bootstrap__goml_p_project_p_TestGroup(self__139)
+    retv6633 = t6634
+    return retv6633
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_h91337e1a09d431607b8cd6a04891e2c3_ect_p_TestGroup(self__134 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup, index__135 int) _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6503 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup
-    var t6504 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = vec_get___goml_m_Vec__43gomlang_p_bootstrap__goml_p_project_p_TestGroup(self__134, index__135)
-    retv6503 = t6504
-    return retv6503
+    var retv6636 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var t6637 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = vec_get___goml_m_Vec__43gomlang_p_bootstrap__goml_p_project_p_TestGroup(self__134, index__135)
+    retv6636 = t6637
+    return retv6636
 }
 
 func _goml_m_inherent_i_FnIterator__h9bfcccd4a58a01094f3c8e752d693a92_ect_p_TestGroup(next_fn__101 func() _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup) _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6506 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup
-    var t6507 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup{
+    var retv6639 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var t6640 _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_FnIterator____gomlang_p_bootstrap__goml_p_project_p_TestGroup{
         next_fn: next_fn__101,
     }
-    retv6506 = t6507
-    return retv6506
+    retv6639 = t6640
+    return retv6639
 }
 
 func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__83 string) uint64 {
-    var retv6512 uint64
-    var t6513 uint64 = _goml_runtime_core_string_hash(self__83)
-    retv6512 = t6513
-    return retv6512
+    var retv6645 uint64
+    var t6646 uint64 = _goml_runtime_core_string_hash(self__83)
+    retv6645 = t6646
+    return retv6645
 }
 
 func _goml_m_inherent_i_closure__env__flush__0_i_closure__env__flush__0_i_apply(env64 closure_env_flush_0, result__137 *_goml_vec_string, buffer__138 *_goml_vec_string, kept__139 *ref_int_x) struct{} {
-    var t6534 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(kept__139)
-    var t6535 bool = t6534 > 0
-    if t6535 {
+    var t6667 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(kept__139)
+    var t6668 bool = t6667 > 0
+    if t6668 {
         _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(result__137, "[dependencies]")
         var for_iter201 FnIterator__string = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_string_r__i_into__iter(buffer__138)
-        Loop_loop6537:
+        Loop_loop6670:
         for {
             if true {
                 var for_next202 Option__string = _goml_m_trait__impl_i_Iterator_i_FnIterator____string_i_next(for_iter201)
                 switch for_next202.(type) {
                 case Option__string_None:
-                    break Loop_loop6537
+                    break Loop_loop6670
                 case Option__string_Some:
                     var x203 string = for_next202.(Option__string_Some)._0
                     var value__140 string = x203
@@ -22602,32 +23093,32 @@ func _goml_m_inherent_i_closure__env__flush__0_i_closure__env__flush__0_i_apply(
                     panic("non-exhaustive match")
                 }
             } else {
-                break Loop_loop6537
+                break Loop_loop6670
             }
         }
-        Loop_loop6531:
+        Loop_loop6664:
         for {
-            var t6532 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(buffer__138)
-            var t6533 bool = t6532 > 0
-            if t6533 {
+            var t6665 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(buffer__138)
+            var t6666 bool = t6665 > 0
+            if t6666 {
                 _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_remove____T__string(buffer__138, 0)
                 continue
             } else {
-                break Loop_loop6531
+                break Loop_loop6664
             }
         }
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(kept__139, 0)
         return struct{}{}
     } else {
-        Loop_loop6531__2:
+        Loop_loop6664__2:
         for {
-            var t6532 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(buffer__138)
-            var t6533 bool = t6532 > 0
-            if t6533 {
+            var t6665 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(buffer__138)
+            var t6666 bool = t6665 > 0
+            if t6666 {
                 _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_remove____T__string(buffer__138, 0)
                 continue
             } else {
-                break Loop_loop6531__2
+                break Loop_loop6664__2
             }
         }
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(kept__139, 0)
@@ -22645,415 +23136,415 @@ func _goml_m_inherent_i_closure__en_h3fba66fe7fdbefdb963c927efd9fa580__run__1_i_
 }
 
 func _goml_m_inherent_i_closure__en_h8e11f798326c46bb5922448656372d4d_ring__2_i_apply(env66 closure_env_inherent_Vec_Vec_T_iter_T_string_2) Option__string {
-    var retv6543 Option__string
+    var retv6676 Option__string
     var index__181 *ref_int_x = env66.index_0
     var len__182 int = env66.len_1
     var self__180 *_goml_vec_string = env66.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6546 bool = current__183 < len__182
-    var jp6545 Option__string
-    if t6546 {
+    var t6679 bool = current__183 < len__182
+    var jp6678 Option__string
+    if t6679 {
         var value__184 string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__string(self__180, current__183)
-        var t6547 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6547)
-        var t6548 Option__string = Option__string_Some{
+        var t6680 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6680)
+        var t6681 Option__string = Option__string_Some{
             _0: value__184,
         }
-        jp6545 = t6548
+        jp6678 = t6681
     } else {
-        jp6545 = Option__string_None{}
+        jp6678 = Option__string_None{}
     }
-    retv6543 = jp6545
-    return retv6543
+    retv6676 = jp6678
+    return retv6676
 }
 
 func _goml_m_inherent_i_closure__en_hb6a3fa4977aa88291cbefd0dae616b54_ange__3_i_apply(env67 closure_env_goml_builtin_range_3) Option__int {
-    var retv6550 Option__int
+    var retv6683 Option__int
     var current__222 *ref_int_x = env67.current_0
     var end__221 int = env67.end_1
     var value__223 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(current__222)
-    var t6553 bool = value__223 < end__221
-    var jp6552 Option__int
-    if t6553 {
-        var t6554 int = value__223 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__222, t6554)
-        var t6555 Option__int = Option__int_Some{
+    var t6686 bool = value__223 < end__221
+    var jp6685 Option__int
+    if t6686 {
+        var t6687 int = value__223 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(current__222, t6687)
+        var t6688 Option__int = Option__int_Some{
             _0: value__223,
         }
-        jp6552 = t6555
+        jp6685 = t6688
     } else {
-        jp6552 = Option__int_None{}
+        jp6685 = Option__int_None{}
     }
-    retv6550 = jp6552
-    return retv6550
+    retv6683 = jp6685
+    return retv6683
 }
 
 func _goml_m_inherent_i_closure__en_hc3bc61f1271a9f77c0211d63c0dd936c_alue__4_i_apply(env68 closure_env_inherent_Vec_Vec_T_iter_T_string_gomlang_bootstrap_goml_json_Value_4) _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ {
-    var retv6557 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
+    var retv6690 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
     var index__181 *ref_int_x = env68.index_0
     var len__182 int = env68.len_1
     var self__180 *_goml_vec__goml_m_Tuple2__6string__36gomlang_p_bootstrap__goml_p_json_p_Value = env68.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6560 bool = current__183 < len__182
-    var jp6559 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
-    if t6560 {
+    var t6693 bool = current__183 < len__182
+    var jp6692 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_
+    if t6693 {
         var value__184 Tuple2_6string_48_goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_h1e4c059f5f77bc2b34d3b924799cd38d_json_p_Value_q_(self__180, current__183)
-        var t6561 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6561)
-        var t6562 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q__Some{
+        var t6694 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6694)
+        var t6695 _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q_ = _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q__Some{
             _0: value__184,
         }
-        jp6559 = t6562
+        jp6692 = t6695
     } else {
-        jp6559 = _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q__None{}
+        jp6692 = _goml_m_Option_____o_string_c_gomlang_p_bootstrap__goml_p_json_p_Value_q__None{}
     }
-    retv6557 = jp6559
-    return retv6557
+    retv6690 = jp6692
+    return retv6690
 }
 
 func _goml_m_inherent_i_closure__en_h88fd4752985147119a1c568a0d2c2616_ntry__5_i_apply(env69 closure_env_inherent_Vec_Vec_T_h2bec200912db2bd20b5dd0d3d3cc8c69_RegistryEntry_5) _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry {
-    var retv6564 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    var retv6697 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
     var index__181 *ref_int_x = env69.index_0
     var len__182 int = env69.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = env69.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6567 bool = current__183 < len__182
-    var jp6566 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
-    if t6567 {
+    var t6700 bool = current__183 < len__182
+    var jp6699 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry
+    if t6700 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_inherent_i_Vec_i_Vec_l_hafd0c674457a43fb194824467cbd8cf9_p_RegistryEntry(self__180, current__183)
-        var t6568 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6568)
-        var t6569 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry_Some{
+        var t6701 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6701)
+        var t6702 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry_Some{
             _0: value__184,
         }
-        jp6566 = t6569
+        jp6699 = t6702
     } else {
-        jp6566 = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry_None{}
+        jp6699 = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_RegistryEntry_None{}
     }
-    retv6564 = jp6566
-    return retv6564
+    retv6697 = jp6699
+    return retv6697
 }
 
 func _goml_m_inherent_i_closure__en_h5e5e5c4b4ea831561e573f061ee3530b_ency__6_i_apply(env70 closure_env_inherent_Vec_Vec_T_ha0f1fda9659165b3ab312aef256e99a1_st_Dependency_6) _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency {
-    var retv6571 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    var retv6704 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
     var index__181 *ref_int_x = env70.index_0
     var len__182 int = env70.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency = env70.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6574 bool = current__183 < len__182
-    var jp6573 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
-    if t6574 {
+    var t6707 bool = current__183 < len__182
+    var jp6706 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency
+    if t6707 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_inherent_i_Vec_i_Vec_l_h8c525512aa327a110388305852b9a33f_st_p_Dependency(self__180, current__183)
-        var t6575 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6575)
-        var t6576 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency_Some{
+        var t6708 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6708)
+        var t6709 _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency = _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency_Some{
             _0: value__184,
         }
-        jp6573 = t6576
+        jp6706 = t6709
     } else {
-        jp6573 = _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency_None{}
+        jp6706 = _goml_m_Option____gomlang_p_bootstrap__goml_p_manifest_p_Dependency_None{}
     }
-    retv6571 = jp6573
-    return retv6571
+    retv6704 = jp6706
+    return retv6704
 }
 
 func _goml_m_inherent_i_closure__en_ha6f3d78e2f3c348e1ce94db743819ac3_alue__7_i_apply(env71 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_json_Value_7) _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value {
-    var retv6578 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value
+    var retv6711 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value
     var index__181 *ref_int_x = env71.index_0
     var len__182 int = env71.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = env71.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6581 bool = current__183 < len__182
-    var jp6580 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value
-    if t6581 {
+    var t6714 bool = current__183 < len__182
+    var jp6713 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value
+    if t6714 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_hbe64ee5de55dd9ad8c392d19161fc04c__p_json_p_Value(self__180, current__183)
-        var t6582 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6582)
-        var t6583 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some{
+        var t6715 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6715)
+        var t6716 _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value = _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_Some{
             _0: value__184,
         }
-        jp6580 = t6583
+        jp6713 = t6716
     } else {
-        jp6580 = _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_None{}
+        jp6713 = _goml_m_Option____gomlang_p_bootstrap__goml_p_json_p_Value_None{}
     }
-    retv6578 = jp6580
-    return retv6578
+    retv6711 = jp6713
+    return retv6711
 }
 
 func _goml_m_inherent_i_closure__en_h9cc6d8fc4e069fba60b555318da6ce9c_urce__8_i_apply(env72 closure_env_inherent_Vec_Vec_T_ha54ba2838822131817046cc89c025882__ModuleSource_8) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource {
-    var retv6585 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    var retv6718 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
     var index__181 *ref_int_x = env72.index_0
     var len__182 int = env72.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource = env72.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6588 bool = current__183 < len__182
-    var jp6587 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
-    if t6588 {
+    var t6721 bool = current__183 < len__182
+    var jp6720 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource
+    if t6721 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_inherent_i_Vec_i_Vec_l_h51363f6d296a2f7d526541b6e55288c7__p_ModuleSource(self__180, current__183)
-        var t6589 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6589)
-        var t6590 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_Some{
+        var t6722 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6722)
+        var t6723 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_Some{
             _0: value__184,
         }
-        jp6587 = t6590
+        jp6720 = t6723
     } else {
-        jp6587 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_None{}
+        jp6720 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ModuleSource_None{}
     }
-    retv6585 = jp6587
-    return retv6585
+    retv6718 = jp6720
+    return retv6718
 }
 
 func _goml_m_inherent_i_closure__en_h6dad3ffe674382991b3ee6a1e6cb4230_dule__9_i_apply(env73 closure_env_inherent_Vec_Vec_T_hde3a1a98cefb14bea01536e4f7006ce7_esolvedModule_9) _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule {
-    var retv6592 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    var retv6725 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
     var index__181 *ref_int_x = env73.index_0
     var len__182 int = env73.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = env73.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6595 bool = current__183 < len__182
-    var jp6594 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
-    if t6595 {
+    var t6728 bool = current__183 < len__182
+    var jp6727 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule
+    if t6728 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_inherent_i_Vec_i_Vec_l_h13852d7828789e8fadb7c82e42cf13e3__ResolvedModule(self__180, current__183)
-        var t6596 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6596)
-        var t6597 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule_Some{
+        var t6729 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6729)
+        var t6730 _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule_Some{
             _0: value__184,
         }
-        jp6594 = t6597
+        jp6727 = t6730
     } else {
-        jp6594 = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule_None{}
+        jp6727 = _goml_m_Option____gomlang_p_bootstrap__goml_p_registry_p_ResolvedModule_None{}
     }
-    retv6592 = jp6594
-    return retv6592
+    retv6725 = jp6727
+    return retv6725
 }
 
 func _goml_m_inherent_i_closure__en_h24af0c2fd98118786d9f526069ea9744_ile__10_i_apply(env74 closure_env_inherent_Vec_Vec_T_h2946f01e552480341244230205a66733_kageInfoFile_10) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile {
-    var retv6599 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    var retv6732 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
     var index__181 *ref_int_x = env74.index_0
     var len__182 int = env74.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = env74.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6602 bool = current__183 < len__182
-    var jp6601 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
-    if t6602 {
+    var t6735 bool = current__183 < len__182
+    var jp6734 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile
+    if t6735 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_inherent_i_Vec_i_Vec_l_h97c2fb6b3f437b174d87ac81b43d5a36_PackageInfoFile(self__180, current__183)
-        var t6603 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6603)
-        var t6604 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile_Some{
+        var t6736 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6736)
+        var t6737 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile_Some{
             _0: value__184,
         }
-        jp6601 = t6604
+        jp6734 = t6737
     } else {
-        jp6601 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile_None{}
+        jp6734 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoFile_None{}
     }
-    retv6599 = jp6601
-    return retv6599
+    retv6732 = jp6734
+    return retv6732
 }
 
 func _goml_m_inherent_i_closure__en_h86d35a63406f21885591445a9ad3d625_Use__11_i_apply(env75 closure_env_inherent_Vec_Vec_T_h93efabdcf5cc65603e1b27dd63d8e487_ckageInfoUse_11) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse {
-    var retv6606 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    var retv6739 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
     var index__181 *ref_int_x = env75.index_0
     var len__182 int = env75.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = env75.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6609 bool = current__183 < len__182
-    var jp6608 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
-    if t6609 {
+    var t6742 bool = current__183 < len__182
+    var jp6741 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse
+    if t6742 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_inherent_i_Vec_i_Vec_l_h8b3e9ed1b3e3996e332486bd909af23f__PackageInfoUse(self__180, current__183)
-        var t6610 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6610)
-        var t6611 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse_Some{
+        var t6743 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6743)
+        var t6744 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse_Some{
             _0: value__184,
         }
-        jp6608 = t6611
+        jp6741 = t6744
     } else {
-        jp6608 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse_None{}
+        jp6741 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_PackageInfoUse_None{}
     }
-    retv6606 = jp6608
-    return retv6606
+    retv6739 = jp6741
+    return retv6739
 }
 
 func _goml_m_inherent_i_closure__en_hc94ed31b7ec98254e0198bcc03f804b2_age__12_i_apply(env76 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Package_12) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package {
-    var retv6613 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package
+    var retv6746 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package
     var index__181 *ref_int_x = env76.index_0
     var len__182 int = env76.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = env76.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6616 bool = current__183 < len__182
-    var jp6615 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package
-    if t6616 {
+    var t6749 bool = current__183 < len__182
+    var jp6748 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package
+    if t6749 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_inherent_i_Vec_i_Vec_l_h28046ca26465f3c1e222b699ae5afd8d_oject_p_Package(self__180, current__183)
-        var t6617 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6617)
-        var t6618 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some{
+        var t6750 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6750)
+        var t6751 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_Some{
             _0: value__184,
         }
-        jp6615 = t6618
+        jp6748 = t6751
     } else {
-        jp6615 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_None{}
+        jp6748 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Package_None{}
     }
-    retv6613 = jp6615
-    return retv6613
+    retv6746 = jp6748
+    return retv6746
 }
 
 func _goml_m_inherent_i_closure__en_hd009d821c74983445a298aaf1546afdf_aph__13_i_apply(env77 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Graph_13) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph {
-    var retv6620 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph
+    var retv6753 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph
     var index__181 *ref_int_x = env77.index_0
     var len__182 int = env77.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = env77.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6623 bool = current__183 < len__182
-    var jp6622 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph
-    if t6623 {
+    var t6756 bool = current__183 < len__182
+    var jp6755 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph
+    if t6756 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_inherent_i_Vec_i_Vec_l_he749e57e79caf5e6b78f8dea851d9fd4_project_p_Graph(self__180, current__183)
-        var t6624 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6624)
-        var t6625 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some{
+        var t6757 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6757)
+        var t6758 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_Some{
             _0: value__184,
         }
-        jp6622 = t6625
+        jp6755 = t6758
     } else {
-        jp6622 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None{}
+        jp6755 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Graph_None{}
     }
-    retv6620 = jp6622
-    return retv6620
+    retv6753 = jp6755
+    return retv6753
 }
 
 func _goml_m_inherent_i_closure__en_hd7f59b55638e2a286dbcecc899f7c081_and__14_i_apply(env78 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_project_Command_14) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command {
-    var retv6627 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command
+    var retv6760 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command
     var index__181 *ref_int_x = env78.index_0
     var len__182 int = env78.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = env78.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6630 bool = current__183 < len__182
-    var jp6629 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command
-    if t6630 {
+    var t6763 bool = current__183 < len__182
+    var jp6762 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command
+    if t6763 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_inherent_i_Vec_i_Vec_l_h12a5b127dab309706aa58add81c4ebeb_oject_p_Command(self__180, current__183)
-        var t6631 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6631)
-        var t6632 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some{
+        var t6764 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6764)
+        var t6765 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_Some{
             _0: value__184,
         }
-        jp6629 = t6632
+        jp6762 = t6765
     } else {
-        jp6629 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None{}
+        jp6762 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_Command_None{}
     }
-    retv6627 = jp6629
-    return retv6627
+    retv6760 = jp6762
+    return retv6760
 }
 
 func _goml_m_inherent_i_closure__en_h9c0029e40a46cf36b339e3924b32ced6_est__15_i_apply(env79 closure_env_inherent_Vec_Vec_T_hb794517a349b105cb4b877ffe0a6609b_ExternalTest_15) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest {
-    var retv6634 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    var retv6767 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
     var index__181 *ref_int_x = env79.index_0
     var len__182 int = env79.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = env79.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6637 bool = current__183 < len__182
-    var jp6636 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
-    if t6637 {
+    var t6770 bool = current__183 < len__182
+    var jp6769 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest
+    if t6770 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_inherent_i_Vec_i_Vec_l_h69011f095e7eca45d28706f4e97a776c__p_ExternalTest(self__180, current__183)
-        var t6638 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6638)
-        var t6639 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some{
+        var t6771 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6771)
+        var t6772 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_Some{
             _0: value__184,
         }
-        jp6636 = t6639
+        jp6769 = t6772
     } else {
-        jp6636 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None{}
+        jp6769 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_ExternalTest_None{}
     }
-    retv6634 = jp6636
-    return retv6634
+    retv6767 = jp6769
+    return retv6767
 }
 
 func _goml_m_inherent_i_closure__en_h10b61ac04cb2870ba317f94f8909b8fa_est__16_i_apply(env80 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Test_16) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test {
-    var retv6641 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test
+    var retv6774 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test
     var index__181 *ref_int_x = env80.index_0
     var len__182 int = env80.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = env80.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6644 bool = current__183 < len__182
-    var jp6643 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test
-    if t6644 {
+    var t6777 bool = current__183 < len__182
+    var jp6776 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test
+    if t6777 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_inherent_i_Vec_i_Vec_l_h696fdded943d7fd7a55007f350ddb6ef_p_runner_p_Test(self__180, current__183)
-        var t6645 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6645)
-        var t6646 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some{
+        var t6778 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6778)
+        var t6779 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_Some{
             _0: value__184,
         }
-        jp6643 = t6646
+        jp6776 = t6779
     } else {
-        jp6643 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_None{}
+        jp6776 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Test_None{}
     }
-    retv6641 = jp6643
-    return retv6641
+    retv6774 = jp6776
+    return retv6774
 }
 
 func _goml_m_inherent_i_closure__en_h068ca8faf744ae8bd7762f5efb8c54fd_ion__17_i_apply(env81 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Execution_17) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution {
-    var retv6648 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    var retv6781 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
     var index__181 *ref_int_x = env81.index_0
     var len__182 int = env81.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = env81.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6651 bool = current__183 < len__182
-    var jp6650 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
-    if t6651 {
+    var t6784 bool = current__183 < len__182
+    var jp6783 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution
+    if t6784 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_inherent_i_Vec_i_Vec_l_h7de0bd5fefcd2e98afcae9f0647c73ec_ner_p_Execution(self__180, current__183)
-        var t6652 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6652)
-        var t6653 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some{
+        var t6785 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6785)
+        var t6786 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_Some{
             _0: value__184,
         }
-        jp6650 = t6653
+        jp6783 = t6786
     } else {
-        jp6650 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None{}
+        jp6783 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Execution_None{}
     }
-    retv6648 = jp6650
-    return retv6648
+    retv6781 = jp6783
+    return retv6781
 }
 
 func _goml_m_inherent_i_closure__en_h0b1bad0ddbfda144bf82691de1c83564_oup__18_i_apply(env82 closure_env_inherent_Vec_Vec_T_iter_T_gomlang_bootstrap_goml_runner_Group_18) _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group {
-    var retv6655 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group
+    var retv6788 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group
     var index__181 *ref_int_x = env82.index_0
     var len__182 int = env82.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = env82.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6658 bool = current__183 < len__182
-    var jp6657 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group
-    if t6658 {
+    var t6791 bool = current__183 < len__182
+    var jp6790 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group
+    if t6791 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_inherent_i_Vec_i_Vec_l_h2ed5b3062bb64a94355a38cb16dc7044__runner_p_Group(self__180, current__183)
-        var t6659 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6659)
-        var t6660 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_Some{
+        var t6792 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6792)
+        var t6793 _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_Some{
             _0: value__184,
         }
-        jp6657 = t6660
+        jp6790 = t6793
     } else {
-        jp6657 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_None{}
+        jp6790 = _goml_m_Option____gomlang_p_bootstrap__goml_p_runner_p_Group_None{}
     }
-    retv6655 = jp6657
-    return retv6655
+    retv6788 = jp6790
+    return retv6788
 }
 
 func _goml_m_inherent_i_closure__en_h3856a1c2496a34bf51e8c89a79674f6b_oup__19_i_apply(env83 closure_env_inherent_Vec_Vec_T_h6ad173f306d8b94911674a7e9a357576_ct_TestGroup_19) _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup {
-    var retv6662 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    var retv6795 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup
     var index__181 *ref_int_x = env83.index_0
     var len__182 int = env83.len_1
     var self__180 *_goml_vec__goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = env83.self_2
     var current__183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__181)
-    var t6665 bool = current__183 < len__182
-    var jp6664 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup
-    if t6665 {
+    var t6798 bool = current__183 < len__182
+    var jp6797 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup
+    if t6798 {
         var value__184 _goml_m_gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_inherent_i_Vec_i_Vec_l_h91337e1a09d431607b8cd6a04891e2c3_ect_p_TestGroup(self__180, current__183)
-        var t6666 int = current__183 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6666)
-        var t6667 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_Some{
+        var t6799 int = current__183 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__181, t6799)
+        var t6800 _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_Some{
             _0: value__184,
         }
-        jp6664 = t6667
+        jp6797 = t6800
     } else {
-        jp6664 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_None{}
+        jp6797 = _goml_m_Option____gomlang_p_bootstrap__goml_p_project_p_TestGroup_None{}
     }
-    retv6662 = jp6664
-    return retv6662
+    retv6795 = jp6797
+    return retv6795
 }
 
 func main() {

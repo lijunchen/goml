@@ -5,6 +5,7 @@ use std::fs;
 use std::io;
 use std::path;
 use std::process;
+use std::text;
 
 fn package_artifact_base(
     root: string,
@@ -110,50 +111,119 @@ fn compile_commands(
 ) -> Result[Vec[Command], string] {
     let result = Vec::new();
     for package_name in context.graph.order {
-        let package_value = match package_by_name(context.graph, package_name) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err("missing package " + package_name),
-        };
-        let inputs = Vec::new();
-        for file in package_value.files {
-            inputs.push(module_relative(context.graph.module_dir, file))
-        };
-        let interfaces = match dependency_interfaces(
-            context.graph,
-            package_name,
-            output_root,
-        ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
-        };
-        let relative_interfaces = Vec::new();
-        for value in interfaces {
-            relative_interfaces.push(module_relative(
-                context.graph.module_dir,
-                value,
-            ))
-        };
         let command = if package_name == context.graph.entry_package {
             entry_command
         } else {
             dependency_command
         };
-        result.push(Command::Compile {
-            subcommand: command,
+        let compiled = match compile_package_command(
+            context.graph,
+            context.graph.module_dir,
             package_name,
-            input_files: util::sorted(inputs),
-            interface_files: relative_interfaces,
-            output: module_relative(
-                context.graph.module_dir,
-                package_artifact_base(
-                    output_root,
-                    context.graph,
-                    package_name,
-                ),
-            ),
-        })
+            output_root,
+            output_root,
+            command,
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        result.push(compiled)
     };
     Result::Ok(result)
+}
+
+fn compile_package_command(
+    graph: Graph,
+    module_dir: string,
+    package_name: string,
+    interface_root: string,
+    output_root: string,
+    command: string,
+) -> Result[Command, string] {
+    let package_value = match package_by_name(graph, package_name) {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("missing package " + package_name),
+    };
+    let inputs = Vec::new();
+    for file in package_value.files {
+        inputs.push(module_relative(module_dir, file))
+    };
+    let interfaces = match dependency_interfaces(
+        graph,
+        package_name,
+        interface_root,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let relative_interfaces = Vec::new();
+    for value in interfaces {
+        relative_interfaces.push(module_relative(module_dir, value))
+    };
+    Result::Ok(Command::Compile {
+        subcommand: command,
+        package_name,
+        input_files: util::sorted(inputs),
+        interface_files: relative_interfaces,
+        output: module_relative(
+            module_dir,
+            package_artifact_base(output_root, graph, package_name),
+        ),
+    })
+}
+
+fn compile_test_package_command(
+    graph: Graph,
+    module_dir: string,
+    package_name: string,
+    dependency_root: string,
+    output_root: string,
+    production_interface: bool,
+) -> Result[Command, string] {
+    let compiled = match compile_package_command(
+        graph,
+        module_dir,
+        package_name,
+        dependency_root,
+        output_root,
+        "test-build",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    match compiled {
+        Command::Compile {
+            subcommand,
+            package_name,
+            input_files,
+            interface_files,
+            output,
+        } => {
+            if production_interface {
+                interface_files.push(module_relative(
+                    module_dir,
+                    extension(
+                        package_artifact_base(
+                            dependency_root,
+                            graph,
+                            package_name,
+                        ),
+                        "interface",
+                    ),
+                ))
+            } else {
+                ()
+            };
+            Result::Ok(Command::Compile {
+                subcommand,
+                package_name,
+                input_files,
+                interface_files,
+                output,
+            })
+        },
+        _ => Result::Err("test package did not produce a compile command"),
+    }
 }
 
 fn core_outputs(context: Context, output_root: string) -> Vec[string] {
@@ -325,54 +395,115 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
     })
 }
 
-fn append_test_graph(
+fn append_test_package(
     context: Context,
     graph: Graph,
+    dependency_root: string,
+    output_root: string,
+    compiled_dependencies: HashMap[string, bool],
+    commands: Vec[Command],
+) -> Result[unit, string] {
+    for package_name in graph.order {
+        if package_name == graph.entry_package
+            || compiled_dependencies.contains(package_name)
+        {
+            ()
+        } else {
+            let compiled = match compile_package_command(
+                graph,
+                context.graph.module_dir,
+                package_name,
+                dependency_root,
+                dependency_root,
+                "build",
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            commands.push(compiled);
+            compiled_dependencies.set(package_name, true)
+        }
+    };
+    let compiled = match compile_test_package_command(
+        graph,
+        context.graph.module_dir,
+        graph.entry_package,
+        dependency_root,
+        output_root,
+        compiled_dependencies.contains(graph.entry_package),
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    commands.push(compiled);
+    Result::Ok(())
+}
+
+fn append_test_group(
+    context: Context,
+    graphs: Vec[Graph],
+    dependency_root: string,
     output_root: string,
     kind: string,
     packages: Vec[string],
     commands: Vec[Command],
     groups: Vec[TestGroup],
-) -> Result[unit, string] {
-    let target = Context {
-        graph,
-        compiler: context.compiler,
-        artifact_root: context.artifact_root,
+) -> unit {
+    let test_packages = HashMap::new();
+    for graph in graphs {
+        test_packages.set(graph.entry_package, true)
     };
-    let compiled = match compile_commands(
-        target,
-        output_root,
-        "test-build",
-        "build",
-    ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+    let input_cores = Vec::new();
+    let added = HashMap::new();
+    for package_name in context.graph.order {
+        let root = if test_packages.contains(package_name) {
+            output_root
+        } else {
+            dependency_root
+        };
+        input_cores.push(module_relative(
+            context.graph.module_dir,
+            extension(
+                package_artifact_base(
+                    root,
+                    context.graph,
+                    package_name,
+                ),
+                "core",
+            ),
+        ));
+        added.set(package_name, true)
     };
-    for command in compiled {
-        commands.push(command)
+    for graph in graphs {
+        for package_name in graph.order {
+            if added.contains(package_name) {
+                ()
+            } else {
+                let root = if test_packages.contains(package_name) {
+                    output_root
+                } else {
+                    dependency_root
+                };
+                input_cores.push(module_relative(
+                    context.graph.module_dir,
+                    extension(
+                        package_artifact_base(root, graph, package_name),
+                        "core",
+                    ),
+                ));
+                added.set(package_name, true)
+            }
+        }
     };
-    let base = package_artifact_base(
-        output_root,
-        target.graph,
-        target.graph.entry_package,
-    );
-    let main_go = linked_go_output(
-        output_root,
-        target.graph,
-        target.graph.entry_package,
-    );
-    let directory = match path::parent(base) {
-        Option::Some(value) => value,
-        Option::None => output_root,
-    };
-    let manifest = path::join(directory, "tests.json");
+    let main_go = path::join(output_root, "goml_generated.go");
+    let manifest = path::join(output_root, "tests.json");
     commands.push(Command::TestLink {
-        input_cores: core_outputs(target, output_root),
+        input_cores,
         packages,
         output: module_relative(context.graph.module_dir, main_go),
         manifest: module_relative(context.graph.module_dir, manifest),
     });
-    let runner = path::join(directory, "runner");
+    let runner = path::join(output_root, "runner");
     commands.push(Command::GoBuild {
         input: module_relative(context.graph.module_dir, main_go),
         output: module_relative(context.graph.module_dir, runner),
@@ -382,13 +513,25 @@ fn append_test_graph(
         manifest,
         runner,
     });
-    Result::Ok(())
 }
 
 pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
-    let commands = match check_plan(context, false) {
-        Result::Ok(value) => value.commands,
+    let dependency_root = path::join(
+        path::join(context.artifact_root, "test"),
+        "base",
+    );
+    let commands = match compile_commands(
+        context,
+        dependency_root,
+        "build",
+        "build",
+    ) {
+        Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
+    };
+    let compiled_dependencies = HashMap::new();
+    for package_name in context.graph.order {
+        compiled_dependencies.set(package_name, true)
     };
     let groups = Vec::new();
     let internal = if kind == "internal" || kind == "all" {
@@ -403,20 +546,38 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
         path::join(context.artifact_root, "test"),
         "internal",
     );
+    let internal_graphs = Vec::new();
+    let internal_packages = Vec::new();
     for graph in internal {
         let package_name = graph.entry_package;
-        match append_test_graph(
+        match append_test_package(
             context,
             graph,
+            dependency_root,
             internal_root,
-            "internal",
-            Vec::new().pushed(package_name),
+            compiled_dependencies,
             commands,
-            groups,
         ) {
-            Result::Ok(()) => (),
+            Result::Ok(()) => {
+                internal_graphs.push(graph);
+                internal_packages.push(package_name)
+            },
             Result::Err(message) => return Result::Err(message),
         }
+    };
+    if internal_graphs.len() > 0 {
+        append_test_group(
+            context,
+            internal_graphs,
+            dependency_root,
+            internal_root,
+            "internal",
+            internal_packages,
+            commands,
+            groups,
+        )
+    } else {
+        ()
     };
     let external = if kind == "external" || kind == "all" {
         match external_test_graphs(context) {
@@ -430,22 +591,39 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
         path::join(context.artifact_root, "test"),
         "external",
     );
+    let external_graphs = Vec::new();
+    let external_packages = Vec::new();
     for test in external {
         let package_name = test.graph.entry_package;
-        match append_test_graph(
+        match append_test_package(
             context,
             test.graph,
+            dependency_root,
             external_root,
-            "external",
-            Vec::new()
-                .pushed(package_name)
-                .pushed(test.target_package),
+            compiled_dependencies,
             commands,
-            groups,
         ) {
-            Result::Ok(()) => (),
+            Result::Ok(()) => {
+                external_graphs.push(test.graph);
+                external_packages.push(package_name);
+                external_packages.push(test.target_package)
+            },
             Result::Err(message) => return Result::Err(message),
         }
+    };
+    if external_graphs.len() > 0 {
+        append_test_group(
+            context,
+            external_graphs,
+            dependency_root,
+            external_root,
+            "external",
+            external_packages,
+            commands,
+            groups,
+        )
+    } else {
+        ()
     };
     Result::Ok(Plan {
         commands,
@@ -542,6 +720,57 @@ pub fn display_command(value: Command) -> string {
     display_args(command.0, command.1)
 }
 
+fn progress_label(value: Command) -> string {
+    match value {
+        Command::Compile {
+            subcommand,
+            package_name,
+            ..
+        } => if subcommand == "check" {
+            "checking " + package_name
+        } else if subcommand == "build" {
+            "compiling " + package_name
+        } else if subcommand == "test-check" {
+            "checking tests for " + package_name
+        } else if subcommand == "test-build" {
+            "compiling tests for " + package_name
+        } else {
+            subcommand + " " + package_name
+        },
+        Command::Link { entry_package, .. } => "linking " + entry_package,
+        Command::TestLink { .. } => "linking test runner",
+        Command::GoBuild { .. } => "building executable",
+    }
+}
+
+fn progress_bar(completed: int, total: int) -> string {
+    let width = 20;
+    let filled = if total == 0 {
+        width
+    } else {
+        completed * width / total
+    };
+    let builder = text::StringBuilder::with_capacity(width + 2);
+    builder.write_char('[');
+    for index in range(0, width) {
+        builder.write_char(if index < filled { '#' } else { '-' })
+    };
+    builder.write_char(']');
+    builder.finish()
+}
+
+fn display_progress(completed: int, total: int, label: string) -> unit {
+    io::eprintln(
+        progress_bar(completed, total)
+            + " "
+            + completed.to_string()
+            + "/"
+            + total.to_string()
+            + " "
+            + label,
+    )
+}
+
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
     let output = match value {
         Command::Compile { output, .. }
@@ -598,6 +827,8 @@ pub fn execute_plan(
     plan: Plan,
     dry_run: bool,
 ) -> Result[unit, string] {
+    let total = plan.commands.len();
+    let completed = Ref::new(0);
     let identity = if dry_run {
         ""
     } else {
@@ -610,6 +841,11 @@ pub fn execute_plan(
         if dry_run {
             io::println(display_command(command))
         } else {
+            display_progress(
+                completed.get(),
+                total,
+                progress_label(command),
+            );
             match cache_spec(command) {
                 Option::Some(spec) => {
                     let fingerprint = match command_fingerprint(
@@ -658,7 +894,13 @@ pub fn execute_plan(
                     Result::Err(message) => return Result::Err(message),
                 },
             }
+            completed.set(completed.get() + 1)
         }
+    };
+    if dry_run {
+        ()
+    } else {
+        display_progress(completed.get(), total, "finished")
     };
     Result::Ok(())
 }

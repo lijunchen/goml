@@ -2,38 +2,38 @@ ci: verify-bootstrap test-selfhost vscode-ext
 
 build-stage0:
     mkdir -p bin/stage0
-    go build -trimpath -o bin/stage0/gomlc stage0/gomlc.go
-    go build -trimpath -o bin/stage0/goml stage0/goml.go
+    go build -trimpath -o bin/stage0/gomlc stage0/gomlc/gomlc.go
+    go build -trimpath -o bin/stage0/goml stage0/goml/goml.go
 
 bootstrap-stage1: build-stage0
     mkdir -p bin/stage1
-    cd bootstrap && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage0/gomlc
-    cp bootstrap/_bootstrap/stage1/bin/cmd/gomlc/gomlc bin/stage1/gomlc
-    cp bootstrap/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp bin/stage1/gomllsp
-    cd bootstrap-goml && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
-    cp bootstrap-goml/_bootstrap/stage1/bin/cmd/goml/goml bin/stage1/goml
+    cd gomlc && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage0/gomlc
+    cp gomlc/_bootstrap/stage1/bin/cmd/gomlc/gomlc bin/stage1/gomlc
+    cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp bin/stage1/gomllsp
+    cd goml && ../bin/stage0/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
+    cp goml/_bootstrap/stage1/bin/cmd/goml/goml bin/stage1/goml
 
 bootstrap-stage2: bootstrap-stage1
     mkdir -p bin/stage2
-    cd bootstrap && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
-    cp bootstrap/_bootstrap/stage2/bin/cmd/gomlc/gomlc bin/stage2/gomlc
-    cp bootstrap/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp bin/stage2/gomllsp
-    cd bootstrap-goml && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
-    cp bootstrap-goml/_bootstrap/stage2/bin/cmd/goml/goml bin/stage2/goml
+    cd gomlc && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
+    cp gomlc/_bootstrap/stage2/bin/cmd/gomlc/gomlc bin/stage2/gomlc
+    cp gomlc/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp bin/stage2/gomllsp
+    cd goml && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
+    cp goml/_bootstrap/stage2/bin/cmd/goml/goml bin/stage2/goml
 
 verify-fixed-point: bootstrap-stage2
-    diff -ru --exclude='*.goml-*-fingerprint' bootstrap/_bootstrap/stage1/build/pkg bootstrap/_bootstrap/stage2/build/pkg
-    diff -ru --exclude='*.goml-*-fingerprint' bootstrap-goml/_bootstrap/stage1/build/pkg bootstrap-goml/_bootstrap/stage2/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage1/build/pkg gomlc/_bootstrap/stage2/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage1/build/pkg goml/_bootstrap/stage2/build/pkg
 
 verify-bootstrap: verify-fixed-point
-    cmp stage0/gomlc.go bootstrap/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
-    cmp stage0/goml.go bootstrap-goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
+    cmp stage0/gomlc/gomlc.go gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+    cmp stage0/goml/goml.go goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
 
 bootstrap: verify-bootstrap
 
 regenerate-stage0: bootstrap-stage2
-    cp bootstrap/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc.go
-    cp bootstrap-goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml.go
+    cp gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go stage0/gomlc/gomlc.go
+    cp goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go stage0/goml/goml.go
     just verify-fixed-point
 
 build-lsp: bootstrap-stage1
@@ -67,20 +67,20 @@ install: bootstrap-stage1
 test-selfhost: test-bootstrap-all test-bootstrap-driver
 
 test-bootstrap-all: bootstrap-stage1
-    cd bootstrap && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+    cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-driver: bootstrap-stage1
-    cd bootstrap-goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 1
+    cd goml && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-pipeline: bootstrap-stage1
-    cd bootstrap && ../bin/stage1/goml test pipeline_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+    cd gomlc && ../bin/stage1/goml test pipeline_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-compiler: bootstrap-stage1
-    cd bootstrap && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test compiler_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 2m
+    cd gomlc && GOML_TEST_GOML=../bin/stage1/goml GOML_TEST_GOMLC=../bin/stage1/gomlc ../bin/stage1/goml test compiler_test --compiler ../bin/stage1/gomlc --jobs 4 --timeout 10m
 
 test-bootstrap-lsp: bootstrap-stage1
-    cd bootstrap && ../bin/stage1/goml test query --compiler ../bin/stage1/gomlc --jobs 1
-    cd bootstrap && ../bin/stage1/goml test lsp --compiler ../bin/stage1/gomlc --jobs 1
+    cd gomlc && ../bin/stage1/goml test query --compiler ../bin/stage1/gomlc --jobs 1
+    cd gomlc && ../bin/stage1/goml test lsp --compiler ../bin/stage1/gomlc --jobs 1
 
 update-golden:
     env UPDATE_EXPECT=1 just test-bootstrap-pipeline

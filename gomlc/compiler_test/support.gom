@@ -23,7 +23,7 @@ pub fn repository_root() -> string {
 }
 
 pub fn compiler_tests_root() -> string {
-    path::join(repository_root(), "bootstrap/testdata")
+    path::join(repository_root(), "gomlc/testdata")
 }
 
 pub fn read_file(file: string) -> string {
@@ -136,7 +136,7 @@ fn copy_directory(source: string, target: string) -> unit {
 fn execute_go(source: string, suite: string, shard: int, index: int) -> string {
     let directory = path::join(
         path::join(
-            path::join(repository_root(), "bootstrap/_artifact/test-work/compiler"),
+            path::join(repository_root(), "gomlc/_artifact/test-work/compiler"),
             suite,
         ),
         shard.to_string() + "-" + index.to_string(),
@@ -381,7 +381,7 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
             let project = path::join(
                 path::join(
                     repository_root(),
-                    "bootstrap/_artifact/test-work/compiler/module-source",
+                    "gomlc/_artifact/test-work/compiler/module-source",
                 ),
                 name,
             );
@@ -389,7 +389,7 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
             let target = path::join(
                 path::join(
                     repository_root(),
-                    "bootstrap/_artifact/test-work/compiler/module",
+                    "gomlc/_artifact/test-work/compiler/module",
                 ),
                 name,
             );
@@ -437,7 +437,7 @@ pub fn assert_module_diagnostics() -> unit {
         let project = path::join(
             path::join(
                 repository_root(),
-                "bootstrap/_artifact/test-work/compiler/module-diagnostics-source",
+                "gomlc/_artifact/test-work/compiler/module-diagnostics-source",
             ),
             name,
         );
@@ -445,7 +445,7 @@ pub fn assert_module_diagnostics() -> unit {
         let target = path::join(
             path::join(
                 repository_root(),
-                "bootstrap/_artifact/test-work/compiler/module-diagnostics",
+                "gomlc/_artifact/test-work/compiler/module-diagnostics",
             ),
             name,
         );
@@ -480,7 +480,7 @@ pub fn assert_module_diagnostics() -> unit {
 pub fn assert_standard_binary_stdio() -> unit {
     let project = path::join(
         repository_root(),
-        "bootstrap/_artifact/test-work/compiler/stdio",
+        "gomlc/_artifact/test-work/compiler/stdio",
     );
     create_directory(project);
     match fs::write_file(
@@ -657,7 +657,7 @@ pub fn assert_package_crasher() -> unit {
     );
     let target = path::join(
         repository_root(),
-        "bootstrap/_artifact/test-work/compiler/crashers/host-shadow",
+        "gomlc/_artifact/test-work/compiler/crashers/host-shadow",
     );
     let output = project_command("check", project, target);
     testing::assert(
