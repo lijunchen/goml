@@ -6,6 +6,7 @@ on:
       - 'v*.*.*'
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -24,16 +25,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: editors/vscode/package-lock.json
       - uses: extractions/setup-just@v2
         with:
           just-version: '1.40.0'
-      - name: Install Yaegi interpreter
-        run: go install github.com/traefik/yaegi/cmd/yaegi@v0.16.1
       - name: Validate release version
         env:
           GH_TOKEN: ${{ github.token }}
@@ -43,6 +37,24 @@ jobs:
           release_version="${RELEASE_TAG#v}"
           test "$RELEASE_TAG" = "v$release_version"
           bash tools/release/release.sh check-version "$release_version"
+          ci_run="$(gh run list \
+            --repo "$GITHUB_REPOSITORY" \
+            --workflow CI \
+            --branch main \
+            --commit "$GITHUB_SHA" \
+            --event push \
+            --limit 1 \
+            --json status,conclusion,url \
+            --jq 'if length == 0 then "" else .[0] | "\(.status)|\(.conclusion)|\(.url)" end')"
+          if test -z "$ci_run"; then
+            echo "main CI run not found for $GITHUB_SHA" >&2
+            exit 1
+          fi
+          IFS='|' read -r ci_status ci_conclusion ci_url <<< "$ci_run"
+          if test "$ci_status" != "completed" || test "$ci_conclusion" != "success"; then
+            echo "main CI has not succeeded for $GITHUB_SHA: $ci_status $ci_conclusion $ci_url" >&2
+            exit 1
+          fi
           release_tags="$(gh release list \
             --repo "$GITHUB_REPOSITORY" \
             --limit 100 \
@@ -61,8 +73,8 @@ jobs:
           test "$release_state" != "false"
           echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
           echo "PREVIOUS_TAG=$previous_tag" >> "$GITHUB_ENV"
-      - name: Test
-        run: just ci
+      - name: Build stage1
+        run: just bootstrap-stage1
       - name: Build release archive
         run: |
           set -euo pipefail

@@ -23,14 +23,17 @@ just set-version 0.1.1
 just ci
 ```
 
-Commit and push the version change, then create the tag:
+Commit and push the version change, then wait for the main branch CI to succeed before creating the tag:
 
 ```sh
+git push origin main
+ci_run_id="$(gh run list --repo lijunchen/goml --workflow CI --branch main --event push --limit 1 --json databaseId --jq '.[0].databaseId')"
+gh run watch "$ci_run_id" --repo lijunchen/goml --exit-status
 git tag -a v0.1.1 -m "goml v0.1.1"
 git push origin v0.1.1
 ```
 
-The Release workflow verifies the version, the previous release, stage0, the fixed point, the complete test suite, and the extracted release archive before publishing.
+The main branch CI verifies the fixed point and complete test suite. The Release workflow requires a successful main branch CI for the tagged commit, verifies the version, previous release, and stage0, rebuilds stage1, and tests the extracted release archive before publishing.
 
 ## Advance stage0
 
