@@ -1,26 +1,28 @@
 package lsp;
 
+use std::json;
+
 pub struct RpcMessage {
-    pub id: Option[JsonValue],
+    pub id: Option[json::Value],
     pub method: string,
-    pub params: JsonValue,
+    pub params: json::Value,
 }
 
-fn json_fields(values: Vec[(string, JsonValue)]) -> JsonValue {
-    JsonValue::Object(values)
+fn json_fields(values: Vec[(string, json::Value)]) -> json::Value {
+    json::Value::Object(values)
 }
 
 fn push_json_field(
-    values: Vec[(string, JsonValue)],
+    values: Vec[(string, json::Value)],
     name: string,
-    value: JsonValue,
+    value: json::Value,
 ) -> unit {
     values.push((name, value))
 }
 
-pub fn parse_rpc_message(value: JsonValue) -> Result[RpcMessage, string] {
-    match json_field(value, "jsonrpc") {
-        Option::Some(JsonValue::String(version)) => if version != "2.0" {
+pub fn parse_rpc_message(value: json::Value) -> Result[RpcMessage, string] {
+    match json::field(value, "jsonrpc") {
+        Option::Some(json::Value::String(version)) => if version != "2.0" {
             return Result::Err("JSON-RPC version must be 2.0")
         } else {
             ()
@@ -30,54 +32,54 @@ pub fn parse_rpc_message(value: JsonValue) -> Result[RpcMessage, string] {
         ),
         Option::None => return Result::Err("JSON-RPC message has no version"),
     };
-    let method = match json_field(value, "method") {
-        Option::Some(method) => match json_string(method) {
+    let method = match json::field(value, "method") {
+        Option::Some(method) => match json::as_string(method) {
             Option::Some(method) => method,
             Option::None => return Result::Err("JSON-RPC method must be a string"),
         },
         Option::None => return Result::Err("JSON-RPC message has no method"),
     };
-    let id = json_field(value, "id");
-    let params = match json_field(value, "params") {
+    let id = json::field(value, "id");
+    let params = match json::field(value, "params") {
         Option::Some(params) => params,
-        Option::None => JsonValue::Null,
+        Option::None => json::Value::Null,
     };
     Result::Ok(RpcMessage { id, method, params })
 }
 
-pub fn rpc_success(id: JsonValue, result: JsonValue) -> JsonValue {
+pub fn rpc_success(id: json::Value, result: json::Value) -> json::Value {
     let fields = Vec::new();
-    push_json_field(fields, "jsonrpc", JsonValue::String("2.0"));
+    push_json_field(fields, "jsonrpc", json::Value::String("2.0"));
     push_json_field(fields, "id", id);
     push_json_field(fields, "result", result);
     json_fields(fields)
 }
 
 pub fn rpc_error(
-    id: JsonValue,
+    id: json::Value,
     code: int,
     message: string,
-) -> JsonValue {
+) -> json::Value {
     let error = Vec::new();
-    push_json_field(error, "code", JsonValue::Number(code.to_string()));
-    push_json_field(error, "message", JsonValue::String(message));
+    push_json_field(error, "code", json::Value::Number(code.to_string()));
+    push_json_field(error, "message", json::Value::String(message));
     let fields = Vec::new();
-    push_json_field(fields, "jsonrpc", JsonValue::String("2.0"));
+    push_json_field(fields, "jsonrpc", json::Value::String("2.0"));
     push_json_field(fields, "id", id);
     push_json_field(fields, "error", json_fields(error));
     json_fields(fields)
 }
 
-pub fn rpc_notification(method: string, params: JsonValue) -> JsonValue {
+pub fn rpc_notification(method: string, params: json::Value) -> json::Value {
     let fields = Vec::new();
-    push_json_field(fields, "jsonrpc", JsonValue::String("2.0"));
-    push_json_field(fields, "method", JsonValue::String(method));
+    push_json_field(fields, "jsonrpc", json::Value::String("2.0"));
+    push_json_field(fields, "method", json::Value::String(method));
     push_json_field(fields, "params", params);
     json_fields(fields)
 }
 
-pub fn framed_json(value: JsonValue) -> string {
-    let body = encode_json(value);
+pub fn framed_json(value: json::Value) -> string {
+    let body = json::encode(value);
     "Content-Length: "
         + body.byte_len().to_string()
         + "\r\n\r\n"
@@ -164,38 +166,38 @@ fn is_content_length_header(value: string) -> bool {
     ascii_prefix_equal_case_insensitive(line, "Content-Length:")
 }
 
-pub fn position_json(value: Position) -> JsonValue {
+pub fn position_json(value: Position) -> json::Value {
     let fields = Vec::new();
     push_json_field(
         fields,
         "line",
-        JsonValue::Number(value.line.to_string()),
+        json::Value::Number(value.line.to_string()),
     );
     push_json_field(
         fields,
         "character",
-        JsonValue::Number(value.character.to_string()),
+        json::Value::Number(value.character.to_string()),
     );
     json_fields(fields)
 }
 
-pub fn range_json(value: Range) -> JsonValue {
+pub fn range_json(value: Range) -> json::Value {
     let fields = Vec::new();
     push_json_field(fields, "start", position_json(value.start));
     push_json_field(fields, "end", position_json(value.end));
     json_fields(fields)
 }
 
-pub fn parse_position(value: JsonValue) -> Result[Position, string] {
-    let line = match json_field(value, "line") {
-        Option::Some(line) => match json_int(line) {
+pub fn parse_position(value: json::Value) -> Result[Position, string] {
+    let line = match json::field(value, "line") {
+        Option::Some(line) => match json::as_int(line) {
             Option::Some(line) => line,
             Option::None => return Result::Err("position line must be an integer"),
         },
         Option::None => return Result::Err("position has no line"),
     };
-    let character = match json_field(value, "character") {
-        Option::Some(character) => match json_int(character) {
+    let character = match json::field(value, "character") {
+        Option::Some(character) => match json::as_int(character) {
             Option::Some(character) => character,
             Option::None => {
                 return Result::Err("position character must be an integer")
@@ -206,15 +208,15 @@ pub fn parse_position(value: JsonValue) -> Result[Position, string] {
     Result::Ok(Position { line, character })
 }
 
-pub fn parse_range(value: JsonValue) -> Result[Range, string] {
-    let start = match json_field(value, "start") {
+pub fn parse_range(value: json::Value) -> Result[Range, string] {
+    let start = match json::field(value, "start") {
         Option::Some(value) => match parse_position(value) {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(error),
         },
         Option::None => return Result::Err("range has no start"),
     };
-    let end = match json_field(value, "end") {
+    let end = match json::field(value, "end") {
         Option::Some(value) => match parse_position(value) {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(error),

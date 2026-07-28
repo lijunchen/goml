@@ -1,10 +1,10 @@
 package runner;
 
-use gomlang::bootstrap_goml::json;
 use gomlang::bootstrap_goml::util;
 use std::bytes;
 use std::fs;
 use std::io;
+use std::json;
 use std::process;
 
 pub struct Options {
@@ -67,7 +67,7 @@ fn required_string(value: json::Value, name: string) -> Result[string, string] {
 
 fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
     match json::field(value, name) {
-        Option::Some(value) => match json::bool_value(value) {
+        Option::Some(value) => match json::as_bool(value) {
             Option::Some(value) => Result::Ok(value),
             Option::None => Result::Err(name + " must be boolean"),
         },
@@ -103,7 +103,7 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
             Result::Err(message) => return Result::Err(message),
         };
         let ignore_reason = match json::field(value, "ignore_reason") {
-            Option::Some(value) => json::optional_string(value),
+            Option::Some(value) => json::as_string(value),
             Option::None => Option::None,
         };
         result.push(Test {

@@ -1,12 +1,12 @@
 package project;
 
-use gomlang::bootstrap_goml::json;
 use gomlang::bootstrap_goml::manifest;
 use gomlang::bootstrap_goml::registry;
 use gomlang::bootstrap_goml::util;
 use std::bytes;
 use std::env;
 use std::fs;
+use std::json;
 use std::path;
 use std::process;
 
@@ -295,7 +295,7 @@ fn compiler_package_info(
             Option::None => return Result::Err("package-info file omitted package"),
         };
         let package_explicit = match json::field(value, "package_explicit") {
-            Option::Some(value) => match json::bool_value(value) {
+            Option::Some(value) => match json::as_bool(value) {
                 Option::Some(value) => value,
                 Option::None => return Result::Err("package_explicit must be boolean"),
             },
@@ -318,7 +318,7 @@ fn compiler_package_info(
                 Option::None => return Result::Err("use omitted path"),
             };
             let alias = match json::field(use_value, "alias") {
-                Option::Some(value) => json::optional_string(value),
+                Option::Some(value) => json::as_string(value),
                 Option::None => Option::None,
             };
             parsed_uses.push(PackageInfoUse {

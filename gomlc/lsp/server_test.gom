@@ -1,9 +1,10 @@
 package lsp;
 
+use std::json;
 use std::testing;
 
-fn response_result(value: JsonValue) -> Option[JsonValue] {
-    json_field(value, "result")
+fn response_result(value: json::Value) -> Option[json::Value] {
+    json::field(value, "result")
 }
 
 #[test]
@@ -16,9 +17,9 @@ fn initializes_and_answers_hover_requests() -> unit {
         Result::Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
             match response_result(messages.get(0)) {
-                Option::Some(result) => match json_field(result, "serverInfo") {
-                    Option::Some(info) => match json_field(info, "name") {
-                        Option::Some(name) => match json_string(name) {
+                Option::Some(result) => match json::field(result, "serverInfo") {
+                    Option::Some(info) => match json::field(info, "name") {
+                        Option::Some(name) => match json::as_string(name) {
                             Option::Some(name) => {
                                 testing::assert_eq(name, "gomllsp")
                             },
@@ -43,12 +44,12 @@ fn initializes_and_answers_hover_requests() -> unit {
         Result::Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
             match response_result(messages.get(0)) {
-                Option::Some(result) => match json_field(result, "contents") {
-                    Option::Some(contents) => match json_field(
+                Option::Some(result) => match json::field(result, "contents") {
+                    Option::Some(contents) => match json::field(
                         contents,
                         "value",
                     ) {
-                        Option::Some(value) => match json_string(value) {
+                        Option::Some(value) => match json::as_string(value) {
                             Option::Some(value) => {
                                 testing::assert_eq(
                                     value,
@@ -108,15 +109,15 @@ fn returns_run_test_code_lenses() -> unit {
     let request = "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"textDocument/codeLens\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/value_test.gom\"}}}";
     match handle_payload(server, request) {
         Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json_array(result) {
+            Option::Some(result) => match json::as_array(result) {
                 Option::Some(lenses) => {
                     testing::assert_eq(lenses.len(), 1);
-                    match json_field(lenses.get(0), "command") {
-                        Option::Some(command) => match json_field(
+                    match json::field(lenses.get(0), "command") {
+                        Option::Some(command) => match json::field(
                             command,
                             "command",
                         ) {
-                            Option::Some(value) => match json_string(value) {
+                            Option::Some(value) => match json::as_string(value) {
                                 Option::Some(value) => {
                                     testing::assert_eq(value, "goml.runTest")
                                 },
@@ -143,11 +144,11 @@ fn converts_diagnostic_fixes_to_code_actions() -> unit {
     let request = "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"textDocument/codeAction\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/main.gom\"},\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"context\":{\"diagnostics\":[{\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"message\":\"replace\",\"data\":{\"fixes\":[{\"uri\":\"file:///tmp/main.gom\",\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"replacement\":\"x\",\"title\":\"Replace value\",\"preferred\":true}]}}]}}}";
     match handle_payload(server, request) {
         Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json_array(result) {
+            Option::Some(result) => match json::as_array(result) {
                 Option::Some(actions) => {
                     testing::assert_eq(actions.len(), 1);
-                    match json_field(actions.get(0), "title") {
-                        Option::Some(value) => match json_string(value) {
+                    match json::field(actions.get(0), "title") {
+                        Option::Some(value) => match json::as_string(value) {
                             Option::Some(value) => {
                                 testing::assert_eq(value, "Replace value")
                             },
@@ -170,7 +171,7 @@ fn returns_null_when_no_code_actions_apply() -> unit {
     let request = "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"textDocument/codeAction\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/main.gom\"},\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"context\":{\"diagnostics\":[]}}}";
     match handle_payload(server, request) {
         Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(JsonValue::Null) => (),
+            Option::Some(json::Value::Null) => (),
             Option::Some(_) => testing::fail("expected null code actions"),
             Option::None => testing::fail("expected code action result"),
         },
@@ -184,9 +185,9 @@ fn reports_json_rpc_parse_and_invalid_request_errors() -> unit {
     match handle_payload(server, "{") {
         Result::Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
-            match json_field(messages.get(0), "error") {
-                Option::Some(error) => match json_field(error, "code") {
-                    Option::Some(code) => match json_int(code) {
+            match json::field(messages.get(0), "error") {
+                Option::Some(error) => match json::field(error, "code") {
+                    Option::Some(code) => match json::as_int(code) {
                         Option::Some(code) => testing::assert_eq(code, -32700),
                         Option::None => testing::fail("expected parse code"),
                     },
@@ -201,9 +202,9 @@ fn reports_json_rpc_parse_and_invalid_request_errors() -> unit {
         server,
         "{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}",
     ) {
-        Result::Ok(messages) => match json_field(messages.get(0), "error") {
-            Option::Some(error) => match json_field(error, "code") {
-                Option::Some(code) => match json_int(code) {
+        Result::Ok(messages) => match json::field(messages.get(0), "error") {
+            Option::Some(error) => match json::field(error, "code") {
+                Option::Some(code) => match json::as_int(code) {
                     Option::Some(code) => testing::assert_eq(code, -32600),
                     Option::None => testing::fail("expected request code"),
                 },
@@ -226,11 +227,11 @@ fn filters_inlay_hints_to_the_requested_range() -> unit {
     let request = "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"textDocument/inlayHint\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/inlay.gom\"},\"range\":{\"start\":{\"line\":2,\"character\":0},\"end\":{\"line\":3,\"character\":0}}}}";
     match handle_payload(server, request) {
         Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json_array(result) {
+            Option::Some(result) => match json::as_array(result) {
                 Option::Some(hints) => {
                     testing::assert_eq(hints.len(), 1);
-                    match json_field(hints.get(0), "label") {
-                        Option::Some(label) => match json_string(label) {
+                    match json::field(hints.get(0), "label") {
+                        Option::Some(label) => match json::as_string(label) {
                             Option::Some(label) => {
                                 testing::assert_eq(label, ": int")
                             },
@@ -257,9 +258,9 @@ fn rejects_requests_after_shutdown() -> unit {
     };
     let request = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"initialize\"}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match json_field(messages.get(0), "error") {
-            Option::Some(error) => match json_field(error, "code") {
-                Option::Some(code) => match json_int(code) {
+        Result::Ok(messages) => match json::field(messages.get(0), "error") {
+            Option::Some(error) => match json::field(error, "code") {
+                Option::Some(code) => match json::as_int(code) {
                     Option::Some(code) => testing::assert_eq(code, -32600),
                     Option::None => testing::fail("expected shutdown code"),
                 },
@@ -282,9 +283,9 @@ fn includes_diagnostics_in_hover() -> unit {
     let request = "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"textDocument/hover\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\"},\"position\":{\"line\":0,\"character\":21}}}";
     match handle_payload(server, request) {
         Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json_field(result, "contents") {
-                Option::Some(contents) => match json_field(contents, "value") {
-                    Option::Some(value) => match json_string(value) {
+            Option::Some(result) => match json::field(result, "contents") {
+                Option::Some(contents) => match json::field(contents, "value") {
+                    Option::Some(value) => match json::as_string(value) {
                         Option::Some(value) => testing::assert(string_contains(
                             value,
                             "**Diagnostics**",
