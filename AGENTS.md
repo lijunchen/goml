@@ -288,6 +288,22 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - `goml check` and `goml build` locate `gomlc` through `--compiler`, `GOMLC`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`; the driver protocol is verified before compilation.
 - Local CI: `just ci`.
 
+## Bootstrap And Language Evolution
+
+- `bootstrap/stage0.env` is the trust root for self-hosting. It pins the previous released Linux amd64 toolchain and its SHA-256 checksum.
+- The current stage0 must always be able to compile the current `gomlc/` and `goml/` sources. Every pull request must preserve this invariant and pass `just ci`.
+- Implement new syntax, builtins, standard-library APIs, traits, or type-system capabilities without using them in compiler or driver sources. Tests and fixtures may use the new capability immediately.
+- Release the implementation and advance stage0 to that release before using the new capability in compiler or driver sources.
+- Syntax removal or incompatible syntax changes require a transition release that accepts both old and new forms. Advance stage0, migrate self-hosted sources, then remove the old form in a later release.
+- Driver protocols, compiler CLI contracts, and other bootstrap-facing interfaces require at least one release of compatibility overlap. A transition release must allow the old stage0 driver to use the new compiler before the old protocol is removed.
+- Artifact formats may change without backward compatibility only when clean stage1 and stage2 builds do not consume artifacts from another compiler version. Cache and external dependency diagnostics must remain recoverable.
+- Do not point stage0 at an unreleased workflow artifact. Only published, checksum-pinned Release archives may become stage0.
+- Use patch versions for compatible fixes, minor versions for new language features and pre-1.0 breaking changes, and major versions for breaking changes after 1.0.
+- Release tags use strict `vX.Y.Z`. The Release workflow requires one continuous SemVer step: patch increments by one, minor increments by one and resets patch to zero, or major increments by one and resets minor and patch to zero.
+- Prepare a release with `just set-version X.Y.Z` and `just ci`, then tag and push `vX.Y.Z`.
+- After publishing, read the archive checksum from `SHA256SUMS`, run `just set-bootstrap-stage0 X.Y.Z <sha256>` and `just bootstrap`, then commit `bootstrap/stage0.env` before relying on new compiler capabilities.
+- See `docs/releasing.md` for the complete release procedure.
+
 ## Coding Style & Naming Conventions
 - do not write any comments, instead, write simple, clear and self-explanatory code
 - GoML: use four-space indentation, snake_case functions/packages, CamelCase types, and explicit top-level signatures.
