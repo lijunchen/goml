@@ -1,5 +1,6 @@
 package go_backend;
 
+use std::bytes;
 use std::text;
 
 fn sha256_constants() -> [uint32; 64] {
@@ -76,14 +77,14 @@ fn rotate_right(value: uint32, count: uint32) -> uint32 {
 }
 
 fn padded_byte(
-    value: string,
+    value: bytes::Bytes,
     index: int,
     padded_len: int,
     bit_len: uint64,
 ) -> uint8 {
-    if index < value.byte_len() {
-        value.byte_get(index)
-    } else if index == value.byte_len() {
+    if index < value.len() {
+        value.get(index)
+    } else if index == value.len() {
         128
     } else if index >= padded_len - 8 {
         let shift = ((padded_len - 1 - index) * 8) as uint64;
@@ -94,7 +95,7 @@ fn padded_byte(
 }
 
 fn message_word(
-    value: string,
+    value: bytes::Bytes,
     offset: int,
     padded_len: int,
     bit_len: uint64,
@@ -113,13 +114,13 @@ fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
     }
 }
 
-pub fn sha256_hex(value: string) -> string {
+pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     let constants = sha256_constants();
-    let padded_len = Ref::new(value.byte_len() + 9);
+    let padded_len = Ref::new(value.len() + 9);
     while padded_len.get() % 64 != 0 {
         padded_len.set(padded_len.get() + 1)
     };
-    let bit_len = (value.byte_len() as uint64) * 8;
+    let bit_len = (value.len() as uint64) * 8;
     let h0 = Ref::new(1779033703);
     let h1 = Ref::new(3144134277);
     let h2 = Ref::new(1013904242);
@@ -204,6 +205,10 @@ pub fn sha256_hex(value: string) -> string {
     write_hex_word(builder, h6.get());
     write_hex_word(builder, h7.get());
     builder.finish()
+}
+
+pub fn sha256_hex(value: string) -> string {
+    sha256_bytes_hex(bytes::Bytes::from_string(value))
 }
 
 pub fn sha256_prefix(value: string) -> string {

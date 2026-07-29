@@ -8,6 +8,8 @@ struct Lowerer {
     counter: Ref[int],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
+    optimize_builtin_iterators: bool,
+    shadowed_range: bool,
 }
 
 struct EnumCase {
@@ -959,7 +961,216 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
     }
 }
 
-fn lower_for(
+fn direct_for_body(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    index_name: string,
+    item_value: Expr,
+    body: tast::Expr,
+) -> Expr {
+    let item_ty = tast::pat_type(pattern);
+    let item_name = gensym(ctx, "for_item");
+    let advance_name = gensym(ctx, "_wild");
+    let stmts: Vec[LetStmt] = Vec::new();
+    stmts.push(LetStmt {
+        name: item_name,
+        value: item_value,
+        ty: item_ty,
+    });
+    stmts.push(LetStmt {
+        name: advance_name,
+        value: Expr::Assign {
+            name: index_name,
+            value: Expr::Binary {
+                op: ast::BinaryOp::Add,
+                lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
+                rhs: ordered_int(1),
+                ty: tast::Type::Int,
+            },
+            target_ty: tast::Type::Int,
+            ty: tast::Type::Unit,
+        },
+        ty: tast::Type::Unit,
+    });
+    Expr::Block {
+        block: Block {
+            stmts,
+            tail: Option::Some(lower_pattern_continuation(
+                ctx,
+                item_name,
+                item_ty,
+                pattern,
+                body,
+                tast::Type::Unit,
+            )),
+        },
+        ty: tast::Type::Unit,
+    }
+}
+
+fn direct_for_loop(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    source_stmts: Vec[LetStmt],
+    index_name: string,
+    limit_name: string,
+    item_value: Expr,
+    body: tast::Expr,
+) -> Expr {
+    Expr::Block {
+        block: Block {
+            stmts: source_stmts,
+            tail: Option::Some(Expr::While {
+                cond: Expr::Binary {
+                    op: ast::BinaryOp::Less,
+                    lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
+                    rhs: Expr::Var { name: limit_name, ty: tast::Type::Int },
+                    ty: tast::Type::Bool,
+                },
+                body: direct_for_body(ctx, pattern, index_name, item_value, body),
+                ty: tast::Type::Unit,
+            }),
+        },
+        ty: tast::Type::Unit,
+    }
+}
+
+fn direct_range_for(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    args: Vec[tast::Expr],
+    body: tast::Expr,
+) -> Option[Expr] {
+    if args.len() != 2 {
+        Option::None
+    } else {
+        let index_name = gensym(ctx, "for_index");
+        let limit_name = gensym(ctx, "for_limit");
+        let stmts: Vec[LetStmt] = Vec::new();
+        stmts.push(LetStmt {
+            name: index_name,
+            value: lower_expr(ctx, args.get(0)),
+            ty: tast::Type::Int,
+        });
+        stmts.push(LetStmt {
+            name: limit_name,
+            value: lower_expr(ctx, args.get(1)),
+            ty: tast::Type::Int,
+        });
+        Option::Some(direct_for_loop(
+            ctx,
+            pattern,
+            stmts,
+            index_name,
+            limit_name,
+            Expr::Var { name: index_name, ty: tast::Type::Int },
+            body,
+        ))
+    }
+}
+
+fn direct_container_for(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    iterator: tast::Expr,
+    container_ty: tast::Type,
+    len_intrinsic: string,
+    get_intrinsic: string,
+    body: tast::Expr,
+) -> Expr {
+    let item_ty = tast::pat_type(pattern);
+    let source_name = gensym(ctx, "for_source");
+    let limit_name = gensym(ctx, "for_limit");
+    let index_name = gensym(ctx, "for_index");
+    let len_params: Vec[tast::Type] = Vec::new();
+    len_params.push(container_ty);
+    let len_args: Vec[Expr] = Vec::new();
+    len_args.push(Expr::Var { name: source_name, ty: container_ty });
+    let stmts: Vec[LetStmt] = Vec::new();
+    stmts.push(LetStmt {
+        name: source_name,
+        value: lower_expr(ctx, iterator),
+        ty: container_ty,
+    });
+    stmts.push(LetStmt {
+        name: limit_name,
+        value: place_intrinsic_call(
+            len_intrinsic,
+            len_params,
+            tast::Type::Int,
+            len_args,
+        ),
+        ty: tast::Type::Int,
+    });
+    stmts.push(LetStmt {
+        name: index_name,
+        value: ordered_int(0),
+        ty: tast::Type::Int,
+    });
+    let get_params: Vec[tast::Type] = Vec::new();
+    get_params.push(container_ty);
+    get_params.push(tast::Type::Int);
+    let get_args: Vec[Expr] = Vec::new();
+    get_args.push(Expr::Var { name: source_name, ty: container_ty });
+    get_args.push(Expr::Var { name: index_name, ty: tast::Type::Int });
+    direct_for_loop(
+        ctx,
+        pattern,
+        stmts,
+        index_name,
+        limit_name,
+        place_intrinsic_call(get_intrinsic, get_params, item_ty, get_args),
+        body,
+    )
+}
+
+fn lower_direct_for(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    iterator: tast::Expr,
+    body: tast::Expr,
+) -> Option[Expr] {
+    match iterator {
+        tast::Expr::Call {
+            func: tast::Expr::Callable {
+                callable: tast::Callable::Function(name),
+                ty: _,
+            },
+            args,
+            ty: _,
+        } => if name == "__goml_builtin_range" || (name == "range" && !ctx.shadowed_range) {
+            direct_range_for(ctx, pattern, args, body)
+        } else {
+            Option::None
+        },
+        other => {
+            let container_ty = tast::resolve_type(tast::expr_type(other));
+            match container_ty {
+                tast::Type::VecType { elem: _ } => Option::Some(direct_container_for(
+                    ctx,
+                    pattern,
+                    other,
+                    container_ty,
+                    "vec.len",
+                    "vec.get",
+                    body,
+                )),
+                tast::Type::Slice { elem: _ } => Option::Some(direct_container_for(
+                    ctx,
+                    pattern,
+                    other,
+                    container_ty,
+                    "slice.len",
+                    "slice.get",
+                    body,
+                )),
+                _ => Option::None,
+            }
+        },
+    }
+}
+
+fn lower_iterator_for(
     ctx: Lowerer,
     pattern: tast::Pat,
     iterator: tast::Expr,
@@ -1056,6 +1267,41 @@ fn lower_for(
                     }),
                 },
         ty: tast::Type::Unit,
+    }
+}
+
+fn lower_for(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    iterator: tast::Expr,
+    into_iterator: tast::TraitRef,
+    iterator_trait: tast::TraitRef,
+    iterator_ty: tast::Type,
+    body: tast::Expr,
+) -> Expr {
+    if ctx.optimize_builtin_iterators {
+        match lower_direct_for(ctx, pattern, iterator, body) {
+            Option::Some(value) => value,
+            Option::None => lower_iterator_for(
+                ctx,
+                pattern,
+                iterator,
+                into_iterator,
+                iterator_trait,
+                iterator_ty,
+                body,
+            ),
+        }
+    } else {
+        lower_iterator_for(
+            ctx,
+            pattern,
+            iterator,
+            into_iterator,
+            iterator_trait,
+            iterator_ty,
+            body,
+        )
     }
 }
 
@@ -1386,9 +1632,21 @@ fn lower_file_with_types(
     counter: Ref[int],
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
+    optimize_builtin_iterators: bool,
 ) -> File {
     let enums = value.enums;
     let structs = value.structs;
+    let shadowed_range = Ref::new(false);
+    for item in value.items {
+        match item {
+            tast::Item::Function(function) => if function.name == "range" {
+                shadowed_range.set(true)
+            } else {
+                ()
+            },
+            tast::Item::ImplBlock(_) => (),
+        }
+    };
     let all_enums: Vec[tast::EnumDef] = Vec::new();
     for definition in dependency_enums {
         all_enums.push(definition)
@@ -1407,6 +1665,8 @@ fn lower_file_with_types(
         counter,
         enums: all_enums,
         structs: all_structs,
+        optimize_builtin_iterators,
+        shadowed_range: shadowed_range.get(),
     };
     let functions: Vec[Function] = Vec::new();
     for item in value.items {
@@ -1449,14 +1709,15 @@ fn lower_file_with_types(
 }
 
 fn lower_file(value: tast::File, counter: Ref[int]) -> File {
-    lower_file_with_types(value, counter, Vec::new(), Vec::new())
+    lower_file_with_types(value, counter, Vec::new(), Vec::new(), false)
 }
 
-pub fn lower_with_counter_and_types(
+pub fn lower_with_counter_types_and_options(
     value: tast::CheckResult,
     counter: Ref[int],
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
+    optimize_builtin_iterators: bool,
 ) -> File {
     match value.tast {
         Option::Some(file) => lower_file_with_types(
@@ -1464,6 +1725,7 @@ pub fn lower_with_counter_and_types(
             counter,
             dependency_enums,
             dependency_structs,
+            optimize_builtin_iterators,
         ),
         Option::None => File {
             functions: Vec::new(),
@@ -1472,6 +1734,21 @@ pub fn lower_with_counter_and_types(
             type_instances: Vec::new(),
         },
     }
+}
+
+pub fn lower_with_counter_and_types(
+    value: tast::CheckResult,
+    counter: Ref[int],
+    dependency_enums: Vec[tast::EnumDef],
+    dependency_structs: Vec[tast::StructDef],
+) -> File {
+    lower_with_counter_types_and_options(
+        value,
+        counter,
+        dependency_enums,
+        dependency_structs,
+        false,
+    )
 }
 
 pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int]) -> File {

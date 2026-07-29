@@ -149,42 +149,37 @@ fn main() -> unit {
   let _wild144 = println__T_int(inherent#Vec#Vec[T]#len__T_(string,int32)(entries/21)) in
   let seen_a/22 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let seen_b/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let _wild151 = let for_iter145 = trait_impl#IntoIterator#Vec[(string,int32)]#into_iter(entries/21) in
-  while true {
-      let for_next146 = trait_impl#Iterator#FnIterator__(string,int32)#next(for_iter145) in
-      match for_next146 {
-        Option__(string,int32)::None => {
-          break
-        },
-        Option__(string,int32)::Some(x147) => {
-          let x147 = Option__(string,int32)::Some._0(for_next146) in
-          let entry/24 = x147 in
-          let mtmp148 = entry/24 in
-          let x149 = mtmp148.0 in
-          let x150 = mtmp148.1 in
-          let item_value/26 = x150 in
-          let key/25 = x149 in
-          if if trait_impl#Eq#string#eq(key/25, "a") {
-              trait_impl#Eq#int32#eq(item_value/26, 1)
+  let _wild153 = let for_source145 = entries/21 in
+  let for_limit146 = @intrinsic(vec.len)(for_source145) in
+  let for_index147 = 0 in
+  while (for_index147 < for_limit146) {
+      let for_item148 = @intrinsic(vec.get)(for_source145, for_index147) in
+      let _wild149 = for_index147 = (for_index147 + 1) in
+      let entry/24 = for_item148 in
+      let mtmp150 = entry/24 in
+      let x151 = mtmp150.0 in
+      let x152 = mtmp150.1 in
+      let item_value/26 = x152 in
+      let key/25 = x151 in
+      if if trait_impl#Eq#string#eq(key/25, "a") {
+          trait_impl#Eq#int32#eq(item_value/26, 1)
+      } else {
+          false
+      } {
+          inherent#Ref#Ref[T]#set__T_bool(seen_a/22, true)
+      } else {
+          if if trait_impl#Eq#string#eq(key/25, "b") {
+              trait_impl#Eq#int32#eq(item_value/26, 2)
           } else {
               false
           } {
-              inherent#Ref#Ref[T]#set__T_bool(seen_a/22, true)
+              inherent#Ref#Ref[T]#set__T_bool(seen_b/23, true)
           } else {
-              if if trait_impl#Eq#string#eq(key/25, "b") {
-                  trait_impl#Eq#int32#eq(item_value/26, 2)
-              } else {
-                  false
-              } {
-                  inherent#Ref#Ref[T]#set__T_bool(seen_b/23, true)
-              } else {
-                  ()
-              }
+              ()
           }
-        },
       }
   } in
-  let _wild152 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(seen_a/22)) in
+  let _wild154 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(seen_a/22)) in
   println__T_bool(inherent#Ref#Ref[T]#get__T_bool(seen_b/23))
 }
 
@@ -451,14 +446,6 @@ fn inherent#Ref#Ref[T]#new__T_bool(value/209: bool) -> Ref[bool] {
   @intrinsic(ref.new)(value/209)
 }
 
-fn trait_impl#IntoIterator#Vec[(string,int32)]#into_iter(self/185: Vec[(string, int32)]) -> FnIterator__(string,int32) {
-  inherent#Vec#Vec[T]#iter__T_(string,int32)(self/185)
-}
-
-fn trait_impl#Iterator#FnIterator__(string,int32)#next(self/102: FnIterator__(string,int32)) -> Option__(string,int32) {
-  FnIterator__(string,int32).next_fn(self/102)()
-}
-
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
   @intrinsic(eq.primitive)(self/65, other/66)
 }
@@ -529,20 +516,6 @@ fn inherent#Vec#Vec[T]#swap__T_int32(self/152: Vec[int32], left/153: int, right/
   inherent#Vec#Vec[T]#set__T_int32(self/152, right/154, value/155)
 }
 
-fn inherent#Vec#Vec[T]#iter__T_(string,int32)(self/180: Vec[(string, int32)]) -> FnIterator__(string,int32) {
-  let index/181 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let len/182 = inherent#Vec#Vec[T]#len__T_(string,int32)(self/180) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_(string,int32)(closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2 { index_0: index/181, len_1: len/182, self_2: self/180 })
-}
-
-fn inherent#Vec#Vec[T]#get__T_(string,int32)(self/134: Vec[(string, int32)], index/135: int) -> (string, int32) {
-  @intrinsic(vec.get)(self/134, index/135)
-}
-
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_(string,int32)(next_fn/101: () -> Option__(string,int32)) -> FnIterator__(string,int32) {
-  FnIterator__(string,int32) { next_fn: next_fn/101 }
-}
-
 fn trait_impl#Hash#string#hash(self/83: string) -> uint64 {
   @runtime(core.string_hash)(self/83)
 }
@@ -563,9 +536,9 @@ fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
   @runtime(core.int_hash)(self/85)
 }
 
-fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_string_string_chars_0#apply(env153: closure_env_inherent_string_string_chars_0) -> Option__char {
-  let self/25 = closure_env_inherent_string_string_chars_0.self_0(env153) in
-  let index/26 = closure_env_inherent_string_string_chars_0.index_1(env153) in
+fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_string_string_chars_0#apply(env155: closure_env_inherent_string_string_chars_0) -> Option__char {
+  let self/25 = closure_env_inherent_string_string_chars_0.self_0(env155) in
+  let index/26 = closure_env_inherent_string_string_chars_0.index_1(env155) in
   let mtmp7 = inherent#string#string#decode_at(self/25, inherent#Ref#Ref[T]#get__T_int(index/26)) in
   match mtmp7 {
     Option__(char,int)::None => {
@@ -585,9 +558,9 @@ fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_stri
   }
 }
 
-fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply(env154: closure_env_inherent_string_string_char_indices_1) -> Option__(int,char) {
-  let index/31 = closure_env_inherent_string_string_char_indices_1.index_0(env154) in
-  let self/30 = closure_env_inherent_string_string_char_indices_1.self_1(env154) in
+fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply(env156: closure_env_inherent_string_string_char_indices_1) -> Option__(int,char) {
+  let index/31 = closure_env_inherent_string_string_char_indices_1.index_0(env156) in
+  let self/30 = closure_env_inherent_string_string_char_indices_1.self_1(env156) in
   let current/32 = inherent#Ref#Ref[T]#get__T_int(index/31) in
   let mtmp13 = inherent#string#string#decode_at(self/30, current/32) in
   match mtmp13 {
@@ -605,19 +578,5 @@ fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inhere
       let _wild18 = inherent#Ref#Ref[T]#set__T_int(index/31, (current/32 + width/35)) in
       Option__(int,char)::Some((current/32, value/34))
     },
-  }
-}
-
-fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2#closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2#apply(env155: closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2) -> Option__(string,int32) {
-  let index/181 = closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2.index_0(env155) in
-  let len/182 = closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2.len_1(env155) in
-  let self/180 = closure_env_inherent_Vec_Vec_T_iter_T_string_int32_2.self_2(env155) in
-  let current/183 = inherent#Ref#Ref[T]#get__T_int(index/181) in
-  if (current/183 < len/182) {
-      let value/184 = inherent#Vec#Vec[T]#get__T_(string,int32)(self/180, current/183) in
-      let _wild58 = inherent#Ref#Ref[T]#set__T_int(index/181, (current/183 + 1)) in
-      Option__(string,int32)::Some(value/184)
-  } else {
-      Option__(string,int32)::None
   }
 }

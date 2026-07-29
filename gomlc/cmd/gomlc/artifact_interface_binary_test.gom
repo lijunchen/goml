@@ -1,0 +1,124 @@
+package main;
+
+use std::bytes;
+use std::testing;
+
+fn binary_interface_fixture() -> ArtifactInterfaceUnit {
+    new_artifact_interface_unit(
+        "audit::value",
+        empty_artifact_package_exports(),
+        ArtifactPackageInterface {
+            package_name: "audit::value",
+            name: "value",
+            value_exports: Vec::new(),
+            enum_variants: Vec::new(),
+        },
+        Vec::new().pushed(("builtin", "0123456789abcdef")),
+    )
+}
+
+#[test]
+fn binary_artifact_value_round_trips_value_shapes() -> unit {
+    let value = ArtifactValue::Object(
+        Vec::new()
+            .pushed(("null", ArtifactValue::Null))
+            .pushed(("false", ArtifactValue::Bool(false)))
+            .pushed(("true", ArtifactValue::Bool(true)))
+            .pushed(("number", ArtifactValue::Number("-12.5e2")))
+            .pushed(("string", ArtifactValue::String("hello")))
+            .pushed((
+                "array",
+                ArtifactValue::Array(
+                    Vec::new()
+                        .pushed(ArtifactValue::Number("1"))
+                        .pushed(ArtifactValue::String("x")),
+                ),
+            )),
+    );
+    let table = artifact_binary_string_table(value);
+    testing::assert_eq(
+        artifact_binary_string_id(table, "-12.5e2"),
+        -1,
+    );
+    let encoded = match encode_artifact_binary_value(table, value) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_artifact_binary_value(table, encoded) {
+        Result::Ok(decoded) => match encode_artifact_binary_value(table, decoded) {
+            Result::Ok(reencoded) => testing::assert(
+                artifact_binary_bytes_equal(encoded, reencoded),
+            ),
+            Result::Err(error) => testing::fail(error),
+        },
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn binary_interface_artifact_is_deterministic() -> unit {
+    let first = match encode_artifact_interface_binary(
+        binary_interface_fixture(),
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    let second = match encode_artifact_interface_binary(
+        binary_interface_fixture(),
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
+    match decode_artifact_interface_binary(first) {
+        Result::Ok(value) => testing::assert_eq(
+            encode_artifact_interface_unit(value, false),
+            encode_artifact_interface_unit(
+                binary_interface_fixture(),
+                false,
+            ),
+        ),
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
+    let sections = match artifact_binary_interface_sections(
+        binary_interface_fixture(),
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            Vec::new()
+        },
+    };
+    sections.push(ArtifactBinarySection {
+        id: 99,
+        version: 1,
+        flags: artifact_binary_required_section_flag(),
+        data: bytes::Bytes::new(),
+    });
+    let encoded = match encode_artifact_binary_container(1, sections) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_artifact_interface_binary(encoded) {
+        Result::Ok(_) => testing::fail(
+            "expected unknown required section rejection",
+        ),
+        Result::Err(_) => (),
+    }
+}

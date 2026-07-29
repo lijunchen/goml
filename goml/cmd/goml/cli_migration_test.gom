@@ -660,9 +660,19 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
     let initial = test_support::read_file(fingerprint);
     test_support::assert_success(migration_check(root));
     testing::assert_eq(test_support::read_file(fingerprint), initial);
-    test_support::write_file(artifact, "corrupt");
+    match fs::write_bytes(artifact, bytes::Bytes::from_string("corrupt")) {
+        Result::Ok(()) => (),
+        Result::Err(message) => testing::fail(message),
+    };
     test_support::assert_success(migration_check(root));
-    testing::assert(test_support::read_file(artifact) != "corrupt");
+    let restored = match fs::read_bytes(artifact) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            bytes::Bytes::new()
+        },
+    };
+    testing::assert(restored.len() > 8);
     testing::assert_eq(test_support::read_file(fingerprint), initial);
     match fs::remove_file(artifact) {
         Result::Ok(()) => (),
@@ -676,6 +686,55 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
     );
     test_support::assert_success(migration_check(root));
     testing::assert(test_support::read_file(fingerprint) != initial)
+}
+
+#[test]
+fn project_build_graph_reuses_unaffected_local_cache_nodes() -> unit {
+    let root = test_support::workspace("build_graph_local_cache");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nuse demo::left;\n\nfn main() -> unit { let _ = left::value(); () }\n",
+    );
+    test_support::write_file(
+        path::join(root, "left/left.gom"),
+        "package left;\n\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "right/right.gom"),
+        "package right;\n\npub fn value() -> int32 { 2 }\n",
+    );
+    test_support::assert_success(migration_check(root));
+    let main_fingerprint = path::join(
+        root,
+        "_artifact/check/pkg/demo/demo.goml-check-fingerprint",
+    );
+    let left_fingerprint = path::join(
+        root,
+        "_artifact/check/pkg/demo/left/left.goml-check-fingerprint",
+    );
+    let right_fingerprint = path::join(
+        root,
+        "_artifact/check/pkg/demo/right/right.goml-check-fingerprint",
+    );
+    let initial_main = test_support::read_file(main_fingerprint);
+    let initial_left = test_support::read_file(left_fingerprint);
+    let initial_right = test_support::read_file(right_fingerprint);
+    test_support::assert_success(migration_check(root));
+    testing::assert_eq(test_support::read_file(main_fingerprint), initial_main);
+    testing::assert_eq(test_support::read_file(left_fingerprint), initial_left);
+    testing::assert_eq(test_support::read_file(right_fingerprint), initial_right);
+    test_support::write_file(
+        path::join(root, "left/left.gom"),
+        "package left;\n\npub fn value() -> int32 { 3 }\n",
+    );
+    test_support::assert_success(migration_check(root));
+    testing::assert_eq(test_support::read_file(main_fingerprint), initial_main);
+    testing::assert(test_support::read_file(left_fingerprint) != initial_left);
+    testing::assert_eq(test_support::read_file(right_fingerprint), initial_right)
 }
 
 #[test]

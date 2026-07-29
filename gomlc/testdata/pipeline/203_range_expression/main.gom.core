@@ -880,29 +880,21 @@ fn range(start/0: int32, end/1: int32) -> int32 {
 }
 
 fn main() -> unit {
-  let _wild68 = {
-    let for_iter64 = trait_call[IntoIterator::into_iter](__goml_builtin_range(1, 4)) in
-    while true {
+  let _wild69 = {
+    let for_index64 = 1 in
+    let for_limit65 = 4 in
+    while (for_index64 < for_limit65) {
         {
-          let for_next65 = trait_call[Iterator::next](for_iter64) in
-          match for_next65 {
-            Option::None => {
-              break
-            },
-            Option::Some(x66) => {
-              {
-                let x66 = Option::Some._0(for_next65) in
-                {
-                  let value/2 = x66 in
-                  {
-                    let _wild67 = println(value/2) in
-                  }
-                }
-              }
-            },
+          let for_item66 = for_index64 in
+          let _wild67 = for_index64 = (for_index64 + 1) in
+          {
+            let value/2 = for_item66 in
+            {
+              let _wild68 = println(value/2) in
+            }
           }
         }
     }
   } in
-  let _wild69 = println(range(10, 20)) in
+  let _wild70 = println(range(10, 20)) in
 }

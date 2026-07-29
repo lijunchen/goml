@@ -1090,66 +1090,59 @@ fn main() -> unit {
                   let _wild144 = println(inherent#Vec#Vec[(string,int32)]#len(entries/21)) in
                   let seen_a/22 = inherent#Ref#Ref[bool]#new(false) in
                   let seen_b/23 = inherent#Ref#Ref[bool]#new(false) in
-                  let _wild151 = {
-                    let for_iter145 = trait_call[IntoIterator::into_iter](entries/21) in
-                    while true {
+                  let _wild153 = {
+                    let for_source145 = entries/21 in
+                    let for_limit146 = @intrinsic(vec.len)(for_source145) in
+                    let for_index147 = 0 in
+                    while (for_index147 < for_limit146) {
                         {
-                          let for_next146 = trait_call[Iterator::next](for_iter145) in
-                          match for_next146 {
-                            Option::None => {
-                              break
-                            },
-                            Option::Some(x147) => {
+                          let for_item148 = @intrinsic(vec.get)(for_source145, for_index147) in
+                          let _wild149 = for_index147 = (for_index147 + 1) in
+                          {
+                            let entry/24 = for_item148 in
+                            {
+                              let mtmp150 = entry/24 in
                               {
-                                let x147 = Option::Some._0(for_next146) in
+                                let x151 = mtmp150.0 in
+                                let x152 = mtmp150.1 in
                                 {
-                                  let entry/24 = x147 in
+                                  let item_value/26 = x152 in
                                   {
-                                    let mtmp148 = entry/24 in
+                                    let key/25 = x151 in
                                     {
-                                      let x149 = mtmp148.0 in
-                                      let x150 = mtmp148.1 in
-                                      {
-                                        let item_value/26 = x150 in
-                                        {
-                                          let key/25 = x149 in
+                                      if if trait_impl#Eq#string#eq(key/25, "a") {
+                                          trait_impl#Eq#int32#eq(item_value/26, 1)
+                                      } else {
+                                          false
+                                      } {
                                           {
-                                            if if trait_impl#Eq#string#eq(key/25, "a") {
-                                                trait_impl#Eq#int32#eq(item_value/26, 1)
-                                            } else {
-                                                false
-                                            } {
-                                                {
-                                                  inherent#Ref#Ref[bool]#set(seen_a/22, true)
-                                                }
-                                            } else {
-                                                if if trait_impl#Eq#string#eq(key/25, "b") {
-                                                    trait_impl#Eq#int32#eq(item_value/26, 2)
-                                                } else {
-                                                    false
-                                                } {
-                                                    {
-                                                      inherent#Ref#Ref[bool]#set(seen_b/23, true)
-                                                    }
-                                                } else {
-                                                    {
-                                                      ()
-                                                    }
-                                                }
-                                            }
+                                            inherent#Ref#Ref[bool]#set(seen_a/22, true)
                                           }
-                                        }
+                                      } else {
+                                          if if trait_impl#Eq#string#eq(key/25, "b") {
+                                              trait_impl#Eq#int32#eq(item_value/26, 2)
+                                          } else {
+                                              false
+                                          } {
+                                              {
+                                                inherent#Ref#Ref[bool]#set(seen_b/23, true)
+                                              }
+                                          } else {
+                                              {
+                                                ()
+                                              }
+                                          }
                                       }
                                     }
                                   }
                                 }
                               }
-                            },
+                            }
                           }
                         }
                     }
                   } in
-                  let _wild152 = println(inherent#Ref#Ref[bool]#get(seen_a/22)) in
+                  let _wild154 = println(inherent#Ref#Ref[bool]#get(seen_a/22)) in
                   println(inherent#Ref#Ref[bool]#get(seen_b/23))
                 }
               }

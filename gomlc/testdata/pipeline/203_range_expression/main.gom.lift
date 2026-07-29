@@ -3,36 +3,17 @@ fn range(start/0: int32, end/1: int32) -> int32 {
 }
 
 fn main() -> unit {
-  let _wild68 = let for_iter64 = trait_impl#IntoIterator#FnIterator__int#into_iter(__goml_builtin_range(1, 4)) in
-  while true {
-      let for_next65 = trait_impl#Iterator#FnIterator__int#next(for_iter64) in
-      match for_next65 {
-        Option__int::None => {
-          break
-        },
-        Option__int::Some(x66) => {
-          let x66 = Option__int::Some._0(for_next65) in
-          let value/2 = x66 in
-          let _wild67 = println__T_int(value/2) in
-          ()
-        },
-      }
+  let _wild69 = let for_index64 = 1 in
+  let for_limit65 = 4 in
+  while (for_index64 < for_limit65) {
+      let for_item66 = for_index64 in
+      let _wild67 = for_index64 = (for_index64 + 1) in
+      let value/2 = for_item66 in
+      let _wild68 = println__T_int(value/2) in
+      ()
   } in
-  let _wild69 = println__T_int32(range(10, 20)) in
+  let _wild70 = println__T_int32(range(10, 20)) in
   ()
-}
-
-fn __goml_builtin_range(start/220: int, end/221: int) -> FnIterator__int {
-  let current/222 = inherent#Ref#Ref[T]#new__T_int(start/220) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int(closure_env_goml_builtin_range_0 { current_0: current/222, end_1: end/221 })
-}
-
-fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/109: FnIterator__int) -> FnIterator__int {
-  self/109
-}
-
-fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/102)()
 }
 
 fn println__T_int(value/1: int) -> unit {
@@ -43,46 +24,10 @@ fn println__T_int32(value/1: int32) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/209)
-}
-
-fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/210)
-}
-
-fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
-}
-
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/101 }
-}
-
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
   @runtime(core.int_to_string)(self/40)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
   @runtime(core.int32_to_string)(self/43)
-}
-
-fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  @intrinsic(eq.primitive)(self/59, other/60)
-}
-
-fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  @runtime(core.int_hash)(self/85)
-}
-
-fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(env70: closure_env_goml_builtin_range_0) -> Option__int {
-  let current/222 = closure_env_goml_builtin_range_0.current_0(env70) in
-  let end/221 = closure_env_goml_builtin_range_0.end_1(env70) in
-  let value/223 = inherent#Ref#Ref[T]#get__T_int(current/222) in
-  if (value/223 < end/221) {
-      let _wild63 = inherent#Ref#Ref[T]#set__T_int(current/222, (value/223 + 1)) in
-      Option__int::Some(value/223)
-  } else {
-      Option__int::None
-  }
 }

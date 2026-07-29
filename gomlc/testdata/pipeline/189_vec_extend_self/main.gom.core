@@ -878,25 +878,18 @@ fn trait_impl#Hash#uint#hash(self/229: uint) -> uint64 {
 fn print_values(values/0: Vec[int32]) -> unit {
   let _wild64 = println(inherent#Vec#Vec[int32]#len(values/0)) in
   {
-    let for_iter65 = trait_call[IntoIterator::into_iter](values/0) in
-    while true {
+    let for_source65 = values/0 in
+    let for_limit66 = @intrinsic(vec.len)(for_source65) in
+    let for_index67 = 0 in
+    while (for_index67 < for_limit66) {
         {
-          let for_next66 = trait_call[Iterator::next](for_iter65) in
-          match for_next66 {
-            Option::None => {
-              break
-            },
-            Option::Some(x67) => {
-              {
-                let x67 = Option::Some._0(for_next66) in
-                {
-                  let value/1 = x67 in
-                  {
-                    println(value/1)
-                  }
-                }
-              }
-            },
+          let for_item68 = @intrinsic(vec.get)(for_source65, for_index67) in
+          let _wild69 = for_index67 = (for_index67 + 1) in
+          {
+            let value/1 = for_item68 in
+            {
+              println(value/1)
+            }
           }
         }
     }
@@ -905,18 +898,18 @@ fn print_values(values/0: Vec[int32]) -> unit {
 
 fn main() -> unit {
   let values/2 = inherent#Vec#Vec[int32]#new() in
-  let _wild68 = inherent#Vec#Vec[int32]#push(values/2, 1) in
-  let _wild69 = inherent#Vec#Vec[int32]#push(values/2, 2) in
-  let _wild70 = inherent#Vec#Vec[int32]#push(values/2, 3) in
-  let _wild71 = inherent#Vec#Vec[int32]#extend(values/2, values/2) in
-  let _wild72 = print_values(values/2) in
+  let _wild70 = inherent#Vec#Vec[int32]#push(values/2, 1) in
+  let _wild71 = inherent#Vec#Vec[int32]#push(values/2, 2) in
+  let _wild72 = inherent#Vec#Vec[int32]#push(values/2, 3) in
+  let _wild73 = inherent#Vec#Vec[int32]#extend(values/2, values/2) in
+  let _wild74 = print_values(values/2) in
   let aliased/3 = inherent#Vec#Vec[int32]#new() in
-  let _wild73 = inherent#Vec#Vec[int32]#push(aliased/3, 4) in
-  let _wild74 = inherent#Vec#Vec[int32]#push(aliased/3, 5) in
+  let _wild75 = inherent#Vec#Vec[int32]#push(aliased/3, 4) in
+  let _wild76 = inherent#Vec#Vec[int32]#push(aliased/3, 5) in
   let same/4 = aliased/3 in
-  let _wild75 = inherent#Vec#Vec[int32]#extend(aliased/3, same/4) in
-  let _wild76 = print_values(aliased/3) in
+  let _wild77 = inherent#Vec#Vec[int32]#extend(aliased/3, same/4) in
+  let _wild78 = print_values(aliased/3) in
   let empty/5 = inherent#Vec#Vec[int32]#new() in
-  let _wild77 = inherent#Vec#Vec[int32]#extend(empty/5, empty/5) in
+  let _wild79 = inherent#Vec#Vec[int32]#extend(empty/5, empty/5) in
   print_values(empty/5)
 }

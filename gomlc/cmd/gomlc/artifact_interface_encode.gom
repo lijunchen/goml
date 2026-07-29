@@ -429,10 +429,14 @@ fn artifact_json_interface_hash_view(
     value: ArtifactInterfaceUnit,
 ) -> unit {
     artifact_json_begin_object(writer);
-    artifact_json_name(writer, "format_version");
-    artifact_json_number(writer, "16");
-    artifact_json_name(writer, "compiler_abi");
-    artifact_json_number(writer, "3");
+    if writer.binary_mode < 2 {
+        artifact_json_name(writer, "format_version");
+        artifact_json_number(writer, "16");
+        artifact_json_name(writer, "compiler_abi");
+        artifact_json_number(writer, "3")
+    } else {
+        ()
+    };
     artifact_json_name(writer, "package");
     artifact_json_string(writer, value.package_name);
     artifact_json_name(writer, "exports");

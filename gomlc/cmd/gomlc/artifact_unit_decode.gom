@@ -1,36 +1,11 @@
 package main;
 
-use std::json;
-
-fn artifact_string_map_contains(
-    values: Vec[(string, string)],
-    required: Vec[(string, string)],
-) -> bool {
-    let matches = Ref::new(0);
-    for required_value in required {
-        let found = Ref::new(false);
-        for value in values {
-            if value.0 == required_value.0 && value.1 == required_value.1 {
-                found.set(true)
-            } else {
-                ()
-            }
-        };
-        if found.get() {
-            matches.set(matches.get() + 1)
-        } else {
-            ()
-        }
-    };
-    matches.get() == required.len()
-}
-
 fn artifact_decode_optional_string(
-    value: json::Value,
+    value: ArtifactValue,
     expected: string,
 ) -> Result[Option[string], string] {
     match value {
-        json::Value::Null => Result::Ok(Option::None),
+        ArtifactValue::Null => Result::Ok(Option::None),
         other => match artifact_json_string_value(other, expected) {
             Result::Ok(value) => Result::Ok(Option::Some(value)),
             Result::Err(error) => Result::Err(error),
@@ -39,7 +14,7 @@ fn artifact_decode_optional_string(
 }
 
 fn artifact_decode_test_descriptor(
-    value: json::Value,
+    value: ArtifactValue,
 ) -> Result[TestDescriptor, string] {
     let object = match artifact_json_object(value, "test descriptor") {
         Result::Ok(value) => value,
@@ -101,7 +76,7 @@ fn artifact_decode_test_descriptor(
 }
 
 fn artifact_decode_tests(
-    value: json::Value,
+    value: ArtifactValue,
 ) -> Result[Vec[TestDescriptor], string] {
     let values = match artifact_json_array(value, "test descriptors") {
         Result::Ok(value) => value,
@@ -142,29 +117,28 @@ fn artifact_test_descriptors_valid(
 }
 
 fn artifact_decode_core_value(
-    value: json::Value,
+    value: ArtifactValue,
 ) -> Result[ArtifactCoreUnit, string] {
     let object = match artifact_json_object(value, "Core unit") {
         Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
-    };
-    match artifact_decode_version_field(object, "format_version", 16) {
-        Result::Ok(()) => (),
-        Result::Err(error) => return Result::Err(error),
-    };
-    match artifact_decode_version_field(object, "compiler_abi", 3) {
-        Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
     let package_name = match artifact_json_field_string(object, "package") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    let interface_unit = match artifact_json_required_field(object, "interface") {
-        Result::Ok(value) => match artifact_decode_interface_value(value) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
-        },
+    let declared_name = match artifact_json_field_string(
+        object,
+        "declared_name",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let interface_hash = match artifact_json_field_string(
+        object,
+        "interface_hash",
+    ) {
+        Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
     let exports = match artifact_json_required_field(object, "exports") {
@@ -204,30 +178,18 @@ fn artifact_decode_core_value(
         Result::Ok(Option::None) => Vec::new(),
         Result::Err(error) => return Result::Err(error),
     };
-    if package_name != interface_unit.package_name {
-        Result::Err(artifact_decode_error("matching Core package"))
-    } else if !artifact_string_map_contains(deps, interface_unit.deps) {
-        Result::Err(artifact_decode_error(
-            "Core dependencies to include interface dependencies",
-        ))
-    } else if !artifact_test_descriptors_valid(package_name, tests) {
+    if !artifact_test_descriptors_valid(package_name, tests) {
         Result::Err(artifact_decode_error("valid test descriptors"))
     } else {
         Result::Ok(ArtifactCoreUnit {
             package_name,
-            interface_unit,
+            declared_name,
+            interface_hash,
             exports,
             core_ir,
             deps,
             sources,
             tests,
         })
-    }
-}
-
-fn decode_artifact_core_unit(input: string) -> Result[ArtifactCoreUnit, string] {
-    match json::parse(input) {
-        Result::Ok(value) => artifact_decode_core_value(value),
-        Result::Err(error) => Result::Err(error),
     }
 }

@@ -30,6 +30,11 @@ pub struct Compilation {
     pub go_value: go_backend::File,
 }
 
+pub enum SourceCompilation {
+    Compiled(Compilation),
+    Diagnostics(string),
+}
+
 struct PackageCompilation {
     hir_file: hir::File,
     core_value: core::File,
@@ -262,11 +267,12 @@ fn compile_standard_package(
         artifact_package_interface(package_name, declared_name, public_exports),
         deps,
     );
-    let core_value = core::lower_with_counter_and_types(
+    let core_value = core::lower_with_counter_types_and_options(
         tast_value,
         Ref::new(0),
         dependency_enums(builtins, core_dependencies),
         dependency_structs(builtins, core_dependencies),
+        true,
     );
     PackageCompilation {
         hir_file,
@@ -1445,11 +1451,12 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     let core_value = core::link_with_dependencies(
         builtins,
         core_dependencies,
-        core::lower_with_counter_and_types(
+        core::lower_with_counter_types_and_options(
             tast_value,
             counter,
             dependency_enums(builtins, core_dependencies),
             dependency_structs(builtins, core_dependencies),
+            true,
         ),
     );
     let mono_result = mono::lower_checked(core_value);
@@ -1548,11 +1555,12 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let core_value = core::link_with_dependencies(
         builtins,
         core_dependencies,
-        core::lower_with_counter_and_types(
+        core::lower_with_counter_types_and_options(
             tast_value,
             counter,
             dependency_enums(builtins, core_dependencies),
             dependency_structs(builtins, core_dependencies),
+            true,
         ),
     );
     let mono_value = lower_mono_or_fail(core_value);
@@ -1568,6 +1576,113 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
         lift_value,
         anf_value,
         go_value,
+    }
+}
+
+pub fn compile_source_or_diagnostics(
+    source_path: string,
+    source: string,
+) -> SourceCompilation {
+    let parsed = parser::parse(source);
+    if parsed.diagnostics.len() > 0 {
+        return SourceCompilation::Diagnostics(
+            compact_ast_diagnostics(parsed.diagnostics, source, true),
+        )
+    } else {
+        ()
+    };
+    let ast_value = ast::lower(parsed);
+    if ast_value.diagnostics.len() > 0 {
+        return SourceCompilation::Diagnostics(
+            compact_ast_diagnostics(ast_value.diagnostics, source, false),
+        )
+    } else {
+        ()
+    };
+    match single_file_project_import(ast_value) {
+        Option::Some(package_path) => return SourceCompilation::Diagnostics(
+            "single-file compilation cannot use project package "
+                + package_path
+                + "\n",
+        ),
+        Option::None => (),
+    };
+    let ast_value = hir::expand_derives(ast_value);
+    if ast_value.diagnostics.len() > 0 {
+        return SourceCompilation::Diagnostics(
+            compact_ast_diagnostics(ast_value.diagnostics, source, false),
+        )
+    } else {
+        ()
+    };
+    let hir_value = hir::lower_expanded(ast_value, source_path);
+    if hir_value.diagnostics.len() > 0 {
+        return SourceCompilation::Diagnostics(
+            compact_hir_diagnostics(hir_value.diagnostics, source),
+        )
+    } else {
+        ()
+    };
+    let counter = Ref::new(0);
+    let builtins = core::lower_builtins(counter);
+    let standard = if has_standard_import(ast_value) {
+        Option::Some(compile_standard_library(builtins))
+    } else {
+        Option::None
+    };
+    let hir_dependencies = match standard {
+        Option::Some(value) => selected_standard_hir(ast_value, value),
+        Option::None => Vec::new(),
+    };
+    let core_dependencies = match standard {
+        Option::Some(value) => selected_standard_core(ast_value, value),
+        Option::None => Vec::new(),
+    };
+    let tast_value = tast::check_for_link_with_dependencies(
+        hir_value,
+        hir_dependencies,
+    );
+    if typer_diagnostics_have_errors(tast_value.diagnostics) {
+        return SourceCompilation::Diagnostics(compact_typer_diagnostics(
+            tast_value.diagnostics,
+            source_path,
+            source,
+        ))
+    } else if !has_single_file_entrypoint(tast_value) {
+        return SourceCompilation::Diagnostics("main function is required\n")
+    } else {
+        ()
+    };
+    let core_value = core::link_with_dependencies(
+        builtins,
+        core_dependencies,
+        core::lower_with_counter_types_and_options(
+            tast_value,
+            counter,
+            dependency_enums(builtins, core_dependencies),
+            dependency_structs(builtins, core_dependencies),
+            true,
+        ),
+    );
+    let mono_result = mono::lower_checked(core_value);
+    match mono_result.error {
+        Option::Some(error) => SourceCompilation::Diagnostics(error + "\n"),
+        Option::None => {
+            let mono_value = mono_result.file;
+            let lift_value = lift::lower_with_counter(mono_value, counter);
+            let anf_value = anf::lower_with_counter(lift_value, counter);
+            let go_value = go_backend::lower(anf_value);
+            SourceCompilation::Compiled(Compilation {
+                ast_value,
+                hir_value,
+                tast_value,
+                core_value,
+                mono_value,
+                lift_value,
+                anf_value,
+                go_value,
+            })
+        },
     }
 }
 

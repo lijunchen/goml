@@ -949,26 +949,19 @@ fn main() -> unit {
   }) in
   let _wild76 = println(sum/17) in
   let texts/19 = iterator_collect(iterator_map(range(1, 4), |value/18: int| => ("v" + inherent#int#int#to_string(value/18)))) in
-  let _wild81 = {
-    let for_iter77 = trait_call[IntoIterator::into_iter](texts/19) in
-    while true {
+  let _wild83 = {
+    let for_source77 = texts/19 in
+    let for_limit78 = @intrinsic(vec.len)(for_source77) in
+    let for_index79 = 0 in
+    while (for_index79 < for_limit78) {
         {
-          let for_next78 = trait_call[Iterator::next](for_iter77) in
-          match for_next78 {
-            Option::None => {
-              break
-            },
-            Option::Some(x79) => {
-              {
-                let x79 = Option::Some._0(for_next78) in
-                {
-                  let text/20 = x79 in
-                  {
-                    let _wild80 = println(text/20) in
-                  }
-                }
-              }
-            },
+          let for_item80 = @intrinsic(vec.get)(for_source77, for_index79) in
+          let _wild81 = for_index79 = (for_index79 + 1) in
+          {
+            let text/20 = for_item80 in
+            {
+              let _wild82 = println(text/20) in
+            }
           }
         }
     }

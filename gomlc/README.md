@@ -6,26 +6,26 @@
 lexer → parser → CST → AST → HIR → TAST → Core → Mono → Lift → ANF → Go
 ```
 
-On Linux amd64, a fresh checkout downloads the checksum-pinned binary stage0 and builds the self-hosted compiler:
+On Linux amd64, a fresh checkout downloads the checksum-pinned binary stage0 and builds the stable stage2 toolchain:
 
 ```sh
-just bootstrap
+just make
 ```
 
-This compiles stage1 and stage2 from the GoML sources and verifies the fixed point. The stage1 tools are:
+Use `just bootstrap` when a clean stage2/stage3 fixed-point verification is required. The stable tools are:
 
 ```text
-bin/stage1/gomlc
-bin/stage1/gomllsp
-bin/stage1/goml
+bin/stage2/gomlc
+bin/stage2/gomllsp
+bin/stage2/goml
 ```
 
 Run a single source or inspect an IR stage:
 
 ```sh
-bin/stage1/gomlc run-single file.gom
-bin/stage1/gomlc anf file.gom
-bin/stage1/gomlc run-single --dump-go file.gom
+bin/stage2/gomlc run-single file.gom
+bin/stage2/gomlc anf file.gom
+bin/stage2/gomlc run-single --dump-go file.gom
 ```
 
 The regression corpus and every generated golden file live in `gomlc/testdata`. Verify or update them with:
@@ -35,11 +35,5 @@ just verify-golden
 just update-golden
 ```
 
-Run the compiler and language-server suites with:
-
-```sh
-just test-bootstrap-all
-just test-bootstrap-compiler
-just test-bootstrap-pipeline
-just test-bootstrap-lsp
-```
+Run all self-hosted compiler, pipeline, query, and language-server tests with
+`just test`.
