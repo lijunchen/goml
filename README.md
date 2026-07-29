@@ -6,16 +6,20 @@ The "ml" in goml nods to the [ML (programming language)](https://en.wikipedia.or
 
 goml aims to empower gophers with a more powerful type system but without leaving the Go ecosystem.
 
-The compiler, project driver, tests, and language server are implemented in GoML. On Linux amd64, the bootstrap uses Bash, curl, tar, and sha256sum to download the checksum-pinned stage0 compiler recorded in `bootstrap/stage0.env`, then builds the self-hosted stages:
+The compiler, project driver, tests, and language server are implemented in GoML. The main development commands are:
 
 ```sh
-just bootstrap
-just test-selfhost
+just make
+just test
+just all
+just clean
 ```
 
-The fixed-point build uses the released stage0 to build stage1, builds stage2 from stage1, then compares the generated compiler and driver artifacts. Set `GOML_STAGE0_ARCHIVE` to a previously downloaded stage0 archive for an offline bootstrap.
+`just make` builds the stage2 toolchain, `just test` runs the self-hosted compiler and driver tests, `just all` builds and tests, and `just clean` removes local build caches and generated toolchains.
 
-Generated executables are published under `bin/stage1` and `bin/stage2`. Downloaded stage0 files and build artifacts are stored under `_bootstrap/`; both directories are ignored by Git.
+On Linux amd64, the bootstrap uses Bash, curl, tar, and sha256sum to download the checksum-pinned stage0 compiler recorded in `bootstrap/stage0.env`. `just bootstrap` performs a clean fixed-point build: it uses stage0 to build stage1, builds stage2 from stage1, builds stage3 from stage2, then compares the stage2 and stage3 compiler and driver artifacts. Set `GOML_STAGE0_ARCHIVE` to a previously downloaded stage0 archive for an offline bootstrap.
+
+Generated executables are published under `bin/stage1`, `bin/stage2`, and `bin/stage3`. Stage2 is the stable self-compiled toolchain, while stage3 verifies its fixed point. Downloaded stage0 files and build artifacts are stored under `_bootstrap/`; both directories are ignored by Git.
 
 Release versions and the binary bootstrap chain are documented in [docs/releasing.md](docs/releasing.md).
 

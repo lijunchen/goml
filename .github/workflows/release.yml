@@ -73,16 +73,16 @@ jobs:
           test "$release_state" != "false"
           echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
           echo "PREVIOUS_TAG=$previous_tag" >> "$GITHUB_ENV"
-      - name: Build stage1
-        run: just bootstrap-stage1
+      - name: Build stage2
+        run: just make
       - name: Build release archive
         run: |
           set -euo pipefail
           package="goml-${RELEASE_VERSION}-linux-amd64"
           mkdir -p "dist/$package/lib"
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/goml" goml/_bootstrap/stage1/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomlc" gomlc/_bootstrap/stage1/build/pkg/gomlc/cmd/gomlc/goml_generated.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomllsp" gomlc/_bootstrap/stage1/build/pkg/gomlc/cmd/gomllsp/goml_generated.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/goml" goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomlc" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomllsp" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomllsp/goml_generated.go
           cp stdlib/builtin_prelude.gom "dist/$package/builtin_prelude.gom"
           cp -R stdlib/std "dist/$package/lib/std"
           test "$(dist/$package/goml version)" = "goml $RELEASE_VERSION"

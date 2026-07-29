@@ -5,9 +5,10 @@
 Build and verify the complete toolchain:
 
 ```sh
-just bootstrap
-just test-bootstrap-driver
+just all
 ```
+
+`just test` includes the project-driver tests.
 
 Use the stage1 driver directly:
 
