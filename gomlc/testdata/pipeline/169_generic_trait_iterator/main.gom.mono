@@ -64,26 +64,19 @@ fn main() -> unit {
   }) in
   let _wild76 = println__T_int(sum/17) in
   let texts/19 = iterator_collect__I_MapIterator[int,string,FnIterator[int]]__T_string(iterator_map__A_int__B_string__I_FnIterator[int](range(1, 4), |value/18| ("v" + inherent#int#int#to_string(value/18)))) in
-  let _wild81 = {
-    let for_iter77 = trait_impl#IntoIterator#Vec[string]#into_iter(texts/19) in
-    while true {
+  let _wild83 = {
+    let for_source77 = texts/19 in
+    let for_limit78 = @intrinsic(vec.len)(for_source77) in
+    let for_index79 = 0 in
+    while (for_index79 < for_limit78) {
         {
-          let for_next78 = trait_impl#Iterator#FnIterator__string#next(for_iter77) in
-          match for_next78 {
-            Option__string::None => {
-              break
-            },
-            Option__string::Some(x79) => {
-              {
-                let x79 = Option__string::Some._0(for_next78) in
-                {
-                  let text/20 = x79 in
-                  {
-                    let _wild80 = println__T_string(text/20) in
-                  }
-                }
-              }
-            },
+          let for_item80 = @intrinsic(vec.get)(for_source77, for_index79) in
+          let _wild81 = for_index79 = (for_index79 + 1) in
+          {
+            let text/20 = for_item80 in
+            {
+              let _wild82 = println__T_string(text/20) in
+            }
           }
         }
     }
@@ -235,14 +228,6 @@ fn inherent#int#int#to_string(self/5: int) -> string {
   @runtime(core.int_to_string)(self/5)
 }
 
-fn trait_impl#IntoIterator#Vec[string]#into_iter(self/185: Vec[string]) -> FnIterator__string {
-  inherent#Vec#Vec[T]#iter__T_string(self/185)
-}
-
-fn trait_impl#Iterator#FnIterator__string#next(self/102: FnIterator__string) -> Option__string {
-  FnIterator__string.next_fn(self/102)()
-}
-
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
   @runtime(core.int32_to_string)(self/43)
 }
@@ -361,25 +346,6 @@ fn inherent#Vec#Vec[T]#push__T_string(self/128: Vec[string], elem/129: string) -
   @intrinsic(vec.push)(self/128, elem/129)
 }
 
-fn inherent#Vec#Vec[T]#iter__T_string(self/180: Vec[string]) -> FnIterator__string {
-  let index/181 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let len/182 = inherent#Vec#Vec[T]#len__T_string(self/180) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_string(|| {
-    let current/183 = inherent#Ref#Ref[T]#get__T_int(index/181) in
-    if (current/183 < len/182) {
-        {
-          let value/184 = inherent#Vec#Vec[T]#get__T_string(self/180, current/183) in
-          let _wild58 = inherent#Ref#Ref[T]#set__T_int(index/181, (current/183 + 1)) in
-          Option__string::Some(value/184)
-        }
-    } else {
-        {
-          Option__string::None
-        }
-    }
-  })
-}
-
 fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/103: MapIterator__int32__int32__Counter) -> Option__int32 {
   {
     let mtmp19 = trait_impl#Iterator#Counter#next(MapIterator__int32__int32__Counter.iterator(self/103)) in
@@ -402,18 +368,6 @@ fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/103: MapIter
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
   FnIterator__int { next_fn: next_fn/101 }
-}
-
-fn inherent#Vec#Vec[T]#len__T_string(self/139: Vec[string]) -> int {
-  @intrinsic(vec.len)(self/139)
-}
-
-fn inherent#Vec#Vec[T]#get__T_string(self/134: Vec[string], index/135: int) -> string {
-  @intrinsic(vec.get)(self/134, index/135)
-}
-
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(next_fn/101: () -> Option__string) -> FnIterator__string {
-  FnIterator__string { next_fn: next_fn/101 }
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
