@@ -3,6 +3,7 @@ package lsp;
 use gomlc::ast;
 use gomlc::query;
 use gomlc::tast;
+use gomlc::version;
 use std::fs;
 use std::json;
 
@@ -171,7 +172,7 @@ fn initialize_result() -> json::Value {
     push_json_field(
         server_info,
         "version",
-        json::Value::String("0.1.0"),
+        json::Value::String(version::current()),
     );
     let result = Vec::new();
     push_json_field(

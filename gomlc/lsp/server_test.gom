@@ -1,5 +1,6 @@
 package lsp;
 
+use gomlc::version;
 use std::json;
 use std::testing;
 
@@ -21,7 +22,21 @@ fn initializes_and_answers_hover_requests() -> unit {
                     Option::Some(info) => match json::field(info, "name") {
                         Option::Some(name) => match json::as_string(name) {
                             Option::Some(name) => {
-                                testing::assert_eq(name, "gomllsp")
+                                testing::assert_eq(name, "gomllsp");
+                                match json::field(info, "version") {
+                                    Option::Some(value) => match json::as_string(value) {
+                                        Option::Some(value) => testing::assert_eq(
+                                            value,
+                                            version::current(),
+                                        ),
+                                        Option::None => testing::fail(
+                                            "expected server version",
+                                        ),
+                                    },
+                                    Option::None => testing::fail(
+                                        "expected server version",
+                                    ),
+                                }
                             },
                             Option::None => testing::fail("expected server name"),
                         },
