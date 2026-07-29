@@ -7,6 +7,16 @@ use std::path;
 use std::process;
 use std::text;
 
+struct BuildNode {
+    index: int,
+    command: Command,
+    dependencies: Vec[int],
+}
+
+struct BuildGraph {
+    nodes: Vec[BuildNode],
+}
+
 fn package_artifact_base(
     root: string,
     graph: Graph,
@@ -822,6 +832,192 @@ fn execute_command(
     }
 }
 
+fn execute_cached_command(
+    context: Context,
+    command: Command,
+    identity: string,
+) -> Result[unit, string] {
+    match cache_spec(command) {
+        Option::Some(spec) => {
+            let fingerprint = match command_fingerprint(
+                context,
+                identity,
+                spec,
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            let fresh = match cache_is_fresh(
+                context,
+                spec,
+                fingerprint,
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(message) => return Result::Err(message),
+            };
+            if fresh {
+                Result::Ok(())
+            } else {
+                match prepare_cache_execution(context, spec) {
+                    Result::Ok(()) => (),
+                    Result::Err(message) => return Result::Err(message),
+                };
+                match execute_command(context, command) {
+                    Result::Ok(()) => (),
+                    Result::Err(message) => {
+                        let _ = prepare_cache_execution(context, spec);
+                        return Result::Err(message)
+                    },
+                };
+                match store_cache(
+                    context,
+                    spec,
+                    identity,
+                    fingerprint,
+                ) {
+                    Result::Ok(()) => Result::Ok(()),
+                    Result::Err(message) => Result::Err(message),
+                }
+            }
+        },
+        Option::None => execute_command(context, command),
+    }
+}
+
+fn contains_index(values: Vec[int], target: int) -> bool {
+    for value in values {
+        if value == target {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
+    let result = Vec::new();
+    for index in range(0, commands.len()) {
+        let command = commands.get(index);
+        let dependencies = Vec::new();
+        match cache_spec(command) {
+            Option::Some(spec) => for input in spec.inputs {
+                let producer = Ref::new(-1);
+                for candidate in range(0, commands.len()) {
+                    if candidate == index {
+                        ()
+                    } else {
+                        match cache_spec(commands.get(candidate)) {
+                            Option::Some(candidate_spec) => {
+                                for output in candidate_spec.outputs {
+                                    if input == output {
+                                        if candidate < index
+                                            && (producer.get() < 0
+                                                || producer.get() > index
+                                                || candidate > producer.get())
+                                        {
+                                            producer.set(candidate)
+                                        } else if producer.get() < 0 {
+                                            producer.set(candidate)
+                                        } else {
+                                            ()
+                                        }
+                                    } else {
+                                        ()
+                                    }
+                                }
+                            },
+                            Option::None => (),
+                        }
+                    }
+                };
+                if producer.get() >= 0
+                    && !contains_index(dependencies, producer.get())
+                {
+                    dependencies.push(producer.get())
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        };
+        match cache_spec(command) {
+            Option::Some(spec) => for output in spec.outputs {
+                let previous = Ref::new(-1);
+                for candidate in range(0, index) {
+                    match cache_spec(commands.get(candidate)) {
+                        Option::Some(candidate_spec) => {
+                            for candidate_output in candidate_spec.outputs {
+                                if output == candidate_output {
+                                    previous.set(candidate)
+                                } else {
+                                    ()
+                                }
+                            }
+                        },
+                        Option::None => (),
+                    }
+                };
+                if previous.get() >= 0
+                    && !contains_index(dependencies, previous.get())
+                {
+                    dependencies.push(previous.get())
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        };
+        result.push(BuildNode {
+            index,
+            command,
+            dependencies,
+        })
+    };
+    Result::Ok(BuildGraph { nodes: result })
+}
+
+fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
+    for node in nodes {
+        if node.index == index {
+            return Option::Some(node)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn build_node_ready(node: BuildNode, pending: Vec[int]) -> bool {
+    for dependency in node.dependencies {
+        if contains_index(pending, dependency) {
+            return false
+        } else {
+            ()
+        }
+    };
+    true
+}
+
+fn execute_plan_worker(
+    context: Context,
+    identity: string,
+    work: Channel[Command],
+    results: Channel[Result[unit, string]],
+) -> unit {
+    let running = Ref::new(true);
+    while running.get() {
+        match work.recv() {
+            Option::Some(command) => results.send(execute_cached_command(
+                context,
+                command,
+                identity,
+            )),
+            Option::None => running.set(false),
+        }
+    }
+}
+
 pub fn execute_plan(
     context: Context,
     plan: Plan,
@@ -837,64 +1033,88 @@ pub fn execute_plan(
             Result::Err(message) => return Result::Err(message),
         }
     };
-    for command in plan.commands {
-        if dry_run {
+    if dry_run {
+        for command in plan.commands {
             io::println(display_command(command))
-        } else {
-            display_progress(
-                completed.get(),
-                total,
-                progress_label(command),
+        }
+    } else {
+        let graph = match build_graph(plan.commands) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        let initial = Vec::new();
+        for node in graph.nodes {
+            initial.push(node.index)
+        };
+        let pending = Ref::new(initial);
+        while pending.get().len() > 0 {
+            let ready_nodes = Vec::new();
+            let blocked = Vec::new();
+            for index in pending.get() {
+                let node = match build_node(graph.nodes, index) {
+                    Option::Some(value) => value,
+                    Option::None => return Result::Err(
+                        "build graph omitted node " + index.to_string(),
+                    ),
+                };
+                if build_node_ready(node, pending.get()) {
+                    ready_nodes.push(node)
+                } else {
+                    blocked.push(index)
+                }
+            };
+            if ready_nodes.len() == 0 {
+                return Result::Err("build plan contains a dependency cycle")
+            } else {
+                ()
+            };
+            pending.set(blocked);
+            for node in ready_nodes {
+                display_progress(
+                    completed.get(),
+                    total,
+                    progress_label(node.command),
+                )
+            };
+            let work: Channel[Command] = Channel::new(ready_nodes.len());
+            let results: Channel[Result[unit, string]] = Channel::new(
+                ready_nodes.len(),
             );
-            match cache_spec(command) {
-                Option::Some(spec) => {
-                    let fingerprint = match command_fingerprint(
-                        context,
-                        identity,
-                        spec,
-                    ) {
-                        Result::Ok(value) => value,
-                        Result::Err(message) => return Result::Err(message),
-                    };
-                    let fresh = match cache_is_fresh(
-                        context,
-                        spec,
-                        fingerprint,
-                    ) {
-                        Result::Ok(value) => value,
-                        Result::Err(message) => return Result::Err(message),
-                    };
-                    if fresh {
-                        ()
-                    } else {
-                        match prepare_cache_execution(context, spec) {
-                            Result::Ok(()) => (),
-                            Result::Err(message) => return Result::Err(message),
-                        };
-                        match execute_command(context, command) {
-                            Result::Ok(()) => (),
-                            Result::Err(message) => {
-                                let _ = prepare_cache_execution(context, spec);
-                                return Result::Err(message)
-                            },
-                        };
-                        match store_cache(
-                            context,
-                            spec,
-                            identity,
-                            fingerprint,
-                        ) {
-                            Result::Ok(()) => (),
-                            Result::Err(message) => return Result::Err(message),
+            for node in ready_nodes {
+                work.send(node.command)
+            };
+            work.close();
+            for _ in range(0, ready_nodes.len()) {
+                go || execute_plan_worker(
+                    context,
+                    identity,
+                    work,
+                    results,
+                )
+            };
+            let failure: Ref[Option[string]] = Ref::new(Option::None);
+            for _ in range(0, ready_nodes.len()) {
+                match results.recv() {
+                    Option::Some(Result::Ok(())) => {
+                        completed.set(completed.get() + 1)
+                    },
+                    Option::Some(Result::Err(message)) => {
+                        completed.set(completed.get() + 1);
+                        match failure.get() {
+                            Option::Some(_) => (),
+                            Option::None => failure.set(Option::Some(message)),
                         }
-                    }
-                },
-                Option::None => match execute_command(context, command) {
-                    Result::Ok(()) => (),
-                    Result::Err(message) => return Result::Err(message),
-                },
+                    },
+                    Option::None => return Result::Err(
+                        "build result channel closed early",
+                    ),
+                }
+            };
+            results.close();
+            match failure.get() {
+                Option::Some(message) => return Result::Err(message),
+                Option::None => (),
             }
-            completed.set(completed.get() + 1)
         }
     };
     if dry_run {
