@@ -133,7 +133,13 @@ fn copy_directory(source: string, target: string) -> unit {
     }
 }
 
-fn execute_go(source: string, suite: string, shard: int, index: int) -> string {
+fn execute_go(
+    source: string,
+    expected: string,
+    suite: string,
+    shard: int,
+    index: int,
+) -> string {
     let directory = path::join(
         path::join(
             path::join(repository_root(), "gomlc/_artifact/test-work/compiler"),
@@ -143,18 +149,90 @@ fn execute_go(source: string, suite: string, shard: int, index: int) -> string {
     );
     create_directory(directory);
     let main_file = path::join(directory, "main.go");
-    match fs::write_file(main_file, source) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(
-            "failed to write " + main_file + ": " + message,
-        ),
+    let executable = path::join(directory, "main");
+    let source_current = if fs::is_file(main_file) {
+        match fs::read_file(main_file) {
+            Result::Ok(value) => value == source,
+            Result::Err(_) => false,
+        }
+    } else {
+        false
     };
-    match process::Command::new("go")
-        .arg("run")
-        .arg("main.go")
+    if source_current {
+        ()
+    } else {
+        match fs::write_file(main_file, source) {
+            Result::Ok(()) => (),
+            Result::Err(message) => {
+                testing::fail("failed to write " + main_file + ": " + message);
+                return ""
+            },
+        }
+    };
+    let interpreted = if source_current && fs::is_file(executable) {
+        Option::None
+    } else {
+        match process::Command::new("yaegi")
+            .arg("main.go")
+            .current_dir(directory)
+            .env("TZ", "UTC")
+            .output()
+        {
+            Result::Ok(output) => if process::ExitStatus::success(
+                process::Output::status(output),
+            ) {
+                match process::Output::stdout(output).to_string() {
+                    Result::Ok(value) => if value == expected {
+                        Option::Some(value)
+                    } else {
+                        Option::None
+                    },
+                    Result::Err(_) => Option::None,
+                }
+            } else {
+                Option::None
+            },
+            Result::Err(_) => Option::None,
+        }
+    };
+    match interpreted {
+        Option::Some(value) => return value,
+        Option::None => (),
+    };
+    if source_current && fs::is_file(executable) {
+        ()
+    } else {
+        match process::Command::new("go")
+            .arg("build")
+            .arg("-o")
+            .arg("main")
+            .arg("main.go")
+            .current_dir(directory)
+            .env("GOWORK", "off")
+            .env("GO111MODULE", "off")
+            .output()
+        {
+            Result::Ok(output) => if process::ExitStatus::success(
+                process::Output::status(output),
+            ) {
+                ()
+            } else {
+                testing::fail(
+                    "go build failed\nstdout:\n"
+                        + bytes_text(process::Output::stdout(output))
+                        + "\nstderr:\n"
+                        + bytes_text(process::Output::stderr(output)),
+                );
+                return ""
+            },
+            Result::Err(message) => {
+                testing::fail("failed to build Go source: " + message);
+                return ""
+            },
+        }
+    };
+    match process::Command::new(executable)
         .current_dir(directory)
-        .env("GOWORK", "off")
-        .env("GO111MODULE", "off")
         .env("TZ", "UTC")
         .output()
     {
@@ -164,7 +242,7 @@ fn execute_go(source: string, suite: string, shard: int, index: int) -> string {
             bytes_text(process::Output::stdout(output))
         } else {
             testing::fail(
-                "go execution failed\nstdout:\n"
+                "generated program failed\nstdout:\n"
                     + bytes_text(process::Output::stdout(output))
                     + "\nstderr:\n"
                     + bytes_text(process::Output::stderr(output)),
@@ -172,7 +250,7 @@ fn execute_go(source: string, suite: string, shard: int, index: int) -> string {
             ""
         },
         Result::Err(message) => {
-            testing::fail("failed to execute go: " + message);
+            testing::fail("failed to execute generated program: " + message);
             ""
         },
     }
@@ -229,23 +307,19 @@ pub fn assert_e2e_suite(
         index.set(current + 1);
         if current % shard_count == shard {
             let source = read_file(source_path);
-            let diagnostics = compiler_driver::diagnostic_output(
+            let expected = read_file(source_path + ".out");
+            let actual = match compiler_driver::compile_source_or_diagnostics(
                 source_path,
                 source,
-            );
-            let actual = if diagnostics == "" {
-                let compilation = compiler_driver::compile_source(
-                    source_path,
-                    source,
-                );
-                execute_go(
+            ) {
+                compiler_driver::SourceCompilation::Compiled(compilation) => execute_go(
                     go_backend::encode(compilation.go_value),
+                    expected,
                     "e2e-" + kind,
                     shard,
                     current,
-                )
-            } else {
-                diagnostics
+                ),
+                compiler_driver::SourceCompilation::Diagnostics(value) => value,
             };
             assert_text(actual, source_path + ".out", source_path)
         } else {
@@ -595,27 +669,26 @@ pub fn assert_crasher_runtime_shard(
         index.set(current + 1);
         if current % shard_count == shard {
             let source = read_file(source_path);
-            let diagnostics = compiler_driver::diagnostic_output(
+            let expected = read_file(source_path + ".out");
+            let compilation = match compiler_driver::compile_source_or_diagnostics(
                 source_path,
                 source,
-            );
-            if diagnostics == "" {
-                ()
-            } else {
-                testing::fail(
-                    "unexpected diagnostics for "
-                        + source_path
-                        + "\n"
-                        + diagnostics,
-                )
+            ) {
+                compiler_driver::SourceCompilation::Compiled(value) => value,
+                compiler_driver::SourceCompilation::Diagnostics(value) => {
+                    testing::fail(
+                        "unexpected diagnostics for "
+                            + source_path
+                            + "\n"
+                            + value,
+                    );
+                    compiler_driver::compile_source(source_path, source)
+                },
             };
-            let compilation = compiler_driver::compile_source(
-                source_path,
-                source,
-            );
             assert_text(
                 execute_go(
                     go_backend::encode(compilation.go_value),
+                    expected,
                     "crashers",
                     shard,
                     current,

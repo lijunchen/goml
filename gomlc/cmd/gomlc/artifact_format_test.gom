@@ -1,0 +1,46 @@
+package main;
+
+use std::bytes;
+use std::testing;
+
+#[test]
+fn artifact_readers_accept_only_gaf() -> unit {
+    let interface = binary_interface_fixture();
+    let interface_data = match encode_artifact_interface_binary(interface) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            artifact_binary_magic()
+        },
+    };
+    match decode_artifact_interface_bytes(interface_data) {
+        Result::Ok(value) => testing::assert_eq(
+            value.interface_hash,
+            interface.interface_hash,
+        ),
+        Result::Err(error) => testing::fail(error),
+    };
+    match decode_artifact_interface_bytes(bytes::Bytes::from_string("{}")) {
+        Result::Ok(_) => testing::fail("expected JSON interface rejection"),
+        Result::Err(_) => (),
+    };
+    let core = binary_core_fixture();
+    let core_data = match encode_artifact_core_binary(core) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            artifact_binary_magic()
+        },
+    };
+    match decode_artifact_core_bytes(core_data) {
+        Result::Ok(value) => testing::assert_eq(
+            value.interface_hash,
+            core.interface_hash,
+        ),
+        Result::Err(error) => testing::fail(error),
+    };
+    match decode_artifact_core_bytes(bytes::Bytes::from_string("{}")) {
+        Result::Ok(_) => testing::fail("expected JSON Core rejection"),
+        Result::Err(_) => (),
+    }
+}

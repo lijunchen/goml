@@ -7,6 +7,7 @@ use gomlc::hir;
 use gomlc::parser;
 use gomlc::tast;
 use gomlc::version;
+use std::bytes;
 use std::json;
 use std::testing;
 
@@ -999,7 +1000,14 @@ fn writes_interface_unit_shape_and_hash() -> unit {
         "{\"format_version\":16,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
         + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29\"}",
     );
-    match decode_artifact_interface_unit(encoded) {
+    let binary = match encode_artifact_interface_binary(artifact_unit) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_artifact_interface_binary(binary) {
         Result::Ok(value) => testing::assert_eq(
             encode_artifact_interface_unit(value, false),
             encoded,
@@ -1142,7 +1150,14 @@ fn extracts_trait_interface_from_checked_package() -> unit {
         "b025f9d7e2d310d37bfc70e59f4ae22ada0a8f98ee74d757503f9e610344a9f4",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
-    match decode_artifact_interface_unit(encoded) {
+    let binary = match encode_artifact_interface_binary(artifact_unit) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_artifact_interface_binary(binary) {
         Result::Ok(value) => {
             testing::assert_eq(
                 encode_artifact_interface_unit(value, false),
@@ -1273,7 +1288,8 @@ fn writes_core_unit_from_checked_package() -> unit {
     );
     let core_unit = ArtifactCoreUnit {
         package_name: "audit::value",
-        interface_unit,
+        declared_name: "value",
+        interface_hash: interface_unit.interface_hash,
         exports: full_exports,
         core_ir,
         deps,
@@ -1283,9 +1299,16 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         go_backend::sha256_hex(encoded),
-        "679352163f4fb1b4b77de9069a9d2b472c290c4bee991961a3db23a38cbf524c",
+        "16208de1247f98da2c695273163d90911f384fd873dd280be5a6c2b37783db24",
     );
-    match decode_artifact_core_unit(encoded) {
+    let binary = match encode_artifact_core_binary(core_unit) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_artifact_core_binary(binary) {
         Result::Ok(value) => testing::assert_eq(
             encode_artifact_core_unit(value, false),
             encoded,
@@ -1552,14 +1575,38 @@ fn parses_artifact_json_values() -> unit {
 fn decodes_artifact_type_shapes() -> unit {
     let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
     let context = new_artifact_decode_context();
-    let decoded = match json::parse(type_json) {
-        Result::Ok(value) => match artifact_decode_type(context, value) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
-                testing::fail(error);
-                tast::Type::Error
-            },
+    let type_value = tast::Type::Func {
+        params: Vec::new().pushed(tast::Type::App {
+            ty: tast::Type::Con { name: "Option" },
+            args: Vec::new().pushed(tast::Type::Int32),
+        }),
+        ret_ty: tast::Type::Projection {
+            trait_ref: Option::Some(tast::TraitRef {
+                name: "Iterator",
+                args: Vec::new(),
+            }),
+            for_ty: tast::Type::Param { name: "I" },
+            name: "Item",
         },
+    };
+    let value_writer = new_artifact_value_writer();
+    artifact_json_type(
+        value_writer,
+        artifact_type_context(
+            Vec::new().pushed("Option"),
+            Vec::new(),
+        ),
+        type_value,
+    );
+    let type_value = match artifact_value_finish(value_writer) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            ArtifactValue::Null
+        },
+    };
+    let decoded = match artifact_decode_type(context, type_value) {
+        Result::Ok(value) => value,
         Result::Err(error) => {
             testing::fail(error);
             tast::Type::Error
@@ -1575,14 +1622,28 @@ fn decodes_artifact_type_shapes() -> unit {
     testing::assert_eq(context.enum_names.len(), 1);
     testing::assert_eq(context.enum_names.get(0), "Option");
     let predicate_json = "{\"Equality\":{\"lhs\":{\"TStruct\":{\"name\":\"Box\"}},\"rhs\":\"TInt32\"}}";
-    let predicate = match json::parse(predicate_json) {
-        Result::Ok(value) => match artifact_decode_predicate(context, value) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
-                testing::fail(error);
-                tast::TypePredicate::Equality { lhs: tast::Type::Error, rhs: tast::Type::Error }
-            },
+    let predicate_value = tast::TypePredicate::Equality {
+        lhs: tast::Type::Con { name: "Box" },
+        rhs: tast::Type::Int32,
+    };
+    let value_writer = new_artifact_value_writer();
+    artifact_json_type_predicate(
+        value_writer,
+        artifact_type_context(
+            Vec::new(),
+            Vec::new().pushed("Box"),
+        ),
+        predicate_value,
+    );
+    let predicate_value = match artifact_value_finish(value_writer) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            ArtifactValue::Null
         },
+    };
+    let predicate = match artifact_decode_predicate(context, predicate_value) {
+        Result::Ok(value) => value,
         Result::Err(error) => {
             testing::fail(error);
             tast::TypePredicate::Equality { lhs: tast::Type::Error, rhs: tast::Type::Error }

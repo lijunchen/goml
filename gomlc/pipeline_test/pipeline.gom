@@ -63,13 +63,6 @@ fn assert_snapshot(base: string, extension: string, actual: string) -> unit {
     }
 }
 
-fn go_available() -> bool {
-    match process::Command::new("go").arg("version").output() {
-        Result::Ok(output) => process::ExitStatus::success(process::Output::status(output)),
-        Result::Err(_) => false,
-    }
-}
-
 fn has_out_snapshot(base: string) -> bool {
     fs::is_file(path::join(base, "main.gom.out"))
 }
@@ -81,7 +74,11 @@ fn tmp_dir() -> string {
     }
 }
 
-fn execute_go_and_read_stdout(go_source: string, name: string) -> string {
+fn execute_go_and_read_stdout(
+    go_source: string,
+    expected: string,
+    name: string,
+) -> string {
     let work_dir = path::join(
         path::join(tmp_dir(), "gomlc-pipeline-test"),
         name,
@@ -94,19 +91,92 @@ fn execute_go_and_read_stdout(go_source: string, name: string) -> string {
         },
     };
     let main_file = path::join(work_dir, "main.go");
-    match fs::write_file(main_file, go_source) {
-        Result::Ok(()) => (),
-        Result::Err(message) => {
-            testing::fail("failed to write Go source: " + message);
-            return ""
-        },
+    let executable = path::join(work_dir, "main");
+    let source_current = if fs::is_file(main_file) {
+        match fs::read_file(main_file) {
+            Result::Ok(value) => value == go_source,
+            Result::Err(_) => false,
+        }
+    } else {
+        false
     };
-    match process::Command::new("go")
-        .arg("run")
-        .arg("main.go")
+    if source_current {
+        ()
+    } else {
+        match fs::write_file(main_file, go_source) {
+            Result::Ok(()) => (),
+            Result::Err(message) => {
+                testing::fail("failed to write Go source: " + message);
+                return ""
+            },
+        }
+    };
+    let interpreted = if source_current && fs::is_file(executable) {
+        Option::None
+    } else {
+        match process::Command::new("yaegi")
+            .arg("main.go")
+            .current_dir(work_dir)
+            .output()
+        {
+            Result::Ok(output) => {
+                if process::ExitStatus::success(process::Output::status(output)) {
+                    match process::Output::stdout(output).to_string() {
+                        Result::Ok(value) => if value == expected {
+                            Option::Some(value)
+                        } else {
+                            Option::None
+                        },
+                        Result::Err(_) => Option::None,
+                    }
+                } else {
+                    Option::None
+                }
+            },
+            Result::Err(_) => Option::None,
+        }
+    };
+    match interpreted {
+        Option::Some(value) => return value,
+        Option::None => (),
+    };
+    if source_current && fs::is_file(executable) {
+        ()
+    } else {
+        match process::Command::new("go")
+            .arg("build")
+            .arg("-o")
+            .arg("main")
+            .arg("main.go")
+            .current_dir(work_dir)
+            .env("GOWORK", "off")
+            .env("GO111MODULE", "off")
+            .output()
+        {
+            Result::Ok(output) => {
+                if process::ExitStatus::success(process::Output::status(output)) {
+                    ()
+                } else {
+                    match process::Output::stderr(output).to_string() {
+                        Result::Ok(value) => {
+                            testing::fail("go build failed: " + value);
+                            return ""
+                        },
+                        Result::Err(_) => {
+                            testing::fail("go build failed (non-UTF-8 stderr)");
+                            return ""
+                        },
+                    }
+                }
+            },
+            Result::Err(message) => {
+                testing::fail("failed to build Go source: " + message);
+                return ""
+            },
+        }
+    };
+    match process::Command::new(executable)
         .current_dir(work_dir)
-        .env("GOWORK", "off")
-        .env("GO111MODULE", "off")
         .output()
     {
         Result::Ok(output) => {
@@ -121,18 +191,20 @@ fn execute_go_and_read_stdout(go_source: string, name: string) -> string {
             } else {
                 match process::Output::stderr(output).to_string() {
                     Result::Ok(value) => {
-                        testing::fail("go run failed: " + value);
+                        testing::fail("generated program failed: " + value);
                         ""
                     },
                     Result::Err(_) => {
-                        testing::fail("go run failed (non-UTF-8 stderr)");
+                        testing::fail(
+                            "generated program failed (non-UTF-8 stderr)",
+                        );
                         ""
                     },
                 }
             }
         },
         Result::Err(message) => {
-            testing::fail("failed to execute go run: " + message);
+            testing::fail("failed to execute generated program: " + message);
             ""
         },
     }
@@ -175,7 +247,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
     result
 }
 
-pub fn test_one_case(name: string) -> unit {
+fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     let base = fixture_dir(name);
     let source_path = path::join(base, "main.gom");
     let source = match fs::read_file(source_path) {
@@ -201,12 +273,16 @@ pub fn test_one_case(name: string) -> unit {
     assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
 
     if has_out_snapshot(base) {
-        if go_available() {
+        if can_run_go {
             let go_source = go_backend::encode(compilation.go_value);
             assert_snapshot(
                 base,
                 "out",
-                execute_go_and_read_stdout(go_source, name),
+                execute_go_and_read_stdout(
+                    go_source,
+                    read_snapshot(base, "out"),
+                    name,
+                ),
             )
         } else {
             ()
@@ -216,12 +292,16 @@ pub fn test_one_case(name: string) -> unit {
     }
 }
 
+pub fn test_one_case(name: string) -> unit {
+    test_one_case_with_go(name, true)
+}
+
 pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
     let index = Ref::new(0);
     for name in all_pipeline_cases() {
         let current = index.get();
         if current % shard_count == shard {
-            test_one_case(name)
+            test_one_case_with_go(name, true)
         } else {
             ()
         };

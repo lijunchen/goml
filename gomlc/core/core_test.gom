@@ -13,6 +13,37 @@ fn lower_source(source: string) -> File {
     )))
 }
 
+fn lower_optimized_source(source: string) -> File {
+    lower_with_counter_types_and_options(
+        tast::check(hir::lower(
+            ast::lower(parser::parse(source)),
+            "main.gom",
+        )),
+        Ref::new(0),
+        Vec::new(),
+        Vec::new(),
+        true,
+    )
+}
+
+fn string_contains(value: string, expected: string) -> bool {
+    if expected.byte_len() == 0 {
+        true
+    } else if value.byte_len() < expected.byte_len() {
+        false
+    } else {
+        let found = Ref::new(false);
+        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
+            if value.byte_slice(index, index + expected.byte_len()) == expected {
+                found.set(true)
+            } else {
+                ()
+            }
+        };
+        found.get()
+    }
+}
+
 #[test]
 fn lowers_basic_functions_and_let_chains() -> unit {
     let source = "fn take(value: uint16) -> uint16 { value } fn main() -> uint16 { let value = take(1000); value }";
@@ -258,6 +289,20 @@ fn lowers_for_loops_through_iterator_protocols() -> unit {
         encode(lower_source(source)),
         "fn each(values/0: Vec[int32]) -> unit {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
     )
+}
+
+#[test]
+fn lowers_builtin_iterators_without_iterator_protocols() -> unit {
+    let source = "fn each(values: Vec[int32]) -> unit { for value in values { if value == 0 { continue } else { println(value) } }; for value in range(2, 4) { println(value) }; for value in values.slice(0, 1) { println(value) } }";
+    let encoded = encode(lower_optimized_source(source));
+    testing::assert(!string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
+    testing::assert(!string_contains(encoded, "trait_call[Iterator::next]"));
+    testing::assert(string_contains(encoded, "@intrinsic(vec.len)"));
+    testing::assert(string_contains(encoded, "@intrinsic(vec.get)"));
+    testing::assert(string_contains(encoded, "@intrinsic(slice.len)"));
+    testing::assert(string_contains(encoded, "@intrinsic(slice.get)"));
+    testing::assert(string_contains(encoded, "for_index"));
+    testing::assert(string_contains(encoded, " = (for_index"))
 }
 
 #[test]
