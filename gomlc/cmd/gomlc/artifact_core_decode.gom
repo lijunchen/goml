@@ -3,7 +3,6 @@ package main;
 use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
-use std::json;
 
 struct ArtifactCoreDecodeContext {
     types: ArtifactDecodeContext,
@@ -51,8 +50,8 @@ fn artifact_decode_struct_fields(
 }
 
 fn artifact_decode_primitive_payload(
-    value: json::Value,
-) -> Result[json::Value, string] {
+    value: ArtifactValue,
+) -> Result[ArtifactValue, string] {
     let object = match artifact_json_object(value, "primitive payload") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
@@ -62,7 +61,7 @@ fn artifact_decode_primitive_payload(
 
 fn artifact_decode_numeric_primitive(
     kind: string,
-    value: json::Value,
+    value: ArtifactValue,
 ) -> Result[tast::Primitive, string] {
     let value = match artifact_decode_primitive_payload(value) {
         Result::Ok(value) => match artifact_json_number_value(value, "numeric primitive") {
@@ -88,7 +87,7 @@ fn artifact_decode_numeric_primitive(
     }
 }
 
-fn artifact_decode_primitive(value: json::Value) -> Result[tast::Primitive, string] {
+fn artifact_decode_primitive(value: ArtifactValue) -> Result[tast::Primitive, string] {
     let object = match artifact_json_object(value, "primitive") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
@@ -102,7 +101,7 @@ fn artifact_decode_primitive(value: json::Value) -> Result[tast::Primitive, stri
     let payload = object.get(0).1;
     if kind == "Unit" {
         match artifact_decode_primitive_payload(payload) {
-            Result::Ok(json::Value::Null) => Result::Ok(tast::Primitive::Unit),
+            Result::Ok(ArtifactValue::Null) => Result::Ok(tast::Primitive::Unit),
             Result::Ok(_) => Result::Err(artifact_decode_error("unit primitive")),
             Result::Err(error) => Result::Err(error),
         }
@@ -142,7 +141,7 @@ fn artifact_decode_primitive(value: json::Value) -> Result[tast::Primitive, stri
 
 fn artifact_decode_constructor(
     context: ArtifactCoreDecodeContext,
-    value: json::Value,
+    value: ArtifactValue,
 ) -> Result[tast::Constructor, string] {
     let object = match artifact_json_object(value, "constructor") {
         Result::Ok(value) => value,

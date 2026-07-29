@@ -1,0 +1,146 @@
+package main;
+
+use std::bytes;
+
+fn artifact_binary_required_section_flag() -> uint16 {
+    1
+}
+
+fn artifact_binary_string_table_section_id() -> uint16 {
+    1
+}
+
+fn artifact_binary_value_section_id() -> uint16 {
+    2
+}
+
+fn artifact_binary_interface_sections(
+    value: ArtifactInterfaceUnit,
+) -> Result[Vec[ArtifactBinarySection], string] {
+    let collector = new_artifact_binary_string_collector();
+    artifact_json_interface_unit(collector, value);
+    let table = artifact_binary_collected_string_table(collector);
+    let writer = new_artifact_binary_value_stream(table);
+    artifact_json_interface_unit(writer, value);
+    let payload = match artifact_binary_stream_finish(writer) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    Result::Ok(
+        Vec::new()
+            .pushed(ArtifactBinarySection {
+                id: artifact_binary_string_table_section_id(),
+                version: 1,
+                flags: artifact_binary_required_section_flag(),
+                data: encode_artifact_binary_string_table(table),
+            })
+            .pushed(ArtifactBinarySection {
+                id: artifact_binary_value_section_id(),
+                version: 2,
+                flags: artifact_binary_required_section_flag(),
+                data: payload,
+            }),
+    )
+}
+
+fn encode_artifact_interface_binary(
+    value: ArtifactInterfaceUnit,
+) -> Result[bytes::Bytes, string] {
+    let sections = match artifact_binary_interface_sections(value) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    encode_artifact_binary_container(1, sections)
+}
+
+fn artifact_binary_validate_interface_sections(
+    value: ArtifactBinaryContainer,
+) -> Result[unit, string] {
+    for section in value.sections {
+        if section.id == artifact_binary_string_table_section_id() {
+            if section.version != 1 {
+                return Result::Err(
+                    "unsupported binary interface artifact section version",
+                )
+            } else if section.flags
+                != artifact_binary_required_section_flag()
+            {
+                return Result::Err(
+                    "invalid binary interface artifact section flags",
+                )
+            } else {
+                ()
+            }
+        } else if section.id == artifact_binary_value_section_id() {
+            if section.version != 2 {
+                return Result::Err(
+                    "unsupported binary interface artifact section version",
+                )
+            } else if section.flags
+                != artifact_binary_required_section_flag()
+            {
+                return Result::Err(
+                    "invalid binary interface artifact section flags",
+                )
+            } else {
+                ()
+            }
+        } else if section.flags & artifact_binary_required_section_flag() != 0 {
+            return Result::Err(
+                "unsupported required binary interface artifact section",
+            )
+        } else {
+            ()
+        }
+    };
+    Result::Ok(())
+}
+
+fn decode_artifact_interface_binary(
+    data: bytes::Bytes,
+) -> Result[ArtifactInterfaceUnit, string] {
+    let container = match decode_artifact_binary_container(data) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if container.kind != 1 {
+        return Result::Err("binary artifact is not an interface")
+    } else {
+        ()
+    };
+    match artifact_binary_validate_interface_sections(container) {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err(error),
+    };
+    let string_section = match artifact_binary_find_section(
+        container,
+        artifact_binary_string_table_section_id(),
+    ) {
+        Option::Some(value) => value,
+        Option::None => {
+            return Result::Err(
+                "binary interface artifact is missing string table",
+            )
+        },
+    };
+    let value_section = match artifact_binary_find_section(
+        container,
+        artifact_binary_value_section_id(),
+    ) {
+        Option::Some(value) => value,
+        Option::None => {
+            return Result::Err("binary interface artifact is missing value")
+        },
+    };
+    let table = match decode_artifact_binary_string_table(
+        string_section.data,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let value = match decode_artifact_binary_value(table, value_section.data) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    artifact_decode_interface_value(value)
+}

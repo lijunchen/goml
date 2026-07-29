@@ -1,0 +1,378 @@
+package main;
+
+use std::bytes;
+
+struct ArtifactBinaryWriter {
+    data: bytes::Bytes,
+}
+
+struct ArtifactBinaryReader {
+    data: bytes::Bytes,
+    offset: Ref[int],
+}
+
+fn new_artifact_binary_writer() -> ArtifactBinaryWriter {
+    ArtifactBinaryWriter {
+        data: bytes::Bytes::new(),
+    }
+}
+
+fn new_artifact_binary_reader(data: bytes::Bytes) -> ArtifactBinaryReader {
+    ArtifactBinaryReader {
+        data,
+        offset: Ref::new(0),
+    }
+}
+
+fn artifact_binary_writer_len(writer: ArtifactBinaryWriter) -> int {
+    writer.data.len()
+}
+
+fn artifact_binary_writer_finish(writer: ArtifactBinaryWriter) -> bytes::Bytes {
+    writer.data
+}
+
+fn artifact_binary_write_u8(
+    writer: ArtifactBinaryWriter,
+    value: uint8,
+) -> unit {
+    writer.data.push(value)
+}
+
+fn artifact_binary_write_u16(
+    writer: ArtifactBinaryWriter,
+    value: uint16,
+) -> unit {
+    writer.data.push((value & 255) as uint8);
+    writer.data.push(((value >> 8) & 255) as uint8)
+}
+
+fn artifact_binary_write_u32(
+    writer: ArtifactBinaryWriter,
+    value: uint32,
+) -> unit {
+    writer.data.push((value & 255) as uint8);
+    writer.data.push(((value >> 8) & 255) as uint8);
+    writer.data.push(((value >> 16) & 255) as uint8);
+    writer.data.push(((value >> 24) & 255) as uint8)
+}
+
+fn artifact_binary_write_u64(
+    writer: ArtifactBinaryWriter,
+    value: uint64,
+) -> unit {
+    for index in range(0, 8) {
+        writer.data.push(((value >> (index * 8)) & 255) as uint8)
+    }
+}
+
+fn artifact_binary_write_uleb128(
+    writer: ArtifactBinaryWriter,
+    value: uint64,
+) -> unit {
+    let remaining = Ref::new(value);
+    while remaining.get() >= 128 {
+        writer.data.push(((remaining.get() & 127) as uint8) | 128);
+        remaining.set(remaining.get() >> 7)
+    };
+    writer.data.push(remaining.get() as uint8)
+}
+
+fn artifact_binary_write_zigzag(
+    writer: ArtifactBinaryWriter,
+    value: int64,
+) -> unit {
+    artifact_binary_write_uleb128(
+        writer,
+        ((value << 1) ^ (value >> 63)) as uint64,
+    )
+}
+
+fn artifact_binary_write_bool(
+    writer: ArtifactBinaryWriter,
+    value: bool,
+) -> unit {
+    artifact_binary_write_u8(writer, if value { 1 } else { 0 })
+}
+
+fn artifact_binary_write_bytes(
+    writer: ArtifactBinaryWriter,
+    value: bytes::Bytes,
+) -> unit {
+    artifact_binary_write_uleb128(writer, value.len() as uint64);
+    for index in range(0, value.len()) {
+        writer.data.push(value.get(index))
+    }
+}
+
+fn artifact_binary_write_raw_bytes(
+    writer: ArtifactBinaryWriter,
+    value: bytes::Bytes,
+) -> unit {
+    for index in range(0, value.len()) {
+        writer.data.push(value.get(index))
+    }
+}
+
+fn artifact_binary_write_string(
+    writer: ArtifactBinaryWriter,
+    value: string,
+) -> unit {
+    artifact_binary_write_bytes(writer, bytes::Bytes::from_string(value))
+}
+
+fn artifact_binary_patch_u32(
+    writer: ArtifactBinaryWriter,
+    offset: int,
+    value: uint32,
+) -> Result[unit, string] {
+    if offset < 0 || offset + 4 > writer.data.len() {
+        Result::Err("binary patch offset out of bounds")
+    } else {
+        writer.data.set(offset, (value & 255) as uint8);
+        writer.data.set(offset + 1, ((value >> 8) & 255) as uint8);
+        writer.data.set(offset + 2, ((value >> 16) & 255) as uint8);
+        writer.data.set(offset + 3, ((value >> 24) & 255) as uint8);
+        Result::Ok(())
+    }
+}
+
+fn artifact_binary_patch_u64(
+    writer: ArtifactBinaryWriter,
+    offset: int,
+    value: uint64,
+) -> Result[unit, string] {
+    if offset < 0 || offset + 8 > writer.data.len() {
+        Result::Err("binary patch offset out of bounds")
+    } else {
+        for index in range(0, 8) {
+            writer.data.set(
+                offset + index,
+                ((value >> (index * 8)) & 255) as uint8,
+            )
+        };
+        Result::Ok(())
+    }
+}
+
+fn artifact_binary_reader_offset(reader: ArtifactBinaryReader) -> int {
+    reader.offset.get()
+}
+
+fn artifact_binary_reader_remaining(reader: ArtifactBinaryReader) -> int {
+    reader.data.len() - reader.offset.get()
+}
+
+fn artifact_binary_reader_error(
+    reader: ArtifactBinaryReader,
+    message: string,
+) -> string {
+    "binary artifact at byte " + reader.offset.get().to_string() + ": " + message
+}
+
+fn artifact_binary_read_u8(
+    reader: ArtifactBinaryReader,
+) -> Result[uint8, string] {
+    if artifact_binary_reader_remaining(reader) < 1 {
+        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
+    } else {
+        let offset = reader.offset.get();
+        reader.offset.set(offset + 1);
+        Result::Ok(reader.data.get(offset))
+    }
+}
+
+fn artifact_binary_read_u16(
+    reader: ArtifactBinaryReader,
+) -> Result[uint16, string] {
+    if artifact_binary_reader_remaining(reader) < 2 {
+        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
+    } else {
+        let offset = reader.offset.get();
+        reader.offset.set(offset + 2);
+        Result::Ok(
+            (reader.data.get(offset) as uint16)
+                | ((reader.data.get(offset + 1) as uint16) << 8),
+        )
+    }
+}
+
+fn artifact_binary_read_u32(
+    reader: ArtifactBinaryReader,
+) -> Result[uint32, string] {
+    if artifact_binary_reader_remaining(reader) < 4 {
+        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
+    } else {
+        let offset = reader.offset.get();
+        reader.offset.set(offset + 4);
+        Result::Ok(
+            (reader.data.get(offset) as uint32)
+                | ((reader.data.get(offset + 1) as uint32) << 8)
+                | ((reader.data.get(offset + 2) as uint32) << 16)
+                | ((reader.data.get(offset + 3) as uint32) << 24),
+        )
+    }
+}
+
+fn artifact_binary_read_u64(
+    reader: ArtifactBinaryReader,
+) -> Result[uint64, string] {
+    if artifact_binary_reader_remaining(reader) < 8 {
+        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
+    } else {
+        let offset = reader.offset.get();
+        reader.offset.set(offset + 8);
+        let value = Ref::new(0 as uint64);
+        for index in range(0, 8) {
+            value.set(
+                value.get()
+                    | ((reader.data.get(offset + index) as uint64) << (index * 8)),
+            )
+        };
+        Result::Ok(value.get())
+    }
+}
+
+fn artifact_binary_read_uleb128(
+    reader: ArtifactBinaryReader,
+) -> Result[uint64, string] {
+    let value = Ref::new(0 as uint64);
+    let index = Ref::new(0);
+    while index.get() < 10 {
+        let byte = match artifact_binary_read_u8(reader) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        if index.get() == 9 && byte > 1 {
+            return Result::Err(artifact_binary_reader_error(
+                reader,
+                "unsigned varint overflow",
+            ))
+        } else {
+            ()
+        };
+        value.set(
+            value.get() | (((byte & 127) as uint64) << (index.get() * 7)),
+        );
+        if byte & 128 == 0 {
+            return Result::Ok(value.get())
+        } else {
+            index.set(index.get() + 1)
+        }
+    };
+    Result::Err(artifact_binary_reader_error(
+        reader,
+        "unsigned varint overflow",
+    ))
+}
+
+fn artifact_binary_read_zigzag(
+    reader: ArtifactBinaryReader,
+) -> Result[int64, string] {
+    match artifact_binary_read_uleb128(reader) {
+        Result::Ok(value) => Result::Ok(
+            ((value >> 1) as int64) ^ -((value & 1) as int64),
+        ),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_binary_read_bool(
+    reader: ArtifactBinaryReader,
+) -> Result[bool, string] {
+    match artifact_binary_read_u8(reader) {
+        Result::Ok(0) => Result::Ok(false),
+        Result::Ok(1) => Result::Ok(true),
+        Result::Ok(_) => Result::Err(artifact_binary_reader_error(
+            reader,
+            "invalid boolean tag",
+        )),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_binary_read_length(
+    reader: ArtifactBinaryReader,
+) -> Result[int, string] {
+    match artifact_binary_read_uleb128(reader) {
+        Result::Ok(value) => if value > 2147483647 {
+            Result::Err(artifact_binary_reader_error(
+                reader,
+                "collection length exceeds limit",
+            ))
+        } else {
+            Result::Ok(value as int)
+        },
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_binary_read_bytes(
+    reader: ArtifactBinaryReader,
+) -> Result[bytes::Bytes, string] {
+    let length = match artifact_binary_read_length(reader) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if length > artifact_binary_reader_remaining(reader) {
+        Result::Err(artifact_binary_reader_error(
+            reader,
+            "byte sequence exceeds remaining input",
+        ))
+    } else {
+        let offset = reader.offset.get();
+        let result = bytes::Bytes::with_capacity(length);
+        for index in range(0, length) {
+            result.push(reader.data.get(offset + index))
+        };
+        reader.offset.set(offset + length);
+        Result::Ok(result)
+    }
+}
+
+fn artifact_binary_read_raw_bytes(
+    reader: ArtifactBinaryReader,
+    length: int,
+) -> Result[bytes::Bytes, string] {
+    if length < 0 || length > artifact_binary_reader_remaining(reader) {
+        Result::Err(artifact_binary_reader_error(
+            reader,
+            "byte sequence exceeds remaining input",
+        ))
+    } else {
+        let offset = reader.offset.get();
+        let result = bytes::Bytes::with_capacity(length);
+        for index in range(0, length) {
+            result.push(reader.data.get(offset + index))
+        };
+        reader.offset.set(offset + length);
+        Result::Ok(result)
+    }
+}
+
+fn artifact_binary_read_string(
+    reader: ArtifactBinaryReader,
+) -> Result[string, string] {
+    match artifact_binary_read_bytes(reader) {
+        Result::Ok(value) => match value.to_string() {
+            Result::Ok(value) => Result::Ok(value),
+            Result::Err(_) => Result::Err(artifact_binary_reader_error(
+                reader,
+                "invalid UTF-8 string",
+            )),
+        },
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_binary_skip(
+    reader: ArtifactBinaryReader,
+    length: int,
+) -> Result[unit, string] {
+    if length < 0 || length > artifact_binary_reader_remaining(reader) {
+        Result::Err(artifact_binary_reader_error(reader, "skip exceeds input"))
+    } else {
+        reader.offset.set(reader.offset.get() + length);
+        Result::Ok(())
+    }
+}

@@ -31,6 +31,11 @@ struct ArtifactCompilation {
     core_value: core::File,
 }
 
+struct ArtifactCompiledPackage {
+    interface_unit: ArtifactInterfaceUnit,
+    core_unit: ArtifactCoreUnit,
+}
+
 struct PackageWorld {
     counter: Ref[int],
     builtins: core::File,
@@ -965,31 +970,36 @@ fn run_package_command(
             } else {
                 fail("error[compile]: " + error)
             };
-            ArtifactCoreUnit {
-                package_name: command.package_name,
-                interface_unit: new_artifact_interface_unit(
-                    command.package_name,
-                    empty_artifact_package_exports(),
-                    ArtifactPackageInterface {
-                        package_name: command.package_name,
-                        name: "main",
-                        value_exports: Vec::new(),
-                        enum_variants: Vec::new(),
-                    },
-                    Vec::new().pushed(builtin_artifact_dependency()),
-                ),
-                exports: empty_artifact_package_exports(),
-                core_ir: empty_core_file(),
-                deps: Vec::new().pushed(builtin_artifact_dependency()),
-                sources: Vec::new(),
-                tests: Vec::new(),
+            let interface_unit = new_artifact_interface_unit(
+                command.package_name,
+                empty_artifact_package_exports(),
+                ArtifactPackageInterface {
+                    package_name: command.package_name,
+                    name: "main",
+                    value_exports: Vec::new(),
+                    enum_variants: Vec::new(),
+                },
+                Vec::new().pushed(builtin_artifact_dependency()),
+            );
+            ArtifactCompiledPackage {
+                interface_unit,
+                core_unit: ArtifactCoreUnit {
+                    package_name: command.package_name,
+                    declared_name: "main",
+                    interface_hash: interface_unit.interface_hash,
+                    exports: empty_artifact_package_exports(),
+                    core_ir: empty_core_file(),
+                    deps: Vec::new().pushed(builtin_artifact_dependency()),
+                    sources: Vec::new(),
+                    tests: Vec::new(),
+                },
             }
         },
     };
     match ensure_parent(interface_output_path(command.output)) {
-        Result::Ok(()) => match fs::write_file(
+        Result::Ok(()) => match write_artifact_interface(
             interface_output_path(command.output),
-            encode_artifact_interface_unit(artifact.interface_unit, true),
+            artifact.interface_unit,
         ) {
             Result::Ok(()) => (),
             Result::Err(error) => fail(error),
@@ -998,9 +1008,9 @@ fn run_package_command(
     };
     if build {
         match ensure_parent(core_output_path(command.output)) {
-            Result::Ok(()) => match fs::write_file(
+            Result::Ok(()) => match write_artifact_core(
                 core_output_path(command.output),
-                encode_artifact_core_unit(artifact, true),
+                artifact.core_unit,
             ) {
                 Result::Ok(()) => (),
                 Result::Err(error) => fail(error),
@@ -1046,8 +1056,8 @@ fn run_link_command(args: Vec[string]) -> unit {
     };
     artifact_prepare_core_units(world, core_units);
     match artifact_find_core_unit(core_units, command.entry) {
-        Option::Some(value) => if value.interface_unit.package_interface.name == ""
-            || value.interface_unit.package_interface.name == "main"
+        Option::Some(value) => if value.declared_name == ""
+            || value.declared_name == "main"
         {
             ()
         } else {
@@ -1055,7 +1065,7 @@ fn run_link_command(args: Vec[string]) -> unit {
                 "error[compile]: entry package "
                     + command.entry
                     + " declares package "
-                    + value.interface_unit.package_interface.name
+                    + value.declared_name
                     + ", expected main",
             )
         },

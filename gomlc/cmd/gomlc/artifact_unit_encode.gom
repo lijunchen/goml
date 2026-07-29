@@ -4,7 +4,8 @@ use gomlc::core;
 
 struct ArtifactCoreUnit {
     package_name: string,
-    interface_unit: ArtifactInterfaceUnit,
+    declared_name: string,
+    interface_hash: string,
     exports: ArtifactPackageExports,
     core_ir: core::File,
     deps: Vec[(string, string)],
@@ -58,14 +59,20 @@ fn artifact_json_core_unit(
 ) -> unit {
     let context = artifact_exports_type_context(value.exports);
     artifact_json_begin_object(writer);
-    artifact_json_name(writer, "format_version");
-    artifact_json_number(writer, "16");
-    artifact_json_name(writer, "compiler_abi");
-    artifact_json_number(writer, "3");
+    if writer.binary_mode < 2 {
+        artifact_json_name(writer, "format_version");
+        artifact_json_number(writer, "17");
+        artifact_json_name(writer, "compiler_abi");
+        artifact_json_number(writer, "3")
+    } else {
+        ()
+    };
     artifact_json_name(writer, "package");
     artifact_json_string(writer, value.package_name);
-    artifact_json_name(writer, "interface");
-    artifact_json_interface_unit(writer, value.interface_unit);
+    artifact_json_name(writer, "declared_name");
+    artifact_json_string(writer, value.declared_name);
+    artifact_json_name(writer, "interface_hash");
+    artifact_json_string(writer, value.interface_hash);
     artifact_json_name(writer, "exports");
     artifact_json_package_exports(writer, context, value.exports);
     artifact_json_name(writer, "core_ir");

@@ -38,13 +38,13 @@ fn artifact_read_interface_units(
     let result = Vec::new();
     let names = Vec::new();
     for path_value in paths {
-        let source = match fs::read_file(path_value) {
+        let source = match fs::read_bytes(path_value) {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(
                 "failed to read interface " + path_value + ": " + error,
             ),
         };
-        let interface = match decode_artifact_interface_unit(source) {
+        let interface = match decode_artifact_interface_bytes(source) {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(
                 "failed to parse interface " + path_value + ": " + error,
@@ -717,7 +717,7 @@ fn compile_artifact_package(
     command: PackageCommandArgs,
     build: bool,
     emit_tests: bool,
-) -> Result[ArtifactCoreUnit, string] {
+) -> Result[ArtifactCompiledPackage, string] {
     let parsed = Vec::new();
     let parser_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for source_path in command.inputs {
@@ -956,23 +956,28 @@ fn compile_artifact_package(
         Option::None => generated_interface,
     };
     let core_ir = if build {
-        core::lower_with_counter_and_types(
+        core::lower_with_counter_types_and_options(
             checked,
             Ref::new(0),
             dependency_enums(world.builtins, dependency_core),
             dependency_structs(world.builtins, dependency_core),
+            true,
         )
     } else {
         empty_core_file()
     };
-    Result::Ok(ArtifactCoreUnit {
-        package_name: command.package_name,
+    Result::Ok(ArtifactCompiledPackage {
         interface_unit,
-        exports,
-        core_ir,
-        deps,
-        sources: command.inputs,
-        tests: if emit_tests { test_validation.tests } else { Vec::new() },
+        core_unit: ArtifactCoreUnit {
+            package_name: command.package_name,
+            declared_name,
+            interface_hash: interface_unit.interface_hash,
+            exports,
+            core_ir,
+            deps,
+            sources: command.inputs,
+            tests: if emit_tests { test_validation.tests } else { Vec::new() },
+        },
     })
 }
 
@@ -982,13 +987,13 @@ fn artifact_read_core_units(
     let result = Vec::new();
     let names = Vec::new();
     for path_value in paths {
-        let source = match fs::read_file(path_value) {
+        let source = match fs::read_bytes(path_value) {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(
                 "failed to read core " + path_value + ": " + error,
             ),
         };
-        let core_unit = match decode_artifact_core_unit(source) {
+        let core_unit = match decode_artifact_core_bytes(source) {
             Result::Ok(value) => value,
             Result::Err(error) => return Result::Err(
                 "failed to parse core " + path_value + ": " + error,
@@ -1073,15 +1078,6 @@ fn artifact_validate_link_core_units(
     values: Vec[ArtifactCoreUnit],
 ) -> Result[unit, string] {
     for value in values {
-        if !artifact_interface_builtin_valid(value.interface_unit) {
-            return Result::Err(
-                "package "
-                    + value.package_name
-                    + " is missing the current builtin dependency",
-            )
-        } else {
-            ()
-        };
         for dependency in value.deps {
             if dependency.0 == "builtin" {
                 if dependency.1 != artifact_builtin_interface_hash() {
@@ -1109,7 +1105,7 @@ fn artifact_validate_link_core_units(
                     },
                     Option::None => match artifact_find_core_unit(values, dependency.0) {
                         Option::Some(actual) => if dependency.1
-                            != actual.interface_unit.interface_hash
+                            != actual.interface_hash
                         {
                             return Result::Err(
                                 "package "
