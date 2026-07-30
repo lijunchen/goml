@@ -153,8 +153,9 @@ fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
                 pat,
                 value: resolve_deferred_expr(ctx, value),
             },
-            Stmt::Assign { target, value } => Stmt::Assign {
+            Stmt::Assign { target, op, value } => Stmt::Assign {
                 target: resolve_deferred_expr(ctx, target),
+                op,
                 value: resolve_deferred_expr(ctx, value),
             },
             Stmt::Expr { expr } => Stmt::Expr {
@@ -309,7 +310,7 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
                 };
                 report_unresolved_expr(ctx, value)
             },
-            hir::Stmt::Assign { target, value } => {
+            hir::Stmt::Assign { target, op: _, value } => {
                 report_unresolved_expr(ctx, target);
                 report_unresolved_expr(ctx, value)
             },
@@ -337,11 +338,28 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
         hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
         | hir::ExprKind::Tuple { items: args }
-        | hir::ExprKind::Array { items: args } => {
+        | hir::ExprKind::Array { items: args }
+        | hir::ExprKind::VecLiteral { items: args } => {
             report_unresolved_exprs(ctx, args)
         },
-        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
-            report_unresolved_expr(ctx, field.1)
+        hir::ExprKind::HashMapLiteral { entries } => for entry in entries {
+            report_unresolved_expr(ctx, entry.0);
+            report_unresolved_expr(ctx, entry.1)
+        },
+        hir::ExprKind::InterpolatedString { parts } => for part in parts {
+            match part {
+                hir::InterpolatedStringPart::Expr(value) => report_unresolved_expr(ctx, value),
+                hir::InterpolatedStringPart::Text(_) => (),
+            }
+        },
+        hir::ExprKind::StructLiteral { name: _, fields, base } => {
+            for field in fields {
+                report_unresolved_expr(ctx, field.1)
+            };
+            match base {
+                Option::Some(value) => report_unresolved_expr(ctx, value),
+                Option::None => (),
+            }
         },
         hir::ExprKind::Closure { params, body } => {
             report_unresolved_expr(ctx, body);
@@ -2607,7 +2625,7 @@ fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
             hir::Stmt::Let { is_mut: _, pat: _, annotation: _, value } => {
                 attach_expr_diagnostic_spans(ctx, value)
             },
-            hir::Stmt::Assign { target, value } => {
+            hir::Stmt::Assign { target, op: _, value } => {
                 attach_expr_diagnostic_spans(ctx, target);
                 attach_expr_diagnostic_spans(ctx, value)
             },
@@ -2641,11 +2659,30 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
         hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
         | hir::ExprKind::Tuple { items: args }
-        | hir::ExprKind::Array { items: args } => {
+        | hir::ExprKind::Array { items: args }
+        | hir::ExprKind::VecLiteral { items: args } => {
             attach_expr_list_diagnostic_spans(ctx, args)
         },
-        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
-            attach_expr_diagnostic_spans(ctx, field.1)
+        hir::ExprKind::HashMapLiteral { entries } => for entry in entries {
+            attach_expr_diagnostic_spans(ctx, entry.0);
+            attach_expr_diagnostic_spans(ctx, entry.1)
+        },
+        hir::ExprKind::InterpolatedString { parts } => for part in parts {
+            match part {
+                hir::InterpolatedStringPart::Expr(value) => {
+                    attach_expr_diagnostic_spans(ctx, value)
+                },
+                hir::InterpolatedStringPart::Text(_) => (),
+            }
+        },
+        hir::ExprKind::StructLiteral { name: _, fields, base } => {
+            for field in fields {
+                attach_expr_diagnostic_spans(ctx, field.1)
+            };
+            match base {
+                Option::Some(value) => attach_expr_diagnostic_spans(ctx, value),
+                Option::None => (),
+            }
         },
         hir::ExprKind::Closure { params: _, body }
         | hir::ExprKind::Unary { op: _, expr: body }

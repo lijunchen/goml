@@ -63,6 +63,22 @@ fn binary_operator(kind: lexer::TokenKind) -> Option[BinaryOp] {
     }
 }
 
+fn compound_assignment_operator(kind: lexer::TokenKind) -> Option[BinaryOp] {
+    match kind {
+        lexer::TokenKind::PlusEq => Option::Some(BinaryOp::Add),
+        lexer::TokenKind::MinusEq => Option::Some(BinaryOp::Sub),
+        lexer::TokenKind::StarEq => Option::Some(BinaryOp::Mul),
+        lexer::TokenKind::SlashEq => Option::Some(BinaryOp::Div),
+        lexer::TokenKind::PercentEq => Option::Some(BinaryOp::Rem),
+        lexer::TokenKind::AmpEq => Option::Some(BinaryOp::BitAnd),
+        lexer::TokenKind::PipeEq => Option::Some(BinaryOp::BitOr),
+        lexer::TokenKind::CaretEq => Option::Some(BinaryOp::BitXor),
+        lexer::TokenKind::LessLessEq => Option::Some(BinaryOp::Shl),
+        lexer::TokenKind::GreaterGreaterEq => Option::Some(BinaryOp::Shr),
+        _ => Option::None,
+    }
+}
+
 fn parse_decimal_int32(value: string) -> Option[int] {
     let result = Ref::new(0);
     let index = Ref::new(0);

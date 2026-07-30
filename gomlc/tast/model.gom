@@ -162,7 +162,11 @@ pub struct Block {
 
 pub enum Stmt {
     Let { is_mut: bool, pat: Pat, value: Expr },
-    Assign { target: Expr, value: Expr },
+    Assign {
+        target: Expr,
+        op: ast::AssignmentOp,
+        value: Expr,
+    },
     Expr { expr: Expr },
 }
 

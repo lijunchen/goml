@@ -865,8 +865,9 @@ fn lower_block(
                     value: lowered_expr,
                 })
             },
-            ast::Stmt::Assign { target, value: expr, span: _ } => stmts.push(Stmt::Assign {
+            ast::Stmt::Assign { target, op, value: expr, span: _ } => stmts.push(Stmt::Assign {
                 target: lower_expr(ctx, target, env, type_params),
+                op,
                 value: lower_expr(ctx, expr, env, type_params),
             }),
             ast::Stmt::Expr { expr, span: _ } => {
@@ -940,6 +941,25 @@ fn lower_expr_value(
         ast::Expr::Int { value, span: _ } => ExprKind::Int { value },
         ast::Expr::Float { value, span: _ } => ExprKind::Float { value },
         ast::Expr::String { value, span: _ } => ExprKind::String { value },
+        ast::Expr::InterpolatedString { parts, span: _ } => {
+            let result: Vec[InterpolatedStringPart] = Vec::new();
+            for part in parts {
+                match part {
+                    ast::InterpolatedStringPart::Text(value) => {
+                        result.push(InterpolatedStringPart::Text(value))
+                    },
+                    ast::InterpolatedStringPart::Expr(value) => {
+                        result.push(InterpolatedStringPart::Expr(lower_expr(
+                            ctx,
+                            value,
+                            env,
+                            type_params,
+                        )))
+                    },
+                }
+            };
+            ExprKind::InterpolatedString { parts: result }
+        },
         ast::Expr::Char { value, span: _ } => ExprKind::Char { value },
         ast::Expr::Byte { value, span: _ } => ExprKind::Byte { value },
         ast::Expr::ConstructorValue { constructor: path, span: _ } => {
@@ -954,12 +974,19 @@ fn lower_expr_value(
             };
             ExprKind::Constr { constructor: unresolved_constructor(ctx, path), args: result }
         },
-        ast::Expr::StructLiteral { name: path, fields, span: _ } => {
+        ast::Expr::StructLiteral { name: path, fields, base, span: _ } => {
             let result: Vec[(string, Expr)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_expr(ctx, field.1, env, type_params)))
             };
-            ExprKind::StructLiteral { name: path_text(ctx, path), fields: result }
+            ExprKind::StructLiteral {
+                name: path_text(ctx, path),
+                fields: result,
+                base: match base {
+                    Option::Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
+                    Option::None => Option::None,
+                },
+            }
         },
         ast::Expr::Tuple { items: values, span: _ } => {
             let result: Vec[Expr] = Vec::new();
@@ -974,6 +1001,23 @@ fn lower_expr_value(
                 result.push(lower_expr(ctx, item, env, type_params))
             };
             ExprKind::Array { items: result }
+        },
+        ast::Expr::VecLiteral { items: values, span: _ } => {
+            let result: Vec[Expr] = Vec::new();
+            for item in values {
+                result.push(lower_expr(ctx, item, env, type_params))
+            };
+            ExprKind::VecLiteral { items: result }
+        },
+        ast::Expr::HashMapLiteral { entries, span: _ } => {
+            let result: Vec[(Expr, Expr)] = Vec::new();
+            for entry in entries {
+                result.push((
+                    lower_expr(ctx, entry.0, env, type_params),
+                    lower_expr(ctx, entry.1, env, type_params),
+                ))
+            };
+            ExprKind::HashMapLiteral { entries: result }
         },
         ast::Expr::Closure { params, body, span: _ } => {
             let closure_env = copy_bindings(env);

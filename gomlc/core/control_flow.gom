@@ -17,7 +17,8 @@ fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
 fn tast_stmt_exits(value: tast::Stmt) -> bool {
     match value {
         tast::Stmt::Expr { expr } => tast_expr_exits(expr),
-        tast::Stmt::Let { is_mut: _, pat: _, value: _ } | tast::Stmt::Assign { target: _, value: _ } => false,
+        tast::Stmt::Let { is_mut: _, pat: _, value: _ }
+        | tast::Stmt::Assign { target: _, op: _, value: _ } => false,
     }
 }
 

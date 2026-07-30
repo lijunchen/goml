@@ -1571,8 +1571,8 @@ fn lower_block_from(
                     ty: value_ty,
                 }, rest)
             },
-            tast::Stmt::Assign { target, value } => {
-                let action = lower_assignment(ctx, target, value);
+            tast::Stmt::Assign { target, op, value } => {
+                let action = lower_assignment(ctx, target, op, value);
                 let binding = gensym(ctx, "_wild");
                 let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
                 prepend_stmt(LetStmt {

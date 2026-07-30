@@ -42,7 +42,7 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
                 };
                 collect_mutable_expr(expr, result)
             },
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_mutable_expr(target, result);
                 collect_mutable_expr(expr, result)
             },
@@ -172,7 +172,7 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
                 collect_pattern_names(pattern, result);
                 collect_bound_expr(expr, result)
             },
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_bound_expr(target, result);
                 collect_bound_expr(expr, result)
             },
@@ -267,7 +267,7 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
             tast::Stmt::Let { is_mut: _, pat: _, value: expr } => collect_reference_expr(expr, result),
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_reference_expr(target, result);
                 collect_reference_expr(expr, result)
             },
@@ -360,7 +360,7 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
             tast::Stmt::Let { is_mut: _, pat: _, value: expr } => collect_capture_expr(expr, result),
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_capture_expr(target, result);
                 collect_capture_expr(expr, result)
             },

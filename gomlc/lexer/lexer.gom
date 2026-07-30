@@ -19,25 +19,35 @@ pub enum TokenKind {
     Arrow,
     FatArrow,
     Plus,
+    PlusEq,
     Minus,
+    MinusEq,
     Star,
+    StarEq,
     Slash,
+    SlashEq,
     Percent,
+    PercentEq,
     Dot,
     DotDotEq,
     DotDot,
     At,
     AndAnd,
     Amp,
+    AmpEq,
     OrOr,
     Pipe,
+    PipeEq,
     Caret,
+    CaretEq,
     Tilde,
     Bang,
     Less,
     LessLess,
+    LessLessEq,
     Greater,
     GreaterGreater,
+    GreaterGreaterEq,
     GreaterEq,
     LessEq,
     EqEq,
@@ -99,6 +109,11 @@ pub enum TokenKind {
     IntLit,
     Str,
     MultilineStr,
+    FStringStart,
+    FStringText,
+    FStringExprStart,
+    FStringExprEnd,
+    FStringEnd,
     CharLit,
     ByteCharLit,
     UnsupportedByteStr,
@@ -436,6 +451,110 @@ fn scan_string(source: string, start: int) -> (bool, int) {
     (false, index.get())
 }
 
+fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
+    let index = Ref::new(start);
+    let depth = Ref::new(1);
+    while index.get() < source.byte_len() {
+        let position = index.get();
+        let value = byte_at(source, position);
+        if strings::starts_with_at(source, position, "//") {
+            index.set(position + 2);
+            while index.get() < source.byte_len() && byte_at(source, index.get()) != 10 {
+                index.set(index.get() + 1)
+            }
+        } else if value == 102
+            && position + 1 < source.byte_len()
+            && byte_at(source, position + 1) == 34
+        {
+            match scan_fstring_end(source, position) {
+                Option::Some(end) => index.set(end),
+                Option::None => return Option::None,
+            }
+        } else if value == 98
+            && position + 1 < source.byte_len()
+            && byte_at(source, position + 1) == 34
+        {
+            let (valid, end) = scan_string(source, position + 1);
+            if valid {
+                index.set(end)
+            } else {
+                return Option::None
+            }
+        } else if value == 34 {
+            let (valid, end) = scan_string(source, position);
+            if valid {
+                index.set(end)
+            } else {
+                return Option::None
+            }
+        } else if value == 98
+            && position + 1 < source.byte_len()
+            && byte_at(source, position + 1) == 39
+        {
+            match scan_byte_char_end(source, position) {
+                Option::Some(end) => index.set(end),
+                Option::None => return Option::None,
+            }
+        } else if value == 39 {
+            match scan_char_end(source, position) {
+                Option::Some(end) => index.set(end),
+                Option::None => return Option::None,
+            }
+        } else if value == 123 {
+            depth.set(depth.get() + 1);
+            index.set(position + 1)
+        } else if value == 125 {
+            depth.set(depth.get() - 1);
+            if depth.get() == 0 {
+                return Option::Some(position)
+            } else {
+                index.set(position + 1)
+            }
+        } else if value == 10 || value == 13 {
+            return Option::None
+        } else {
+            index.set(position + utf8_width(value))
+        }
+    };
+    Option::None
+}
+
+fn scan_fstring_end(source: string, start: int) -> Option[int] {
+    let index = Ref::new(start + 2);
+    while index.get() < source.byte_len() {
+        let position = index.get();
+        let value = byte_at(source, position);
+        if value == 34 {
+            return Option::Some(position + 1)
+        } else if value < 32 {
+            return Option::None
+        } else if value == 92 {
+            match scan_escape_end(source, position, 34) {
+                Option::Some(next) => index.set(next),
+                Option::None => return Option::None,
+            }
+        } else if value == 123 {
+            if position + 1 < source.byte_len() && byte_at(source, position + 1) == 123 {
+                index.set(position + 2)
+            } else {
+                match scan_interpolation_expr_end(source, position + 1) {
+                    Option::Some(end) => index.set(end + 1),
+                    Option::None => return Option::None,
+                }
+            }
+        } else if value == 125 {
+            if position + 1 < source.byte_len() && byte_at(source, position + 1) == 125 {
+                index.set(position + 2)
+            } else {
+                return Option::None
+            }
+        } else {
+            index.set(position + utf8_width(value))
+        }
+    };
+    Option::None
+}
+
 fn scan_char_end(source: string, start: int) -> Option[int] {
     let content = start + 1;
     if content >= source.byte_len() {
@@ -580,8 +699,28 @@ fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
 }
 
 fn scan_symbol(source: string, start: int) -> Option[(TokenKind, int)] {
-    if strings::starts_with_at(source, start, "..=") {
+    if strings::starts_with_at(source, start, "<<=") {
+        Option::Some((TokenKind::LessLessEq, start + 3))
+    } else if strings::starts_with_at(source, start, ">>=") {
+        Option::Some((TokenKind::GreaterGreaterEq, start + 3))
+    } else if strings::starts_with_at(source, start, "..=") {
         Option::Some((TokenKind::DotDotEq, start + 3))
+    } else if strings::starts_with_at(source, start, "+=") {
+        Option::Some((TokenKind::PlusEq, start + 2))
+    } else if strings::starts_with_at(source, start, "-=") {
+        Option::Some((TokenKind::MinusEq, start + 2))
+    } else if strings::starts_with_at(source, start, "*=") {
+        Option::Some((TokenKind::StarEq, start + 2))
+    } else if strings::starts_with_at(source, start, "/=") {
+        Option::Some((TokenKind::SlashEq, start + 2))
+    } else if strings::starts_with_at(source, start, "%=") {
+        Option::Some((TokenKind::PercentEq, start + 2))
+    } else if strings::starts_with_at(source, start, "&=") {
+        Option::Some((TokenKind::AmpEq, start + 2))
+    } else if strings::starts_with_at(source, start, "|=") {
+        Option::Some((TokenKind::PipeEq, start + 2))
+    } else if strings::starts_with_at(source, start, "^=") {
+        Option::Some((TokenKind::CaretEq, start + 2))
     } else if strings::starts_with_at(source, start, "::") {
         Option::Some((TokenKind::ColonColon, start + 2))
     } else if strings::starts_with_at(source, start, "->") {
@@ -652,6 +791,106 @@ fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: int, e
     })
 }
 
+fn append_fragment_tokens(
+    tokens: Vec[Token],
+    source: string,
+    start: int,
+    end: int,
+) -> unit {
+    for token in lex(source.byte_slice(start, end)) {
+        tokens.push(Token {
+            kind: token.kind,
+            text: token.text,
+            start: start + token.start,
+            end: start + token.end,
+        })
+    }
+}
+
+fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
+    push_token(tokens, source, TokenKind::FStringStart, start, start + 2);
+    let index = Ref::new(start + 2);
+    let text_start = Ref::new(start + 2);
+    while index.get() < source.byte_len() {
+        let position = index.get();
+        let value = byte_at(source, position);
+        if value == 34 {
+            if text_start.get() < position {
+                push_token(tokens, source, TokenKind::FStringText, text_start.get(), position)
+            } else {
+                ()
+            };
+            push_token(tokens, source, TokenKind::FStringEnd, position, position + 1);
+            return position + 1
+        } else if value < 32 {
+            if text_start.get() < position {
+                push_token(tokens, source, TokenKind::FStringText, text_start.get(), position)
+            } else {
+                ()
+            };
+            push_token(tokens, source, TokenKind::Error, position, position + 1);
+            return position + 1
+        } else if value == 92 {
+            match scan_escape_end(source, position, 34) {
+                Option::Some(next) => index.set(next),
+                Option::None => {
+                    if text_start.get() < position {
+                        push_token(tokens, source, TokenKind::FStringText, text_start.get(), position)
+                    } else {
+                        ()
+                    };
+                    push_token(tokens, source, TokenKind::Error, position, position + 1);
+                    return position + 1
+                },
+            }
+        } else if value == 123 {
+            if position + 1 < source.byte_len() && byte_at(source, position + 1) == 123 {
+                index.set(position + 2)
+            } else {
+                if text_start.get() < position {
+                    push_token(tokens, source, TokenKind::FStringText, text_start.get(), position)
+                } else {
+                    ()
+                };
+                push_token(tokens, source, TokenKind::FStringExprStart, position, position + 1);
+                match scan_interpolation_expr_end(source, position + 1) {
+                    Option::Some(end) => {
+                        append_fragment_tokens(tokens, source, position + 1, end);
+                        push_token(tokens, source, TokenKind::FStringExprEnd, end, end + 1);
+                        index.set(end + 1);
+                        text_start.set(end + 1)
+                    },
+                    Option::None => {
+                        push_token(tokens, source, TokenKind::Error, position + 1, source.byte_len());
+                        return source.byte_len()
+                    },
+                }
+            }
+        } else if value == 125 {
+            if position + 1 < source.byte_len() && byte_at(source, position + 1) == 125 {
+                index.set(position + 2)
+            } else {
+                if text_start.get() < position {
+                    push_token(tokens, source, TokenKind::FStringText, text_start.get(), position)
+                } else {
+                    ()
+                };
+                push_token(tokens, source, TokenKind::Error, position, position + 1);
+                index.set(position + 1);
+                text_start.set(position + 1)
+            }
+        } else {
+            index.set(position + utf8_width(value))
+        }
+    };
+    if text_start.get() < source.byte_len() {
+        push_token(tokens, source, TokenKind::Error, text_start.get(), source.byte_len())
+    } else {
+        push_token(tokens, source, TokenKind::Error, start, source.byte_len())
+    };
+    source.byte_len()
+}
+
 pub fn lex(source: string) -> Vec[Token] {
     let tokens: Vec[Token] = Vec::new();
     let index = Ref::new(0);
@@ -681,6 +920,11 @@ pub fn lex(source: string) -> Vec[Token] {
                     push_token(tokens, source, TokenKind::Error, start, start + 2)
                 },
             }
+        } else if value == 102
+            && start + 1 < source.byte_len()
+            && byte_at(source, start + 1) == 34
+        {
+            index.set(lex_fstring(tokens, source, start))
         } else if value == 98
             && start + 1 < source.byte_len()
             && byte_at(source, start + 1) == 39
@@ -785,25 +1029,35 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         TokenKind::Arrow => "->",
         TokenKind::FatArrow => "=>",
         TokenKind::Plus => "+",
+        TokenKind::PlusEq => "+=",
         TokenKind::Minus => "-",
+        TokenKind::MinusEq => "-=",
         TokenKind::Star => "*",
+        TokenKind::StarEq => "*=",
         TokenKind::Slash => "/",
+        TokenKind::SlashEq => "/=",
         TokenKind::Percent => "%",
+        TokenKind::PercentEq => "%=",
         TokenKind::Dot => ".",
         TokenKind::DotDotEq => "..=",
         TokenKind::DotDot => "..",
         TokenKind::At => "@",
         TokenKind::AndAnd => "&&",
         TokenKind::Amp => "&",
+        TokenKind::AmpEq => "&=",
         TokenKind::OrOr => "||",
         TokenKind::Pipe => "|",
+        TokenKind::PipeEq => "|=",
         TokenKind::Caret => "^",
+        TokenKind::CaretEq => "^=",
         TokenKind::Tilde => "~",
         TokenKind::Bang => "!",
         TokenKind::Less => "<",
         TokenKind::LessLess => "<<",
+        TokenKind::LessLessEq => "<<=",
         TokenKind::Greater => ">",
         TokenKind::GreaterGreater => ">>",
+        TokenKind::GreaterGreaterEq => ">>=",
         TokenKind::GreaterEq => ">=",
         TokenKind::LessEq => "<=",
         TokenKind::EqEq => "==",
@@ -865,6 +1119,11 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         TokenKind::IntLit => "int_lit",
         TokenKind::Str => "str",
         TokenKind::MultilineStr => "multiline_str",
+        TokenKind::FStringStart => "f\"",
+        TokenKind::FStringText => "interpolated string text",
+        TokenKind::FStringExprStart => "{",
+        TokenKind::FStringExprEnd => "}",
+        TokenKind::FStringEnd => "\"",
         TokenKind::CharLit => "char_lit",
         TokenKind::ByteCharLit => "byte_char_lit",
         TokenKind::UnsupportedByteStr => "unsupported_byte_str",

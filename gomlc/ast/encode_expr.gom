@@ -88,6 +88,25 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_string_value(builder, Hash::hash(value).to_string())
         },
         Expr::String { value, span: value_span } => encode_literal_expr(builder, "String", value, value_span),
+        Expr::InterpolatedString { parts, span: value_span } => {
+            encode_open(builder, "Expr.InterpolatedString");
+            encode_span(builder, value_span);
+            encode_list(builder, parts.len());
+            for part in parts {
+                match part {
+                    InterpolatedStringPart::Text(value) => {
+                        encode_open(builder, "InterpolatedStringPart.Text");
+                        encode_string_value(builder, value);
+                        encode_close(builder)
+                    },
+                    InterpolatedStringPart::Expr(value) => {
+                        encode_open(builder, "InterpolatedStringPart.Expr");
+                        encode_expr(builder, value);
+                        encode_close(builder)
+                    },
+                }
+            }
+        },
         Expr::Char { value, span: value_span } => encode_literal_expr(builder, "Char", value, value_span),
         Expr::Byte { value, span: value_span } => encode_literal_expr(builder, "Byte", value, value_span),
         Expr::ConstructorValue { constructor: path, span: value_span } => {
@@ -102,7 +121,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_path(builder, path);
             encode_exprs(builder, args)
         },
-        Expr::StructLiteral { name: path, fields, span: value_span } => {
+        Expr::StructLiteral { name: path, fields, base, span: value_span } => {
             encode_open(builder, "Expr.StructLiteral");
             encode_span(builder, value_span);
             encode_path(builder, path);
@@ -113,6 +132,13 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
                 encode_string_value(builder, name);
                 encode_expr(builder, expr);
                 encode_close(builder)
+            };
+            match base {
+                Option::Some(value) => {
+                    encode_some(builder);
+                    encode_expr(builder, value)
+                },
+                Option::None => encode_none(builder),
             }
         },
         Expr::Tuple { items, span: value_span } => {
@@ -124,6 +150,22 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_open(builder, "Expr.Array");
             encode_span(builder, value_span);
             encode_exprs(builder, items)
+        },
+        Expr::VecLiteral { items, span: value_span } => {
+            encode_open(builder, "Expr.VecLiteral");
+            encode_span(builder, value_span);
+            encode_exprs(builder, items)
+        },
+        Expr::HashMapLiteral { entries, span: value_span } => {
+            encode_open(builder, "Expr.HashMapLiteral");
+            encode_span(builder, value_span);
+            encode_list(builder, entries.len());
+            for entry in entries {
+                encode_open(builder, "HashMapEntry");
+                encode_expr(builder, entry.0);
+                encode_expr(builder, entry.1);
+                encode_close(builder)
+            }
         },
         Expr::Closure { params, body, span: value_span } => {
             encode_open(builder, "Expr.Closure");

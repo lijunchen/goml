@@ -488,9 +488,14 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::Assign { target, value } => {
+        Stmt::Assign { target, op, value } => {
             write_expr(builder, target, indent);
-            builder.write_string(" = ");
+            builder.write_char(' ');
+            match op {
+                ast::AssignmentOp::Compound(value) => builder.write_string(binary_symbol(value)),
+                ast::AssignmentOp::Plain => (),
+            };
+            builder.write_string("= ");
             write_expr(builder, value, indent)
         },
         Stmt::Expr { expr: value } => write_expr(builder, value, indent),

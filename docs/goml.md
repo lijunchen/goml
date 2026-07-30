@@ -82,6 +82,7 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 | integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `int` when unconstrained |
 | floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `float64` when unconstrained |
 | string | `"text"` | Type is `string` |
+| interpolated string | `f"value={value}"` | Type is `string`; embedded values use `ToString` |
 | character | `'a'`、`'\n'`、`'\u0041'` | Type is `char`, representing a Unicode scalar value |
 | byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `uint8` |
 
@@ -96,6 +97,14 @@ let values: [int16; 3] = [1, 2, 3];
 ```
 
 Strings support `\"`, `\\`, `\n`, `\r`, `\t`, `\b`, `\f`, `\/` and four-digit `\uXXXX` escaping; characters are escaped using the same set of control characters, and `\'` is used to represent single quotes. Ordinary strings cannot span lines.
+
+Interpolated strings use `f"..."`. Each `{expression}` is evaluated once from left to right and converted with `ToString`; a value that is already `string` is inserted directly. Write `{{` and `}}` for literal braces. Formatting specifications and interpolated multiline strings are not supported:
+
+```goml
+let name = "Ada";
+let count = 3;
+let message = f"{name} has {count} items {{ready}}";
+```
 
 Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes.Non-ASCII contents are rejected.There is no builtin `bytes` type or byte-string literal; `b"..."` is deliberately rejected pending a separate design.
 
@@ -398,7 +407,16 @@ Field access uses dot notation:
 let x = point.x;
 ```
 
-Currently, Rust's `..old` structure update syntax is not supported, nor is direct field assignment `point.x = value;` supported.When you need to update, you can rebuild the entire value, or put the modified content that needs to be shared into `Ref[T]`.
+Structure update copies omitted fields from a base value of the same structure type. The `..base` item must be last. Explicit field expressions are evaluated from left to right, followed by the base expression, and every expression is evaluated once:
+
+```goml
+let moved = Point {
+    x: point.x + 1,
+    ..point,
+};
+```
+
+Structure update is rejected when inaccessible fields prevent construction across a package boundary.
 
 Directly recursive structures will have infinite size and must be recursed through indirect layers such as `Ref` and `Vec`:
 
@@ -572,13 +590,15 @@ let mut count = 0;
 count = count + 1;
 ```
 
-Ordinary local bindings without `mut` cannot be reassigned.Currently ordinary assignment targets are mutable local variables or supported index locations; compound assignments, increment/decrement, or direct field assignments are not supported:
+Ordinary local bindings without `mut` cannot be reassigned.Assignment targets include mutable locals, tuple projections, structure fields, and supported index locations. Compound assignment supports `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `^=`, `<<=`, and `>>=`:
 
-```text
-x += 1
-x++
-point.x = 1
+```goml
+count += 1;
+point.x *= 2;
+values[index] <<= 1;
 ```
+
+The target root and each index are evaluated once before the right-hand side. `++` and `--` are not supported. Compound assignment through `HashMap` indexing is not supported because an indexed read returns `Option[V]`; use `get` and `set`, or ordinary indexed assignment.
 
 Array index assignment requires that the root value is a `let mut` local array, or comes from the built-in `Ref.get()`:
 
@@ -1498,11 +1518,11 @@ The index type is `int`.The underlying `array_get` and `array_set` can also be c
 ### `Vec[T]`
 
 ```goml
-let values: Vec[int32] = Vec::new();
-values.push(1);
-values.push(2);
+let values = Vec::[1, 2, 3];
 let first = values.get(0);
 ```
+
+`Vec::[...]` creates a vector literal. Items are evaluated once from left to right. A trailing comma is allowed. An empty literal needs an expected element type, for example `let values: Vec[int32] = Vec::[];`.
 
 Commonly used methods:
 
@@ -1547,10 +1567,14 @@ Commonly used methods: `get`, `len`, `sub`, `iter`.`view[index]` can be written,
 The key type must implement both `Hash` and `Eq`:
 
 ```goml
-let counts: HashMap[string, int32] = HashMap::new();
-counts.set("a", 1);
+let counts = HashMap::{
+    "a" => 1,
+    "b" => 2,
+};
 let value: Option[int32] = counts.get("a");
 ```
+
+`HashMap::{ key => value, ... }` evaluates each key followed by its value, proceeding from left to right. A trailing comma is allowed. Later duplicate keys overwrite earlier entries. An empty literal needs an expected key and value type, for example `let counts: HashMap[string, int32] = HashMap::{};`. The `=>` spelling reuses the same token used by match arms.
 
 Commonly used methods: `new`, `get`, `set`, `remove`, `len`, `contains`, and `entries`. `entries()` returns a snapshot `Vec[(K, V)]`.
 
@@ -1738,15 +1762,29 @@ type_list     = type ("," type)* ","?
 
 block         = "{" statement* expression? "}"
 statement     = "let" "mut"? pattern (":" type)? "=" expression ";"
-              | assign_target "=" expression ";"
+              | assign_target assignment_operator expression ";"
               | expression ";"
               | control_expression
 
-expression    = literal | path | tuple | array | struct_literal | closure
+assignment_operator = "=" | "+=" | "-=" | "*=" | "/=" | "%="
+                    | "&=" | "|=" | "^=" | "<<=" | ">>="
+
+expression    = literal | interpolated_string | path | tuple | array
+              | vec_literal | hashmap_literal | struct_literal | closure
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
               | if_expression | match_expression | while_expression | for_expression
               | "return" expression? | "break" | "continue" | "go" expression
+
+interpolated_string = "f\"" (string_text | "{{" | "}}" | "{" expression "}")* "\""
+vec_literal   = "Vec" "::" "[" (expression ("," expression)* ","?)? "]"
+hashmap_literal = "HashMap" "::" "{"
+                  (expression "=>" expression
+                   ("," expression "=>" expression)* ","?)?
+                  "}"
+struct_literal = path "{" (struct_literal_field ("," struct_literal_field)*
+                 ("," ".." expression)? ","? | ".." expression ","?)? "}"
+struct_literal_field = lower_ident (":" expression)?
 
 control_expression = if_expression | match_expression | while_expression | for_expression
 if_expression = "if" expression block ("else" (block | if_expression))?

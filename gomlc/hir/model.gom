@@ -218,13 +218,22 @@ pub enum Stmt {
         annotation: Option[TypeExpr],
         value: Expr,
     },
-    Assign { target: Expr, value: Expr },
+    Assign {
+        target: Expr,
+        op: ast::AssignmentOp,
+        value: Expr,
+    },
     Expr { expr: Expr },
 }
 
 pub struct Expr {
     pub kind: ExprKind,
     pub span: ast::Span,
+}
+
+pub enum InterpolatedStringPart {
+    Text(string),
+    Expr(Expr),
 }
 
 pub enum ExprKind {
@@ -240,13 +249,20 @@ pub enum ExprKind {
     Int { value: string },
     Float { value: float64 },
     String { value: string },
+    InterpolatedString { parts: Vec[InterpolatedStringPart] },
     Char { value: string },
     Byte { value: string },
     ConstructorValue { constructor: ConstructorRef },
     Constr { constructor: ConstructorRef, args: Vec[Expr] },
-    StructLiteral { name: string, fields: Vec[(string, Expr)] },
+    StructLiteral {
+        name: string,
+        fields: Vec[(string, Expr)],
+        base: Option[Expr],
+    },
     Tuple { items: Vec[Expr] },
     Array { items: Vec[Expr] },
+    VecLiteral { items: Vec[Expr] },
+    HashMapLiteral { entries: Vec[(Expr, Expr)] },
     Closure { params: Vec[ClosureParam], body: Expr },
     Match { expr: Expr, arms: Vec[Arm] },
     If { cond: Expr, then_branch: Expr, else_branch: Expr },

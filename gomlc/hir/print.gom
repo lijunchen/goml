@@ -330,6 +330,32 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
+fn write_interpolated_text(builder: text::StringBuilder, value: string) -> unit {
+    let index = Ref::new(0);
+    while index.get() < value.byte_len() {
+        let byte = value.byte_get(index.get());
+        if byte == 34 {
+            builder.write_string("\\\"")
+        } else if byte == 92 {
+            builder.write_string("\\\\")
+        } else if byte == 10 {
+            builder.write_string("\\n")
+        } else if byte == 13 {
+            builder.write_string("\\r")
+        } else if byte == 9 {
+            builder.write_string("\\t")
+        } else if byte == 123 {
+            builder.write_string("{{")
+        } else if byte == 125 {
+            builder.write_string("}}")
+        } else {
+            let width = utf8_width(byte);
+            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+        };
+        index.set(index.get() + utf8_width(byte))
+    }
+}
+
 fn unary_symbol(value: ast::UnaryOp) -> string {
     match value {
         ast::UnaryOp::Neg => "-",
@@ -430,9 +456,14 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::Assign { target, value: expr } => {
+        Stmt::Assign { target, op, value: expr } => {
             write_expr(builder, target, indent);
-            builder.write_string(" = ");
+            builder.write_char(' ');
+            match op {
+                ast::AssignmentOp::Compound(value) => builder.write_string(binary_symbol(value)),
+                ast::AssignmentOp::Plain => (),
+            };
+            builder.write_string("= ");
             write_expr(builder, expr, indent)
         },
         Stmt::Expr { expr } => write_expr(builder, expr, indent),
@@ -473,6 +504,22 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         ExprKind::Int { value } => builder.write_string(value),
         ExprKind::Float { value } => builder.write_string(value.to_string()),
         ExprKind::String { value } => write_quoted_string(builder, value),
+        ExprKind::InterpolatedString { parts } => {
+            builder.write_string("f\"");
+            for part in parts {
+                match part {
+                    InterpolatedStringPart::Text(value) => {
+                        write_interpolated_text(builder, value)
+                    },
+                    InterpolatedStringPart::Expr(value) => {
+                        builder.write_char('{');
+                        write_expr(builder, value, indent);
+                        builder.write_char('}')
+                    },
+                }
+            };
+            builder.write_char('"')
+        },
         ExprKind::Char { value } => {
             builder.write_char('\'');
             builder.write_string(value);
@@ -492,10 +539,13 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                 ()
             }
         },
-        ExprKind::StructLiteral { name, fields } => {
+        ExprKind::StructLiteral { name, fields, base } => {
             builder.write_string(name);
             builder.write_string(" {");
-            if fields.len() == 0 {
+            if fields.len() == 0 && match base {
+                Option::Some(_) => false,
+                Option::None => true,
+            } {
                 builder.write_char('}')
             } else {
                 let index = Ref::new(0);
@@ -511,6 +561,19 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                     write_expr(builder, field.1, indent + 4);
                     index.set(index.get() + 1)
                 };
+                match base {
+                    Option::Some(value) => {
+                        if index.get() > 0 {
+                            builder.write_char(',')
+                        } else {
+                            ()
+                        };
+                        newline(builder, indent + 4);
+                        builder.write_string("..");
+                        write_expr(builder, value, indent + 4)
+                    },
+                    Option::None => (),
+                };
                 newline(builder, indent);
                 builder.write_char('}')
             }
@@ -524,6 +587,27 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             builder.write_char('[');
             write_exprs(builder, values, ", ", indent);
             builder.write_char(']')
+        },
+        ExprKind::VecLiteral { items: values } => {
+            builder.write_string("Vec::[");
+            write_exprs(builder, values, ", ", indent);
+            builder.write_char(']')
+        },
+        ExprKind::HashMapLiteral { entries } => {
+            builder.write_string("HashMap::{");
+            let index = Ref::new(0);
+            for entry in entries {
+                if index.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_expr(builder, entry.0, indent);
+                builder.write_string(" => ");
+                write_expr(builder, entry.1, indent);
+                index.set(index.get() + 1)
+            };
+            builder.write_char('}')
         },
         ExprKind::Closure { params, body } => {
             builder.write_char('|');

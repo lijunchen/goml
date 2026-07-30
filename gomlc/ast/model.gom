@@ -213,7 +213,12 @@ pub enum Stmt {
         value: Expr,
         span: Span,
     },
-    Assign { target: Expr, value: Expr, span: Span },
+    Assign {
+        target: Expr,
+        op: AssignmentOp,
+        value: Expr,
+        span: Span,
+    },
     Expr { expr: Expr, span: Span },
 }
 
@@ -244,6 +249,16 @@ pub enum BinaryOp {
     NotEq,
 }
 
+pub enum AssignmentOp {
+    Plain,
+    Compound(BinaryOp),
+}
+
+pub enum InterpolatedStringPart {
+    Text(string),
+    Expr(Expr),
+}
+
 pub enum Expr {
     Path { path: Path, type_args: Vec[TypeExpr], span: Span },
     Unit { span: Span },
@@ -251,13 +266,21 @@ pub enum Expr {
     Int { value: string, span: Span },
     Float { value: float64, span: Span },
     String { value: string, span: Span },
+    InterpolatedString { parts: Vec[InterpolatedStringPart], span: Span },
     Char { value: string, span: Span },
     Byte { value: string, span: Span },
     ConstructorValue { constructor: Path, span: Span },
     Constr { constructor: Path, args: Vec[Expr], span: Span },
-    StructLiteral { name: Path, fields: Vec[(string, Expr)], span: Span },
+    StructLiteral {
+        name: Path,
+        fields: Vec[(string, Expr)],
+        base: Option[Expr],
+        span: Span,
+    },
     Tuple { items: Vec[Expr], span: Span },
     Array { items: Vec[Expr], span: Span },
+    VecLiteral { items: Vec[Expr], span: Span },
+    HashMapLiteral { entries: Vec[(Expr, Expr)], span: Span },
     Closure { params: Vec[ClosureParam], body: Expr, span: Span },
     Match { expr: Expr, arms: Vec[Arm], span: Span },
     If { cond: Expr, then_branch: Expr, else_branch: Expr, span: Span },
@@ -331,6 +354,7 @@ pub fn expr_span(value: Expr) -> Span {
         | Expr::Int { span, .. }
         | Expr::Float { span, .. }
         | Expr::String { span, .. }
+        | Expr::InterpolatedString { span, .. }
         | Expr::Char { span, .. }
         | Expr::Byte { span, .. }
         | Expr::ConstructorValue { span, .. }
@@ -338,6 +362,8 @@ pub fn expr_span(value: Expr) -> Span {
         | Expr::StructLiteral { span, .. }
         | Expr::Tuple { span, .. }
         | Expr::Array { span, .. }
+        | Expr::VecLiteral { span, .. }
+        | Expr::HashMapLiteral { span, .. }
         | Expr::Closure { span, .. }
         | Expr::Match { span, .. }
         | Expr::If { span, .. }

@@ -1089,19 +1089,36 @@ fn block(parser: Parser) -> unit {
             };
             match expr(parser) {
                 Option::Some(expr_marker) => {
-                    if parser.at(lexer::TokenKind::Eq) {
-                        let _ = finish_assign_stmt(parser, expr_marker);
-                        ()
-                    } else if parser.eat(lexer::TokenKind::Semi) {
-                        let _ = wrap_expr_stmt(parser, expr_marker);
-                        ()
-                    } else if semicolon_optional
-                        && parser.at(lexer::TokenKind::RBrace) == false
-                    {
-                        let _ = wrap_expr_stmt(parser, expr_marker);
-                        ()
-                    } else {
-                        trailing_expr_seen.set(true)
+                    let assignment_operator = match parser.peek() {
+                        lexer::TokenKind::Eq
+                        | lexer::TokenKind::PlusEq
+                        | lexer::TokenKind::MinusEq
+                        | lexer::TokenKind::StarEq
+                        | lexer::TokenKind::SlashEq
+                        | lexer::TokenKind::PercentEq
+                        | lexer::TokenKind::AmpEq
+                        | lexer::TokenKind::PipeEq
+                        | lexer::TokenKind::CaretEq
+                        | lexer::TokenKind::LessLessEq
+                        | lexer::TokenKind::GreaterGreaterEq => Option::Some(parser.peek()),
+                        _ => Option::None,
+                    };
+                    match assignment_operator {
+                        Option::Some(operator) => {
+                            let _ = finish_assign_stmt(parser, expr_marker, operator);
+                            ()
+                        },
+                        Option::None => if parser.eat(lexer::TokenKind::Semi) {
+                            let _ = wrap_expr_stmt(parser, expr_marker);
+                            ()
+                        } else if semicolon_optional
+                            && parser.at(lexer::TokenKind::RBrace) == false
+                        {
+                            let _ = wrap_expr_stmt(parser, expr_marker);
+                            ()
+                        } else {
+                            trailing_expr_seen.set(true)
+                        },
                     }
                 },
                 Option::None => parsing.set(false),

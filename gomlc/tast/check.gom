@@ -1333,6 +1333,149 @@ fn named_type_field_present(
     false
 }
 
+fn named_type_field(
+    values: Vec[(string, Type)],
+    name: string,
+) -> Option[Type] {
+    for field in values {
+        if field.0 == name {
+            return Option::Some(field.1)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn checked_update_field(
+    values: Vec[(string, string, Type)],
+    name: string,
+) -> Option[(string, Type)] {
+    for field in values {
+        if field.0 == name {
+            return Option::Some((field.1, field.2))
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn check_struct_update_expr(
+    ctx: Checker,
+    name: string,
+    fields: Vec[(string, hir::Expr)],
+    base: hir::Expr,
+    expected: Option[Type],
+    value_span: ast::Span,
+) -> Expr {
+    match resolve_struct(ctx, name) {
+        Option::Some(info) => {
+            match propagated_expected(expected) {
+                Option::Some(ty) => expect_type(ctx, info.ty, ty),
+                Option::None => (),
+            };
+            let stmts: Vec[Stmt] = Vec::new();
+            let checked_fields: Vec[(string, string, Type)] = Vec::new();
+            for index in range(0, fields.len()) {
+                let provided = fields.get(index);
+                if named_expr_field_before(fields, index, provided.0) {
+                    push_diagnostic_at(
+                        ctx,
+                        "Duplicate field "
+                            + provided.0
+                            + " in struct update "
+                            + name,
+                        Option::Some(provided.1.span),
+                    )
+                } else {
+                    ()
+                };
+                let field_ty = match named_type_field(info.fields, provided.0) {
+                    Option::Some(ty) => ty,
+                    Option::None => {
+                        push_diagnostic_at(
+                            ctx,
+                            "Unknown field "
+                                + provided.0
+                                + " on struct update "
+                                + name,
+                            Option::Some(provided.1.span),
+                        );
+                        Type::Error
+                    },
+                };
+                let value = check_expr(ctx, provided.1, Option::Some(field_ty));
+                let local_name = "struct_update_field/"
+                    + value_span.start.to_string()
+                    + "/"
+                    + index.to_string();
+                stmts.push(Stmt::Let {
+                    is_mut: false,
+                    pat: Pat::Var { name: local_name, ty: field_ty },
+                    value,
+                });
+                checked_fields.push((provided.0, local_name, field_ty))
+            };
+            let checked_base = check_expr(ctx, base, Option::Some(info.ty));
+            if info.has_hidden_fields {
+                push_diagnostic(
+                    ctx,
+                    "Struct "
+                        + info.constructor.name
+                        + " has private fields and cannot be updated here",
+                );
+                report_error_inference(ctx, expected);
+                Expr::Prim { value: Primitive::Unit, ty: Type::Error }
+            } else {
+                let base_name = "struct_update_base/" + value_span.start.to_string();
+                stmts.push(Stmt::Let {
+                    is_mut: false,
+                    pat: Pat::Var { name: base_name, ty: info.ty },
+                    value: checked_base,
+                });
+                let args: Vec[Expr] = Vec::new();
+                for field in info.fields {
+                    match checked_update_field(checked_fields, field.0) {
+                        Option::Some((local_name, field_ty)) => {
+                            args.push(Expr::Var { name: local_name, ty: field_ty })
+                        },
+                        Option::None => args.push(Expr::Field {
+                            expr: Expr::Var { name: base_name, ty: info.ty },
+                            field_name: field.0,
+                            ty: field.1,
+                        }),
+                    }
+                };
+                coerce_expr(
+                    ctx,
+                    Expr::Block {
+                        block: Block {
+                            stmts,
+                            tail: Option::Some(Expr::Constr {
+                                constructor: info.constructor,
+                                args,
+                                ty: info.ty,
+                            }),
+                        },
+                        ty: info.ty,
+                    },
+                    expected,
+                )
+            }
+        },
+        Option::None => {
+            for field in fields {
+                let _ = check_expr(ctx, field.1, Option::None);
+            };
+            let _ = check_expr(ctx, base, Option::None);
+            push_diagnostic(ctx, "Struct " + name + " not found for struct update");
+            report_error_inference(ctx, expected);
+            Expr::Prim { value: Primitive::Unit, ty: Type::Error }
+        },
+    }
+}
+
 fn check_struct_expr(
     ctx: Checker,
     name: string,
@@ -1562,6 +1705,214 @@ fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
         items.push(check_expr(ctx, value, Option::Some(elem)))
     };
     coerce_expr(ctx, Expr::Array { items, ty: array_ty }, expected)
+}
+
+fn collection_literal_call(
+    owner: Type,
+    name: string,
+    params: Vec[Type],
+    ret_ty: Type,
+    args: Vec[Expr],
+) -> Expr {
+    let function_ty = Type::Func { params, ret_ty };
+    Expr::Call {
+        func: Expr::Callable {
+            callable: Callable::InherentMethod {
+                receiver_ty: owner,
+                method_name: name,
+            },
+            ty: function_ty,
+        },
+        args,
+        ty: ret_ty,
+    }
+}
+
+fn check_vec_literal_expr(
+    ctx: Checker,
+    values: Vec[hir::Expr],
+    expected: Option[Type],
+    value_span: ast::Span,
+) -> Expr {
+    let elem = fresh_type(ctx.counter, VarKind::Any);
+    let vec_ty = Type::VecType { elem };
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, vec_ty, ty),
+        Option::None => if values.len() == 0 {
+            push_inference_diagnostic_at(ctx, value_span, 0)
+        } else {
+            ()
+        },
+    };
+    let local_name = "vec_literal/" + value_span.start.to_string();
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Let {
+        is_mut: false,
+        pat: Pat::Var { name: local_name, ty: vec_ty },
+        value: collection_literal_call(
+            vec_ty,
+            "new",
+            Vec::new(),
+            vec_ty,
+            Vec::new(),
+        ),
+    });
+    for value in values {
+        let args: Vec[Expr] = Vec::new();
+        args.push(Expr::Var { name: local_name, ty: vec_ty });
+        args.push(check_expr(ctx, value, Option::Some(elem)));
+        stmts.push(Stmt::Expr {
+            expr: collection_literal_call(
+                vec_ty,
+                "push",
+                two_types(vec_ty, elem),
+                Type::Unit,
+                args,
+            ),
+        })
+    };
+    coerce_expr(
+        ctx,
+        Expr::Block {
+            block: Block {
+                stmts,
+                tail: Option::Some(Expr::Var { name: local_name, ty: vec_ty }),
+            },
+            ty: vec_ty,
+        },
+        expected,
+    )
+}
+
+fn check_hashmap_literal_expr(
+    ctx: Checker,
+    entries: Vec[(hir::Expr, hir::Expr)],
+    expected: Option[Type],
+    value_span: ast::Span,
+) -> Expr {
+    let key = fresh_type(ctx.counter, VarKind::Any);
+    let value = fresh_type(ctx.counter, VarKind::Any);
+    let map_ty = Type::HashMap { key, value };
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, map_ty, ty),
+        Option::None => if entries.len() == 0 {
+            push_inference_diagnostic_at(ctx, value_span, 0)
+        } else {
+            ()
+        },
+    };
+    require_hashmap_type(ctx, map_ty);
+    let local_name = "hashmap_literal/" + value_span.start.to_string();
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Let {
+        is_mut: false,
+        pat: Pat::Var { name: local_name, ty: map_ty },
+        value: collection_literal_call(
+            map_ty,
+            "new",
+            Vec::new(),
+            map_ty,
+            Vec::new(),
+        ),
+    });
+    for entry in entries {
+        let args: Vec[Expr] = Vec::new();
+        args.push(Expr::Var { name: local_name, ty: map_ty });
+        args.push(check_expr(ctx, entry.0, Option::Some(key)));
+        args.push(check_expr(ctx, entry.1, Option::Some(value)));
+        stmts.push(Stmt::Expr {
+            expr: collection_literal_call(
+                map_ty,
+                "set",
+                three_types(map_ty, key, value),
+                Type::Unit,
+                args,
+            ),
+        })
+    };
+    coerce_expr(
+        ctx,
+        Expr::Block {
+            block: Block {
+                stmts,
+                tail: Option::Some(Expr::Var { name: local_name, ty: map_ty }),
+            },
+            ty: map_ty,
+        },
+        expected,
+    )
+}
+
+fn interpolated_value_to_string(ctx: Checker, source: hir::Expr) -> Expr {
+    let value = check_expr(ctx, source, Option::None);
+    let value_ty = expr_type(value);
+    match prune(normalize_type(ctx, value_ty)) {
+        Type::String => value,
+        Type::Error => Expr::Prim {
+            value: Primitive::String { value: "" },
+            ty: Type::String,
+        },
+        _ => match resolve_builtin_method(ctx, value_ty, "to_string") {
+            Option::Some(resolved) => {
+                let args: Vec[Expr] = Vec::new();
+                args.push(value);
+                Expr::Call {
+                    func: Expr::Callable {
+                        callable: resolved.callable,
+                        ty: resolved.ty,
+                    },
+                    args,
+                    ty: Type::String,
+                }
+            },
+            Option::None => {
+                push_diagnostic(
+                    ctx,
+                    "interpolated expression of type "
+                        + type_text(value_ty)
+                        + " does not implement ToString",
+                );
+                Expr::Prim {
+                    value: Primitive::String { value: "" },
+                    ty: Type::String,
+                }
+            },
+        },
+    }
+}
+
+fn check_interpolated_string_expr(
+    ctx: Checker,
+    parts: Vec[hir::InterpolatedStringPart],
+    expected: Option[Type],
+) -> Expr {
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, Type::String, ty),
+        Option::None => (),
+    };
+    let result = Ref::new(Expr::Prim {
+        value: Primitive::String { value: "" },
+        ty: Type::String,
+    });
+    for part in parts {
+        let next = match part {
+            hir::InterpolatedStringPart::Text(value) => Expr::Prim {
+                value: Primitive::String { value },
+                ty: Type::String,
+            },
+            hir::InterpolatedStringPart::Expr(value) => {
+                interpolated_value_to_string(ctx, value)
+            },
+        };
+        result.set(Expr::Binary {
+            op: ast::BinaryOp::Add,
+            lhs: result.get(),
+            rhs: next,
+            ty: Type::String,
+            resolution: BinaryResolution::Builtin,
+        })
+    };
+    coerce_expr(ctx, result.get(), expected)
 }
 
 fn check_closure_expr(
@@ -3855,7 +4206,11 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
     }
 }
 
-fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
+fn check_assign_target(
+    ctx: Checker,
+    target: hir::Expr,
+    compound: bool,
+) -> (Expr, Type) {
     let target_span = target.span;
     match target.kind {
         hir::ExprKind::Index { base: base_source, index: index_source } => {
@@ -3885,13 +4240,75 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
                 },
             };
             let index = check_expr(ctx, index_source, Option::Some(parts.0));
-            (Expr::Index { base, index, ty: parts.1 }, parts.2)
+            (Expr::Index {
+                base,
+                index,
+                ty: if compound {
+                    match prune(expr_type(base)) {
+                        Type::HashMap { key: _, value } => nominal_type("Option", one_type(value)),
+                        _ => parts.2,
+                    }
+                } else {
+                    parts.1
+                },
+            }, parts.2)
         },
         _ => {
             let typed = check_expr(ctx, target, Option::None);
             (typed, expr_type(typed))
         },
     }
+}
+
+fn check_compound_assignment_value(
+    ctx: Checker,
+    op: ast::BinaryOp,
+    target_ty: Type,
+    source: hir::Expr,
+) -> Expr {
+    let value = check_expr(
+        ctx,
+        source,
+        if is_shift_op(op) {
+            Option::None
+        } else {
+            Option::Some(target_ty)
+        },
+    );
+    if is_shift_op(op) {
+        if !is_integer_type(target_ty) {
+            push_operator_not_defined(ctx, op, target_ty, source.span)
+        } else {
+            ()
+        };
+        if !is_integer_type(expr_type(value)) {
+            push_operator_not_defined(ctx, op, expr_type(value), source.span)
+        } else {
+            ()
+        }
+    } else {
+        expect_type_at(ctx, target_ty, expr_type(value), Option::Some(source.span));
+        if (is_bitwise_op(op) || is_remainder_op(op)) && !is_integer_type(target_ty) {
+            push_operator_not_defined(ctx, op, target_ty, source.span)
+        } else if is_arithmetic_op(op)
+            && !is_numeric_type(target_ty)
+            && !(match prune(target_ty) {
+                Type::String => match op {
+                    ast::BinaryOp::Add => true,
+                    _ => false,
+                },
+                Type::Con { name: _ }
+                | Type::App { ty: _, args: _ }
+                | Type::Param { name: _ } => true,
+                _ => false,
+            })
+        {
+            push_operator_not_defined(ctx, op, target_ty, source.span)
+        } else {
+            ()
+        }
+    };
+    value
 }
 
 fn array_assignment_local_root(value: hir::Expr) -> Option[hir::LocalId] {
@@ -4172,11 +4589,23 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             hir::ExprKind::Constr { constructor, args } => {
                 check_constructor_expr(ctx, constructor, args, Option::None)
             },
-            hir::ExprKind::StructLiteral { name, fields } => {
-                check_struct_expr(ctx, name, fields, Option::None)
+            hir::ExprKind::StructLiteral { name, fields, base } => match base {
+                Option::Some(value) => {
+                    check_struct_update_expr(ctx, name, fields, value, Option::None, value_span)
+                },
+                Option::None => check_struct_expr(ctx, name, fields, Option::None),
             },
             hir::ExprKind::Tuple { items: values } => check_tuple_expr(ctx, values, Option::None),
             hir::ExprKind::Array { items: values } => check_array_expr(ctx, values, Option::None),
+            hir::ExprKind::VecLiteral { items: values } => {
+                check_vec_literal_expr(ctx, values, Option::None, value_span)
+            },
+            hir::ExprKind::HashMapLiteral { entries } => {
+                check_hashmap_literal_expr(ctx, entries, Option::None, value_span)
+            },
+            hir::ExprKind::InterpolatedString { parts } => {
+                check_interpolated_string_expr(ctx, parts, Option::None)
+            },
             hir::ExprKind::Closure { params, body } => {
                 check_closure_expr(ctx, params, body, Option::None)
             },
@@ -4471,11 +4900,23 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         hir::ExprKind::Constr { constructor, args } => {
             check_constructor_expr(ctx, constructor, args, expected)
         },
-        hir::ExprKind::StructLiteral { name, fields } => {
-            check_struct_expr(ctx, name, fields, expected)
+        hir::ExprKind::StructLiteral { name, fields, base } => match base {
+            Option::Some(value) => {
+                check_struct_update_expr(ctx, name, fields, value, expected, value_span)
+            },
+            Option::None => check_struct_expr(ctx, name, fields, expected),
         },
         hir::ExprKind::Tuple { items: values } => check_tuple_expr(ctx, values, expected),
         hir::ExprKind::Array { items: values } => check_array_expr(ctx, values, expected),
+        hir::ExprKind::VecLiteral { items: values } => {
+            check_vec_literal_expr(ctx, values, expected, value_span)
+        },
+        hir::ExprKind::HashMapLiteral { entries } => {
+            check_hashmap_literal_expr(ctx, entries, expected, value_span)
+        },
+        hir::ExprKind::InterpolatedString { parts } => {
+            check_interpolated_string_expr(ctx, parts, expected)
+        },
         hir::ExprKind::Closure { params, body } => coerce_expr(
             ctx,
             check_closure_expr(ctx, params, body, expected),
@@ -5055,10 +5496,35 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             };
             Stmt::Let { is_mut, pat: pattern, value: expression }
         },
-        hir::Stmt::Assign { target, value: source } => {
-            let checked = check_assign_target(ctx, target);
-            let source = check_expr(ctx, source, Option::Some(checked.1));
-            Stmt::Assign { target: checked.0, value: source }
+        hir::Stmt::Assign { target, op, value: source } => {
+            let target_span = target.span;
+            let checked = check_assign_target(ctx, target, match op {
+                ast::AssignmentOp::Compound(_) => true,
+                ast::AssignmentOp::Plain => false,
+            });
+            let source = match op {
+                ast::AssignmentOp::Compound(operator) => {
+                    let supported = match checked.0 {
+                        Expr::Index { base, index: _, ty: _ } => match prune(expr_type(base)) {
+                            Type::HashMap { key: _, value: _ } => false,
+                            _ => true,
+                        },
+                        _ => true,
+                    };
+                    if supported {
+                        ()
+                    } else {
+                        push_diagnostic_at(
+                            ctx,
+                            "compound assignment is not supported for HashMap indexing because reads return Option[V]",
+                            Option::Some(target_span),
+                        )
+                    };
+                    check_compound_assignment_value(ctx, operator, checked.1, source)
+                },
+                ast::AssignmentOp::Plain => check_expr(ctx, source, Option::Some(checked.1)),
+            };
+            Stmt::Assign { target: checked.0, op, value: source }
         },
         hir::Stmt::Expr { expr: value } => Stmt::Expr { expr: check_expr(ctx, value, Option::None) },
     }
@@ -5152,11 +5618,43 @@ fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
         hir::ExprKind::Break | hir::ExprKind::Continue | hir::ExprKind::Return { expr: _ } => true,
         hir::ExprKind::ConstructorValue { constructor: _ } => false,
         hir::ExprKind::Constr { constructor: _, args } => hir_exprs_any_exit_loop_control(args),
-        hir::ExprKind::StructLiteral { name: _, fields } => {
-            hir_fields_any_exit_loop_control(fields)
+        hir::ExprKind::StructLiteral { name: _, fields, base } => {
+            hir_fields_any_exit_loop_control(fields) || match base {
+                Option::Some(value) => hir_expr_always_exits_loop_control(value),
+                Option::None => false,
+            }
         },
-        hir::ExprKind::Tuple { items: values } | hir::ExprKind::Array { items: values } => {
+        hir::ExprKind::Tuple { items: values }
+        | hir::ExprKind::Array { items: values }
+        | hir::ExprKind::VecLiteral { items: values } => {
             hir_exprs_any_exit_loop_control(values)
+        },
+        hir::ExprKind::HashMapLiteral { entries } => {
+            for entry in entries {
+                if hir_expr_always_exits_loop_control(entry.0)
+                    || hir_expr_always_exits_loop_control(entry.1)
+                {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        hir::ExprKind::InterpolatedString { parts } => {
+            for part in parts {
+                match part {
+                    hir::InterpolatedStringPart::Expr(value) => {
+                        if hir_expr_always_exits_loop_control(value) {
+                            return true
+                        } else {
+                            ()
+                        }
+                    },
+                    hir::InterpolatedStringPart::Text(_) => (),
+                }
+            };
+            false
         },
         hir::ExprKind::Call { func: function, args } => {
             hir_expr_always_exits_loop_control(function)
