@@ -127,7 +127,7 @@ target-dir = "_artifact"
 
 Dependency versions must use the strict `X.Y.Z` form. A dependency version is a minimum version requirement resolved using MVS; there is currently no `goml.lock`.
 
-`[build]` can be omitted; `build.target-dir` defaults to `_artifact` under the module root. The manifest value must be a non-empty relative path and cannot contain a `..` segment. `goml check`, `goml build`, `goml run`, and `goml test` can temporarily override it with `--target-dir <path>`; command-line overrides may be relative or absolute.
+`[build]` can be omitted; `build.target-dir` defaults to `_artifact` under the module root. The manifest value must be a non-empty relative path and cannot contain a `..` segment. `goml check`, `goml build`, `goml run`, and `goml test` can temporarily override it with `--target-dir <path>`; command-line overrides may be relative or absolute. `goml clean` removes the configured target directory. Its optional `--target-dir <path>` override must stay inside the module.
 
 Each module path segment must be non-empty and may contain ASCII letters, digits, `_`, and `-`. The current manifest parser does not reserve `main`, `builtin`, or `std` as module paths. The `[module]` section currently has no `name`, `kind`, `root`, or similar fields.
 

@@ -34,7 +34,7 @@ fn fail(message: string) -> unit {
 }
 
 fn top_help() -> string {
-    "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
+    "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  clean\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn command_help(command: string) -> string {
@@ -48,6 +48,8 @@ fn command_help(command: string) -> string {
         "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n  -h, --help"
     } else if command == "test" {
         "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help"
+    } else if command == "clean" {
+        "Usage: goml clean [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n  -h, --help"
     } else if command == "update" {
         "Usage: goml update [OPTIONS]\n\nOptions:\n      --local-registry <PATH>\n  -h, --help"
     } else if command == "add" {
@@ -98,6 +100,37 @@ fn option_value(
             Option::None => Result::Ok(Option::None),
         }
     }
+}
+
+fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
+    let target_dir: Ref[Option[string]] = Ref::new(Option::None);
+    let index = Ref::new(2);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        let parsed = match option_value(
+            args,
+            index,
+            argument,
+            "--target-dir",
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        match parsed {
+            Option::Some(value) => match target_dir.get() {
+                Option::Some(_) => {
+                    return Result::Err("--target-dir cannot be repeated")
+                },
+                Option::None => target_dir.set(Option::Some(value)),
+            },
+            Option::None => if util::starts_with(argument, "-") {
+                return Result::Err("unknown option " + argument)
+            } else {
+                return Result::Err("unexpected argument " + argument)
+            },
+        }
+    };
+    Result::Ok(target_dir.get())
 }
 
 fn parse_duration(value: string) -> Result[int, string] {
@@ -488,6 +521,20 @@ fn main() -> unit {
         } else {
             match commands::parse_new(args) {
                 Result::Ok(()) => (),
+                Result::Err(message) => fail(message),
+            }
+        }
+    } else if args.get(1) == "clean" {
+        if args.len() >= 3
+            && (args.get(2) == "-h" || args.get(2) == "--help")
+        {
+            io::println(command_help("clean"))
+        } else {
+            match parse_clean(args) {
+                Result::Ok(target_dir) => match project::clean(target_dir) {
+                    Result::Ok(()) => (),
+                    Result::Err(message) => fail(message),
+                },
                 Result::Err(message) => fail(message),
             }
         }

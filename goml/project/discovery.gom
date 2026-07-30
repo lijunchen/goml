@@ -40,6 +40,38 @@ fn manifest_root(start: string) -> Result[string, string] {
     Result::Err("could not find goml.toml")
 }
 
+pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
+    let current = match env::current_dir() {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let module_dir = match manifest_root(current) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let module_manifest = match manifest::load(path::join(module_dir, "goml.toml")) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let artifact_root = match target_dir_override {
+        Option::Some(value) => if path::is_absolute(value) {
+            path::clean(value)
+        } else {
+            path::join(module_dir, value)
+        },
+        Option::None => path::join(module_dir, module_manifest.target_dir),
+    };
+    if artifact_root == module_dir || !path_inside(module_dir, artifact_root) {
+        return Result::Err("clean target must stay inside the module")
+    } else if fs::is_file(artifact_root) {
+        return Result::Err("clean target is not a directory")
+    } else if !fs::exists(artifact_root) {
+        return Result::Ok(())
+    } else {
+        fs::remove_dir_all(artifact_root)
+    }
+}
+
 fn target_directory(target: string) -> Result[string, string] {
     let resolved = match path::absolute(target) {
         Result::Ok(value) => value,

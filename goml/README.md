@@ -24,6 +24,8 @@ cd goml
 
 `goml test --nocapture` inherits test output, while `--timeout` accepts positive `ms`, `s`, or `m` durations. Compiler, linker, and Go build steps are skipped only when their compiler identity, arguments, inputs, and recorded output digests all match.
 
+`goml clean` removes the current module's configured build target directory. Use `goml clean --target-dir <path>` to clean another target directory inside the module.
+
 The driver resolves `gomlc` from `--compiler`, `GOMLC`, a sibling binary, `GOML_HOME/bin`, then `PATH`.
 
 Package-management commands are:
