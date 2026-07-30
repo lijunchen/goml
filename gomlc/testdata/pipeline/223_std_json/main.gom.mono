@@ -88,52 +88,66 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::B
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
-  std::text::StringBuilder { parts: inherent#Vec#Vec[T]#new__T_string(), byte_len: inherent#Ref#Ref[T]#new__T_int(0) }
+  std::text::StringBuilder { values: inherent#Vec#Vec[T]#new__T_uint8() }
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(part_capacity/0: int) -> std::text::StringBuilder {
-  std::text::StringBuilder { parts: inherent#Vec#Vec[T]#with_capacity__T_string(part_capacity/0), byte_len: inherent#Ref#Ref[T]#new__T_int(0) }
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/0: int) -> std::text::StringBuilder {
+  std::text::StringBuilder { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#len(self/1: std::text::StringBuilder) -> int {
-  inherent#Ref#Ref[T]#get__T_int(std::text::StringBuilder.byte_len(self/1))
+  inherent#Vec#Vec[T]#len__T_uint8(std::text::StringBuilder.values(self/1))
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(self/2: std::text::StringBuilder) -> bool {
-  trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(std::text::StringBuilder.byte_len(self/2)), 0)
+  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(std::text::StringBuilder.values(self/2)), 0)
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/3: std::text::StringBuilder, value/4: string) -> unit {
-  let _wild0 = inherent#Vec#Vec[T]#push__T_string(std::text::StringBuilder.parts(self/3), value/4) in
-  inherent#Ref#Ref[T]#set__T_int(std::text::StringBuilder.byte_len(self/3), (inherent#Ref#Ref[T]#get__T_int(std::text::StringBuilder.byte_len(self/3)) + inherent#string#string#byte_len(value/4)))
-}
-
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/5: std::text::StringBuilder, value/6: char) -> unit {
-  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/5, inherent#char#char#to_string(value/6))
-}
-
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/7: std::text::StringBuilder, value/8: std::bytes::Bytes) -> Result__unit__string {
   {
-    let mtmp1 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/8) in
-    match mtmp1 {
-      Result__string__string::Ok(x2) => {
+    let for_index0 = 0 in
+    let for_limit1 = inherent#string#string#byte_len(value/4) in
+    while (for_index0 < for_limit1) {
         {
-          let x2 = Result__string__string::Ok._0(mtmp1) in
+          let for_item2 = for_index0 in
+          let _wild3 = for_index0 = (for_index0 + 1) in
           {
-            let text/9 = x2 in
+            let index/5 = for_item2 in
             {
-              let _wild4 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/7, text/9) in
+              inherent#Vec#Vec[T]#push__T_uint8(std::text::StringBuilder.values(self/3), inherent#string#string#byte_get(value/4, index/5))
+            }
+          }
+        }
+    }
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/6: std::text::StringBuilder, value/7: char) -> unit {
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/6, inherent#char#char#to_string(value/7))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/8: std::text::StringBuilder, value/9: std::bytes::Bytes) -> Result__unit__string {
+  {
+    let mtmp4 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/9) in
+    match mtmp4 {
+      Result__string__string::Ok(x5) => {
+        {
+          let x5 = Result__string__string::Ok._0(mtmp4) in
+          {
+            let text/10 = x5 in
+            {
+              let _wild7 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/8, text/10) in
               Result__unit__string::Ok(())
             }
           }
         }
       },
-      Result__string__string::Err(x3) => {
+      Result__string__string::Err(x6) => {
         {
-          let x3 = Result__string__string::Err._0(mtmp1) in
+          let x6 = Result__string__string::Err._0(mtmp4) in
           {
-            let error/10 = x3 in
-            Result__unit__string::Err(error/10)
+            let error/11 = x6 in
+            Result__unit__string::Err(error/11)
           }
         }
       },
@@ -141,22 +155,31 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/7
   }
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(self/11: std::text::StringBuilder, value/12: string) -> unit {
-  let _wild5 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/11, value/12) in
-  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/11, "\n")
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(self/12: std::text::StringBuilder, value/13: string) -> unit {
+  let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, value/13) in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, "\n")
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/13: std::text::StringBuilder) -> unit {
-  let _wild6 = inherent#Vec#Vec[T]#clear__T_string(std::text::StringBuilder.parts(self/13)) in
-  inherent#Ref#Ref[T]#set__T_int(std::text::StringBuilder.byte_len(self/13), 0)
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/14: std::text::StringBuilder) -> unit {
+  inherent#Vec#Vec[T]#clear__T_uint8(std::text::StringBuilder.values(self/14))
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/14: std::text::StringBuilder) -> string {
-  @runtime(core.string_concat)(std::text::StringBuilder.parts(self/14))
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/15: std::text::StringBuilder) -> string {
+  let mtmp9 = @runtime(core.string_from_utf8)(std::text::StringBuilder.values(self/15)) in
+  {
+    let x10 = mtmp9.0 in
+    let x11 = mtmp9.1 in
+    {
+      let value/16 = x11 in
+      {
+        value/16
+      }
+    }
+  }
 }
 
-fn trait_impl#ToString#std::text::StringBuilder#to_string(self/15: std::text::StringBuilder) -> string {
-  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/15)
+fn trait_impl#ToString#std::text::StringBuilder#to_string(self/17: std::text::StringBuilder) -> string {
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/17)
 }
 
 fn std::json::json_parser(input/0: string) -> std::json::JsonParser {
@@ -1658,44 +1681,28 @@ fn inherent#Vec#Vec[T]#slice__T_uint8(self/177: Vec[uint8], start/178: int, end/
   @intrinsic(slice.new)(self/177, start/178, end/179)
 }
 
-fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  @intrinsic(vec.new)()
-}
-
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/209)
-}
-
-fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/127: int) -> Vec[string] {
-  @intrinsic(vec.with_capacity)(capacity/127)
-}
-
-fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/210)
-}
-
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
   @intrinsic(eq.primitive)(self/59, other/60)
-}
-
-fn inherent#Vec#Vec[T]#push__T_string(self/128: Vec[string], elem/129: string) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
 }
 
 fn inherent#string#string#byte_len(self/9: string) -> int {
   @runtime(core.string_len)(self/9)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#string#string#byte_get(self/12: string, index/13: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/12, index/13)
 }
 
 fn inherent#char#char#to_string(self/7: char) -> string {
   @runtime(core.char_to_string)(self/7)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_string(self/146: Vec[string]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_string(self/146, 0)
+fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/209)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/210)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
@@ -1706,8 +1713,8 @@ fn trait_impl#Eq#uint8#eq(self/69: uint8, other/70: uint8) -> bool {
   @intrinsic(eq.primitive)(self/69, other/70)
 }
 
-fn inherent#string#string#byte_get(self/12: string, index/13: int) -> uint8 {
-  @runtime(core.string_byte_get)(self/12, index/13)
+fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
+  @intrinsic(ref.set)(self/211, value/212)
 }
 
 fn inherent#Ref#Ref[T]#new__T_uint32(value/209: uint32) -> Ref[uint32] {
@@ -1797,10 +1804,6 @@ fn println__T_int(value/1: int) -> unit {
 
 fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
-}
-
-fn inherent#Vec#Vec[T]#truncate__T_string(self/144: Vec[string], len/145: int) -> unit {
-  @intrinsic(vec.truncate)(self/144, len/145)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
