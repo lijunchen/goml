@@ -22,16 +22,16 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func show_int(label__0 string, value__1 int32) struct{} {
-    var t77 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__1)
-    var t78 string = label__0 + t77
-    println__T_string(t78)
+    var t81 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__1)
+    var t82 string = label__0 + t81
+    println__T_string(t82)
     return struct{}{}
 }
 
 func show_bool(label__2 string, value__3 bool) struct{} {
-    var t80 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__3)
-    var t81 string = label__2 + t80
-    println__T_string(t81)
+    var t84 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__3)
+    var t85 string = label__2 + t84
+    println__T_string(t85)
     return struct{}{}
 }
 
@@ -45,58 +45,58 @@ func main0() struct{} {
     show_int("diff=", diff__6)
     show_int("prod=", prod__7)
     show_int("quot=", quot__8)
-    var jp84 bool
+    var jp88 bool
     if true {
-        jp84 = false
+        jp88 = false
     } else {
-        jp84 = false
+        jp88 = false
     }
-    var and_result__9 bool = jp84
-    var jp86 bool
-    if true {
-        jp86 = true
-    } else {
-        jp86 = false
-    }
-    var or_result__10 bool = jp86
-    var not_result__11 bool = !false
-    var t97 bool = !and_result__9
+    var and_result__9 bool = jp88
     var jp90 bool
-    if t97 {
-        var t98 int32 = prod__7 * base__4
-        var t99 int32 = sum__5 + t98
-        var t100 int32 = prod__7 / 2
-        var mtmp70 int32 = t99 - t100
-        var jp102 bool
-        switch mtmp70 {
-        case 0:
-            jp102 = false
-        default:
-            jp102 = true
-        }
-        jp90 = jp102
+    if true {
+        jp90 = true
     } else {
         jp90 = false
     }
-    var jp88 bool
-    if jp90 {
-        jp88 = true
-    } else {
-        var t91 int32 = diff__6 - quot__8
-        var t92 int32 = t91 + base__4
-        var t93 int32 = sum__5 / 2
-        var mtmp71 int32 = t92 - t93
-        var jp95 bool
-        switch mtmp71 {
+    var or_result__10 bool = jp90
+    var not_result__11 bool = !false
+    var t101 bool = !and_result__9
+    var jp94 bool
+    if t101 {
+        var t102 int32 = prod__7 * base__4
+        var t103 int32 = sum__5 + t102
+        var t104 int32 = prod__7 / 2
+        var mtmp74 int32 = t103 - t104
+        var jp106 bool
+        switch mtmp74 {
         case 0:
-            jp95 = false
+            jp106 = false
         default:
-            jp95 = true
+            jp106 = true
         }
-        var t96 bool = !jp95
-        jp88 = t96
+        jp94 = jp106
+    } else {
+        jp94 = false
     }
-    var mixed__12 bool = jp88
+    var jp92 bool
+    if jp94 {
+        jp92 = true
+    } else {
+        var t95 int32 = diff__6 - quot__8
+        var t96 int32 = t95 + base__4
+        var t97 int32 = sum__5 / 2
+        var mtmp75 int32 = t96 - t97
+        var jp99 bool
+        switch mtmp75 {
+        case 0:
+            jp99 = false
+        default:
+            jp99 = true
+        }
+        var t100 bool = !jp99
+        jp92 = t100
+    }
+    var mixed__12 bool = jp92
     show_bool("and=", and_result__9)
     show_bool("or=", or_result__10)
     show_bool("not=", not_result__11)
@@ -105,29 +105,29 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t104 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t104)
+    var t108 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t108)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv107 string
-    var t108 string = _goml_runtime_core_int32_to_string(self__6)
-    retv107 = t108
-    return retv107
+    var retv111 string
+    var t112 string = _goml_runtime_core_int32_to_string(self__6)
+    retv111 = t112
+    return retv111
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv110 string
-    var t111 string = _goml_runtime_core_bool_to_string(self__37)
-    retv110 = t111
-    return retv110
+    var retv114 string
+    var t115 string = _goml_runtime_core_bool_to_string(self__37)
+    retv114 = t115
+    return retv114
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv113 string
-    retv113 = self__38
-    return retv113
+    var retv117 string
+    retv117 = self__38
+    return retv117
 }
 
 func main() {

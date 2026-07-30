@@ -134,45 +134,45 @@ type Result__unit__string_Err struct {
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
 func _goml_m_std_p_env_p_args() *_goml_vec_string {
-    var retv129 *_goml_vec_string
-    var t130 *_goml_vec_string = _goml_runtime_std_env_args()
-    retv129 = t130
-    return retv129
+    var retv133 *_goml_vec_string
+    var t134 *_goml_vec_string = _goml_runtime_std_env_args()
+    retv133 = t134
+    return retv133
 }
 
 func main0() struct{} {
-    var t181 *_goml_vec_string = _goml_m_std_p_env_p_args()
-    var t182 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(t181)
-    var t183 bool = t182 > 0
-    var t184 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t183)
-    _goml_m_std_p_io_p_println____T__string(t184)
+    var t185 *_goml_vec_string = _goml_m_std_p_env_p_args()
+    var t186 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(t185)
+    var t187 bool = t186 > 0
+    var t188 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t187)
+    _goml_m_std_p_io_p_println____T__string(t188)
     return struct{}{}
 }
 
 func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
-    var t230 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_std_io_println(t230)
+    var t234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_std_io_println(t234)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__139 *_goml_vec_string) int {
-    var retv233 int
-    var t234 int = vec_len__Vec_6string(self__139)
-    retv233 = t234
-    return retv233
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__137 *_goml_vec_string) int {
+    var retv237 int
+    var t238 int = vec_len__Vec_6string(self__137)
+    retv237 = t238
+    return retv237
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv236 string
-    var t237 string = _goml_runtime_core_bool_to_string(self__37)
-    retv236 = t237
-    return retv236
+    var retv240 string
+    var t241 string = _goml_runtime_core_bool_to_string(self__37)
+    retv240 = t241
+    return retv240
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv242 string
-    retv242 = self__38
-    return retv242
+    var retv246 string
+    retv246 = self__38
+    return retv246
 }
 
 func main() {

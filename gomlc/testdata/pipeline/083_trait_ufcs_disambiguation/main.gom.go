@@ -16,60 +16,60 @@ func _goml_runtime_core_string_println(s string) struct{} {
 type S struct {}
 
 func _goml_m_trait__impl_i_A_i_S_i_pick(self__0 S) int32 {
-    var retv67 int32
-    retv67 = 10
-    return retv67
+    var retv71 int32
+    retv71 = 10
+    return retv71
 }
 
 func _goml_m_trait__impl_i_B_i_S_i_pick(self__1 S) int32 {
-    var retv69 int32
-    retv69 = 20
-    return retv69
+    var retv73 int32
+    retv73 = 20
+    return retv73
 }
 
 func main0() struct{} {
-    var t71 S = S{}
-    var t72 int32 = pick_a__T_S(t71)
-    var t73 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t72)
-    println__T_string(t73)
-    var t74 S = S{}
-    var t75 int32 = pick_b__T_S(t74)
-    var t76 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t75)
-    println__T_string(t76)
+    var t75 S = S{}
+    var t76 int32 = pick_a__T_S(t75)
+    var t77 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t76)
+    println__T_string(t77)
+    var t78 S = S{}
+    var t79 int32 = pick_b__T_S(t78)
+    var t80 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t79)
+    println__T_string(t80)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t78 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t78)
+    var t82 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t82)
     return struct{}{}
 }
 
 func pick_a__T_S(x__2 S) int32 {
-    var retv81 int32
-    var t82 int32 = _goml_m_trait__impl_i_A_i_S_i_pick(x__2)
-    retv81 = t82
-    return retv81
+    var retv85 int32
+    var t86 int32 = _goml_m_trait__impl_i_A_i_S_i_pick(x__2)
+    retv85 = t86
+    return retv85
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv84 string
-    var t85 string = _goml_runtime_core_int32_to_string(self__6)
-    retv84 = t85
-    return retv84
+    var retv88 string
+    var t89 string = _goml_runtime_core_int32_to_string(self__6)
+    retv88 = t89
+    return retv88
 }
 
 func pick_b__T_S(x__3 S) int32 {
-    var retv87 int32
-    var t88 int32 = _goml_m_trait__impl_i_B_i_S_i_pick(x__3)
-    retv87 = t88
-    return retv87
+    var retv91 int32
+    var t92 int32 = _goml_m_trait__impl_i_B_i_S_i_pick(x__3)
+    retv91 = t92
+    return retv91
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv90 string
-    retv90 = self__38
-    return retv90
+    var retv94 string
+    retv94 = self__38
+    return retv94
 }
 
 func main() {

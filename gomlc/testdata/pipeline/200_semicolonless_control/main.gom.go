@@ -61,87 +61,87 @@ func main0() struct{} {
     } else {
         _goml_runtime_core_string_println("else")
     }
-    var mtmp65 int = 1
-    switch mtmp65 {
+    var mtmp69 int = 1
+    switch mtmp69 {
     case 1:
         _goml_runtime_core_string_println("match")
     default:
     }
     var index__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop86:
+    Loop_loop90:
     for {
-        var t87 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__0)
-        var t88 bool = t87 < 2
-        if t88 {
-            var t89 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__0)
-            var t90 string = _goml_m_inherent_i_int_i_int_i_to__string(t89)
-            _goml_runtime_core_string_println(t90)
-            var t91 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__0)
-            var t92 int = t91 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__0, t92)
+        var t91 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__0)
+        var t92 bool = t91 < 2
+        if t92 {
+            var t93 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__0)
+            var t94 string = _goml_m_inherent_i_int_i_int_i_to__string(t93)
+            _goml_runtime_core_string_println(t94)
+            var t95 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(index__0)
+            var t96 int = t95 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(index__0, t96)
             continue
         } else {
-            break Loop_loop86
+            break Loop_loop90
         }
     }
     var values__1 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(values__1, "for")
-    var for_source70 *_goml_vec_string = values__1
-    var for_limit71 int = vec_len__Vec_6string(for_source70)
-    var for_index72 int = 0
-    Loop_loop82:
+    var for_source74 *_goml_vec_string = values__1
+    var for_limit75 int = vec_len__Vec_6string(for_source74)
+    var for_index76 int = 0
+    Loop_loop86:
     for {
-        var t83 bool = for_index72 < for_limit71
-        if t83 {
-            var for_item73 string = vec_get__Vec_6string(for_source70, for_index72)
-            var t84 int = for_index72 + 1
-            for_index72 = t84
-            var value__2 string = for_item73
+        var t87 bool = for_index76 < for_limit75
+        if t87 {
+            var for_item77 string = vec_get__Vec_6string(for_source74, for_index76)
+            var t88 int = for_index76 + 1
+            for_index76 = t88
+            var value__2 string = for_item77
             _goml_runtime_core_string_println(value__2)
             continue
         } else {
-            break Loop_loop82
+            break Loop_loop86
         }
     }
     _goml_runtime_core_string_println("done")
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__209 int) *ref_int_x {
-    var retv98 *ref_int_x
-    var t99 *ref_int_x = ref__Ref_3int(value__209)
-    retv98 = t99
-    return retv98
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
+    var retv102 *ref_int_x
+    var t103 *ref_int_x = ref__Ref_3int(value__207)
+    retv102 = t103
+    return retv102
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__210 *ref_int_x) int {
-    var retv101 int
-    var t102 int = ref_get__Ref_3int(self__210)
-    retv101 = t102
-    return retv101
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
+    var retv105 int
+    var t106 int = ref_get__Ref_3int(self__208)
+    retv105 = t106
+    return retv105
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv104 string
-    var t105 string = _goml_runtime_core_int_to_string(self__5)
-    retv104 = t105
-    return retv104
+    var retv108 string
+    var t109 string = _goml_runtime_core_int_to_string(self__5)
+    retv108 = t109
+    return retv108
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__211 *ref_int_x, value__212 int) struct{} {
-    ref_set__Ref_3int(self__211, value__212)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
+    ref_set__Ref_3int(self__209, value__210)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string() *_goml_vec_string {
-    var retv109 *_goml_vec_string
-    var t110 *_goml_vec_string = vec_new__Vec_6string()
-    retv109 = t110
-    return retv109
+    var retv113 *_goml_vec_string
+    var t114 *_goml_vec_string = vec_new__Vec_6string()
+    retv113 = t114
+    return retv113
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__128 *_goml_vec_string, elem__129 string) struct{} {
-    vec_push__Vec_6string(self__128, elem__129)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__126 *_goml_vec_string, elem__127 string) struct{} {
+    vec_push__Vec_6string(self__126, elem__127)
     return struct{}{}
 }
 

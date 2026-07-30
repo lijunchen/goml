@@ -1,52 +1,52 @@
 fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
-  join ret65(retv66: string) -> string {
-    retv66
+  join ret69(retv70: string) -> string {
+    retv70
   } in
-  let t67 = Worker.name(self/0) in
-  let t68 = (t67 + ":ready") in
-  jump ret65(t68)
+  let t71 = Worker.name(self/0) in
+  let t72 = (t71 + ":ready") in
+  jump ret69(t72)
 }
 
 fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
-  join ret69(retv70: Worker) -> Worker {
-    retv70
+  join ret73(retv74: Worker) -> Worker {
+    retv74
   } in
-  let t71 = Station.worker(self/1) in
-  jump ret69(t71)
+  let t75 = Station.worker(self/1) in
+  jump ret73(t75)
 }
 
 fn main() -> unit {
-  join ret72() -> unit {
-    ()
-  } in
-  let t73 = Worker { name: "build" } in
-  let t74 = Station { worker: t73 } in
-  let t75 = describe__S_Station__T_Worker(t74) in
-  let _wild64 = println__T_string(t75) in
-  jump ret72()
-}
-
-fn println__T_string(value/1: string) -> unit {
   join ret76() -> unit {
     ()
   } in
-  let t77 = trait_impl#ToString#string#to_string(value/1) in
-  let t78 = @runtime(core.string_println)(t77) in
+  let t77 = Worker { name: "build" } in
+  let t78 = Station { worker: t77 } in
+  let t79 = describe__S_Station__T_Worker(t78) in
+  let _wild68 = println__T_string(t79) in
   jump ret76()
 }
 
-fn describe__S_Station__T_Worker(service/2: Station) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+fn println__T_string(value/1: string) -> unit {
+  join ret80() -> unit {
+    ()
   } in
-  let t81 = trait_impl#Service#[Worker]@Station#get(service/2) in
-  let t82 = trait_impl#Ready#Worker#state(t81) in
-  jump ret79(t82)
+  let t81 = trait_impl#ToString#string#to_string(value/1) in
+  let t82 = @runtime(core.string_println)(t81) in
+  jump ret80()
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn describe__S_Station__T_Worker(service/2: Station) -> string {
   join ret83(retv84: string) -> string {
     retv84
   } in
-  jump ret83(self/38)
+  let t85 = trait_impl#Service#[Worker]@Station#get(service/2) in
+  let t86 = trait_impl#Ready#Worker#state(t85) in
+  jump ret83(t86)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret87(retv88: string) -> string {
+    retv88
+  } in
+  jump ret87(self/38)
 }

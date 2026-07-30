@@ -11,44 +11,44 @@ fn pair(ok/1: bool) -> Result__(string,string)__string {
 }
 
 fn render(ok/2: bool) -> Result__string__string {
-  let mtmp67 = let mtmp64 = pair(ok/2) in
-  match mtmp64 {
-    Result__(string,string)__string::Ok(x65) => {
-      let x65 = Result__(string,string)__string::Ok._0(mtmp64) in
-      let try_value/17 = x65 in
+  let mtmp71 = let mtmp68 = pair(ok/2) in
+  match mtmp68 {
+    Result__(string,string)__string::Ok(x69) => {
+      let x69 = Result__(string,string)__string::Ok._0(mtmp68) in
+      let try_value/17 = x69 in
       try_value/17
     },
-    Result__(string,string)__string::Err(x66) => {
-      let x66 = Result__(string,string)__string::Err._0(mtmp64) in
-      let try_residual/17 = x66 in
+    Result__(string,string)__string::Err(x70) => {
+      let x70 = Result__(string,string)__string::Err._0(mtmp68) in
+      let try_residual/17 = x70 in
       return Result__string__string::Err(try_residual/17)
     },
   } in
-  let x68 = mtmp67.0 in
-  let x69 = mtmp67.1 in
-  let port/4 = x69 in
-  let host/3 = x68 in
+  let x72 = mtmp71.0 in
+  let x73 = mtmp71.1 in
+  let port/4 = x73 in
+  let host/3 = x72 in
   Result__string__string::Ok(((host/3 + "=") + port/4))
 }
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x70) => {
-      let x70 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x70 in
+    Result__string__string::Ok(x74) => {
+      let x74 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x74 in
       ("ok " + value/6)
     },
-    Result__string__string::Err(x71) => {
-      let x71 = Result__string__string::Err._0(res/5) in
-      let err/7 = x71 in
+    Result__string__string::Err(x75) => {
+      let x75 = Result__string__string::Err._0(res/5) in
+      let err/7 = x75 in
       ("err " + err/7)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild72 = println__T_string(show(render(true))) in
-  let _wild73 = println__T_string(show(render(false))) in
+  let _wild76 = println__T_string(show(render(true))) in
+  let _wild77 = println__T_string(show(render(false))) in
   ()
 }
 

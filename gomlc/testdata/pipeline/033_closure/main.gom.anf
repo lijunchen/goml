@@ -1,155 +1,155 @@
 fn test() -> unit {
-  join ret81() -> unit {
+  join ret85() -> unit {
     ()
   } in
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
-  let t82 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2) in
-  let t83 = inherent#int32#int32#to_string(t82) in
-  let mtmp64 = println__T_string(t83) in
-  let t84 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 3) in
-  let t85 = inherent#int32#int32#to_string(t84) in
-  let t86 = println__T_string(t85) in
-  jump ret81()
+  let t86 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2) in
+  let t87 = inherent#int32#int32#to_string(t86) in
+  let mtmp68 = println__T_string(t87) in
+  let t88 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 3) in
+  let t89 = inherent#int32#int32#to_string(t88) in
+  let t90 = println__T_string(t89) in
+  jump ret85()
 }
 
 fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
-  join ret87(retv88: int32) -> int32 {
-    retv88
+  join ret91(retv92: int32) -> int32 {
+    retv92
   } in
-  let t89 = f/4(v/5) in
-  jump ret87(t89)
+  let t93 = f/4(v/5) in
+  jump ret91(t93)
 }
 
 fn main() -> unit {
-  join ret90() -> unit {
+  join ret94() -> unit {
     ()
   } in
   let base/6 = 5 in
   let add_base/8 = closure_env_add_base_1 { base_0: base/6 } in
   let result/9 = inherent#closure_env_add_base_1#closure_env_add_base_1#apply(add_base/8, 7) in
   let printer/13 = closure_env_printer_2 {} in
-  let mtmp65 = inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
+  let mtmp69 = inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
   let unused/15 = closure_env_unused_3 { result_0: result/9 } in
   let no_capture/17 = closure_env_no_capture_4 {} in
   let doubled/18 = inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(no_capture/17, 3) in
-  let t91 = inherent#int32#int32#to_string(doubled/18) in
-  let mtmp66 = println__T_string(t91) in
-  let mtmp67 = test() in
-  let t92 = IntList::Cons(3, Tag_0) in
-  let t93 = IntList::Cons(2, t92) in
-  let list123/19 = IntList::Cons(1, t93) in
+  let t95 = inherent#int32#int32#to_string(doubled/18) in
+  let mtmp70 = println__T_string(t95) in
+  let mtmp71 = test() in
+  let t96 = IntList::Cons(3, Tag_0) in
+  let t97 = IntList::Cons(2, t96) in
+  let list123/19 = IntList::Cons(1, t97) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 = closure_env_play_list_and_point_5 { list123_0: list123/19, point_1: point/20 } in
-  let mtmp74 = inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(play_list_and_point/25) in
-  jump ret90()
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret94() -> unit {
-    ()
-  } in
-  let t95 = trait_impl#ToString#string#to_string(value/1) in
-  let t96 = @runtime(core.string_println)(t95) in
+  let mtmp78 = inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(play_list_and_point/25) in
   jump ret94()
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret97(retv98: string) -> string {
-    retv98
+fn println__T_string(value/1: string) -> unit {
+  join ret98() -> unit {
+    ()
   } in
-  let t99 = @runtime(core.int32_to_string)(self/6) in
-  jump ret97(t99)
+  let t99 = trait_impl#ToString#string#to_string(value/1) in
+  let t100 = @runtime(core.string_println)(t99) in
+  jump ret98()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret101(retv102: string) -> string {
+    retv102
+  } in
+  let t103 = @runtime(core.int32_to_string)(self/6) in
+  jump ret101(t103)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret100(retv101: string) -> string {
-    retv101
+  join ret104(retv105: string) -> string {
+    retv105
   } in
-  jump ret100(self/38)
+  jump ret104(self/38)
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env75: closure_env_f_0, x/2: int32) -> int32 {
-  join ret102(retv103: int32) -> int32 {
-    retv103
-  } in
-  let y/0 = closure_env_f_0.y_0(env75) in
-  let z/1 = closure_env_f_0.z_1(env75) in
-  let t104 = (x/2 * y/0) in
-  let t105 = (t104 * z/1) in
-  jump ret102(t105)
-}
-
-fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(env76: closure_env_add_base_1, x/7: int32) -> int32 {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env79: closure_env_f_0, x/2: int32) -> int32 {
   join ret106(retv107: int32) -> int32 {
     retv107
   } in
-  let base/6 = closure_env_add_base_1.base_0(env76) in
-  let t108 = (x/7 + base/6) in
-  jump ret106(t108)
+  let y/0 = closure_env_f_0.y_0(env79) in
+  let z/1 = closure_env_f_0.z_1(env79) in
+  let t108 = (x/2 * y/0) in
+  let t109 = (t108 * z/1) in
+  jump ret106(t109)
 }
 
-fn inherent#closure_env_printer_2#closure_env_printer_2#apply(env77: closure_env_printer_2, prefix/10: string, value/11: int32) -> unit {
-  join ret109() -> unit {
+fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(env80: closure_env_add_base_1, x/7: int32) -> int32 {
+  join ret110(retv111: int32) -> int32 {
+    retv111
+  } in
+  let base/6 = closure_env_add_base_1.base_0(env80) in
+  let t112 = (x/7 + base/6) in
+  jump ret110(t112)
+}
+
+fn inherent#closure_env_printer_2#closure_env_printer_2#apply(env81: closure_env_printer_2, prefix/10: string, value/11: int32) -> unit {
+  join ret113() -> unit {
     ()
   } in
-  let t110 = inherent#int32#int32#to_string(value/11) in
-  let message/12 = (prefix/10 + t110) in
-  let t111 = println__T_string(message/12) in
-  jump ret109()
+  let t114 = inherent#int32#int32#to_string(value/11) in
+  let message/12 = (prefix/10 + t114) in
+  let t115 = println__T_string(message/12) in
+  jump ret113()
 }
 
-fn inherent#closure_env_unused_3#closure_env_unused_3#apply(env78: closure_env_unused_3, y/14: int32) -> int32 {
-  join ret112(retv113: int32) -> int32 {
-    retv113
+fn inherent#closure_env_unused_3#closure_env_unused_3#apply(env82: closure_env_unused_3, y/14: int32) -> int32 {
+  join ret116(retv117: int32) -> int32 {
+    retv117
   } in
-  let result/9 = closure_env_unused_3.result_0(env78) in
-  let t114 = (y/14 + result/9) in
-  jump ret112(t114)
+  let result/9 = closure_env_unused_3.result_0(env82) in
+  let t118 = (y/14 + result/9) in
+  jump ret116(t118)
 }
 
-fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(env79: closure_env_no_capture_4, z/16: int32) -> int32 {
-  join ret115(retv116: int32) -> int32 {
-    retv116
+fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(env83: closure_env_no_capture_4, z/16: int32) -> int32 {
+  join ret119(retv120: int32) -> int32 {
+    retv120
   } in
-  let t117 = (z/16 * 2) in
-  jump ret115(t117)
+  let t121 = (z/16 * 2) in
+  jump ret119(t121)
 }
 
-fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(env80: closure_env_play_list_and_point_5) -> unit {
-  join ret118() -> unit {
+fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(env84: closure_env_play_list_and_point_5) -> unit {
+  join ret122() -> unit {
     ()
   } in
-  let list123/19 = closure_env_play_list_and_point_5.list123_0(env80) in
-  let point/20 = closure_env_play_list_and_point_5.point_1(env80) in
-  join k119() -> unit {
-    jump ret118()
+  let list123/19 = closure_env_play_list_and_point_5.list123_0(env84) in
+  let point/20 = closure_env_play_list_and_point_5.point_1(env84) in
+  join k123() -> unit {
+    jump ret122()
   } in
   match list123/19 {
     Tag_0 => {
-      let t120 = println__T_string("Empty list") in
-      jump k119()
+      let t124 = println__T_string("Empty list") in
+      jump k123()
     },
     Tag_1 => {
-      let x68 = IntList::Cons._0(list123/19) in
-      let x69 = IntList::Cons._1(list123/19) in
-      let tail/22 = x69 in
-      let head/21 = x68 in
-      let t121 = inherent#int32#int32#to_string(head/21) in
-      let mtmp70 = println__T_string(t121) in
-      let x71 = Point.x(point/20) in
-      let x72 = Point.y(point/20) in
-      let y/24 = x72 in
-      let x/23 = x71 in
-      let t122 = inherent#int32#int32#to_string(x/23) in
-      let t123 = ("Point: (" + t122) in
-      let t124 = (t123 + ", ") in
-      let t125 = inherent#int32#int32#to_string(y/24) in
-      let t126 = (t124 + t125) in
-      let t127 = (t126 + ")") in
-      let mtmp73 = println__T_string(t127) in
-      jump k119()
+      let x72 = IntList::Cons._0(list123/19) in
+      let x73 = IntList::Cons._1(list123/19) in
+      let tail/22 = x73 in
+      let head/21 = x72 in
+      let t125 = inherent#int32#int32#to_string(head/21) in
+      let mtmp74 = println__T_string(t125) in
+      let x75 = Point.x(point/20) in
+      let x76 = Point.y(point/20) in
+      let y/24 = x76 in
+      let x/23 = x75 in
+      let t126 = inherent#int32#int32#to_string(x/23) in
+      let t127 = ("Point: (" + t126) in
+      let t128 = (t127 + ", ") in
+      let t129 = inherent#int32#int32#to_string(y/24) in
+      let t130 = (t128 + t129) in
+      let t131 = (t130 + ")") in
+      let mtmp77 = println__T_string(t131) in
+      jump k123()
     },
   }
 }

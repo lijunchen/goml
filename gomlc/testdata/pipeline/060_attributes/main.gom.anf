@@ -1,95 +1,95 @@
 fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
-  join ret74(retv75: string) -> string {
-    retv75
+  join ret78(retv79: string) -> string {
+    retv79
   } in
-  let mtmp64 = self/0 in
-  let x65 = Point.x(mtmp64) in
-  let x66 = Point.y(mtmp64) in
-  let y/2 = x66 in
-  let x/1 = x65 in
-  let t76 = ("Point { " + "x: ") in
-  let t77 = inherent#int32#int32#to_string(x/1) in
-  let t78 = (t76 + t77) in
-  let t79 = (t78 + ", ") in
-  let t80 = (t79 + "y: ") in
-  let t81 = inherent#int32#int32#to_string(y/2) in
+  let mtmp68 = self/0 in
+  let x69 = Point.x(mtmp68) in
+  let x70 = Point.y(mtmp68) in
+  let y/2 = x70 in
+  let x/1 = x69 in
+  let t80 = ("Point { " + "x: ") in
+  let t81 = inherent#int32#int32#to_string(x/1) in
   let t82 = (t80 + t81) in
-  let t83 = (t82 + " }") in
-  jump ret74(t83)
+  let t83 = (t82 + ", ") in
+  let t84 = (t83 + "y: ") in
+  let t85 = inherent#int32#int32#to_string(y/2) in
+  let t86 = (t84 + t85) in
+  let t87 = (t86 + " }") in
+  jump ret78(t87)
 }
 
 fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
-  join ret84(retv85: string) -> string {
-    retv85
+  join ret88(retv89: string) -> string {
+    retv89
   } in
-  join k86(jp87: string) -> string {
-    jump ret84(jp87)
+  join k90(jp91: string) -> string {
+    jump ret88(jp91)
   } in
   match self/3 {
     Tag_0 => {
-      jump k86("Message::Quit")
+      jump k90("Message::Quit")
     },
     Tag_1 => {
-      let x67 = Message::Move._0(self/3) in
-      let x68 = Message::Move._1(self/3) in
-      let __field1/5 = x68 in
-      let __field0/4 = x67 in
-      let t88 = inherent#int32#int32#to_string(__field0/4) in
-      let t89 = ("Message::Move(" + t88) in
-      let t90 = (t89 + ", ") in
-      let t91 = inherent#int32#int32#to_string(__field1/5) in
-      let t92 = (t90 + t91) in
-      let t93 = (t92 + ")") in
-      jump k86(t93)
+      let x71 = Message::Move._0(self/3) in
+      let x72 = Message::Move._1(self/3) in
+      let __field1/5 = x72 in
+      let __field0/4 = x71 in
+      let t92 = inherent#int32#int32#to_string(__field0/4) in
+      let t93 = ("Message::Move(" + t92) in
+      let t94 = (t93 + ", ") in
+      let t95 = inherent#int32#int32#to_string(__field1/5) in
+      let t96 = (t94 + t95) in
+      let t97 = (t96 + ")") in
+      jump k90(t97)
     },
     Tag_2 => {
-      let x69 = Message::Write._0(self/3) in
-      let __field0/6 = x69 in
-      let t94 = ("Message::Write(" + __field0/6) in
-      let t95 = (t94 + ")") in
-      jump k86(t95)
+      let x73 = Message::Write._0(self/3) in
+      let __field0/6 = x73 in
+      let t98 = ("Message::Write(" + __field0/6) in
+      let t99 = (t98 + ")") in
+      jump k90(t99)
     },
   }
 }
 
 fn main() -> unit {
-  join ret96() -> unit {
+  join ret100() -> unit {
     ()
   } in
   let point/7 = Point { x: 4, y: 7 } in
   let summary/8 = trait_impl#ToString#Point#to_string(point/7) in
-  let t97 = Message::Move(1, 2) in
-  let mv/9 = trait_impl#ToString#Message#to_string(t97) in
-  let t98 = Message::Write("done") in
-  let text/10 = trait_impl#ToString#Message#to_string(t98) in
+  let t101 = Message::Move(1, 2) in
+  let mv/9 = trait_impl#ToString#Message#to_string(t101) in
+  let t102 = Message::Write("done") in
+  let text/10 = trait_impl#ToString#Message#to_string(t102) in
   let exit/11 = trait_impl#ToString#Message#to_string(Tag_0) in
-  let _wild70 = println__T_string(summary/8) in
-  let _wild71 = println__T_string(mv/9) in
-  let _wild72 = println__T_string(text/10) in
-  let _wild73 = println__T_string(exit/11) in
-  jump ret96()
+  let _wild74 = println__T_string(summary/8) in
+  let _wild75 = println__T_string(mv/9) in
+  let _wild76 = println__T_string(text/10) in
+  let _wild77 = println__T_string(exit/11) in
+  jump ret100()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret99(retv100: string) -> string {
-    retv100
+  join ret103(retv104: string) -> string {
+    retv104
   } in
-  let t101 = @runtime(core.int32_to_string)(self/6) in
-  jump ret99(t101)
+  let t105 = @runtime(core.int32_to_string)(self/6) in
+  jump ret103(t105)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret102() -> unit {
+  join ret106() -> unit {
     ()
   } in
-  let t103 = trait_impl#ToString#string#to_string(value/1) in
-  let t104 = @runtime(core.string_println)(t103) in
-  jump ret102()
+  let t107 = trait_impl#ToString#string#to_string(value/1) in
+  let t108 = @runtime(core.string_println)(t107) in
+  jump ret106()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret105(retv106: string) -> string {
-    retv106
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  jump ret105(self/38)
+  jump ret109(self/38)
 }

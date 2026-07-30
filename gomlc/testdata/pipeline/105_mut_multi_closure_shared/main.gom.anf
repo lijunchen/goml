@@ -1,74 +1,74 @@
 fn main() -> unit {
-  join ret69() -> unit {
+  join ret73() -> unit {
     ()
   } in
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
   let get/2 = closure_env_get_1 { x_0: x/0 } in
-  let mtmp65 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
-  let t70 = inherent#closure_env_get_1#closure_env_get_1#apply(get/2) in
-  let t71 = inherent#int#int#to_string(t70) in
-  let _wild66 = println__T_string(t71) in
-  jump ret69()
+  let mtmp69 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
+  let t74 = inherent#closure_env_get_1#closure_env_get_1#apply(get/2) in
+  let t75 = inherent#int#int#to_string(t74) in
+  let _wild70 = println__T_string(t75) in
+  jump ret73()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret72() -> unit {
+  join ret76() -> unit {
     ()
   } in
-  let t73 = trait_impl#ToString#string#to_string(value/1) in
-  let t74 = @runtime(core.string_println)(t73) in
-  jump ret72()
+  let t77 = trait_impl#ToString#string#to_string(value/1) in
+  let t78 = @runtime(core.string_println)(t77) in
+  jump ret76()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret79(retv80: string) -> string {
+    retv80
   } in
-  let t77 = @runtime(core.int_to_string)(self/5) in
-  jump ret75(t77)
+  let t81 = @runtime(core.int_to_string)(self/5) in
+  jump ret79(t81)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret78(retv79: string) -> string {
-    retv79
+  join ret82(retv83: string) -> string {
+    retv83
   } in
-  jump ret78(self/38)
+  jump ret82(self/38)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret80(retv81: bool) -> bool {
-    retv81
+  join ret84(retv85: bool) -> bool {
+    retv85
   } in
-  let t82 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret80(t82)
+  let t86 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret84(t86)
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret83(retv84: uint64) -> uint64 {
-    retv84
+  join ret87(retv88: uint64) -> uint64 {
+    retv88
   } in
-  let t85 = @runtime(core.int_hash)(self/85) in
-  jump ret83(t85)
+  let t89 = @runtime(core.int_hash)(self/85) in
+  jump ret87(t89)
 }
 
-fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env67: closure_env_inc_0) -> int {
-  join ret86(retv87: int) -> int {
-    retv87
+fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env71: closure_env_inc_0) -> int {
+  join ret90(retv91: int) -> int {
+    retv91
   } in
-  let x/0 = closure_env_inc_0.x_0(env67) in
-  let t88 = @intrinsic(ref.get)(x/0) in
-  let t89 = (t88 + 1) in
-  let _wild64 = @intrinsic(ref.set)(x/0, t89) in
-  let t90 = @intrinsic(ref.get)(x/0) in
-  jump ret86(t90)
+  let x/0 = closure_env_inc_0.x_0(env71) in
+  let t92 = @intrinsic(ref.get)(x/0) in
+  let t93 = (t92 + 1) in
+  let _wild68 = @intrinsic(ref.set)(x/0, t93) in
+  let t94 = @intrinsic(ref.get)(x/0) in
+  jump ret90(t94)
 }
 
-fn inherent#closure_env_get_1#closure_env_get_1#apply(env68: closure_env_get_1) -> int {
-  join ret91(retv92: int) -> int {
-    retv92
+fn inherent#closure_env_get_1#closure_env_get_1#apply(env72: closure_env_get_1) -> int {
+  join ret95(retv96: int) -> int {
+    retv96
   } in
-  let x/0 = closure_env_get_1.x_0(env68) in
-  let t93 = @intrinsic(ref.get)(x/0) in
-  jump ret91(t93)
+  let x/0 = closure_env_get_1.x_0(env72) in
+  let t97 = @intrinsic(ref.get)(x/0) in
+  jump ret95(t97)
 }

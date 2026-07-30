@@ -62,134 +62,134 @@ type Result__string__string_Err struct {
 func (_ Result__string__string_Err) isResult__string__string() {}
 
 func open_handle(ok__0 bool) Result__Handle__string {
-    var retv77 Result__Handle__string
-    var jp79 Result__Handle__string
+    var retv81 Result__Handle__string
+    var jp83 Result__Handle__string
     if ok__0 {
-        var t80 Handle = Handle{
+        var t84 Handle = Handle{
             name: "config",
         }
-        var t81 Result__Handle__string = Result__Handle__string_Ok{
-            _0: t80,
+        var t85 Result__Handle__string = Result__Handle__string_Ok{
+            _0: t84,
         }
-        jp79 = t81
+        jp83 = t85
     } else {
-        var t82 Result__Handle__string = Result__Handle__string_Err{
+        var t86 Result__Handle__string = Result__Handle__string_Err{
             _0: "open failed",
         }
-        jp79 = t82
+        jp83 = t86
     }
-    retv77 = jp79
-    return retv77
+    retv81 = jp83
+    return retv81
 }
 
 func close_handle(handle__1 Handle, ok__2 bool) Result__unit__string {
-    var retv84 Result__unit__string
-    var jp86 Result__unit__string
+    var retv88 Result__unit__string
+    var jp90 Result__unit__string
     if ok__2 {
-        var t87 Result__unit__string = Result__unit__string_Ok{
+        var t91 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp86 = t87
+        jp90 = t91
     } else {
-        var t88 string = handle__1.name
-        var t89 string = "close failed for " + t88
-        var t90 Result__unit__string = Result__unit__string_Err{
-            _0: t89,
+        var t92 string = handle__1.name
+        var t93 string = "close failed for " + t92
+        var t94 Result__unit__string = Result__unit__string_Err{
+            _0: t93,
         }
-        jp86 = t90
+        jp90 = t94
     }
-    retv84 = jp86
-    return retv84
+    retv88 = jp90
+    return retv88
 }
 
 func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
-    var retv92 Result__string__string
-    var mtmp64 Result__Handle__string = open_handle(open_ok__3)
-    var jp94 Handle
-    switch mtmp64.(type) {
+    var retv96 Result__string__string
+    var mtmp68 Result__Handle__string = open_handle(open_ok__3)
+    var jp98 Handle
+    switch mtmp68.(type) {
     case Result__Handle__string_Ok:
-        var x65 Handle = mtmp64.(Result__Handle__string_Ok)._0
-        var try_value__24 Handle = x65
-        jp94 = try_value__24
-        var handle__5 Handle = jp94
+        var x69 Handle = mtmp68.(Result__Handle__string_Ok)._0
+        var try_value__24 Handle = x69
+        jp98 = try_value__24
+        var handle__5 Handle = jp98
         var name__6 string = handle__5.name
-        var mtmp67 Result__unit__string = close_handle(handle__5, close_ok__4)
-        switch mtmp67.(type) {
+        var mtmp71 Result__unit__string = close_handle(handle__5, close_ok__4)
+        switch mtmp71.(type) {
         case Result__unit__string_Ok:
-            var t96 string = "closed " + name__6
-            var t97 Result__string__string = Result__string__string_Ok{
-                _0: t96,
+            var t100 string = "closed " + name__6
+            var t101 Result__string__string = Result__string__string_Ok{
+                _0: t100,
             }
-            retv92 = t97
-            return retv92
+            retv96 = t101
+            return retv96
         case Result__unit__string_Err:
-            var x69 string = mtmp67.(Result__unit__string_Err)._0
-            var try_residual__31 string = x69
-            var t98 Result__string__string = Result__string__string_Err{
+            var x73 string = mtmp71.(Result__unit__string_Err)._0
+            var try_residual__31 string = x73
+            var t102 Result__string__string = Result__string__string_Err{
                 _0: try_residual__31,
             }
-            retv92 = t98
-            return retv92
+            retv96 = t102
+            return retv96
         default:
             panic("non-exhaustive match")
         }
     case Result__Handle__string_Err:
-        var x66 string = mtmp64.(Result__Handle__string_Err)._0
-        var try_residual__24 string = x66
-        var t99 Result__string__string = Result__string__string_Err{
+        var x70 string = mtmp68.(Result__Handle__string_Err)._0
+        var try_residual__24 string = x70
+        var t103 Result__string__string = Result__string__string_Err{
             _0: try_residual__24,
         }
-        retv92 = t99
-        return retv92
+        retv96 = t103
+        return retv96
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__7 Result__string__string) string {
-    var retv101 string
-    var jp103 string
+    var retv105 string
+    var jp107 string
     switch res__7.(type) {
     case Result__string__string_Ok:
-        var x71 string = res__7.(Result__string__string_Ok)._0
-        var value__8 string = x71
-        var t104 string = "ok " + value__8
-        jp103 = t104
+        var x75 string = res__7.(Result__string__string_Ok)._0
+        var value__8 string = x75
+        var t108 string = "ok " + value__8
+        jp107 = t108
     case Result__string__string_Err:
-        var x72 string = res__7.(Result__string__string_Err)._0
-        var err__9 string = x72
-        var t105 string = "err " + err__9
-        jp103 = t105
+        var x76 string = res__7.(Result__string__string_Err)._0
+        var err__9 string = x76
+        var t109 string = "err " + err__9
+        jp107 = t109
     default:
         panic("non-exhaustive match")
     }
-    retv101 = jp103
-    return retv101
+    retv105 = jp107
+    return retv105
 }
 
 func main0() struct{} {
-    var t107 Result__string__string = use_handle(true, true)
-    var t108 string = show(t107)
-    println__T_string(t108)
-    var t109 Result__string__string = use_handle(false, true)
-    var t110 string = show(t109)
-    println__T_string(t110)
-    var t111 Result__string__string = use_handle(true, false)
+    var t111 Result__string__string = use_handle(true, true)
     var t112 string = show(t111)
     println__T_string(t112)
+    var t113 Result__string__string = use_handle(false, true)
+    var t114 string = show(t113)
+    println__T_string(t114)
+    var t115 Result__string__string = use_handle(true, false)
+    var t116 string = show(t115)
+    println__T_string(t116)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t114 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t114)
+    var t118 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t118)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv117 string
-    retv117 = self__38
-    return retv117
+    var retv121 string
+    retv121 = self__38
+    return retv121
 }
 
 func main() {

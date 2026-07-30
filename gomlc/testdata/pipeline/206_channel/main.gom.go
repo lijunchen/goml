@@ -57,10 +57,10 @@ type Option__string_Some struct {
 func (_ Option__string_Some) isOption__string() {}
 
 func make_string_channel() chan string {
-    var retv83 chan string
-    var t84 chan string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(0)
-    retv83 = t84
-    return retv83
+    var retv87 chan string
+    var t88 chan string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(0)
+    retv87 = t88
+    return retv87
 }
 
 func main0() struct{} {
@@ -68,103 +68,103 @@ func main0() struct{} {
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(buffered__2, 10)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(buffered__2, 20)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(buffered__2)
-    var mtmp68 Option__int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(buffered__2)
-    var jp87 int
-    switch mtmp68.(type) {
+    var mtmp72 Option__int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(buffered__2)
+    var jp91 int
+    switch mtmp72.(type) {
     case Option__int_None:
-        jp87 = -1
+        jp91 = -1
     case Option__int_Some:
-        var x69 int = mtmp68.(Option__int_Some)._0
-        var value__3 int = x69
-        jp87 = value__3
+        var x73 int = mtmp72.(Option__int_Some)._0
+        var value__3 int = x73
+        jp91 = value__3
     default:
         panic("non-exhaustive match")
     }
-    println__T_int(jp87)
-    var mtmp71 Option__int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(buffered__2)
-    var jp89 int
-    switch mtmp71.(type) {
+    println__T_int(jp91)
+    var mtmp75 Option__int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(buffered__2)
+    var jp93 int
+    switch mtmp75.(type) {
     case Option__int_None:
-        jp89 = -1
+        jp93 = -1
     case Option__int_Some:
-        var x72 int = mtmp71.(Option__int_Some)._0
-        var value__4 int = x72
-        jp89 = value__4
+        var x76 int = mtmp75.(Option__int_Some)._0
+        var value__4 int = x76
+        jp93 = value__4
     default:
         panic("non-exhaustive match")
     }
-    println__T_int(jp89)
-    var mtmp74 Option__int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(buffered__2)
-    var jp91 string
-    switch mtmp74.(type) {
+    println__T_int(jp93)
+    var mtmp78 Option__int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(buffered__2)
+    var jp95 string
+    switch mtmp78.(type) {
     case Option__int_None:
-        jp91 = "closed"
+        jp95 = "closed"
     case Option__int_Some:
-        jp91 = "open"
+        jp95 = "open"
     default:
         panic("non-exhaustive match")
     }
-    println__T_string(jp91)
+    println__T_string(jp95)
     var unbuffered__5 chan string = make_string_channel()
-    var mtmp77 Option__string = roundtrip__T_string(unbuffered__5, "ready")
-    var jp93 string
-    switch mtmp77.(type) {
+    var mtmp81 Option__string = roundtrip__T_string(unbuffered__5, "ready")
+    var jp97 string
+    switch mtmp81.(type) {
     case Option__string_None:
-        jp93 = "closed"
+        jp97 = "closed"
     case Option__string_Some:
-        var x78 string = mtmp77.(Option__string_Some)._0
-        var value__6 string = x78
-        jp93 = value__6
+        var x82 string = mtmp81.(Option__string_Some)._0
+        var value__6 string = x82
+        jp97 = value__6
     default:
         panic("non-exhaustive match")
     }
-    println__T_string(jp93)
+    println__T_string(jp97)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__string(unbuffered__5)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__213 int) chan string {
-    var retv95 chan string
-    var t96 chan string = func(p0 int) chan string {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__211 int) chan string {
+    var retv99 chan string
+    var t100 chan string = func(p0 int) chan string {
         return make(chan string, p0)
-    }(capacity__213)
-    retv95 = t96
-    return retv95
+    }(capacity__211)
+    retv99 = t100
+    return retv99
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__213 int) chan int {
-    var retv98 chan int
-    var t99 chan int = func(p0 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__211 int) chan int {
+    var retv102 chan int
+    var t103 chan int = func(p0 int) chan int {
         return make(chan int, p0)
-    }(capacity__213)
-    retv98 = t99
-    return retv98
+    }(capacity__211)
+    retv102 = t103
+    return retv102
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__214 chan int, value__215 int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__212 chan int, value__213 int) struct{} {
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(self__214, value__215)
+    }(self__212, value__213)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__219 chan int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__217 chan int) struct{} {
     func(p0 chan int) struct{} {
         close(p0)
         return struct{}{}
-    }(self__219)
+    }(self__217)
     return struct{}{}
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t105 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t105)
+    var t109 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    _goml_runtime_core_string_println(t109)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(self__216 chan int) Option__int {
-    var retv108 Option__int
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(self__214 chan int) Option__int {
+    var retv112 Option__int
     var mtmp60 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
@@ -173,73 +173,73 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__int(self__216 chan
             _0: value,
             _1: ok,
         }
-    }(self__216)
+    }(self__214)
     var x61 int = mtmp60._0
     var x62 bool = mtmp60._1
-    var ok__218 bool = x62
-    var value__217 int = x61
-    var jp110 Option__int
-    if ok__218 {
-        var t111 Option__int = Option__int_Some{
-            _0: value__217,
+    var ok__216 bool = x62
+    var value__215 int = x61
+    var jp114 Option__int
+    if ok__216 {
+        var t115 Option__int = Option__int_Some{
+            _0: value__215,
         }
-        jp110 = t111
+        jp114 = t115
     } else {
-        jp110 = Option__int_None{}
+        jp114 = Option__int_None{}
     }
-    retv108 = jp110
-    return retv108
+    retv112 = jp114
+    return retv112
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t113 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t113)
+    var t117 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t117)
     return struct{}{}
 }
 
 func roundtrip__T_string(channel__0 chan string, value__1 string) Option__string {
-    var retv116 Option__string
-    var t117 closure_env_roundtrip_T_string_0 = closure_env_roundtrip_T_string_0{
+    var retv120 Option__string
+    var t121 closure_env_roundtrip_T_string_0 = closure_env_roundtrip_T_string_0{
         channel_0: channel__0,
         value_1: value__1,
     }
-    go _goml_m_inherent_i_closure__en_h6de6ca36633f2d445fcbfaf4a81e6dce_ring__0_i_apply(t117)
-    var t118 Option__string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(channel__0)
-    retv116 = t118
-    return retv116
+    go _goml_m_inherent_i_closure__en_h6de6ca36633f2d445fcbfaf4a81e6dce_ring__0_i_apply(t121)
+    var t122 Option__string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(channel__0)
+    retv120 = t122
+    return retv120
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__string(self__219 chan string) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__string(self__217 chan string) struct{} {
     func(p0 chan string) struct{} {
         close(p0)
         return struct{}{}
-    }(self__219)
+    }(self__217)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv122 string
-    var t123 string = _goml_runtime_core_int_to_string(self__40)
-    retv122 = t123
-    return retv122
+    var retv126 string
+    var t127 string = _goml_runtime_core_int_to_string(self__40)
+    retv126 = t127
+    return retv126
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv125 string
-    retv125 = self__38
-    return retv125
+    var retv129 string
+    retv129 = self__38
+    return retv129
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__string(self__214 chan string, value__215 string) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__string(self__212 chan string, value__213 string) struct{} {
     func(p0 chan string, p1 string) struct{} {
         p0 <- p1
         return struct{}{}
-    }(self__214, value__215)
+    }(self__212, value__213)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__216 chan string) Option__string {
-    var retv129 Option__string
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__214 chan string) Option__string {
+    var retv133 Option__string
     var mtmp60 Tuple2_6string_4bool = func(p0 chan string) Tuple2_6string_4bool {
         var value string
         var ok bool
@@ -248,27 +248,27 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__216 c
             _0: value,
             _1: ok,
         }
-    }(self__216)
+    }(self__214)
     var x61 string = mtmp60._0
     var x62 bool = mtmp60._1
-    var ok__218 bool = x62
-    var value__217 string = x61
-    var jp131 Option__string
-    if ok__218 {
-        var t132 Option__string = Option__string_Some{
-            _0: value__217,
+    var ok__216 bool = x62
+    var value__215 string = x61
+    var jp135 Option__string
+    if ok__216 {
+        var t136 Option__string = Option__string_Some{
+            _0: value__215,
         }
-        jp131 = t132
+        jp135 = t136
     } else {
-        jp131 = Option__string_None{}
+        jp135 = Option__string_None{}
     }
-    retv129 = jp131
-    return retv129
+    retv133 = jp135
+    return retv133
 }
 
-func _goml_m_inherent_i_closure__en_h6de6ca36633f2d445fcbfaf4a81e6dce_ring__0_i_apply(env81 closure_env_roundtrip_T_string_0) struct{} {
-    var channel__0 chan string = env81.channel_0
-    var value__1 string = env81.value_1
+func _goml_m_inherent_i_closure__en_h6de6ca36633f2d445fcbfaf4a81e6dce_ring__0_i_apply(env85 closure_env_roundtrip_T_string_0) struct{} {
+    var channel__0 chan string = env85.channel_0
+    var value__1 string = env85.value_1
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__string(channel__0, value__1)
     return struct{}{}
 }

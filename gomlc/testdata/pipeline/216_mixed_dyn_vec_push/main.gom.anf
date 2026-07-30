@@ -1,75 +1,75 @@
 fn trait_impl#Show#int32#show(self/0: int32) -> string {
-  join ret67(retv68: string) -> string {
-    retv68
+  join ret71(retv72: string) -> string {
+    retv72
   } in
-  let t69 = inherent#int32#int32#to_string(self/0) in
-  jump ret67(t69)
+  let t73 = inherent#int32#int32#to_string(self/0) in
+  jump ret71(t73)
 }
 
 fn trait_impl#Show#Wrap#show(self/1: Wrap) -> string {
-  join ret70(retv71: string) -> string {
-    retv71
+  join ret74(retv75: string) -> string {
+    retv75
   } in
-  let t72 = Wrap.value(self/1) in
-  jump ret70(t72)
+  let t76 = Wrap.value(self/1) in
+  jump ret74(t76)
 }
 
 fn main() -> unit {
-  join ret73() -> unit {
+  join ret77() -> unit {
     ()
   } in
   let values/2 = inherent#Vec#Vec[T]#new__T_dynShow() in
   let value/3 = 10 in
-  let t74 = to_dyn[Show]{int32}(value/3) in
-  let _wild64 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, t74) in
-  let t75 = Wrap { value: "ok" } in
-  let t76 = to_dyn[Show]{Wrap}(t75) in
-  let _wild65 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, t76) in
-  let t77 = @intrinsic(vec.get)(values/2, 0) in
-  let t78 = dyn_call[Show::show](t77) in
-  let _wild66 = println__T_string(t78) in
-  let t79 = @intrinsic(vec.get)(values/2, 1) in
-  let t80 = dyn_call[Show::show](t79) in
-  let t81 = println__T_string(t80) in
-  jump ret73()
+  let t78 = to_dyn[Show]{int32}(value/3) in
+  let _wild68 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, t78) in
+  let t79 = Wrap { value: "ok" } in
+  let t80 = to_dyn[Show]{Wrap}(t79) in
+  let _wild69 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, t80) in
+  let t81 = @intrinsic(vec.get)(values/2, 0) in
+  let t82 = dyn_call[Show::show](t81) in
+  let _wild70 = println__T_string(t82) in
+  let t83 = @intrinsic(vec.get)(values/2, 1) in
+  let t84 = dyn_call[Show::show](t83) in
+  let t85 = println__T_string(t84) in
+  jump ret77()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret82(retv83: string) -> string {
-    retv83
+  join ret86(retv87: string) -> string {
+    retv87
   } in
-  let t84 = @runtime(core.int32_to_string)(self/6) in
-  jump ret82(t84)
+  let t88 = @runtime(core.int32_to_string)(self/6) in
+  jump ret86(t88)
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynShow() -> Vec[dyn Show] {
-  join ret85(retv86: Vec[dyn Show]) -> Vec[dyn Show] {
-    retv86
+  join ret89(retv90: Vec[dyn Show]) -> Vec[dyn Show] {
+    retv90
   } in
-  let t87 = @intrinsic(vec.new)() in
-  jump ret85(t87)
+  let t91 = @intrinsic(vec.new)() in
+  jump ret89(t91)
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynShow(self/128: Vec[dyn Show], elem/129: dyn Show) -> unit {
-  join ret88() -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynShow(self/126: Vec[dyn Show], elem/127: dyn Show) -> unit {
+  join ret92() -> unit {
     ()
   } in
-  let t89 = @intrinsic(vec.push)(self/128, elem/129) in
-  jump ret88()
+  let t93 = @intrinsic(vec.push)(self/126, elem/127) in
+  jump ret92()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret90() -> unit {
+  join ret94() -> unit {
     ()
   } in
-  let t91 = trait_impl#ToString#string#to_string(value/1) in
-  let t92 = @runtime(core.string_println)(t91) in
-  jump ret90()
+  let t95 = trait_impl#ToString#string#to_string(value/1) in
+  let t96 = @runtime(core.string_println)(t95) in
+  jump ret94()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret93(retv94: string) -> string {
-    retv94
+  join ret97(retv98: string) -> string {
+    retv98
   } in
-  jump ret93(self/38)
+  jump ret97(self/38)
 }

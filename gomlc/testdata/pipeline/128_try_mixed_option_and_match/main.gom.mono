@@ -24,16 +24,16 @@ fn maybe_secondary(flag/1: bool) -> Option__int32 {
 
 fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
   let value/4 = {
-    let mtmp64 = maybe_primary(primary/2) in
-    match mtmp64 {
+    let mtmp68 = maybe_primary(primary/2) in
+    match mtmp68 {
       Option__int32::None => {
         return Option__string::None
       },
-      Option__int32::Some(x65) => {
+      Option__int32::Some(x69) => {
         {
-          let x65 = Option__int32::Some._0(mtmp64) in
+          let x69 = Option__int32::Some._0(mtmp68) in
           {
-            let try_value/18 = x65 in
+            let try_value/18 = x69 in
             try_value/18
           }
         }
@@ -41,16 +41,16 @@ fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
     }
   } in
   let label/6 = {
-    let mtmp66 = maybe_secondary(secondary/3) in
-    match mtmp66 {
+    let mtmp70 = maybe_secondary(secondary/3) in
+    match mtmp70 {
       Option__int32::None => {
         "extra=none"
       },
-      Option__int32::Some(x67) => {
+      Option__int32::Some(x71) => {
         {
-          let x67 = Option__int32::Some._0(mtmp66) in
+          let x71 = Option__int32::Some._0(mtmp70) in
           {
-            let extra/5 = x67 in
+            let extra/5 = x71 in
             ("extra=" + inherent#int32#int32#to_string(extra/5))
           }
         }
@@ -65,11 +65,11 @@ fn show(opt/7: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x68) => {
+    Option__string::Some(x72) => {
       {
-        let x68 = Option__string::Some._0(opt/7) in
+        let x72 = Option__string::Some._0(opt/7) in
         {
-          let value/8 = x68 in
+          let value/8 = x72 in
           ("some=" + value/8)
         }
       }
@@ -78,9 +78,9 @@ fn show(opt/7: Option__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild69 = println__T_string(show(mixed(true, true))) in
-  let _wild70 = println__T_string(show(mixed(true, false))) in
-  let _wild71 = println__T_string(show(mixed(false, true))) in
+  let _wild73 = println__T_string(show(mixed(true, true))) in
+  let _wild74 = println__T_string(show(mixed(true, false))) in
+  let _wild75 = println__T_string(show(mixed(false, true))) in
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {

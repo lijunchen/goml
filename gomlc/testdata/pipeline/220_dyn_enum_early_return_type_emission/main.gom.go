@@ -33,35 +33,35 @@ type dyn__Display struct {
 }
 
 func build() int32 {
-    var retv69 int32
-    retv69 = 9
-    return retv69
+    var retv73 int32
+    retv73 = 9
+    return retv73
 }
 
 func main0() struct{} {
-    var t71 int32 = build()
-    var t72 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t71)
-    println__T_string(t72)
+    var t75 int32 = build()
+    var t76 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t75)
+    println__T_string(t76)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv75 string
-    var t76 string = _goml_runtime_core_int32_to_string(self__6)
-    retv75 = t76
-    return retv75
+    var retv79 string
+    var t80 string = _goml_runtime_core_int32_to_string(self__6)
+    retv79 = t80
+    return retv79
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t78 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t78)
+    var t82 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t82)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv81 string
-    retv81 = self__38
-    return retv81
+    var retv85 string
+    retv85 = self__38
+    return retv85
 }
 
 func main() {

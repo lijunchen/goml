@@ -4,20 +4,20 @@ fn main() -> unit {
   let unsigned/2 = 9 in
   let text/3 = (((@runtime(core.int_to_string)(native/0) + @runtime(core.int8_to_string)(small/1)) + @runtime(core.uint8_to_string)(unsigned/2)) + @runtime(core.string_byte_slice)("abcd", 1, 3)) in
   let value/4 = @intrinsic(ref.new)(1) in
-  let _wild64 = @intrinsic(ref.set)(value/4, 2) in
+  let _wild68 = @intrinsic(ref.set)(value/4, 2) in
   let same/5 = @intrinsic(ref.ptr_eq)(value/4, value/4) in
-  let mtmp65 = @intrinsic(ref.ptr_hash)(value/4) in
+  let mtmp69 = @intrinsic(ref.ptr_hash)(value/4) in
   {
     let values/6 = @intrinsic(vec.new)() in
-    let _wild66 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
-    let _wild67 = @intrinsic(vec.push)(values/6, 3) in
-    let _wild68 = @intrinsic(vec.set)(values/6, 1, 4) in
+    let _wild70 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
+    let _wild71 = @intrinsic(vec.push)(values/6, 3) in
+    let _wild72 = @intrinsic(vec.set)(values/6, 1, 4) in
     let values_slice/7 = @intrinsic(slice.new)(values/6, 0, @intrinsic(vec.len)(values/6)) in
     let nested/8 = @intrinsic(slice.sub)(values_slice/7, 0, @intrinsic(slice.len)(values_slice/7)) in
     let channel/9 = @intrinsic(channel.new)(1) in
-    let _wild69 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
+    let _wild73 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
     let received/10 = @intrinsic(channel.recv)(channel/9) in
-    let _wild70 = @intrinsic(channel.close)(channel/9) in
+    let _wild74 = @intrinsic(channel.close)(channel/9) in
     let total/13 = iterator_fold__A_int__I_FnIterator[int]__T_int(range(0, 3), 0, |sum/11, item/12| {
       (sum/11 + item/12)
     }) in
@@ -27,21 +27,20 @@ fn main() -> unit {
 
 fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int, initial/118: int, combine/119: (int, int) -> int) -> int {
   let accumulator/120 = inherent#Ref#Ref[T]#new__T_int(initial/118) in
-  let running/121 = inherent#Ref#Ref[T]#new__T_bool(true) in
-  let _wild29 = while inherent#Ref#Ref[T]#get__T_bool(running/121) {
+  let _wild29 = while true {
       {
         let _wild28 = {
           let mtmp26 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
           match mtmp26 {
             Option__int::None => {
-              inherent#Ref#Ref[T]#set__T_bool(running/121, false)
+              break
             },
             Option__int::Some(x27) => {
               {
                 let x27 = Option__int::Some._0(mtmp26) in
                 {
-                  let value/122 = x27 in
-                  inherent#Ref#Ref[T]#set__T_int(accumulator/120, combine/119(inherent#Ref#Ref[T]#get__T_int(accumulator/120), value/122))
+                  let value/121 = x27 in
+                  inherent#Ref#Ref[T]#set__T_int(accumulator/120, combine/119(inherent#Ref#Ref[T]#get__T_int(accumulator/120), value/121))
                 }
               }
             },
@@ -52,8 +51,8 @@ fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int,
   inherent#Ref#Ref[T]#get__T_int(accumulator/120)
 }
 
-fn range(start/224: int, end/225: int) -> FnIterator__int {
-  __goml_builtin_range(start/224, end/225)
+fn range(start/222: int, end/223: int) -> FnIterator__int {
+  __goml_builtin_range(start/222, end/223)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -72,42 +71,30 @@ fn inherent#int#int#to_string(self/5: int) -> string {
   @runtime(core.int_to_string)(self/5)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/209)
-}
-
-fn inherent#Ref#Ref[T]#new__T_bool(value/209: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/209)
-}
-
-fn inherent#Ref#Ref[T]#get__T_bool(self/210: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/207)
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
   FnIterator__int.next_fn(self/102)()
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/211: Ref[bool], value/212: bool) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/208)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
-}
-
-fn __goml_builtin_range(start/220: int, end/221: int) -> FnIterator__int {
-  let current/222 = inherent#Ref#Ref[T]#new__T_int(start/220) in
+fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
+  let current/220 = inherent#Ref#Ref[T]#new__T_int(start/218) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(|| {
-    let value/223 = inherent#Ref#Ref[T]#get__T_int(current/222) in
-    if (value/223 < end/221) {
+    let value/221 = inherent#Ref#Ref[T]#get__T_int(current/220) in
+    if (value/221 < end/219) {
         {
-          let _wild63 = inherent#Ref#Ref[T]#set__T_int(current/222, (value/223 + 1)) in
-          Option__int::Some(value/223)
+          let _wild63 = inherent#Ref#Ref[T]#set__T_int(current/220, (value/221 + 1)) in
+          Option__int::Some(value/221)
         }
     } else {
         {
@@ -139,20 +126,4 @@ fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
   @runtime(core.int_hash)(self/85)
-}
-
-fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
-  @intrinsic(eq.primitive)(self/53, other/54)
-}
-
-fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
-  if self/82 {
-      {
-        1
-      }
-  } else {
-      {
-        0
-      }
-  }
 }

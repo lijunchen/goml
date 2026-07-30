@@ -1,54 +1,54 @@
 fn main() -> unit {
-  join ret66() -> unit {
+  join ret70() -> unit {
     ()
   } in
   let a/0 = inherent#Ref#Ref[T]#new__T_int(1) in
   let b/1 = a/0 in
   let c/2 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let t67 = @intrinsic(ref.ptr_eq)(a/0, b/1) in
-  let _wild64 = println__T_bool(t67) in
-  let t68 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
-  let _wild65 = println__T_bool(t68) in
-  jump ret66()
+  let t71 = @intrinsic(ref.ptr_eq)(a/0, b/1) in
+  let _wild68 = println__T_bool(t71) in
+  let t72 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
+  let _wild69 = println__T_bool(t72) in
+  jump ret70()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  join ret69(retv70: Ref[int]) -> Ref[int] {
-    retv70
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  join ret73(retv74: Ref[int]) -> Ref[int] {
+    retv74
   } in
-  let t71 = @intrinsic(ref.new)(value/209) in
-  jump ret69(t71)
+  let t75 = @intrinsic(ref.new)(value/207) in
+  jump ret73(t75)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret72() -> unit {
+  join ret76() -> unit {
     ()
   } in
-  let t73 = trait_impl#ToString#bool#to_string(value/1) in
-  let t74 = @runtime(core.string_println)(t73) in
-  jump ret72()
+  let t77 = trait_impl#ToString#bool#to_string(value/1) in
+  let t78 = @runtime(core.string_println)(t77) in
+  jump ret76()
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret79(retv80: string) -> string {
+    retv80
   } in
-  let t77 = @runtime(core.bool_to_string)(self/37) in
-  jump ret75(t77)
+  let t81 = @runtime(core.bool_to_string)(self/37) in
+  jump ret79(t81)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret78(retv79: bool) -> bool {
-    retv79
+  join ret82(retv83: bool) -> bool {
+    retv83
   } in
-  let t80 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret78(t80)
+  let t84 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret82(t84)
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret81(retv82: uint64) -> uint64 {
-    retv82
+  join ret85(retv86: uint64) -> uint64 {
+    retv86
   } in
-  let t83 = @runtime(core.int_hash)(self/85) in
-  jump ret81(t83)
+  let t87 = @runtime(core.int_hash)(self/85) in
+  jump ret85(t87)
 }

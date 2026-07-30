@@ -1488,24 +1488,24 @@ fn std::json::object(fields/95: Vec[(string, std::json::Value)]) -> std::json::V
 
 fn main() -> unit {
   let value/2 = {
-    let mtmp64 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
-    match mtmp64 {
-      Result__std::json::Value__string::Ok(x65) => {
+    let mtmp68 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
+    match mtmp68 {
+      Result__std::json::Value__string::Ok(x69) => {
         {
-          let x65 = Result__std::json::Value__string::Ok._0(mtmp64) in
+          let x69 = Result__std::json::Value__string::Ok._0(mtmp68) in
           {
-            let value/0 = x65 in
+            let value/0 = x69 in
             value/0
           }
         }
       },
-      Result__std::json::Value__string::Err(x66) => {
+      Result__std::json::Value__string::Err(x70) => {
         {
-          let x66 = Result__std::json::Value__string::Err._0(mtmp64) in
+          let x70 = Result__std::json::Value__string::Err._0(mtmp68) in
           {
-            let error/1 = x66 in
+            let error/1 = x70 in
             {
-              let _wild67 = println__T_string(error/1) in
+              let _wild71 = println__T_string(error/1) in
               return
             }
           }
@@ -1513,28 +1513,28 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild72 = {
-    let mtmp68 = std::json::field(value/2, "name") in
-    match mtmp68 {
+  let _wild76 = {
+    let mtmp72 = std::json::field(value/2, "name") in
+    match mtmp72 {
       Option__std::json::Value::None => {
         println__T_string("missing name")
       },
-      Option__std::json::Value::Some(x69) => {
+      Option__std::json::Value::Some(x73) => {
         {
-          let x69 = Option__std::json::Value::Some._0(mtmp68) in
+          let x73 = Option__std::json::Value::Some._0(mtmp72) in
           {
-            let field/3 = x69 in
+            let field/3 = x73 in
             {
-              let mtmp70 = std::json::as_string(field/3) in
-              match mtmp70 {
+              let mtmp74 = std::json::as_string(field/3) in
+              match mtmp74 {
                 Option__string::None => {
                   println__T_string("invalid name")
                 },
-                Option__string::Some(x71) => {
+                Option__string::Some(x75) => {
                   {
-                    let x71 = Option__string::Some._0(mtmp70) in
+                    let x75 = Option__string::Some._0(mtmp74) in
                     {
-                      let name/4 = x71 in
+                      let name/4 = x75 in
                       println__T_string(name/4)
                     }
                   }
@@ -1546,28 +1546,28 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild77 = {
-    let mtmp73 = std::json::field(value/2, "version") in
-    match mtmp73 {
+  let _wild81 = {
+    let mtmp77 = std::json::field(value/2, "version") in
+    match mtmp77 {
       Option__std::json::Value::None => {
         println__T_string("missing version")
       },
-      Option__std::json::Value::Some(x74) => {
+      Option__std::json::Value::Some(x78) => {
         {
-          let x74 = Option__std::json::Value::Some._0(mtmp73) in
+          let x78 = Option__std::json::Value::Some._0(mtmp77) in
           {
-            let field/5 = x74 in
+            let field/5 = x78 in
             {
-              let mtmp75 = std::json::as_int(field/5) in
-              match mtmp75 {
+              let mtmp79 = std::json::as_int(field/5) in
+              match mtmp79 {
                 Option__int::None => {
                   println__T_string("invalid version")
                 },
-                Option__int::Some(x76) => {
+                Option__int::Some(x80) => {
                   {
-                    let x76 = Option__int::Some._0(mtmp75) in
+                    let x80 = Option__int::Some._0(mtmp79) in
                     {
-                      let version/6 = x76 in
+                      let version/6 = x80 in
                       println__T_int(version/6)
                     }
                   }
@@ -1579,28 +1579,28 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild82 = {
-    let mtmp78 = std::json::field(value/2, "stable") in
-    match mtmp78 {
+  let _wild86 = {
+    let mtmp82 = std::json::field(value/2, "stable") in
+    match mtmp82 {
       Option__std::json::Value::None => {
         println__T_string("missing stable")
       },
-      Option__std::json::Value::Some(x79) => {
+      Option__std::json::Value::Some(x83) => {
         {
-          let x79 = Option__std::json::Value::Some._0(mtmp78) in
+          let x83 = Option__std::json::Value::Some._0(mtmp82) in
           {
-            let field/7 = x79 in
+            let field/7 = x83 in
             {
-              let mtmp80 = std::json::as_bool(field/7) in
-              match mtmp80 {
+              let mtmp84 = std::json::as_bool(field/7) in
+              match mtmp84 {
                 Option__bool::None => {
                   println__T_string("invalid stable")
                 },
-                Option__bool::Some(x81) => {
+                Option__bool::Some(x85) => {
                   {
-                    let x81 = Option__bool::Some._0(mtmp80) in
+                    let x85 = Option__bool::Some._0(mtmp84) in
                     {
-                      let stable/8 = x81 in
+                      let stable/8 = x85 in
                       println__T_bool(stable/8)
                     }
                   }
@@ -1619,67 +1619,67 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/127: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/127)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/125: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/125)
 }
 
 fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/24)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/139: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/139)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/137: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/137)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/140: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/140)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/138: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/138)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/141: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/141), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/139: Vec[uint8]) -> bool {
+  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/139), 0)
 }
 
-fn inherent#Vec#Vec[T]#get__T_uint8(self/134: Vec[uint8], index/135: int) -> uint8 {
-  @intrinsic(vec.get)(self/134, index/135)
+fn inherent#Vec#Vec[T]#get__T_uint8(self/132: Vec[uint8], index/133: int) -> uint8 {
+  @intrinsic(vec.get)(self/132, index/133)
 }
 
-fn inherent#Vec#Vec[T]#set__T_uint8(self/136: Vec[uint8], index/137: int, elem/138: uint8) -> unit {
-  @intrinsic(vec.set)(self/136, index/137, elem/138)
+fn inherent#Vec#Vec[T]#set__T_uint8(self/134: Vec[uint8], index/135: int, elem/136: uint8) -> unit {
+  @intrinsic(vec.set)(self/134, index/135, elem/136)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/128: Vec[uint8], elem/129: uint8) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/126: Vec[uint8], elem/127: uint8) -> unit {
+  @intrinsic(vec.push)(self/126, elem/127)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/149: Vec[uint8]) -> Option__uint8 {
-  let len/150 = inherent#Vec#Vec[T]#len__T_uint8(self/149) in
-  if trait_impl#Eq#int#eq(len/150, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/147: Vec[uint8]) -> Option__uint8 {
+  let len/148 = inherent#Vec#Vec[T]#len__T_uint8(self/147) in
+  if trait_impl#Eq#int#eq(len/148, 0) {
       {
         Option__uint8::None
       }
   } else {
       {
-        let value/151 = inherent#Vec#Vec[T]#get__T_uint8(self/149, (len/150 - 1)) in
-        let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/149, (len/150 - 1)) in
-        Option__uint8::Some(value/151)
+        let value/149 = inherent#Vec#Vec[T]#get__T_uint8(self/147, (len/148 - 1)) in
+        let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/147, (len/148 - 1)) in
+        Option__uint8::Some(value/149)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/142: Vec[uint8], additional/143: int) -> unit {
-  @intrinsic(vec.reserve)(self/142, additional/143)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/140: Vec[uint8], additional/141: int) -> unit {
+  @intrinsic(vec.reserve)(self/140, additional/141)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/144: Vec[uint8], len/145: int) -> unit {
-  @intrinsic(vec.truncate)(self/144, len/145)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/142: Vec[uint8], len/143: int) -> unit {
+  @intrinsic(vec.truncate)(self/142, len/143)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/146: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/146, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/144: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/144, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/177: Vec[uint8], start/178: int, end/179: int) -> Slice[uint8] {
-  @intrinsic(slice.new)(self/177, start/178, end/179)
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/175: Vec[uint8], start/176: int, end/177: int) -> Slice[uint8] {
+  @intrinsic(slice.new)(self/175, start/176, end/177)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
@@ -1698,12 +1698,12 @@ fn inherent#char#char#to_string(self/7: char) -> string {
   @runtime(core.char_to_string)(self/7)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/209)
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/208)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
@@ -1714,20 +1714,20 @@ fn trait_impl#Eq#uint8#eq(self/69: uint8, other/70: uint8) -> bool {
   @intrinsic(eq.primitive)(self/69, other/70)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
-fn inherent#Ref#Ref[T]#new__T_uint32(value/209: uint32) -> Ref[uint32] {
-  @intrinsic(ref.new)(value/209)
+fn inherent#Ref#Ref[T]#new__T_uint32(value/207: uint32) -> Ref[uint32] {
+  @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#get__T_uint32(self/210: Ref[uint32]) -> uint32 {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#get__T_uint32(self/208: Ref[uint32]) -> uint32 {
+  @intrinsic(ref.get)(self/208)
 }
 
-fn inherent#Ref#Ref[T]#set__T_uint32(self/211: Ref[uint32], value/212: uint32) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#set__T_uint32(self/209: Ref[uint32], value/210: uint32) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
 fn char_from_uint32(value/2: uint32) -> Option__char {
@@ -1767,32 +1767,32 @@ fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_std::json::Value(self/128: Vec[std::json::Value], elem/129: std::json::Value) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
+fn inherent#Vec#Vec[T]#push__T_std::json::Value(self/126: Vec[std::json::Value], elem/127: std::json::Value) -> unit {
+  @intrinsic(vec.push)(self/126, elem/127)
 }
 
 fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::json::Value)] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(self/128: Vec[(string, std::json::Value)], elem/129: (string, std::json::Value)) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
+fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(self/126: Vec[(string, std::json::Value)], elem/127: (string, std::json::Value)) -> unit {
+  @intrinsic(vec.push)(self/126, elem/127)
 }
 
 fn inherent#string#string#get(self/10: string, index/11: int) -> char {
   @runtime(core.string_get)(self/10, index/11)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[std::json::Value](value/209: Option__std::json::Value) -> Ref[Option__std::json::Value] {
-  @intrinsic(ref.new)(value/209)
+fn inherent#Ref#Ref[T]#new__T_Option[std::json::Value](value/207: Option__std::json::Value) -> Ref[Option__std::json::Value] {
+  @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Option[std::json::Value](self/211: Ref[Option__std::json::Value], value/212: Option__std::json::Value) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#set__T_Option[std::json::Value](self/209: Ref[Option__std::json::Value], value/210: Option__std::json::Value) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[std::json::Value](self/210: Ref[Option__std::json::Value]) -> Option__std::json::Value {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#get__T_Option[std::json::Value](self/208: Ref[Option__std::json::Value]) -> Option__std::json::Value {
+  @intrinsic(ref.get)(self/208)
 }
 
 fn println__T_string(value/1: string) -> unit {

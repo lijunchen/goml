@@ -33,14 +33,14 @@ func print_int_list(xs__0 IntList) struct{} {
     case Nil:
         println__T_string("Nil")
     case Cons:
-        var x64 int32 = xs__0.(Cons)._0
-        var x65 IntList = xs__0.(Cons)._1
-        var xs__2 IntList = x65
-        var x__1 int32 = x64
+        var x68 int32 = xs__0.(Cons)._0
+        var x69 IntList = xs__0.(Cons)._1
+        var xs__2 IntList = x69
+        var x__1 int32 = x68
         println__T_string("Cons")
         println__T_string("(")
-        var t92 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
-        println__T_string(t92)
+        var t96 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
+        println__T_string(t96)
         println__T_string(", ")
         print_int_list(xs__2)
         println__T_string(")")
@@ -51,60 +51,60 @@ func print_int_list(xs__0 IntList) struct{} {
 }
 
 func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
-    var retv94 IntList
-    var jp96 IntList
+    var retv98 IntList
+    var jp100 IntList
     switch xs__3.(type) {
     case Nil:
-        jp96 = acc__4
+        jp100 = acc__4
     case Cons:
-        var x72 int32 = xs__3.(Cons)._0
-        var x73 IntList = xs__3.(Cons)._1
-        var tail__6 IntList = x73
-        var head__5 int32 = x72
-        var t97 IntList = Cons{
+        var x76 int32 = xs__3.(Cons)._0
+        var x77 IntList = xs__3.(Cons)._1
+        var tail__6 IntList = x77
+        var head__5 int32 = x76
+        var t101 IntList = Cons{
             _0: head__5,
             _1: acc__4,
         }
-        var t98 IntList = int_list_rev_aux(tail__6, t97)
-        jp96 = t98
+        var t102 IntList = int_list_rev_aux(tail__6, t101)
+        jp100 = t102
     default:
         panic("non-exhaustive match")
     }
-    retv94 = jp96
-    return retv94
+    retv98 = jp100
+    return retv98
 }
 
 func int_list_rev(xs__7 IntList) IntList {
-    var retv100 IntList
-    var t101 IntList = int_list_rev_aux(xs__7, Nil{})
-    retv100 = t101
-    return retv100
+    var retv104 IntList
+    var t105 IntList = int_list_rev_aux(xs__7, Nil{})
+    retv104 = t105
+    return retv104
 }
 
 func int_list_length(xs__8 IntList) int32 {
-    var retv103 int32
-    var jp105 int32
+    var retv107 int32
+    var jp109 int32
     switch xs__8.(type) {
     case Nil:
-        jp105 = 0
+        jp109 = 0
     case Cons:
-        var x75 IntList = xs__8.(Cons)._1
-        var xs__9 IntList = x75
-        var t106 int32 = int_list_length(xs__9)
-        var t107 int32 = 1 + t106
-        jp105 = t107
+        var x79 IntList = xs__8.(Cons)._1
+        var xs__9 IntList = x79
+        var t110 int32 = int_list_length(xs__9)
+        var t111 int32 = 1 + t110
+        jp109 = t111
     default:
         panic("non-exhaustive match")
     }
-    retv103 = jp105
-    return retv103
+    retv107 = jp109
+    return retv107
 }
 
 func print_int_list_length(xs__10 IntList) struct{} {
     println__T_string("Length: ")
-    var t109 int32 = int_list_length(xs__10)
-    var t110 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t109)
-    println__T_string(t110)
+    var t113 int32 = int_list_length(xs__10)
+    var t114 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t113)
+    println__T_string(t114)
     return struct{}{}
 }
 
@@ -120,17 +120,17 @@ func main0() struct{} {
     print_int_list(x__12)
     println__T_string("")
     print_int_list_length(x__12)
-    var t112 IntList = Cons{
+    var t116 IntList = Cons{
         _0: 3,
         _1: Nil{},
     }
-    var t113 IntList = Cons{
+    var t117 IntList = Cons{
         _0: 2,
-        _1: t112,
+        _1: t116,
     }
     var x__13 IntList = Cons{
         _0: 1,
-        _1: t113,
+        _1: t117,
     }
     print_int_list(x__13)
     println__T_string("")
@@ -142,22 +142,22 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t115 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t115)
+    var t119 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t119)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv118 string
-    var t119 string = _goml_runtime_core_int32_to_string(self__6)
-    retv118 = t119
-    return retv118
+    var retv122 string
+    var t123 string = _goml_runtime_core_int32_to_string(self__6)
+    retv122 = t123
+    return retv122
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv121 string
-    retv121 = self__38
-    return retv121
+    var retv125 string
+    retv125 = self__38
+    return retv125
 }
 
 func main() {

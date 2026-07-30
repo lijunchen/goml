@@ -1,45 +1,45 @@
 fn main() -> unit {
-  join ret66() -> unit {
+  join ret70() -> unit {
     ()
   } in
   let a/0 = (true, true) in
-  let x64 = a/0.0 in
-  let x65 = a/0.1 in
-  join k67() -> unit {
-    jump ret66()
+  let x68 = a/0.0 in
+  let x69 = a/0.1 in
+  join k71() -> unit {
+    jump ret70()
   } in
-  match x65 {
+  match x69 {
     true => {
-      join k68() -> unit {
-        jump k67()
+      join k72() -> unit {
+        jump k71()
       } in
-      match x64 {
+      match x68 {
         true => {
-          let t69 = inherent#int#int#to_string(789) in
-          let t70 = println__T_string(t69) in
-          jump k68()
+          let t73 = inherent#int#int#to_string(789) in
+          let t74 = println__T_string(t73) in
+          jump k72()
         },
         false => {
-          let t71 = inherent#int#int#to_string(456) in
-          let t72 = println__T_string(t71) in
-          jump k68()
+          let t75 = inherent#int#int#to_string(456) in
+          let t76 = println__T_string(t75) in
+          jump k72()
         },
       }
     },
     false => {
-      join k73() -> unit {
-        jump k67()
+      join k77() -> unit {
+        jump k71()
       } in
-      match x64 {
+      match x68 {
         true => {
-          let t74 = inherent#int#int#to_string(123) in
-          let t75 = println__T_string(t74) in
-          jump k73()
+          let t78 = inherent#int#int#to_string(123) in
+          let t79 = println__T_string(t78) in
+          jump k77()
         },
         false => {
-          let t76 = inherent#int#int#to_string(789) in
-          let t77 = println__T_string(t76) in
-          jump k73()
+          let t80 = inherent#int#int#to_string(789) in
+          let t81 = println__T_string(t80) in
+          jump k77()
         },
       }
     },
@@ -47,25 +47,25 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret78() -> unit {
+  join ret82() -> unit {
     ()
   } in
-  let t79 = trait_impl#ToString#string#to_string(value/1) in
-  let t80 = @runtime(core.string_println)(t79) in
-  jump ret78()
+  let t83 = trait_impl#ToString#string#to_string(value/1) in
+  let t84 = @runtime(core.string_println)(t83) in
+  jump ret82()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret81(retv82: string) -> string {
-    retv82
+  join ret85(retv86: string) -> string {
+    retv86
   } in
-  let t83 = @runtime(core.int_to_string)(self/5) in
-  jump ret81(t83)
+  let t87 = @runtime(core.int_to_string)(self/5) in
+  jump ret85(t87)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret84(retv85: string) -> string {
-    retv85
+  join ret88(retv89: string) -> string {
+    retv89
   } in
-  jump ret84(self/38)
+  jump ret88(self/38)
 }

@@ -1,75 +1,75 @@
 fn prepend_with(make/0: (int32, List__int32) -> List__int32, value/1: int32, values/2: List__int32) -> List__int32 {
-  join ret67(retv68: List__int32) -> List__int32 {
-    retv68
+  join ret71(retv72: List__int32) -> List__int32 {
+    retv72
   } in
-  let t69 = make/0(value/1, values/2) in
-  jump ret67(t69)
+  let t73 = make/0(value/1, values/2) in
+  jump ret71(t73)
 }
 
 fn sum(values/3: List__int32) -> int32 {
-  join ret70(retv71: int32) -> int32 {
-    retv71
+  join ret74(retv75: int32) -> int32 {
+    retv75
   } in
-  join k72(jp73: int32) -> int32 {
-    jump ret70(jp73)
+  join k76(jp77: int32) -> int32 {
+    jump ret74(jp77)
   } in
   match values/3 {
     Tag_0 => {
-      jump k72(0)
+      jump k76(0)
     },
     Tag_1 => {
-      let x64 = List__int32::Cons._0(values/3) in
-      let x65 = List__int32::Cons._1(values/3) in
-      let rest/5 = x65 in
-      let value/4 = x64 in
-      let t74 = sum(rest/5) in
-      let t75 = (value/4 + t74) in
-      jump k72(t75)
+      let x68 = List__int32::Cons._0(values/3) in
+      let x69 = List__int32::Cons._1(values/3) in
+      let rest/5 = x69 in
+      let value/4 = x68 in
+      let t78 = sum(rest/5) in
+      let t79 = (value/4 + t78) in
+      jump k76(t79)
     },
   }
 }
 
 fn main() -> unit {
-  join ret76() -> unit {
+  join ret80() -> unit {
     ()
   } in
   let cons/6 = closure_env_cons_0 {} in
-  let t77 = prepend_with(cons/6, 2, Tag_0) in
-  let values/7 = prepend_with(cons/6, 1, t77) in
-  let t78 = sum(values/7) in
-  let t79 = inherent#int32#int32#to_string(t78) in
-  let t80 = println__T_string(t79) in
-  jump ret76()
+  let t81 = prepend_with(cons/6, 2, Tag_0) in
+  let values/7 = prepend_with(cons/6, 1, t81) in
+  let t82 = sum(values/7) in
+  let t83 = inherent#int32#int32#to_string(t82) in
+  let t84 = println__T_string(t83) in
+  jump ret80()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret81() -> unit {
+  join ret85() -> unit {
     ()
   } in
-  let t82 = trait_impl#ToString#string#to_string(value/1) in
-  let t83 = @runtime(core.string_println)(t82) in
-  jump ret81()
+  let t86 = trait_impl#ToString#string#to_string(value/1) in
+  let t87 = @runtime(core.string_println)(t86) in
+  jump ret85()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret84(retv85: string) -> string {
-    retv85
+  join ret88(retv89: string) -> string {
+    retv89
   } in
-  let t86 = @runtime(core.int32_to_string)(self/6) in
-  jump ret84(t86)
+  let t90 = @runtime(core.int32_to_string)(self/6) in
+  jump ret88(t90)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret87(retv88: string) -> string {
-    retv88
+  join ret91(retv92: string) -> string {
+    retv92
   } in
-  jump ret87(self/38)
+  jump ret91(self/38)
 }
 
-fn inherent#closure_env_cons_0#closure_env_cons_0#apply(env66: closure_env_cons_0, ctor_arg_0: int32, ctor_arg_1: List__int32) -> List__int32 {
-  join ret89(retv90: List__int32) -> List__int32 {
-    retv90
+fn inherent#closure_env_cons_0#closure_env_cons_0#apply(env70: closure_env_cons_0, ctor_arg_0: int32, ctor_arg_1: List__int32) -> List__int32 {
+  join ret93(retv94: List__int32) -> List__int32 {
+    retv94
   } in
-  let t91 = List__int32::Cons(ctor_arg_0, ctor_arg_1) in
-  jump ret89(t91)
+  let t95 = List__int32::Cons(ctor_arg_0, ctor_arg_1) in
+  jump ret93(t95)
 }

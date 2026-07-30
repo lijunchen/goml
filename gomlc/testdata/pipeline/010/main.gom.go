@@ -23,28 +23,28 @@ func main0() struct{} {
         _0: true,
         _1: true,
     }
-    var x64 bool = a__0._0
-    var x65 bool = a__0._1
-    switch x65 {
+    var x68 bool = a__0._0
+    var x69 bool = a__0._1
+    switch x69 {
     case true:
-        switch x64 {
+        switch x68 {
         case true:
-            var t69 string = _goml_m_inherent_i_int_i_int_i_to__string(789)
-            println__T_string(t69)
+            var t73 string = _goml_m_inherent_i_int_i_int_i_to__string(789)
+            println__T_string(t73)
         case false:
-            var t71 string = _goml_m_inherent_i_int_i_int_i_to__string(456)
-            println__T_string(t71)
+            var t75 string = _goml_m_inherent_i_int_i_int_i_to__string(456)
+            println__T_string(t75)
         default:
             panic("non-exhaustive match")
         }
     case false:
-        switch x64 {
+        switch x68 {
         case true:
-            var t74 string = _goml_m_inherent_i_int_i_int_i_to__string(123)
-            println__T_string(t74)
+            var t78 string = _goml_m_inherent_i_int_i_int_i_to__string(123)
+            println__T_string(t78)
         case false:
-            var t76 string = _goml_m_inherent_i_int_i_int_i_to__string(789)
-            println__T_string(t76)
+            var t80 string = _goml_m_inherent_i_int_i_int_i_to__string(789)
+            println__T_string(t80)
         default:
             panic("non-exhaustive match")
         }
@@ -55,22 +55,22 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t79 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t79)
+    var t83 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t83)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv82 string
-    var t83 string = _goml_runtime_core_int_to_string(self__5)
-    retv82 = t83
-    return retv82
+    var retv86 string
+    var t87 string = _goml_runtime_core_int_to_string(self__5)
+    retv86 = t87
+    return retv86
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv85 string
-    retv85 = self__38
-    return retv85
+    var retv89 string
+    retv89 = self__38
+    return retv89
 }
 
 func main() {

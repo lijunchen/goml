@@ -33,41 +33,41 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t70 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_core_string_print(t70)
+    var t74 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t74)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t73 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t73)
+    var t77 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t77)
     return struct{}{}
 }
 
 func println__T_int8(value__1 int8) struct{} {
-    var t76 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(value__1)
-    _goml_runtime_core_string_println(t76)
+    var t80 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(value__1)
+    _goml_runtime_core_string_println(t80)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv79 string
-    retv79 = self__38
-    return retv79
+    var retv83 string
+    retv83 = self__38
+    return retv83
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv81 string
-    var t82 string = _goml_runtime_core_int32_to_string(self__43)
-    retv81 = t82
-    return retv81
+    var retv85 string
+    var t86 string = _goml_runtime_core_int32_to_string(self__43)
+    retv85 = t86
+    return retv85
 }
 
 func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__41 int8) string {
-    var retv84 string
-    var t85 string = _goml_runtime_core_int8_to_string(self__41)
-    retv84 = t85
-    return retv84
+    var retv88 string
+    var t89 string = _goml_runtime_core_int8_to_string(self__41)
+    retv88 = t89
+    return retv88
 }
 
 func main() {

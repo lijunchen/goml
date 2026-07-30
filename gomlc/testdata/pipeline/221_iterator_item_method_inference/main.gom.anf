@@ -1,58 +1,58 @@
 fn trait_impl#Iterator#Values#next(self/0: Values) -> Option__int32 {
-  join ret69(retv70: Option__int32) -> Option__int32 {
-    retv70
+  join ret73(retv74: Option__int32) -> Option__int32 {
+    retv74
   } in
-  jump ret69(Tag_0)
+  jump ret73(Tag_0)
 }
 
 fn main() -> unit {
-  join ret71() -> unit {
+  join ret75() -> unit {
     ()
   } in
-  let t72 = Values {} in
-  let for_iter64 = trait_impl#IntoIterator#Values#into_iter(t72) in
-  join exit73() -> unit {
-    let _wild68 = () in
-    jump ret71()
+  let t76 = Values {} in
+  let for_iter68 = trait_impl#IntoIterator#Values#into_iter(t76) in
+  join exit77() -> unit {
+    let _wild72 = () in
+    jump ret75()
   } in
   joinrec {
-    join loop74() -> unit {
+    join loop78() -> unit {
       if true {
-        let for_next65 = trait_impl#Iterator#Values#next(for_iter64) in
-        join k75() -> unit {
-          jump loop74()
+        let for_next69 = trait_impl#Iterator#Values#next(for_iter68) in
+        join k79() -> unit {
+          jump loop78()
         } in
-        match for_next65 {
+        match for_next69 {
           Tag_0 => {
-            jump exit73()
+            jump exit77()
           },
           Tag_1 => {
-            let x66 = Option__int32::Some._0(for_next65) in
-            let value/1 = x66 in
-            let t76 = inherent#int32#int32#to_string(value/1) in
-            let _wild67 = @runtime(core.string_println)(t76) in
-            jump k75()
+            let x70 = Option__int32::Some._0(for_next69) in
+            let value/1 = x70 in
+            let t80 = inherent#int32#int32#to_string(value/1) in
+            let _wild71 = @runtime(core.string_println)(t80) in
+            jump k79()
           },
         }
       } else {
-        jump exit73()
+        jump exit77()
       }
     } in
   } in
-  jump loop74()
+  jump loop78()
 }
 
 fn trait_impl#IntoIterator#Values#into_iter(self/109: Values) -> Values {
-  join ret77(retv78: Values) -> Values {
-    retv78
+  join ret81(retv82: Values) -> Values {
+    retv82
   } in
-  jump ret77(self/109)
+  jump ret81(self/109)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret83(retv84: string) -> string {
+    retv84
   } in
-  let t81 = @runtime(core.int32_to_string)(self/6) in
-  jump ret79(t81)
+  let t85 = @runtime(core.int32_to_string)(self/6) in
+  jump ret83(t85)
 }

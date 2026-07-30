@@ -1,5 +1,5 @@
 fn early(x/0: int32) -> int32 {
-  let _wild64 = if (x/0 < 0) {
+  let _wild68 = if (x/0 < 0) {
       {
         return 0
       }
@@ -8,7 +8,7 @@ fn early(x/0: int32) -> int32 {
         ()
       }
   } in
-  let _wild65 = if trait_impl#Eq#int32#eq(x/0, 0) {
+  let _wild69 = if trait_impl#Eq#int32#eq(x/0, 0) {
       {
         return 1
       }
@@ -22,7 +22,7 @@ fn early(x/0: int32) -> int32 {
 
 fn closure_early(x/1: int32) -> int32 {
   let f/3 = |y/2| {
-    let _wild66 = if (y/2 > 5) {
+    let _wild70 = if (y/2 > 5) {
         {
           return y/2
         }
@@ -37,7 +37,7 @@ fn closure_early(x/1: int32) -> int32 {
 }
 
 fn unit_ret(flag/4: bool) -> unit {
-  let _wild67 = if flag/4 {
+  let _wild71 = if flag/4 {
       {
         return
       }
@@ -46,35 +46,35 @@ fn unit_ret(flag/4: bool) -> unit {
         ()
       }
   } in
-  let mtmp68 = println__T_string("after") in
+  let mtmp72 = println__T_string("after") in
   {
     ()
   }
 }
 
 fn main() -> unit {
-  let mtmp69 = print__T_string("e-1: ") in
+  let mtmp73 = print__T_string("e-1: ") in
   {
-    let mtmp70 = println__T_int32(early(-1)) in
+    let mtmp74 = println__T_int32(early(-1)) in
     {
-      let mtmp71 = print__T_string("e0: ") in
+      let mtmp75 = print__T_string("e0: ") in
       {
-        let mtmp72 = println__T_int32(early(0)) in
+        let mtmp76 = println__T_int32(early(0)) in
         {
-          let mtmp73 = print__T_string("e3: ") in
+          let mtmp77 = print__T_string("e3: ") in
           {
-            let mtmp74 = println__T_int32(early(3)) in
+            let mtmp78 = println__T_int32(early(3)) in
             {
-              let mtmp75 = print__T_string("c7: ") in
+              let mtmp79 = print__T_string("c7: ") in
               {
-                let mtmp76 = println__T_int32(closure_early(7)) in
+                let mtmp80 = println__T_int32(closure_early(7)) in
                 {
-                  let mtmp77 = print__T_string("c2: ") in
+                  let mtmp81 = print__T_string("c2: ") in
                   {
-                    let mtmp78 = println__T_int32(closure_early(2)) in
+                    let mtmp82 = println__T_int32(closure_early(2)) in
                     {
-                      let _wild79 = unit_ret(true) in
-                      let _wild80 = unit_ret(false) in
+                      let _wild83 = unit_ret(true) in
+                      let _wild84 = unit_ret(false) in
                     }
                   }
                 }

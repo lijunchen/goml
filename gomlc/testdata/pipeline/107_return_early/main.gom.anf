@@ -1,141 +1,141 @@
 fn early(x/0: int32) -> int32 {
-  join ret82(retv83: int32) -> int32 {
-    retv83
+  join ret86(retv87: int32) -> int32 {
+    retv87
   } in
-  let t88 = (x/0 < 0) in
-  join k84() -> int32 {
-    let _wild64 = () in
-    let t87 = trait_impl#Eq#int32#eq(x/0, 0) in
-    join k85() -> int32 {
-      let _wild65 = () in
-      let t86 = (x/0 + 2) in
-      jump ret82(t86)
+  let t92 = (x/0 < 0) in
+  join k88() -> int32 {
+    let _wild68 = () in
+    let t91 = trait_impl#Eq#int32#eq(x/0, 0) in
+    join k89() -> int32 {
+      let _wild69 = () in
+      let t90 = (x/0 + 2) in
+      jump ret86(t90)
     } in
-    if t87 {
-      jump ret82(1)
+    if t91 {
+      jump ret86(1)
     } else {
-      jump k85()
+      jump k89()
     }
   } in
-  if t88 {
-    jump ret82(0)
+  if t92 {
+    jump ret86(0)
   } else {
-    jump k84()
+    jump k88()
   }
 }
 
 fn closure_early(x/1: int32) -> int32 {
-  join ret89(retv90: int32) -> int32 {
-    retv90
+  join ret93(retv94: int32) -> int32 {
+    retv94
   } in
   let f/3 = closure_env_f_0 {} in
-  let t91 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, x/1) in
-  jump ret89(t91)
+  let t95 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, x/1) in
+  jump ret93(t95)
 }
 
 fn unit_ret(flag/4: bool) -> unit {
-  join ret92() -> unit {
+  join ret96() -> unit {
     ()
   } in
-  join k93() -> unit {
-    let _wild67 = () in
-    let mtmp68 = println__T_string("after") in
-    jump ret92()
+  join k97() -> unit {
+    let _wild71 = () in
+    let mtmp72 = println__T_string("after") in
+    jump ret96()
   } in
   if flag/4 {
-    jump ret92()
+    jump ret96()
   } else {
-    jump k93()
+    jump k97()
   }
 }
 
 fn main() -> unit {
-  join ret94() -> unit {
+  join ret98() -> unit {
     ()
   } in
-  let mtmp69 = print__T_string("e-1: ") in
-  let t95 = early(-1) in
-  let mtmp70 = println__T_int32(t95) in
-  let mtmp71 = print__T_string("e0: ") in
-  let t96 = early(0) in
-  let mtmp72 = println__T_int32(t96) in
-  let mtmp73 = print__T_string("e3: ") in
-  let t97 = early(3) in
-  let mtmp74 = println__T_int32(t97) in
-  let mtmp75 = print__T_string("c7: ") in
-  let t98 = closure_early(7) in
-  let mtmp76 = println__T_int32(t98) in
-  let mtmp77 = print__T_string("c2: ") in
-  let t99 = closure_early(2) in
-  let mtmp78 = println__T_int32(t99) in
-  let _wild79 = unit_ret(true) in
-  let _wild80 = unit_ret(false) in
-  jump ret94()
+  let mtmp73 = print__T_string("e-1: ") in
+  let t99 = early(-1) in
+  let mtmp74 = println__T_int32(t99) in
+  let mtmp75 = print__T_string("e0: ") in
+  let t100 = early(0) in
+  let mtmp76 = println__T_int32(t100) in
+  let mtmp77 = print__T_string("e3: ") in
+  let t101 = early(3) in
+  let mtmp78 = println__T_int32(t101) in
+  let mtmp79 = print__T_string("c7: ") in
+  let t102 = closure_early(7) in
+  let mtmp80 = println__T_int32(t102) in
+  let mtmp81 = print__T_string("c2: ") in
+  let t103 = closure_early(2) in
+  let mtmp82 = println__T_int32(t103) in
+  let _wild83 = unit_ret(true) in
+  let _wild84 = unit_ret(false) in
+  jump ret98()
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret100(retv101: bool) -> bool {
-    retv101
+  join ret104(retv105: bool) -> bool {
+    retv105
   } in
-  let t102 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret100(t102)
+  let t106 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret104(t106)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret103() -> unit {
+  join ret107() -> unit {
     ()
   } in
-  let t104 = trait_impl#ToString#string#to_string(value/1) in
-  let t105 = @runtime(core.string_println)(t104) in
-  jump ret103()
+  let t108 = trait_impl#ToString#string#to_string(value/1) in
+  let t109 = @runtime(core.string_println)(t108) in
+  jump ret107()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret106() -> unit {
+  join ret110() -> unit {
     ()
   } in
-  let t107 = trait_impl#ToString#string#to_string(value/0) in
-  let t108 = @runtime(core.string_print)(t107) in
-  jump ret106()
+  let t111 = trait_impl#ToString#string#to_string(value/0) in
+  let t112 = @runtime(core.string_print)(t111) in
+  jump ret110()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret109() -> unit {
+  join ret113() -> unit {
     ()
   } in
-  let t110 = trait_impl#ToString#int32#to_string(value/1) in
-  let t111 = @runtime(core.string_println)(t110) in
-  jump ret109()
+  let t114 = trait_impl#ToString#int32#to_string(value/1) in
+  let t115 = @runtime(core.string_println)(t114) in
+  jump ret113()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret112(retv113: string) -> string {
-    retv113
+  join ret116(retv117: string) -> string {
+    retv117
   } in
-  jump ret112(self/38)
+  jump ret116(self/38)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret114(retv115: string) -> string {
-    retv115
+  join ret118(retv119: string) -> string {
+    retv119
   } in
-  let t116 = @runtime(core.int32_to_string)(self/43) in
-  jump ret114(t116)
+  let t120 = @runtime(core.int32_to_string)(self/43) in
+  jump ret118(t120)
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env81: closure_env_f_0, y/2: int32) -> int32 {
-  join ret117(retv118: int32) -> int32 {
-    retv118
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env85: closure_env_f_0, y/2: int32) -> int32 {
+  join ret121(retv122: int32) -> int32 {
+    retv122
   } in
-  let t121 = (y/2 > 5) in
-  join k119() -> int32 {
-    let _wild66 = () in
-    let t120 = (y/2 + 10) in
-    jump ret117(t120)
+  let t125 = (y/2 > 5) in
+  join k123() -> int32 {
+    let _wild70 = () in
+    let t124 = (y/2 + 10) in
+    jump ret121(t124)
   } in
-  if t121 {
-    jump ret117(y/2)
+  if t125 {
+    jump ret121(y/2)
   } else {
-    jump k119()
+    jump k123()
   }
 }

@@ -1,52 +1,52 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret65(retv66: string) -> string {
-    retv66
+  join ret69(retv70: string) -> string {
+    retv70
   } in
-  let t67 = inherent#int32#int32#to_string(self/0) in
-  jump ret65(t67)
+  let t71 = inherent#int32#int32#to_string(self/0) in
+  jump ret69(t71)
 }
 
 fn render(x/1: dyn Display) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
+  join ret72(retv73: string) -> string {
+    retv73
   } in
-  let t70 = dyn_call[Display::show](x/1) in
-  jump ret68(t70)
+  let t74 = dyn_call[Display::show](x/1) in
+  jump ret72(t74)
 }
 
 fn main() -> unit {
-  join ret71() -> unit {
+  join ret75() -> unit {
     ()
   } in
   let value/2 = 42 in
-  let t72 = to_dyn[Display]{int32}(value/2) in
-  let holder/3 = Holder__dynDisplay { value: t72 } in
-  let t73 = Holder__dynDisplay.value(holder/3) in
-  let t74 = render(t73) in
-  let _wild64 = println__T_string(t74) in
-  jump ret71()
+  let t76 = to_dyn[Display]{int32}(value/2) in
+  let holder/3 = Holder__dynDisplay { value: t76 } in
+  let t77 = Holder__dynDisplay.value(holder/3) in
+  let t78 = render(t77) in
+  let _wild68 = println__T_string(t78) in
+  jump ret75()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret79(retv80: string) -> string {
+    retv80
   } in
-  let t77 = @runtime(core.int32_to_string)(self/6) in
-  jump ret75(t77)
+  let t81 = @runtime(core.int32_to_string)(self/6) in
+  jump ret79(t81)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret78() -> unit {
+  join ret82() -> unit {
     ()
   } in
-  let t79 = trait_impl#ToString#string#to_string(value/1) in
-  let t80 = @runtime(core.string_println)(t79) in
-  jump ret78()
+  let t83 = trait_impl#ToString#string#to_string(value/1) in
+  let t84 = @runtime(core.string_println)(t83) in
+  jump ret82()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret81(retv82: string) -> string {
-    retv82
+  join ret85(retv86: string) -> string {
+    retv86
   } in
-  jump ret81(self/38)
+  jump ret85(self/38)
 }

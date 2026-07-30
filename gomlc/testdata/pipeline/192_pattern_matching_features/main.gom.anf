@@ -1,55 +1,55 @@
 fn unwrap_either(value/0: Either) -> int32 {
-  join ret99(retv100: int32) -> int32 {
-    retv100
+  join ret103(retv104: int32) -> int32 {
+    retv104
   } in
-  let match64 = value/0 in
-  let whole/1 = match64 in
-  join k101(jp102: int32) -> int32 {
-    jump ret99(jp102)
+  let match68 = value/0 in
+  let whole/1 = match68 in
+  join k105(jp106: int32) -> int32 {
+    jump ret103(jp106)
   } in
   match whole/1 {
     Tag_0 => {
       let shared/2 = Either::Left._0(whole/1) in
-      join k103(jp104: int32) -> int32 {
-        let t105 = (shared/2 + jp104) in
-        jump k101(t105)
+      join k107(jp108: int32) -> int32 {
+        let t109 = (shared/2 + jp108) in
+        jump k105(t109)
       } in
       match whole/1 {
         Tag_0 => {
-          let x65 = Either::Left._0(whole/1) in
-          jump k103(0)
+          let x69 = Either::Left._0(whole/1) in
+          jump k107(0)
         },
         Tag_1 => {
-          let x66 = Either::Right._0(whole/1) in
-          jump k103(1)
+          let x70 = Either::Right._0(whole/1) in
+          jump k107(1)
         },
       }
     },
     _ => {
-      join k106(jp107: int32) -> int32 {
-        jump k101(jp107)
+      join k110(jp111: int32) -> int32 {
+        jump k105(jp111)
       } in
       match whole/1 {
         Tag_1 => {
           let shared/2 = Either::Right._0(whole/1) in
-          join k108(jp109: int32) -> int32 {
-            let t110 = (shared/2 + jp109) in
-            jump k106(t110)
+          join k112(jp113: int32) -> int32 {
+            let t114 = (shared/2 + jp113) in
+            jump k110(t114)
           } in
           match whole/1 {
             Tag_0 => {
-              let x65 = Either::Left._0(whole/1) in
-              jump k108(0)
+              let x69 = Either::Left._0(whole/1) in
+              jump k112(0)
             },
             Tag_1 => {
-              let x66 = Either::Right._0(whole/1) in
-              jump k108(1)
+              let x70 = Either::Right._0(whole/1) in
+              jump k112(1)
             },
           }
         },
         _ => {
-          let t111 = @intrinsic(compiler.missing)("") in
-          jump k106(t111)
+          let t115 = @intrinsic(compiler.missing)("") in
+          jump k110(t115)
         },
       }
     },
@@ -57,400 +57,400 @@ fn unwrap_either(value/0: Either) -> int32 {
 }
 
 fn char_group(value/3: char) -> string {
-  join ret112(retv113: string) -> string {
-    retv113
+  join ret116(retv117: string) -> string {
+    retv117
   } in
-  let match69 = value/3 in
-  let t116 = (match69 >= 'a') in
-  join k114(jp115: string) -> string {
-    jump ret112(jp115)
+  let match73 = value/3 in
+  let t120 = (match73 >= 'a') in
+  join k118(jp119: string) -> string {
+    jump ret116(jp119)
   } in
-  if t116 {
-    let t119 = (match69 <= 'c') in
-    join k117(jp118: string) -> string {
-      jump k114(jp118)
+  if t120 {
+    let t123 = (match73 <= 'c') in
+    join k121(jp122: string) -> string {
+      jump k118(jp122)
     } in
-    if t119 {
-      jump k117("abc")
+    if t123 {
+      jump k121("abc")
     } else {
-      jump k117("other")
+      jump k121("other")
     }
   } else {
-    jump k114("other")
+    jump k118("other")
   }
 }
 
 fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> string {
-  join ret120(retv121: string) -> string {
-    retv121
+  join ret124(retv125: string) -> string {
+    retv125
   } in
-  join k122(jp123: string) -> string {
-    let from_if/9 = jp123 in
-    let match72 = numbers/5 in
-    let t140 = @intrinsic(vec.len)(match72) in
-    let t141 = (t140 == 0) in
-    join k124(jp125: string) -> string {
-      let from_vec/12 = jp125 in
-      let match73 = view/6 in
-      let t132 = @intrinsic(slice.len)(match73) in
-      let t133 = (t132 >= 2) in
-      join k126(jp127: string) -> string {
-        let from_slice/15 = jp127 in
-        let t128 = (from_if/9 + "/") in
-        let t129 = (t128 + from_vec/12) in
-        let t130 = (t129 + "/") in
-        let t131 = (t130 + from_slice/15) in
-        jump ret120(t131)
+  join k126(jp127: string) -> string {
+    let from_if/9 = jp127 in
+    let match76 = numbers/5 in
+    let t144 = @intrinsic(vec.len)(match76) in
+    let t145 = (t144 == 0) in
+    join k128(jp129: string) -> string {
+      let from_vec/12 = jp129 in
+      let match77 = view/6 in
+      let t136 = @intrinsic(slice.len)(match77) in
+      let t137 = (t136 >= 2) in
+      join k130(jp131: string) -> string {
+        let from_slice/15 = jp131 in
+        let t132 = (from_if/9 + "/") in
+        let t133 = (t132 + from_vec/12) in
+        let t134 = (t133 + "/") in
+        let t135 = (t134 + from_slice/15) in
+        jump ret124(t135)
       } in
-      if t133 {
-        let first/13 = @intrinsic(slice.get)(match73, 0) in
-        let t134 = @intrinsic(slice.len)(match73) in
-        let t135 = (t134 - 1) in
-        let t136 = (t135 + 0) in
-        let last/14 = @intrinsic(slice.get)(match73, t136) in
-        let t139 = trait_impl#Eq#int32#eq(first/13, last/14) in
-        join k137(jp138: string) -> string {
-          jump k126(jp138)
+      if t137 {
+        let first/13 = @intrinsic(slice.get)(match77, 0) in
+        let t138 = @intrinsic(slice.len)(match77) in
+        let t139 = (t138 - 1) in
+        let t140 = (t139 + 0) in
+        let last/14 = @intrinsic(slice.get)(match77, t140) in
+        let t143 = trait_impl#Eq#int32#eq(first/13, last/14) in
+        join k141(jp142: string) -> string {
+          jump k130(jp142)
         } in
-        if t139 {
-          jump k137("same ends")
+        if t143 {
+          jump k141("same ends")
         } else {
-          jump k137("different ends")
+          jump k141("different ends")
         }
       } else {
-        jump k126("different ends")
+        jump k130("different ends")
       }
     } in
-    if t141 {
-      jump k124("empty")
+    if t145 {
+      jump k128("empty")
     } else {
-      let t144 = @intrinsic(vec.len)(match72) in
-      let t145 = (t144 >= 1) in
-      join k142(jp143: string) -> string {
-        jump k124(jp143)
+      let t148 = @intrinsic(vec.len)(match76) in
+      let t149 = (t148 >= 1) in
+      join k146(jp147: string) -> string {
+        jump k128(jp147)
       } in
-      if t145 {
-        let first/10 = @intrinsic(vec.get)(match72, 0) in
-        let t146 = @intrinsic(vec.len)(match72) in
-        let tail/11 = @intrinsic(slice.new)(match72, 1, t146) in
-        let t149 = inherent#Slice#Slice[T]#len__T_int32(tail/11) in
-        let t150 = (t149 as int32) in
-        let t151 = trait_impl#Eq#int32#eq(first/10, t150) in
-        join k147(jp148: string) -> string {
-          jump k142(jp148)
+      if t149 {
+        let first/10 = @intrinsic(vec.get)(match76, 0) in
+        let t150 = @intrinsic(vec.len)(match76) in
+        let tail/11 = @intrinsic(slice.new)(match76, 1, t150) in
+        let t153 = inherent#Slice#Slice[T]#len__T_int32(tail/11) in
+        let t154 = (t153 as int32) in
+        let t155 = trait_impl#Eq#int32#eq(first/10, t154) in
+        join k151(jp152: string) -> string {
+          jump k146(jp152)
         } in
-        if t151 {
-          jump k147("balanced")
+        if t155 {
+          jump k151("balanced")
         } else {
-          let t154 = @intrinsic(vec.len)(match72) in
-          let t155 = (t154 >= 1) in
-          join k152(jp153: string) -> string {
-            jump k147(jp153)
+          let t158 = @intrinsic(vec.len)(match76) in
+          let t159 = (t158 >= 1) in
+          join k156(jp157: string) -> string {
+            jump k151(jp157)
           } in
-          if t155 {
-            jump k152("nonempty")
+          if t159 {
+            jump k156("nonempty")
           } else {
-            let t156 = @intrinsic(compiler.missing)("") in
-            jump k152(t156)
+            let t160 = @intrinsic(compiler.missing)("") in
+            jump k156(t160)
           }
         }
       } else {
-        let t159 = @intrinsic(vec.len)(match72) in
-        let t160 = (t159 >= 1) in
-        join k157(jp158: string) -> string {
-          jump k142(jp158)
+        let t163 = @intrinsic(vec.len)(match76) in
+        let t164 = (t163 >= 1) in
+        join k161(jp162: string) -> string {
+          jump k146(jp162)
         } in
-        if t160 {
-          jump k157("nonempty")
+        if t164 {
+          jump k161("nonempty")
         } else {
-          let t161 = @intrinsic(compiler.missing)("") in
-          jump k157(t161)
+          let t165 = @intrinsic(compiler.missing)("") in
+          jump k161(t165)
         }
       }
     }
   } in
   match value/4 {
     Tag_1 => {
-      let x70 = Maybe::Some._0(value/4) in
-      let n/7 = x70 in
-      let match71 = n/7 in
-      let t164 = (match71 == 0) in
-      join k162(jp163: string) -> string {
-        jump k122(jp163)
+      let x74 = Maybe::Some._0(value/4) in
+      let n/7 = x74 in
+      let match75 = n/7 in
+      let t168 = (match75 == 0) in
+      join k166(jp167: string) -> string {
+        jump k126(jp167)
       } in
-      if t164 {
-        jump k162("small")
+      if t168 {
+        jump k166("small")
       } else {
-        let t167 = (match71 == 1) in
-        join k165(jp166: string) -> string {
-          jump k162(jp166)
+        let t171 = (match75 == 1) in
+        join k169(jp170: string) -> string {
+          jump k166(jp170)
         } in
-        if t167 {
-          jump k165("small")
+        if t171 {
+          jump k169("small")
         } else {
-          let t170 = (match71 >= 2) in
-          join k168(jp169: string) -> string {
-            jump k165(jp169)
+          let t174 = (match75 >= 2) in
+          join k172(jp173: string) -> string {
+            jump k169(jp173)
           } in
-          if t170 {
-            let t173 = (match71 <= 4) in
-            join k171(jp172: string) -> string {
-              jump k168(jp172)
+          if t174 {
+            let t177 = (match75 <= 4) in
+            join k175(jp176: string) -> string {
+              jump k172(jp176)
             } in
-            if t173 {
-              jump k171("middle")
+            if t177 {
+              jump k175("middle")
             } else {
-              let x/8 = match71 in
-              let t176 = (x/8 > 10) in
-              join k174(jp175: string) -> string {
-                jump k171(jp175)
+              let x/8 = match75 in
+              let t180 = (x/8 > 10) in
+              join k178(jp179: string) -> string {
+                jump k175(jp179)
               } in
-              if t176 {
-                jump k174("large")
+              if t180 {
+                jump k178("large")
               } else {
-                jump k174("other")
+                jump k178("other")
               }
             }
           } else {
-            let x/8 = match71 in
-            let t179 = (x/8 > 10) in
-            join k177(jp178: string) -> string {
-              jump k168(jp178)
+            let x/8 = match75 in
+            let t183 = (x/8 > 10) in
+            join k181(jp182: string) -> string {
+              jump k172(jp182)
             } in
-            if t179 {
-              jump k177("large")
+            if t183 {
+              jump k181("large")
             } else {
-              jump k177("other")
+              jump k181("other")
             }
           }
         }
       }
     },
     _ => {
-      jump k122("none")
+      jump k126("none")
     },
   }
 }
 
 fn main() -> unit {
-  join ret180() -> unit {
+  join ret184() -> unit {
     ()
   } in
   let pair/16 = Pair { left: 3, right: 9 } in
-  let mtmp74 = pair/16 in
-  let x75 = Pair.left(mtmp74) in
-  let x76 = Pair.right(mtmp74) in
-  let left/17 = x75 in
+  let mtmp78 = pair/16 in
+  let x79 = Pair.left(mtmp78) in
+  let x80 = Pair.right(mtmp78) in
+  let left/17 = x79 in
   let values/18 = [1, 2, 3, 1] in
-  let mtmp77 = values/18 in
-  let first/19 = @intrinsic(array.get)(mtmp77, 0) in
-  let last/21 = @intrinsic(array.get)(mtmp77, 3) in
-  let t181 = @intrinsic(array.get)(mtmp77, 1) in
-  let t182 = @intrinsic(array.get)(mtmp77, 2) in
-  let middle/20 = [t181, t182] in
-  let _wild78 = println__T_int32(left/17) in
-  let t183 = @intrinsic(array.get)(middle/20, 0) in
-  let t184 = (first/19 + t183) in
-  let t185 = (t184 + last/21) in
-  let _wild79 = println__T_int(t185) in
+  let mtmp81 = values/18 in
+  let first/19 = @intrinsic(array.get)(mtmp81, 0) in
+  let last/21 = @intrinsic(array.get)(mtmp81, 3) in
+  let t185 = @intrinsic(array.get)(mtmp81, 1) in
+  let t186 = @intrinsic(array.get)(mtmp81, 2) in
+  let middle/20 = [t185, t186] in
+  let _wild82 = println__T_int32(left/17) in
+  let t187 = @intrinsic(array.get)(middle/20, 0) in
+  let t188 = (first/19 + t187) in
+  let t189 = (t188 + last/21) in
+  let _wild83 = println__T_int(t189) in
   let numbers/22 = @intrinsic(vec.new)() in
-  let _wild80 = @intrinsic(vec.push)(numbers/22, 1) in
-  let _wild81 = @intrinsic(vec.push)(numbers/22, 8) in
-  let t186 = inherent#Vec#Vec[T]#len__T_int32(numbers/22) in
-  let view/23 = @intrinsic(slice.new)(numbers/22, 0, t186) in
-  let t187 = Maybe::Some(3) in
-  let t188 = describe(t187, numbers/22, view/23) in
-  let _wild82 = println__T_string(t188) in
+  let _wild84 = @intrinsic(vec.push)(numbers/22, 1) in
+  let _wild85 = @intrinsic(vec.push)(numbers/22, 8) in
+  let t190 = inherent#Vec#Vec[T]#len__T_int32(numbers/22) in
+  let view/23 = @intrinsic(slice.new)(numbers/22, 0, t190) in
+  let t191 = Maybe::Some(3) in
+  let t192 = describe(t191, numbers/22, view/23) in
+  let _wild86 = println__T_string(t192) in
   let empty/24 = @intrinsic(vec.new)() in
   let empty_view/25 = @intrinsic(slice.new)(empty/24, 0, 0) in
-  let t189 = describe(Tag_0, empty/24, empty_view/25) in
-  let _wild83 = println__T_string(t189) in
-  let t190 = Maybe::Some(7) in
-  let state/26 = inherent#Ref#Ref[T]#new__T_Maybe(t190) in
-  join exit191() -> unit {
-    let _wild88 = () in
-    let mtmp89 = Maybe::Some(6) in
-    join k192() -> unit {
-      let _wild92 = () in
-      let match93 = Maybe::Some(5) in
-      let whole/29 = match93 in
-      join k193(jp194: int32) -> unit {
-        let aliased/32 = jp194 in
-        let _wild96 = println__T_int32(aliased/32) in
-        let t195 = Either::Right(11) in
-        let t196 = unwrap_either(t195) in
-        let _wild97 = println__T_int32(t196) in
-        let t197 = char_group('b') in
-        let _wild98 = println__T_string(t197) in
-        jump ret180()
+  let t193 = describe(Tag_0, empty/24, empty_view/25) in
+  let _wild87 = println__T_string(t193) in
+  let t194 = Maybe::Some(7) in
+  let state/26 = inherent#Ref#Ref[T]#new__T_Maybe(t194) in
+  join exit195() -> unit {
+    let _wild92 = () in
+    let mtmp93 = Maybe::Some(6) in
+    join k196() -> unit {
+      let _wild96 = () in
+      let match97 = Maybe::Some(5) in
+      let whole/29 = match97 in
+      join k197(jp198: int32) -> unit {
+        let aliased/32 = jp198 in
+        let _wild100 = println__T_int32(aliased/32) in
+        let t199 = Either::Right(11) in
+        let t200 = unwrap_either(t199) in
+        let _wild101 = println__T_int32(t200) in
+        let t201 = char_group('b') in
+        let _wild102 = println__T_string(t201) in
+        jump ret184()
       } in
       match whole/29 {
         Tag_1 => {
           let value/30 = Maybe::Some._0(whole/29) in
-          join k198(jp199: int32) -> unit {
-            let t200 = (value/30 + jp199) in
-            jump k193(t200)
+          join k202(jp203: int32) -> unit {
+            let t204 = (value/30 + jp203) in
+            jump k197(t204)
           } in
           match whole/29 {
             Tag_0 => {
-              jump k198(0)
+              jump k202(0)
             },
             Tag_1 => {
-              let x94 = Maybe::Some._0(whole/29) in
-              let inner/31 = x94 in
-              jump k198(inner/31)
+              let x98 = Maybe::Some._0(whole/29) in
+              let inner/31 = x98 in
+              jump k202(inner/31)
             },
           }
         },
         _ => {
-          join k201(jp202: int32) -> unit {
-            jump k193(jp202)
+          join k205(jp206: int32) -> unit {
+            jump k197(jp206)
           } in
-          match match93 {
+          match match97 {
             Tag_0 => {
-              jump k201(0)
+              jump k205(0)
             },
             _ => {
-              let t203 = @intrinsic(compiler.missing)("") in
-              jump k201(t203)
+              let t207 = @intrinsic(compiler.missing)("") in
+              jump k205(t207)
             },
           }
         },
       }
     } in
-    match mtmp89 {
+    match mtmp93 {
       Tag_1 => {
-        let x90 = Maybe::Some._0(mtmp89) in
-        let n/28 = x90 in
-        let _wild91 = println__T_int32(n/28) in
-        jump k192()
+        let x94 = Maybe::Some._0(mtmp93) in
+        let n/28 = x94 in
+        let _wild95 = println__T_int32(n/28) in
+        jump k196()
       },
       _ => {
-        jump k192()
+        jump k196()
       },
     }
   } in
   joinrec {
-    join loop204() -> unit {
+    join loop208() -> unit {
       if true {
-        let mtmp84 = inherent#Ref#Ref[T]#get__T_Maybe(state/26) in
-        join k205() -> unit {
-          jump loop204()
+        let mtmp88 = inherent#Ref#Ref[T]#get__T_Maybe(state/26) in
+        join k209() -> unit {
+          jump loop208()
         } in
-        match mtmp84 {
+        match mtmp88 {
           Tag_1 => {
-            let x85 = Maybe::Some._0(mtmp84) in
-            let n/27 = x85 in
-            let _wild86 = println__T_int32(n/27) in
-            let _wild87 = inherent#Ref#Ref[T]#set__T_Maybe(state/26, Tag_0) in
-            jump k205()
+            let x89 = Maybe::Some._0(mtmp88) in
+            let n/27 = x89 in
+            let _wild90 = println__T_int32(n/27) in
+            let _wild91 = inherent#Ref#Ref[T]#set__T_Maybe(state/26, Tag_0) in
+            jump k209()
           },
           _ => {
-            jump exit191()
+            jump exit195()
           },
         }
       } else {
-        jump exit191()
+        jump exit195()
       }
     } in
   } in
-  jump loop204()
+  jump loop208()
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/188: Slice[int32]) -> int {
-  join ret206(retv207: int) -> int {
-    retv207
+fn inherent#Slice#Slice[T]#len__T_int32(self/186: Slice[int32]) -> int {
+  join ret210(retv211: int) -> int {
+    retv211
   } in
-  let t208 = @intrinsic(slice.len)(self/188) in
-  jump ret206(t208)
+  let t212 = @intrinsic(slice.len)(self/186) in
+  jump ret210(t212)
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret209(retv210: bool) -> bool {
-    retv210
+  join ret213(retv214: bool) -> bool {
+    retv214
   } in
-  let t211 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret209(t211)
+  let t215 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret213(t215)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret212() -> unit {
+  join ret216() -> unit {
     ()
   } in
-  let t213 = trait_impl#ToString#int32#to_string(value/1) in
-  let t214 = @runtime(core.string_println)(t213) in
-  jump ret212()
+  let t217 = trait_impl#ToString#int32#to_string(value/1) in
+  let t218 = @runtime(core.string_println)(t217) in
+  jump ret216()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret215() -> unit {
+  join ret219() -> unit {
     ()
   } in
-  let t216 = trait_impl#ToString#int#to_string(value/1) in
-  let t217 = @runtime(core.string_println)(t216) in
-  jump ret215()
+  let t220 = trait_impl#ToString#int#to_string(value/1) in
+  let t221 = @runtime(core.string_println)(t220) in
+  jump ret219()
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/139: Vec[int32]) -> int {
-  join ret218(retv219: int) -> int {
-    retv219
+fn inherent#Vec#Vec[T]#len__T_int32(self/137: Vec[int32]) -> int {
+  join ret222(retv223: int) -> int {
+    retv223
   } in
-  let t220 = @intrinsic(vec.len)(self/139) in
-  jump ret218(t220)
+  let t224 = @intrinsic(vec.len)(self/137) in
+  jump ret222(t224)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret221() -> unit {
+  join ret225() -> unit {
     ()
   } in
-  let t222 = trait_impl#ToString#string#to_string(value/1) in
-  let t223 = @runtime(core.string_println)(t222) in
-  jump ret221()
+  let t226 = trait_impl#ToString#string#to_string(value/1) in
+  let t227 = @runtime(core.string_println)(t226) in
+  jump ret225()
 }
 
-fn inherent#Ref#Ref[T]#new__T_Maybe(value/209: Maybe) -> Ref[Maybe] {
-  join ret224(retv225: Ref[Maybe]) -> Ref[Maybe] {
-    retv225
+fn inherent#Ref#Ref[T]#new__T_Maybe(value/207: Maybe) -> Ref[Maybe] {
+  join ret228(retv229: Ref[Maybe]) -> Ref[Maybe] {
+    retv229
   } in
-  let t226 = @intrinsic(ref.new)(value/209) in
-  jump ret224(t226)
+  let t230 = @intrinsic(ref.new)(value/207) in
+  jump ret228(t230)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Maybe(self/210: Ref[Maybe]) -> Maybe {
-  join ret227(retv228: Maybe) -> Maybe {
-    retv228
+fn inherent#Ref#Ref[T]#get__T_Maybe(self/208: Ref[Maybe]) -> Maybe {
+  join ret231(retv232: Maybe) -> Maybe {
+    retv232
   } in
-  let t229 = @intrinsic(ref.get)(self/210) in
-  jump ret227(t229)
+  let t233 = @intrinsic(ref.get)(self/208) in
+  jump ret231(t233)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Maybe(self/211: Ref[Maybe], value/212: Maybe) -> unit {
-  join ret230() -> unit {
+fn inherent#Ref#Ref[T]#set__T_Maybe(self/209: Ref[Maybe], value/210: Maybe) -> unit {
+  join ret234() -> unit {
     ()
   } in
-  let t231 = @intrinsic(ref.set)(self/211, value/212) in
-  jump ret230()
+  let t235 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret234()
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret232(retv233: string) -> string {
-    retv233
+  join ret236(retv237: string) -> string {
+    retv237
   } in
-  let t234 = @runtime(core.int32_to_string)(self/43) in
-  jump ret232(t234)
+  let t238 = @runtime(core.int32_to_string)(self/43) in
+  jump ret236(t238)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret235(retv236: string) -> string {
-    retv236
+  join ret239(retv240: string) -> string {
+    retv240
   } in
-  let t237 = @runtime(core.int_to_string)(self/40) in
-  jump ret235(t237)
+  let t241 = @runtime(core.int_to_string)(self/40) in
+  jump ret239(t241)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret238(retv239: string) -> string {
-    retv239
+  join ret242(retv243: string) -> string {
+    retv243
   } in
-  jump ret238(self/38)
+  jump ret242(self/38)
 }

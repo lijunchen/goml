@@ -1,48 +1,48 @@
 fn fib(x/0: int32) -> int32 {
-  join ret66(retv67: int32) -> int32 {
-    retv67
+  join ret70(retv71: int32) -> int32 {
+    retv71
   } in
-  let mtmp64 = (x/0 < 2) in
-  join k68(jp69: int32) -> int32 {
-    jump ret66(jp69)
+  let mtmp68 = (x/0 < 2) in
+  join k72(jp73: int32) -> int32 {
+    jump ret70(jp73)
   } in
-  match mtmp64 {
+  match mtmp68 {
     true => {
-      jump k68(1)
+      jump k72(1)
     },
     false => {
-      let t70 = (x/0 - 1) in
-      let t71 = fib(t70) in
-      let t72 = (x/0 - 2) in
-      let t73 = fib(t72) in
-      let t74 = (t71 + t73) in
-      jump k68(t74)
+      let t74 = (x/0 - 1) in
+      let t75 = fib(t74) in
+      let t76 = (x/0 - 2) in
+      let t77 = fib(t76) in
+      let t78 = (t75 + t77) in
+      jump k72(t78)
     },
   }
 }
 
 fn main() -> unit {
-  join ret75() -> unit {
+  join ret79() -> unit {
     ()
   } in
-  let t76 = fib(10) in
-  let mtmp65 = print__T_int32(t76) in
-  jump ret75()
+  let t80 = fib(10) in
+  let mtmp69 = print__T_int32(t80) in
+  jump ret79()
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  join ret77() -> unit {
+  join ret81() -> unit {
     ()
   } in
-  let t78 = trait_impl#ToString#int32#to_string(value/0) in
-  let t79 = @runtime(core.string_print)(t78) in
-  jump ret77()
+  let t82 = trait_impl#ToString#int32#to_string(value/0) in
+  let t83 = @runtime(core.string_print)(t82) in
+  jump ret81()
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret80(retv81: string) -> string {
-    retv81
+  join ret84(retv85: string) -> string {
+    retv85
   } in
-  let t82 = @runtime(core.int32_to_string)(self/43) in
-  jump ret80(t82)
+  let t86 = @runtime(core.int32_to_string)(self/43) in
+  jump ret84(t86)
 }

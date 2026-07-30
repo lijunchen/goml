@@ -1,216 +1,216 @@
 fn make_string_channel() -> Channel[string] {
-  join ret82(retv83: Channel[string]) -> Channel[string] {
-    retv83
+  join ret86(retv87: Channel[string]) -> Channel[string] {
+    retv87
   } in
-  let t84 = inherent#Channel#Channel[T]#new__T_string(0) in
-  jump ret82(t84)
+  let t88 = inherent#Channel#Channel[T]#new__T_string(0) in
+  jump ret86(t88)
 }
 
 fn main() -> unit {
-  join ret85() -> unit {
+  join ret89() -> unit {
     ()
   } in
   let buffered/2 = inherent#Channel#Channel[T]#new__T_int(2) in
-  let _wild65 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 10) in
-  let _wild66 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 20) in
-  let _wild67 = inherent#Channel#Channel[T]#close__T_int(buffered/2) in
-  let mtmp68 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
-  join k86(jp87: int) -> unit {
-    let _wild70 = println__T_int(jp87) in
-    let mtmp71 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
-    join k88(jp89: int) -> unit {
-      let _wild73 = println__T_int(jp89) in
-      let mtmp74 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
-      join k90(jp91: string) -> unit {
-        let _wild76 = println__T_string(jp91) in
+  let _wild69 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 10) in
+  let _wild70 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 20) in
+  let _wild71 = inherent#Channel#Channel[T]#close__T_int(buffered/2) in
+  let mtmp72 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
+  join k90(jp91: int) -> unit {
+    let _wild74 = println__T_int(jp91) in
+    let mtmp75 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
+    join k92(jp93: int) -> unit {
+      let _wild77 = println__T_int(jp93) in
+      let mtmp78 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
+      join k94(jp95: string) -> unit {
+        let _wild80 = println__T_string(jp95) in
         let unbuffered/5 = make_string_channel() in
-        let mtmp77 = roundtrip__T_string(unbuffered/5, "ready") in
-        join k92(jp93: string) -> unit {
-          let _wild79 = println__T_string(jp93) in
-          let _wild80 = inherent#Channel#Channel[T]#close__T_string(unbuffered/5) in
-          jump ret85()
+        let mtmp81 = roundtrip__T_string(unbuffered/5, "ready") in
+        join k96(jp97: string) -> unit {
+          let _wild83 = println__T_string(jp97) in
+          let _wild84 = inherent#Channel#Channel[T]#close__T_string(unbuffered/5) in
+          jump ret89()
         } in
-        match mtmp77 {
+        match mtmp81 {
           Tag_0 => {
-            jump k92("closed")
+            jump k96("closed")
           },
           Tag_1 => {
-            let x78 = Option__string::Some._0(mtmp77) in
-            let value/6 = x78 in
-            jump k92(value/6)
+            let x82 = Option__string::Some._0(mtmp81) in
+            let value/6 = x82 in
+            jump k96(value/6)
           },
         }
       } in
-      match mtmp74 {
+      match mtmp78 {
         Tag_0 => {
-          jump k90("closed")
+          jump k94("closed")
         },
         Tag_1 => {
-          let x75 = Option__int::Some._0(mtmp74) in
-          jump k90("open")
+          let x79 = Option__int::Some._0(mtmp78) in
+          jump k94("open")
         },
       }
     } in
-    match mtmp71 {
+    match mtmp75 {
       Tag_0 => {
-        jump k88(-1)
+        jump k92(-1)
       },
       Tag_1 => {
-        let x72 = Option__int::Some._0(mtmp71) in
-        let value/4 = x72 in
-        jump k88(value/4)
+        let x76 = Option__int::Some._0(mtmp75) in
+        let value/4 = x76 in
+        jump k92(value/4)
       },
     }
   } in
-  match mtmp68 {
+  match mtmp72 {
     Tag_0 => {
-      jump k86(-1)
+      jump k90(-1)
     },
     Tag_1 => {
-      let x69 = Option__int::Some._0(mtmp68) in
-      let value/3 = x69 in
-      jump k86(value/3)
+      let x73 = Option__int::Some._0(mtmp72) in
+      let value/3 = x73 in
+      jump k90(value/3)
     },
   }
 }
 
-fn inherent#Channel#Channel[T]#new__T_string(capacity/213: int) -> Channel[string] {
-  join ret94(retv95: Channel[string]) -> Channel[string] {
-    retv95
+fn inherent#Channel#Channel[T]#new__T_string(capacity/211: int) -> Channel[string] {
+  join ret98(retv99: Channel[string]) -> Channel[string] {
+    retv99
   } in
-  let t96 = @intrinsic(channel.new)(capacity/213) in
-  jump ret94(t96)
+  let t100 = @intrinsic(channel.new)(capacity/211) in
+  jump ret98(t100)
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/213: int) -> Channel[int] {
-  join ret97(retv98: Channel[int]) -> Channel[int] {
-    retv98
+fn inherent#Channel#Channel[T]#new__T_int(capacity/211: int) -> Channel[int] {
+  join ret101(retv102: Channel[int]) -> Channel[int] {
+    retv102
   } in
-  let t99 = @intrinsic(channel.new)(capacity/213) in
-  jump ret97(t99)
+  let t103 = @intrinsic(channel.new)(capacity/211) in
+  jump ret101(t103)
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/214: Channel[int], value/215: int) -> unit {
-  join ret100() -> unit {
-    ()
-  } in
-  let t101 = @intrinsic(channel.send)(self/214, value/215) in
-  jump ret100()
-}
-
-fn inherent#Channel#Channel[T]#close__T_int(self/219: Channel[int]) -> unit {
-  join ret102() -> unit {
-    ()
-  } in
-  let t103 = @intrinsic(channel.close)(self/219) in
-  jump ret102()
-}
-
-fn println__T_int(value/1: int) -> unit {
+fn inherent#Channel#Channel[T]#send__T_int(self/212: Channel[int], value/213: int) -> unit {
   join ret104() -> unit {
     ()
   } in
-  let t105 = trait_impl#ToString#int#to_string(value/1) in
-  let t106 = @runtime(core.string_println)(t105) in
+  let t105 = @intrinsic(channel.send)(self/212, value/213) in
   jump ret104()
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/216: Channel[int]) -> Option__int {
-  join ret107(retv108: Option__int) -> Option__int {
-    retv108
+fn inherent#Channel#Channel[T]#close__T_int(self/217: Channel[int]) -> unit {
+  join ret106() -> unit {
+    ()
   } in
-  let mtmp60 = @intrinsic(channel.recv)(self/216) in
+  let t107 = @intrinsic(channel.close)(self/217) in
+  jump ret106()
+}
+
+fn println__T_int(value/1: int) -> unit {
+  join ret108() -> unit {
+    ()
+  } in
+  let t109 = trait_impl#ToString#int#to_string(value/1) in
+  let t110 = @runtime(core.string_println)(t109) in
+  jump ret108()
+}
+
+fn inherent#Channel#Channel[T]#recv__T_int(self/214: Channel[int]) -> Option__int {
+  join ret111(retv112: Option__int) -> Option__int {
+    retv112
+  } in
+  let mtmp60 = @intrinsic(channel.recv)(self/214) in
   let x61 = mtmp60.0 in
   let x62 = mtmp60.1 in
-  let ok/218 = x62 in
-  let value/217 = x61 in
-  join k109(jp110: Option__int) -> Option__int {
-    jump ret107(jp110)
+  let ok/216 = x62 in
+  let value/215 = x61 in
+  join k113(jp114: Option__int) -> Option__int {
+    jump ret111(jp114)
   } in
-  if ok/218 {
-    let t111 = Option__int::Some(value/217) in
-    jump k109(t111)
+  if ok/216 {
+    let t115 = Option__int::Some(value/215) in
+    jump k113(t115)
   } else {
-    jump k109(Tag_0)
+    jump k113(Tag_0)
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret112() -> unit {
+  join ret116() -> unit {
     ()
   } in
-  let t113 = trait_impl#ToString#string#to_string(value/1) in
-  let t114 = @runtime(core.string_println)(t113) in
-  jump ret112()
+  let t117 = trait_impl#ToString#string#to_string(value/1) in
+  let t118 = @runtime(core.string_println)(t117) in
+  jump ret116()
 }
 
 fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__string {
-  join ret115(retv116: Option__string) -> Option__string {
-    retv116
+  join ret119(retv120: Option__string) -> Option__string {
+    retv120
   } in
-  let t117 = closure_env_roundtrip_T_string_0 { channel_0: channel/0, value_1: value/1 } in
-  let _wild64 = go t117 in
-  let t118 = inherent#Channel#Channel[T]#recv__T_string(channel/0) in
-  jump ret115(t118)
+  let t121 = closure_env_roundtrip_T_string_0 { channel_0: channel/0, value_1: value/1 } in
+  let _wild68 = go t121 in
+  let t122 = inherent#Channel#Channel[T]#recv__T_string(channel/0) in
+  jump ret119(t122)
 }
 
-fn inherent#Channel#Channel[T]#close__T_string(self/219: Channel[string]) -> unit {
-  join ret119() -> unit {
+fn inherent#Channel#Channel[T]#close__T_string(self/217: Channel[string]) -> unit {
+  join ret123() -> unit {
     ()
   } in
-  let t120 = @intrinsic(channel.close)(self/219) in
-  jump ret119()
+  let t124 = @intrinsic(channel.close)(self/217) in
+  jump ret123()
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret121(retv122: string) -> string {
-    retv122
+  join ret125(retv126: string) -> string {
+    retv126
   } in
-  let t123 = @runtime(core.int_to_string)(self/40) in
-  jump ret121(t123)
+  let t127 = @runtime(core.int_to_string)(self/40) in
+  jump ret125(t127)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret124(retv125: string) -> string {
-    retv125
-  } in
-  jump ret124(self/38)
-}
-
-fn inherent#Channel#Channel[T]#send__T_string(self/214: Channel[string], value/215: string) -> unit {
-  join ret126() -> unit {
-    ()
-  } in
-  let t127 = @intrinsic(channel.send)(self/214, value/215) in
-  jump ret126()
-}
-
-fn inherent#Channel#Channel[T]#recv__T_string(self/216: Channel[string]) -> Option__string {
-  join ret128(retv129: Option__string) -> Option__string {
+  join ret128(retv129: string) -> string {
     retv129
   } in
-  let mtmp60 = @intrinsic(channel.recv)(self/216) in
+  jump ret128(self/38)
+}
+
+fn inherent#Channel#Channel[T]#send__T_string(self/212: Channel[string], value/213: string) -> unit {
+  join ret130() -> unit {
+    ()
+  } in
+  let t131 = @intrinsic(channel.send)(self/212, value/213) in
+  jump ret130()
+}
+
+fn inherent#Channel#Channel[T]#recv__T_string(self/214: Channel[string]) -> Option__string {
+  join ret132(retv133: Option__string) -> Option__string {
+    retv133
+  } in
+  let mtmp60 = @intrinsic(channel.recv)(self/214) in
   let x61 = mtmp60.0 in
   let x62 = mtmp60.1 in
-  let ok/218 = x62 in
-  let value/217 = x61 in
-  join k130(jp131: Option__string) -> Option__string {
-    jump ret128(jp131)
+  let ok/216 = x62 in
+  let value/215 = x61 in
+  join k134(jp135: Option__string) -> Option__string {
+    jump ret132(jp135)
   } in
-  if ok/218 {
-    let t132 = Option__string::Some(value/217) in
-    jump k130(t132)
+  if ok/216 {
+    let t136 = Option__string::Some(value/215) in
+    jump k134(t136)
   } else {
-    jump k130(Tag_0)
+    jump k134(Tag_0)
   }
 }
 
-fn inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply(env81: closure_env_roundtrip_T_string_0) -> unit {
-  join ret133() -> unit {
+fn inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply(env85: closure_env_roundtrip_T_string_0) -> unit {
+  join ret137() -> unit {
     ()
   } in
-  let channel/0 = closure_env_roundtrip_T_string_0.channel_0(env81) in
-  let value/1 = closure_env_roundtrip_T_string_0.value_1(env81) in
-  let t134 = inherent#Channel#Channel[T]#send__T_string(channel/0, value/1) in
-  jump ret133()
+  let channel/0 = closure_env_roundtrip_T_string_0.channel_0(env85) in
+  let value/1 = closure_env_roundtrip_T_string_0.value_1(env85) in
+  let t138 = inherent#Channel#Channel[T]#send__T_string(channel/0, value/1) in
+  jump ret137()
 }

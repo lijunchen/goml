@@ -28,89 +28,89 @@ type None struct {}
 func (_ None) isOption__int32() {}
 
 func maybe_value(flag__0 bool) Option__int32 {
-    var retv69 Option__int32
-    var jp71 Option__int32
+    var retv73 Option__int32
+    var jp75 Option__int32
     if flag__0 {
-        var t72 Option__int32 = Some{
+        var t76 Option__int32 = Some{
             _0: 41,
         }
-        jp71 = t72
+        jp75 = t76
     } else {
-        jp71 = None{}
+        jp75 = None{}
     }
-    retv69 = jp71
-    return retv69
+    retv73 = jp75
+    return retv73
 }
 
 func compute(flag__1 bool) Option__int32 {
-    var retv74 Option__int32
-    var mtmp64 Option__int32 = maybe_value(flag__1)
-    var jp76 int32
-    switch mtmp64.(type) {
+    var retv78 Option__int32
+    var mtmp68 Option__int32 = maybe_value(flag__1)
+    var jp80 int32
+    switch mtmp68.(type) {
     case Some:
-        var x65 int32 = mtmp64.(Some)._0
-        var try_value__11 int32 = x65
-        jp76 = try_value__11
-        var value__2 int32 = jp76
-        var t77 int32 = value__2 + 1
-        var t78 Option__int32 = Some{
-            _0: t77,
+        var x69 int32 = mtmp68.(Some)._0
+        var try_value__11 int32 = x69
+        jp80 = try_value__11
+        var value__2 int32 = jp80
+        var t81 int32 = value__2 + 1
+        var t82 Option__int32 = Some{
+            _0: t81,
         }
-        retv74 = t78
-        return retv74
+        retv78 = t82
+        return retv78
     case None:
-        retv74 = None{}
-        return retv74
+        retv78 = None{}
+        return retv78
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(value__3 Option__int32) string {
-    var retv80 string
-    var jp82 string
+    var retv84 string
+    var jp86 string
     switch value__3.(type) {
     case Some:
-        var x66 int32 = value__3.(Some)._0
-        var value__4 int32 = x66
-        var t83 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__4)
-        jp82 = t83
+        var x70 int32 = value__3.(Some)._0
+        var value__4 int32 = x70
+        var t87 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__4)
+        jp86 = t87
     case None:
-        jp82 = "none"
+        jp86 = "none"
     default:
         panic("non-exhaustive match")
     }
-    retv80 = jp82
-    return retv80
+    retv84 = jp86
+    return retv84
 }
 
 func main0() struct{} {
-    var t85 Option__int32 = compute(true)
-    var t86 string = show(t85)
-    println__T_string(t86)
-    var t87 Option__int32 = compute(false)
-    var t88 string = show(t87)
-    println__T_string(t88)
+    var t89 Option__int32 = compute(true)
+    var t90 string = show(t89)
+    println__T_string(t90)
+    var t91 Option__int32 = compute(false)
+    var t92 string = show(t91)
+    println__T_string(t92)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv91 string
-    var t92 string = _goml_runtime_core_int32_to_string(self__6)
-    retv91 = t92
-    return retv91
+    var retv95 string
+    var t96 string = _goml_runtime_core_int32_to_string(self__6)
+    retv95 = t96
+    return retv95
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t94 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t94)
+    var t98 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t98)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv97 string
-    retv97 = self__38
-    return retv97
+    var retv101 string
+    retv101 = self__38
+    return retv101
 }
 
 func main() {

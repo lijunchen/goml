@@ -11,17 +11,17 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 }
 
 fn check(ok/1: bool) -> Option__string {
-  let mtmp66 = {
-    let mtmp64 = cut_pair(ok/1) in
-    match mtmp64 {
+  let mtmp70 = {
+    let mtmp68 = cut_pair(ok/1) in
+    match mtmp68 {
       Option__(string,string)::None => {
         return Option__string::None
       },
-      Option__(string,string)::Some(x65) => {
+      Option__(string,string)::Some(x69) => {
         {
-          let x65 = Option__(string,string)::Some._0(mtmp64) in
+          let x69 = Option__(string,string)::Some._0(mtmp68) in
           {
-            let try_value/13 = x65 in
+            let try_value/13 = x69 in
             try_value/13
           }
         }
@@ -38,11 +38,11 @@ fn show(opt/2: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x67) => {
+    Option__string::Some(x71) => {
       {
-        let x67 = Option__string::Some._0(opt/2) in
+        let x71 = Option__string::Some._0(opt/2) in
         {
-          let value/3 = x67 in
+          let value/3 = x71 in
           ("some " + value/3)
         }
       }
@@ -51,8 +51,8 @@ fn show(opt/2: Option__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild68 = println__T_string(show(check(true))) in
-  let _wild69 = println__T_string(show(check(false))) in
+  let _wild72 = println__T_string(show(check(true))) in
+  let _wild73 = println__T_string(show(check(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {

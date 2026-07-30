@@ -10,7 +10,7 @@ fn choose(flag/0: bool) -> int32 {
 fn continue_branch() -> unit {
   let count/2 = inherent#Ref#Ref[T]#new__T_int(0) in
   while (inherent#Ref#Ref[T]#get__T_int(count/2) < 2) {
-      let _wild64 = inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
+      let _wild68 = inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
       let value/3 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(count/2), 1) {
           continue
       } else {
@@ -27,29 +27,29 @@ fn break_branch(stop/4: bool) -> unit {
       } else {
           9
       } in
-      let _wild65 = println__T_int(value/5) in
+      let _wild69 = println__T_int(value/5) in
       break
   }
 }
 
 fn main() -> unit {
-  let _wild66 = println__T_int32(choose(false)) in
-  let _wild67 = println__T_int32(choose(true)) in
-  let _wild68 = continue_branch() in
-  let _wild69 = break_branch(false) in
+  let _wild70 = println__T_int32(choose(false)) in
+  let _wild71 = println__T_int32(choose(true)) in
+  let _wild72 = continue_branch() in
+  let _wild73 = break_branch(false) in
   break_branch(true)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/209)
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/208)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
