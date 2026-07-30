@@ -2,10 +2,13 @@ package lsp;
 
 use gomlc::ast;
 use gomlc::query;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 use gomlc::version;
 use std::fs;
 use std::json;
+use std::text;
 
 fn required_field(value: json::Value, name: string) -> Result[json::Value, string] {
     match json::field(value, name) {
@@ -192,20 +195,18 @@ fn source_for_path(
     analysis: query::Analysis,
     source_path: string,
 ) -> Option[string] {
-    let result = Ref::new(Option::None);
-    for source in analysis.sources {
+    let index = Ref::new(analysis.sources.len() - 1);
+    while index.get() >= 0 {
+        let source = analysis.sources.get(index.get());
         if source.path == source_path {
-            result.set(Option::Some(source.source))
+            return Option::Some(source.source)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    match result.get() {
-        Option::Some(source) => Option::Some(source),
-        Option::None => match fs::read_file(source_path) {
-            Result::Ok(source) => Option::Some(source),
-            Result::Err(_) => Option::None,
-        },
+    match fs::read_file(source_path) {
+        Result::Ok(source) => Option::Some(source),
+        Result::Err(_) => Option::None,
     }
 }
 
@@ -232,52 +233,17 @@ fn diagnostic_contains_offset(
         }
 }
 
-fn string_vec_contains(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
-fn string_contains(value: string, expected: string) -> bool {
-    if expected.byte_len() > value.byte_len() {
-        false
-    } else {
-        let found = Ref::new(false);
-        for start in range(
-            0,
-            value.byte_len() - expected.byte_len() + 1,
-        ) {
-            if value.byte_slice(
-                start,
-                start + expected.byte_len(),
-            ) == expected
-            {
-                found.set(true)
-            } else {
-                ()
-            }
-        };
-        found.get()
-    }
-}
-
 fn join_strings(values: Vec[string], separator: string) -> string {
-    let result = Ref::new("");
+    let builder = text::StringBuilder::new();
     for index in range(0, values.len()) {
         if index > 0 {
-            result.set(result.get() + separator)
+            builder.write_string(separator)
         } else {
             ()
         };
-        result.set(result.get() + values.get(index))
+        builder.write_string(values.get(index))
     };
-    result.get()
+    builder.finish()
 }
 
 fn hover_response(
@@ -315,7 +281,7 @@ fn hover_response(
                 tast::DiagnosticSeverity::Error => "- ",
                 tast::DiagnosticSeverity::Warning => "+ ",
             } + diagnostic_text(diagnostic);
-            if string_vec_contains(diagnostic_lines, line) {
+            if vecs::contains(diagnostic_lines, line) {
                 ()
             } else {
                 diagnostic_lines.push(line)
@@ -1090,9 +1056,7 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
                     Result::Ok(result) => output.push(rpc_success(id, result)),
                     Result::Err(error) => output.push(rpc_error(
                         id,
-                        if error.byte_len() >= 17
-                            && error.byte_slice(0, 17) == "method not found:"
-                        {
+                        if strings::starts_with(error, "method not found:") {
                             -32601
                         } else {
                             -32602

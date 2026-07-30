@@ -11,9 +11,7 @@ fn parse_path_always(parser: Parser) -> unit {
         ()
     } else {
         parser.advance();
-        let parsing = Ref::new(true);
-        while parsing.get()
-            && parser.at(lexer::TokenKind::ColonColon)
+        while parser.at(lexer::TokenKind::ColonColon)
             && token_is(parser.nth(1), lexer::TokenKind::LBracket) == false
         {
             parser.expect(lexer::TokenKind::ColonColon);
@@ -21,7 +19,7 @@ fn parse_path_always(parser: Parser) -> unit {
                 parser.advance()
             } else {
                 parser.advance_with_error("expected a path segment after '::'");
-                parsing.set(false)
+                break
             }
         };
         let _ = parser.close(marker, cst::NodeKind::PATH);

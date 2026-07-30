@@ -2,7 +2,9 @@ package go_backend;
 
 use gomlc::anf;
 use gomlc::core;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 use std::text;
 
 struct DynMethod {
@@ -27,7 +29,9 @@ pub fn runtime_helper_name(prefix: string, ty: tast::Type) -> string {
 }
 
 pub fn runtime_hook_name(key: string) -> string {
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(
+        "_goml_runtime_".byte_len() + key.byte_len(),
+    );
     builder.write_string("_goml_runtime_");
     for character in key.chars() {
         if character == '.' {
@@ -95,18 +99,6 @@ pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) 
     } else {
         ()
     }
-}
-
-fn contains_runtime_hook(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
 }
 
 fn unit_to_string_hook_item() -> Item {
@@ -317,106 +309,102 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
     })
 }
 
+fn require_runtime_import(imports: Vec[string], name: string) -> unit {
+    if !vecs::contains(imports, name) {
+        imports.push(name)
+    } else {
+        ()
+    }
+}
+
 pub fn emit_runtime_hook_items(
     items: Vec[Item],
     hooks: Vec[string],
     intrinsics: Vec[string],
 ) -> unit {
-    let uses_bytes = Ref::new(false);
-    let uses_context = Ref::new(false);
-    let uses_fmt = Ref::new(false);
-    let uses_io = Ref::new(false);
-    let uses_math = Ref::new(false);
-    let uses_os = Ref::new(false);
-    let uses_exec = Ref::new(false);
-    let uses_filepath = Ref::new(false);
-    let uses_reflect = Ref::new(false);
-    let uses_sha256 = Ref::new(false);
-    let uses_slices = Ref::new(false);
-    let uses_strconv = Ref::new(false);
-    let uses_strings = Ref::new(false);
-    let uses_utf8 = Ref::new(false);
+    let required_imports: Vec[string] = Vec::new();
     for hook in hooks {
         match integer_to_string_hook_type(hook) {
-            Option::Some(_) => uses_fmt.set(true),
+            Option::Some(_) => require_runtime_import(required_imports, "fmt"),
             Option::None => {
                 if hook == "core.string_print" || hook == "core.string_println" {
-                    uses_fmt.set(true)
+                    require_runtime_import(required_imports, "fmt")
                 } else if hook == "core.string_parse_float32"
                     || hook == "core.string_parse_float64"
                     || hook == "core.float32_to_string"
                     || hook == "core.float64_to_string"
                 {
-                    uses_strconv.set(true)
+                    require_runtime_import(required_imports, "strconv")
                 } else if hook == "core.float32_hash" || hook == "core.float64_hash" {
-                    uses_math.set(true)
+                    require_runtime_import(required_imports, "math")
                 } else if hook == "core.string_concat" {
-                    uses_strings.set(true)
+                    require_runtime_import(required_imports, "strings")
                 } else if hook == "core.string_from_utf8" {
-                    uses_utf8.set(true)
+                    require_runtime_import(required_imports, "utf8")
                 } else if hook == "core.string_get"
                     || hook == "core.string_is_char_boundary"
                     || hook == "core.string_decode_utf8_at"
                     || hook == "core.char_to_string"
                     || hook == "core.string_byte_slice"
                 {
-                    uses_utf8.set(true)
+                    require_runtime_import(required_imports, "utf8")
                 } else if hook == "std.io.print" || hook == "std.io.println" {
-                    uses_fmt.set(true)
+                    require_runtime_import(required_imports, "fmt")
                 } else if hook == "std.io.eprint" {
-                    uses_fmt.set(true);
-                    uses_os.set(true)
+                    require_runtime_import(required_imports, "fmt");
+                    require_runtime_import(required_imports, "os")
                 } else if hook == "std.io.read_stdin"
                     || hook == "std.io.read_stdin_exact"
                 {
-                    uses_io.set(true);
-                    uses_os.set(true)
+                    require_runtime_import(required_imports, "io");
+                    require_runtime_import(required_imports, "os")
                 } else if hook == "std.io.write_stdout"
                     || hook == "std.io.write_stderr"
-                    || (hook.byte_len() >= 8 && hook.byte_slice(0, 8) == "std.env.")
-                    || (hook.byte_len() >= 7
-                        && hook.byte_slice(0, 7) == "std.fs."
+                    || strings::starts_with(hook, "std.env.")
+                    || (strings::starts_with(hook, "std.fs.")
                         && hook != "std.fs.canonicalize"
                         && hook != "std.fs.sha256_file")
                 {
-                    uses_os.set(true)
+                    require_runtime_import(required_imports, "os")
                 } else if hook == "std.fs.canonicalize" {
-                    uses_filepath.set(true)
+                    require_runtime_import(required_imports, "filepath")
                 } else if hook == "std.fs.sha256_file" {
-                    uses_fmt.set(true);
-                    uses_os.set(true);
-                    uses_sha256.set(true)
-                } else if hook.byte_len() >= 9
-                    && hook.byte_slice(0, 9) == "std.path."
-                {
-                    uses_filepath.set(true);
+                    require_runtime_import(required_imports, "fmt");
+                    require_runtime_import(required_imports, "os");
+                    require_runtime_import(required_imports, "sha256")
+                } else if strings::starts_with(hook, "std.path.") {
+                    require_runtime_import(required_imports, "filepath");
                     if hook == "std.path.extension"
                         || hook == "std.path.file_stem"
                         || hook == "std.path.with_extension"
                     {
-                        uses_strings.set(true)
+                        require_runtime_import(required_imports, "strings")
                     } else {
                         ()
                     }
                 } else if hook == "std.testing.fail" {
-                    uses_fmt.set(true);
-                    uses_os.set(true)
+                    require_runtime_import(required_imports, "fmt");
+                    require_runtime_import(required_imports, "os")
+                } else if strings::starts_with(hook, "std.num.") {
+                    require_runtime_import(required_imports, "strconv")
+                } else if strings::starts_with(hook, "std.time.") {
+                    require_runtime_import(required_imports, "time")
                 } else if hook == "std.process.exit" {
-                    uses_os.set(true)
+                    require_runtime_import(required_imports, "os")
                 } else if hook == "std.process.look_path" {
-                    uses_exec.set(true)
+                    require_runtime_import(required_imports, "exec")
                 } else if hook == "std.process.output"
                     || hook == "std.process.status"
                     || hook == "std.process.output_timeout"
                     || hook == "std.process.status_timeout"
                 {
-                    uses_bytes.set(true);
-                    uses_os.set(true);
-                    uses_exec.set(true);
+                    require_runtime_import(required_imports, "bytes");
+                    require_runtime_import(required_imports, "os");
+                    require_runtime_import(required_imports, "exec");
                     if hook == "std.process.output_timeout"
                         || hook == "std.process.status_timeout"
                     {
-                        uses_context.set(true)
+                        require_runtime_import(required_imports, "context")
                     } else {
                         ()
                     }
@@ -428,100 +416,88 @@ pub fn emit_runtime_hook_items(
     };
     for intrinsic in intrinsics {
         if intrinsic == "ref.ptr_hash" {
-            uses_reflect.set(true)
+            require_runtime_import(required_imports, "reflect")
         } else if intrinsic == "vec.with_capacity" || intrinsic == "vec.reserve" {
-            uses_slices.set(true)
+            require_runtime_import(required_imports, "slices")
         } else {
             ()
         }
     };
-    if uses_bytes.get()
-        || uses_context.get()
-        || uses_fmt.get()
-        || uses_math.get()
-        || uses_io.get()
-        || uses_os.get()
-        || uses_exec.get()
-        || uses_filepath.get()
-        || uses_reflect.get()
-        || uses_sha256.get()
-        || uses_slices.get()
-        || uses_strconv.get()
-        || uses_strings.get()
-        || uses_utf8.get()
-    {
+    if required_imports.len() > 0 {
         let imports: Vec[(string, string)] = Vec::new();
-        if uses_bytes.get() {
+        if vecs::contains(required_imports, "bytes") {
             imports.push(("_goml_bytes", "bytes"))
         } else {
             ()
         };
-        if uses_context.get() {
+        if vecs::contains(required_imports, "context") {
             imports.push(("_goml_context", "context"))
         } else {
             ()
         };
-        if uses_fmt.get() {
+        if vecs::contains(required_imports, "fmt") {
             imports.push(("_goml_fmt", "fmt"))
         } else {
             ()
         };
-        if uses_io.get() {
+        if vecs::contains(required_imports, "io") {
             imports.push(("_goml_io", "io"))
         } else {
             ()
         };
-        if uses_math.get() {
+        if vecs::contains(required_imports, "math") {
             imports.push(("_goml_math", "math"))
         } else {
             ()
         };
-        if uses_os.get() {
+        if vecs::contains(required_imports, "os") {
             imports.push(("_goml_os", "os"))
         } else {
             ()
         };
-        if uses_exec.get() {
+        if vecs::contains(required_imports, "exec") {
             imports.push(("_goml_exec", "os/exec"))
         } else {
             ()
         };
-        if uses_filepath.get() {
+        if vecs::contains(required_imports, "filepath") {
             imports.push(("_goml_filepath", "path/filepath"))
         } else {
             ()
         };
-        if uses_reflect.get() {
+        if vecs::contains(required_imports, "reflect") {
             imports.push(("_goml_reflect", "reflect"))
         } else {
             ()
         };
-        if uses_sha256.get() {
+        if vecs::contains(required_imports, "sha256") {
             imports.push(("_goml_sha256", "crypto/sha256"))
         } else {
             ()
         };
-        if uses_slices.get() {
+        if vecs::contains(required_imports, "slices") {
             imports.push(("_goml_slices", "slices"))
         } else {
             ()
         };
-        if uses_strconv.get() {
+        if vecs::contains(required_imports, "strconv") {
             imports.push(("_goml_strconv", "strconv"))
         } else {
             ()
         };
-        if uses_strings.get() {
+        if vecs::contains(required_imports, "strings") {
             imports.push(("_goml_strings", "strings"))
         } else {
             ()
         };
-        if uses_context.get() {
+        if vecs::contains(required_imports, "time")
+            || vecs::contains(required_imports, "context")
+        {
             imports.push(("_goml_time", "time"))
         } else {
             ()
         };
-        if uses_utf8.get() {
+        if vecs::contains(required_imports, "utf8") {
             imports.push(("_goml_utf8", "unicode/utf8"))
         } else {
             ()
@@ -614,17 +590,29 @@ pub fn emit_runtime_hook_items(
     ordered.push("std.process.status");
     ordered.push("std.process.status_timeout");
     ordered.push("std.testing.fail");
+    ordered.push("std.num.parse_int");
+    ordered.push("std.num.parse_uint");
+    ordered.push("std.num.parse_float32");
+    ordered.push("std.num.parse_float64");
+    ordered.push("std.time.monotonic_nanoseconds");
+    ordered.push("std.time.unix_nanoseconds");
+    ordered.push("std.time.sleep_nanoseconds");
     for key in ordered {
         let needed = if key == "internal.string_decode_utf8_at_native" {
-            contains_runtime_hook(hooks, "core.string_get")
-                || contains_runtime_hook(hooks, "core.string_decode_utf8_at")
+            vecs::contains(hooks, "core.string_get")
+                || vecs::contains(hooks, "core.string_decode_utf8_at")
         } else if key == "core.string_is_char_boundary" {
-            contains_runtime_hook(hooks, key)
-                || contains_runtime_hook(hooks, "core.string_byte_slice")
+            vecs::contains(hooks, key)
+                || vecs::contains(hooks, "core.string_byte_slice")
         } else {
-            contains_runtime_hook(hooks, key)
+            vecs::contains(hooks, key)
         };
         if needed {
+            if key == "std.time.monotonic_nanoseconds" {
+                items.push(std_time_monotonic_origin_item())
+            } else {
+                ()
+            };
             match integer_to_string_hook_type(key) {
                 Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
                 Option::None => {
@@ -1102,8 +1090,8 @@ fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
 }
 
 fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
-    let named_some = Ref::new(Option::None);
-    let named_none = Ref::new(Option::None);
+    let named_some: Vec[string] = Vec::new();
+    let named_none: Vec[string] = Vec::new();
     let payloads: Vec[string] = Vec::new();
     let empties: Vec[string] = Vec::new();
     for variant in value.variants {
@@ -1111,14 +1099,14 @@ fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
         if fields.len() == 1 {
             payloads.push(variant.name);
             if variant.name == "Some" {
-                named_some.set(Option::Some(variant.name))
+                named_some.push(variant.name)
             } else {
                 ()
             }
         } else if fields.len() == 0 {
             empties.push(variant.name);
             if variant.name == "None" {
-                named_none.set(Option::Some(variant.name))
+                named_none.push(variant.name)
             } else {
                 ()
             }
@@ -1126,13 +1114,12 @@ fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
             ()
         }
     };
-    match (named_some.get(), named_none.get()) {
-        (Option::Some(some), Option::Some(none)) => Option::Some((some, none)),
-        _ => if payloads.len() == 1 && empties.len() == 1 {
-            Option::Some((payloads.get(0), empties.get(0)))
-        } else {
-            Option::None
-        },
+    if named_some.len() > 0 && named_none.len() > 0 {
+        Option::Some((named_some.get(0), named_none.get(0)))
+    } else if payloads.len() == 1 && empties.len() == 1 {
+        Option::Some((payloads.get(0), empties.get(0)))
+    } else {
+        Option::None
     }
 }
 
@@ -1200,7 +1187,9 @@ fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) 
 
 fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
     match tast::resolve_type(key) {
-        tast::Type::Dyn { trait_name: name } => if name == "Hash" || has_suffix(name, "::Hash") {
+        tast::Type::Dyn { trait_name: name } => if name == "Hash"
+            || strings::ends_with(name, "::Hash")
+        {
             Expr::Call {
                 func: Expr::Field {
                                     expr: Expr::Field { expr: value, field_name: "vtable" },
@@ -2066,18 +2055,7 @@ pub fn dyn_factory_name(
 }
 
 fn hash_segments(value: string) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
-    let start = Ref::new(0);
-    for index in range(0, value.byte_len()) {
-        if value.byte_slice(index, index + 1) == "#" {
-            result.push(value.byte_slice(start.get(), index));
-            start.set(index + 1)
-        } else {
-            ()
-        }
-    };
-    result.push(value.byte_slice(start.get(), value.byte_len()));
-    result
+    strings::split(value, "#")
 }
 
 fn trait_impl_method_name(value: string) -> Option[string] {
@@ -2090,15 +2068,14 @@ fn trait_impl_method_name(value: string) -> Option[string] {
 }
 
 fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
-    let found = Ref::new(false);
     for value in values {
         if value.name == expected {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
@@ -2354,28 +2331,26 @@ fn find_dyn_impl_name(
     for_ty: tast::Type,
     method_name: string,
 ) -> string {
-    let result: Ref[Option[string]] = Ref::new(Option::None);
-    for function in functions {
+    let index = Ref::new(functions.len() - 1);
+    while index.get() >= 0 {
+        let function = functions.get(index.get());
         match (function.trait_impl, trait_impl_method_name(function.name)) {
             (Option::Some(metadata), Option::Some(candidate_method)) => {
                 if metadata.trait_ref.name == trait_name
                     && encode_type(metadata.for_ty) == encode_type(for_ty)
                     && candidate_method == method_name
                 {
-                    result.set(Option::Some(go_ident(function.name)))
+                    return go_ident(function.name)
                 } else {
-                    ()
+                    index.set(index.get() - 1)
                 }
             },
-            _ => (),
+            _ => index.set(index.get() - 1),
         }
     };
-    match result.get() {
-        Option::Some(name) => name,
-        Option::None => go_ident(
-            "trait_impl#" + trait_name + "#" + compact_type(for_ty) + "#" + method_name,
-        ),
-    }
+    go_ident(
+        "trait_impl#" + trait_name + "#" + compact_type(for_ty) + "#" + method_name,
+    )
 }
 
 fn runtime_string_precedes(left: string, right: string) -> bool {
@@ -2544,18 +2519,6 @@ fn dyn_coercion_items(
     result
 }
 
-fn contains_text(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 pub fn emit_builtin_runtime_items(
     items: Vec[Item],
     types: Vec[tast::Type],
@@ -2602,7 +2565,7 @@ pub fn emit_builtin_runtime_items(
         match tast::resolve_type(ty) {
             tast::Type::HashMap { key, value } => {
                 let option = synthetic_option_base(value);
-                let include_option = contains_text(options, option) == false
+                let include_option = vecs::contains(options, option) == false
                     && option_available(instances, value) == false;
                 for item in hashmap_items(
                     key,
@@ -2648,7 +2611,7 @@ pub fn emit_dyn_runtime_items(
     for ty in types {
         match tast::resolve_type(ty) {
             tast::Type::Dyn { trait_name: name } => {
-                if contains_text(dyn_traits, name) == false {
+                if vecs::contains(dyn_traits, name) == false {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)
                     };

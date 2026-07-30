@@ -4,7 +4,7 @@ enum List[T] {
     Cons(T, List[T])
 }
 
-fn list_length(xs: List[T]) -> int32 {
+fn list_length[T](xs: List[T]) -> int32 {
     match xs {
         Nil => 0,
         Cons(_, tail) => 1 + list_length(tail),

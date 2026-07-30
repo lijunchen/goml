@@ -37,12 +37,12 @@ file main.gom
     impl Describe for Record[int32] {
       fn describe(local/1/10: Record[int32]) -> string {
           match self/10 {
-              ctor(def/1/1::v0)(local/1/11) => "Value(" + value/11.to_string() + ")",
-              ctor(def/1/1::v1)(local/1/12, local/1/13) => {
+              Value(local/1/11) => "Value(" + value/11.to_string() + ")",
+              Pair(local/1/12, local/1/13) => {
                     let local/1/14 = "Pair(" + before/12.to_string();
                     prefix/14 + ", " + after/13.to_string() + ")"
                 },
-              ctor(def/1/1::v2) => "Empty",
+              Empty => "Empty",
           }
       }
     }
@@ -50,17 +50,17 @@ file main.gom
     impl Describe for Record[string] {
       fn describe(local/1/15: Record[string]) -> string {
           match self/15 {
-              ctor(def/1/1::v0)(local/1/16) => "Value(" + text/16 + ")",
-              ctor(def/1/1::v1)(local/1/17, local/1/18) => {
+              Value(local/1/16) => "Value(" + text/16 + ")",
+              Pair(local/1/17, local/1/18) => {
                     let local/1/19 = "Pair(" + before/17;
                     prefix/19 + ", " + after/18 + ")"
                 },
-              ctor(def/1/1::v2) => "Empty",
+              Empty => "Empty",
           }
       }
     }
     
-    fn choose(local/1/20: bool, local/1/21: T, local/1/22: T) -> T {
+    fn choose[T](local/1/20: bool, local/1/21: T, local/1/22: T) -> T {
         if flag/20 {
             when_true/21
         } else {
@@ -68,10 +68,10 @@ file main.gom
         }
     }
     
-    fn map_maybe(local/1/23: Maybe[T], local/1/24: (T) -> U) -> Maybe[U] {
+    fn map_maybe[T, U](local/1/23: Maybe[T], local/1/24: (T) -> U) -> Maybe[U] {
         match value/23 {
-            ctor(def/1/2::v0)(local/1/25) => ctor(def/1/2::v0)(f/24(inner/25)),
-            ctor(def/1/2::v1) => ctor(def/1/2::v1),
+            Some(local/1/25) => ctor(def/1/2::v0)(f/24(inner/25)),
+            None => ctor(def/1/2::v1),
         }
     }
     
@@ -104,9 +104,9 @@ file main.gom
     
     fn gather(local/1/39: Record[int32]) -> Maybe[int32] {
         match record/39 {
-            ctor(def/1/1::v0)(local/1/40) => ctor(def/1/2::v0)(value/40),
-            ctor(def/1/1::v1)(_, local/1/41) => ctor(def/1/2::v0)(after/41),
-            ctor(def/1/1::v2) => ctor(def/1/2::v1),
+            Value(local/1/40) => ctor(def/1/2::v0)(value/40),
+            Pair(_, local/1/41) => ctor(def/1/2::v0)(after/41),
+            Empty => ctor(def/1/2::v1),
         }
     }
     
@@ -154,8 +154,8 @@ file main.gom
         let local/1/72 = Describe::describe(bumped_record/60);
         let local/1/73 = Describe::describe(flipped_record/61);
         let local/1/75 = match stringified/65 {
-            ctor(def/1/2::v0)(local/1/74) => "Snapshot: " + text/74,
-            ctor(def/1/2::v1) => "Snapshot: none",
+            Some(local/1/74) => "Snapshot: " + text/74,
+            None => "Snapshot: none",
         };
         let local/1/76 = def/1/12((first_result/68.to_string(), second_result/69.to_string()));
         let local/1/77 = order_check/70.to_string();

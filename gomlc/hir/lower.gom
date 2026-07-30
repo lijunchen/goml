@@ -2,6 +2,7 @@ package hir;
 
 use gomlc::ast;
 use gomlc::cst;
+use gomlc::vecs;
 use std::text;
 
 struct EnumInfo {
@@ -67,6 +68,14 @@ fn copy_strings(values: Vec[string]) -> Vec[string] {
     result
 }
 
+fn append_strings(first: Vec[string], second: Vec[string]) -> Vec[string] {
+    let result = copy_strings(first);
+    for value in second {
+        result.push(value)
+    };
+    result
+}
+
 fn copy_bindings(values: Vec[(string, LocalId)]) -> Vec[(string, LocalId)] {
     let result: Vec[(string, LocalId)] = Vec::new();
     for value in values {
@@ -114,12 +123,11 @@ fn full_name(package_name: string, name: string) -> string {
 
 fn basename(path: string) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, path.len()) {
-        let ch = path.get(index);
-        if ch == '/' || ch == '\\' {
+    for character in path.chars() {
+        if character == '/' || character == '\\' {
             builder.clear()
         } else {
-            builder.write_char(ch)
+            builder.write_char(character)
         }
     };
     if builder.is_empty() { "<unknown>" } else { builder.finish() }
@@ -138,17 +146,14 @@ fn starts_with_std(values: Vec[string]) -> bool {
 }
 
 fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
-    let result: Ref[Option[Vec[string]]] = Ref::new(Option::None);
-    let found = Ref::new(false);
     if target.len() > 1 {
         for alias in aliases {
-            if found.get() == false && alias.alias == target.get(0) {
+            if alias.alias == target.get(0) {
                 let expanded = copy_strings(alias.target);
                 for index in range(1, target.len()) {
                     expanded.push(target.get(index))
                 };
-                result.set(Option::Some(expanded));
-                found.set(true)
+                return Option::Some(expanded)
             } else {
                 ()
             }
@@ -156,7 +161,7 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
     } else {
         ()
     };
-    result.get()
+    Option::None
 }
 
 fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
@@ -245,22 +250,21 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     if values.len() < 2 || !ctx.qualify_imports {
         values
     } else {
-        let result: Vec[string] = Vec::new();
-        let expanded = Ref::new(false);
         for alias in ctx.aliases {
-            if expanded.get() == false && alias.alias == values.get(0) {
+            if alias.alias == values.get(0) {
+                let result: Vec[string] = Vec::new();
                 for segment in alias.target {
                     result.push(segment)
                 };
                 for index in range(1, values.len()) {
                     result.push(values.get(index))
                 };
-                expanded.set(true)
+                return result
             } else {
                 ()
             }
         };
-        if expanded.get() { result } else { values }
+        values
     }
 }
 
@@ -268,7 +272,7 @@ fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
     if ctx.qualify_imports
         && values.len() > 0
-        && contains_string(ctx.nominal_types, values.get(0))
+        && vecs::contains(ctx.nominal_types, values.get(0))
     {
         let result: Vec[string] = Vec::new();
         result.push(full_name(ctx.package_name, values.get(0)));
@@ -287,8 +291,10 @@ fn path_text(ctx: LowerCtx, path: ast::Path) -> string {
 
 fn static_member(
     parts: Vec[string],
-    type_args: Vec[TypeExpr],
-    type_arg_spans: Vec[Option[ast::Span]],
+    owner_type_args: Vec[TypeExpr],
+    owner_type_arg_spans: Vec[Option[ast::Span]],
+    member_type_args: Vec[TypeExpr],
+    member_type_arg_spans: Vec[Option[ast::Span]],
 ) -> ExprKind {
     let owner_parts: Vec[string] = Vec::new();
     if parts.len() > 1 {
@@ -304,8 +310,10 @@ fn static_member(
                     Option::Some(member) => member,
                     Option::None => "<error>",
         },
-        type_args,
-        type_arg_spans,
+        owner_type_args,
+        owner_type_arg_spans,
+        member_type_args,
+        member_type_arg_spans,
     }
 }
 
@@ -326,45 +334,31 @@ fn ast_type_head_span(value: ast::TypeExpr) -> Option[ast::Span] {
     }
 }
 
-fn contains_string(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 fn find_binding(values: Vec[(string, LocalId)], name: string) -> Option[LocalId] {
     let index = Ref::new(values.len());
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     while index.get() > 0 {
         index.set(index.get() - 1);
         let entry = values.get(index.get());
-        if found.get() == false && entry.0 == name {
-            result.set(Option::Some(entry.1));
-            found.set(true)
+        if entry.0 == name {
+            return Option::Some(entry.1)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_definition(ctx: LowerCtx, name: string) -> Option[DefId] {
-    let result = Ref::new(Option::None);
-    for entry in ctx.definitions {
+    let index = Ref::new(ctx.definitions.len() - 1);
+    while index.get() >= 0 {
+        let entry = ctx.definitions.get(index.get());
         if entry.0 == name {
-            result.set(Option::Some(entry.1))
+            return Option::Some(entry.1)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn fresh_local(ctx: LowerCtx, hint: string) -> LocalId {
@@ -387,32 +381,29 @@ fn fresh_method(ctx: LowerCtx) -> DefId {
 }
 
 fn enum_variant(info: EnumInfo, name: string) -> Option[int] {
-    let result = Ref::new(Option::None);
-    let index = Ref::new(0);
-    for variant in info.variants {
-        if variant == name {
-            result.set(Option::Some(index.get()))
+    let index = Ref::new(info.variants.len() - 1);
+    while index.get() >= 0 {
+        if info.variants.get(index.get()) == name {
+            return Option::Some(index.get())
         } else {
-            ()
-        };
-        index.set(index.get() + 1)
+            index.set(index.get() - 1)
+        }
     };
-    result.get()
+    Option::None
 }
 
 fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> bool {
-    let found = Ref::new(false);
     for info in ctx.enums {
         if info.name == enum_name {
             match enum_variant(info, variant_name) {
-                Option::Some(_) => found.set(true),
+                Option::Some(_) => return true,
                 Option::None => (),
             }
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
@@ -450,24 +441,28 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
             join_segments(names)
         };
         let package_matches = parts.len() == 2 || parts.get(0) == ctx.package_name;
-        let result = Ref::new(Option::None);
         if package_matches {
-            for info in ctx.enums {
+            let index = Ref::new(ctx.enums.len() - 1);
+            while index.get() >= 0 {
+                let info = ctx.enums.get(index.get());
                 if info.name == enum_name {
                     match enum_variant(info, variant) {
-                        Option::Some(index) => result.set(Option::Some(
-                            ConstructorRef::Resolved { enum_def: info.def_id, variant_index: index },
-                        )),
-                        Option::None => (),
+                        Option::Some(variant_index) => return Option::Some(
+                            ConstructorRef::Resolved {
+                                enum_def: info.def_id,
+                                variant_index,
+                            },
+                        ),
+                        Option::None => index.set(index.get() - 1),
                     }
                 } else {
-                    ()
+                    index.set(index.get() - 1)
                 }
-            }
+            };
+            Option::None
         } else {
-            ()
-        };
-        result.get()
+            Option::None
+        }
     }
 }
 
@@ -475,6 +470,42 @@ fn unresolved_constructor(ctx: LowerCtx, path: ast::Path) -> ConstructorRef {
     match constructor_ref(ctx, path) {
         Option::Some(value) => value,
         Option::None => ConstructorRef::Unresolved(path_text(ctx, path)),
+    }
+}
+
+fn pattern_head_span(path: ast::Path) -> ast::Span {
+    if path.segments.len() == 0 {
+        ast::span(0, 0)
+    } else {
+        path.segments.get(path.segments.len() - 1).span
+    }
+}
+
+fn pattern_head(ctx: LowerCtx, path: ast::Path) -> PatternHead {
+    let span = pattern_head_span(path);
+    if path.segments.len() == 1 {
+        PatternHead::Contextual {
+            name: path.segments.get(0).ident,
+            span,
+        }
+    } else {
+        match constructor_ref(ctx, path) {
+            Option::Some(ConstructorRef::Resolved {
+                enum_def,
+                variant_index,
+            }) => PatternHead::Resolved {
+                enum_def,
+                variant_index,
+                span,
+            },
+            Option::Some(ConstructorRef::Unresolved(name)) => {
+                PatternHead::Qualified { name, span }
+            },
+            Option::None => PatternHead::Qualified {
+                name: path_text(ctx, path),
+                span,
+            },
+        }
     }
 }
 
@@ -506,7 +537,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         ast::TypeExpr::Con { path } => {
             let parts = qualified_segments(ctx, path);
             if parts.len() == 2
-                && (parts.get(0) == "Self" || contains_string(type_params, parts.get(0))) {
+                && (parts.get(0) == "Self" || vecs::contains(type_params, parts.get(0))) {
                 TypeExpr::Projection {
                     base: TypeExpr::Con { name: parts.get(0) },
                     associated: parts.get(1),
@@ -562,7 +593,7 @@ fn lower_impl_trait_ref(
     type_params: Vec[string],
 ) -> TraitRef {
     let parts = expand_segments(ctx, value.path);
-    let name = if parts.len() == 1 && contains_string(ctx.traits, parts.get(0)) {
+    let name = if parts.len() == 1 && vecs::contains(ctx.traits, parts.get(0)) {
         full_name(ctx.package_name, parts.get(0))
     } else {
         join_segments(parts)
@@ -672,31 +703,31 @@ fn pattern_binding_mismatch(
     if missing.len() == 0 && extra.len() == 0 {
         Option::None
     } else {
-        let details = Ref::new("");
+        let details = text::StringBuilder::new();
         if missing.len() > 0 {
-            details.set(
-                "missing " + join_pattern_names(sort_pattern_names(missing)),
+            details.write_string("missing ");
+            details.write_string(
+                join_pattern_names(sort_pattern_names(missing)),
             )
         } else {
             ()
         };
         if extra.len() > 0 {
-            if details.get().byte_len() > 0 {
-                details.set(details.get() + "; ")
-            } else {
+            if details.is_empty() {
                 ()
+            } else {
+                details.write_string("; ")
             };
-            details.set(
-                details.get()
-                    + "extra "
-                    + join_pattern_names(sort_pattern_names(extra)),
+            details.write_string("extra ");
+            details.write_string(
+                join_pattern_names(sort_pattern_names(extra)),
             )
         } else {
             ()
         };
         Option::Some(
             "Or-pattern alternatives must bind the same variables: "
-                + details.get(),
+                + details.finish(),
         )
     }
 }
@@ -739,9 +770,22 @@ fn lower_pattern_inner(
     let previous_span = ctx.current_pattern_span.get();
     ctx.current_pattern_span.set(Option::Some(span));
     let kind = match value {
-        ast::Pat::Var { name, span: _ } => match constructor_ref(ctx, single_path(name)) {
-            Option::Some(constructor) => PatKind::Constr { constructor, args: Vec::new() },
+        ast::Pat::Var { name, span } => match constructor_ref(ctx, single_path(name)) {
+            Option::Some(ConstructorRef::Resolved {
+                enum_def,
+                variant_index,
+            }) => PatKind::Constr {
+                head: PatternHead::Resolved {
+                    enum_def,
+                    variant_index,
+                    span,
+                },
+                args: Vec::new(),
+            },
             Option::None => PatKind::Var { name: bind_pattern_name(ctx, env, state, name) },
+            Option::Some(ConstructorRef::Unresolved(_)) => {
+                PatKind::Var { name: bind_pattern_name(ctx, env, state, name) }
+            },
         },
         ast::Pat::Unit { span: _ } => PatKind::Unit,
         ast::Pat::Bool { value, span: _ } => PatKind::Bool { value },
@@ -749,19 +793,20 @@ fn lower_pattern_inner(
         ast::Pat::Float { value, span: _ } => PatKind::Float { value },
         ast::Pat::String { value, span: _ } => PatKind::String { value },
         ast::Pat::Char { value, span: _ } => PatKind::Char { value },
+        ast::Pat::Byte { value, span: _ } => PatKind::Byte { value },
         ast::Pat::Constr { constructor: path, args, span: _ } => {
             let result: Vec[Pat] = Vec::new();
             for arg in args {
                 result.push(lower_pattern_inner(ctx, arg, env, state))
             };
-            PatKind::Constr { constructor: unresolved_constructor(ctx, path), args: result }
+            PatKind::Constr { head: pattern_head(ctx, path), args: result }
         },
         ast::Pat::Struct { name: path, fields, has_rest, span: _ } => {
             let result: Vec[(string, Pat)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_pattern_inner(ctx, field.1, env, state)))
             };
-            PatKind::Struct { name: path_text(ctx, path), fields: result, has_rest }
+            PatKind::Struct { head: pattern_head(ctx, path), fields: result, has_rest }
         },
         ast::Pat::Tuple { items: values, span: _ } => {
             let result: Vec[Pat] = Vec::new();
@@ -881,8 +926,9 @@ fn lower_block(
                     value: lowered_expr,
                 })
             },
-            ast::Stmt::Assign { target, value: expr, span: _ } => stmts.push(Stmt::Assign {
+            ast::Stmt::Assign { target, op, value: expr, span: _ } => stmts.push(Stmt::Assign {
                 target: lower_expr(ctx, target, env, type_params),
+                op,
                 value: lower_expr(ctx, expr, env, type_params),
             }),
             ast::Stmt::Expr { expr, span: _ } => {
@@ -906,15 +952,32 @@ fn lower_expr_value(
     type_params: Vec[string],
 ) -> ExprKind {
     match value {
-        ast::Expr::Path { path, type_args, span: _ } => {
-            if type_args.len() > 0 {
-                let args: Vec[TypeExpr] = Vec::new();
-                let arg_spans: Vec[Option[ast::Span]] = Vec::new();
-                for arg in type_args {
-                    arg_spans.push(ast_type_head_span(arg));
-                    args.push(lower_type(ctx, arg, type_params))
+        ast::Expr::Path {
+            path,
+            owner_type_args,
+            member_type_args,
+            span: _,
+        } => {
+            if owner_type_args.len() > 0 || member_type_args.len() > 0 {
+                let owner_args: Vec[TypeExpr] = Vec::new();
+                let owner_arg_spans: Vec[Option[ast::Span]] = Vec::new();
+                for arg in owner_type_args {
+                    owner_arg_spans.push(ast_type_head_span(arg));
+                    owner_args.push(lower_type(ctx, arg, type_params))
                 };
-                static_member(qualified_segments(ctx, path), args, arg_spans)
+                let member_args: Vec[TypeExpr] = Vec::new();
+                let member_arg_spans: Vec[Option[ast::Span]] = Vec::new();
+                for arg in member_type_args {
+                    member_arg_spans.push(ast_type_head_span(arg));
+                    member_args.push(lower_type(ctx, arg, type_params))
+                };
+                static_member(
+                    qualified_segments(ctx, path),
+                    owner_args,
+                    owner_arg_spans,
+                    member_args,
+                    member_arg_spans,
+                )
             } else {
                 match constructor_ref(ctx, path) {
                     Option::Some(constructor) => ExprKind::ConstructorValue { constructor },
@@ -944,6 +1007,8 @@ fn lower_expr_value(
                                     parts,
                                     Vec::new(),
                                     Vec::new(),
+                                    Vec::new(),
+                                    Vec::new(),
                                 ),
                             }
                         }
@@ -956,7 +1021,27 @@ fn lower_expr_value(
         ast::Expr::Int { value, span: _ } => ExprKind::Int { value },
         ast::Expr::Float { value, span: _ } => ExprKind::Float { value },
         ast::Expr::String { value, span: _ } => ExprKind::String { value },
+        ast::Expr::InterpolatedString { parts, span: _ } => {
+            let result: Vec[InterpolatedStringPart] = Vec::new();
+            for part in parts {
+                match part {
+                    ast::InterpolatedStringPart::Text(value) => {
+                        result.push(InterpolatedStringPart::Text(value))
+                    },
+                    ast::InterpolatedStringPart::Expr(value) => {
+                        result.push(InterpolatedStringPart::Expr(lower_expr(
+                            ctx,
+                            value,
+                            env,
+                            type_params,
+                        )))
+                    },
+                }
+            };
+            ExprKind::InterpolatedString { parts: result }
+        },
         ast::Expr::Char { value, span: _ } => ExprKind::Char { value },
+        ast::Expr::Byte { value, span: _ } => ExprKind::Byte { value },
         ast::Expr::ConstructorValue { constructor: path, span: _ } => {
             ExprKind::ConstructorValue {
                 constructor: unresolved_constructor(ctx, path),
@@ -969,12 +1054,19 @@ fn lower_expr_value(
             };
             ExprKind::Constr { constructor: unresolved_constructor(ctx, path), args: result }
         },
-        ast::Expr::StructLiteral { name: path, fields, span: _ } => {
+        ast::Expr::StructLiteral { name: path, fields, base, span: _ } => {
             let result: Vec[(string, Expr)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_expr(ctx, field.1, env, type_params)))
             };
-            ExprKind::StructLiteral { name: path_text(ctx, path), fields: result }
+            ExprKind::StructLiteral {
+                name: path_text(ctx, path),
+                fields: result,
+                base: match base {
+                    Option::Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
+                    Option::None => Option::None,
+                },
+            }
         },
         ast::Expr::Tuple { items: values, span: _ } => {
             let result: Vec[Expr] = Vec::new();
@@ -989,6 +1081,23 @@ fn lower_expr_value(
                 result.push(lower_expr(ctx, item, env, type_params))
             };
             ExprKind::Array { items: result }
+        },
+        ast::Expr::VecLiteral { items: values, span: _ } => {
+            let result: Vec[Expr] = Vec::new();
+            for item in values {
+                result.push(lower_expr(ctx, item, env, type_params))
+            };
+            ExprKind::VecLiteral { items: result }
+        },
+        ast::Expr::HashMapLiteral { entries, span: _ } => {
+            let result: Vec[(Expr, Expr)] = Vec::new();
+            for entry in entries {
+                result.push((
+                    lower_expr(ctx, entry.0, env, type_params),
+                    lower_expr(ctx, entry.1, env, type_params),
+                ))
+            };
+            ExprKind::HashMapLiteral { entries: result }
         },
         ast::Expr::Closure { params, body, span: _ } => {
             let closure_env = copy_bindings(env);
@@ -1061,7 +1170,7 @@ fn lower_expr_value(
         },
         ast::Expr::Call { func, args, span: _ } => {
             match func {
-                ast::Expr::Path { path, type_args: _, span: _ } => match constructor_ref(ctx, path) {
+                ast::Expr::Path { path, .. } => match constructor_ref(ctx, path) {
                     Option::Some(constructor) => {
                         let result: Vec[Expr] = Vec::new();
                         for arg in args {
@@ -1111,8 +1220,21 @@ fn lower_expr_value(
         ast::Expr::Proj { tuple: expr, index, span: _ } => {
             ExprKind::Proj { tuple: lower_expr(ctx, expr, env, type_params), index }
         },
-        ast::Expr::Field { expr, field_name: field, span: _ } => {
-            ExprKind::Field { expr: lower_expr(ctx, expr, env, type_params), field_name: field }
+        ast::Expr::Field {
+            expr,
+            field_name: field,
+            method_type_args,
+            span: _,
+        } => {
+            let args = Vec::new();
+            for arg in method_type_args {
+                args.push(lower_type(ctx, arg, type_params))
+            };
+            ExprKind::Field {
+                expr: lower_expr(ctx, expr, env, type_params),
+                field_name: field,
+                method_type_args: args,
+            }
         },
         ast::Expr::Index { base, index, span: _ } => ExprKind::Index {
             base: lower_expr(ctx, base, env, type_params),
@@ -1275,6 +1397,29 @@ fn lower_struct(ctx: LowerCtx, value: ast::StructDef, def_id: DefId) -> StructDe
     }
 }
 
+fn lower_type_alias(ctx: LowerCtx, value: ast::TypeAlias, def_id: DefId) -> TypeAlias {
+    TypeAlias {
+        def_id,
+        attrs: value.attrs,
+        name: full_name(ctx.package_name, value.name),
+        generics: value.generics,
+        ty: lower_type(ctx, value.ty, value.generics),
+        ty_span: value.ty_span,
+    }
+}
+
+fn lower_constant(ctx: LowerCtx, value: ast::Constant, def_id: DefId) -> Constant {
+    Constant {
+        def_id,
+        attrs: value.attrs,
+        visibility: value.visibility,
+        name: full_name(ctx.package_name, value.name),
+        ty: lower_type(ctx, value.ty, Vec::new()),
+        ty_span: value.ty_span,
+        value: lower_expr(ctx, value.value, Vec::new(), Vec::new()),
+    }
+}
+
 fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
     let type_params = copy_strings(value.generics);
     let predicates: Vec[Predicate] = Vec::new();
@@ -1298,15 +1443,33 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
     };
     let method_sigs: Vec[TraitMethodSignature] = Vec::new();
     for method in value.method_sigs {
+        let method_type_params = append_strings(type_params, method.generics);
         let params: Vec[TypeExpr] = Vec::new();
         for param in method.params {
-            params.push(lower_type(ctx, param.1, type_params))
+            params.push(lower_type(ctx, param.1, method_type_params))
+        };
+        let method_predicates = Vec::new();
+        for predicate in method.predicates {
+            method_predicates.push(lower_predicate(
+                ctx,
+                predicate,
+                method_type_params,
+                false,
+            ))
         };
         method_sigs.push(TraitMethodSignature {
             name: method.name,
+            generics: method.generics,
+            generic_bounds: lower_bounds(
+                ctx,
+                method.generic_bounds,
+                method_type_params,
+                false,
+            ),
+            predicates: method_predicates,
             params,
             ret_ty_span: ast_type_head_span(method.ret_ty),
-            ret_ty: lower_type(ctx, method.ret_ty, type_params),
+            ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
         })
     };
     TraitDef {
@@ -1371,6 +1534,8 @@ fn item_name(package_name: string, value: ast::Item) -> Option[string] {
         ast::Item::TraitDef(value) => Option::Some(full_name(package_name, value.name)),
         ast::Item::Function(value) => Option::Some(full_name(package_name, value.name)),
         ast::Item::ExternFunction(value) => Option::Some(full_name(package_name, value.name)),
+        ast::Item::TypeAlias(value) => Option::Some(full_name(package_name, value.name)),
+        ast::Item::Constant(value) => Option::Some(full_name(package_name, value.name)),
         ast::Item::ImplBlock(_) => Option::None,
     }
 }
@@ -1410,6 +1575,7 @@ fn make_context(
                     })
                 },
                 ast::Item::StructDef(value) => nominal_types.push(value.name),
+                ast::Item::TypeAlias(value) => nominal_types.push(value.name),
                 ast::Item::TraitDef(value) => traits.push(value.name),
                 _ => (),
             };
@@ -1498,6 +1664,12 @@ fn lower_file_with_context(
             ))),
             ast::Item::ExternFunction(value) => {
                 items.push(Item::ExternFunction(lower_extern(ctx, value, def_id)))
+            },
+            ast::Item::TypeAlias(value) => {
+                items.push(Item::TypeAlias(lower_type_alias(ctx, value, def_id)))
+            },
+            ast::Item::Constant(value) => {
+                items.push(Item::Constant(lower_constant(ctx, value, def_id)))
             },
         };
         index.set(index.get() + 1)

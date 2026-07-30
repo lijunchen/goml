@@ -1,5 +1,7 @@
 package go_backend;
 
+use gomlc::strings;
+
 struct NameSet {
     values: Vec[string],
     present: HashMap[string, unit],
@@ -221,21 +223,20 @@ fn name_uses_import(name: string, alias: string) -> bool {
     } else if name.byte_len() <= alias.byte_len() {
         false
     } else {
-        name.byte_slice(0, alias.byte_len()) == alias
+        strings::starts_with(name, alias)
             && name.byte_get(alias.byte_len()) == 46
     }
 }
 
 fn import_is_used(names: NameSet, alias: string) -> bool {
-    let used = Ref::new(false);
     for name in names.values {
         if name_uses_import(name, alias) {
-            used.set(true)
+            return true
         } else {
             ()
         }
     };
-    used.get()
+    false
 }
 
 fn collect_item_names(result: NameSet, value: Item) -> unit {
@@ -246,6 +247,13 @@ fn collect_item_names(result: NameSet, value: Item) -> unit {
                 collect_type_names(result, spec.ty);
                 collect_expr_names(result, spec.value)
             }
+        },
+        Item::Global(global) => {
+            match global.ty {
+                Option::Some(ty) => collect_type_names(result, ty),
+                Option::None => (),
+            };
+            collect_expr_names(result, global.value)
         },
         Item::Interface(definition) => {
             for method in definition.methods {
@@ -321,9 +329,8 @@ pub fn prune_functions(value: File) -> File {
     let reachable = new_name_set();
     let expanded = new_name_set();
     add_reachable(reachable, "main");
-    let changed = Ref::new(true);
-    while changed.get() {
-        changed.set(false);
+    while true {
+        let previous_len = expanded.values.len();
         for item in value.items {
             match item {
                 Item::Function(function) => {
@@ -332,13 +339,61 @@ pub fn prune_functions(value: File) -> File {
                     {
                         add_reachable(expanded, function.name);
                         collect_block_names(reachable, function.body);
-                        changed.set(true)
                     } else {
                         ()
                     }
                 },
                 _ => (),
             }
+        };
+        if expanded.values.len() == previous_len {
+            break
+        } else {
+            ()
+        }
+    };
+    while true {
+        let previous_len = expanded.values.len();
+        for item in value.items {
+            match item {
+                Item::Global(global) => if name_present(reachable, global.name)
+                    && name_present(expanded, global.name) == false
+                {
+                    add_reachable(expanded, global.name);
+                    collect_expr_names(reachable, global.value)
+                } else {
+                    ()
+                },
+                _ => (),
+            }
+        };
+        if expanded.values.len() == previous_len {
+            break
+        } else {
+            ()
+        }
+    };
+    while true {
+        let previous_len = expanded.values.len();
+        for item in value.items {
+            match item {
+                Item::ConstGroup(group) => for spec in group.specs {
+                    if name_present(reachable, spec.name)
+                        && name_present(expanded, spec.name) == false
+                    {
+                        add_reachable(expanded, spec.name);
+                        collect_expr_names(reachable, spec.value)
+                    } else {
+                        ()
+                    }
+                },
+                _ => (),
+            }
+        };
+        if expanded.values.len() == previous_len {
+            break
+        } else {
+            ()
         }
     };
     let items: Vec[Item] = Vec::new();
@@ -347,6 +402,29 @@ pub fn prune_functions(value: File) -> File {
             Item::Function(function) => {
                 if name_present(reachable, function.name) {
                     items.push(Item::Function(function))
+                } else {
+                    ()
+                }
+            },
+            Item::ConstGroup(group) => {
+                let was_empty = group.specs.len() == 0;
+                let specs: Vec[ConstSpec] = Vec::new();
+                for spec in group.specs {
+                    if name_present(reachable, spec.name) {
+                        specs.push(spec)
+                    } else {
+                        ()
+                    }
+                };
+                if was_empty || specs.len() > 0 {
+                    items.push(Item::ConstGroup(ConstGroup { specs }))
+                } else {
+                    ()
+                }
+            },
+            Item::Global(global) => {
+                if name_present(reachable, global.name) {
+                    items.push(Item::Global(global))
                 } else {
                     ()
                 }

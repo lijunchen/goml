@@ -1,50 +1,50 @@
 fn trait_impl#Label#string#label(self/0: string) -> string {
-  join ret65(retv66: string) -> string {
-    retv66
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  let t67 = ("label:" + self/0) in
-  jump ret65(t67)
+  let t111 = ("label:" + self/0) in
+  jump ret109(t111)
 }
 
 fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
+  join ret112(retv113: string) -> string {
+    retv113
   } in
-  let t70 = TextSource.value(self/1) in
-  jump ret68(t70)
+  let t114 = TextSource.value(self/1) in
+  jump ret112(t114)
 }
 
 fn main() -> unit {
-  join ret71() -> unit {
+  join ret115() -> unit {
     ()
   } in
-  let t72 = TextSource { value: "goml" } in
-  let t73 = render__S_TextSource(t72) in
-  let _wild64 = println__T_string(t73) in
-  jump ret71()
+  let t116 = TextSource { value: "goml" } in
+  let t117 = render__S_TextSource(t116) in
+  let _wild108 = println__T_string(t117) in
+  jump ret115()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret74() -> unit {
+  join ret118() -> unit {
     ()
   } in
-  let t75 = trait_impl#ToString#string#to_string(value/1) in
-  let t76 = @runtime(core.string_println)(t75) in
-  jump ret74()
+  let t119 = trait_impl#ToString#string#to_string(value/1) in
+  let t120 = @runtime(core.string_println)(t119) in
+  jump ret118()
 }
 
 fn render__S_TextSource(source/2: TextSource) -> string {
-  join ret77(retv78: string) -> string {
-    retv78
+  join ret121(retv122: string) -> string {
+    retv122
   } in
-  let t79 = trait_impl#Source#TextSource#get(source/2) in
-  let t80 = trait_impl#Label#string#label(t79) in
-  jump ret77(t80)
+  let t123 = trait_impl#Source#TextSource#get(source/2) in
+  let t124 = trait_impl#Label#string#label(t123) in
+  jump ret121(t124)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret81(retv82: string) -> string {
-    retv82
+  join ret125(retv126: string) -> string {
+    retv126
   } in
-  jump ret81(self/38)
+  jump ret125(self/38)
 }

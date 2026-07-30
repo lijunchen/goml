@@ -3,7 +3,7 @@ trait Ready {
   fn state(self: Self) -> string;
 }
 
-trait Service[T] {
+trait Service[T] where T: Ready {
   fn get(self: Self) -> T;
 }
 
@@ -27,7 +27,7 @@ impl Service[Worker] for Station {
   }
 }
 
-fn describe(service: S) -> string {
+fn describe[T, S: Service[T]](service: S) -> string {
     Service::[T]::get(service).state()
 }
 

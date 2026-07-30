@@ -5,17 +5,17 @@ file main.gom
         Cons(T, List[T])
     }
     
-    fn list_length(local/1/0: List[T]) -> int32 {
+    fn list_length[T](local/1/0: List[T]) -> int32 {
         match xs/0 {
-            ctor(def/1/0::v0) => 0,
-            ctor(def/1/0::v1)(_, local/1/1) => 1 + def/1/1(tail/1),
+            Nil => 0,
+            Cons(_, local/1/1) => 1 + def/1/1(tail/1),
         }
     }
     
     fn int_list_length(local/1/2: List[int32]) -> int32 {
         match xs/2 {
-            ctor(def/1/0::v0) => 0,
-            ctor(def/1/0::v1)(_, local/1/3) => 1 + def/1/2(tail/3),
+            Nil => 0,
+            Cons(_, local/1/3) => 1 + def/1/2(tail/3),
         }
     }
     

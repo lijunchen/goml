@@ -1,5 +1,6 @@
 package main;
 
+use gomlc::strings;
 use std::fs;
 use std::path;
 
@@ -8,12 +9,14 @@ struct PackageCommandArgs {
     inputs: Vec[string],
     interface_paths: Vec[string],
     output: string,
+    world: Option[string],
 }
 
 struct LinkCommandArgs {
     inputs: Vec[string],
     entry: string,
     output: string,
+    world: Option[string],
 }
 
 struct TestLinkCommandArgs {
@@ -21,17 +24,81 @@ struct TestLinkCommandArgs {
     packages: Vec[string],
     output: string,
     manifest: string,
+    world: Option[string],
+}
+
+struct ExtractedWorldArgs {
+    args: Vec[string],
+    world: Option[string],
+}
+
+fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
+    let result = Vec::new();
+    let world: Ref[Option[string]] = Ref::new(Option::None);
+    let index = Ref::new(0);
+    let positional = Ref::new(false);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if index.get() >= 2 && positional.get() == false && argument == "--" {
+            positional.set(true);
+            result.push(argument);
+            index.set(index.get() + 1)
+        } else if index.get() >= 2
+            && positional.get() == false
+            && argument == "--world"
+        {
+            if option_string_present(world.get()) {
+                return Result::Err(repeated_argument_error(
+                    args.get(1),
+                    "--world <WORLD>",
+                ))
+            } else if index.get() + 1 >= args.len()
+                || cli_option(args.get(index.get() + 1))
+            {
+                return Result::Err(value_required_error(
+                    "--world <WORLD>",
+                    Option::None,
+                ))
+            } else {
+                world.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else if index.get() >= 2
+            && positional.get() == false
+            && option_string_present(inline_cli_value(argument, "--world"))
+        {
+            if option_string_present(world.get()) {
+                return Result::Err(repeated_argument_error(
+                    args.get(1),
+                    "--world <WORLD>",
+                ))
+            } else if option_string_empty(inline_cli_value(argument, "--world")) {
+                return Result::Err(value_required_error(
+                    "--world <WORLD>",
+                    Option::None,
+                ))
+            } else {
+                world.set(inline_cli_value(argument, "--world"));
+                index.set(index.get() + 1)
+            }
+        } else {
+            result.push(argument);
+            index.set(index.get() + 1)
+        }
+    };
+    Result::Ok(ExtractedWorldArgs {
+        args: result,
+        world: world.get(),
+    })
 }
 
 fn cli_option(value: string) -> bool {
-    value.byte_len() > 0 && value.byte_slice(0, 1) == "-"
+    strings::starts_with(value, "-")
 }
 
 fn inline_cli_value(argument: string, name: string) -> Option[string] {
     let prefix = name + "=";
-    if argument.byte_len() >= prefix.byte_len()
-        && argument.byte_slice(0, prefix.byte_len()) == prefix
-    {
+    if strings::starts_with(argument, prefix) {
         Option::Some(argument.byte_slice(prefix.byte_len(), argument.byte_len()))
     } else {
         Option::None
@@ -74,13 +141,17 @@ fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
 }
 
 fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, string] {
+    let extracted = match extract_world_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = extracted.args;
     let package_name: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let inputs = Vec::new();
     let interface_paths = Vec::new();
     let index = Ref::new(2);
     let positional = Ref::new(false);
-    let used_option = Ref::new(false);
     let command = args.get(1);
     while index.get() < args.len() {
         let argument = args.get(index.get());
@@ -107,7 +178,11 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
             && cli_option(args.get(index.get() + 1))
             && !known_cli_option(command, args.get(index.get() + 1))
         {
-            let usage = if used_option.get() {
+            let usage = if option_string_present(package_name.get())
+                || option_string_present(output.get())
+                || inputs.len() > 0
+                || interface_paths.len() > 0
+            {
                 selected_package_usage(command, interface_paths)
             } else {
                 command_usage(command)
@@ -134,7 +209,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 package_name.set(Option::Some(args.get(index.get() + 1)));
-                used_option.set(true);
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--package")) {
@@ -145,7 +219,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 package_name.set(inline_cli_value(argument, "--package"));
-                used_option.set(true);
                 index.set(index.get() + 1)
             }
         } else if argument == "--input" {
@@ -161,7 +234,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     Option::None,
                 ))
             } else {
-                used_option.set(true)
+                ()
             }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
@@ -175,7 +248,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 inputs.push(value);
-                used_option.set(true);
                 index.set(index.get() + 1);
                 while index.get() < args.len() && !cli_option(args.get(index.get())) {
                     inputs.push(args.get(index.get()));
@@ -192,7 +264,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 interface_paths.push(args.get(index.get() + 1));
-                used_option.set(true);
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--interface-path")) {
@@ -206,7 +277,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     Option::Some(value) => interface_paths.push(value),
                     Option::None => (),
                 };
-                used_option.set(true);
                 index.set(index.get() + 1)
             }
         } else if argument == "--output" {
@@ -224,7 +294,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 output.set(Option::Some(args.get(index.get() + 1)));
-                used_option.set(true);
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
@@ -240,7 +309,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 output.set(inline_cli_value(argument, "--output"));
-                used_option.set(true);
                 index.set(index.get() + 1)
             }
         } else {
@@ -264,7 +332,12 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 },
                 Option::None => (),
             };
-            let usage = if cli_option(argument) && used_option.get() {
+            let usage = if cli_option(argument)
+                && (option_string_present(package_name.get())
+                    || option_string_present(output.get())
+                    || inputs.len() > 0
+                    || interface_paths.len() > 0)
+            {
                 selected_package_usage(command, interface_paths)
             } else {
                 command_usage(command)
@@ -309,11 +382,17 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 Option::Some(value) => value,
                 Option::None => "",
             },
+            world: extracted.world,
         })
     }
 }
 
 fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string] {
+    let extracted = match extract_world_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = extracted.args;
     let entry: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let inputs = Vec::new();
@@ -478,11 +557,17 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 Option::Some(value) => value,
                 Option::None => "",
             },
+            world: extracted.world,
         })
     }
 }
 
 fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs, string] {
+    let extracted = match extract_world_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = extracted.args;
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let manifest: Ref[Option[string]] = Ref::new(Option::None);
     let inputs = Vec::new();
@@ -683,6 +768,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 Option::Some(value) => value,
                 Option::None => "",
             },
+            world: extracted.world,
         })
     }
 }

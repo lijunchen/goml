@@ -40,7 +40,7 @@ impl Convert[string] for Convertible {
   }
 }
 
-trait Source[T] {
+trait Source[T] where Self::Item = T {
   type Item;
   fn get(self: Self) -> Self::Item;
 }
@@ -56,7 +56,7 @@ impl Source[int32] for Number {
   }
 }
 
-fn read(source: S) -> T {
+fn read[T, S: Source[T]](source: S) -> T {
     Source::[T]::get(source)
 }
 
@@ -69,7 +69,7 @@ trait Select[T] {
   fn select(self: Self) -> T;
 }
 
-impl[S: ItemSource, T] Select[T] for S {
+impl[S: ItemSource, T] Select[T] for S where S::Item = T {
   fn select(self: S) -> T {
       ItemSource::item(self)
   }
@@ -86,11 +86,11 @@ impl ItemSource for Selected {
   }
 }
 
-fn invoke(source: S) -> T {
+fn invoke[T, S: Select[T]](source: S) -> T {
     source.select()
 }
 
-fn select_item(source: S) -> S::Item {
+fn select_item[S: ItemSource](source: S) -> S::Item {
     invoke(source)
 }
 

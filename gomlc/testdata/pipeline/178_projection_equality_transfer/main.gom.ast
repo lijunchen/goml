@@ -36,7 +36,7 @@ impl Source for RightSource {
   }
 }
 
-fn combine(left: A, right: B) -> string {
+fn combine[A: Source, B: Source](left: A, right: B) -> string where A::Item = B::Item, B::Item: Mark {
     Source::get(left).marked() + ":" + Source::get(right).marked()
 }
 

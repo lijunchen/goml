@@ -1,0 +1,100 @@
+fn main() -> unit {
+  join ret116() -> unit {
+    ()
+  } in
+  let first/4 = Box__int { value: 42 } in
+  let t117 = closure_env_main_0 {} in
+  let text/6 = inherent#Box#Box[T]#map__T_int__U_string(first/4, t117) in
+  let t118 = Box__string.value(text/6) in
+  let _wild109 = println__T_string(t118) in
+  let second/7 = Box__int { value: 7 } in
+  let t119 = closure_env_main_1 {} in
+  let explicit/9 = inherent#Box#Box[T]#map__T_int__U_string(second/7, t119) in
+  let t120 = Box__string.value(explicit/9) in
+  let _wild110 = println__T_string(t120) in
+  let third/10 = Box__int { value: 9 } in
+  let t121 = closure_env_main_2 {} in
+  let static_call/12 = inherent#Box#Box[T]#map__T_int__U_string(third/10, t121) in
+  let t122 = Box__string.value(static_call/12) in
+  let _wild111 = println__T_string(t122) in
+  let t123 = Box__string { value: "value" } in
+  let rendered/13 = inherent#Box#Box[T]#render__T_string__U_int(t123, 5) in
+  let _wild112 = println__T_string(rendered/13) in
+  jump ret116()
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  join ret124(retv125: string) -> string {
+    retv125
+  } in
+  let t126 = @runtime(core.int_to_string)(self/5) in
+  jump ret124(t126)
+}
+
+fn inherent#Box#Box[T]#map__T_int__U_string(self/0: Box__int, map_fn/1: (int) -> string) -> Box__string {
+  join ret127(retv128: Box__string) -> Box__string {
+    retv128
+  } in
+  let t129 = Box__int.value(self/0) in
+  let t130 = map_fn/1(t129) in
+  let t131 = Box__string { value: t130 } in
+  jump ret127(t131)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret132() -> unit {
+    ()
+  } in
+  let t133 = trait_impl#ToString#string#to_string(value/1) in
+  let t134 = @runtime(core.string_println)(t133) in
+  jump ret132()
+}
+
+fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
+  join ret135(retv136: string) -> string {
+    retv136
+  } in
+  let mtmp108 = self/2 in
+  let t137 = trait_impl#ToString#int#to_string(value/3) in
+  let t138 = ("value:" + t137) in
+  jump ret135(t138)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret139(retv140: string) -> string {
+    retv140
+  } in
+  jump ret139(self/38)
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  join ret141(retv142: string) -> string {
+    retv142
+  } in
+  let t143 = @runtime(core.int_to_string)(self/40) in
+  jump ret141(t143)
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env113: closure_env_main_0, value/5: int) -> string {
+  join ret144(retv145: string) -> string {
+    retv145
+  } in
+  let t146 = inherent#int#int#to_string(value/5) in
+  jump ret144(t146)
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env114: closure_env_main_1, value/8: int) -> string {
+  join ret147(retv148: string) -> string {
+    retv148
+  } in
+  let t149 = inherent#int#int#to_string(value/8) in
+  jump ret147(t149)
+}
+
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env115: closure_env_main_2, value/11: int) -> string {
+  join ret150(retv151: string) -> string {
+    retv151
+  } in
+  let t152 = inherent#int#int#to_string(value/11) in
+  jump ret150(t152)
+}

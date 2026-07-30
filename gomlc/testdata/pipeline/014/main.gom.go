@@ -15,15 +15,15 @@ type Tuple2_4bool_4bool struct {
 }
 
 func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{} {
-    var x64 bool = x__0._0
-    var x65 bool = x__0._1
-    switch x65 {
+    var x108 bool = x__0._0
+    var x109 bool = x__0._1
+    switch x109 {
     case true:
-        var x66 bool = y__1._0
-        var x67 bool = y__1._1
-        switch x67 {
+        var x110 bool = y__1._0
+        var x111 bool = y__1._1
+        switch x111 {
         case true:
-            switch x66 {
+            switch x110 {
             case true:
                 println__T_string("case4")
             case false:
@@ -37,13 +37,13 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
             panic("non-exhaustive match")
         }
     case false:
-        switch x64 {
+        switch x108 {
         case true:
-            var x68 bool = y__1._0
-            var x69 bool = y__1._1
-            switch x69 {
+            var x112 bool = y__1._0
+            var x113 bool = y__1._1
+            switch x113 {
             case true:
-                switch x68 {
+                switch x112 {
                 case true:
                     println__T_string("case2")
                 case false:
@@ -57,11 +57,11 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
                 panic("non-exhaustive match")
             }
         case false:
-            var x70 bool = y__1._0
-            var x71 bool = y__1._1
-            switch x71 {
+            var x114 bool = y__1._0
+            var x115 bool = y__1._1
+            switch x115 {
             case true:
-                switch x70 {
+                switch x114 {
                 case true:
                     println__T_string("case4")
                 case false:
@@ -84,55 +84,55 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
 }
 
 func main0() struct{} {
-    var t95 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t139 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var t96 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t140 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    test_nested_match(t95, t96)
-    var t97 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    test_nested_match(t139, t140)
+    var t141 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var t98 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t142 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    test_nested_match(t97, t98)
-    var t99 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    test_nested_match(t141, t142)
+    var t143 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    var t100 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t144 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    test_nested_match(t99, t100)
-    var t101 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    test_nested_match(t143, t144)
+    var t145 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    var t102 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t146 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    test_nested_match(t101, t102)
+    test_nested_match(t145, t146)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t104 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t104)
+    var t148 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t148)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv107 string
-    retv107 = self__38
-    return retv107
+    var retv151 string
+    retv151 = self__38
+    return retv151
 }
 
 func main() {

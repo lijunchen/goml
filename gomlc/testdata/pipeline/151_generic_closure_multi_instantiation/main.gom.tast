@@ -1,4 +1,4 @@
-fn make_pairer(x/0: T) -> (string) -> string {
+fn make_pairer[T](x/0: T) -> (string) -> string where T: ToString {
     |tag/1: string| => (tag/1 : string) + ":" + (ToString::to_string : (T) -> string)((x/0 : T))
 }
 

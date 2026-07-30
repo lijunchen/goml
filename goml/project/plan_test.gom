@@ -2,6 +2,32 @@ package project;
 
 use std::testing;
 
+#[test]
+fn derives_unicode_package_names_from_directories() -> unit {
+    match package_name_for_directory(
+        "/tmp/项目",
+        "alice::app",
+        "/tmp/项目/工具/解析",
+    ) {
+        Result::Ok(value) => testing::assert_eq(
+            value,
+            "alice::app::工具::解析",
+        ),
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn displays_commands_with_unicode_and_quoted_arguments() -> unit {
+    testing::assert_eq(
+        display_command(Command::GoBuild {
+            input: "源 code/main.go",
+            output: "输出's app",
+        }),
+        "go build -o '输出'\\''s app' '源 code/main.go'",
+    )
+}
+
 fn compile_command(
     name: string,
     interface_files: Vec[string],
@@ -13,6 +39,7 @@ fn compile_command(
         input_files: Vec::new().pushed(name + ".gom"),
         interface_files,
         output,
+        world: Option::None,
     }
 }
 
@@ -31,6 +58,7 @@ fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
                 .pushed("out/b.core"),
             output: "out/main.go",
             entry_package: "b",
+            world: Option::None,
         })
         .pushed(Command::GoBuild {
             input: "out/main.go",
@@ -52,6 +80,33 @@ fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
     testing::assert_eq(graph.nodes.get(2).dependencies.get(1), 1);
     testing::assert_eq(graph.nodes.get(3).dependencies.len(), 1);
     testing::assert_eq(graph.nodes.get(3).dependencies.get(0), 2)
+}
+
+#[test]
+fn build_graph_tracks_compiler_world_dependencies() -> unit {
+    let world = "out/compiler/world-v1.gaf";
+    let command = Command::Compile {
+        subcommand: "check",
+        package_name: "a",
+        input_files: Vec::new().pushed("a.gom"),
+        interface_files: Vec::new(),
+        output: "out/a",
+        world: Option::Some(world),
+    };
+    let graph = match build_graph(
+        Vec::new()
+            .pushed(Command::PrepareWorld { output: world })
+            .pushed(command),
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(message) => {
+            testing::fail(message);
+            BuildGraph { nodes: Vec::new() }
+        },
+    };
+    testing::assert_eq(graph.nodes.get(0).dependencies.len(), 0);
+    testing::assert_eq(graph.nodes.get(1).dependencies.len(), 1);
+    testing::assert_eq(graph.nodes.get(1).dependencies.get(0), 0)
 }
 
 #[test]
@@ -93,7 +148,7 @@ fn build_graph_exposes_dependency_cycles() -> unit {
             BuildGraph { nodes: Vec::new() }
         },
     };
-    let pending = Vec::new().pushed(0).pushed(1);
-    testing::assert(!build_node_ready(graph.nodes.get(0), pending));
-    testing::assert(!build_node_ready(graph.nodes.get(1), pending))
+    let completed = Vec::new();
+    testing::assert(!build_node_ready(graph.nodes.get(0), completed));
+    testing::assert(!build_node_ready(graph.nodes.get(1), completed))
 }

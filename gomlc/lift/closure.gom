@@ -2,6 +2,7 @@ package lift;
 
 use gomlc::core;
 use gomlc::tast;
+use gomlc::vecs;
 use std::text;
 
 struct ScopeEntry {
@@ -39,27 +40,27 @@ fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
 }
 
 fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
-    let result: Ref[Option[ScopeEntry]] = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_closure(state: State, name: string) -> Option[ClosureInfo] {
-    let result: Ref[Option[ClosureInfo]] = Ref::new(Option::None);
     for value in state.closures {
         if value.struct_name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
@@ -69,20 +70,8 @@ fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
     }
 }
 
-fn string_contains(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 fn record_used_type(values: Vec[string], name: string) -> unit {
-    if string_contains(values, name) {
+    if vecs::contains(values, name) {
         ()
     } else {
         values.push(name)
@@ -197,7 +186,7 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_expr(values, expr)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
@@ -237,17 +226,14 @@ fn ascii_alphanumeric(value: uint8) -> bool {
 }
 
 fn primary_name(value: string) -> string {
-    let end = Ref::new(value.byte_len());
-    let found = Ref::new(false);
     for index in range(0, value.byte_len()) {
-        if found.get() == false && value.byte_get(index) == 47 {
-            end.set(index);
-            found.set(true)
+        if value.byte_get(index) == 47 {
+            return value.byte_slice(0, index)
         } else {
             ()
         }
     };
-    value.byte_slice(0, end.get())
+    value
 }
 
 fn sanitize_name(value: string) -> Option[string] {
@@ -285,24 +271,21 @@ fn sanitize_name(value: string) -> Option[string] {
 }
 
 fn fresh_struct_name(state: State, hint: Option[string]) -> string {
-    let result = Ref::new("");
-    let found = Ref::new(false);
-    while found.get() == false {
+    while true {
         let index = state.next_env.get();
         state.next_env.set(index + 1);
         let candidate = match hint {
             Option::Some(name) => "closure_env_" + name + "_" + index.to_string(),
             Option::None => "closure_env_" + index.to_string(),
         };
-        if string_contains(state.used_types, candidate) {
+        if vecs::contains(state.used_types, candidate) {
             ()
         } else {
             state.used_types.push(candidate);
-            result.set(candidate);
-            found.set(true)
+            return candidate
         }
     };
-    result.get()
+    ""
 }
 
 fn fresh_name(state: State, prefix: string) -> string {
@@ -312,28 +295,26 @@ fn fresh_name(state: State, prefix: string) -> string {
 }
 
 fn trailing_number(value: string) -> Option[int] {
-    let slash = Ref::new(false);
     for index in range(0, value.byte_len()) {
         if value.byte_get(index) == 47 {
-            slash.set(true)
+            return Option::None
         } else {
             ()
         }
     };
-    if slash.get() || value.byte_len() == 0 {
+    if value.byte_len() == 0 {
         Option::None
     } else {
         let start = Ref::new(value.byte_len());
-        let scanning = Ref::new(true);
         let index = Ref::new(value.byte_len());
-        while scanning.get() && index.get() > 0 {
+        while index.get() > 0 {
             let next = index.get() - 1;
             let byte = value.byte_get(next);
             if byte >= 48 && byte <= 57 {
                 start.set(next);
                 index.set(next)
             } else {
-                scanning.set(false)
+                break
             }
         };
         if start.get() == value.byte_len() {
@@ -450,7 +431,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_exprs(maximum, args)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
@@ -722,10 +703,18 @@ fn transform_expr(
                 ty,
             }
         },
-        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
+        core::Expr::TraitCall {
+            trait_ref: reference,
+            method_name,
+            instance_name,
+            receiver,
+            args,
+            ty,
+        } => {
             core::Expr::TraitCall {
                 trait_ref: reference,
                 method_name,
+                instance_name,
                 receiver: transform_expr(state, scope, receiver, context),
                 args: transform_exprs(state, scope, args, context),
                 ty,
@@ -740,19 +729,14 @@ fn transform_expr(
 }
 
 fn capture_exists(values: Vec[Capture], name: string) -> bool {
-    let found = Ref::new(false);
     for value in values {
         if value.name == name {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
-}
-
-fn bound_contains(values: Vec[string], name: string) -> bool {
-    string_contains(values, name)
+    false
 }
 
 fn collect_captured_exprs(
@@ -803,7 +787,7 @@ fn collect_captured(
     scope: Vec[ScopeEntry],
 ) -> unit {
     match value {
-        core::Expr::Var { name, ty: _ } => if bound_contains(bound, name) {
+        core::Expr::Var { name, ty: _ } => if vecs::contains(bound, name) {
             ()
         } else {
             match find_scope(scope, name) {
@@ -866,7 +850,7 @@ fn collect_captured(
             collect_captured_exprs(args, bound, captured, scope)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
@@ -1062,6 +1046,7 @@ fn lambda_lift_with_counter(
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
+    let constants = value.constants;
     let state = State {
         next_env: Ref::new(0),
         next_name: counter,
@@ -1080,7 +1065,7 @@ fn lambda_lift_with_counter(
     for generated_struct in state.generated_structs {
         structs.push(generated_struct)
     };
-    core::File { functions, enums, structs, type_instances }
+    core::File { functions, enums, structs, type_instances, constants }
 }
 
 fn lambda_lift(value: core::File) -> core::File {

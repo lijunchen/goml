@@ -2,10 +2,10 @@
     "name": "goml",
     "displayName": "GoML Language Support",
     "description": "Language support for GoML (.gom files)",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "publisher": "goml",
     "engines": {
-        "vscode": "^1.85.0"
+        "vscode": "^1.91.0"
     },
     "categories": [
         "Programming Languages"
@@ -72,26 +72,42 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint src",
         "pretest": "npm run compile",
         "test": "node ./out/test/runTest.js",
         "package": "vsce package"
     },
     "dependencies": {
-        "vscode-languageclient": "^9.0.1"
+        "vscode-languageclient": "^10.1.0"
     },
     "devDependencies": {
-        "@types/glob": "^8.1.0",
+        "@eslint/js": "^10.0.1",
         "@types/mocha": "^10.0.6",
         "@types/node": "^20.10.0",
-        "@types/vscode": "^1.85.0",
-        "@typescript-eslint/eslint-plugin": "^6.13.0",
-        "@typescript-eslint/parser": "^6.13.0",
+        "@types/vscode": "^1.91.0",
         "@vscode/test-electron": "^2.3.8",
-        "eslint": "^8.54.0",
-        "glob": "^10.3.10",
-        "mocha": "^10.2.0",
+        "@vscode/vsce": "^3.9.2",
+        "eslint": "^10.8.0",
+        "glob": "^13.0.6",
+        "globals": "^17.8.0",
+        "mocha": "^11.7.6",
         "typescript": "^5.3.2",
-        "@vscode/vsce": "^2.22.0"
+        "typescript-eslint": "^8.65.0"
+    },
+    "overrides": {
+        "mocha": {
+            "diff": "^8.0.3",
+            "glob": "^13.0.6",
+            "minimatch": "^10.2.6",
+            "serialize-javascript": "^7.0.5"
+        }
+    },
+    "pnpm": {
+        "overrides": {
+            "mocha>diff": "^8.0.3",
+            "mocha>glob": "^13.0.6",
+            "mocha>minimatch": "^10.2.6",
+            "mocha>serialize-javascript": "^7.0.5"
+        }
     }
 }

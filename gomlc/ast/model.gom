@@ -77,6 +77,26 @@ pub enum Item {
     ImplBlock(ImplBlock),
     Function(Function),
     ExternFunction(ExternFunction),
+    TypeAlias(TypeAlias),
+    Constant(Constant),
+}
+
+pub struct TypeAlias {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub ty: TypeExpr,
+    pub ty_span: Span,
+}
+
+pub struct Constant {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub ty: TypeExpr,
+    pub ty_span: Span,
+    pub value: Expr,
 }
 
 pub struct Function {
@@ -163,6 +183,9 @@ pub enum Predicate {
 
 pub struct TraitMethodSignature {
     pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
     pub params: Vec[(string, TypeExpr)],
     pub ret_ty: TypeExpr,
 }
@@ -193,7 +216,12 @@ pub enum Stmt {
         value: Expr,
         span: Span,
     },
-    Assign { target: Expr, value: Expr, span: Span },
+    Assign {
+        target: Expr,
+        op: AssignmentOp,
+        value: Expr,
+        span: Span,
+    },
     Expr { expr: Expr, span: Span },
 }
 
@@ -224,19 +252,43 @@ pub enum BinaryOp {
     NotEq,
 }
 
+pub enum AssignmentOp {
+    Plain,
+    Compound(BinaryOp),
+}
+
+pub enum InterpolatedStringPart {
+    Text(string),
+    Expr(Expr),
+}
+
 pub enum Expr {
-    Path { path: Path, type_args: Vec[TypeExpr], span: Span },
+    Path {
+        path: Path,
+        owner_type_args: Vec[TypeExpr],
+        member_type_args: Vec[TypeExpr],
+        span: Span,
+    },
     Unit { span: Span },
     Bool { value: bool, span: Span },
     Int { value: string, span: Span },
     Float { value: float64, span: Span },
     String { value: string, span: Span },
+    InterpolatedString { parts: Vec[InterpolatedStringPart], span: Span },
     Char { value: string, span: Span },
+    Byte { value: string, span: Span },
     ConstructorValue { constructor: Path, span: Span },
     Constr { constructor: Path, args: Vec[Expr], span: Span },
-    StructLiteral { name: Path, fields: Vec[(string, Expr)], span: Span },
+    StructLiteral {
+        name: Path,
+        fields: Vec[(string, Expr)],
+        base: Option[Expr],
+        span: Span,
+    },
     Tuple { items: Vec[Expr], span: Span },
     Array { items: Vec[Expr], span: Span },
+    VecLiteral { items: Vec[Expr], span: Span },
+    HashMapLiteral { entries: Vec[(Expr, Expr)], span: Span },
     Closure { params: Vec[ClosureParam], body: Expr, span: Span },
     Match { expr: Expr, arms: Vec[Arm], span: Span },
     If { cond: Expr, then_branch: Expr, else_branch: Expr, span: Span },
@@ -253,7 +305,12 @@ pub enum Expr {
     Range { start: Expr, end: Expr, span: Span },
     Binary { op: BinaryOp, lhs: Expr, rhs: Expr, span: Span },
     Proj { tuple: Expr, index: int, span: Span },
-    Field { expr: Expr, field_name: string, span: Span },
+    Field {
+        expr: Expr,
+        field_name: string,
+        method_type_args: Vec[TypeExpr],
+        span: Span,
+    },
     Index { base: Expr, index: Expr, span: Span },
     Block { block: Block, span: Span },
 }
@@ -277,6 +334,7 @@ pub enum Pat {
     Float { value: string, span: Span },
     String { value: string, span: Span },
     Char { value: string, span: Span },
+    Byte { value: string, span: Span },
     Constr { constructor: Path, args: Vec[Pat], span: Span },
     Struct { name: Path, fields: Vec[(string, Pat)], has_rest: bool, span: Span },
     Tuple { items: Vec[Pat], span: Span },
@@ -309,12 +367,16 @@ pub fn expr_span(value: Expr) -> Span {
         | Expr::Int { span, .. }
         | Expr::Float { span, .. }
         | Expr::String { span, .. }
+        | Expr::InterpolatedString { span, .. }
         | Expr::Char { span, .. }
+        | Expr::Byte { span, .. }
         | Expr::ConstructorValue { span, .. }
         | Expr::Constr { span, .. }
         | Expr::StructLiteral { span, .. }
         | Expr::Tuple { span, .. }
         | Expr::Array { span, .. }
+        | Expr::VecLiteral { span, .. }
+        | Expr::HashMapLiteral { span, .. }
         | Expr::Closure { span, .. }
         | Expr::Match { span, .. }
         | Expr::If { span, .. }
@@ -346,6 +408,7 @@ pub fn pat_span(value: Pat) -> Span {
         | Pat::Float { span, .. }
         | Pat::String { span, .. }
         | Pat::Char { span, .. }
+        | Pat::Byte { span, .. }
         | Pat::Constr { span, .. }
         | Pat::Struct { span, .. }
         | Pat::Tuple { span, .. }

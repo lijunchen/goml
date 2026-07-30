@@ -11,23 +11,23 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  let mtmp67 = {
-    let mtmp64 = parse_text(ok/1) in
-    match mtmp64 {
-      Result__string__string::Ok(x65) => {
+  let mtmp111 = {
+    let mtmp108 = parse_text(ok/1) in
+    match mtmp108 {
+      Result__string__string::Ok(x109) => {
         {
-          let x65 = Result__string__string::Ok._0(mtmp64) in
+          let x109 = Result__string__string::Ok._0(mtmp108) in
           {
-            let try_value/12 = x65 in
+            let try_value/12 = x109 in
             try_value/12
           }
         }
       },
-      Result__string__string::Err(x66) => {
+      Result__string__string::Err(x110) => {
         {
-          let x66 = Result__string__string::Err._0(mtmp64) in
+          let x110 = Result__string__string::Err._0(mtmp108) in
           {
-            let try_residual/12 = x66 in
+            let try_residual/12 = x110 in
             return Result__string__string::Err(try_residual/12)
           }
         }
@@ -41,20 +41,20 @@ fn check(ok/1: bool) -> Result__string__string {
 
 fn show(res/2: Result__string__string) -> string {
   match res/2 {
-    Result__string__string::Ok(x68) => {
+    Result__string__string::Ok(x112) => {
       {
-        let x68 = Result__string__string::Ok._0(res/2) in
+        let x112 = Result__string__string::Ok._0(res/2) in
         {
-          let value/3 = x68 in
+          let value/3 = x112 in
           ("ok " + value/3)
         }
       }
     },
-    Result__string__string::Err(x69) => {
+    Result__string__string::Err(x113) => {
       {
-        let x69 = Result__string__string::Err._0(res/2) in
+        let x113 = Result__string__string::Err._0(res/2) in
         {
-          let err/4 = x69 in
+          let err/4 = x113 in
           ("err " + err/4)
         }
       }
@@ -63,8 +63,8 @@ fn show(res/2: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild70 = println__T_string(show(check(true))) in
-  let _wild71 = println__T_string(show(check(false))) in
+  let _wild114 = println__T_string(show(check(true))) in
+  let _wild115 = println__T_string(show(check(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {

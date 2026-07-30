@@ -81,7 +81,19 @@ pub fn link_with_dependencies(
     for value in user.type_instances {
         type_instances.push(value)
     };
-    File { functions, enums, structs, type_instances }
+    let constants: Vec[tast::Constant] = Vec::new();
+    for value in builtins.constants {
+        constants.push(value)
+    };
+    for dependency in dependencies {
+        for value in dependency.constants {
+            constants.push(value)
+        }
+    };
+    for value in user.constants {
+        constants.push(value)
+    };
+    File { functions, enums, structs, type_instances, constants }
 }
 
 pub fn link_with_builtins(builtins: File, user: File) -> File {

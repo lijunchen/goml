@@ -29,34 +29,34 @@ type Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {
 }
 
 func main0() struct{} {
-    var t72 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t116 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
     var a__0 Tuple3_4bool_4bool_18Tuple2_4bool_4bool = Tuple3_4bool_4bool_18Tuple2_4bool_4bool{
         _0: true,
         _1: false,
-        _2: t72,
+        _2: t116,
     }
-    var x67 Tuple2_4bool_4bool = a__0._2
-    var x69 bool = x67._1
-    var w__4 bool = x69
+    var x111 Tuple2_4bool_4bool = a__0._2
+    var x113 bool = x111._1
+    var w__4 bool = x113
     var b__5 bool = w__4
     print__T_bool(b__5)
     return struct{}{}
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t74 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t74)
+    var t118 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
+    _goml_runtime_core_string_print(t118)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv77 string
-    var t78 string = _goml_runtime_core_bool_to_string(self__37)
-    retv77 = t78
-    return retv77
+    var retv121 string
+    var t122 string = _goml_runtime_core_bool_to_string(self__37)
+    retv121 = t122
+    return retv121
 }
 
 func main() {

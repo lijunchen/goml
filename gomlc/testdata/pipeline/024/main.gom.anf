@@ -1,155 +1,155 @@
 fn point32_to_string(p/0: Point) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret119(retv120: string) -> string {
+    retv120
   } in
-  let mtmp64 = p/0 in
-  let x65 = Point.x(mtmp64) in
-  let x66 = Point.y(mtmp64) in
-  let y/2 = x66 in
-  let x/1 = x65 in
-  let t77 = inherent#int32#int32#to_string(x/1) in
-  let t78 = ("Point { x: " + t77) in
-  let t79 = (t78 + ", y: ") in
-  let t80 = inherent#int32#int32#to_string(y/2) in
-  let t81 = (t79 + t80) in
-  let t82 = (t81 + " }") in
-  jump ret75(t82)
+  let mtmp108 = p/0 in
+  let x109 = Point.x(mtmp108) in
+  let x110 = Point.y(mtmp108) in
+  let y/2 = x110 in
+  let x/1 = x109 in
+  let t121 = inherent#int32#int32#to_string(x/1) in
+  let t122 = ("Point { x: " + t121) in
+  let t123 = (t122 + ", y: ") in
+  let t124 = inherent#int32#int32#to_string(y/2) in
+  let t125 = (t123 + t124) in
+  let t126 = (t125 + " }") in
+  jump ret119(t126)
 }
 
 fn color_to_string(c/3: Color) -> string {
-  join ret83(retv84: string) -> string {
-    retv84
+  join ret127(retv128: string) -> string {
+    retv128
   } in
-  join k85(jp86: string) -> string {
-    jump ret83(jp86)
+  join k129(jp130: string) -> string {
+    jump ret127(jp130)
   } in
   match c/3 {
     Tag_0 => {
-      jump k85("Red")
+      jump k129("Red")
     },
     Tag_1 => {
-      jump k85("Green")
+      jump k129("Green")
     },
     Tag_2 => {
-      jump k85("Blue")
+      jump k129("Blue")
     },
   }
 }
 
 fn line_to_string(l/4: Line) -> string {
-  join ret87(retv88: string) -> string {
-    retv88
+  join ret131(retv132: string) -> string {
+    retv132
   } in
-  let mtmp67 = l/4 in
-  let x68 = Line.from(mtmp67) in
-  let x69 = Line.to(mtmp67) in
-  let x70 = Line.color(mtmp67) in
-  let color/7 = x70 in
-  let to/6 = x69 in
-  let from/5 = x68 in
-  let t89 = point32_to_string(from/5) in
-  let t90 = ("Line { from: " + t89) in
-  let t91 = (t90 + ", to: ") in
-  let t92 = point32_to_string(to/6) in
-  let t93 = (t91 + t92) in
-  let t94 = (t93 + ", color: ") in
-  let t95 = color_to_string(color/7) in
-  let t96 = (t94 + t95) in
-  let t97 = (t96 + " }") in
-  jump ret87(t97)
+  let mtmp111 = l/4 in
+  let x112 = Line.from(mtmp111) in
+  let x113 = Line.to(mtmp111) in
+  let x114 = Line.color(mtmp111) in
+  let color/7 = x114 in
+  let to/6 = x113 in
+  let from/5 = x112 in
+  let t133 = point32_to_string(from/5) in
+  let t134 = ("Line { from: " + t133) in
+  let t135 = (t134 + ", to: ") in
+  let t136 = point32_to_string(to/6) in
+  let t137 = (t135 + t136) in
+  let t138 = (t137 + ", color: ") in
+  let t139 = color_to_string(color/7) in
+  let t140 = (t138 + t139) in
+  let t141 = (t140 + " }") in
+  jump ret131(t141)
 }
 
 fn point_type(p/8: Point) -> string {
-  join ret98(retv99: string) -> string {
-    retv99
+  join ret142(retv143: string) -> string {
+    retv143
   } in
-  let x71 = Point.x(p/8) in
-  let x72 = Point.y(p/8) in
-  join k100(jp101: string) -> string {
-    jump ret98(jp101)
+  let x115 = Point.x(p/8) in
+  let x116 = Point.y(p/8) in
+  join k144(jp145: string) -> string {
+    jump ret142(jp145)
   } in
-  match x71 {
+  match x115 {
     0 => {
-      join k102(jp103: string) -> string {
-        jump k100(jp103)
+      join k146(jp147: string) -> string {
+        jump k144(jp147)
       } in
-      match x72 {
+      match x116 {
         0 => {
-          jump k102("origin")
+          jump k146("origin")
         },
         1 => {
-          jump k102("up")
+          jump k146("up")
         },
         _ => {
-          let y/9 = x72 in
-          let mtmp73 = (0 < y/9) in
-          join k104(jp105: string) -> string {
-            jump k102(jp105)
+          let y/9 = x116 in
+          let mtmp117 = (0 < y/9) in
+          join k148(jp149: string) -> string {
+            jump k146(jp149)
           } in
-          match mtmp73 {
+          match mtmp117 {
             true => {
-              jump k104("above")
+              jump k148("above")
             },
             false => {
-              jump k104("below")
+              jump k148("below")
             },
           }
         },
       }
     },
     1 => {
-      join k106(jp107: string) -> string {
-        jump k100(jp107)
+      join k150(jp151: string) -> string {
+        jump k144(jp151)
       } in
-      match x72 {
+      match x116 {
         0 => {
-          jump k106("right")
+          jump k150("right")
         },
         _ => {
-          jump k106("unknown")
+          jump k150("unknown")
         },
       }
     },
     _ => {
-      jump k100("unknown")
+      jump k144("unknown")
     },
   }
 }
 
 fn main() -> unit {
-  join ret108() -> unit {
+  join ret152() -> unit {
     ()
   } in
   let p0/10 = Point { x: 0, y: 0 } in
-  let t109 = point_type(p0/10) in
-  let mtmp74 = println__T_string(t109) in
+  let t153 = point_type(p0/10) in
+  let mtmp118 = println__T_string(t153) in
   let p1/11 = Point { x: 10, y: 10 } in
   let line/12 = Line { from: p0/10, to: p1/11, color: Tag_0 } in
-  let t110 = line_to_string(line/12) in
-  let t111 = println__T_string(t110) in
-  jump ret108()
+  let t154 = line_to_string(line/12) in
+  let t155 = println__T_string(t154) in
+  jump ret152()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret112(retv113: string) -> string {
-    retv113
+  join ret156(retv157: string) -> string {
+    retv157
   } in
-  let t114 = @runtime(core.int32_to_string)(self/6) in
-  jump ret112(t114)
+  let t158 = @runtime(core.int32_to_string)(self/6) in
+  jump ret156(t158)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret115() -> unit {
+  join ret159() -> unit {
     ()
   } in
-  let t116 = trait_impl#ToString#string#to_string(value/1) in
-  let t117 = @runtime(core.string_println)(t116) in
-  jump ret115()
+  let t160 = trait_impl#ToString#string#to_string(value/1) in
+  let t161 = @runtime(core.string_println)(t160) in
+  jump ret159()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret118(retv119: string) -> string {
-    retv119
+  join ret162(retv163: string) -> string {
+    retv163
   } in
-  jump ret118(self/38)
+  jump ret162(self/38)
 }

@@ -4,6 +4,7 @@ use gomlc::ast;
 use gomlc::core;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
 use std::testing;
 
@@ -37,40 +38,13 @@ fn lower_checked_source(source: string) -> LowerResult {
 }
 
 fn string_contains(value: string, expected: string) -> bool {
-    if expected.byte_len() == 0 {
-        true
-    } else if value.byte_len() < expected.byte_len() {
-        false
-    } else {
-        let found = Ref::new(false);
-        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
-            if value.byte_slice(index, index + expected.byte_len()) == expected {
-                found.set(true)
-            } else {
-                ()
-            }
-        };
-        found.get()
-    }
+    strings::contains(value, expected)
 }
 
 fn string_index(value: string, expected: string) -> int {
-    if expected.byte_len() == 0 {
-        0
-    } else if value.byte_len() < expected.byte_len() {
-        -1
-    } else {
-        let result = Ref::new(-1);
-        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
-            if result.get() < 0
-                && value.byte_slice(index, index + expected.byte_len()) == expected
-            {
-                result.set(index)
-            } else {
-                ()
-            }
-        };
-        result.get()
+    match strings::find(value, expected) {
+        Option::Some(index) => index,
+        Option::None => -1,
     }
 }
 

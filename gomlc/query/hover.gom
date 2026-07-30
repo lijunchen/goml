@@ -1,7 +1,9 @@
 package query;
 
 use gomlc::ast;
+use gomlc::strings;
 use gomlc::tast;
+use std::text;
 
 pub struct HoverResult {
     pub contents: string,
@@ -19,6 +21,35 @@ fn hover_text(value: tast::Type) -> Option[string] {
     }
 }
 
+fn hover_function_text(
+    generics: Vec[string],
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
+) -> Option[string] {
+    match hover_text(tast::Type::Func { params, ret_ty }) {
+        Option::Some(signature) => if generics.len() == 0 {
+            Option::Some(signature)
+        } else {
+            let builder = text::StringBuilder::new();
+            builder.write_char('[');
+            let index = Ref::new(0);
+            for generic in generics {
+                if index.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                builder.write_string(short_type_name(generic));
+                index.set(index.get() + 1)
+            };
+            builder.write_string("] ");
+            builder.write_string(signature);
+            Option::Some(builder.finish())
+        },
+        Option::None => Option::None,
+    }
+}
+
 fn hover_span(value: Analysis, span: ast::Span, offset: int) -> ast::Span {
     match token_at(value.syntax, offset) {
         Option::Some(token) => if token.start >= span.start
@@ -33,23 +64,30 @@ fn hover_span(value: Analysis, span: ast::Span, offset: int) -> ast::Span {
 }
 
 fn symbol_owner(value: string) -> string {
-    let end = Ref::new(Option::None);
-    let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58
-            && value.byte_get(index.get() + 1) == 58
-        {
-            end.set(Option::Some(index.get()));
-            index.set(index.get() + 1)
-        } else {
-            ()
-        };
-        index.set(index.get() + 1)
-    };
-    match end.get() {
+    match strings::rfind(value, "::") {
         Option::Some(end) => value.byte_slice(0, end),
         Option::None => "",
     }
+}
+
+fn method_owner(value: tast::MethodInfo) -> string {
+    match value.trait_ref {
+        Option::Some(reference) => reference.name,
+        Option::None => type_owner_name(value.for_type),
+    }
+}
+
+fn method_matches_symbol(
+    value: tast::MethodInfo,
+    symbol: Symbol,
+) -> bool {
+    let expected_owner = symbol_owner(symbol.qualified_name);
+    let actual_owner = method_owner(value);
+    (value.function.name == symbol.qualified_name
+        || short_type_name(value.function.name) == symbol.name)
+        && (actual_owner == expected_owner
+            || short_type_name(actual_owner)
+                == short_type_name(expected_owner))
 }
 
 fn symbol_hover_type(
@@ -58,67 +96,120 @@ fn symbol_hover_type(
 ) -> Option[string] {
     match symbol.kind {
         SymbolKind::Function => {
-            let result = Ref::new(Option::None);
-            for environment in value.environments {
-                for function in environment.functions {
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let function_index = Ref::new(environment.functions.len() - 1);
+                while function_index.get() >= 0 {
+                    let function = environment.functions.get(function_index.get());
                     if function.name == symbol.qualified_name
                         || short_type_name(function.name) == symbol.name
                     {
-                        result.set(hover_text(tast::Type::Func {
-                            params: function.params,
-                            ret_ty: function.ret_ty,
-                        }))
+                        return hover_function_text(
+                            function.generics,
+                            function.params,
+                            function.ret_ty,
+                        )
                     } else {
-                        ()
+                        function_index.set(function_index.get() - 1)
                     }
-                }
+                };
+                environment_index.set(environment_index.get() - 1)
             };
-            result.get()
+            Option::None
         },
         SymbolKind::Method => {
-            let result = Ref::new(Option::None);
-            for environment in value.environments {
-                for method in environment.methods {
-                    if method.function.name == symbol.qualified_name
-                        || short_type_name(method.function.name) == symbol.name
-                    {
-                        result.set(hover_text(tast::Type::Func {
-                            params: method.function.params,
-                            ret_ty: method.function.ret_ty,
-                        }))
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let method_index = Ref::new(environment.methods.len() - 1);
+                while method_index.get() >= 0 {
+                    let method = environment.methods.get(method_index.get());
+                    if method_matches_symbol(method, symbol) {
+                        return hover_function_text(
+                            method.method_generics,
+                            method.function.params,
+                            method.function.ret_ty,
+                        )
                     } else {
-                        ()
+                        method_index.set(method_index.get() - 1)
                     }
-                }
+                };
+                environment_index.set(environment_index.get() - 1)
             };
-            result.get()
+            Option::None
         },
         SymbolKind::Field => {
             let owner = symbol_owner(symbol.qualified_name);
-            let result = Ref::new(Option::None);
-            for environment in value.environments {
-                for definition in environment.structs {
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let definition_index = Ref::new(environment.structs.len() - 1);
+                while definition_index.get() >= 0 {
+                    let definition = environment.structs.get(definition_index.get());
                     if definition.name == owner
                         || short_type_name(definition.name)
                             == short_type_name(owner)
                     {
-                        for field in definition.fields {
+                        let field_index = Ref::new(definition.fields.len() - 1);
+                        while field_index.get() >= 0 {
+                            let field = definition.fields.get(field_index.get());
                             if field.0 == symbol.name {
-                                result.set(hover_text(field.1))
+                                return hover_text(field.1)
                             } else {
-                                ()
+                                field_index.set(field_index.get() - 1)
                             }
-                        }
+                        };
+                        definition_index.set(definition_index.get() - 1)
                     } else {
-                        ()
+                        definition_index.set(definition_index.get() - 1)
                     }
-                }
+                };
+                environment_index.set(environment_index.get() - 1)
             };
-            result.get()
+            Option::None
         },
         SymbolKind::Variant => Option::Some(short_type_name(
             symbol_owner(symbol.qualified_name),
         )),
+        SymbolKind::Constant => {
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let constant_index = Ref::new(environment.constants.len() - 1);
+                while constant_index.get() >= 0 {
+                    let constant = environment.constants.get(constant_index.get());
+                    if constant.name == symbol.qualified_name
+                        || short_type_name(constant.name) == symbol.name
+                    {
+                        return hover_text(constant.ty)
+                    } else {
+                        constant_index.set(constant_index.get() - 1)
+                    }
+                };
+                environment_index.set(environment_index.get() - 1)
+            };
+            Option::None
+        },
+        SymbolKind::TypeAlias => {
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let alias_index = Ref::new(environment.type_aliases.len() - 1);
+                while alias_index.get() >= 0 {
+                    let alias = environment.type_aliases.get(alias_index.get());
+                    if alias.name == symbol.qualified_name
+                        || short_type_name(alias.name) == symbol.name
+                    {
+                        return hover_text(alias.ty)
+                    } else {
+                        alias_index.set(alias_index.get() - 1)
+                    }
+                };
+                environment_index.set(environment_index.get() - 1)
+            };
+            Option::None
+        },
         SymbolKind::Struct | SymbolKind::Enum | SymbolKind::Trait => {
             Option::Some(short_type_name(symbol.qualified_name))
         },
@@ -126,18 +217,20 @@ fn symbol_hover_type(
 }
 
 fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
-    let result = Ref::new(Option::None);
-    for symbol in build_symbol_index(value).symbols {
+    let symbols = build_symbol_index(value).symbols;
+    let index = Ref::new(symbols.len() - 1);
+    while index.get() >= 0 {
+        let symbol = symbols.get(index.get());
         if symbol.source_path == value.source_path
             && symbol.span.start <= offset
             && offset < symbol.span.end
         {
-            result.set(Option::Some(symbol))
+            return Option::Some(symbol)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {

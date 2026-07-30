@@ -126,6 +126,30 @@ fn std_bool_strings_string_expr(valid: bool, value: Expr, error: Expr) -> Expr {
     std_tuple_expr(std_bool_strings_string_type(), values)
 }
 
+fn std_bool_value_string_type(value: tast::Type) -> Type {
+    std_tuple_type(
+        Vec::new()
+            .pushed(tast::Type::Bool)
+            .pushed(value)
+            .pushed(tast::Type::String),
+    )
+}
+
+fn std_bool_value_string_expr(
+    value_ty: tast::Type,
+    valid: bool,
+    value: Expr,
+    error: Expr,
+) -> Expr {
+    std_tuple_expr(
+        std_bool_value_string_type(value_ty),
+        Vec::new()
+            .pushed(Expr::Bool { value: valid })
+            .pushed(value)
+            .pushed(error),
+    )
+}
+
 fn std_env_args_item() -> Item {
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::Return {
@@ -1237,6 +1261,205 @@ fn std_testing_fail_item() -> Item {
     std_function_item("std.testing.fail", params, Type::Unit, stmts)
 }
 
+fn std_num_parse_integer_item(signed: bool) -> Item {
+    let key = if signed {
+        "std.num.parse_int"
+    } else {
+        "std.num.parse_uint"
+    };
+    let value_ty = if signed {
+        tast::Type::Int
+    } else {
+        tast::Type::Uint
+    };
+    let native_ty = if signed { Type::Int64 } else { Type::Uint64 };
+    let function = if signed {
+        "_goml_strconv.ParseInt"
+    } else {
+        "_goml_strconv.ParseUint"
+    };
+    let params = Vec::new()
+        .pushed(("value", Type::String))
+        .pushed(("radix", Type::Int));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "parsed",
+        ty: native_ty,
+        value: Option::None,
+    });
+    stmts.push(Stmt::Var {
+        name: "err",
+        ty: Type::Named { name: "error" },
+        value: Option::None,
+    });
+    stmts.push(Stmt::MultiAssign {
+        names: Vec::new().pushed("parsed").pushed("err"),
+        value: std_call(
+            function,
+            Vec::new()
+                .pushed(Expr::Var { name: "value" })
+                .pushed(Expr::Var { name: "radix" })
+                .pushed(Expr::Var { name: "_goml_strconv.IntSize" }),
+        ),
+    });
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return {
+        expr: Option::Some(std_bool_value_string_expr(
+            value_ty,
+            false,
+            Expr::Int { value: "0" },
+            std_error_string(),
+        )),
+    });
+    stmts.push(Stmt::If {
+        cond: std_error_condition(),
+        then_: Block { stmts: failed },
+        else_: Option::None,
+    });
+    stmts.push(Stmt::Return {
+        expr: Option::Some(std_bool_value_string_expr(
+            value_ty,
+            true,
+            Expr::Convert {
+                ty: lower_type(value_ty),
+                expr: Expr::Var { name: "parsed" },
+            },
+            Expr::String { value: "" },
+        )),
+    });
+    std_function_item(key, params, std_bool_value_string_type(value_ty), stmts)
+}
+
+fn std_num_parse_float_item(single: bool) -> Item {
+    let key = if single {
+        "std.num.parse_float32"
+    } else {
+        "std.num.parse_float64"
+    };
+    let value_ty = if single {
+        tast::Type::Float32
+    } else {
+        tast::Type::Float64
+    };
+    let params = Vec::new().pushed(("value", Type::String));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var {
+        name: "parsed",
+        ty: Type::Float64,
+        value: Option::None,
+    });
+    stmts.push(Stmt::Var {
+        name: "err",
+        ty: Type::Named { name: "error" },
+        value: Option::None,
+    });
+    stmts.push(Stmt::MultiAssign {
+        names: Vec::new().pushed("parsed").pushed("err"),
+        value: std_call(
+            "_goml_strconv.ParseFloat",
+            Vec::new()
+                .pushed(Expr::Var { name: "value" })
+                .pushed(Expr::Int {
+                    value: if single { "32" } else { "64" },
+                }),
+        ),
+    });
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return {
+        expr: Option::Some(std_bool_value_string_expr(
+            value_ty,
+            false,
+            Expr::Float { value: "0" },
+            std_error_string(),
+        )),
+    });
+    stmts.push(Stmt::If {
+        cond: std_error_condition(),
+        then_: Block { stmts: failed },
+        else_: Option::None,
+    });
+    stmts.push(Stmt::Return {
+        expr: Option::Some(std_bool_value_string_expr(
+            value_ty,
+            true,
+            Expr::Convert {
+                ty: lower_type(value_ty),
+                expr: Expr::Var { name: "parsed" },
+            },
+            Expr::String { value: "" },
+        )),
+    });
+    std_function_item(key, params, std_bool_value_string_type(value_ty), stmts)
+}
+
+fn std_time_monotonic_origin_name() -> string {
+    go_generated_ident("_goml_runtime_std_time_monotonic_origin")
+}
+
+fn std_time_monotonic_origin_item() -> Item {
+    Item::Global(Global {
+        name: std_time_monotonic_origin_name(),
+        ty: Option::None,
+        value: std_call("_goml_time.Now", Vec::new()),
+    })
+}
+
+fn std_time_monotonic_nanoseconds_item() -> Item {
+    let elapsed = std_call(
+        "_goml_time.Since",
+        Vec::new().pushed(Expr::Var {
+            name: std_time_monotonic_origin_name(),
+        }),
+    );
+    let stmts = Vec::new().pushed(Stmt::Return {
+        expr: Option::Some(std_method_call(
+            elapsed,
+            "Nanoseconds",
+            Vec::new(),
+        )),
+    });
+    std_function_item(
+        "std.time.monotonic_nanoseconds",
+        Vec::new(),
+        Type::Int64,
+        stmts,
+    )
+}
+
+fn std_time_unix_nanoseconds_item() -> Item {
+    let now = std_call("_goml_time.Now", Vec::new());
+    let stmts = Vec::new().pushed(Stmt::Return {
+        expr: Option::Some(std_method_call(now, "UnixNano", Vec::new())),
+    });
+    std_function_item(
+        "std.time.unix_nanoseconds",
+        Vec::new(),
+        Type::Int64,
+        stmts,
+    )
+}
+
+fn std_time_sleep_nanoseconds_item() -> Item {
+    let params = Vec::new().pushed(("value", Type::Int64));
+    let stmts = Vec::new()
+        .pushed(Stmt::Expr {
+            expr: std_call(
+                "_goml_time.Sleep",
+                Vec::new().pushed(Expr::Convert {
+                    ty: Type::Named { name: "_goml_time.Duration" },
+                    expr: Expr::Var { name: "value" },
+                }),
+            ),
+        })
+        .pushed(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    std_function_item(
+        "std.time.sleep_nanoseconds",
+        params,
+        Type::Unit,
+        stmts,
+    )
+}
+
 fn std_process_environment_type() -> tast::Type {
     tast::Type::VecType {
         elem: tast::Type::Tuple {
@@ -1875,6 +2098,20 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_process_status_timeout_item())
     } else if key == "std.testing.fail" {
         Option::Some(std_testing_fail_item())
+    } else if key == "std.num.parse_int" {
+        Option::Some(std_num_parse_integer_item(true))
+    } else if key == "std.num.parse_uint" {
+        Option::Some(std_num_parse_integer_item(false))
+    } else if key == "std.num.parse_float32" {
+        Option::Some(std_num_parse_float_item(true))
+    } else if key == "std.num.parse_float64" {
+        Option::Some(std_num_parse_float_item(false))
+    } else if key == "std.time.monotonic_nanoseconds" {
+        Option::Some(std_time_monotonic_nanoseconds_item())
+    } else if key == "std.time.unix_nanoseconds" {
+        Option::Some(std_time_unix_nanoseconds_item())
+    } else if key == "std.time.sleep_nanoseconds" {
+        Option::Some(std_time_sleep_nanoseconds_item())
     } else {
         Option::None
     }

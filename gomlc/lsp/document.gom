@@ -43,15 +43,15 @@ pub fn invalidate_analyses(value: Server) -> unit {
 }
 
 fn document_index(value: Server, uri: string) -> Option[int] {
-    let result = Ref::new(Option::None);
-    for index in range(0, value.documents.len()) {
-        if value.documents.get(index).uri == uri {
-            result.set(Option::Some(index))
+    let index = Ref::new(value.documents.len() - 1);
+    while index.get() >= 0 {
+        if value.documents.get(index.get()).uri == uri {
+            return Option::Some(index.get())
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 pub fn server_document(value: Server, uri: string) -> Option[Document] {
@@ -115,30 +115,26 @@ pub fn document_analysis(
     value: Server,
     document: Document,
 ) -> query::Analysis {
-    let result = Ref::new(Option::None);
-    for cached in value.analyses {
+    let index = Ref::new(value.analyses.len() - 1);
+    while index.get() >= 0 {
+        let cached = value.analyses.get(index.get());
         if cached.path == document.path
             && cached.generation == value.generation.get()
         {
-            result.set(Option::Some(cached.analysis))
+            return cached.analysis
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    match result.get() {
-        Option::Some(analysis) => analysis,
-        Option::None => {
-            let analysis = query::analyze_with_overrides(
-                document.path,
-                document.text,
-                source_overrides(value),
-            );
-            value.analyses.push(CachedAnalysis {
-                path: document.path,
-                generation: value.generation.get(),
-                analysis,
-            });
-            analysis
-        },
-    }
+    let analysis = query::analyze_with_overrides(
+        document.path,
+        document.text,
+        source_overrides(value),
+    );
+    value.analyses.push(CachedAnalysis {
+        path: document.path,
+        generation: value.generation.get(),
+        analysis,
+    });
+    analysis
 }

@@ -4,17 +4,17 @@ impl Provider for Number{
   }
 }
 
-impl Provider for Box[T]{
+impl[T] Provider for Box[T] where T: ToString{
   fn get(self/1: Box[T]) -> T {
       (self/1 : Box[T]).value
   }
 }
 
-fn read(provider/2: P) -> P::Item {
+fn read[P](provider/2: P) -> P::Item where P: Provider, P::Item: ToString {
     (Provider::get : (P) -> P::Item)((provider/2 : P))
 }
 
-fn read_as(provider/3: P) -> T {
+fn read_as[P, T](provider/3: P) -> T where P: Provider, P::Item = T, P::Item: ToString {
     (Provider::get : (P) -> T)((provider/3 : P))
 }
 

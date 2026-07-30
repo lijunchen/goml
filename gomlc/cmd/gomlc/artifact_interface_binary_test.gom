@@ -92,6 +92,25 @@ fn binary_interface_artifact_is_deterministic() -> unit {
 }
 
 #[test]
+fn binary_interface_artifact_streams_standard_type_data() -> unit {
+    let value = package_world().standard.collections.interface_unit;
+    let encoded = match encode_artifact_interface_binary(value) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_artifact_interface_binary(encoded) {
+        Result::Ok(decoded) => testing::assert_eq(
+            encode_artifact_interface_unit(decoded, false),
+            encode_artifact_interface_unit(value, false),
+        ),
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
 fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
     let sections = match artifact_binary_interface_sections(
         binary_interface_fixture(),

@@ -1,8 +1,8 @@
 package main;
 
-use gomlc::ast;
-use gomlc::parser;
+use gomlc::strings;
 use std::io;
+use std::text;
 
 struct PackageInfoArgs {
     inputs: Vec[string],
@@ -134,19 +134,265 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
     }
 }
 
-fn package_info_path(value: ast::Path) -> string {
-    let result = Ref::new("");
-    let index = Ref::new(0);
-    for segment in value.segments {
-        if index.get() > 0 {
-            result.set(result.get() + "::")
+struct PackageInfoUse {
+    alias: Option[string],
+    path: string,
+}
+
+struct PackageInfoFile {
+    package_name: string,
+    package_explicit: bool,
+    uses: Vec[PackageInfoUse],
+}
+
+struct PackageInfoScanner {
+    source: string,
+    index: Ref[int],
+}
+
+fn new_package_info_scanner(source: string) -> PackageInfoScanner {
+    PackageInfoScanner {
+        source,
+        index: Ref::new(0),
+    }
+}
+
+fn package_info_ident_continue(value: uint8) -> bool {
+    (value >= 65 && value <= 90)
+        || (value >= 97 && value <= 122)
+        || (value >= 48 && value <= 57)
+        || value == 95
+}
+
+fn package_info_skip_trivia(scanner: PackageInfoScanner) -> unit {
+    while scanner.index.get() < scanner.source.byte_len() {
+        let index = scanner.index.get();
+        let value = scanner.source.byte_get(index);
+        if value == 32 || value == 9 || value == 10 || value == 13 {
+            scanner.index.set(index + 1)
+        } else if index + 1 < scanner.source.byte_len()
+            && value == 47
+            && scanner.source.byte_get(index + 1) == 47
+        {
+            scanner.index.set(index + 2);
+            while scanner.index.get() < scanner.source.byte_len()
+                && scanner.source.byte_get(scanner.index.get()) != 10
+            {
+                scanner.index.set(scanner.index.get() + 1)
+            }
         } else {
-            ()
-        };
-        result.set(result.get() + segment.ident);
-        index.set(index.get() + 1)
+            break
+        }
+    }
+}
+
+fn package_info_at_text(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    let start = scanner.index.get();
+    let end = start + expected.byte_len();
+    end <= scanner.source.byte_len()
+        && strings::starts_with_at(scanner.source, start, expected)
+}
+
+fn package_info_at_keyword(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    let end = scanner.index.get() + expected.byte_len();
+    package_info_at_text(scanner, expected)
+        && (end >= scanner.source.byte_len()
+            || !package_info_ident_continue(scanner.source.byte_get(end)))
+}
+
+fn package_info_consume_text(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    package_info_skip_trivia(scanner);
+    if package_info_at_text(scanner, expected) {
+        scanner.index.set(scanner.index.get() + expected.byte_len());
+        true
+    } else {
+        false
+    }
+}
+
+fn package_info_consume_keyword(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    package_info_skip_trivia(scanner);
+    if package_info_at_keyword(scanner, expected) {
+        scanner.index.set(scanner.index.get() + expected.byte_len());
+        true
+    } else {
+        false
+    }
+}
+
+fn package_info_read_ident(scanner: PackageInfoScanner) -> Option[string] {
+    package_info_skip_trivia(scanner);
+    if scanner.index.get() >= scanner.source.byte_len() {
+        Option::None
+    } else {
+        let start = scanner.index.get();
+        let first = scanner.source.byte_get(start);
+        if !((first >= 65 && first <= 90)
+            || (first >= 97 && first <= 122)
+            || first == 95)
+        {
+            Option::None
+        } else {
+            scanner.index.set(start + 1);
+            while scanner.index.get() < scanner.source.byte_len()
+                && package_info_ident_continue(
+                    scanner.source.byte_get(scanner.index.get()),
+                )
+            {
+                scanner.index.set(scanner.index.get() + 1)
+            };
+            Option::Some(
+                scanner.source.byte_slice(start, scanner.index.get()),
+            )
+        }
+    }
+}
+
+fn package_info_lower_ident(value: string) -> bool {
+    if value.byte_len() == 0 {
+        false
+    } else {
+        let first = value.byte_get(0);
+        (first >= 97 && first <= 122) || first == 95
+    }
+}
+
+fn package_info_error(source_path: string, message: string) -> string {
+    "error[parser]: " + source_path + ": " + message
+}
+
+fn package_info_expect_text(
+    scanner: PackageInfoScanner,
+    expected: string,
+    source_path: string,
+    message: string,
+) -> Result[unit, string] {
+    if package_info_consume_text(scanner, expected) {
+        Result::Ok(())
+    } else {
+        Result::Err(package_info_error(source_path, message))
+    }
+}
+
+fn package_info_parse_use(
+    scanner: PackageInfoScanner,
+    source_path: string,
+) -> Result[PackageInfoUse, string] {
+    let first = match package_info_read_ident(scanner) {
+        Option::Some(value) => value,
+        Option::None => {
+            return Result::Err(package_info_error(
+                source_path,
+                "expected a path after `use`",
+            ))
+        },
     };
-    result.get()
+    let path = text::StringBuilder::new();
+    path.write_string(first);
+    package_info_skip_trivia(scanner);
+    while package_info_at_text(scanner, "::") {
+        scanner.index.set(scanner.index.get() + 2);
+        match package_info_read_ident(scanner) {
+            Option::Some(value) => {
+                path.write_string("::");
+                path.write_string(value);
+                package_info_skip_trivia(scanner)
+            },
+            Option::None => {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "expected a path segment after '::'",
+                ))
+            },
+        }
+    };
+    let alias: Ref[Option[string]] = Ref::new(Option::None);
+    if package_info_consume_keyword(scanner, "as") {
+        match package_info_read_ident(scanner) {
+            Option::Some(value) => if package_info_lower_ident(value) {
+                alias.set(Option::Some(value))
+            } else {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "use alias must start with a lowercase letter or `_`",
+                ))
+            },
+            Option::None => {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "expected use alias",
+                ))
+            },
+        }
+    } else {
+        ()
+    };
+    match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
+        Result::Ok(_) => Result::Ok(PackageInfoUse {
+            alias: alias.get(),
+            path: path.finish(),
+        }),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn parse_package_info_file(
+    source_path: string,
+    source: string,
+) -> Result[PackageInfoFile, string] {
+    let scanner = new_package_info_scanner(source);
+    package_info_skip_trivia(scanner);
+    let declared_package = if package_info_consume_keyword(scanner, "package") {
+        let package_name = match package_info_read_ident(scanner) {
+            Option::Some(value) => if !package_info_lower_ident(value) {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "package name must start with a lowercase letter or `_`",
+                ))
+            } else {
+                value
+            },
+            Option::None => {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "expected package name",
+                ))
+            },
+        };
+        match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
+            Result::Ok(_) => (),
+            Result::Err(error) => return Result::Err(error),
+        };
+        (package_name, true)
+    } else {
+        ("main", false)
+    };
+    let uses = Vec::new();
+    package_info_skip_trivia(scanner);
+    while package_info_consume_keyword(scanner, "use") {
+        match package_info_parse_use(scanner, source_path) {
+            Result::Ok(value) => uses.push(value),
+            Result::Err(error) => return Result::Err(error),
+        };
+        package_info_skip_trivia(scanner)
+    };
+    Result::Ok(PackageInfoFile {
+        package_name: declared_package.0,
+        package_explicit: declared_package.1,
+        uses,
+    })
 }
 
 fn package_info_json(args: PackageInfoArgs) -> string {
@@ -156,30 +402,14 @@ fn package_info_json(args: PackageInfoArgs) -> string {
     artifact_json_begin_array(writer);
     for source_path in args.inputs {
         let source = read_source(source_path);
-        let parsed = parser::parse(source);
-        fail_on_ast_diagnostics(
-            parsed.diagnostics,
-            "parser",
-            source_path,
-            source,
-        );
-        let lowered = ast::lower(parsed);
-        fail_on_ast_diagnostics(
-            lowered.diagnostics,
-            "lower",
-            source_path,
-            source,
-        );
-        let file = match lowered.ast {
-            Option::Some(value) => value,
-            Option::None => {
-                fail("error[compile]: missing AST for " + source_path);
-                ast::File {
+        let file = match parse_package_info_file(source_path, source) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                fail(error);
+                PackageInfoFile {
                     package_name: "",
                     package_explicit: false,
                     uses: Vec::new(),
-                    items: Vec::new(),
-                    invalid_self_type_spans: Vec::new(),
                 }
             },
         };
@@ -200,7 +430,7 @@ fn package_info_json(args: PackageInfoArgs) -> string {
                 Option::None => artifact_json_null(writer),
             };
             artifact_json_name(writer, "path");
-            artifact_json_string(writer, package_info_path(use_decl.path));
+            artifact_json_string(writer, use_decl.path);
             artifact_json_end_object(writer)
         };
         artifact_json_end_array(writer);

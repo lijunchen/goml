@@ -9,6 +9,7 @@ use std::fs;
 use std::json;
 use std::path;
 use std::process;
+use std::text;
 
 fn result_string(value: Result[string, string], context: string) -> Result[string, string] {
     match value {
@@ -38,6 +39,38 @@ fn manifest_root(start: string) -> Result[string, string] {
         }
     };
     Result::Err("could not find goml.toml")
+}
+
+pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
+    let current = match env::current_dir() {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let module_dir = match manifest_root(current) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let module_manifest = match manifest::load(path::join(module_dir, "goml.toml")) {
+        Result::Ok(value) => value,
+        Result::Err(message) => return Result::Err(message),
+    };
+    let artifact_root = match target_dir_override {
+        Option::Some(value) => if path::is_absolute(value) {
+            path::clean(value)
+        } else {
+            path::join(module_dir, value)
+        },
+        Option::None => path::join(module_dir, module_manifest.target_dir),
+    };
+    if artifact_root == module_dir || !path_inside(module_dir, artifact_root) {
+        return Result::Err("clean target must stay inside the module")
+    } else if fs::is_file(artifact_root) {
+        return Result::Err("clean target is not a directory")
+    } else if !fs::exists(artifact_root) {
+        return Result::Ok(())
+    } else {
+        fs::remove_dir_all(artifact_root)
+    }
 }
 
 fn target_directory(target: string) -> Result[string, string] {
@@ -93,22 +126,21 @@ fn package_name_for_directory(
     };
     let relative = relative_path(module_dir, directory);
     let segments = Vec::new();
-    let current = Ref::new("");
-    for index in range(0, relative.byte_len()) {
-        let byte = relative.byte_get(index);
-        if byte == 47 || byte == 92 {
-            if current.get() != "" {
-                segments.push(current.get());
-                current.set("")
+    let current = text::StringBuilder::new();
+    for character in relative.chars() {
+        if character == '/' || character == '\\' {
+            if !(current.is_empty()) {
+                segments.push(current.finish());
+                current.clear()
             } else {
                 ()
             }
         } else {
-            current.set(current.get() + relative.byte_slice(index, index + 1))
+            current.write_char(character)
         }
     };
-    if current.get() != "" {
-        segments.push(current.get())
+    if !(current.is_empty()) {
+        segments.push(current.finish())
     } else {
         ()
     };
@@ -587,17 +619,6 @@ fn package_from_info(
     })
 }
 
-fn contains_file(files: Vec[string], target: string) -> bool {
-    for file in files {
-        if file == target {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
-}
-
 fn extend_package_with_info(
     sources: Vec[ModuleSource],
     package_value: Package,
@@ -768,8 +789,8 @@ fn collect_package_directories(
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
-    let has_source = Ref::new(false);
-    let tests_dir: Ref[Option[string]] = Ref::new(Option::None);
+    let source_files: Vec[string] = Vec::new();
+    let test_directories: Vec[string] = Vec::new();
     let children = Vec::new();
     for name in names {
         let value = path::join(directory, name);
@@ -786,10 +807,10 @@ fn collect_package_directories(
                 Option::None => false,
             }
         {
-            has_source.set(true)
+            source_files.push(value)
         } else if fs::is_dir(value) && value != artifact_root {
             if name == "tests" {
-                tests_dir.set(Option::Some(value))
+                test_directories.push(value)
             } else if name != "testdata" && !util::starts_with(name, ".") {
                 children.push(value)
             } else {
@@ -799,25 +820,25 @@ fn collect_package_directories(
             ()
         }
     };
-    match tests_dir.get() {
-        Option::Some(value) => {
-            let files = match black_box_test_files(value) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
-            };
-            if files.len() > 0 && !(has_source.get()) {
-                return Result::Err(
-                    "black-box test package "
-                        + value
-                        + " has no parent production package",
-                )
-            } else {
-                ()
-            }
-        },
-        Option::None => (),
+    if test_directories.len() > 0 {
+        let value = test_directories.get(test_directories.len() - 1);
+        let files = match black_box_test_files(value) {
+            Result::Ok(value) => value,
+            Result::Err(message) => return Result::Err(message),
+        };
+        if files.len() > 0 && source_files.len() == 0 {
+            return Result::Err(
+                "black-box test package "
+                    + value
+                    + " has no parent production package",
+            )
+        } else {
+            ()
+        }
+    } else {
+        ()
     };
-    if has_source.get() {
+    if source_files.len() > 0 {
         result.push(directory)
     } else {
         ()
@@ -1010,7 +1031,12 @@ fn discover_graph(
     })
 }
 
-fn resolve_compiler(explicit: Option[string]) -> Result[string, string] {
+struct ResolvedCompiler {
+    path: string,
+    world_artifact: bool,
+}
+
+fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string] {
     let candidate = match explicit {
         Option::Some(value) => Option::Some(value),
         Option::None => match env::var("GOMLC") {
@@ -1099,7 +1125,14 @@ fn resolve_compiler(explicit: Option[string]) -> Result[string, string] {
     };
     match json::field(version, "driver_protocol") {
         Option::Some(json::Value::Number(value)) => if value == "1" {
-            Result::Ok(compiler)
+            let world_artifact = match json::field(version, "world_artifact") {
+                Option::Some(json::Value::Number(value)) => value == "1",
+                _ => false,
+            };
+            Result::Ok(ResolvedCompiler {
+                path: compiler,
+                world_artifact,
+            })
         } else {
             Result::Err("incompatible gomlc driver protocol " + value)
         },
@@ -1123,10 +1156,11 @@ pub fn load_context(
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
-    let compiler = match resolve_compiler(compiler_override) {
+    let resolved_compiler = match resolve_compiler(compiler_override) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
+    let compiler = resolved_compiler.path;
     let sources = match module_sources(module_dir, module_manifest) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
@@ -1152,6 +1186,7 @@ pub fn load_context(
     Result::Ok(Context {
         graph,
         compiler,
+        compiler_world_artifact: resolved_compiler.world_artifact,
         artifact_root,
     })
 }
@@ -1173,10 +1208,11 @@ pub fn load_target_context(
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
-    let compiler = match resolve_compiler(compiler_override) {
+    let resolved_compiler = match resolve_compiler(compiler_override) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
+    let compiler = resolved_compiler.path;
     let sources = match module_sources(module_dir, module_manifest) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
@@ -1203,6 +1239,7 @@ pub fn load_target_context(
     Result::Ok(Context {
         graph,
         compiler,
+        compiler_world_artifact: resolved_compiler.world_artifact,
         artifact_root,
     })
 }
@@ -1338,7 +1375,7 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
         };
         let test_files = Vec::new();
         for file in files {
-            if !contains_file(package_value.files, file) {
+            if !util::string_vec_contains(package_value.files, file) {
                 test_files.push(file);
                 all_files.push(file)
             } else {

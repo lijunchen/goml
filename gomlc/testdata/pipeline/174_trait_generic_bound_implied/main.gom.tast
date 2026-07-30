@@ -10,7 +10,7 @@ impl Container[int32] for NumberBox{
   }
 }
 
-fn describe(container/2: C) -> string {
+fn describe[T, C](container/2: C) -> string where C: Container[T], T: Mark {
     (Mark::mark : (T) -> string)((Container[T]::value : (C) -> T)((container/2 : C)))
 }
 

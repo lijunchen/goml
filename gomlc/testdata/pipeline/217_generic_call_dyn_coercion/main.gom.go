@@ -37,58 +37,58 @@ func dyn__Show__vtable__Wrap__int32() *dyn__Show_vtable {
 }
 
 func _goml_m_trait__impl_i_Show_i_Wrap____int32_i_show(self__0 Wrap__int32) string {
-    var retv65 string
-    var t66 int32 = self__0.value
-    var t67 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t66)
-    retv65 = t67
-    return retv65
+    var retv109 string
+    var t110 int32 = self__0.value
+    var t111 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t110)
+    retv109 = t111
+    return retv109
 }
 
 func render(value__2 dyn__Show) string {
-    var retv69 string
-    var t70 string = value__2.vtable.show(value__2.data)
-    retv69 = t70
-    return retv69
+    var retv113 string
+    var t114 string = value__2.vtable.show(value__2.data)
+    retv113 = t114
+    return retv113
 }
 
 func main0() struct{} {
     var value__3 int32 = 42
-    var t72 Wrap__int32 = make_wrap__T_int32(value__3)
-    var t73 dyn__Show = dyn__Show{
-        data: t72,
+    var t116 Wrap__int32 = make_wrap__T_int32(value__3)
+    var t117 dyn__Show = dyn__Show{
+        data: t116,
         vtable: dyn__Show__vtable__Wrap__int32(),
     }
-    var t74 string = render(t73)
-    println__T_string(t74)
+    var t118 string = render(t117)
+    println__T_string(t118)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv77 string
-    var t78 string = _goml_runtime_core_int32_to_string(self__6)
-    retv77 = t78
-    return retv77
+    var retv121 string
+    var t122 string = _goml_runtime_core_int32_to_string(self__6)
+    retv121 = t122
+    return retv121
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t80 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t80)
+    var t124 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t124)
     return struct{}{}
 }
 
 func make_wrap__T_int32(value__1 int32) Wrap__int32 {
-    var retv83 Wrap__int32
-    var t84 Wrap__int32 = Wrap__int32{
+    var retv127 Wrap__int32
+    var t128 Wrap__int32 = Wrap__int32{
         value: value__1,
     }
-    retv83 = t84
-    return retv83
+    retv127 = t128
+    return retv127
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv86 string
-    retv86 = self__38
-    return retv86
+    var retv130 string
+    retv130 = self__38
+    return retv130
 }
 
 func main() {

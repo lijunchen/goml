@@ -1,7 +1,9 @@
 package main;
 
 use gomlc::ast;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 
 fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type) -> tast::Type {
     let types = Vec::new();
@@ -26,7 +28,7 @@ fn artifact_local_trait_name(
     name: string,
     trait_names: Vec[string],
 ) -> string {
-    if artifact_string_contains(name, "::") {
+    if strings::contains(name, "::") {
         name
     } else {
         let separator = artifact_constructor_separator(owner);
@@ -35,7 +37,7 @@ fn artifact_local_trait_name(
         } else {
             owner.byte_slice(0, separator + 2) + name
         };
-        if public_names_contain(trait_names, candidate) { candidate } else { name }
+        if vecs::contains(trait_names, candidate) { candidate } else { name }
     }
 }
 
@@ -166,10 +168,18 @@ fn artifact_trait_def(
     };
     let methods = Vec::new();
     for method in value.methods {
+        let constraints = Vec::new();
+        for predicate in method.predicates {
+            constraints.push(artifact_trait_definition_predicate(
+                predicate,
+                value.name,
+                trait_names,
+            ))
+        };
         methods.push(ArtifactFnScheme {
             name: method.name,
-            type_params: Vec::new(),
-            constraints: Vec::new(),
+            type_params: method.generics,
+            constraints,
             ty: artifact_trait_definition_type(
                 tast::Type::Func { params: method.params, ret_ty: method.ret_ty },
                 value.name,
@@ -217,11 +227,16 @@ fn artifact_method_constraints(
 
 fn artifact_method_scheme(
     value: tast::Function,
+    owner_generic_count: int,
     constraint_start: int,
 ) -> ArtifactFnScheme {
+    let type_params = Vec::new();
+    for index in range(owner_generic_count, value.generics.len()) {
+        type_params.push(value.generics.get(index))
+    };
     ArtifactFnScheme {
         name: value.name,
-        type_params: value.generics,
+        type_params,
         constraints: artifact_method_constraints(value, constraint_start),
         ty: artifact_function_type(value.params, value.ret_ty),
         body: tast::Callable::Function(value.name),
@@ -237,13 +252,18 @@ fn artifact_method_is_public(value: tast::Function) -> bool {
 
 fn artifact_impl_methods(
     value: tast::ImplBlock,
+    owner_generic_count: int,
     constraint_start: int,
     public_only: bool,
 ) -> Vec[ArtifactFnScheme] {
     let result = Vec::new();
     for method in value.methods {
         if !public_only || artifact_method_is_public(method) {
-            result.push(artifact_method_scheme(method, constraint_start))
+            result.push(artifact_method_scheme(
+                method,
+                owner_generic_count,
+                constraint_start,
+            ))
         } else {
             ()
         }
@@ -269,7 +289,12 @@ fn artifact_trait_impl(value: tast::ImplBlock) -> ArtifactTraitImpl {
             params: value.generics,
             constraints: value.predicates,
             associated_types: value.associated_types,
-            methods: artifact_impl_methods(value, value.predicates.len(), false),
+            methods: artifact_impl_methods(
+                value,
+                value.generics.len(),
+                value.predicates.len(),
+                false,
+            ),
             valid: true,
         },
     }
@@ -302,10 +327,15 @@ fn artifact_inherent_impl(
             ArtifactInherentImplKey::Exact(value.for_type)
         },
         definition: ArtifactImplDef {
-            params: Vec::new(),
-            constraints: Vec::new(),
+            params: value.generics,
+            constraints: value.predicates,
             associated_types: Vec::new(),
-            methods: artifact_impl_methods(value, 0, public_only),
+            methods: artifact_impl_methods(
+                value,
+                value.generics.len(),
+                value.predicates.len(),
+                public_only,
+            ),
             valid: true,
         },
     }
@@ -321,7 +351,7 @@ fn artifact_struct_def(
         let fields = Vec::new();
         let public_fields = Vec::new();
         for field in value.fields {
-            if public_names_contain(value.public_fields, field.0) {
+            if vecs::contains(value.public_fields, field.0) {
                 fields.push(field);
                 public_fields.push(field.0)
             } else {
@@ -467,7 +497,7 @@ fn artifact_trait_impl_is_public(
 }
 
 fn artifact_add_type_name(values: Vec[string], name: string) -> unit {
-    if public_names_contain(values, name) {
+    if vecs::contains(values, name) {
         ()
     } else {
         values.push(name)
@@ -492,7 +522,7 @@ fn artifact_package_exports(
     };
     for definition in file.enums {
         artifact_add_type_name(result.enum_type_names, definition.name);
-        if !public_only || public_names_contain(public_names, definition.name) {
+        if !public_only || vecs::contains(public_names, definition.name) {
             result.enums.push(definition)
         } else {
             ()
@@ -500,8 +530,15 @@ fn artifact_package_exports(
     };
     for definition in file.structs {
         artifact_add_type_name(result.struct_type_names, definition.name);
-        if !public_only || public_names_contain(public_names, definition.name) {
+        if !public_only || vecs::contains(public_names, definition.name) {
             result.structs.push(artifact_struct_def(definition, public_only))
+        } else {
+            ()
+        }
+    };
+    for alias in signatures.type_aliases {
+        if !public_only || vecs::contains(public_names, alias.name) {
+            result.type_aliases.push(alias)
         } else {
             ()
         }
@@ -511,15 +548,26 @@ fn artifact_package_exports(
         trait_names.push(definition.name)
     };
     for definition in signatures.traits {
-        if !public_only || public_names_contain(public_names, definition.name) {
+        if !public_only || vecs::contains(public_names, definition.name) {
             result.traits.push(artifact_trait_def(definition, trait_names))
         } else {
             ()
         }
     };
     for function in signatures.functions {
-        if !public_only || public_names_contain(public_names, function.name) {
+        if !public_only || vecs::contains(public_names, function.name) {
             result.functions.push(artifact_fn_scheme(function))
+        } else {
+            ()
+        }
+    };
+    for value in signatures.constants {
+        if !public_only || vecs::contains(public_names, value.name) {
+            result.constants.push(tast::ConstantScheme {
+                def_id: Option::None,
+                name: value.name,
+                ty: value.ty,
+            })
         } else {
             ()
         }
@@ -556,7 +604,7 @@ fn artifact_relative_export_name(package_name: string, name: string) -> string {
         name
     } else {
         let prefix = package_name + "::";
-        if artifact_string_starts_with(name, prefix) {
+        if strings::starts_with(name, prefix) {
             name.byte_slice(prefix.byte_len(), name.byte_len())
         } else {
             name

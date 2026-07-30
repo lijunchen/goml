@@ -1,10 +1,12 @@
 package main;
 
+use gomlc::strings;
 use std::io;
 use std::process;
+use std::text;
 
 fn top_level_help() -> string {
-    "Usage: gomlc <COMMAND>\n\nCommands:\n  check         \n  test-check    \n  build         \n  test-build    \n  link          \n  test-link     \n  package-info  \n  run-single    \n  version       \n  help          Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
+    "Usage: gomlc <COMMAND>\n\nCommands:\n  check          \n  test-check     \n  build          \n  test-build     \n  link           \n  test-link      \n  prepare-world  \n  package-info   \n  run-single     \n  version        \n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn package_command_help(command: string) -> string {
@@ -22,6 +24,8 @@ fn command_help(command: string) -> Option[string] {
         Option::Some("Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help")
     } else if command == "test-link" {
         Option::Some("Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help")
+    } else if command == "prepare-world" {
+        Option::Some("Usage: gomlc prepare-world --output <OUTPUT>\n\nOptions:\n      --output <OUTPUT>  \n  -h, --help             Print help")
     } else if command == "package-info" {
         Option::Some("Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help")
     } else if command == "run-single" {
@@ -46,6 +50,10 @@ fn command_usage(command: string) -> string {
         "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>"
     } else if command == "test-link" {
         "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>"
+    } else if command == "prepare-world" {
+        "gomlc prepare-world --output <OUTPUT>"
+    } else if command == "prepare-world" {
+        "gomlc prepare-world --output <OUTPUT>"
     } else if command == "package-info" {
         "gomlc package-info [OPTIONS] --input <INPUT>..."
     } else if command == "run-single" {
@@ -66,6 +74,8 @@ fn required_command_usage(command: string) -> string {
         "gomlc " + command + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
     } else if command == "run-single" {
         "gomlc run-single <FILE>"
+    } else if command == "prepare-world" {
+        "gomlc prepare-world --output <OUTPUT>"
     } else if command == "package-info" {
         "gomlc package-info --input <INPUT>..."
     } else {
@@ -94,7 +104,7 @@ fn cli_error_with_usage(message: string, usage: string) -> string {
 }
 
 fn cli_argument_name(argument: string) -> string {
-    if argument.byte_len() < 2 || argument.byte_slice(0, 2) != "--" {
+    if !strings::starts_with(argument, "--") {
         return argument
     } else {
         ()
@@ -102,7 +112,7 @@ fn cli_argument_name(argument: string) -> string {
     let end = Ref::new(argument.byte_len());
     for index in range(0, argument.byte_len()) {
         if end.get() == argument.byte_len()
-            && argument.byte_slice(index, index + 1) == "="
+            && argument.byte_get(index) == 61
         {
             end.set(index)
         } else {
@@ -114,7 +124,7 @@ fn cli_argument_name(argument: string) -> string {
 
 fn cli_help_argument(argument: string) -> bool {
     argument == "--help"
-        || (argument.byte_len() >= 2 && argument.byte_slice(0, 2) == "-h")
+        || strings::starts_with(argument, "-h")
 }
 
 fn cli_minimum(left: int, middle: int, right: int) -> int {
@@ -174,6 +184,9 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         candidates.push("--package");
         candidates.push("--output");
         candidates.push("--manifest");
+        candidates.push("--help")
+    } else if command == "prepare-world" {
+        candidates.push("--output");
         candidates.push("--help")
     } else if command == "package-info" {
         candidates.push("--input");
@@ -259,6 +272,8 @@ fn cli_value_option(command: string, argument: string) -> bool {
             || argument == "--package"
             || argument == "--output"
             || argument == "--manifest"
+    } else if command == "prepare-world" {
+        argument == "--output"
     } else if command == "package-info" {
         argument == "--input" || argument == "--format"
     } else if command == "version" {
@@ -293,6 +308,8 @@ fn known_cli_option(command: string, argument: string) -> bool {
             || option_string_present(inline_cli_value(argument, "--package"))
             || option_string_present(inline_cli_value(argument, "--output"))
             || option_string_present(inline_cli_value(argument, "--manifest"))
+    } else if command == "prepare-world" {
+        option_string_present(inline_cli_value(argument, "--output"))
     } else if command == "package-info" {
         option_string_present(inline_cli_value(argument, "--input"))
             || option_string_present(inline_cli_value(argument, "--format"))
@@ -326,15 +343,17 @@ fn missing_required_arguments_error_with_usage(
     arguments: Vec[string],
     usage: string,
 ) -> string {
-    let message = Ref::new("error: the following required arguments were not provided:");
+    let builder = text::StringBuilder::new();
+    builder.write_string("error: the following required arguments were not provided:");
     for argument in arguments {
-        message.set(message.get() + "\n  " + argument)
+        builder.write_string("\n  ");
+        builder.write_string(argument)
     };
-    message.get()
-        + "\n\nUsage: "
-        + usage
-        + "\n\n"
-        + cli_error_footer()
+    builder.write_string("\n\nUsage: ");
+    builder.write_string(usage);
+    builder.write_string("\n\n");
+    builder.write_string(cli_error_footer());
+    builder.finish()
 }
 
 fn missing_required_arguments_error(command: string, arguments: Vec[string]) -> string {
@@ -364,8 +383,8 @@ fn unexpected_argument_error_with_usage(
 ) -> string {
     let name = cli_argument_name(argument);
     let displayed = if name.byte_len() > 2
-        && name.byte_slice(0, 1) == "-"
-        && name.byte_slice(0, 2) != "--"
+        && strings::starts_with(name, "-")
+        && !strings::starts_with(name, "--")
     {
         name.byte_slice(0, 2)
     } else {
@@ -511,8 +530,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
             right.byte_len(),
         );
         let right_index = Ref::new(start);
-        let found = Ref::new(false);
-        while right_index.get() < end && !(found.get()) {
+        while right_index.get() < end {
             let index = right_index.get();
             if !right_matches.get(index)
                 && left.byte_get(left_index) == right.byte_get(index)
@@ -520,7 +538,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
                 left_matches.set(left_index, true);
                 right_matches.set(index, true);
                 matches.set(matches.get() + 1);
-                found.set(true)
+                break
             } else {
                 right_index.set(index + 1)
             }
@@ -578,6 +596,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     candidates.push("test-build");
     candidates.push("link");
     candidates.push("test-link");
+    candidates.push("prepare-world");
     candidates.push("package-info");
     candidates.push("run-single");
     candidates.push("version");
@@ -616,20 +635,23 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
     if values.len() == 0 {
         ""
     } else {
-        let result = Ref::new(if values.len() == 1 {
+        let builder = text::StringBuilder::new();
+        builder.write_string(if values.len() == 1 {
             "\n\n  tip: a similar subcommand exists: "
         } else {
             "\n\n  tip: some similar subcommands exist: "
         });
         for index in range(0, values.len()) {
             if index > 0 {
-                result.set(result.get() + ", ")
+                builder.write_string(", ")
             } else {
                 ()
             };
-            result.set(result.get() + "'" + values.get(index) + "'")
+            builder.write_char('\'');
+            builder.write_string(values.get(index));
+            builder.write_char('\'')
         };
-        result.get()
+        builder.finish()
     }
 }
 

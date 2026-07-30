@@ -14,7 +14,7 @@ fn make_numbers(builds/1: Ref[int32], conversions/2: Ref[int32]) -> Numbers {
     Numbers { values: (values/3 : Vec[int32]), conversions: (conversions/2 : Ref[int32]) }
 }
 
-fn sum(source/4: S) -> int32 {
+fn sum[S](source/4: S) -> int32 where S: IntoIterator, S::Item = int32, S::Item = S::IntoIter::Item, S::IntoIter: Iterator {
     let total/5: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
     for value/6: int32 in (source/4 : S) {
         (Ref[int32]::set : (Ref[int32], int32) -> unit)((total/5 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((total/5 : Ref[int32])) + (value/6 : int32));

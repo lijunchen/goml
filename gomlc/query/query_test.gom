@@ -2,6 +2,7 @@ package query;
 
 use gomlc::cst;
 use gomlc::lexer;
+use gomlc::strings;
 use std::fs;
 use std::testing;
 use std::text;
@@ -176,7 +177,7 @@ fn resolves_definitions_in_local_dependencies() -> unit {
                 let analysis = analyze(main_path, source);
                 match goto_definition(analysis, offset) {
                     Option::Some(definition) => {
-                        testing::assert(string_ends_with(
+                        testing::assert(strings::ends_with(
                             definition.source_path,
                             "/lib/lib.gom",
                         ));
@@ -294,6 +295,75 @@ fn resolves_package_type_variant_and_field_definitions() -> unit {
 }
 
 #[test]
+fn resolves_contextual_pattern_variant_definitions() -> unit {
+    let root = "../gomlc/testdata/module/project041_contextual_enum_patterns";
+    let main_path = root + "/main.gom";
+    let source = match fs::read_file(main_path) {
+        Result::Ok(source) => source,
+        Result::Err(error) => {
+            testing::fail(error);
+            ""
+        },
+    };
+    let analysis = analyze(main_path, source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "Ready(number)") {
+        Option::Some(offset) => {
+            match goto_definition(analysis, offset) {
+                Option::Some(definition) => {
+                    if strings::ends_with(
+                        definition.source_path,
+                        "/events/events.gom",
+                    ) {
+                        ()
+                    } else {
+                        testing::fail(
+                            "unexpected contextual variant source "
+                                + definition.source_path,
+                        )
+                    };
+                    match source_by_path(
+                        analysis.sources,
+                        definition.source_path,
+                    ) {
+                        Option::Some(target) => testing::assert_eq(
+                            target.source.byte_slice(
+                                definition.span.start,
+                                definition.span.end,
+                            ),
+                            "Ready",
+                        ),
+                        Option::None => {
+                            testing::fail("expected contextual variant source")
+                        },
+                    }
+                },
+                Option::None => {
+                    testing::fail("expected contextual variant definition")
+                },
+            };
+            match hover(analysis, offset) {
+                Option::Some(result) => if strings::contains(
+                    result.contents,
+                    "Event",
+                ) {
+                    ()
+                } else {
+                    testing::fail(
+                        "unexpected contextual variant hover "
+                            + result.contents,
+                    )
+                },
+                Option::None => testing::fail(
+                    "expected contextual variant hover",
+                ),
+            }
+        },
+        Option::None => testing::fail("expected contextual Ready pattern"),
+    }
+}
+
+#[test]
 fn resolves_builtin_method_definitions() -> unit {
     let source = "fn main() -> string { let value = 1; value.to_string() }";
     match last_substring(source, "to_string") {
@@ -317,6 +387,29 @@ fn resolves_builtin_method_definitions() -> unit {
             Option::None => testing::fail("expected builtin method definition"),
         },
         Option::None => testing::fail("expected builtin method"),
+    };
+    let string_source = "fn main() -> bool { \"abc\".contains(\"b\") }";
+    match last_substring(string_source, "contains") {
+        Option::Some(offset) => match goto_definition(
+            analyze("main.gom", string_source),
+            offset,
+        ) {
+            Option::Some(definition) => match source_by_path(
+                analyze("main.gom", string_source).sources,
+                definition.source_path,
+            ) {
+                Option::Some(target) => testing::assert_eq(
+                    target.source.byte_slice(
+                        definition.span.start,
+                        definition.span.end,
+                    ),
+                    "contains",
+                ),
+                Option::None => testing::fail("expected builtin source"),
+            },
+            Option::None => testing::fail("expected string method definition"),
+        },
+        Option::None => testing::fail("expected string method"),
     };
     let static_source = "fn main() -> Vec[int32] { Vec::new() }";
     match last_substring(static_source, "new") {
@@ -407,6 +500,36 @@ fn resolves_qualified_standard_library_definitions() -> unit {
             }
         },
         Option::None => testing::fail("expected println call"),
+    }
+}
+
+#[test]
+fn resolves_index_map_standard_library_definitions() -> unit {
+    let source = "use std::collections; fn main() -> unit { let values: collections::IndexMap[string, int] = collections::IndexMap::new(); values.insert(\"key\", 1); }";
+    match last_substring(source, "insert") {
+        Option::Some(offset) => {
+            let analysis = analyze("/tmp/index-map-std.gom", source);
+            assert_no_diagnostics(analysis);
+            let definitions = goto_definitions(analysis, offset);
+            testing::assert_eq(definitions.len(), 1);
+            match source_by_path(
+                analysis.sources,
+                definitions.get(0).source_path,
+            ) {
+                Option::Some(target) => {
+                    testing::assert_eq(target.package_name, "std::collections");
+                    testing::assert_eq(
+                        target.source.byte_slice(
+                            definitions.get(0).span.start,
+                            definitions.get(0).span.end,
+                        ),
+                        "insert",
+                    )
+                },
+                Option::None => testing::fail("expected IndexMap source"),
+            }
+        },
+        Option::None => testing::fail("expected IndexMap insert call"),
     }
 }
 
@@ -585,6 +708,20 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         },
         Option::None => testing::fail("expected int member"),
     };
+    let string_source = "fn main(value: string) -> unit { value.con }";
+    match last_substring(string_source, "value.con") {
+        Option::Some(offset) => if has_completion(completions(
+                analyze("main.gom", string_source),
+                offset + "value.con".byte_len(),
+            ),
+            "contains",
+        ) {
+            ()
+        } else {
+            testing::fail("expected string contains completion")
+        },
+        Option::None => testing::fail("expected string member"),
+    };
     let vec_source = "fn main() -> unit { let values: Vec[int32] = Vec::new(); values.p }";
     match last_substring(vec_source, "values.p") {
         Option::Some(offset) => if has_completion(completions(
@@ -760,6 +897,80 @@ fn returns_function_hover_on_declarations_and_calls() -> unit {
             Option::None => testing::fail("expected call hover"),
         },
         Option::None => testing::fail("expected function call"),
+    }
+}
+
+#[test]
+fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> unit {
+    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn map[U](self: Box[T], convert: (T) -> U) -> Box[U] { Box { value: convert(self.value) } } } struct Other {} impl Other { fn map[V](self: Other, value: V) -> V { let _ = self; value } } fn main() -> Box[string] { let value = Box { value: 1 }; value.map(|item: int| item.to_string()) }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "map[U]") {
+        Option::Some(offset) => match hover(analysis, offset) {
+            Option::Some(result) => testing::assert_eq(
+                result.contents,
+                "[U] (gomlc::Box[T], (T) -> U) -> gomlc::Box[U]",
+            ),
+            Option::None => testing::fail("expected generic method hover"),
+        },
+        Option::None => testing::fail("expected method declaration"),
+    };
+    match last_substring(source, "map(") {
+        Option::Some(offset) => match signature_help(
+            analysis,
+            offset + "map(".byte_len(),
+        ) {
+            Option::Some(signature) => testing::assert_eq(
+                signature.label,
+                "(convert: (int) -> string) -> gomlc::Box[string]",
+            ),
+            Option::None => testing::fail("expected generic method signature"),
+        },
+        Option::None => testing::fail("expected method call"),
+    }
+}
+
+#[test]
+fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
+    let source = "type Count = int32; const answer: Count = 42; fn main() -> int32 { answer }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    let alias_found = Ref::new(false);
+    let constant_found = Ref::new(false);
+    for symbol in build_symbol_index(analysis).symbols {
+        match symbol.kind {
+            SymbolKind::TypeAlias => if symbol.name == "Count" {
+                alias_found.set(true)
+            } else {
+                ()
+            },
+            SymbolKind::Constant => if symbol.name == "answer" {
+                constant_found.set(true)
+            } else {
+                ()
+            },
+            _ => (),
+        }
+    };
+    testing::assert(alias_found.get());
+    testing::assert(constant_found.get());
+    match last_substring(source, "ans") {
+        Option::Some(offset) => testing::assert(has_completion(
+            completions(analysis, offset + 3),
+            "answer",
+        )),
+        Option::None => testing::fail("expected constant prefix"),
+    };
+    match last_substring(source, "answer") {
+        Option::Some(offset) => match hover(analysis, offset) {
+            Option::Some(value) => testing::assert_eq(value.contents, "int32"),
+            Option::None => testing::fail("expected constant hover"),
+        },
+        Option::None => testing::fail("expected constant declaration"),
+    };
+    match hover(analysis, "type ".byte_len()) {
+        Option::Some(value) => testing::assert_eq(value.contents, "int32"),
+        Option::None => testing::fail("expected type alias hover"),
     }
 }
 

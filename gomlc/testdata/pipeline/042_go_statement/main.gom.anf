@@ -1,98 +1,98 @@
 fn child(signal/0: Ref[int32]) -> unit {
-  join ret68() -> unit {
+  join ret112() -> unit {
     ()
   } in
-  let t69 = inherent#Ref#Ref[T]#set__T_int32(signal/0, 1) in
-  jump ret68()
+  let t113 = inherent#Ref#Ref[T]#set__T_int32(signal/0, 1) in
+  jump ret112()
 }
 
 fn main() -> unit {
-  join ret70() -> unit {
+  join ret114() -> unit {
     ()
   } in
   let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let t71 = closure_env_main_0 { signal_0: signal/1 } in
-  let _wild64 = go t71 in
-  join exit72() -> unit {
-    let _wild65 = () in
-    let _wild66 = println__T_string("main") in
-    jump ret70()
+  let t115 = closure_env_main_0 { signal_0: signal/1 } in
+  let _wild108 = go t115 in
+  join exit116() -> unit {
+    let _wild109 = () in
+    let _wild110 = println__T_string("main") in
+    jump ret114()
   } in
   joinrec {
-    join loop73() -> unit {
-      let t74 = inherent#Ref#Ref[T]#get__T_int32(signal/1) in
-      let t75 = (t74 < 1) in
-      if t75 {
-        jump loop73()
+    join loop117() -> unit {
+      let t118 = inherent#Ref#Ref[T]#get__T_int32(signal/1) in
+      let t119 = (t118 < 1) in
+      if t119 {
+        jump loop117()
       } else {
-        jump exit72()
+        jump exit116()
       }
     } in
   } in
-  jump loop73()
+  jump loop117()
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/211: Ref[int32], value/212: int32) -> unit {
-  join ret76() -> unit {
+fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
+  join ret120() -> unit {
     ()
   } in
-  let t77 = @intrinsic(ref.set)(self/211, value/212) in
-  jump ret76()
+  let t121 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret120()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/209: int32) -> Ref[int32] {
-  join ret78(retv79: Ref[int32]) -> Ref[int32] {
-    retv79
+fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
+  join ret122(retv123: Ref[int32]) -> Ref[int32] {
+    retv123
   } in
-  let t80 = @intrinsic(ref.new)(value/209) in
-  jump ret78(t80)
+  let t124 = @intrinsic(ref.new)(value/207) in
+  jump ret122(t124)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/210: Ref[int32]) -> int32 {
-  join ret81(retv82: int32) -> int32 {
-    retv82
+fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
+  join ret125(retv126: int32) -> int32 {
+    retv126
   } in
-  let t83 = @intrinsic(ref.get)(self/210) in
-  jump ret81(t83)
+  let t127 = @intrinsic(ref.get)(self/208) in
+  jump ret125(t127)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret84() -> unit {
+  join ret128() -> unit {
     ()
   } in
-  let t85 = trait_impl#ToString#string#to_string(value/1) in
-  let t86 = @runtime(core.string_println)(t85) in
-  jump ret84()
+  let t129 = trait_impl#ToString#string#to_string(value/1) in
+  let t130 = @runtime(core.string_println)(t129) in
+  jump ret128()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret87(retv88: string) -> string {
-    retv88
+  join ret131(retv132: string) -> string {
+    retv132
   } in
-  jump ret87(self/38)
+  jump ret131(self/38)
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret89(retv90: bool) -> bool {
-    retv90
+  join ret133(retv134: bool) -> bool {
+    retv134
   } in
-  let t91 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret89(t91)
+  let t135 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret133(t135)
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret92(retv93: uint64) -> uint64 {
-    retv93
+  join ret136(retv137: uint64) -> uint64 {
+    retv137
   } in
-  let t94 = @runtime(core.int32_hash)(self/88) in
-  jump ret92(t94)
+  let t138 = @runtime(core.int32_hash)(self/88) in
+  jump ret136(t138)
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env67: closure_env_main_0) -> unit {
-  join ret95() -> unit {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env111: closure_env_main_0) -> unit {
+  join ret139() -> unit {
     ()
   } in
-  let signal/1 = closure_env_main_0.signal_0(env67) in
-  let t96 = child(signal/1) in
-  jump ret95()
+  let signal/1 = closure_env_main_0.signal_0(env111) in
+  let t140 = child(signal/1) in
+  jump ret139()
 }

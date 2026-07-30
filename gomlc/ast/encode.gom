@@ -328,6 +328,9 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
     for method in value.method_sigs {
         encode_open(builder, "TraitMethod");
         encode_string_value(builder, method.name);
+        encode_generics(builder, method.generics);
+        encode_generic_bounds(builder, method.generic_bounds);
+        encode_predicates(builder, method.predicates);
         encode_list(builder, method.params.len());
         for param in method.params {
             encode_string_value(builder, param.0);
@@ -368,6 +371,26 @@ fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
     encode_close(builder)
 }
 
+fn encode_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
+    encode_open(builder, "TypeAlias");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_type(builder, value.ty);
+    encode_close(builder)
+}
+
+fn encode_constant(builder: text::StringBuilder, value: Constant) -> unit {
+    encode_open(builder, "Constant");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_type(builder, value.ty);
+    encode_expr(builder, value.value);
+    encode_close(builder)
+}
+
 fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
         Item::EnumDef(item) => encode_enum(builder, item),
@@ -376,6 +399,8 @@ fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
         Item::ImplBlock(item) => encode_impl(builder, item),
         Item::Function(item) => encode_function(builder, item),
         Item::ExternFunction(item) => encode_extern_function(builder, item),
+        Item::TypeAlias(item) => encode_type_alias(builder, item),
+        Item::Constant(item) => encode_constant(builder, item),
     }
 }
 
@@ -406,9 +431,16 @@ fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
             encode_optional_type(builder, annotation);
             encode_expr(builder, expr)
         },
-        Stmt::Assign { target, value: expr, span: value_span } => {
+        Stmt::Assign { target, op, value: expr, span: value_span } => {
             encode_open(builder, "Stmt.Assign");
             encode_span(builder, value_span);
+            match op {
+                AssignmentOp::Compound(value) => {
+                    encode_some(builder);
+                    encode_string_value(builder, binary_name(value))
+                },
+                AssignmentOp::Plain => encode_none(builder),
+            };
             encode_expr(builder, target);
             encode_expr(builder, expr)
         },

@@ -2,6 +2,22 @@ package ast;
 
 use std::text;
 
+fn pretty_decimal_byte(value: string) -> uint8 {
+    let result = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
+    };
+    result.get() as uint8
+}
+
+fn pretty_write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
+    let byte = pretty_decimal_byte(value);
+    builder.write_string("b'\\x");
+    builder.write_char(pretty_hex_digit(byte / 16));
+    builder.write_char(pretty_hex_digit(byte % 16));
+    builder.write_char('\'')
+}
+
 fn pretty_write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
@@ -71,9 +87,14 @@ fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> 
             builder.write_string(" = ");
             pretty_write_expr(builder, expr, indent)
         },
-        Stmt::Assign { target, value: expr, span: _ } => {
+        Stmt::Assign { target, op, value: expr, span: _ } => {
             pretty_write_expr(builder, target, indent);
-            builder.write_string(" = ");
+            builder.write_char(' ');
+            match op {
+                AssignmentOp::Compound(value) => builder.write_string(pretty_binary_symbol(value)),
+                AssignmentOp::Plain => (),
+            };
+            builder.write_string("= ");
             pretty_write_expr(builder, expr, indent)
         },
         Stmt::Expr { expr, span: _ } => pretty_write_expr(builder, expr, indent),
@@ -83,28 +104,24 @@ fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> 
 fn pretty_write_path_expr(
     builder: text::StringBuilder,
     path: Path,
-    type_args: Vec[TypeExpr],
+    owner_type_args: Vec[TypeExpr],
+    member_type_args: Vec[TypeExpr],
 ) -> unit {
-    if type_args.len() == 0 {
+    if owner_type_args.len() == 0 {
         pretty_write_path(builder, path)
     } else {
         let last = path.segments.len() - 1;
-        if last == 0 {
-            builder.write_string(path.segments.get(0).ident);
-            builder.write_string("::")
-        } else {
-            for index in range(0, last) {
-                if index > 0 {
-                    builder.write_string("::")
-                } else {
-                    ()
-                };
-                builder.write_string(path.segments.get(index).ident)
+        for index in range(0, last) {
+            if index > 0 {
+                builder.write_string("::")
+            } else {
+                ()
             };
-            builder.write_string("::")
+            builder.write_string(path.segments.get(index).ident)
         };
+        builder.write_string("::");
         builder.write_char('[');
-        pretty_write_types(builder, type_args, ", ");
+        pretty_write_types(builder, owner_type_args, ", ");
         builder.write_char(']');
         if last > 0 {
             builder.write_string("::");
@@ -112,22 +129,82 @@ fn pretty_write_path_expr(
         } else {
             ()
         }
+    };
+    if member_type_args.len() > 0 {
+        builder.write_string("::[");
+        pretty_write_types(builder, member_type_args, ", ");
+        builder.write_char(']')
+    } else {
+        ()
+    }
+}
+
+fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -> unit {
+    let index = Ref::new(0);
+    while index.get() < value.byte_len() {
+        let byte = value.byte_get(index.get());
+        if byte == 34 {
+            builder.write_string("\\\"")
+        } else if byte == 92 {
+            builder.write_string("\\\\")
+        } else if byte == 10 {
+            builder.write_string("\\n")
+        } else if byte == 13 {
+            builder.write_string("\\r")
+        } else if byte == 9 {
+            builder.write_string("\\t")
+        } else if byte == 123 {
+            builder.write_string("{{")
+        } else if byte == 125 {
+            builder.write_string("}}")
+        } else {
+            let width = pretty_utf8_width(byte);
+            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+        };
+        index.set(index.get() + pretty_utf8_width(byte))
     }
 }
 
 fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
-        Expr::Path { path, type_args, span: _ } => pretty_write_path_expr(builder, path, type_args),
+        Expr::Path {
+            path,
+            owner_type_args,
+            member_type_args,
+            span: _,
+        } => pretty_write_path_expr(
+            builder,
+            path,
+            owner_type_args,
+            member_type_args,
+        ),
         Expr::Unit { span: _ } => builder.write_string("()"),
         Expr::Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
         Expr::Int { value, span: _ } => builder.write_string(value),
         Expr::Float { value, span: _ } => builder.write_string(value.to_string()),
         Expr::String { value, span: _ } => pretty_write_quoted_string(builder, value),
+        Expr::InterpolatedString { parts, span: _ } => {
+            builder.write_string("f\"");
+            for part in parts {
+                match part {
+                    InterpolatedStringPart::Text(value) => {
+                        pretty_write_interpolated_text(builder, value)
+                    },
+                    InterpolatedStringPart::Expr(value) => {
+                        builder.write_char('{');
+                        pretty_write_expr(builder, value, indent);
+                        builder.write_char('}')
+                    },
+                }
+            };
+            builder.write_char('"')
+        },
         Expr::Char { value, span: _ } => {
             builder.write_char('\'');
             builder.write_string(value);
             builder.write_char('\'')
         },
+        Expr::Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
         Expr::ConstructorValue { constructor: path, span: _ } => {
             pretty_write_path(builder, path)
         },
@@ -141,10 +218,13 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                 ()
             }
         },
-        Expr::StructLiteral { name: path, fields, span: _ } => {
+        Expr::StructLiteral { name: path, fields, base, span: _ } => {
             pretty_write_path(builder, path);
             builder.write_string(" {");
-            if fields.len() == 0 {
+            if fields.len() == 0 && match base {
+                Option::Some(_) => false,
+                Option::None => true,
+            } {
                 builder.write_char('}')
             } else {
                 let index = Ref::new(0);
@@ -160,6 +240,19 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                     pretty_write_expr(builder, field.1, indent + 4);
                     index.set(index.get() + 1)
                 };
+                match base {
+                    Option::Some(value) => {
+                        if index.get() > 0 {
+                            builder.write_char(',')
+                        } else {
+                            ()
+                        };
+                        pretty_newline(builder, indent + 4);
+                        builder.write_string("..");
+                        pretty_write_expr(builder, value, indent + 4)
+                    },
+                    Option::None => (),
+                };
                 pretty_newline(builder, indent);
                 builder.write_char('}')
             }
@@ -173,6 +266,27 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('[');
             pretty_write_exprs(builder, values, ", ", indent);
             builder.write_char(']')
+        },
+        Expr::VecLiteral { items: values, span: _ } => {
+            builder.write_string("Vec::[");
+            pretty_write_exprs(builder, values, ", ", indent);
+            builder.write_char(']')
+        },
+        Expr::HashMapLiteral { entries, span: _ } => {
+            builder.write_string("HashMap::{");
+            let index = Ref::new(0);
+            for entry in entries {
+                if index.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                pretty_write_expr(builder, entry.0, indent);
+                builder.write_string(" => ");
+                pretty_write_expr(builder, entry.1, indent);
+                index.set(index.get() + 1)
+            };
+            builder.write_char('}')
         },
         Expr::Closure { params, body, span: _ } => {
             builder.write_char('|');
@@ -289,10 +403,22 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('.');
             builder.write_string(index.to_string())
         },
-        Expr::Field { expr, field_name: field, span: _ } => {
+        Expr::Field {
+            expr,
+            field_name: field,
+            method_type_args,
+            span: _,
+        } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('.');
-            builder.write_string(field)
+            builder.write_string(field);
+            if method_type_args.len() > 0 {
+                builder.write_string("::[");
+                pretty_write_types(builder, method_type_args, ", ");
+                builder.write_char(']')
+            } else {
+                ()
+            }
         },
         Expr::Index { base, index, span: _ } => {
             pretty_write_expr(builder, base, indent);
@@ -356,6 +482,7 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
             builder.write_string(value);
             builder.write_char('\'')
         },
+        Pat::Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
         Pat::Constr { constructor: path, args, span: _ } => {
             pretty_write_path(builder, path);
             if args.len() > 0 {

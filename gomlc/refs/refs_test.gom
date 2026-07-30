@@ -1,0 +1,12 @@
+package refs;
+
+use std::testing;
+
+#[test]
+fn compares_reference_identity() -> unit {
+    let first = Ref::new(1);
+    let alias = first;
+    let second = Ref::new(1);
+    testing::assert(same(first, alias));
+    testing::assert(!same(first, second))
+}

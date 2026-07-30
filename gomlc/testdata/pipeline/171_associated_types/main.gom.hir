@@ -27,11 +27,11 @@ file main.gom
       }
     }
     
-    fn read(local/1/2: P) -> P::Item {
+    fn read[P: Provider](local/1/2: P) -> P::Item {
         provider/2.get()
     }
     
-    fn read_as(local/1/3: P) -> T {
+    fn read_as[P, T](local/1/3: P) -> T where P: Provider, P::Item = T {
         provider/3.get()
     }
     

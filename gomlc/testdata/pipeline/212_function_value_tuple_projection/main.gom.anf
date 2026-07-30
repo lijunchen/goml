@@ -1,45 +1,45 @@
 fn pair(first/0: int32, second/1: string) -> (int32, string) {
-  join ret64(retv65: (int32, string)) -> (int32, string) {
-    retv65
+  join ret108(retv109: (int32, string)) -> (int32, string) {
+    retv109
   } in
-  let t66 = (first/0, second/1) in
-  jump ret64(t66)
+  let t110 = (first/0, second/1) in
+  jump ret108(t110)
 }
 
 fn main() -> unit {
-  join ret67() -> unit {
+  join ret111() -> unit {
     ()
   } in
   let make/2 = pair in
   let value/3 = make/2(1, "x") in
-  let t68 = value/3.0 in
-  let t69 = inherent#int32#int32#to_string(t68) in
-  let t70 = value/3.1 in
-  let t71 = (t69 + t70) in
-  let t72 = println__T_string(t71) in
-  jump ret67()
+  let t112 = value/3.0 in
+  let t113 = inherent#int32#int32#to_string(t112) in
+  let t114 = value/3.1 in
+  let t115 = (t113 + t114) in
+  let t116 = println__T_string(t115) in
+  jump ret111()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret73() -> unit {
+  join ret117() -> unit {
     ()
   } in
-  let t74 = trait_impl#ToString#string#to_string(value/1) in
-  let t75 = @runtime(core.string_println)(t74) in
-  jump ret73()
+  let t118 = trait_impl#ToString#string#to_string(value/1) in
+  let t119 = @runtime(core.string_println)(t118) in
+  jump ret117()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret76(retv77: string) -> string {
-    retv77
+  join ret120(retv121: string) -> string {
+    retv121
   } in
-  let t78 = @runtime(core.int32_to_string)(self/6) in
-  jump ret76(t78)
+  let t122 = @runtime(core.int32_to_string)(self/6) in
+  jump ret120(t122)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret123(retv124: string) -> string {
+    retv124
   } in
-  jump ret79(self/38)
+  jump ret123(self/38)
 }

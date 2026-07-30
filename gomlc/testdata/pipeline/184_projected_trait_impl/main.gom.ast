@@ -25,7 +25,7 @@ impl Source for Value {
   }
 }
 
-fn copy(source: S) -> S::Item {
+fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item {
     let value: S::Item = Pick::[S::Item]::pick(source);
     let identity = |item: S::Item| item;
     identity(value)

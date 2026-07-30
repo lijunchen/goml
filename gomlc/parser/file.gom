@@ -49,6 +49,8 @@ fn is_block_recovery(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::EnumKeyword
         | lexer::TokenKind::TraitKeyword
         | lexer::TokenKind::ImplKeyword
+        | lexer::TokenKind::TypeKeyword
+        | lexer::TokenKind::ConstKeyword
         | lexer::TokenKind::PackageKeyword
         | lexer::TokenKind::UseKeyword
         | lexer::TokenKind::ImportKeyword => true,
@@ -92,6 +94,10 @@ fn parse_file(parser: Parser) -> unit {
             trait_def(parser)
         } else if parser.at(lexer::TokenKind::ImplKeyword) {
             impl_block(parser)
+        } else if parser.at(lexer::TokenKind::TypeKeyword) {
+            type_alias(parser)
+        } else if parser.at(lexer::TokenKind::ConstKeyword) {
+            constant(parser)
         } else if is_expr_first(parser.peek()) {
             if marker_is_none(expr(parser)) {
                 parser.advance_with_error("expected an expression")
@@ -173,6 +179,10 @@ fn item_with_attrs(parser: Parser, attrs: MarkerClosed) -> unit {
         trait_def_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::ImplKeyword) {
         impl_block_with_marker(parser, marker)
+    } else if parser.at(lexer::TokenKind::TypeKeyword) {
+        type_alias_with_marker(parser, marker)
+    } else if parser.at(lexer::TokenKind::ConstKeyword) {
+        constant_with_marker(parser, marker)
     } else {
         parser.error("expected a top-level item after attributes");
         if parser.eof() == false {
@@ -213,6 +223,10 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         struct_def_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::TraitKeyword) {
         trait_def_with_marker(parser, marker)
+    } else if parser.at(lexer::TokenKind::TypeKeyword) {
+        type_alias_with_marker(parser, marker)
+    } else if parser.at(lexer::TokenKind::ConstKeyword) {
+        constant_with_marker(parser, marker)
     } else {
         parser.error("expected a public top-level item");
         if parser.eof() == false {
@@ -223,6 +237,55 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
         ()
     }
+}
+
+fn type_alias(parser: Parser) -> unit {
+    let marker = parser.open();
+    type_alias_with_marker(parser, marker)
+}
+
+fn type_alias_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
+    parser.expect(lexer::TokenKind::TypeKeyword);
+    parser.expect_upper_ident("type alias name");
+    if parser.at(lexer::TokenKind::LBracket) {
+        generic_list(parser, false)
+    } else {
+        ()
+    };
+    parser.expect(lexer::TokenKind::Eq);
+    if is_type_first(parser.peek()) {
+        type_expr(parser)
+    } else {
+        parser.error("expected a type after `=`")
+    };
+    parser.expect(lexer::TokenKind::Semi);
+    let _ = parser.close(marker, cst::NodeKind::TYPE_ALIAS);
+    ()
+}
+
+fn constant(parser: Parser) -> unit {
+    let marker = parser.open();
+    constant_with_marker(parser, marker)
+}
+
+fn constant_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
+    parser.expect(lexer::TokenKind::ConstKeyword);
+    parser.expect_lower_ident("constant name");
+    parser.expect(lexer::TokenKind::Colon);
+    if is_type_first(parser.peek()) {
+        type_expr(parser)
+    } else {
+        parser.error("expected a constant type after `:`")
+    };
+    parser.expect(lexer::TokenKind::Eq);
+    if marker_is_none(expr(parser)) {
+        parser.error("expected a constant expression after `=`")
+    } else {
+        ()
+    };
+    parser.expect(lexer::TokenKind::Semi);
+    let _ = parser.close(marker, cst::NodeKind::CONST);
+    ()
 }
 
 fn attribute_list(parser: Parser) -> MarkerClosed {
@@ -274,9 +337,19 @@ fn extern_decl(parser: Parser) -> unit {
 fn extern_decl_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect(lexer::TokenKind::ExternKeyword);
     if parser.eat(lexer::TokenKind::FnKeyword) == false {
+        let legacy_extern = parser.at(lexer::TokenKind::Str);
         parser.error("only `extern fn` declarations are supported");
         while parser.eof() == false && is_block_recovery(parser.peek()) == false {
             parser.advance()
+        };
+        if legacy_extern && parser.eat(lexer::TokenKind::TypeKeyword) {
+            if parser.at(lexer::TokenKind::Ident) {
+                parser.advance()
+            } else {
+                ()
+            }
+        } else {
+            ()
         };
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
         ()
@@ -459,6 +532,11 @@ fn trait_method(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::FnKeyword);
     parser.expect_lower_ident("method name");
+    if parser.at(lexer::TokenKind::LBracket) {
+        generic_list(parser, true)
+    } else {
+        ()
+    };
     if parser.at(lexer::TokenKind::LParen) {
         param_list(parser)
     } else {
@@ -466,6 +544,11 @@ fn trait_method(parser: Parser) -> unit {
     };
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)
+    } else {
+        ()
+    };
+    if parser.at(lexer::TokenKind::WhereKeyword) {
+        where_clause(parser)
     } else {
         ()
     };
@@ -660,13 +743,12 @@ fn trait_set(parser: Parser) -> unit {
         let _ = parser.close(marker, cst::NodeKind::TRAIT_SET);
         return
     };
-    let parsing = Ref::new(true);
-    while parsing.get() && parser.eat(lexer::TokenKind::Plus) {
+    while parser.eat(lexer::TokenKind::Plus) {
         if parser.at(lexer::TokenKind::Ident) {
             trait_ref(parser)
         } else {
             parser.advance_with_error("expected a trait name after '+'");
-            parsing.set(false)
+            break
         }
     };
     let _ = parser.close(marker, cst::NodeKind::TRAIT_SET);
@@ -813,13 +895,12 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
             },
             Option::Some(initial) => {
                 let lhs = Ref::new(initial);
-                let parsing = Ref::new(true);
-                while parsing.get() && parser.eof() == false {
+                while parser.eof() == false {
                     if parser.at(lexer::TokenKind::Arrow) {
                         let left_bp = 5;
                         let right_bp = 4;
                         if left_bp < min_bp {
-                            parsing.set(false)
+                            break
                         } else {
                             let marker = lhs.get().precede(parser);
                             parser.expect(lexer::TokenKind::Arrow);
@@ -831,7 +912,7 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             lhs.set(marker.completed(parser, cst::NodeKind::TYPE_FUNC))
                         }
                     } else {
-                        parsing.set(false)
+                        break
                     }
                 };
                 let result = lhs.get();
@@ -1018,19 +1099,36 @@ fn block(parser: Parser) -> unit {
             };
             match expr(parser) {
                 Option::Some(expr_marker) => {
-                    if parser.at(lexer::TokenKind::Eq) {
-                        let _ = finish_assign_stmt(parser, expr_marker);
-                        ()
-                    } else if parser.eat(lexer::TokenKind::Semi) {
-                        let _ = wrap_expr_stmt(parser, expr_marker);
-                        ()
-                    } else if semicolon_optional
-                        && parser.at(lexer::TokenKind::RBrace) == false
-                    {
-                        let _ = wrap_expr_stmt(parser, expr_marker);
-                        ()
-                    } else {
-                        trailing_expr_seen.set(true)
+                    let assignment_operator = match parser.peek() {
+                        lexer::TokenKind::Eq
+                        | lexer::TokenKind::PlusEq
+                        | lexer::TokenKind::MinusEq
+                        | lexer::TokenKind::StarEq
+                        | lexer::TokenKind::SlashEq
+                        | lexer::TokenKind::PercentEq
+                        | lexer::TokenKind::AmpEq
+                        | lexer::TokenKind::PipeEq
+                        | lexer::TokenKind::CaretEq
+                        | lexer::TokenKind::LessLessEq
+                        | lexer::TokenKind::GreaterGreaterEq => Option::Some(parser.peek()),
+                        _ => Option::None,
+                    };
+                    match assignment_operator {
+                        Option::Some(operator) => {
+                            let _ = finish_assign_stmt(parser, expr_marker, operator);
+                            ()
+                        },
+                        Option::None => if parser.eat(lexer::TokenKind::Semi) {
+                            let _ = wrap_expr_stmt(parser, expr_marker);
+                            ()
+                        } else if semicolon_optional
+                            && parser.at(lexer::TokenKind::RBrace) == false
+                        {
+                            let _ = wrap_expr_stmt(parser, expr_marker);
+                            ()
+                        } else {
+                            trailing_expr_seen.set(true)
+                        },
                     }
                 },
                 Option::None => parsing.set(false),

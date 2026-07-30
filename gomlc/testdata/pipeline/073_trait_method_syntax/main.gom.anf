@@ -1,44 +1,44 @@
 fn trait_impl#ToString#S#to_string(self/0: S) -> string {
-  join ret65(retv66: string) -> string {
-    retv66
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  let t67 = S.value(self/0) in
-  let t68 = inherent#int32#int32#to_string(t67) in
-  let t69 = ("S(" + t68) in
-  let t70 = (t69 + ")") in
-  jump ret65(t70)
+  let t111 = S.value(self/0) in
+  let t112 = inherent#int32#int32#to_string(t111) in
+  let t113 = ("S(" + t112) in
+  let t114 = (t113 + ")") in
+  jump ret109(t114)
 }
 
 fn main() -> unit {
-  join ret71() -> unit {
+  join ret115() -> unit {
     ()
   } in
   let s/1 = S { value: 7 } in
-  let t72 = trait_impl#ToString#S#to_string(s/1) in
-  let _wild64 = println__T_string(t72) in
-  jump ret71()
+  let t116 = trait_impl#ToString#S#to_string(s/1) in
+  let _wild108 = println__T_string(t116) in
+  jump ret115()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret73(retv74: string) -> string {
-    retv74
+  join ret117(retv118: string) -> string {
+    retv118
   } in
-  let t75 = @runtime(core.int32_to_string)(self/6) in
-  jump ret73(t75)
+  let t119 = @runtime(core.int32_to_string)(self/6) in
+  jump ret117(t119)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret76() -> unit {
+  join ret120() -> unit {
     ()
   } in
-  let t77 = trait_impl#ToString#string#to_string(value/1) in
-  let t78 = @runtime(core.string_println)(t77) in
-  jump ret76()
+  let t121 = trait_impl#ToString#string#to_string(value/1) in
+  let t122 = @runtime(core.string_println)(t121) in
+  jump ret120()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret123(retv124: string) -> string {
+    retv124
   } in
-  jump ret79(self/38)
+  jump ret123(self/38)
 }

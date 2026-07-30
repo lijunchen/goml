@@ -17,19 +17,19 @@ fn step_none(i/1: int32) -> Option__bool {
 fn run_some() -> Option__int32 {
   let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let total/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild68 = while let mtmp64 = step_some(inherent#Ref#Ref[T]#get__T_int32(i/2)) in
-  match mtmp64 {
+  let _wild112 = while let mtmp108 = step_some(inherent#Ref#Ref[T]#get__T_int32(i/2)) in
+  match mtmp108 {
     Option__bool::None => {
       return Option__int32::None
     },
-    Option__bool::Some(x65) => {
-      let x65 = Option__bool::Some._0(mtmp64) in
-      let try_value/31 = x65 in
+    Option__bool::Some(x109) => {
+      let x109 = Option__bool::Some._0(mtmp108) in
+      let try_value/31 = x109 in
       try_value/31
     },
   } {
-      let _wild66 = inherent#Ref#Ref[T]#set__T_int32(total/3, (inherent#Ref#Ref[T]#get__T_int32(total/3) + inherent#Ref#Ref[T]#get__T_int32(i/2))) in
-      let _wild67 = inherent#Ref#Ref[T]#set__T_int32(i/2, (inherent#Ref#Ref[T]#get__T_int32(i/2) + 1)) in
+      let _wild110 = inherent#Ref#Ref[T]#set__T_int32(total/3, (inherent#Ref#Ref[T]#get__T_int32(total/3) + inherent#Ref#Ref[T]#get__T_int32(i/2))) in
+      let _wild111 = inherent#Ref#Ref[T]#set__T_int32(i/2, (inherent#Ref#Ref[T]#get__T_int32(i/2) + 1)) in
       ()
   } in
   Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(total/3))
@@ -38,19 +38,19 @@ fn run_some() -> Option__int32 {
 fn run_none() -> Option__int32 {
   let i/4 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let total/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild73 = while let mtmp69 = step_none(inherent#Ref#Ref[T]#get__T_int32(i/4)) in
-  match mtmp69 {
+  let _wild117 = while let mtmp113 = step_none(inherent#Ref#Ref[T]#get__T_int32(i/4)) in
+  match mtmp113 {
     Option__bool::None => {
       return Option__int32::None
     },
-    Option__bool::Some(x70) => {
-      let x70 = Option__bool::Some._0(mtmp69) in
-      let try_value/67 = x70 in
+    Option__bool::Some(x114) => {
+      let x114 = Option__bool::Some._0(mtmp113) in
+      let try_value/67 = x114 in
       try_value/67
     },
   } {
-      let _wild71 = inherent#Ref#Ref[T]#set__T_int32(total/5, (inherent#Ref#Ref[T]#get__T_int32(total/5) + inherent#Ref#Ref[T]#get__T_int32(i/4))) in
-      let _wild72 = inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1)) in
+      let _wild115 = inherent#Ref#Ref[T]#set__T_int32(total/5, (inherent#Ref#Ref[T]#get__T_int32(total/5) + inherent#Ref#Ref[T]#get__T_int32(i/4))) in
+      let _wild116 = inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1)) in
       ()
   } in
   Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(total/5))
@@ -61,30 +61,30 @@ fn show(x/6: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x74) => {
-      let x74 = Option__int32::Some._0(x/6) in
-      let v/7 = x74 in
+    Option__int32::Some(x118) => {
+      let x118 = Option__int32::Some._0(x/6) in
+      let v/7 = x118 in
       ("some=" + inherent#int32#int32#to_string(v/7))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild75 = println__T_string(show(run_some())) in
-  let _wild76 = println__T_string(show(run_none())) in
+  let _wild119 = println__T_string(show(run_some())) in
+  let _wild120 = println__T_string(show(run_none())) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/209: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/209)
+fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/210: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/208)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/211: Ref[int32], value/212: int32) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {

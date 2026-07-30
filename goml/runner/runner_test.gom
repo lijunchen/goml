@@ -1,0 +1,11 @@
+package runner;
+
+use std::testing;
+
+#[test]
+fn escapes_unicode_json_text() -> unit {
+    testing::assert_eq(
+        escape_json("你好\n\"goml\"\\"),
+        "你好\\n\\\"goml\\\"\\\\",
+    )
+}

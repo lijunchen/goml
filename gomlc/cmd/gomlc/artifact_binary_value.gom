@@ -101,7 +101,7 @@ fn decode_artifact_binary_string_table(
     } else {
         ()
     };
-    let values = Vec::new();
+    let values = Vec::with_capacity(count);
     let indexes: HashMap[string, int] = HashMap::new();
     for index in range(0, count) {
         let value = match artifact_binary_read_string(reader) {
@@ -156,6 +156,20 @@ fn artifact_binary_decode_string_id(
     } else {
         Result::Ok(table.values.get(id))
     }
+}
+
+fn artifact_binary_object_has_field(
+    fields: Vec[(string, ArtifactValue)],
+    name: string,
+) -> bool {
+    for field in fields {
+        if field.0 == name {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn artifact_binary_encode_value_at(
@@ -281,7 +295,7 @@ fn artifact_binary_decode_value_at(
             } else {
                 ()
             };
-            let values = Vec::new();
+            let values = Vec::with_capacity(count);
             for _ in range(0, count) {
                 match artifact_binary_decode_value_at(
                     reader,
@@ -304,17 +318,31 @@ fn artifact_binary_decode_value_at(
             } else {
                 ()
             };
-            let fields = Vec::new();
-            let names: HashMap[string, unit] = HashMap::new();
+            let fields = Vec::with_capacity(count);
+            let names: Option[HashMap[string, unit]] = if count > 32 {
+                Option::Some(HashMap::new())
+            } else {
+                Option::None
+            };
             for _ in range(0, count) {
                 let name = match artifact_binary_decode_string_id(reader, table) {
                     Result::Ok(value) => value,
                     Result::Err(error) => return Result::Err(error),
                 };
-                if names.contains(name) {
+                let duplicate = match names {
+                    Option::Some(value) => value.contains(name),
+                    Option::None => artifact_binary_object_has_field(
+                        fields,
+                        name,
+                    ),
+                };
+                if duplicate {
                     return Result::Err("duplicate binary artifact object field")
                 } else {
-                    names.set(name, ())
+                    match names {
+                        Option::Some(value) => value.set(name, ()),
+                        Option::None => (),
+                    }
                 };
                 let value = match artifact_binary_decode_value_at(
                     reader,

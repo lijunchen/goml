@@ -55,10 +55,12 @@ fn standard_library_children(package_name: string) -> Vec[string] {
             .pushed("internal")
             .pushed("io")
             .pushed("json")
+            .pushed("num")
             .pushed("path")
             .pushed("process")
             .pushed("testing")
             .pushed("text")
+            .pushed("time")
     } else if package_name == "std::internal" {
         Vec::new().pushed("host")
     } else {
@@ -115,6 +117,12 @@ fn standard_library_source(package_name: string) -> Option[SourceFile] {
             source: stdlib::json_source(),
             package_name: "std::json",
         })
+    } else if package_name == "std::num" {
+        Option::Some(SourceFile {
+            path: standard_source_path("num/num.gom"),
+            source: stdlib::num_source(),
+            package_name: "std::num",
+        })
     } else if package_name == "std::path" {
         Option::Some(SourceFile {
             path: standard_source_path("path/path.gom"),
@@ -138,6 +146,12 @@ fn standard_library_source(package_name: string) -> Option[SourceFile] {
             path: standard_source_path("text/text.gom"),
             source: stdlib::text_source(),
             package_name: "std::text",
+        })
+    } else if package_name == "std::time" {
+        Option::Some(SourceFile {
+            path: standard_source_path("time/time.gom"),
+            source: stdlib::time_source(),
+            package_name: "std::time",
         })
     } else {
         Option::None

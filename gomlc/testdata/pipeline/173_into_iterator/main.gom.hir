@@ -26,7 +26,7 @@ file main.gom
         }
     }
     
-    fn sum(local/1/4: S) -> int32 {
+    fn sum[S: IntoIterator](local/1/4: S) -> int32 where S::Item = int32 {
         let local/1/5 = Ref::new(0);
         for local/1/6 in source/4 {
             total/5.set(total/5.get() + value/6);

@@ -1,0 +1,21 @@
+enum Maybe[T] {
+    None,
+    Some(T),
+}
+
+impl[T] Maybe[T] {
+    fn map[U](self: Maybe[T], map_fn: (T) -> U) -> Maybe[U] {
+        match self {
+            Maybe::Some(value) => Maybe::Some(map_fn(value)),
+            Maybe::None => Maybe::None,
+        }
+    }
+}
+
+fn main() {
+    let value: Maybe[int] = Maybe::Some(3);
+    match value.map(|item: int| item.to_string()) {
+        Maybe::Some(text) => println(text),
+        Maybe::None => println("none"),
+    }
+}

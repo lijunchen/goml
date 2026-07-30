@@ -4,54 +4,47 @@ use gomlc::ast;
 use gomlc::tast;
 
 fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
-    let result = Ref::new(false);
     for value in values {
         if tast_expr_exits(value) {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
-    result.get()
+    false
 }
 
 fn tast_stmt_exits(value: tast::Stmt) -> bool {
     match value {
         tast::Stmt::Expr { expr } => tast_expr_exits(expr),
-        tast::Stmt::Let { is_mut: _, pat: _, value: _ } | tast::Stmt::Assign { target: _, value: _ } => false,
+        tast::Stmt::Let { is_mut: _, pat: _, value: _ }
+        | tast::Stmt::Assign { target: _, op: _, value: _ } => false,
     }
 }
 
 fn tast_block_exits(value: tast::Block) -> bool {
-    let result = Ref::new(false);
     for stmt in value.stmts {
         if tast_stmt_exits(stmt) {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
     match value.tail {
-        Option::Some(tail) => if tast_expr_exits(tail) {
-            result.set(true)
-        } else {
-            ()
-        },
-        Option::None => (),
-    };
-    result.get()
+        Option::Some(tail) => tast_expr_exits(tail),
+        Option::None => false,
+    }
 }
 
 fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
-    let result = Ref::new(true);
     for arm in arms {
-        if tast_expr_exits(arm.body) {
-            ()
+        if !tast_expr_exits(arm.body) {
+            return false
         } else {
-            result.set(false)
+            ()
         }
     };
-    result.get()
+    true
 }
 
 fn tast_expr_exits(value: tast::Expr) -> bool {

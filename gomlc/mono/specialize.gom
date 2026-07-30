@@ -1,7 +1,9 @@
 package mono;
 
 use gomlc::core;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 
 struct TypeBinding {
     name: string,
@@ -36,15 +38,16 @@ struct SpecializeCtx {
 }
 
 fn find_binding(values: Vec[TypeBinding], name: string) -> Option[tast::Type] {
-    let result: Ref[Option[tast::Type]] = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value.ty))
+            return Option::Some(value.ty)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn bind_type(values: Vec[TypeBinding], name: string, ty: tast::Type) -> bool {
@@ -65,15 +68,14 @@ fn unify_types(
     if templates.len() != actuals.len() {
         false
     } else {
-        let valid = Ref::new(true);
         for index in range(0, templates.len()) {
             if unify_type(templates.get(index), actuals.get(index), bindings) {
                 ()
             } else {
-                valid.set(false)
+                return false
             }
         };
-        valid.get()
+        true
     }
 }
 
@@ -116,17 +118,14 @@ fn projection_binding_name(
 }
 
 fn has_projection_binding(values: Vec[TypeBinding]) -> bool {
-    let found = Ref::new(false);
     for value in values {
-        if value.name.byte_len() >= 11
-            && value.name.byte_slice(0, 11) == "projection#"
-        {
-            found.set(true)
+        if strings::starts_with(value.name, "projection#") {
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn unify_type(
@@ -371,18 +370,7 @@ fn find_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
 }
 
 fn hash_segments(value: string) -> Vec[string] {
-    let result = Vec::new();
-    let start = Ref::new(0);
-    for index in range(0, value.byte_len()) {
-        if value.byte_slice(index, index + 1) == "#" {
-            result.push(value.byte_slice(start.get(), index));
-            start.set(index + 1)
-        } else {
-            ()
-        }
-    };
-    result.push(value.byte_slice(start.get(), value.byte_len()));
-    result
+    strings::split(value, "#")
 }
 
 fn inherent_method_key(name: string) -> Option[(string, string)] {
@@ -472,18 +460,17 @@ fn same_bindings(left: Vec[TypeBinding], right: Vec[TypeBinding]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        let equal = Ref::new(true);
         for value in left {
             match find_binding(right, value.name) {
                 Option::Some(ty) => if compact_type(value.ty) == compact_type(ty) {
                     ()
                 } else {
-                    equal.set(false)
+                    return false
                 },
-                Option::None => equal.set(false),
+                Option::None => return false,
             }
         };
-        equal.get()
+        true
     }
 }
 
@@ -567,9 +554,7 @@ fn instance_base_name(
                     let builder = std::text::StringBuilder::new();
                     builder.write_string(original_name);
                     for binding in sorted_bindings(bindings) {
-                        if binding.name.byte_len() >= 11
-                            && binding.name.byte_slice(0, 11) == "projection#"
-                        {
+                        if strings::starts_with(binding.name, "projection#") {
                             ()
                         } else {
                             builder.write_string("__");
@@ -662,33 +647,35 @@ fn mono_type_contains_proper_subterm(
 ) -> bool {
     match tast::resolve_type(value) {
         tast::Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for value in values {
                 if mono_types_equal(value, expected)
                     || mono_type_contains_proper_subterm(value, expected)
                 {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         tast::Type::App { ty: base, args } => {
-            let found = Ref::new(
-                mono_types_equal(base, expected)
-                    || mono_type_contains_proper_subterm(base, expected),
-            );
+            if mono_types_equal(base, expected)
+                || mono_type_contains_proper_subterm(base, expected)
+            {
+                return true
+            } else {
+                ()
+            };
             for arg in args {
                 if mono_types_equal(arg, expected)
                     || mono_type_contains_proper_subterm(arg, expected)
                 {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         tast::Type::Array { len: _, elem }
         | tast::Type::Slice { elem }
@@ -705,20 +692,23 @@ fn mono_type_contains_proper_subterm(
                 || mono_type_contains_proper_subterm(value, expected)
         },
         tast::Type::Func { params, ret_ty } => {
-            let found = Ref::new(
-                mono_types_equal(ret_ty, expected)
-                    || mono_type_contains_proper_subterm(ret_ty, expected),
-            );
+            if mono_types_equal(ret_ty, expected)
+                || mono_type_contains_proper_subterm(ret_ty, expected)
+            {
+                return true
+            } else {
+                ()
+            };
             for param in params {
                 if mono_types_equal(param, expected)
                     || mono_type_contains_proper_subterm(param, expected)
                 {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         _ => false,
     }
@@ -753,8 +743,7 @@ fn mono_type_contains_recursive_growth(
 }
 
 fn projection_binding(value: TypeBinding) -> bool {
-    value.name.byte_len() >= 11
-        && value.name.byte_slice(0, 11) == "projection#"
+    strings::starts_with(value.name, "projection#")
 }
 
 fn specialization_growth_message(
@@ -897,18 +886,6 @@ fn trait_selection_key(value: TraitSelection) -> string {
     builder.finish()
 }
 
-fn contains_string(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 fn matching_trait_selections(
     ctx: SpecializeCtx,
     for_ty: tast::Type,
@@ -934,7 +911,13 @@ fn matching_trait_selections(
                         true
                     };
                     if candidate_matches
-                        && complete_bindings(ctx, function, impl_bindings)
+                        && complete_bindings_up_to(
+                            ctx,
+                            function,
+                            impl_bindings,
+                            metadata.generic_count,
+                            metadata.predicate_count,
+                        )
                     {
                         let application = substitute_trait_ref(
                             metadata.trait_ref,
@@ -950,7 +933,7 @@ fn matching_trait_selections(
                                 ),
                             };
                             let key = trait_selection_key(selection);
-                            if contains_string(keys, key) {
+                            if vecs::contains(keys, key) {
                                 ()
                             } else {
                                 keys.push(key);
@@ -1040,13 +1023,19 @@ fn matching_projection_types(
                             reference.args,
                             bindings,
                         )
-                        && complete_bindings(ctx, function, bindings)
+                        && complete_bindings_up_to(
+                            ctx,
+                            function,
+                            bindings,
+                            metadata.generic_count,
+                            metadata.predicate_count,
+                        )
                     {
                         for associated in metadata.associated_types {
                             if associated.0 == name {
                                 let value = substitute_type(associated.1, bindings);
                                 let key = compact_type(value);
-                                if contains_string(keys, key) {
+                                if vecs::contains(keys, key) {
                                     ()
                                 } else {
                                     keys.push(key);
@@ -1078,7 +1067,7 @@ fn normalize_projection(
 ) -> tast::Type {
     let projection = tast::Type::Projection { for_ty: base, name, trait_ref: reference };
     let key = projection_binding_name(base, name, reference);
-    if contains_string(active, key) {
+    if vecs::contains(active, key) {
         projection
     } else {
         let normalized = match tast::builtin_projection(base, name, reference) {
@@ -1180,15 +1169,14 @@ fn normalize_type(
 }
 
 fn types_contain_associated_projection(values: Vec[tast::Type]) -> bool {
-    let found = Ref::new(false);
     for value in values {
         if type_contains_associated_projection(value) {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn type_contains_associated_projection(value: tast::Type) -> bool {
@@ -1274,14 +1262,17 @@ fn specialize_named_types(
     result
 }
 
-fn complete_function_bindings(
+fn complete_function_bindings_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
+    generic_count: int,
+    predicate_count: int,
 ) -> unit {
-    for _ in range(0, value.generics.len() + 1) {
+    for _ in range(0, generic_count + 1) {
         let previous_len = bindings.len();
-        for predicate in value.predicates {
+        for index in range(0, predicate_count) {
+            let predicate = value.predicates.get(index);
             match predicate {
                 tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
                     let for_ty = substitute_type(for_ty, bindings);
@@ -1349,13 +1340,14 @@ fn complete_function_bindings(
     }
 }
 
-fn predicates_are_satisfied(
+fn predicates_are_satisfied_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
+    predicate_count: int,
 ) -> bool {
-    let satisfied = Ref::new(true);
-    for predicate in value.predicates {
+    for index in range(0, predicate_count) {
+        let predicate = value.predicates.get(index);
         match predicate {
             tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
                 let for_ty = substitute_type(for_ty, bindings);
@@ -1371,7 +1363,7 @@ fn predicates_are_satisfied(
                 {
                     ()
                 } else {
-                    satisfied.set(false)
+                    return false
                 }
             },
             tast::TypePredicate::Equality { lhs, rhs } => {
@@ -1380,12 +1372,12 @@ fn predicates_are_satisfied(
                 if compact_type(lhs) == compact_type(rhs) {
                     ()
                 } else {
-                    satisfied.set(false)
+                    return false
                 }
             },
         }
     };
-    satisfied.get()
+    true
 }
 
 fn builtin_scalar_type(value: tast::Type) -> bool {
@@ -1446,24 +1438,46 @@ fn builtin_trait_satisfied(
     }
 }
 
+fn complete_bindings_up_to(
+    ctx: SpecializeCtx,
+    value: core::Function,
+    bindings: Vec[TypeBinding],
+    generic_count: int,
+    predicate_count: int,
+) -> bool {
+    complete_function_bindings_up_to(
+        ctx,
+        value,
+        bindings,
+        generic_count,
+        predicate_count,
+    );
+    for index in range(0, generic_count) {
+        let generic = value.generics.get(index);
+        match find_binding(bindings, generic) {
+            Option::Some(ty) => if type_is_concrete(ty) {
+                ()
+            } else {
+                return false
+            },
+            Option::None => return false,
+        }
+    };
+    predicates_are_satisfied_up_to(ctx, value, bindings, predicate_count)
+}
+
 fn complete_bindings(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
 ) -> bool {
-    complete_function_bindings(ctx, value, bindings);
-    let complete = Ref::new(true);
-    for generic in value.generics {
-        match find_binding(bindings, generic) {
-            Option::Some(ty) => if type_is_concrete(ty) {
-                ()
-            } else {
-                complete.set(false)
-            },
-            Option::None => complete.set(false),
-        }
-    };
-    complete.get() && predicates_are_satisfied(ctx, value, bindings)
+    complete_bindings_up_to(
+        ctx,
+        value,
+        bindings,
+        value.generics.len(),
+        value.predicates.len(),
+    )
 }
 
 fn specialize_callable(
@@ -1582,74 +1596,96 @@ fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[tast::Ty
     result
 }
 
+fn trait_method_bindings(
+    function: core::Function,
+    reference: tast::TraitRef,
+    actual_types: Vec[tast::Type],
+    ret_ty: tast::Type,
+) -> Option[Vec[TypeBinding]] {
+    let bindings = Vec::new();
+    let metadata = match function.trait_impl {
+        Option::Some(value) => value,
+        Option::None => return Option::None,
+    };
+    if metadata.trait_ref.args.len() != reference.args.len()
+        || !unify_type(metadata.for_ty, actual_types.get(0), bindings)
+        || !unify_types(
+            metadata.trait_ref.args,
+            reference.args,
+            bindings,
+        )
+    {
+        return Option::None
+    } else {
+        ()
+    };
+    let param_types = Vec::new();
+    for param in function.params {
+        param_types.push(param.1)
+    };
+    if unify_types(param_types, actual_types, bindings)
+        && unify_type(function.ret_ty, ret_ty, bindings)
+    {
+        Option::Some(bindings)
+    } else {
+        Option::None
+    }
+}
+
 fn ensure_trait_method_instance(
     ctx: SpecializeCtx,
     reference: tast::TraitRef,
     method_name: string,
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
-) -> tast::TraitRef {
-    let resolved: Ref[Option[tast::TraitRef]] = Ref::new(Option::None);
+) -> (tast::TraitRef, Option[string]) {
+    let resolved = Ref::new(reference);
+    let instance_name: Ref[Option[string]] = Ref::new(Option::None);
     for function in indexed_functions(
         ctx.trait_method_index,
         lookup_pair_key(reference.name, method_name),
     ) {
-        let bindings = Vec::new();
-        let valid = Ref::new(true);
-        match function.trait_impl {
-            Option::Some(metadata) => {
-                if metadata.trait_ref.args.len() == reference.args.len() {
-                    if unify_type(
-                        metadata.for_ty,
-                        actual_types.get(0),
-                        bindings,
-                    ) && unify_types(
-                        metadata.trait_ref.args,
-                        reference.args,
-                        bindings,
-                    ) {
-                        ()
-                    } else {
-                        valid.set(false)
-                    }
-                } else {
-                    valid.set(false)
-                };
-            },
-            Option::None => valid.set(false),
-        };
-        if valid.get() {
-            let param_types = Vec::new();
-            for param in function.params {
-                param_types.push(param.1)
-            };
-            if unify_types(param_types, actual_types, bindings)
-                && unify_type(function.ret_ty, ret_ty, bindings)
-            {
-                ()
-            } else {
-                valid.set(false)
-            }
-        } else {
-            ()
-        };
-        if valid.get()
-            && complete_bindings(ctx, function, bindings)
-        {
-            ensure_instance(ctx, function.name, bindings);
-            resolved.set(Option::Some(specialize_trait_ref(
+        match trait_method_bindings(
+            function,
+            reference,
+            actual_types,
+            ret_ty,
+        ) {
+            Option::Some(bindings) => if complete_bindings(
                 ctx,
-                reference,
+                function,
                 bindings,
-            )))
-        } else {
-            ()
+            ) {
+                let base_name = trait_instance_name(
+                    ctx,
+                    function,
+                    bindings,
+                );
+                let name = ensure_instance(
+                    ctx,
+                    function.name,
+                    bindings,
+                );
+                match base_name {
+                    Option::Some(base) => if base != name {
+                        instance_name.set(Option::Some(name))
+                    } else {
+                        ()
+                    },
+                    Option::None => (),
+                };
+                resolved.set(specialize_trait_ref(
+                    ctx,
+                    reference,
+                    bindings,
+                ))
+            } else {
+                ()
+            },
+            Option::None => (),
         }
     };
-    match resolved.get() {
-        Option::Some(reference) => reference,
-        Option::None => reference,
-    }
+    (resolved.get(), instance_name.get())
 }
 
 fn ensure_trait_call_instance(
@@ -1659,7 +1695,7 @@ fn ensure_trait_call_instance(
     receiver: core::Expr,
     args: Vec[core::Expr],
     ret_ty: tast::Type,
-) -> tast::TraitRef {
+) -> (tast::TraitRef, Option[string]) {
     ensure_trait_method_instance(
         ctx,
         reference,
@@ -1908,12 +1944,19 @@ fn specialize_expr(
                 ty: specialize_type(ctx, ty, bindings),
             }
         },
-        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
+        core::Expr::TraitCall {
+            trait_ref: reference,
+            method_name,
+            instance_name: _,
+            receiver,
+            args,
+            ty,
+        } => {
             let reference = specialize_trait_ref(ctx, reference, bindings);
             let receiver = specialize_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
             let ty = specialize_type(ctx, ty, bindings);
-            let reference = ensure_trait_call_instance(
+            let resolved = ensure_trait_call_instance(
                 ctx,
                 reference,
                 method_name,
@@ -1921,7 +1964,14 @@ fn specialize_expr(
                 args,
                 ty,
             );
-            core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty }
+            core::Expr::TraitCall {
+                trait_ref: resolved.0,
+                method_name,
+                instance_name: resolved.1,
+                receiver,
+                args,
+                ty,
+            }
         },
         core::Expr::Proj { tuple, index, ty } => core::Expr::Proj {
             tuple: specialize_expr(ctx, bindings, tuple),
@@ -2103,7 +2153,7 @@ fn ensure_runtime_trait_impls_for_expr(
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
@@ -2158,6 +2208,8 @@ fn specialize_function(
                     metadata.associated_types,
                     instance.bindings,
                 ),
+                generic_count: 0,
+                predicate_count: 0,
             }),
             Option::None => Option::None,
         },
@@ -2174,6 +2226,7 @@ fn specialize(
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
+    let constants = value.constants;
     let function_index: HashMap[string, core::Function] = HashMap::new();
     let generic_inherent_index: HashMap[string, core::Function] = HashMap::new();
     let trait_function_index: HashMap[string, Vec[core::Function]] = HashMap::new();
@@ -2240,8 +2293,7 @@ fn specialize(
     };
     let output = Vec::new();
     let index = Ref::new(0);
-    let complete = Ref::new(false);
-    while complete.get() == false {
+    while true {
         while index.get() < ctx.work.len() {
             let instance = ctx.work.get(index.get());
             index.set(index.get() + 1);
@@ -2256,7 +2308,11 @@ fn specialize(
         };
         let previous_len = ctx.work.len();
         ensure_runtime_trait_impls(ctx, output);
-        complete.set(ctx.work.len() == previous_len)
+        if ctx.work.len() == previous_len {
+            break
+        } else {
+            ()
+        }
     };
-    core::File { functions: output, enums, structs, type_instances }
+    core::File { functions: output, enums, structs, type_instances, constants }
 }

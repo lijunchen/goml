@@ -4,85 +4,85 @@ fn make_string_channel() -> Channel[string] {
 
 fn main() -> unit {
   let buffered/2 = inherent#Channel#Channel[T]#new__T_int(2) in
-  let _wild65 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 10) in
-  let _wild66 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 20) in
-  let _wild67 = inherent#Channel#Channel[T]#close__T_int(buffered/2) in
-  let _wild70 = println__T_int(let mtmp68 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
-  match mtmp68 {
+  let _wild109 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 10) in
+  let _wild110 = inherent#Channel#Channel[T]#send__T_int(buffered/2, 20) in
+  let _wild111 = inherent#Channel#Channel[T]#close__T_int(buffered/2) in
+  let _wild114 = println__T_int(let mtmp112 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
+  match mtmp112 {
     Option__int::None => {
       -1
     },
-    Option__int::Some(x69) => {
-      let x69 = Option__int::Some._0(mtmp68) in
-      let value/3 = x69 in
+    Option__int::Some(x113) => {
+      let x113 = Option__int::Some._0(mtmp112) in
+      let value/3 = x113 in
       value/3
     },
   }) in
-  let _wild73 = println__T_int(let mtmp71 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
-  match mtmp71 {
+  let _wild117 = println__T_int(let mtmp115 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
+  match mtmp115 {
     Option__int::None => {
       -1
     },
-    Option__int::Some(x72) => {
-      let x72 = Option__int::Some._0(mtmp71) in
-      let value/4 = x72 in
+    Option__int::Some(x116) => {
+      let x116 = Option__int::Some._0(mtmp115) in
+      let value/4 = x116 in
       value/4
     },
   }) in
-  let _wild76 = println__T_string(let mtmp74 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
-  match mtmp74 {
+  let _wild120 = println__T_string(let mtmp118 = inherent#Channel#Channel[T]#recv__T_int(buffered/2) in
+  match mtmp118 {
     Option__int::None => {
       "closed"
     },
-    Option__int::Some(x75) => {
-      let x75 = Option__int::Some._0(mtmp74) in
+    Option__int::Some(x119) => {
+      let x119 = Option__int::Some._0(mtmp118) in
       "open"
     },
   }) in
   let unbuffered/5 = make_string_channel() in
-  let _wild79 = println__T_string(let mtmp77 = roundtrip__T_string(unbuffered/5, "ready") in
-  match mtmp77 {
+  let _wild123 = println__T_string(let mtmp121 = roundtrip__T_string(unbuffered/5, "ready") in
+  match mtmp121 {
     Option__string::None => {
       "closed"
     },
-    Option__string::Some(x78) => {
-      let x78 = Option__string::Some._0(mtmp77) in
-      let value/6 = x78 in
+    Option__string::Some(x122) => {
+      let x122 = Option__string::Some._0(mtmp121) in
+      let value/6 = x122 in
       value/6
     },
   }) in
-  let _wild80 = inherent#Channel#Channel[T]#close__T_string(unbuffered/5) in
+  let _wild124 = inherent#Channel#Channel[T]#close__T_string(unbuffered/5) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#new__T_string(capacity/213: int) -> Channel[string] {
-  @intrinsic(channel.new)(capacity/213)
+fn inherent#Channel#Channel[T]#new__T_string(capacity/211: int) -> Channel[string] {
+  @intrinsic(channel.new)(capacity/211)
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/213: int) -> Channel[int] {
-  @intrinsic(channel.new)(capacity/213)
+fn inherent#Channel#Channel[T]#new__T_int(capacity/211: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/211)
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/214: Channel[int], value/215: int) -> unit {
-  @intrinsic(channel.send)(self/214, value/215)
+fn inherent#Channel#Channel[T]#send__T_int(self/212: Channel[int], value/213: int) -> unit {
+  @intrinsic(channel.send)(self/212, value/213)
 }
 
-fn inherent#Channel#Channel[T]#close__T_int(self/219: Channel[int]) -> unit {
-  @intrinsic(channel.close)(self/219)
+fn inherent#Channel#Channel[T]#close__T_int(self/217: Channel[int]) -> unit {
+  @intrinsic(channel.close)(self/217)
 }
 
 fn println__T_int(value/1: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/216: Channel[int]) -> Option__int {
-  let mtmp60 = @intrinsic(channel.recv)(self/216) in
+fn inherent#Channel#Channel[T]#recv__T_int(self/214: Channel[int]) -> Option__int {
+  let mtmp60 = @intrinsic(channel.recv)(self/214) in
   let x61 = mtmp60.0 in
   let x62 = mtmp60.1 in
-  let ok/218 = x62 in
-  let value/217 = x61 in
-  if ok/218 {
-      Option__int::Some(value/217)
+  let ok/216 = x62 in
+  let value/215 = x61 in
+  if ok/216 {
+      Option__int::Some(value/215)
   } else {
       Option__int::None
   }
@@ -93,12 +93,12 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__string {
-  let _wild64 = go closure_env_roundtrip_T_string_0 { channel_0: channel/0, value_1: value/1 } in
+  let _wild108 = go closure_env_roundtrip_T_string_0 { channel_0: channel/0, value_1: value/1 } in
   inherent#Channel#Channel[T]#recv__T_string(channel/0)
 }
 
-fn inherent#Channel#Channel[T]#close__T_string(self/219: Channel[string]) -> unit {
-  @intrinsic(channel.close)(self/219)
+fn inherent#Channel#Channel[T]#close__T_string(self/217: Channel[string]) -> unit {
+  @intrinsic(channel.close)(self/217)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
@@ -109,25 +109,25 @@ fn trait_impl#ToString#string#to_string(self/38: string) -> string {
   self/38
 }
 
-fn inherent#Channel#Channel[T]#send__T_string(self/214: Channel[string], value/215: string) -> unit {
-  @intrinsic(channel.send)(self/214, value/215)
+fn inherent#Channel#Channel[T]#send__T_string(self/212: Channel[string], value/213: string) -> unit {
+  @intrinsic(channel.send)(self/212, value/213)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_string(self/216: Channel[string]) -> Option__string {
-  let mtmp60 = @intrinsic(channel.recv)(self/216) in
+fn inherent#Channel#Channel[T]#recv__T_string(self/214: Channel[string]) -> Option__string {
+  let mtmp60 = @intrinsic(channel.recv)(self/214) in
   let x61 = mtmp60.0 in
   let x62 = mtmp60.1 in
-  let ok/218 = x62 in
-  let value/217 = x61 in
-  if ok/218 {
-      Option__string::Some(value/217)
+  let ok/216 = x62 in
+  let value/215 = x61 in
+  if ok/216 {
+      Option__string::Some(value/215)
   } else {
       Option__string::None
   }
 }
 
-fn inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply(env81: closure_env_roundtrip_T_string_0) -> unit {
-  let channel/0 = closure_env_roundtrip_T_string_0.channel_0(env81) in
-  let value/1 = closure_env_roundtrip_T_string_0.value_1(env81) in
+fn inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply(env125: closure_env_roundtrip_T_string_0) -> unit {
+  let channel/0 = closure_env_roundtrip_T_string_0.channel_0(env125) in
+  let value/1 = closure_env_roundtrip_T_string_0.value_1(env125) in
   inherent#Channel#Channel[T]#send__T_string(channel/0, value/1)
 }

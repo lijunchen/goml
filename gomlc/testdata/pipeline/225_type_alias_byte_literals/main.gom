@@ -1,0 +1,25 @@
+type UserId = uint64;
+type Pair[T] = (T, T);
+
+fn sum_pair(value: Pair[int32]) -> int32 {
+    value.0 + value.1
+}
+
+fn classify(value: byte) -> string {
+    match value {
+        b'\n' => "newline",
+        b'A'..=b'Z' => "uppercase",
+        _ => "other",
+    }
+}
+
+fn main() -> unit {
+    let user: UserId = 0xff;
+    let pair: Pair[int32] = (0b1010, 0o12);
+    let marker: byte = b'\x41';
+    println(user);
+    println(sum_pair(pair));
+    println(marker);
+    println(classify(marker));
+    println(classify(b'\n'))
+}

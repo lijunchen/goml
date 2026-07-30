@@ -121,204 +121,204 @@ type Right struct {
 func (_ Right) isEither() {}
 
 func unwrap_either(value__0 Either) int32 {
-    var retv100 int32
-    var match64 Either = value__0
-    var whole__1 Either = match64
-    var jp102 int32
+    var retv144 int32
+    var match108 Either = value__0
+    var whole__1 Either = match108
+    var jp146 int32
     switch whole__1.(type) {
     case Left:
         var shared__2 int32 = whole__1.(Left)._0
-        var jp104 int32
+        var jp148 int32
         switch whole__1.(type) {
         case Left:
-            jp104 = 0
+            jp148 = 0
         case Right:
-            jp104 = 1
+            jp148 = 1
         default:
             panic("non-exhaustive match")
         }
-        var t105 int32 = shared__2 + jp104
-        jp102 = t105
+        var t149 int32 = shared__2 + jp148
+        jp146 = t149
     default:
-        var jp107 int32
+        var jp151 int32
         switch whole__1.(type) {
         case Right:
             var shared__2 int32 = whole__1.(Right)._0
-            var jp109 int32
+            var jp153 int32
             switch whole__1.(type) {
             case Left:
-                jp109 = 0
+                jp153 = 0
             case Right:
-                jp109 = 1
+                jp153 = 1
             default:
                 panic("non-exhaustive match")
             }
-            var t110 int32 = shared__2 + jp109
-            jp107 = t110
+            var t154 int32 = shared__2 + jp153
+            jp151 = t154
         default:
-            var t111 int32 = missing__int32("")
-            jp107 = t111
+            var t155 int32 = missing__int32("")
+            jp151 = t155
         }
-        jp102 = jp107
+        jp146 = jp151
     }
-    retv100 = jp102
-    return retv100
+    retv144 = jp146
+    return retv144
 }
 
 func char_group(value__3 rune) string {
-    var retv113 string
-    var match69 rune = value__3
-    var t116 bool = match69 >= 97
-    var jp115 string
-    if t116 {
-        var t119 bool = match69 <= 99
-        var jp118 string
-        if t119 {
-            jp118 = "abc"
+    var retv157 string
+    var match113 rune = value__3
+    var t160 bool = match113 >= 97
+    var jp159 string
+    if t160 {
+        var t163 bool = match113 <= 99
+        var jp162 string
+        if t163 {
+            jp162 = "abc"
         } else {
-            jp118 = "other"
+            jp162 = "other"
         }
-        jp115 = jp118
+        jp159 = jp162
     } else {
-        jp115 = "other"
+        jp159 = "other"
     }
-    retv113 = jp115
-    return retv113
+    retv157 = jp159
+    return retv157
 }
 
 func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) string {
-    var retv121 string
-    var jp123 string
+    var retv165 string
+    var jp167 string
     switch value__4.(type) {
     case Some:
-        var x70 int32 = value__4.(Some)._0
-        var n__7 int32 = x70
-        var match71 int32 = n__7
-        var t164 bool = match71 == 0
-        var jp163 string
-        if t164 {
-            jp163 = "small"
+        var x114 int32 = value__4.(Some)._0
+        var n__7 int32 = x114
+        var match115 int32 = n__7
+        var t208 bool = match115 == 0
+        var jp207 string
+        if t208 {
+            jp207 = "small"
         } else {
-            var t167 bool = match71 == 1
-            var jp166 string
-            if t167 {
-                jp166 = "small"
+            var t211 bool = match115 == 1
+            var jp210 string
+            if t211 {
+                jp210 = "small"
             } else {
-                var t170 bool = match71 >= 2
-                var jp169 string
-                if t170 {
-                    var t173 bool = match71 <= 4
-                    var jp172 string
-                    if t173 {
-                        jp172 = "middle"
+                var t214 bool = match115 >= 2
+                var jp213 string
+                if t214 {
+                    var t217 bool = match115 <= 4
+                    var jp216 string
+                    if t217 {
+                        jp216 = "middle"
                     } else {
-                        var x__8 int32 = match71
-                        var t176 bool = x__8 > 10
-                        var jp175 string
-                        if t176 {
-                            jp175 = "large"
+                        var x__8 int32 = match115
+                        var t220 bool = x__8 > 10
+                        var jp219 string
+                        if t220 {
+                            jp219 = "large"
                         } else {
-                            jp175 = "other"
+                            jp219 = "other"
                         }
-                        jp172 = jp175
+                        jp216 = jp219
                     }
-                    jp169 = jp172
+                    jp213 = jp216
                 } else {
-                    var x__8 int32 = match71
-                    var t179 bool = x__8 > 10
-                    var jp178 string
-                    if t179 {
-                        jp178 = "large"
+                    var x__8 int32 = match115
+                    var t223 bool = x__8 > 10
+                    var jp222 string
+                    if t223 {
+                        jp222 = "large"
                     } else {
-                        jp178 = "other"
+                        jp222 = "other"
                     }
-                    jp169 = jp178
+                    jp213 = jp222
                 }
-                jp166 = jp169
+                jp210 = jp213
             }
-            jp163 = jp166
+            jp207 = jp210
         }
-        jp123 = jp163
+        jp167 = jp207
     default:
-        jp123 = "none"
+        jp167 = "none"
     }
-    var from_if__9 string = jp123
-    var match72 *_goml_vec_int32 = numbers__5
-    var t140 int = vec_len__Vec_5int32(match72)
-    var t141 bool = t140 == 0
-    var jp125 string
-    if t141 {
-        jp125 = "empty"
+    var from_if__9 string = jp167
+    var match116 *_goml_vec_int32 = numbers__5
+    var t184 int = vec_len__Vec_5int32(match116)
+    var t185 bool = t184 == 0
+    var jp169 string
+    if t185 {
+        jp169 = "empty"
     } else {
-        var t144 int = vec_len__Vec_5int32(match72)
-        var t145 bool = t144 >= 1
-        var jp143 string
-        if t145 {
-            var first__10 int32 = vec_get__Vec_5int32(match72, 0)
-            var t146 int = vec_len__Vec_5int32(match72)
-            var tail__11 []int32 = match72.items[1:t146]
-            var t149 int = _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(tail__11)
-            var t150 int32 = int32(int(t149))
-            var t151 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(first__10, t150)
-            var jp148 string
-            if t151 {
-                jp148 = "balanced"
+        var t188 int = vec_len__Vec_5int32(match116)
+        var t189 bool = t188 >= 1
+        var jp187 string
+        if t189 {
+            var first__10 int32 = vec_get__Vec_5int32(match116, 0)
+            var t190 int = vec_len__Vec_5int32(match116)
+            var tail__11 []int32 = match116.items[1:t190]
+            var t193 int = _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(tail__11)
+            var t194 int32 = int32(int(t193))
+            var t195 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(first__10, t194)
+            var jp192 string
+            if t195 {
+                jp192 = "balanced"
             } else {
-                var t154 int = vec_len__Vec_5int32(match72)
-                var t155 bool = t154 >= 1
-                var jp153 string
-                if t155 {
-                    jp153 = "nonempty"
+                var t198 int = vec_len__Vec_5int32(match116)
+                var t199 bool = t198 >= 1
+                var jp197 string
+                if t199 {
+                    jp197 = "nonempty"
                 } else {
-                    var t156 string = missing__string("")
-                    jp153 = t156
+                    var t200 string = missing__string("")
+                    jp197 = t200
                 }
-                jp148 = jp153
+                jp192 = jp197
             }
-            jp143 = jp148
+            jp187 = jp192
         } else {
-            var t159 int = vec_len__Vec_5int32(match72)
-            var t160 bool = t159 >= 1
-            var jp158 string
-            if t160 {
-                jp158 = "nonempty"
+            var t203 int = vec_len__Vec_5int32(match116)
+            var t204 bool = t203 >= 1
+            var jp202 string
+            if t204 {
+                jp202 = "nonempty"
             } else {
-                var t161 string = missing__string("")
-                jp158 = t161
+                var t205 string = missing__string("")
+                jp202 = t205
             }
-            jp143 = jp158
+            jp187 = jp202
         }
-        jp125 = jp143
+        jp169 = jp187
     }
-    var from_vec__12 string = jp125
-    var match73 []int32 = view__6
-    var t132 int = len(match73)
-    var t133 bool = t132 >= 2
-    var jp127 string
-    if t133 {
-        var first__13 int32 = match73[0]
-        var t134 int = len(match73)
-        var t135 int = t134 - 1
-        var t136 int = t135 + 0
-        var last__14 int32 = match73[t136]
-        var t139 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(first__13, last__14)
-        var jp138 string
-        if t139 {
-            jp138 = "same ends"
+    var from_vec__12 string = jp169
+    var match117 []int32 = view__6
+    var t176 int = len(match117)
+    var t177 bool = t176 >= 2
+    var jp171 string
+    if t177 {
+        var first__13 int32 = match117[0]
+        var t178 int = len(match117)
+        var t179 int = t178 - 1
+        var t180 int = t179 + 0
+        var last__14 int32 = match117[t180]
+        var t183 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(first__13, last__14)
+        var jp182 string
+        if t183 {
+            jp182 = "same ends"
         } else {
-            jp138 = "different ends"
+            jp182 = "different ends"
         }
-        jp127 = jp138
+        jp171 = jp182
     } else {
-        jp127 = "different ends"
+        jp171 = "different ends"
     }
-    var from_slice__15 string = jp127
-    var t128 string = from_if__9 + "/"
-    var t129 string = t128 + from_vec__12
-    var t130 string = t129 + "/"
-    var t131 string = t130 + from_slice__15
-    retv121 = t131
-    return retv121
+    var from_slice__15 string = jp171
+    var t172 string = from_if__9 + "/"
+    var t173 string = t172 + from_vec__12
+    var t174 string = t173 + "/"
+    var t175 string = t174 + from_slice__15
+    retv165 = t175
+    return retv165
 }
 
 func main0() struct{} {
@@ -326,187 +326,187 @@ func main0() struct{} {
         left: 3,
         right: 9,
     }
-    var mtmp74 Pair = pair__16
-    var x75 int32 = mtmp74.left
-    var left__17 int32 = x75
+    var mtmp118 Pair = pair__16
+    var x119 int32 = mtmp118.left
+    var left__17 int32 = x119
     var values__18 [4]int = [4]int{1, 2, 3, 1}
-    var mtmp77 [4]int = values__18
-    var first__19 int = array_get__Array_4_3int(mtmp77, 0)
-    var last__21 int = array_get__Array_4_3int(mtmp77, 3)
-    var t181 int = array_get__Array_4_3int(mtmp77, 1)
-    var t182 int = array_get__Array_4_3int(mtmp77, 2)
-    var middle__20 [2]int = [2]int{t181, t182}
+    var mtmp121 [4]int = values__18
+    var first__19 int = array_get__Array_4_3int(mtmp121, 0)
+    var last__21 int = array_get__Array_4_3int(mtmp121, 3)
+    var t225 int = array_get__Array_4_3int(mtmp121, 1)
+    var t226 int = array_get__Array_4_3int(mtmp121, 2)
+    var middle__20 [2]int = [2]int{t225, t226}
     println__T_int32(left__17)
-    var t183 int = array_get__Array_2_3int(middle__20, 0)
-    var t184 int = first__19 + t183
-    var t185 int = t184 + last__21
-    println__T_int(t185)
+    var t227 int = array_get__Array_2_3int(middle__20, 0)
+    var t228 int = first__19 + t227
+    var t229 int = t228 + last__21
+    println__T_int(t229)
     var numbers__22 *_goml_vec_int32 = vec_new__Vec_5int32()
     vec_push__Vec_5int32(numbers__22, 1)
     vec_push__Vec_5int32(numbers__22, 8)
-    var t186 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(numbers__22)
-    var view__23 []int32 = numbers__22.items[0:t186]
-    var t187 Maybe = Some{
+    var t230 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(numbers__22)
+    var view__23 []int32 = numbers__22.items[0:t230]
+    var t231 Maybe = Some{
         _0: 3,
     }
-    var t188 string = describe(t187, numbers__22, view__23)
-    println__T_string(t188)
+    var t232 string = describe(t231, numbers__22, view__23)
+    println__T_string(t232)
     var empty__24 *_goml_vec_int32 = vec_new__Vec_5int32()
     var empty_view__25 []int32 = empty__24.items[0:0]
-    var t189 string = describe(None{}, empty__24, empty_view__25)
-    println__T_string(t189)
-    var t190 Maybe = Some{
+    var t233 string = describe(None{}, empty__24, empty_view__25)
+    println__T_string(t233)
+    var t234 Maybe = Some{
         _0: 7,
     }
-    var state__26 *ref_Maybe_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Maybe(t190)
-    Loop_loop204:
+    var state__26 *ref_Maybe_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Maybe(t234)
+    Loop_loop248:
     for {
         if true {
-            var mtmp84 Maybe = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Maybe(state__26)
-            switch mtmp84.(type) {
+            var mtmp128 Maybe = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Maybe(state__26)
+            switch mtmp128.(type) {
             case Some:
-                var x85 int32 = mtmp84.(Some)._0
-                var n__27 int32 = x85
+                var x129 int32 = mtmp128.(Some)._0
+                var n__27 int32 = x129
                 println__T_int32(n__27)
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Maybe(state__26, None{})
                 continue
             default:
-                break Loop_loop204
+                break Loop_loop248
             }
         } else {
-            break Loop_loop204
+            break Loop_loop248
         }
     }
-    var mtmp89 Maybe = Some{
+    var mtmp133 Maybe = Some{
         _0: 6,
     }
-    switch mtmp89.(type) {
+    switch mtmp133.(type) {
     case Some:
-        var x90 int32 = mtmp89.(Some)._0
-        var n__28 int32 = x90
+        var x134 int32 = mtmp133.(Some)._0
+        var n__28 int32 = x134
         println__T_int32(n__28)
     default:
     }
-    var match93 Maybe = Some{
+    var match137 Maybe = Some{
         _0: 5,
     }
-    var whole__29 Maybe = match93
-    var jp194 int32
+    var whole__29 Maybe = match137
+    var jp238 int32
     switch whole__29.(type) {
     case Some:
         var value__30 int32 = whole__29.(Some)._0
-        var jp199 int32
+        var jp243 int32
         switch whole__29.(type) {
         case None:
-            jp199 = 0
+            jp243 = 0
         case Some:
-            var x94 int32 = whole__29.(Some)._0
-            var inner__31 int32 = x94
-            jp199 = inner__31
+            var x138 int32 = whole__29.(Some)._0
+            var inner__31 int32 = x138
+            jp243 = inner__31
         default:
             panic("non-exhaustive match")
         }
-        var t200 int32 = value__30 + jp199
-        jp194 = t200
+        var t244 int32 = value__30 + jp243
+        jp238 = t244
     default:
-        var jp202 int32
-        switch match93.(type) {
+        var jp246 int32
+        switch match137.(type) {
         case None:
-            jp202 = 0
+            jp246 = 0
         default:
-            var t203 int32 = missing__int32("")
-            jp202 = t203
+            var t247 int32 = missing__int32("")
+            jp246 = t247
         }
-        jp194 = jp202
+        jp238 = jp246
     }
-    var aliased__32 int32 = jp194
+    var aliased__32 int32 = jp238
     println__T_int32(aliased__32)
-    var t195 Either = Right{
+    var t239 Either = Right{
         _0: 11,
     }
-    var t196 int32 = unwrap_either(t195)
-    println__T_int32(t196)
-    var t197 string = char_group(98)
-    println__T_string(t197)
+    var t240 int32 = unwrap_either(t239)
+    println__T_int32(t240)
+    var t241 string = char_group(98)
+    println__T_string(t241)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__188 []int32) int {
-    var retv207 int
-    var t208 int = len(self__188)
-    retv207 = t208
-    return retv207
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__186 []int32) int {
+    var retv251 int
+    var t252 int = len(self__186)
+    retv251 = t252
+    return retv251
 }
 
 func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__65 int32, other__66 int32) bool {
-    var retv210 bool
-    var t211 bool = self__65 == other__66
-    retv210 = t211
-    return retv210
+    var retv254 bool
+    var t255 bool = self__65 == other__66
+    retv254 = t255
+    return retv254
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t213 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t213)
+    var t257 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t257)
     return struct{}{}
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t216 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t216)
+    var t260 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    _goml_runtime_core_string_println(t260)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__139 *_goml_vec_int32) int {
-    var retv219 int
-    var t220 int = vec_len__Vec_5int32(self__139)
-    retv219 = t220
-    return retv219
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__137 *_goml_vec_int32) int {
+    var retv263 int
+    var t264 int = vec_len__Vec_5int32(self__137)
+    retv263 = t264
+    return retv263
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t222)
+    var t266 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t266)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Maybe(value__209 Maybe) *ref_Maybe_x {
-    var retv225 *ref_Maybe_x
-    var t226 *ref_Maybe_x = ref__Ref_5Maybe(value__209)
-    retv225 = t226
-    return retv225
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Maybe(value__207 Maybe) *ref_Maybe_x {
+    var retv269 *ref_Maybe_x
+    var t270 *ref_Maybe_x = ref__Ref_5Maybe(value__207)
+    retv269 = t270
+    return retv269
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Maybe(self__210 *ref_Maybe_x) Maybe {
-    var retv228 Maybe
-    var t229 Maybe = ref_get__Ref_5Maybe(self__210)
-    retv228 = t229
-    return retv228
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Maybe(self__208 *ref_Maybe_x) Maybe {
+    var retv272 Maybe
+    var t273 Maybe = ref_get__Ref_5Maybe(self__208)
+    retv272 = t273
+    return retv272
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Maybe(self__211 *ref_Maybe_x, value__212 Maybe) struct{} {
-    ref_set__Ref_5Maybe(self__211, value__212)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Maybe(self__209 *ref_Maybe_x, value__210 Maybe) struct{} {
+    ref_set__Ref_5Maybe(self__209, value__210)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv233 string
-    var t234 string = _goml_runtime_core_int32_to_string(self__43)
-    retv233 = t234
-    return retv233
+    var retv277 string
+    var t278 string = _goml_runtime_core_int32_to_string(self__43)
+    retv277 = t278
+    return retv277
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv236 string
-    var t237 string = _goml_runtime_core_int_to_string(self__40)
-    retv236 = t237
-    return retv236
+    var retv280 string
+    var t281 string = _goml_runtime_core_int_to_string(self__40)
+    retv280 = t281
+    return retv280
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv239 string
-    retv239 = self__38
-    return retv239
+    var retv283 string
+    retv283 = self__38
+    return retv283
 }
 
 func main() {

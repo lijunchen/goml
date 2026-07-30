@@ -41,7 +41,7 @@ file main.gom
       }
     }
     
-    trait Source[T] {
+    trait Source[T] where Self::Item = T {
       type Item;
       fn get(Self) -> Self::Item;
     }
@@ -57,7 +57,7 @@ file main.gom
       }
     }
     
-    fn read(local/1/7: S) -> T {
+    fn read[T, S: Source[T]](local/1/7: S) -> T {
         Source[T]::get(source/7)
     }
     
@@ -70,7 +70,7 @@ file main.gom
       fn select(Self) -> T;
     }
     
-    impl[S: ItemSource, T] Select[T] for S {
+    impl[S: ItemSource, T] Select[T] for S where S::Item = T {
       fn select(local/1/8: S) -> T {
           ItemSource::item(self/8)
       }
@@ -87,11 +87,11 @@ file main.gom
       }
     }
     
-    fn invoke(local/1/10: S) -> T {
+    fn invoke[T, S: Select[T]](local/1/10: S) -> T {
         source/10.select()
     }
     
-    fn select_item(local/1/11: S) -> S::Item {
+    fn select_item[S: ItemSource](local/1/11: S) -> S::Item {
         def/1/17(source/11)
     }
     

@@ -3,73 +3,73 @@ package go_backend;
 use std::bytes;
 use std::text;
 
-fn sha256_constants() -> [uint32; 64] {
-    [
-        1116352408,
-        1899447441,
-        3049323471,
-        3921009573,
-        961987163,
-        1508970993,
-        2453635748,
-        2870763221,
-        3624381080,
-        310598401,
-        607225278,
-        1426881987,
-        1925078388,
-        2162078206,
-        2614888103,
-        3248222580,
-        3835390401,
-        4022224774,
-        264347078,
-        604807628,
-        770255983,
-        1249150122,
-        1555081692,
-        1996064986,
-        2554220882,
-        2821834349,
-        2952996808,
-        3210313671,
-        3336571891,
-        3584528711,
-        113926993,
-        338241895,
-        666307205,
-        773529912,
-        1294757372,
-        1396182291,
-        1695183700,
-        1986661051,
-        2177026350,
-        2456956037,
-        2730485921,
-        2820302411,
-        3259730800,
-        3345764771,
-        3516065817,
-        3600352804,
-        4094571909,
-        275423344,
-        430227734,
-        506948616,
-        659060556,
-        883997877,
-        958139571,
-        1322822218,
-        1537002063,
-        1747873779,
-        1955562222,
-        2024104815,
-        2227730452,
-        2361852424,
-        2428436474,
-        2756734187,
-        3204031479,
-        3329325298,
-    ]
+fn sha256_constants() -> Vec[uint32] {
+    let values = Vec::with_capacity(64);
+    values.push(1116352408);
+    values.push(1899447441);
+    values.push(3049323471);
+    values.push(3921009573);
+    values.push(961987163);
+    values.push(1508970993);
+    values.push(2453635748);
+    values.push(2870763221);
+    values.push(3624381080);
+    values.push(310598401);
+    values.push(607225278);
+    values.push(1426881987);
+    values.push(1925078388);
+    values.push(2162078206);
+    values.push(2614888103);
+    values.push(3248222580);
+    values.push(3835390401);
+    values.push(4022224774);
+    values.push(264347078);
+    values.push(604807628);
+    values.push(770255983);
+    values.push(1249150122);
+    values.push(1555081692);
+    values.push(1996064986);
+    values.push(2554220882);
+    values.push(2821834349);
+    values.push(2952996808);
+    values.push(3210313671);
+    values.push(3336571891);
+    values.push(3584528711);
+    values.push(113926993);
+    values.push(338241895);
+    values.push(666307205);
+    values.push(773529912);
+    values.push(1294757372);
+    values.push(1396182291);
+    values.push(1695183700);
+    values.push(1986661051);
+    values.push(2177026350);
+    values.push(2456956037);
+    values.push(2730485921);
+    values.push(2820302411);
+    values.push(3259730800);
+    values.push(3345764771);
+    values.push(3516065817);
+    values.push(3600352804);
+    values.push(4094571909);
+    values.push(275423344);
+    values.push(430227734);
+    values.push(506948616);
+    values.push(659060556);
+    values.push(883997877);
+    values.push(958139571);
+    values.push(1322822218);
+    values.push(1537002063);
+    values.push(1747873779);
+    values.push(1955562222);
+    values.push(2024104815);
+    values.push(2227730452);
+    values.push(2361852424);
+    values.push(2428436474);
+    values.push(2756734187);
+    values.push(3204031479);
+    values.push(3329325298);
+    values
 }
 
 fn rotate_right(value: uint32, count: uint32) -> uint32 {
@@ -129,15 +129,21 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     let h5 = Ref::new(2600822924);
     let h6 = Ref::new(528734635);
     let h7 = Ref::new(1541459225);
+    let words: Vec[uint32] = Vec::with_capacity(64);
+    for _ in range(0, 64) {
+        words.push(0)
+    };
     for chunk in range(0, padded_len.get() / 64) {
-        let words: Vec[uint32] = Vec::new();
         for index in range(0, 16) {
-            words.push(message_word(
-                value,
-                chunk * 64 + index * 4,
-                padded_len.get(),
-                bit_len,
-            ))
+            words.set(
+                index,
+                message_word(
+                    value,
+                    chunk * 64 + index * 4,
+                    padded_len.get(),
+                    bit_len,
+                ),
+            )
         };
         for index in range(16, 64) {
             let first = words.get(index - 15);
@@ -148,8 +154,12 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
             let sigma1 = rotate_right(second, 17)
                 ^ rotate_right(second, 19)
                 ^ (second >> 10);
-            words.push(
-                words.get(index - 16) + sigma0 + words.get(index - 7) + sigma1,
+            words.set(
+                index,
+                words.get(index - 16)
+                    + sigma0
+                    + words.get(index - 7)
+                    + sigma1,
             )
         };
         let a = Ref::new(h0.get());
@@ -168,7 +178,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
             let temp1 = h.get()
                 + sigma1
                 + choice
-                + array_get(constants, index)
+                + constants.get(index)
                 + words.get(index);
             let sigma0 = rotate_right(a.get(), 2)
                 ^ rotate_right(a.get(), 13)
@@ -195,7 +205,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
         h6.set(h6.get() + g.get());
         h7.set(h7.get() + h.get())
     };
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(64);
     write_hex_word(builder, h0.get());
     write_hex_word(builder, h1.get());
     write_hex_word(builder, h2.get());

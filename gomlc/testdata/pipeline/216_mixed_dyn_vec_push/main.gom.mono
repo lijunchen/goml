@@ -9,9 +9,9 @@ fn trait_impl#Show#Wrap#show(self/1: Wrap) -> string {
 fn main() -> unit {
   let values/2 = inherent#Vec#Vec[T]#new__T_dynShow() in
   let value/3 = 10 in
-  let _wild64 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{int32}(value/3)) in
-  let _wild65 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{Wrap}(Wrap { value: "ok" })) in
-  let _wild66 = println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 0))) in
+  let _wild108 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{int32}(value/3)) in
+  let _wild109 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{Wrap}(Wrap { value: "ok" })) in
+  let _wild110 = println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 0))) in
   println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 1)))
 }
 
@@ -23,8 +23,8 @@ fn inherent#Vec#Vec[T]#new__T_dynShow() -> Vec[dyn Show] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynShow(self/128: Vec[dyn Show], elem/129: dyn Show) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
+fn inherent#Vec#Vec[T]#push__T_dynShow(self/126: Vec[dyn Show], elem/127: dyn Show) -> unit {
+  @intrinsic(vec.push)(self/126, elem/127)
 }
 
 fn println__T_string(value/1: string) -> unit {

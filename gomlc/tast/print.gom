@@ -488,9 +488,14 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::Assign { target, value } => {
+        Stmt::Assign { target, op, value } => {
             write_expr(builder, target, indent);
-            builder.write_string(" = ");
+            builder.write_char(' ');
+            match op {
+                ast::AssignmentOp::Compound(value) => builder.write_string(binary_symbol(value)),
+                ast::AssignmentOp::Plain => (),
+            };
+            builder.write_string("= ");
             write_expr(builder, value, indent)
         },
         Stmt::Expr { expr: value } => write_expr(builder, value, indent),
@@ -823,9 +828,68 @@ fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
     builder.write_char(',')
 }
 
-fn write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
+fn write_generics_from(
+    builder: text::StringBuilder,
+    values: Vec[string],
+    start: int,
+) -> unit {
+    if start < values.len() {
+        builder.write_char('[');
+        for index in range(start, values.len()) {
+            if index > start {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            builder.write_string(values.get(index))
+        };
+        builder.write_char(']')
+    } else {
+        ()
+    }
+}
+
+fn write_predicates_from(
+    builder: text::StringBuilder,
+    values: Vec[TypePredicate],
+    start: int,
+) -> unit {
+    if start < values.len() {
+        builder.write_string(" where ");
+        for index in range(start, values.len()) {
+            if index > start {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            match values.get(index) {
+                TypePredicate::Trait { for_ty, trait_ref } => {
+                    write_type(builder, for_ty);
+                    builder.write_string(": ");
+                    write_trait_ref(builder, trait_ref)
+                },
+                TypePredicate::Equality { lhs, rhs } => {
+                    write_type(builder, lhs);
+                    builder.write_string(" = ");
+                    write_type(builder, rhs)
+                },
+            }
+        }
+    } else {
+        ()
+    }
+}
+
+fn write_function_from(
+    builder: text::StringBuilder,
+    value: Function,
+    indent: int,
+    generic_start: int,
+    predicate_start: int,
+) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
+    write_generics_from(builder, value.generics, generic_start);
     builder.write_char('(');
     for index in range(0, value.params.len()) {
         if index > 0 {
@@ -840,12 +904,19 @@ fn write_function(builder: text::StringBuilder, value: Function, indent: int) ->
     };
     builder.write_string(") -> ");
     write_type(builder, value.ret_ty);
+    write_predicates_from(builder, value.predicates, predicate_start);
     builder.write_char(' ');
     write_block(builder, value.body, indent)
 }
 
+fn write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
+    write_function_from(builder, value, indent, 0, 0)
+}
+
 fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
-    builder.write_string("impl ");
+    builder.write_string("impl");
+    write_generics_from(builder, value.generics, 0);
+    builder.write_char(' ');
     match value.trait_ref {
         Option::Some(reference) => {
             write_trait_ref(builder, reference);
@@ -854,10 +925,17 @@ fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> un
         Option::None => (),
     };
     write_type(builder, value.for_type);
+    write_predicates_from(builder, value.predicates, 0);
     builder.write_char('{');
     for method in value.methods {
         newline(builder, indent + 2);
-        write_function(builder, method, indent + 2)
+        write_function_from(
+            builder,
+            method,
+            indent + 2,
+            value.generics.len(),
+            value.predicates.len(),
+        )
     };
     newline(builder, indent);
     builder.write_char('}')
@@ -870,8 +948,67 @@ fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     }
 }
 
+pub fn write_const_expr(
+    builder: text::StringBuilder,
+    value: ConstExpr,
+) -> unit {
+    match value {
+        ConstExpr::Prim { value, ty: _ } => write_primitive(builder, value),
+        ConstExpr::Ref { name, ty: _ } => builder.write_string(name),
+        ConstExpr::Unary { op, expr, ty: _ } => {
+            builder.write_string(unary_symbol(op));
+            builder.write_char('(');
+            write_const_expr(builder, expr);
+            builder.write_char(')')
+        },
+        ConstExpr::Cast { expr, ty } => {
+            builder.write_char('(');
+            write_const_expr(builder, expr);
+            builder.write_string(" as ");
+            write_type(builder, ty);
+            builder.write_char(')')
+        },
+        ConstExpr::Binary { op, lhs, rhs, ty: _ } => {
+            builder.write_char('(');
+            write_const_expr(builder, lhs);
+            builder.write_char(' ');
+            builder.write_string(binary_symbol(op));
+            builder.write_char(' ');
+            write_const_expr(builder, rhs);
+            builder.write_char(')')
+        },
+        ConstExpr::Error { ty: _ } => builder.write_string("<error>"),
+    }
+}
+
+pub fn write_constant(
+    builder: text::StringBuilder,
+    value: Constant,
+) -> unit {
+    builder.write_string("const ");
+    builder.write_string(value.name);
+    builder.write_string(": ");
+    write_type(builder, value.ty);
+    builder.write_string(" = ");
+    write_const_expr(builder, value.value);
+    builder.write_char(';')
+}
+
 fn encode_file(value: File) -> string {
     let builder = text::StringBuilder::new();
+    for index in range(0, value.constants.len()) {
+        if index > 0 {
+            builder.write_char('\n')
+        } else {
+            ()
+        };
+        write_constant(builder, value.constants.get(index))
+    };
+    if value.constants.len() > 0 && value.items.len() > 0 {
+        builder.write_string("\n\n")
+    } else {
+        ()
+    };
     for index in range(0, value.items.len()) {
         if index > 0 {
             builder.write_string("\n\n")

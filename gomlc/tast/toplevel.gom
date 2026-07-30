@@ -2,6 +2,9 @@ package tast;
 
 use gomlc::ast;
 use gomlc::hir;
+use gomlc::strings;
+use gomlc::vecs;
+use std::text;
 
 fn function_context(
     base: Checker,
@@ -27,6 +30,14 @@ fn function_context(
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
         structs: base.structs,
+        type_aliases: base.type_aliases,
+        constants: base.constants,
+        enum_names: base.enum_names,
+        enum_short_names: base.enum_short_names,
+        struct_names: base.struct_names,
+        struct_short_names: base.struct_short_names,
+        coverage_domains: base.coverage_domains,
+        coverage_inhabited: base.coverage_inhabited,
         traits: base.traits,
         functions: base.functions,
         rejected_externs: base.rejected_externs,
@@ -70,6 +81,14 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
         structs: base.structs,
+        type_aliases: base.type_aliases,
+        constants: base.constants,
+        enum_names: base.enum_names,
+        enum_short_names: base.enum_short_names,
+        struct_names: base.struct_names,
+        struct_short_names: base.struct_short_names,
+        coverage_domains: base.coverage_domains,
+        coverage_inhabited: base.coverage_inhabited,
         traits: base.traits,
         functions: base.functions,
         rejected_externs: base.rejected_externs,
@@ -103,7 +122,7 @@ fn deferred_method_name(value: Callable) -> Option[string] {
         Callable::Function(name) => {
             let prefix = "__goml_deferred_method:";
             if name.byte_len() > prefix.byte_len()
-                && name.byte_slice(0, prefix.byte_len()) == prefix
+                && strings::starts_with(name, prefix)
             {
                 Option::Some(name.byte_slice(
                     prefix.byte_len(),
@@ -134,8 +153,9 @@ fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
                 pat,
                 value: resolve_deferred_expr(ctx, value),
             },
-            Stmt::Assign { target, value } => Stmt::Assign {
+            Stmt::Assign { target, op, value } => Stmt::Assign {
                 target: resolve_deferred_expr(ctx, target),
+                op,
                 value: resolve_deferred_expr(ctx, value),
             },
             Stmt::Expr { expr } => Stmt::Expr {
@@ -179,6 +199,7 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                                 name,
                                 arg_types,
                                 Option::Some(ty),
+                                Vec::new(),
                             ) {
                                 Option::Some(value) => Expr::Callable {
                                     callable: value.callable,
@@ -215,47 +236,44 @@ fn pattern_has_unresolved_inference(
             Option::Some(ty) => contains_unresolved_inference(ctx, ty),
             Option::None => false,
         },
-        hir::PatKind::Constr { constructor: _, args }
+        hir::PatKind::Constr { head: _, args }
         | hir::PatKind::Tuple { items: args }
         | hir::PatKind::Or { pats: args } => {
-            let found = Ref::new(false);
             for arg in args {
                 if pattern_has_unresolved_inference(ctx, arg) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
-        hir::PatKind::Struct { name: _, fields, has_rest: _ } => {
-            let found = Ref::new(false);
+        hir::PatKind::Struct { head: _, fields, has_rest: _ } => {
             for field in fields {
                 if pattern_has_unresolved_inference(ctx, field.1) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         hir::PatKind::Array { prefix, rest: _, suffix } => {
-            let found = Ref::new(false);
             for arg in prefix {
                 if pattern_has_unresolved_inference(ctx, arg) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
             for arg in suffix {
                 if pattern_has_unresolved_inference(ctx, arg) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         hir::PatKind::Alias { name, pat } => {
             let alias_unresolved = match find_local(ctx, name) {
@@ -293,7 +311,7 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
                 };
                 report_unresolved_expr(ctx, value)
             },
-            hir::Stmt::Assign { target, value } => {
+            hir::Stmt::Assign { target, op: _, value } => {
                 report_unresolved_expr(ctx, target);
                 report_unresolved_expr(ctx, value)
             },
@@ -321,11 +339,28 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
         hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
         | hir::ExprKind::Tuple { items: args }
-        | hir::ExprKind::Array { items: args } => {
+        | hir::ExprKind::Array { items: args }
+        | hir::ExprKind::VecLiteral { items: args } => {
             report_unresolved_exprs(ctx, args)
         },
-        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
-            report_unresolved_expr(ctx, field.1)
+        hir::ExprKind::HashMapLiteral { entries } => for entry in entries {
+            report_unresolved_expr(ctx, entry.0);
+            report_unresolved_expr(ctx, entry.1)
+        },
+        hir::ExprKind::InterpolatedString { parts } => for part in parts {
+            match part {
+                hir::InterpolatedStringPart::Expr(value) => report_unresolved_expr(ctx, value),
+                hir::InterpolatedStringPart::Text(_) => (),
+            }
+        },
+        hir::ExprKind::StructLiteral { name: _, fields, base } => {
+            for field in fields {
+                report_unresolved_expr(ctx, field.1)
+            };
+            match base {
+                Option::Some(value) => report_unresolved_expr(ctx, value),
+                Option::None => (),
+            }
         },
         hir::ExprKind::Closure { params, body } => {
             report_unresolved_expr(ctx, body);
@@ -375,7 +410,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
         | hir::ExprKind::Cast { expr, ty: _ }
         | hir::ExprKind::Try { depth: _, expr }
         | hir::ExprKind::Proj { tuple: expr, index: _ }
-        | hir::ExprKind::Field { expr, field_name: _ }
+        | hir::ExprKind::Field { expr, .. }
         | hir::ExprKind::Go { expr } => report_unresolved_expr(ctx, expr),
         hir::ExprKind::Range { start, end }
         | hir::ExprKind::Binary { op: _, lhs: start, rhs: end }
@@ -394,7 +429,6 @@ fn check_function(
     inherited_generics: Vec[string],
     inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
-    ignore_generic_bounds: bool,
 ) -> Function {
     match self_ty {
         Option::None => if value.name == "main" {
@@ -426,9 +460,8 @@ fn check_function(
         Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
         Option::None => Type::Unit,
     };
-    let predicates = resolve_signature_predicates(base, if ignore_generic_bounds {
-        inherited_predicates
-    } else {
+    let predicates = resolve_signature_predicates(
+        base,
         append_predicates(
             inherited_predicates,
             predicates_from_hir(
@@ -437,8 +470,9 @@ fn check_function(
                 type_params,
                 self_ty,
             ),
-        )
-    }, true);
+        ),
+        true,
+    );
     let previous_span = base.current_span.get();
     base.current_span.set(value.ret_ty_span);
     let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
@@ -484,9 +518,184 @@ fn check_function(
     }
 }
 
+fn lower_constant_expr(ctx: Checker, value: Expr) -> ConstExpr {
+    match value {
+        Expr::Prim { value, ty } => ConstExpr::Prim { value, ty },
+        Expr::Var { name, ty } => match find_constant_by_name(ctx, name) {
+            Option::Some(_) => ConstExpr::Ref { name, ty },
+            Option::None => {
+                push_diagnostic(ctx, "constant expression cannot reference " + name);
+                ConstExpr::Error { ty }
+            },
+        },
+        Expr::Unary { op, expr, ty } => ConstExpr::Unary {
+            op,
+            expr: lower_constant_expr(ctx, expr),
+            ty,
+        },
+        Expr::Cast { expr, ty } => ConstExpr::Cast {
+            expr: lower_constant_expr(ctx, expr),
+            ty,
+        },
+        Expr::Binary {
+            op,
+            lhs,
+            rhs,
+            ty,
+            resolution,
+        } => match resolution {
+            BinaryResolution::Builtin
+            | BinaryResolution::Overloaded { trait_name: _ } => ConstExpr::Binary {
+                op,
+                lhs: lower_constant_expr(ctx, lhs),
+                rhs: lower_constant_expr(ctx, rhs),
+                ty,
+            },
+        },
+        other => {
+            let ty = expr_type(other);
+            push_diagnostic(
+                ctx,
+                "constant values support only literals, constant references, unary operators, binary operators, and casts",
+            );
+            ConstExpr::Error { ty }
+        },
+    }
+}
+
+fn constant_type_supported(value: Type) -> bool {
+    match prune(value) {
+        Type::Bool
+        | Type::Int
+        | Type::Int8
+        | Type::Int16
+        | Type::Int32
+        | Type::Int64
+        | Type::Uint
+        | Type::Uint8
+        | Type::Uint16
+        | Type::Uint32
+        | Type::Uint64
+        | Type::Float32
+        | Type::Float64
+        | Type::String
+        | Type::Char => true,
+        _ => false,
+    }
+}
+
+fn check_constant(base: Checker, value: hir::Constant) -> Constant {
+    let previous_span = base.current_span.get();
+    base.current_span.set(Option::Some(value.ty_span));
+    let ty = resolve_signature_type(
+        base,
+        type_from_hir(value.ty, Vec::new(), Option::None),
+        Vec::new(),
+        true,
+    );
+    if !constant_type_supported(ty) {
+        push_diagnostic(
+            base,
+            "constant type must be bool, numeric, string, char, or byte",
+        )
+    } else {
+        ()
+    };
+    base.current_span.set(Option::Some(value.value.span));
+    let ctx = function_context(base, ty, Option::None, Vec::new(), Vec::new());
+    let checked = check_expr(ctx, value.value, Option::Some(ty));
+    resolve_field_constraints(ctx);
+    resolve_coercion_constraints(ctx);
+    resolve_numeric_literal_constraints(ctx);
+    let checked = resolve_deferred_expr(ctx, checked);
+    let result = Constant {
+        name: value.name,
+        ty: resolve_type(ty),
+        value: lower_constant_expr(ctx, checked),
+    };
+    base.current_span.set(previous_span);
+    result
+}
+
+fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
+    match value {
+        ConstExpr::Ref { name, ty: _ } => {
+            if !vecs::contains(result, name) {
+                result.push(name)
+            } else {
+                ()
+            }
+        },
+        ConstExpr::Unary { op: _, expr, ty: _ }
+        | ConstExpr::Cast { expr, ty: _ } => constant_expr_references(expr, result),
+        ConstExpr::Binary { op: _, lhs, rhs, ty: _ } => {
+            constant_expr_references(lhs, result);
+            constant_expr_references(rhs, result)
+        },
+        _ => (),
+    }
+}
+
+fn checked_constant_by_name(
+    values: Vec[Constant],
+    name: string,
+) -> Option[Constant] {
+    for value in values {
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn constant_reaches(
+    values: Vec[Constant],
+    current: string,
+    target: string,
+    visited: Vec[string],
+) -> bool {
+    if vecs::contains(visited, current) {
+        false
+    } else {
+        visited.push(current);
+        match checked_constant_by_name(values, current) {
+            Option::Some(value) => {
+                let references: Vec[string] = Vec::new();
+                constant_expr_references(value.value, references);
+                for reference in references {
+                    if reference == target
+                        || constant_reaches(values, reference, target, visited)
+                    {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            },
+            Option::None => false,
+        }
+    }
+}
+
+fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> unit {
+    for value in values {
+        if constant_reaches(values, value.name, value.name, Vec::new()) {
+            push_global_diagnostic(
+                ctx,
+                "Cyclic constant " + short_name(value.name),
+            )
+        } else {
+            ()
+        }
+    }
+}
+
 fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
     match prune(value) {
-        Type::Param { name } => if contains_name(result, name) {
+        Type::Param { name } => if vecs::contains(result, name) {
             ()
         } else {
             result.push(name)
@@ -524,26 +733,29 @@ fn type_contains_projection(value: Type) -> bool {
     match prune(value) {
         Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
         Type::Tuple { items } => {
-            let found = Ref::new(false);
             for item in items {
                 if type_contains_projection(item) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::App { ty, args } => {
-            let found = Ref::new(type_contains_projection(ty));
+            if type_contains_projection(ty) {
+                return true
+            } else {
+                ()
+            };
             for arg in args {
                 if type_contains_projection(arg) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -554,15 +766,19 @@ fn type_contains_projection(value: Type) -> bool {
             type_contains_projection(key) || type_contains_projection(value)
         },
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(type_contains_projection(ret_ty));
+            if type_contains_projection(ret_ty) {
+                return true
+            } else {
+                ()
+            };
             for param in params {
                 if type_contains_projection(param) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         _ => false,
     }
@@ -584,7 +800,7 @@ fn validate_impl_type_params(
         Option::None => (),
     };
     for generic in generics {
-        if contains_name(constrained, generic) {
+        if vecs::contains(constrained, generic) {
             ()
         } else {
             push_diagnostic_at(
@@ -606,7 +822,7 @@ fn validate_impl_type_params(
 fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> unit {
     for value in ctx.impls {
         if value.span.start == span.start && value.span.end == span.end {
-            if contains_name(ctx.invalid_impl_origins, value.origin) {
+            if vecs::contains(ctx.invalid_impl_origins, value.origin) {
                 ()
             } else {
                 ctx.invalid_impl_origins.push(value.origin)
@@ -812,33 +1028,13 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         Option::None => (),
     };
     let methods: Vec[Function] = Vec::new();
-    let generic_method_names: Vec[string] = Vec::new();
     for method in value.methods {
-        match trait_ref {
-            Option::Some(reference) => if method.generics.len() > 0 {
-                invalid.set(true);
-                generic_method_names.push(method.name);
-                push_diagnostic_at(
-                    base,
-                    "Trait method implementation "
-                        + short_name(reference.name)
-                        + "::"
-                        + method.name
-                        + " cannot declare type parameters",
-                    Option::None,
-                )
-            } else {
-                ()
-            },
-            Option::None => (),
-        };
         methods.push(check_function(
             base,
             method,
             value.generics,
             predicates,
             Option::Some(for_type),
-            method.generics.len() > 0,
         ))
     };
     match trait_ref {
@@ -850,7 +1046,8 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 for_type,
                 associated_types,
                 methods,
-                generic_method_names,
+                value.generics.len(),
+                predicates.len(),
             );
             if base.diagnostics.len() > validation_start {
                 invalid.set(true)
@@ -879,13 +1076,81 @@ fn type_matches(ctx: Checker, left: Type, right: Type) -> bool {
     types_equal(normalize_type(ctx, left), normalize_type(ctx, right))
 }
 
+fn contains_type_predicate(
+    values: Vec[TypePredicate],
+    expected: TypePredicate,
+) -> bool {
+    for value in values {
+        if predicate_equal(value, expected) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn type_predicate_sets_equal(
+    left: Vec[TypePredicate],
+    right: Vec[TypePredicate],
+) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for value in left {
+            if !contains_type_predicate(right, value) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
 fn validate_method_signature(
     ctx: Checker,
     trait_name: string,
     expected: TraitMethodInfo,
     actual: Function,
     substitutions: Vec[TypeSubst],
+    owner_generic_count: int,
+    owner_predicate_count: int,
 ) -> unit {
+    let actual_method_generics = Vec::new();
+    for index in range(owner_generic_count, actual.generics.len()) {
+        actual_method_generics.push(actual.generics.get(index))
+    };
+    if expected.generics.len() != actual_method_generics.len() {
+        push_diagnostic(
+            ctx,
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " expects "
+                + expected.generics.len().to_string()
+                + " method type parameters but impl has "
+                + actual_method_generics.len().to_string(),
+        )
+    } else {
+        ()
+    };
+    let generic_count = if expected.generics.len()
+        < actual_method_generics.len()
+    {
+        expected.generics.len()
+    } else {
+        actual_method_generics.len()
+    };
+    for index in range(0, generic_count) {
+        substitutions.push(TypeSubst {
+            name: expected.generics.get(index),
+            ty: Type::Param {
+                name: actual_method_generics.get(index),
+            },
+        })
+    };
     let expected_params: Vec[Type] = Vec::new();
     for param in expected.params {
         expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
@@ -947,6 +1212,32 @@ fn validate_method_signature(
         )
     } else {
         ()
+    };
+    let expected_predicates: Vec[TypePredicate] = Vec::new();
+    for predicate in expected.predicates {
+        expected_predicates.push(substitute_predicate(
+            predicate,
+            substitutions,
+        ))
+    };
+    let actual_predicates: Vec[TypePredicate] = Vec::new();
+    for index in range(owner_predicate_count, actual.predicates.len()) {
+        actual_predicates.push(actual.predicates.get(index))
+    };
+    if !type_predicate_sets_equal(
+        expected_predicates,
+        actual_predicates,
+    ) {
+        push_diagnostic(
+            ctx,
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " method bounds do not match the trait declaration",
+        )
+    } else {
+        ()
     }
 }
 
@@ -966,7 +1257,7 @@ fn validate_trait_associated_types(
                     + " is not declared in trait "
                     + reference.name,
             )
-        } else if contains_name(seen, associated.0) {
+        } else if vecs::contains(seen, associated.0) {
             push_diagnostic(ctx,
                 "Associated type "
                     + associated.0
@@ -978,7 +1269,7 @@ fn validate_trait_associated_types(
         }
     };
     for expected in info.associated_types {
-        if !contains_name(seen, expected.name) {
+        if !vecs::contains(seen, expected.name) {
             push_diagnostic(ctx,
                 "Trait "
                     + reference.name
@@ -994,30 +1285,29 @@ fn validate_trait_associated_types(
 }
 
 fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bool {
-    let result = Ref::new(false);
     for value in values {
         if value.name == name {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
-    result.get()
+    false
 }
 
 fn impl_associated_type(
     values: Vec[(string, Type)],
     name: string,
 ) -> Option[Type] {
-    let result = Ref::new(Option::None);
-    for value in values {
+    for offset in range(0, values.len()) {
+        let value = values.get(values.len() - 1 - offset);
         if value.0 == name {
-            result.set(Option::Some(value.1))
+            return Option::Some(value.1)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn associated_type_reaches(
@@ -1028,77 +1318,74 @@ fn associated_type_reaches(
 ) -> bool {
     match prune(value) {
         Type::Projection { for_ty, name, trait_ref } => {
-            let found = Ref::new(name == target);
-            if !(found.get()) && !contains_name(active, name) {
+            if name == target {
+                return true
+            } else {
+                ()
+            };
+            if !vecs::contains(active, name) {
                 match impl_associated_type(values, name) {
                     Option::Some(next) => {
                         active.push(name);
-                        found.set(associated_type_reaches(
+                        let reaches = associated_type_reaches(
                             values,
                             next,
                             target,
                             active,
-                        ));
-                        active.truncate(active.len() - 1)
+                        );
+                        active.truncate(active.len() - 1);
+                        if reaches {
+                            return true
+                        } else {
+                            ()
+                        }
                     },
                     Option::None => (),
                 }
             } else {
                 ()
             };
-            if found.get() {
-                true
+            if associated_type_reaches(values, for_ty, target, active) {
+                return true
             } else {
-                let nested = Ref::new(associated_type_reaches(
-                    values,
-                    for_ty,
-                    target,
-                    active,
-                ));
-                match trait_ref {
-                    Option::Some(reference) => for arg in reference.args {
-                        if associated_type_reaches(
-                            values,
-                            arg,
-                            target,
-                            active,
-                        ) {
-                            nested.set(true)
-                        } else {
-                            ()
-                        }
-                    },
-                    Option::None => (),
-                };
-                nested.get()
-            }
+                ()
+            };
+            match trait_ref {
+                Option::Some(reference) => for arg in reference.args {
+                    if associated_type_reaches(values, arg, target, active) {
+                        return true
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            false
         },
         Type::Tuple { items } => {
-            let found = Ref::new(false);
             for item in items {
                 if associated_type_reaches(values, item, target, active) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::App { ty, args } => {
-            let found = Ref::new(associated_type_reaches(
-                values,
-                ty,
-                target,
-                active,
-            ));
+            if associated_type_reaches(values, ty, target, active) {
+                return true
+            } else {
+                ()
+            };
             for arg in args {
                 if associated_type_reaches(values, arg, target, active) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -1112,20 +1399,19 @@ fn associated_type_reaches(
                 || associated_type_reaches(values, value, target, active)
         },
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(associated_type_reaches(
-                values,
-                ret_ty,
-                target,
-                active,
-            ));
+            if associated_type_reaches(values, ret_ty, target, active) {
+                return true
+            } else {
+                ()
+            };
             for param in params {
                 if associated_type_reaches(values, param, target, active) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         _ => false,
     }
@@ -1401,7 +1687,8 @@ fn validate_trait_impl(
     for_type: Type,
     associated_types: Vec[(string, Type)],
     methods: Vec[Function],
-    generic_method_names: Vec[string],
+    owner_generic_count: int,
+    owner_predicate_count: int,
 ) -> unit {
     match find_trait(ctx, reference.name) {
         Option::Some(info) => {
@@ -1440,7 +1727,7 @@ fn validate_trait_impl(
             let seen: Vec[string] = Vec::new();
             for method in methods {
                 match find_trait_method(info, method.name) {
-                    Option::Some(expected) => if contains_name(seen, method.name) {
+                    Option::Some(expected) => if vecs::contains(seen, method.name) {
                         push_diagnostic(ctx,
                             "Method "
                                 + method.name
@@ -1449,17 +1736,15 @@ fn validate_trait_impl(
                         )
                     } else {
                         seen.push(method.name);
-                        if contains_name(generic_method_names, method.name) {
-                            ()
-                        } else {
-                            validate_method_signature(
-                                ctx,
-                                reference.name,
-                                expected,
-                                method,
-                                substitutions,
-                            )
-                        }
+                        validate_method_signature(
+                            ctx,
+                            reference.name,
+                            expected,
+                            method,
+                            substitutions,
+                            owner_generic_count,
+                            owner_predicate_count,
+                        )
                     },
                     Option::None => push_diagnostic(ctx,
                         "Method "
@@ -1470,7 +1755,7 @@ fn validate_trait_impl(
                 }
             };
             for expected in info.methods {
-                if !contains_name(seen, expected.name) {
+                if !vecs::contains(seen, expected.name) {
                     push_diagnostic(ctx,
                         "Trait "
                             + reference.name
@@ -1492,7 +1777,7 @@ fn validate_trait_impl(
 fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) -> unit {
     let seen: Vec[string] = Vec::new();
     for method in methods {
-        if contains_name(seen, method.name) {
+        if vecs::contains(seen, method.name) {
             push_diagnostic(ctx,
                 "Method "
                     + method.name
@@ -1528,25 +1813,23 @@ fn by_value_type_has_cycle(
 ) -> bool {
     match prune(normalize_type(ctx, value)) {
         Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for value in values {
                 if by_value_type_has_cycle(ctx, value, active) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Array { len: _, elem } => by_value_type_has_cycle(ctx, elem, active),
         value => match struct_application_parts(value) {
             Option::Some(parts) => match find_struct_by_name(ctx, parts.0) {
-                Option::Some(info) => if contains_name(active, info.name) {
+                Option::Some(info) => if vecs::contains(active, info.name) {
                     true
                 } else {
                     let next = copied_names(active);
                     next.push(info.name);
-                    let found = Ref::new(false);
                     for field in info.fields {
                         if by_value_type_has_cycle(
                             ctx,
@@ -1557,12 +1840,12 @@ fn by_value_type_has_cycle(
                             ),
                             next,
                         ) {
-                            found.set(true)
+                            return true
                         } else {
                             ()
                         }
                     };
-                    found.get()
+                    false
                 },
                 Option::None => false,
             },
@@ -1575,24 +1858,19 @@ fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
     for index in range(0, struct_count) {
         let info = ctx.structs.get(index);
         let active = Vec::new().pushed(info.name);
-        let recursive = Ref::new(false);
         for field in info.fields {
             if by_value_type_has_cycle(ctx, field.1, active) {
-                recursive.set(true)
+                push_diagnostic(ctx,
+                    "Struct "
+                        + info.name
+                        + " has infinite size due to recursive field; use Ref["
+                        + info.name
+                        + "] for indirection",
+                );
+                break
             } else {
                 ()
             }
-        };
-        if recursive.get() {
-            push_diagnostic(ctx,
-                "Struct "
-                    + info.name
-                    + " has infinite size due to recursive field; use Ref["
-                    + info.name
-                    + "] for indirection",
-            )
-        } else {
-            ()
         }
     }
 }
@@ -1606,75 +1884,58 @@ fn supertrait_path(
 ) -> bool {
     if names_match(current, target) {
         true
-    } else if contains_name(active, current) {
+    } else if vecs::contains(active, current) {
         false
     } else {
         active.push(current);
-        let found = Ref::new(false);
         match find_trait(ctx, current) {
             Option::Some(info) => for reference in info.supertraits {
-                if !(found.get()) {
-                    let length = path.len();
-                    path.push(short_name(reference.name));
-                    if supertrait_path(
-                        ctx,
-                        reference.name,
-                        target,
-                        active,
-                        path,
-                    ) {
-                        found.set(true)
-                    } else {
-                        path.truncate(length)
-                    }
+                let length = path.len();
+                path.push(short_name(reference.name));
+                if supertrait_path(
+                    ctx,
+                    reference.name,
+                    target,
+                    active,
+                    path,
+                ) {
+                    active.truncate(active.len() - 1);
+                    return true
                 } else {
-                    ()
+                    path.truncate(length)
                 }
             },
             Option::None => (),
         };
         active.truncate(active.len() - 1);
-        found.get()
+        false
     }
 }
 
 fn cycle_text(values: Vec[string]) -> string {
-    let result = Ref::new("");
-    for value in values {
-        if result.get() == "" {
-            result.set(value)
-        } else {
-            result.set(result.get() + " -> " + value)
-        }
-    };
-    result.get()
+    strings::join(values, " -> ")
 }
 
 fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
-    let reported = Ref::new(false);
     for index in range(0, trait_count) {
         let info = ctx.traits.get(index);
         for reference in info.supertraits {
-            if !(reported.get()) {
-                let path = Vec::new()
-                    .pushed(short_name(info.name))
-                    .pushed(short_name(reference.name));
-                if supertrait_path(
+            let path = Vec::new()
+                .pushed(short_name(info.name))
+                .pushed(short_name(reference.name));
+            if supertrait_path(
+                ctx,
+                reference.name,
+                info.name,
+                Vec::new(),
+                path,
+            ) {
+                push_diagnostic_at(
                     ctx,
-                    reference.name,
-                    info.name,
-                    Vec::new(),
-                    path,
-                ) {
-                    push_diagnostic_at(
-                        ctx,
-                        "Supertrait cycle detected: " + cycle_text(path),
-                        Option::None,
-                    );
-                    reported.set(true)
-                } else {
-                    ()
-                }
+                    "Supertrait cycle detected: " + cycle_text(path),
+                    Option::None,
+                );
+                return
             } else {
                 ()
             }
@@ -1725,6 +1986,21 @@ fn validate_local_definitions(
             }
         };
         for method in info.methods {
+            for predicate in method.predicates {
+                match predicate {
+                    TypePredicate::Trait {
+                        for_ty,
+                        trait_ref: reference,
+                    } => {
+                        validate_signature_type(ctx, for_ty);
+                        validate_trait_reference(ctx, reference)
+                    },
+                    TypePredicate::Equality { lhs, rhs } => {
+                        validate_signature_type(ctx, lhs);
+                        validate_signature_type(ctx, rhs)
+                    },
+                }
+            };
             for param in method.params {
                 validate_signature_type(ctx, param)
             };
@@ -1788,7 +2064,7 @@ fn push_declaration_diagnostic(ctx: Checker, message: string) -> unit {
 fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> unit {
     let names: Vec[string] = Vec::new();
     for name in values {
-        if contains_name(names, name) {
+        if vecs::contains(names, name) {
             push_declaration_diagnostic(
                 ctx,
                 "type parameter " + name + " is defined multiple times",
@@ -1803,7 +2079,7 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
     let names: Vec[string] = Vec::new();
     for param in value.params {
         let name = param.0.hint;
-        if contains_name(names, name) {
+        if vecs::contains(names, name) {
             push_declaration_diagnostic(
                 ctx,
                 "parameter " + name + " is defined multiple times",
@@ -1817,7 +2093,7 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
 fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
     let names: Vec[string] = Vec::new();
     for variant in value.variants {
-        if contains_name(names, variant.name) {
+        if vecs::contains(names, variant.name) {
             push_declaration_diagnostic(
                 ctx,
                 "variant "
@@ -1832,7 +2108,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
             hir::EnumVariantFields::Struct(fields) => {
                 let field_names: Vec[string] = Vec::new();
                 for field in fields {
-                    if contains_name(field_names, field.0) {
+                    if vecs::contains(field_names, field.0) {
                         push_declaration_diagnostic(
                             ctx,
                             "field "
@@ -1855,7 +2131,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
 fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
     let names: Vec[string] = Vec::new();
     for field in value.fields {
-        if contains_name(names, field.0) {
+        if vecs::contains(names, field.0) {
             push_declaration_diagnostic(
                 ctx,
                 "field "
@@ -1872,7 +2148,7 @@ fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
 fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     let methods: Vec[string] = Vec::new();
     for method in value.method_sigs {
-        if contains_name(methods, method.name) {
+        if vecs::contains(methods, method.name) {
             push_declaration_diagnostic(
                 ctx,
                 "method "
@@ -1886,7 +2162,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     };
     let associated_types: Vec[string] = Vec::new();
     for associated in value.associated_types {
-        if contains_name(associated_types, associated.name) {
+        if vecs::contains(associated_types, associated.name) {
             push_declaration_diagnostic(
                 ctx,
                 "associated type "
@@ -1900,14 +2176,51 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     }
 }
 
+fn nominal_kind_name(kind: int) -> string {
+    if kind == 1 {
+        "enum"
+    } else if kind == 2 {
+        "struct"
+    } else {
+        "type alias"
+    }
+}
+
+fn mixed_nominal_declaration_message(
+    name: string,
+    first: int,
+    second: int,
+) -> string {
+    if (first == 1 && second == 2) || (first == 2 && second == 1) {
+        "type " + name + " is defined as both a struct and an enum"
+    } else {
+        "type "
+            + name
+            + " is defined as both a "
+            + nominal_kind_name(first)
+            + " and a "
+            + nominal_kind_name(second)
+    }
+}
+
+fn value_kind_name(kind: int) -> string {
+    if kind == 1 { "function" } else { "constant" }
+}
+
+fn mixed_value_declaration_message(name: string) -> string {
+    "value " + name + " is defined as both a function and a constant"
+}
+
 fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
     let nominal_names: Vec[string] = Vec::new();
     let nominal_kinds: Vec[int] = Vec::new();
     let function_names: Vec[string] = Vec::new();
+    let function_kinds: Vec[int] = Vec::new();
     for item in value.items {
         let nominal = match item {
             hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
             hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+            hir::Item::TypeAlias(definition) => Option::Some((definition.name, 3)),
             _ => Option::None,
         };
         match nominal {
@@ -1919,32 +2232,55 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 } else if nominal_kinds.get(index) == value.1 {
                     push_declaration_diagnostic(
                         ctx,
-                        (if value.1 == 1 { "enum " } else { "struct " })
+                        (if value.1 == 1 {
+                            "enum "
+                        } else if value.1 == 2 {
+                            "struct "
+                        } else {
+                            "type alias "
+                        })
                             + value.0
                             + " is defined multiple times",
                     )
                 } else {
                     push_declaration_diagnostic(
                         ctx,
-                        "type " + value.0 + " is defined as both a struct and an enum",
+                        mixed_nominal_declaration_message(
+                            value.0,
+                            nominal_kinds.get(index),
+                            value.1,
+                        ),
                     )
                 }
             },
             Option::None => (),
         };
         let function_name = match item {
-            hir::Item::Function(function) => Option::Some(function.name),
-            hir::Item::ExternFunction(function) => Option::Some(function.name),
+            hir::Item::Function(function) => Option::Some((function.name, 1)),
+            hir::Item::ExternFunction(function) => Option::Some((function.name, 1)),
+            hir::Item::Constant(value) => Option::Some((value.name, 2)),
             _ => Option::None,
         };
         match function_name {
-            Option::Some(name) => if contains_name(function_names, name) {
-                push_declaration_diagnostic(
-                    ctx,
-                    "function " + name + " is defined multiple times",
-                )
-            } else {
-                function_names.push(name)
+            Option::Some(value) => {
+                let index = declaration_name_index(function_names, value.0);
+                if index < 0 {
+                    function_names.push(value.0);
+                    function_kinds.push(value.1)
+                } else if function_kinds.get(index) == value.1 {
+                    push_declaration_diagnostic(
+                        ctx,
+                        value_kind_name(value.1)
+                            + " "
+                            + value.0
+                            + " is defined multiple times",
+                    )
+                } else {
+                    push_declaration_diagnostic(
+                        ctx,
+                        mixed_value_declaration_message(value.0),
+                    )
+                }
             },
             Option::None => (),
         }
@@ -1961,7 +2297,16 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
             },
             hir::Item::TraitDef(definition) => {
                 validate_type_parameter_names(ctx, definition.generics);
-                validate_trait_member_names(ctx, definition)
+                validate_trait_member_names(ctx, definition);
+                for method in definition.method_sigs {
+                    validate_type_parameter_names(
+                        ctx,
+                        append_names(
+                            definition.generics,
+                            method.generics,
+                        ),
+                    )
+                }
             },
             hir::Item::ImplBlock(block) => {
                 validate_type_parameter_names(ctx, block.generics);
@@ -1980,6 +2325,10 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
             hir::Item::ExternFunction(function) => {
                 validate_type_parameter_names(ctx, function.generics)
             },
+            hir::Item::TypeAlias(alias) => {
+                validate_type_parameter_names(ctx, alias.generics)
+            },
+            hir::Item::Constant(_) => (),
         }
     }
 }
@@ -1997,18 +2346,21 @@ fn validate_cross_file_declaration_names(
     let nominal_names: Vec[string] = Vec::new();
     let nominal_kinds: Vec[int] = Vec::new();
     let function_names: Vec[string] = Vec::new();
+    let function_kinds: Vec[int] = Vec::new();
     for file in files {
         let local_nominal_names: Vec[string] = Vec::new();
         let local_nominal_kinds: Vec[int] = Vec::new();
         let local_function_names: Vec[string] = Vec::new();
+        let local_function_kinds: Vec[int] = Vec::new();
         for item in file.items {
             let nominal = match item {
                 hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
                 hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+                hir::Item::TypeAlias(definition) => Option::Some((definition.name, 3)),
                 _ => Option::None,
             };
             match nominal {
-                Option::Some(value) => if !contains_name(local_nominal_names, value.0) {
+                Option::Some(value) => if !vecs::contains(local_nominal_names, value.0) {
                     local_nominal_names.push(value.0);
                     local_nominal_kinds.push(value.1)
                 } else {
@@ -2017,13 +2369,18 @@ fn validate_cross_file_declaration_names(
                 Option::None => (),
             };
             let function_name = match item {
-                hir::Item::Function(function) => Option::Some(function.name),
-                hir::Item::ExternFunction(function) => Option::Some(function.name),
+                hir::Item::Function(function) => Option::Some((function.name, 1)),
+                hir::Item::ExternFunction(function) => Option::Some((function.name, 1)),
+                hir::Item::Constant(value) => Option::Some((value.name, 2)),
                 _ => Option::None,
             };
             match function_name {
-                Option::Some(name) => if !contains_name(local_function_names, name) {
-                    local_function_names.push(name)
+                Option::Some(value) => if !vecs::contains(
+                    local_function_names,
+                    value.0,
+                ) {
+                    local_function_names.push(value.0);
+                    local_function_kinds.push(value.1)
                 } else {
                     ()
                 },
@@ -2040,25 +2397,47 @@ fn validate_cross_file_declaration_names(
             } else if nominal_kinds.get(previous) == kind {
                 push_global_diagnostic(
                     ctx,
-                    (if kind == 1 { "enum " } else { "struct " })
+                    (if kind == 1 {
+                        "enum "
+                    } else if kind == 2 {
+                        "struct "
+                    } else {
+                        "type alias "
+                    })
                         + name
                         + " is defined multiple times",
                 )
             } else {
                 push_global_diagnostic(
                     ctx,
-                    "type " + name + " is defined as both a struct and an enum",
+                    mixed_nominal_declaration_message(
+                        name,
+                        nominal_kinds.get(previous),
+                        kind,
+                    ),
                 )
             }
         };
-        for name in local_function_names {
-            if contains_name(function_names, name) {
+        for index in range(0, local_function_names.len()) {
+            let name = local_function_names.get(index);
+            let kind = local_function_kinds.get(index);
+            let previous = declaration_name_index(function_names, name);
+            if previous < 0 {
+                function_names.push(name);
+                function_kinds.push(kind)
+            } else if function_kinds.get(previous) == kind {
                 push_global_diagnostic(
                     ctx,
-                    "function " + name + " is defined multiple times",
+                    value_kind_name(kind)
+                        + " "
+                        + name
+                        + " is defined multiple times",
                 )
             } else {
-                function_names.push(name)
+                push_global_diagnostic(
+                    ctx,
+                    mixed_value_declaration_message(name),
+                )
             }
         }
     }
@@ -2123,6 +2502,12 @@ fn validate_lang_item_declarations(
             hir::Item::ExternFunction(value) => {
                 validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
             },
+            hir::Item::TypeAlias(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::Constant(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
             hir::Item::ImplBlock(_) => (),
         }
     }
@@ -2133,15 +2518,8 @@ fn move_diagnostics_before(
     message: string,
     anchor: string,
 ) -> Vec[Diagnostic] {
-    let has_anchor = Ref::new(false);
-    for value in values {
-        if value.message == anchor {
-            has_anchor.set(true)
-        } else {
-            ()
-        }
-    };
-    if !(has_anchor.get()) {
+    let anchor_index = diagnostic_message_index(values, anchor);
+    if anchor_index < 0 {
         values
     } else {
         let moved: Vec[Diagnostic] = Vec::new();
@@ -2153,16 +2531,15 @@ fn move_diagnostics_before(
             }
         };
         let result: Vec[Diagnostic] = Vec::new();
-        let inserted = Ref::new(false);
-        for value in values {
+        for index in range(0, values.len()) {
+            let value = values.get(index);
             if value.message == message {
                 ()
             } else {
-                if !(inserted.get()) && value.message == anchor {
+                if index == anchor_index {
                     for diagnostic in moved {
                         result.push(diagnostic)
-                    };
-                    inserted.set(true)
+                    }
                 } else {
                     ()
                 };
@@ -2171,6 +2548,34 @@ fn move_diagnostics_before(
         };
         result
     }
+}
+
+fn diagnostic_message_index(
+    values: Vec[Diagnostic],
+    message: string,
+) -> int {
+    for index in range(0, values.len()) {
+        if values.get(index).message == message {
+            return index
+        } else {
+            ()
+        }
+    };
+    -1
+}
+
+fn diagnostics_have_message(
+    values: Vec[Diagnostic],
+    message: string,
+) -> bool {
+    for value in values {
+        if value.message == message {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
@@ -2197,11 +2602,9 @@ fn attach_diagnostic_span(
 ) -> unit {
     match span {
         Option::Some(span) => {
-            let attached = Ref::new(false);
             for index in range(0, ctx.diagnostics.len()) {
                 let value = ctx.diagnostics.get(index);
-                if !(attached.get())
-                    && value.message == message
+                if value.message == message
                     && value.source_path == ctx.source_path
                 {
                     ctx.diagnostics.set(index, Diagnostic {
@@ -2214,7 +2617,7 @@ fn attach_diagnostic_span(
                         secondary_labels: value.secondary_labels,
                         sort_order: value.sort_order,
                     });
-                    attached.set(true)
+                    return
                 } else {
                     ()
                 }
@@ -2320,7 +2723,7 @@ fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
             hir::Stmt::Let { is_mut: _, pat: _, annotation: _, value } => {
                 attach_expr_diagnostic_spans(ctx, value)
             },
-            hir::Stmt::Assign { target, value } => {
+            hir::Stmt::Assign { target, op: _, value } => {
                 attach_expr_diagnostic_spans(ctx, target);
                 attach_expr_diagnostic_spans(ctx, value)
             },
@@ -2338,34 +2741,68 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
         hir::ExprKind::StaticMember {
             owner: _,
             member: _,
-            type_args,
-            type_arg_spans,
-        } => for index in range(0, type_args.len()) {
-            attach_type_diagnostic_span(
-                ctx,
-                type_args.get(index),
-                if index < type_arg_spans.len() {
-                    type_arg_spans.get(index)
-                } else {
-                    Option::None
-                },
-            )
+            owner_type_args,
+            owner_type_arg_spans,
+            member_type_args,
+            member_type_arg_spans,
+        } => {
+            for index in range(0, owner_type_args.len()) {
+                attach_type_diagnostic_span(
+                    ctx,
+                    owner_type_args.get(index),
+                    if index < owner_type_arg_spans.len() {
+                        owner_type_arg_spans.get(index)
+                    } else {
+                        Option::None
+                    },
+                )
+            };
+            for index in range(0, member_type_args.len()) {
+                attach_type_diagnostic_span(
+                    ctx,
+                    member_type_args.get(index),
+                    if index < member_type_arg_spans.len() {
+                        member_type_arg_spans.get(index)
+                    } else {
+                        Option::None
+                    },
+                )
+            }
         },
         hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
         | hir::ExprKind::Tuple { items: args }
-        | hir::ExprKind::Array { items: args } => {
+        | hir::ExprKind::Array { items: args }
+        | hir::ExprKind::VecLiteral { items: args } => {
             attach_expr_list_diagnostic_spans(ctx, args)
         },
-        hir::ExprKind::StructLiteral { name: _, fields } => for field in fields {
-            attach_expr_diagnostic_spans(ctx, field.1)
+        hir::ExprKind::HashMapLiteral { entries } => for entry in entries {
+            attach_expr_diagnostic_spans(ctx, entry.0);
+            attach_expr_diagnostic_spans(ctx, entry.1)
+        },
+        hir::ExprKind::InterpolatedString { parts } => for part in parts {
+            match part {
+                hir::InterpolatedStringPart::Expr(value) => {
+                    attach_expr_diagnostic_spans(ctx, value)
+                },
+                hir::InterpolatedStringPart::Text(_) => (),
+            }
+        },
+        hir::ExprKind::StructLiteral { name: _, fields, base } => {
+            for field in fields {
+                attach_expr_diagnostic_spans(ctx, field.1)
+            };
+            match base {
+                Option::Some(value) => attach_expr_diagnostic_spans(ctx, value),
+                Option::None => (),
+            }
         },
         hir::ExprKind::Closure { params: _, body }
         | hir::ExprKind::Unary { op: _, expr: body }
         | hir::ExprKind::Cast { expr: body, ty: _ }
         | hir::ExprKind::Try { depth: _, expr: body }
         | hir::ExprKind::Proj { tuple: body, index: _ }
-        | hir::ExprKind::Field { expr: body, field_name: _ }
+        | hir::ExprKind::Field { expr: body, .. }
         | hir::ExprKind::Go { expr: body } => {
             attach_expr_diagnostic_spans(ctx, body)
         },
@@ -2527,6 +2964,35 @@ fn check_file_with_package(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
+    for index in range(0, ctx.constants.len()) {
+        let constant = ctx.constants.get(index);
+        ctx.constants.set(index, ConstantScheme {
+            def_id: constant.def_id,
+            name: constant.name,
+            ty: resolve_signature_type(
+                ctx,
+                constant.ty,
+                Vec::new(),
+                false,
+            ),
+        })
+    };
+    for item in value.items {
+        match item {
+            hir::Item::TypeAlias(alias) => {
+                let previous = ctx.current_span.get();
+                ctx.current_span.set(Option::Some(alias.ty_span));
+                let _ = resolve_signature_type(
+                    ctx,
+                    type_from_hir(alias.ty, alias.generics, Option::None),
+                    Vec::new(),
+                    true,
+                );
+                ctx.current_span.set(previous)
+            },
+            _ => (),
+        }
+    };
     for trait_name in value.use_traits {
         match find_trait(ctx, trait_name) {
             Option::Some(_) => (),
@@ -2549,6 +3015,14 @@ fn check_file_with_package(
     expand_in_scope_supertraits(ctx);
     validate_impl_overlaps(ctx);
     validate_builtin_impl_overlaps(ctx, value);
+    let constants: Vec[Constant] = Vec::new();
+    for item in value.items {
+        match item {
+            hir::Item::Constant(value) => constants.push(check_constant(ctx, value)),
+            _ => (),
+        }
+    };
+    validate_constant_cycles(ctx, constants);
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
@@ -2559,7 +3033,6 @@ fn check_file_with_package(
                 Vec::new(),
                 Vec::new(),
                 Option::None,
-                false,
             ))),
             _ => (),
         }
@@ -2601,6 +3074,7 @@ fn check_file_with_package(
             items,
             enums,
             structs,
+            constants,
         }),
         diagnostics: order_extern_diagnostics(ctx),
         typeck_results: ctx.typeck_results,
@@ -2716,6 +3190,7 @@ pub fn check_package_files_for_link_with_environments(
     let items: Vec[Item] = Vec::new();
     let enums: Vec[EnumDef] = Vec::new();
     let structs: Vec[StructDef] = Vec::new();
+    let constants: Vec[Constant] = Vec::new();
     let diagnostics: Vec[Diagnostic] = Vec::new();
     let typeck_results = empty_typeck_results();
     let valid = Ref::new(true);
@@ -2751,9 +3226,32 @@ pub fn check_package_files_for_link_with_environments(
                 };
                 for definition in file.structs {
                     structs.push(definition)
+                };
+                for value in file.constants {
+                    constants.push(value)
                 }
             },
             Option::None => valid.set(false),
+        }
+    };
+    let diagnostic_source = if values.len() > 0 {
+        values.get(0).source_path
+    } else {
+        "<unknown>"
+    };
+    for value in constants {
+        let message = "Cyclic constant " + short_name(value.name);
+        if constant_reaches(constants, value.name, value.name, Vec::new())
+            && !diagnostics_have_message(diagnostics, message)
+        {
+            diagnostics.push(new_diagnostic(
+                "typer",
+                message,
+                diagnostic_source,
+                Option::None,
+            ))
+        } else {
+            ()
         }
     };
     CheckResult {
@@ -2762,6 +3260,7 @@ pub fn check_package_files_for_link_with_environments(
                 items,
                 enums,
                 structs,
+                constants,
             })
         } else {
             Option::None

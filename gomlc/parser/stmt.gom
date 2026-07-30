@@ -32,9 +32,13 @@ fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
     }
 }
 
-fn finish_assign_stmt(parser: Parser, target: MarkerClosed) -> MarkerClosed {
+fn finish_assign_stmt(
+    parser: Parser,
+    target: MarkerClosed,
+    operator: lexer::TokenKind,
+) -> MarkerClosed {
     let marker = target.precede(parser);
-    parser.expect(lexer::TokenKind::Eq);
+    parser.expect(operator);
     if marker_is_none(expr(parser)) {
         parser.advance_with_error("assignment statement expected an expression")
     } else {

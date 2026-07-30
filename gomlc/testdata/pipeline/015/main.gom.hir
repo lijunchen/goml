@@ -7,8 +7,8 @@ file main.gom
     
     fn print_int_list(local/1/0: IntList) {
         match xs/0 {
-            ctor(def/1/0::v0) => println("Nil"),
-            ctor(def/1/0::v1)(local/1/1, local/1/2) => {
+            Nil => println("Nil"),
+            Cons(local/1/1, local/1/2) => {
                   let _ = println("Cons");
                   let _ = println("(");
                   let _ = println(x/1.to_string());
@@ -22,8 +22,8 @@ file main.gom
     
     fn int_list_rev_aux(local/1/3: IntList, local/1/4: IntList) -> IntList {
         match xs/3 {
-            ctor(def/1/0::v0) => acc/4,
-            ctor(def/1/0::v1)(local/1/5, local/1/6) => def/1/2(tail/6, ctor(def/1/0::v1)(head/5, acc/4)),
+            Nil => acc/4,
+            Cons(local/1/5, local/1/6) => def/1/2(tail/6, ctor(def/1/0::v1)(head/5, acc/4)),
         }
     }
     
@@ -33,8 +33,8 @@ file main.gom
     
     fn int_list_length(local/1/8: IntList) -> int32 {
         match xs/8 {
-            ctor(def/1/0::v0) => 0,
-            ctor(def/1/0::v1)(_, local/1/9) => 1 + def/1/4(xs/9),
+            Nil => 0,
+            Cons(_, local/1/9) => 1 + def/1/4(xs/9),
         }
     }
     

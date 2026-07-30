@@ -62,6 +62,7 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
+    let constants = value.constants;
     let state = State {
         counter,
         loop_ctx: Ref::new(Option::None),
@@ -71,7 +72,7 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
     for function in value.functions {
         functions.push(lower_function(state, function))
     };
-    File { functions, enums, structs, type_instances }
+    File { functions, enums, structs, type_instances, constants }
 }
 
 pub fn lower(value: core::File) -> File {

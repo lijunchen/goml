@@ -25,7 +25,7 @@ impl Source for TextSource {
   }
 }
 
-fn render(source: S) -> string {
+fn render[S: Source](source: S) -> string {
     Source::get(source).label()
 }
 

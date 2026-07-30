@@ -312,6 +312,20 @@ fn section_name(line: string) -> Option[string] {
     }
 }
 
+fn has_section(lines: Vec[string], expected: string) -> bool {
+    for line in lines {
+        match section_name(line) {
+            Option::Some(section) => if section == expected {
+                return true
+            } else {
+                ()
+            },
+            Option::None => (),
+        }
+    };
+    false
+}
+
 fn upsert_dependency(
     manifest_path: string,
     name: string,
@@ -323,10 +337,11 @@ fn upsert_dependency(
     };
     let result = Vec::new();
     let in_dependencies = Ref::new(false);
-    let found_section = Ref::new(false);
     let inserted = Ref::new(false);
     let entry = "\"" + name + "\" = \"" + version + "\"";
-    for line in util::split_lines(source) {
+    let lines = util::split_lines(source);
+    let dependency_section_exists = has_section(lines, "dependencies");
+    for line in lines {
         match section_name(line) {
             Option::Some(section) => {
                 if in_dependencies.get() && !(inserted.get()) {
@@ -336,11 +351,6 @@ fn upsert_dependency(
                     ()
                 };
                 in_dependencies.set(section == "dependencies");
-                if section == "dependencies" {
-                    found_section.set(true)
-                } else {
-                    ()
-                };
                 result.push(line)
             },
             Option::None => {
@@ -358,7 +368,7 @@ fn upsert_dependency(
             },
         }
     };
-    if !(found_section.get()) {
+    if !dependency_section_exists {
         if result.len() > 0 && result.get(result.len() - 1) != "" {
             result.push("")
         } else {

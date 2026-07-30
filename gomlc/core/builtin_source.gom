@@ -136,6 +136,7 @@ pub fn builtin_source() -> string {
         \\            }
         \\        })
         \\    }
+        \\
         \\}
         \\
         \\impl ToString for unit {
@@ -536,11 +537,10 @@ pub fn builtin_source() -> string {
         \\    I::Item = T,
         \\{
         \\    let accumulator = Ref::new(initial);
-        \\    let running = Ref::new(true);
-        \\    while running.get() {
+        \\    while true {
         \\        match Iterator::next(iterator) {
         \\            Option::Some(value) => accumulator.set(combine(accumulator.get(), value)),
-        \\            Option::None => running.set(false),
+        \\            Option::None => break,
         \\        };
         \\    };
         \\    accumulator.get()
@@ -551,11 +551,10 @@ pub fn builtin_source() -> string {
         \\    I::Item = T,
         \\{
         \\    let values: Vec[T] = Vec::new();
-        \\    let running = Ref::new(true);
-        \\    while running.get() {
+        \\    while true {
         \\        match Iterator::next(iterator) {
         \\            Option::Some(value) => values.push(value),
-        \\            Option::None => running.set(false),
+        \\            Option::None => break,
         \\        };
         \\    };
         \\    values
@@ -837,6 +836,7 @@ pub fn builtin_source() -> string {
         \\    }
         \\}
         \\
+        \\#[lang("range")]
         \\fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
         \\    let current = Ref::new(start);
         \\    FnIterator::from_fn(|| {
@@ -871,6 +871,338 @@ pub fn builtin_source() -> string {
         \\        uint_hash(self)
         \\    }
         \\}
+        \\
+        \\impl string {
+        \\    fn starts_with(self: string, prefix: string) -> bool {
+        \\        prefix.byte_len() <= self.byte_len()
+        \\            && self.is_char_boundary(prefix.byte_len())
+        \\            && self.byte_slice(0, prefix.byte_len()) == prefix
+        \\    }
+        \\
+        \\    fn ends_with(self: string, suffix: string) -> bool {
+        \\        if suffix.byte_len() > self.byte_len() {
+        \\            false
+        \\        } else {
+        \\            let start = self.byte_len() - suffix.byte_len();
+        \\            self.is_char_boundary(start)
+        \\                && self.byte_slice(start, self.byte_len()) == suffix
+        \\        }
+        \\    }
+        \\
+        \\    fn contains(self: string, expected: string) -> bool {
+        \\        if expected.byte_len() == 0 {
+        \\            true
+        \\        } else if expected.byte_len() > self.byte_len() {
+        \\            false
+        \\        } else {
+        \\            for start in range(
+        \\                0,
+        \\                self.byte_len() - expected.byte_len() + 1,
+        \\            ) {
+        \\                let end = start + expected.byte_len();
+        \\                if self.is_char_boundary(start)
+        \\                    && self.is_char_boundary(end)
+        \\                    && self.byte_slice(start, end) == expected
+        \\                {
+        \\                    return true
+        \\                } else {
+        \\                    ()
+        \\                }
+        \\            };
+        \\            false
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\struct EnumerateIterator[I] {
+        \\    iterator: I,
+        \\    index: Ref[int],
+        \\}
+        \\
+        \\struct ZipIterator[A, B] {
+        \\    left: A,
+        \\    right: B,
+        \\}
+        \\
+        \\struct SkipIterator[I] {
+        \\    iterator: I,
+        \\    remaining: Ref[int],
+        \\}
+        \\
+        \\struct ChainIterator[T, A, B] {
+        \\    first: A,
+        \\    second: B,
+        \\    first_done: Ref[bool],
+        \\}
+        \\
+        \\impl [I: Iterator] Iterator for EnumerateIterator[I] {
+        \\    type Item = (int, I::Item);
+        \\
+        \\    fn next(self: Self) -> Option[(int, I::Item)] {
+        \\        match Iterator::next(self.iterator) {
+        \\            Option::Some(value) => {
+        \\                let index = self.index.get();
+        \\                self.index.set(index + 1);
+        \\                Option::Some((index, value))
+        \\            },
+        \\            Option::None => Option::None,
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [A: Iterator, B: Iterator] Iterator for ZipIterator[A, B] {
+        \\    type Item = (A::Item, B::Item);
+        \\
+        \\    fn next(self: Self) -> Option[(A::Item, B::Item)] {
+        \\        match Iterator::next(self.left) {
+        \\            Option::Some(left) => match Iterator::next(self.right) {
+        \\                Option::Some(right) => Option::Some((left, right)),
+        \\                Option::None => Option::None,
+        \\            },
+        \\            Option::None => Option::None,
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [I: Iterator] Iterator for SkipIterator[I] {
+        \\    type Item = I::Item;
+        \\
+        \\    fn next(self: Self) -> Option[I::Item] {
+        \\        while self.remaining.get() > 0 {
+        \\            match Iterator::next(self.iterator) {
+        \\                Option::Some(_) => self.remaining.set(self.remaining.get() - 1),
+        \\                Option::None => {
+        \\                    self.remaining.set(0);
+        \\                    return Option::None
+        \\                },
+        \\            }
+        \\        };
+        \\        Iterator::next(self.iterator)
+        \\    }
+        \\}
+        \\
+        \\impl [T, A: Iterator, B: Iterator] Iterator for ChainIterator[T, A, B]
+        \\where
+        \\    A::Item = T,
+        \\    B::Item = T,
+        \\{
+        \\    type Item = T;
+        \\
+        \\    fn next(self: Self) -> Option[T] {
+        \\        if self.first_done.get() == false {
+        \\            match Iterator::next(self.first) {
+        \\                Option::Some(value) => return Option::Some(value),
+        \\                Option::None => self.first_done.set(true),
+        \\            }
+        \\        } else {
+        \\            ()
+        \\        };
+        \\        Iterator::next(self.second)
+        \\    }
+        \\}
+        \\
+        \\fn iterator_enumerate[I: Iterator](iterator: I) -> EnumerateIterator[I] {
+        \\    EnumerateIterator {
+        \\        iterator,
+        \\        index: Ref::new(0),
+        \\    }
+        \\}
+        \\
+        \\fn iterator_zip[A: Iterator, B: Iterator](
+        \\    left: A,
+        \\    right: B,
+        \\) -> ZipIterator[A, B] {
+        \\    ZipIterator { left, right }
+        \\}
+        \\
+        \\fn iterator_skip[I: Iterator](iterator: I, count: int) -> SkipIterator[I] {
+        \\    SkipIterator {
+        \\        iterator,
+        \\        remaining: Ref::new(if count > 0 { count } else { 0 }),
+        \\    }
+        \\}
+        \\
+        \\fn iterator_chain[T, A: Iterator, B: Iterator](
+        \\    first: A,
+        \\    second: B,
+        \\) -> ChainIterator[T, A, B]
+        \\where
+        \\    A::Item = T,
+        \\    B::Item = T,
+        \\{
+        \\    ChainIterator {
+        \\        first,
+        \\        second,
+        \\        first_done: Ref::new(false),
+        \\    }
+        \\}
+        \\
+        \\fn iterator_find[T, I: Iterator](
+        \\    iterator: I,
+        \\    predicate: (T) -> bool,
+        \\) -> Option[T]
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    while true {
+        \\        match Iterator::next(iterator) {
+        \\            Option::Some(value) => if predicate(value) {
+        \\                return Option::Some(value)
+        \\            } else {
+        \\                ()
+        \\            },
+        \\            Option::None => return Option::None,
+        \\        }
+        \\    };
+        \\    Option::None
+        \\}
+        \\
+        \\fn iterator_any[T, I: Iterator](
+        \\    iterator: I,
+        \\    predicate: (T) -> bool,
+        \\) -> bool
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    match iterator_find(iterator, predicate) {
+        \\        Option::Some(_) => true,
+        \\        Option::None => false,
+        \\    }
+        \\}
+        \\
+        \\fn iterator_all[T, I: Iterator](
+        \\    iterator: I,
+        \\    predicate: (T) -> bool,
+        \\) -> bool
+        \\where
+        \\    I::Item = T,
+        \\{
+        \\    iterator_any(iterator, |value: T| predicate(value) == false) == false
+        \\}
+        \\
+        \\fn iterator_count[I: Iterator](iterator: I) -> int {
+        \\    let count = Ref::new(0);
+        \\    while true {
+        \\        match Iterator::next(iterator) {
+        \\            Option::Some(_) => count.set(count.get() + 1),
+        \\            Option::None => break,
+        \\        }
+        \\    };
+        \\    count.get()
+        \\}
+        \\
+        \\impl [T] Option[T] {
+        \\    fn is_some(self: Option[T]) -> bool {
+        \\        match self {
+        \\            Option::Some(_) => true,
+        \\            Option::None => false,
+        \\        }
+        \\    }
+        \\
+        \\    fn is_none(self: Option[T]) -> bool {
+        \\        self.is_some() == false
+        \\    }
+        \\
+        \\    fn unwrap_or(self: Option[T], fallback: T) -> T {
+        \\        match self {
+        \\            Option::Some(value) => value,
+        \\            Option::None => fallback,
+        \\        }
+        \\    }
+        \\
+        \\    fn unwrap_or_else(self: Option[T], fallback: () -> T) -> T {
+        \\        match self {
+        \\            Option::Some(value) => value,
+        \\            Option::None => fallback(),
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [T, E] Result[T, E] {
+        \\    fn is_ok(self: Result[T, E]) -> bool {
+        \\        match self {
+        \\            Result::Ok(_) => true,
+        \\            Result::Err(_) => false,
+        \\        }
+        \\    }
+        \\
+        \\    fn is_err(self: Result[T, E]) -> bool {
+        \\        self.is_ok() == false
+        \\    }
+        \\
+        \\    fn unwrap_or(self: Result[T, E], fallback: T) -> T {
+        \\        match self {
+        \\            Result::Ok(value) => value,
+        \\            Result::Err(_) => fallback,
+        \\        }
+        \\    }
+        \\
+        \\    fn unwrap_or_else(self: Result[T, E], fallback: (E) -> T) -> T {
+        \\        match self {
+        \\            Result::Ok(value) => value,
+        \\            Result::Err(error) => fallback(error),
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [T] Option[T] {
+        \\    fn map[U](self: Option[T], map_fn: (T) -> U) -> Option[U] {
+        \\        match self {
+        \\            Option::Some(value) => Option::Some(map_fn(value)),
+        \\            Option::None => Option::None,
+        \\        }
+        \\    }
+        \\
+        \\    fn and_then[U](
+        \\        self: Option[T],
+        \\        next: (T) -> Option[U],
+        \\    ) -> Option[U] {
+        \\        match self {
+        \\            Option::Some(value) => next(value),
+        \\            Option::None => Option::None,
+        \\        }
+        \\    }
+        \\
+        \\    fn ok_or[E](self: Option[T], error: E) -> Result[T, E] {
+        \\        match self {
+        \\            Option::Some(value) => Result::Ok(value),
+        \\            Option::None => Result::Err(error),
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\impl [T, E] Result[T, E] {
+        \\    fn map[U](
+        \\        self: Result[T, E],
+        \\        map_fn: (T) -> U,
+        \\    ) -> Result[U, E] {
+        \\        match self {
+        \\            Result::Ok(value) => Result::Ok(map_fn(value)),
+        \\            Result::Err(error) => Result::Err(error),
+        \\        }
+        \\    }
+        \\
+        \\    fn map_err[F](
+        \\        self: Result[T, E],
+        \\        map_fn: (E) -> F,
+        \\    ) -> Result[T, F] {
+        \\        match self {
+        \\            Result::Ok(value) => Result::Ok(value),
+        \\            Result::Err(error) => Result::Err(map_fn(error)),
+        \\        }
+        \\    }
+        \\
+        \\    fn and_then[U](
+        \\        self: Result[T, E],
+        \\        next: (T) -> Result[U, E],
+        \\    ) -> Result[U, E] {
+        \\        match self {
+        \\            Result::Ok(value) => next(value),
+        \\            Result::Err(error) => Result::Err(error),
+        \\        }
+        \\    }
+        \\}
+        \\
     ;
     source
 }

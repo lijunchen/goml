@@ -37,18 +37,17 @@ fn artifact_core_function_matches_scheme(
         {
             false
         } else {
-            let matches = Ref::new(true);
             for index in range(0, value.params.len()) {
                 if !artifact_core_types_equal(
                     value.params.get(index).1,
                     function_type.params.get(index),
                 ) {
-                    matches.set(false)
+                    return false
                 } else {
                     ()
                 }
             };
-            matches.get()
+            true
         },
         Result::Err(_) => false,
     }
@@ -57,7 +56,7 @@ fn artifact_core_function_matches_scheme(
 fn artifact_core_method_name(value: string) -> Option[string] {
     let separator = Ref::new(-1);
     for index in range(0, value.byte_len()) {
-        if value.byte_slice(index, index + 1) == "#" {
+        if value.byte_get(index) == 35 {
             separator.set(index)
         } else {
             ()
@@ -101,6 +100,8 @@ fn artifact_prepare_core_function_metadata(
     let trait_impl = match value.trait_impl {
         Option::Some(metadata) => {
             let associated_types = Ref::new(metadata.associated_types);
+            let generic_count = Ref::new(metadata.generic_count);
+            let predicate_count = Ref::new(metadata.predicate_count);
             let method_name = artifact_core_method_name(value.name);
             for implementation in exports.trait_impls {
                 if implementation.definition.valid
@@ -114,6 +115,8 @@ fn artifact_prepare_core_function_metadata(
                     )
                 {
                     associated_types.set(implementation.definition.associated_types);
+                    generic_count.set(implementation.definition.params.len());
+                    predicate_count.set(implementation.definition.constraints.len());
                     match method_name {
                         Option::Some(method_name) => for method in implementation.definition.methods {
                             if method.name == method_name
@@ -137,6 +140,8 @@ fn artifact_prepare_core_function_metadata(
                 trait_ref: metadata.trait_ref,
                 for_ty: metadata.for_ty,
                 associated_types: associated_types.get(),
+                generic_count: generic_count.get(),
+                predicate_count: predicate_count.get(),
             })
         },
         Option::None => {
@@ -282,7 +287,7 @@ fn artifact_prepare_core_expr(
             artifact_prepare_core_expr(expr, definitions)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             artifact_prepare_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
@@ -332,5 +337,81 @@ fn artifact_prepare_core_units(
             value.core_ir.functions.set(index, function);
             artifact_prepare_core_block(function.body, definitions)
         }
+    }
+}
+
+fn artifact_world_struct_definitions(
+    world: PackageWorld,
+) -> Vec[tast::StructDef] {
+    let result = Vec::new();
+    for definition in world.builtins.structs {
+        result.push(definition)
+    };
+    let packages: Vec[ArtifactStandardPackage] = Vec::new()
+        .pushed(world.standard.root)
+        .pushed(world.standard.host)
+        .pushed(world.standard.bytes)
+        .pushed(world.standard.collections)
+        .pushed(world.standard.env)
+        .pushed(world.standard.fs)
+        .pushed(world.standard.io)
+        .pushed(world.standard.json)
+        .pushed(world.standard.num)
+        .pushed(world.standard.path)
+        .pushed(world.standard.process)
+        .pushed(world.standard.testing)
+        .pushed(world.standard.text)
+        .pushed(world.standard.time);
+    for package_value in packages {
+        for definition in package_value.environment_exports.structs {
+            result.push(definition)
+        }
+    };
+    result
+}
+
+fn artifact_prepare_world_core(
+    value: core::File,
+    exports: ArtifactPackageExports,
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    for index in range(0, value.functions.len()) {
+        let function = artifact_prepare_core_function_metadata(
+            value.functions.get(index),
+            exports,
+        );
+        value.functions.set(index, function);
+        artifact_prepare_core_block(function.body, definitions)
+    }
+}
+
+fn artifact_prepare_world(world: PackageWorld) -> unit {
+    let definitions = artifact_world_struct_definitions(world);
+    artifact_prepare_world_core(
+        world.builtins,
+        world.builtin_interface.exports,
+        definitions,
+    );
+    let packages: Vec[ArtifactStandardPackage] = Vec::new()
+        .pushed(world.standard.root)
+        .pushed(world.standard.host)
+        .pushed(world.standard.bytes)
+        .pushed(world.standard.collections)
+        .pushed(world.standard.env)
+        .pushed(world.standard.fs)
+        .pushed(world.standard.io)
+        .pushed(world.standard.json)
+        .pushed(world.standard.num)
+        .pushed(world.standard.path)
+        .pushed(world.standard.process)
+        .pushed(world.standard.testing)
+        .pushed(world.standard.text)
+        .pushed(world.standard.time);
+    for package_value in packages {
+        artifact_prepare_world_core(
+            package_value.core_value,
+            package_value.environment_exports,
+            definitions,
+        )
     }
 }

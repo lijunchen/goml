@@ -73,7 +73,80 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
             record_disallowed_self_types(ctx, node);
             lower_extern(ctx, node)
         },
+        cst::NodeKind::TYPE_ALIAS => {
+            record_disallowed_self_types(ctx, node);
+            lower_type_alias(ctx, node)
+        },
+        cst::NodeKind::CONST => {
+            record_disallowed_self_types(ctx, node);
+            lower_constant(ctx, node)
+        },
         _ => Option::None,
+    }
+}
+
+fn lower_constant(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
+    let types = type_children(node);
+    let values = expr_children(node);
+    match (
+        first_token(node, lexer::TokenKind::Ident),
+        types.len(),
+        values.len(),
+    ) {
+        (Option::Some(name), type_count, value_count) => {
+            if type_count > 0 && value_count > 0 {
+                match lower_ty(ctx, types.get(0)) {
+                    Option::Some(ty) => match lower_expr(ctx, values.get(0)) {
+                        Option::Some(value) => Option::Some(Item::Constant(Constant {
+                            attrs: lower_attributes(node),
+                            visibility: lower_visibility(node),
+                            name: name.token.text,
+                            ty,
+                            ty_span: type_head_span(types.get(0)),
+                            value,
+                        })),
+                        Option::None => Option::None,
+                    },
+                    Option::None => Option::None,
+                }
+            } else {
+                push_error(ctx, node_span(node), "Constant is missing a type or value");
+                Option::None
+            }
+        },
+        (Option::None, _, _) => {
+            push_error(ctx, node_span(node), "Constant is missing a name");
+            Option::None
+        },
+    }
+}
+
+fn lower_type_alias(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
+    let types = type_children(node);
+    match (first_token(node, lexer::TokenKind::Ident), types.len()) {
+        (Option::Some(name), count) => if count > 0 {
+            match lower_ty(ctx, types.get(0)) {
+                Option::Some(ty) => {
+                    let (generics, _) = lower_generics(ctx, node);
+                    Option::Some(Item::TypeAlias(TypeAlias {
+                        attrs: lower_attributes(node),
+                        visibility: lower_visibility(node),
+                        name: name.token.text,
+                        generics,
+                        ty,
+                        ty_span: type_head_span(types.get(0)),
+                    }))
+                },
+                Option::None => Option::None,
+            }
+        } else {
+            push_error(ctx, node_span(node), "Type alias is missing a target type");
+            Option::None
+        },
+        (Option::None, _) => {
+            push_error(ctx, node_span(node), "Type alias is missing a name");
+            Option::None
+        },
     }
 }
 
@@ -246,6 +319,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
 fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSignature] {
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => {
+            let (generics, generic_bounds) = lower_generics(ctx, node);
             let params = match first_child(node, cst::NodeKind::PARAM_LIST) {
                 Option::Some(_) => lower_params(
                     ctx,
@@ -292,6 +366,9 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
             match ret_ty {
                 Option::Some(value) => Option::Some(TraitMethodSignature {
                     name: name_token.token.text,
+                    generics,
+                    generic_bounds,
+                    predicates: lower_where_clause(ctx, node),
                     params,
                     ret_ty: value,
                 }),

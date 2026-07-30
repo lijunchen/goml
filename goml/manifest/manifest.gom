@@ -3,6 +3,7 @@ package manifest;
 use gomlang::bootstrap_goml::util;
 use std::fs;
 use std::path;
+use std::text;
 
 pub struct Dependency {
     pub name: string,
@@ -45,32 +46,28 @@ fn parse_string(value: string) -> Result[string, string] {
     } else {
         ()
     };
-    let result = Ref::new("");
-    let index = Ref::new(1);
-    while index.get() < value.byte_len() - 1 {
-        let byte = value.byte_get(index.get());
-        if byte == 92 {
-            if index.get() + 1 >= value.byte_len() - 1 {
-                return Result::Err("invalid manifest string escape")
-            } else {
-                ()
-            };
-            let escaped = value.byte_get(index.get() + 1);
-            if escaped == 34 || escaped == 92 {
-                result.set(
-                    result.get()
-                        + value.byte_slice(index.get() + 1, index.get() + 2),
-                );
-                index.set(index.get() + 2)
+    let content = value.byte_slice(1, value.byte_len() - 1);
+    let builder = text::StringBuilder::with_capacity(content.byte_len());
+    let escaped = Ref::new(false);
+    for character in content.chars() {
+        if escaped.get() {
+            if character == '"' || character == '\\' {
+                builder.write_char(character);
+                escaped.set(false)
             } else {
                 return Result::Err("unsupported manifest string escape")
             }
+        } else if character == '\\' {
+            escaped.set(true)
         } else {
-            result.set(result.get() + value.byte_slice(index.get(), index.get() + 1));
-            index.set(index.get() + 1)
+            builder.write_char(character)
         }
     };
-    Result::Ok(result.get())
+    if escaped.get() {
+        Result::Err("invalid manifest string escape")
+    } else {
+        Result::Ok(builder.finish())
+    }
 }
 
 fn valid_segment(value: string) -> bool {

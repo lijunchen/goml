@@ -36,7 +36,7 @@ fn artifact_binary_interface_sections(
             })
             .pushed(ArtifactBinarySection {
                 id: artifact_binary_value_section_id(),
-                version: 2,
+                version: 4,
                 flags: artifact_binary_required_section_flag(),
                 data: payload,
             }),
@@ -72,7 +72,7 @@ fn artifact_binary_validate_interface_sections(
                 ()
             }
         } else if section.id == artifact_binary_value_section_id() {
-            if section.version != 2 {
+            if section.version != 4 {
                 return Result::Err(
                     "unsupported binary interface artifact section version",
                 )
@@ -138,9 +138,5 @@ fn decode_artifact_interface_binary(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    let value = match decode_artifact_binary_value(table, value_section.data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
-    };
-    artifact_decode_interface_value(value)
+    decode_artifact_interface_binary_value(table, value_section.data)
 }

@@ -9,9 +9,11 @@ pub fn root_source() -> string {
         \\use std::fs;
         \\use std::io;
         \\use std::json;
+        \\use std::num;
         \\use std::path;
         \\use std::process;
         \\use std::text;
+        \\use std::time;
     ;
     source
 }
@@ -168,6 +170,27 @@ pub fn host_source() -> string {
         \\
         \\#[runtime("std.testing.fail")]
         \\pub extern fn test_fail(message: string) -> unit;
+        \\
+        \\#[runtime("std.num.parse_int")]
+        \\pub extern fn parse_int(value: string, radix: int) -> (bool, int, string);
+        \\
+        \\#[runtime("std.num.parse_uint")]
+        \\pub extern fn parse_uint(value: string, radix: int) -> (bool, uint, string);
+        \\
+        \\#[runtime("std.num.parse_float32")]
+        \\pub extern fn parse_float32(value: string) -> (bool, float32, string);
+        \\
+        \\#[runtime("std.num.parse_float64")]
+        \\pub extern fn parse_float64(value: string) -> (bool, float64, string);
+        \\
+        \\#[runtime("std.time.monotonic_nanoseconds")]
+        \\pub extern fn monotonic_nanoseconds() -> int64;
+        \\
+        \\#[runtime("std.time.unix_nanoseconds")]
+        \\pub extern fn unix_nanoseconds() -> int64;
+        \\
+        \\#[runtime("std.time.sleep_nanoseconds")]
+        \\pub extern fn sleep_nanoseconds(value: int64) -> unit;
     ;
     source
 }
@@ -780,8 +803,7 @@ pub fn testing_source() -> string {
         \\pub fn assert_ne[T: Eq + ToString](actual: T, expected: T) -> unit {
         \\    if Eq::eq(actual, expected) {
         \\        fail(
-        \\            "assertion failed: values are equal\nvalue: "
-        \\                + ToString::to_string(actual),
+        \\            "assertion failed: values are equal\nvalue: " + ToString::to_string(actual),
         \\        )
         \\    } else {
         \\        ()
@@ -1120,6 +1142,344 @@ pub fn collections_source() -> string {
         \\    }
         \\}
         \\
+        \\struct IndexMapEntry[K, V] {
+        \\    hash: uint64,
+        \\    key: K,
+        \\    value: V,
+        \\}
+        \\
+        \\enum IndexMapProbe {
+        \\    Found(int, int),
+        \\    Vacant(int),
+        \\}
+        \\
+        \\pub struct IndexMap[K, V] {
+        \\    indices: Ref[Vec[int]],
+        \\    entries: Ref[Vec[Option[IndexMapEntry[K, V]]]],
+        \\    len: Ref[int],
+        \\    deleted: Ref[int],
+        \\}
+        \\
+        \\fn index_map_capacity_for_entries(entries: int) -> int {
+        \\    let requested = if entries < 0 { 0 } else { entries };
+        \\    let capacity = Ref::new(8);
+        \\    while requested * 3 >= capacity.get() * 2 {
+        \\        capacity.set(capacity.get() * 2)
+        \\    };
+        \\    capacity.get()
+        \\}
+        \\
+        \\fn index_map_empty_indices(capacity: int) -> Vec[int] {
+        \\    let indices = Vec::with_capacity(capacity);
+        \\    let index = Ref::new(0);
+        \\    while index.get() < capacity {
+        \\        indices.push(-1);
+        \\        index.set(index.get() + 1)
+        \\    };
+        \\    indices
+        \\}
+        \\
+        \\impl[K: Eq + Hash, V] IndexMap[K, V] {
+        \\    pub fn new() -> IndexMap[K, V] {
+        \\        IndexMap::with_capacity(0)
+        \\    }
+        \\
+        \\    pub fn with_capacity(capacity: int) -> IndexMap[K, V] {
+        \\        let entry_capacity = if capacity < 0 { 0 } else { capacity };
+        \\        IndexMap {
+        \\            indices: Ref::new(index_map_empty_indices(
+        \\                index_map_capacity_for_entries(entry_capacity),
+        \\            )),
+        \\            entries: Ref::new(Vec::with_capacity(entry_capacity)),
+        \\            len: Ref::new(0),
+        \\            deleted: Ref::new(0),
+        \\        }
+        \\    }
+        \\
+        \\    pub fn len(self: IndexMap[K, V]) -> int {
+        \\        self.len.get()
+        \\    }
+        \\
+        \\    pub fn is_empty(self: IndexMap[K, V]) -> bool {
+        \\        self.len.get() == 0
+        \\    }
+        \\
+        \\    fn probe(self: IndexMap[K, V], key: K, hash: uint64) -> IndexMapProbe {
+        \\        let indices = self.indices.get();
+        \\        let mask = indices.len() - 1;
+        \\        let position = Ref::new((hash & mask as uint64) as int);
+        \\        let perturb = Ref::new(hash);
+        \\        let first_deleted = Ref::new(-1);
+        \\        while true {
+        \\            let dense_index = indices.get(position.get());
+        \\            if dense_index == -1 {
+        \\                return IndexMapProbe::Vacant(
+        \\                    if first_deleted.get() >= 0 {
+        \\                        first_deleted.get()
+        \\                    } else {
+        \\                        position.get()
+        \\                    },
+        \\                )
+        \\            } else if dense_index == -2 {
+        \\                if first_deleted.get() < 0 {
+        \\                    first_deleted.set(position.get())
+        \\                } else {
+        \\                    ()
+        \\                }
+        \\            } else {
+        \\                match self.entries.get().get(dense_index) {
+        \\                    Option::Some(entry) => {
+        \\                        if entry.hash == hash && Eq::eq(entry.key, key) {
+        \\                            return IndexMapProbe::Found(position.get(), dense_index)
+        \\                        } else {
+        \\                            ()
+        \\                        }
+        \\                    },
+        \\                    Option::None => (),
+        \\                }
+        \\            };
+        \\            position.set(
+        \\                (
+        \\                    (
+        \\                        position.get() as uint64 * 5
+        \\                            + perturb.get()
+        \\                            + 1
+        \\                    ) & mask as uint64
+        \\                ) as int,
+        \\            );
+        \\            perturb.set(perturb.get() >> 5)
+        \\        };
+        \\        IndexMapProbe::Vacant(0)
+        \\    }
+        \\
+        \\    fn place_entry_index(self: IndexMap[K, V], dense_index: int) -> unit {
+        \\        match self.entries.get().get(dense_index) {
+        \\            Option::Some(entry) => match self.probe(entry.key, entry.hash) {
+        \\                IndexMapProbe::Found(slot, _) => {
+        \\                    self.indices.get().set(slot, dense_index)
+        \\                },
+        \\                IndexMapProbe::Vacant(slot) => {
+        \\                    self.indices.get().set(slot, dense_index)
+        \\                },
+        \\            },
+        \\            Option::None => (),
+        \\        }
+        \\    }
+        \\
+        \\    fn rebuild(self: IndexMap[K, V], requested_entries: int) -> unit {
+        \\        let live_entries = self.len.get();
+        \\        let desired_entries = if requested_entries > live_entries {
+        \\            requested_entries
+        \\        } else {
+        \\            live_entries
+        \\        };
+        \\        let old_entries = self.entries.get();
+        \\        let next_entries: Vec[Option[IndexMapEntry[K, V]]] =
+        \\            Vec::with_capacity(desired_entries);
+        \\        let old_index = Ref::new(0);
+        \\        while old_index.get() < old_entries.len() {
+        \\            match old_entries.get(old_index.get()) {
+        \\                Option::Some(entry) => next_entries.push(Option::Some(entry)),
+        \\                Option::None => (),
+        \\            };
+        \\            old_index.set(old_index.get() + 1)
+        \\        };
+        \\        self.entries.set(next_entries);
+        \\        self.indices.set(index_map_empty_indices(
+        \\            index_map_capacity_for_entries(desired_entries),
+        \\        ));
+        \\        self.deleted.set(0);
+        \\        let dense_index = Ref::new(0);
+        \\        while dense_index.get() < self.entries.get().len() {
+        \\            self.place_entry_index(dense_index.get());
+        \\            dense_index.set(dense_index.get() + 1)
+        \\        }
+        \\    }
+        \\
+        \\    fn ensure_insert_capacity(self: IndexMap[K, V]) -> unit {
+        \\        let occupied = self.len.get() + self.deleted.get();
+        \\        if (occupied + 1) * 3 >= self.indices.get().len() * 2 {
+        \\            self.rebuild(self.len.get() + 1)
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    }
+        \\
+        \\    fn compact_after_remove(self: IndexMap[K, V]) -> unit {
+        \\        if self.len.get() == 0 {
+        \\            self.clear()
+        \\        } else if self.deleted.get() >= 8 && self.deleted.get() > self.len.get() {
+        \\            self.rebuild(self.len.get())
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    }
+        \\
+        \\    pub fn contains(self: IndexMap[K, V], key: K) -> bool {
+        \\        let hash = Hash::hash(key);
+        \\        match self.probe(key, hash) {
+        \\            IndexMapProbe::Found(_, _) => true,
+        \\            IndexMapProbe::Vacant(_) => false,
+        \\        }
+        \\    }
+        \\
+        \\    pub fn get(self: IndexMap[K, V], key: K) -> Option[V] {
+        \\        let hash = Hash::hash(key);
+        \\        match self.probe(key, hash) {
+        \\            IndexMapProbe::Found(_, dense_index) => {
+        \\                match self.entries.get().get(dense_index) {
+        \\                    Option::Some(entry) => Option::Some(entry.value),
+        \\                    Option::None => Option::None,
+        \\                }
+        \\            },
+        \\            IndexMapProbe::Vacant(_) => Option::None,
+        \\        }
+        \\    }
+        \\
+        \\    pub fn insert(self: IndexMap[K, V], key: K, value: V) -> Option[V] {
+        \\        self.ensure_insert_capacity();
+        \\        let hash = Hash::hash(key);
+        \\        match self.probe(key, hash) {
+        \\            IndexMapProbe::Found(_, dense_index) => {
+        \\                match self.entries.get().get(dense_index) {
+        \\                    Option::Some(entry) => {
+        \\                        let previous = entry.value;
+        \\                        self.entries.get().set(
+        \\                            dense_index,
+        \\                            Option::Some(IndexMapEntry {
+        \\                                hash: entry.hash,
+        \\                                key: entry.key,
+        \\                                value,
+        \\                            }),
+        \\                        );
+        \\                        Option::Some(previous)
+        \\                    },
+        \\                    Option::None => Option::None,
+        \\                }
+        \\            },
+        \\            IndexMapProbe::Vacant(slot) => {
+        \\                let dense_index = self.entries.get().len();
+        \\                self.entries.get().push(Option::Some(IndexMapEntry {
+        \\                    hash,
+        \\                    key,
+        \\                    value,
+        \\                }));
+        \\                self.indices.get().set(slot, dense_index);
+        \\                self.len.set(self.len.get() + 1);
+        \\                Option::None
+        \\            },
+        \\        }
+        \\    }
+        \\
+        \\    pub fn remove(self: IndexMap[K, V], key: K) -> Option[V] {
+        \\        let hash = Hash::hash(key);
+        \\        match self.probe(key, hash) {
+        \\            IndexMapProbe::Found(slot, dense_index) => {
+        \\                match self.entries.get().get(dense_index) {
+        \\                    Option::Some(entry) => {
+        \\                        self.indices.get().set(slot, -2);
+        \\                        self.entries.get().set(dense_index, Option::None);
+        \\                        self.len.set(self.len.get() - 1);
+        \\                        self.deleted.set(self.deleted.get() + 1);
+        \\                        self.compact_after_remove();
+        \\                        Option::Some(entry.value)
+        \\                    },
+        \\                    Option::None => Option::None,
+        \\                }
+        \\            },
+        \\            IndexMapProbe::Vacant(_) => Option::None,
+        \\        }
+        \\    }
+        \\
+        \\    pub fn reserve(self: IndexMap[K, V], additional: int) -> unit {
+        \\        if additional <= 0 {
+        \\            ()
+        \\        } else {
+        \\            let desired_entries = self.len.get() + additional;
+        \\            let desired_capacity = index_map_capacity_for_entries(desired_entries);
+        \\            if desired_capacity > self.indices.get().len() || self.deleted.get() > 0 {
+        \\                self.rebuild(desired_entries)
+        \\            } else {
+        \\                self.entries.get().reserve(additional)
+        \\            }
+        \\        }
+        \\    }
+        \\
+        \\    pub fn clear(self: IndexMap[K, V]) -> unit {
+        \\        let capacity = self.indices.get().len();
+        \\        self.indices.set(index_map_empty_indices(capacity));
+        \\        self.entries.get().clear();
+        \\        self.len.set(0);
+        \\        self.deleted.set(0)
+        \\    }
+        \\
+        \\    pub fn entries(self: IndexMap[K, V]) -> Vec[(K, V)] {
+        \\        let result = Vec::with_capacity(self.len.get());
+        \\        let index = Ref::new(0);
+        \\        while index.get() < self.entries.get().len() {
+        \\            match self.entries.get().get(index.get()) {
+        \\                Option::Some(entry) => result.push((entry.key, entry.value)),
+        \\                Option::None => (),
+        \\            };
+        \\            index.set(index.get() + 1)
+        \\        };
+        \\        result
+        \\    }
+        \\
+        \\    pub fn keys(self: IndexMap[K, V]) -> Vec[K] {
+        \\        let result = Vec::with_capacity(self.len.get());
+        \\        let index = Ref::new(0);
+        \\        while index.get() < self.entries.get().len() {
+        \\            match self.entries.get().get(index.get()) {
+        \\                Option::Some(entry) => result.push(entry.key),
+        \\                Option::None => (),
+        \\            };
+        \\            index.set(index.get() + 1)
+        \\        };
+        \\        result
+        \\    }
+        \\
+        \\    pub fn values(self: IndexMap[K, V]) -> Vec[V] {
+        \\        let result = Vec::with_capacity(self.len.get());
+        \\        let index = Ref::new(0);
+        \\        while index.get() < self.entries.get().len() {
+        \\            match self.entries.get().get(index.get()) {
+        \\                Option::Some(entry) => result.push(entry.value),
+        \\                Option::None => (),
+        \\            };
+        \\            index.set(index.get() + 1)
+        \\        };
+        \\        result
+        \\    }
+        \\
+        \\    pub fn iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {
+        \\        let index = Ref::new(0);
+        \\        let entries_len = self.entries.get().len();
+        \\        FnIterator::from_fn(|| {
+        \\            while index.get() < entries_len {
+        \\                let current = index.get();
+        \\                index.set(current + 1);
+        \\                match self.entries.get().get(current) {
+        \\                    Option::Some(entry) => {
+        \\                        return Option::Some((entry.key, entry.value))
+        \\                    },
+        \\                    Option::None => (),
+        \\                }
+        \\            };
+        \\            Option::None
+        \\        })
+        \\    }
+        \\}
+        \\
+        \\impl[K: Eq + Hash, V] IntoIterator for IndexMap[K, V] {
+        \\    type Item = (K, V);
+        \\    type IntoIter = FnIterator[(K, V)];
+        \\
+        \\    fn into_iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {
+        \\        self.iter()
+        \\    }
+        \\}
+        \\
         \\pub struct Index[T] {
         \\    pub value: int,
         \\}
@@ -1306,6 +1666,184 @@ pub fn collections_source() -> string {
         \\    pub fn clear(self: Stack[T]) -> unit {
         \\        self.values.clear()
         \\    }
+        \\}
+        \\
+        \\fn smaller(left: int, right: int) -> int {
+        \\    if left < right { left } else { right }
+        \\}
+        \\
+        \\pub fn stable_sort_by[T](
+        \\    values: Vec[T],
+        \\    compare: (T, T) -> int,
+        \\) -> unit {
+        \\    let length = values.len();
+        \\    if length < 2 {
+        \\        return
+        \\    } else {
+        \\        ()
+        \\    };
+        \\    let buffer: Vec[T] = Vec::with_capacity(length);
+        \\    for index in range(0, length) {
+        \\        buffer.push(values.get(index))
+        \\    };
+        \\    let width = Ref::new(1);
+        \\    while width.get() < length {
+        \\        let left = Ref::new(0);
+        \\        while left.get() < length {
+        \\            let middle = smaller(left.get() + width.get(), length);
+        \\            let right = smaller(middle + width.get(), length);
+        \\            let first = Ref::new(left.get());
+        \\            let second = Ref::new(middle);
+        \\            let output = Ref::new(left.get());
+        \\            while first.get() < middle && second.get() < right {
+        \\                if compare(
+        \\                    values.get(first.get()),
+        \\                    values.get(second.get()),
+        \\                ) <= 0
+        \\                {
+        \\                    buffer.set(output.get(), values.get(first.get()));
+        \\                    first.set(first.get() + 1)
+        \\                } else {
+        \\                    buffer.set(output.get(), values.get(second.get()));
+        \\                    second.set(second.get() + 1)
+        \\                };
+        \\                output.set(output.get() + 1)
+        \\            };
+        \\            while first.get() < middle {
+        \\                buffer.set(output.get(), values.get(first.get()));
+        \\                first.set(first.get() + 1);
+        \\                output.set(output.get() + 1)
+        \\            };
+        \\            while second.get() < right {
+        \\                buffer.set(output.get(), values.get(second.get()));
+        \\                second.set(second.get() + 1);
+        \\                output.set(output.get() + 1)
+        \\            };
+        \\            left.set(right)
+        \\        };
+        \\        for index in range(0, length) {
+        \\            values.set(index, buffer.get(index))
+        \\        };
+        \\        width.set(
+        \\            if width.get() > length / 2 {
+        \\                length
+        \\            } else {
+        \\                width.get() * 2
+        \\            },
+        \\        )
+        \\    }
+        \\}
+        \\
+        \\pub fn sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
+        \\    stable_sort_by(values, compare)
+        \\}
+        \\
+        \\pub fn binary_search_by[T](
+        \\    values: Vec[T],
+        \\    compare: (T) -> int,
+        \\) -> Option[int] {
+        \\    let low = Ref::new(0);
+        \\    let high = Ref::new(values.len());
+        \\    while low.get() < high.get() {
+        \\        let middle = low.get() + (high.get() - low.get()) / 2;
+        \\        if compare(values.get(middle)) < 0 {
+        \\            low.set(middle + 1)
+        \\        } else {
+        \\            high.set(middle)
+        \\        }
+        \\    };
+        \\    if low.get() < values.len() && compare(values.get(low.get())) == 0 {
+        \\        Option::Some(low.get())
+        \\    } else {
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\pub fn position_by[T](
+        \\    values: Vec[T],
+        \\    predicate: (T) -> bool,
+        \\) -> Option[int] {
+        \\    for index in range(0, values.len()) {
+        \\        if predicate(values.get(index)) {
+        \\            return Option::Some(index)
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    };
+        \\    Option::None
+        \\}
+        \\
+        \\pub fn contains[T: Eq](values: Vec[T], expected: T) -> bool {
+        \\    match position_by(values, |value: T| Eq::eq(value, expected)) {
+        \\        Option::Some(_) => true,
+        \\        Option::None => false,
+        \\    }
+        \\}
+        \\
+        \\pub fn min_by[T](
+        \\    values: Vec[T],
+        \\    compare: (T, T) -> int,
+        \\) -> Option[T] {
+        \\    if values.len() == 0 {
+        \\        Option::None
+        \\    } else {
+        \\        let best = Ref::new(values.get(0));
+        \\        for index in range(1, values.len()) {
+        \\            let value = values.get(index);
+        \\            if compare(value, best.get()) < 0 {
+        \\                best.set(value)
+        \\            } else {
+        \\                ()
+        \\            }
+        \\        };
+        \\        Option::Some(best.get())
+        \\    }
+        \\}
+        \\
+        \\pub fn max_by[T](
+        \\    values: Vec[T],
+        \\    compare: (T, T) -> int,
+        \\) -> Option[T] {
+        \\    if values.len() == 0 {
+        \\        Option::None
+        \\    } else {
+        \\        let best = Ref::new(values.get(0));
+        \\        for index in range(1, values.len()) {
+        \\            let value = values.get(index);
+        \\            if compare(value, best.get()) > 0 {
+        \\                best.set(value)
+        \\            } else {
+        \\                ()
+        \\            }
+        \\        };
+        \\        Option::Some(best.get())
+        \\    }
+        \\}
+        \\
+        \\pub fn dedup_by[T](
+        \\    values: Vec[T],
+        \\    equal: (T, T) -> bool,
+        \\) -> unit {
+        \\    if values.len() < 2 {
+        \\        return
+        \\    } else {
+        \\        ()
+        \\    };
+        \\    let output = Ref::new(1);
+        \\    for index in range(1, values.len()) {
+        \\        let value = values.get(index);
+        \\        if equal(values.get(output.get() - 1), value) == false {
+        \\            values.set(output.get(), value);
+        \\            output.set(output.get() + 1)
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    };
+        \\    values.truncate(output.get())
+        \\}
+        \\
+        \\pub fn dedup[T: Eq](values: Vec[T]) -> unit {
+        \\    dedup_by(values, |left: T, right: T| Eq::eq(left, right))
         \\}
     ;
     source
@@ -1938,36 +2476,35 @@ pub fn text_source() -> string {
         \\use std::bytes;
         \\
         \\pub struct StringBuilder {
-        \\    pub parts: Vec[string],
-        \\    pub byte_len: Ref[int],
+        \\    pub values: Vec[uint8],
         \\}
         \\
         \\impl StringBuilder {
         \\    pub fn new() -> StringBuilder {
         \\        StringBuilder {
-        \\            parts: Vec::new(),
-        \\            byte_len: Ref::new(0),
+        \\            values: Vec::new(),
         \\        }
         \\    }
         \\
-        \\    pub fn with_capacity(part_capacity: int) -> StringBuilder {
+        \\    pub fn with_capacity(capacity: int) -> StringBuilder {
         \\        StringBuilder {
-        \\            parts: Vec::with_capacity(part_capacity),
-        \\            byte_len: Ref::new(0),
+        \\            values: Vec::with_capacity(capacity),
         \\        }
         \\    }
         \\
         \\    pub fn len(self: StringBuilder) -> int {
-        \\        self.byte_len.get()
+        \\        self.values.len()
         \\    }
         \\
         \\    pub fn is_empty(self: StringBuilder) -> bool {
-        \\        self.byte_len.get() == 0
+        \\        self.values.len() == 0
         \\    }
         \\
         \\    pub fn write_string(self: StringBuilder, value: string) -> unit {
-        \\        self.parts.push(value);
-        \\        self.byte_len.set(self.byte_len.get() + value.byte_len())
+        \\        self.values.reserve(value.byte_len());
+        \\        for index in range(0, value.byte_len()) {
+        \\            self.values.push(value.byte_get(index))
+        \\        }
         \\    }
         \\
         \\    pub fn write_char(self: StringBuilder, value: char) -> unit {
@@ -1990,12 +2527,12 @@ pub fn text_source() -> string {
         \\    }
         \\
         \\    pub fn clear(self: StringBuilder) -> unit {
-        \\        self.parts.clear();
-        \\        self.byte_len.set(0)
+        \\        self.values.clear()
         \\    }
         \\
         \\    pub fn finish(self: StringBuilder) -> string {
-        \\        string_concat(self.parts)
+        \\        let (_, value) = string_from_utf8(self.values);
+        \\        value
         \\    }
         \\}
         \\
@@ -2003,6 +2540,403 @@ pub fn text_source() -> string {
         \\    fn to_string(self: StringBuilder) -> string {
         \\        self.finish()
         \\    }
+        \\}
+        \\
+        \\fn is_ascii_whitespace_byte(value: uint8) -> bool {
+        \\    value == 9
+        \\        || value == 10
+        \\        || value == 11
+        \\        || value == 12
+        \\        || value == 13
+        \\        || value == 32
+        \\}
+        \\
+        \\fn find_from(value: string, expected: string, start: int) -> Option[int] {
+        \\    if start < 0 || start > value.byte_len() {
+        \\        Option::None
+        \\    } else if expected.byte_len() == 0 {
+        \\        Option::Some(start)
+        \\    } else if expected.byte_len() > value.byte_len() - start {
+        \\        Option::None
+        \\    } else {
+        \\        let limit = value.byte_len() - expected.byte_len();
+        \\        let index = Ref::new(start);
+        \\        while index.get() <= limit {
+        \\            let end = index.get() + expected.byte_len();
+        \\            if value.is_char_boundary(index.get())
+        \\                && value.is_char_boundary(end)
+        \\                && value.byte_slice(index.get(), end) == expected
+        \\            {
+        \\                return Option::Some(index.get())
+        \\            } else {
+        \\                index.set(index.get() + 1)
+        \\            }
+        \\        };
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\pub fn find(value: string, expected: string) -> Option[int] {
+        \\    find_from(value, expected, 0)
+        \\}
+        \\
+        \\pub fn trim_start(value: string) -> string {
+        \\    let start = Ref::new(0);
+        \\    while start.get() < value.byte_len()
+        \\        && is_ascii_whitespace_byte(value.byte_get(start.get()))
+        \\    {
+        \\        start.set(start.get() + 1)
+        \\    };
+        \\    value.byte_slice(start.get(), value.byte_len())
+        \\}
+        \\
+        \\pub fn trim_end(value: string) -> string {
+        \\    let end = Ref::new(value.byte_len());
+        \\    while end.get() > 0
+        \\        && is_ascii_whitespace_byte(value.byte_get(end.get() - 1))
+        \\    {
+        \\        end.set(end.get() - 1)
+        \\    };
+        \\    value.byte_slice(0, end.get())
+        \\}
+        \\
+        \\pub fn trim(value: string) -> string {
+        \\    trim_end(trim_start(value))
+        \\}
+        \\
+        \\pub fn split(value: string, separator: string) -> Vec[string] {
+        \\    let result: Vec[string] = Vec::new();
+        \\    if separator.byte_len() == 0 {
+        \\        result.push(value);
+        \\        return result
+        \\    } else {
+        \\        ()
+        \\    };
+        \\    let start = Ref::new(0);
+        \\    let done: Ref[bool] = Ref::new(false);
+        \\    while done.get() == false {
+        \\        match find_from(value, separator, start.get()) {
+        \\            Option::Some(index) => {
+        \\                result.push(value.byte_slice(start.get(), index));
+        \\                start.set(index + separator.byte_len())
+        \\            },
+        \\            Option::None => {
+        \\                result.push(value.byte_slice(start.get(), value.byte_len()));
+        \\                done.set(true)
+        \\            },
+        \\        }
+        \\    };
+        \\    result
+        \\}
+        \\
+        \\pub fn split_once(value: string, separator: string) -> Option[(string, string)] {
+        \\    if separator.byte_len() == 0 {
+        \\        Option::None
+        \\    } else {
+        \\        match find(value, separator) {
+        \\            Option::Some(index) => Option::Some((
+        \\                value.byte_slice(0, index),
+        \\                value.byte_slice(index + separator.byte_len(), value.byte_len()),
+        \\            )),
+        \\            Option::None => Option::None,
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\pub fn lines(value: string) -> Vec[string] {
+        \\    let result = split(value, "\n");
+        \\    if result.len() > 0 && result.get(result.len() - 1) == "" {
+        \\        let _ = result.pop();
+        \\    } else {
+        \\        ()
+        \\    };
+        \\    for index in range(0, result.len()) {
+        \\        let line = result.get(index);
+        \\        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == 13 {
+        \\            result.set(index, line.byte_slice(0, line.byte_len() - 1))
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    };
+        \\    result
+        \\}
+        \\
+        \\pub fn replace(value: string, expected: string, replacement: string) -> string {
+        \\    if expected.byte_len() == 0 {
+        \\        value
+        \\    } else {
+        \\        let builder = StringBuilder::with_capacity(value.byte_len());
+        \\        let start = Ref::new(0);
+        \\        let done: Ref[bool] = Ref::new(false);
+        \\        while done.get() == false {
+        \\            match find_from(value, expected, start.get()) {
+        \\                Option::Some(index) => {
+        \\                    builder.write_string(value.byte_slice(start.get(), index));
+        \\                    builder.write_string(replacement);
+        \\                    start.set(index + expected.byte_len())
+        \\                },
+        \\                Option::None => {
+        \\                    builder.write_string(
+        \\                        value.byte_slice(start.get(), value.byte_len()),
+        \\                    );
+        \\                    done.set(true)
+        \\                },
+        \\            }
+        \\        };
+        \\        builder.finish()
+        \\    }
+        \\}
+        \\
+        \\pub fn join(values: Vec[string], separator: string) -> string {
+        \\    let builder = StringBuilder::new();
+        \\    for index in range(0, values.len()) {
+        \\        if index > 0 {
+        \\            builder.write_string(separator)
+        \\        } else {
+        \\            ()
+        \\        };
+        \\        builder.write_string(values.get(index))
+        \\    };
+        \\    builder.finish()
+        \\}
+        \\
+        \\pub fn repeat(value: string, count: int) -> string {
+        \\    if count <= 0 || value.byte_len() == 0 {
+        \\        ""
+        \\    } else {
+        \\        let builder = StringBuilder::with_capacity(value.byte_len() * count);
+        \\        for _ in range(0, count) {
+        \\            builder.write_string(value)
+        \\        };
+        \\        builder.finish()
+        \\    }
+        \\}
+        \\
+        \\pub fn is_ascii(value: string) -> bool {
+        \\    let ascii = Ref::new(true);
+        \\    let index = Ref::new(0);
+        \\    while ascii.get() && index.get() < value.byte_len() {
+        \\        if value.byte_get(index.get()) > 127 {
+        \\            ascii.set(false)
+        \\        } else {
+        \\            index.set(index.get() + 1)
+        \\        }
+        \\    };
+        \\    ascii.get()
+        \\}
+        \\
+        \\pub fn to_ascii_lowercase(value: string) -> string {
+        \\    let values = value.to_bytes();
+        \\    for index in range(0, values.len()) {
+        \\        let current = values.get(index);
+        \\        if current >= 65 && current <= 90 {
+        \\            values.set(index, current + 32)
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    };
+        \\    let (_, result) = string_from_utf8(values);
+        \\    result
+        \\}
+        \\
+        \\pub fn to_ascii_uppercase(value: string) -> string {
+        \\    let values = value.to_bytes();
+        \\    for index in range(0, values.len()) {
+        \\        let current = values.get(index);
+        \\        if current >= 97 && current <= 122 {
+        \\            values.set(index, current - 32)
+        \\        } else {
+        \\            ()
+        \\        }
+        \\    };
+        \\    let (_, result) = string_from_utf8(values);
+        \\    result
+        \\}
+    ;
+    source
+}
+
+pub fn num_source() -> string {
+    let source = \\package num;
+        \\
+        \\use std::internal::host;
+        \\
+        \\fn int_result(value: (bool, int, string)) -> Result[int, string] {
+        \\    let (ok, parsed, error) = value;
+        \\    if ok {
+        \\        Result::Ok(parsed)
+        \\    } else {
+        \\        Result::Err(error)
+        \\    }
+        \\}
+        \\
+        \\fn uint_result(value: (bool, uint, string)) -> Result[uint, string] {
+        \\    let (ok, parsed, error) = value;
+        \\    if ok {
+        \\        Result::Ok(parsed)
+        \\    } else {
+        \\        Result::Err(error)
+        \\    }
+        \\}
+        \\
+        \\fn float32_result(value: (bool, float32, string)) -> Result[float32, string] {
+        \\    let (ok, parsed, error) = value;
+        \\    if ok {
+        \\        Result::Ok(parsed)
+        \\    } else {
+        \\        Result::Err(error)
+        \\    }
+        \\}
+        \\
+        \\fn float64_result(value: (bool, float64, string)) -> Result[float64, string] {
+        \\    let (ok, parsed, error) = value;
+        \\    if ok {
+        \\        Result::Ok(parsed)
+        \\    } else {
+        \\        Result::Err(error)
+        \\    }
+        \\}
+        \\
+        \\pub fn parse_int(value: string) -> Result[int, string] {
+        \\    parse_int_radix(value, 10)
+        \\}
+        \\
+        \\pub fn parse_int_radix(value: string, radix: int) -> Result[int, string] {
+        \\    int_result(host::parse_int(value, radix))
+        \\}
+        \\
+        \\pub fn parse_uint(value: string) -> Result[uint, string] {
+        \\    parse_uint_radix(value, 10)
+        \\}
+        \\
+        \\pub fn parse_uint_radix(value: string, radix: int) -> Result[uint, string] {
+        \\    uint_result(host::parse_uint(value, radix))
+        \\}
+        \\
+        \\pub fn parse_float32(value: string) -> Result[float32, string] {
+        \\    float32_result(host::parse_float32(value))
+        \\}
+        \\
+        \\pub fn parse_float64(value: string) -> Result[float64, string] {
+        \\    float64_result(host::parse_float64(value))
+        \\}
+    ;
+    source
+}
+
+pub fn time_source() -> string {
+    let source = \\package time;
+        \\
+        \\use std::internal::host;
+        \\
+        \\pub struct Duration {
+        \\    nanoseconds: int64,
+        \\}
+        \\
+        \\impl Duration {
+        \\    pub fn zero() -> Duration {
+        \\        Duration { nanoseconds: 0 }
+        \\    }
+        \\
+        \\    pub fn from_nanoseconds(value: int64) -> Duration {
+        \\        Duration {
+        \\            nanoseconds: if value < 0 { 0 } else { value },
+        \\        }
+        \\    }
+        \\
+        \\    pub fn from_microseconds(value: int64) -> Duration {
+        \\        Duration::from_nanoseconds(value * 1000)
+        \\    }
+        \\
+        \\    pub fn from_milliseconds(value: int64) -> Duration {
+        \\        Duration::from_nanoseconds(value * 1000000)
+        \\    }
+        \\
+        \\    pub fn from_seconds(value: int64) -> Duration {
+        \\        Duration::from_nanoseconds(value * 1000000000)
+        \\    }
+        \\
+        \\    pub fn as_nanoseconds(self: Duration) -> int64 {
+        \\        self.nanoseconds
+        \\    }
+        \\
+        \\    pub fn as_microseconds(self: Duration) -> int64 {
+        \\        self.nanoseconds / 1000
+        \\    }
+        \\
+        \\    pub fn as_milliseconds(self: Duration) -> int64 {
+        \\        self.nanoseconds / 1000000
+        \\    }
+        \\
+        \\    pub fn as_seconds(self: Duration) -> int64 {
+        \\        self.nanoseconds / 1000000000
+        \\    }
+        \\
+        \\    pub fn is_zero(self: Duration) -> bool {
+        \\        self.nanoseconds == 0
+        \\    }
+        \\
+        \\    pub fn add(self: Duration, other: Duration) -> Duration {
+        \\        Duration::from_nanoseconds(self.nanoseconds + other.nanoseconds)
+        \\    }
+        \\
+        \\    pub fn subtract(self: Duration, other: Duration) -> Duration {
+        \\        Duration::from_nanoseconds(self.nanoseconds - other.nanoseconds)
+        \\    }
+        \\}
+        \\
+        \\pub struct Instant {
+        \\    nanoseconds: int64,
+        \\}
+        \\
+        \\impl Instant {
+        \\    pub fn now() -> Instant {
+        \\        Instant {
+        \\            nanoseconds: host::monotonic_nanoseconds(),
+        \\        }
+        \\    }
+        \\
+        \\    pub fn elapsed(self: Instant) -> Duration {
+        \\        Instant::now().duration_since(self)
+        \\    }
+        \\
+        \\    pub fn duration_since(self: Instant, earlier: Instant) -> Duration {
+        \\        Duration::from_nanoseconds(self.nanoseconds - earlier.nanoseconds)
+        \\    }
+        \\}
+        \\
+        \\pub struct SystemTime {
+        \\    unix_nanoseconds: int64,
+        \\}
+        \\
+        \\impl SystemTime {
+        \\    pub fn now() -> SystemTime {
+        \\        SystemTime {
+        \\            unix_nanoseconds: host::unix_nanoseconds(),
+        \\        }
+        \\    }
+        \\
+        \\    pub fn from_unix_nanoseconds(value: int64) -> SystemTime {
+        \\        SystemTime {
+        \\            unix_nanoseconds: value,
+        \\        }
+        \\    }
+        \\
+        \\    pub fn unix_nanoseconds(self: SystemTime) -> int64 {
+        \\        self.unix_nanoseconds
+        \\    }
+        \\
+        \\    pub fn unix_milliseconds(self: SystemTime) -> int64 {
+        \\        self.unix_nanoseconds / 1000000
+        \\    }
+        \\
+        \\    pub fn unix_seconds(self: SystemTime) -> int64 {
+        \\        self.unix_nanoseconds / 1000000000
+        \\    }
+        \\}
+        \\
+        \\pub fn sleep(duration: Duration) -> unit {
+        \\    host::sleep_nanoseconds(duration.as_nanoseconds())
         \\}
     ;
     source

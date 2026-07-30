@@ -1,0 +1,20 @@
+package main;
+
+use tests::contextual_enum_patterns::events;
+
+enum LocalEvent {
+    Ready(int32),
+    Failed(string),
+}
+
+fn describe(value: events::Event) -> string {
+    match value {
+        Ready(number) => "ready:" + number.to_string(),
+        Failed(message) => "failed:" + message,
+    }
+}
+
+fn main() -> unit {
+    println(describe(events::ready(42)));
+    println(describe(events::failed("offline")))
+}

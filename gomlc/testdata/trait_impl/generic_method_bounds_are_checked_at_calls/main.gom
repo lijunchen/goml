@@ -1,0 +1,14 @@
+struct Value {}
+
+struct Holder {}
+
+impl Holder {
+    fn render[T: ToString](self: Holder, value: T) -> string {
+        let _ = self;
+        value.to_string()
+    }
+}
+
+fn main() {
+    let _ = Holder {}.render(Value {});
+}

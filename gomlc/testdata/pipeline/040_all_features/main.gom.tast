@@ -37,7 +37,7 @@ impl Describe for Record[string]{
   }
 }
 
-fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
+fn choose[T](flag/20: bool, when_true/21: T, when_false/22: T) -> T {
     if (flag/20 : bool) {
         {
             (when_true/21 : T)
@@ -49,7 +49,7 @@ fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
     }
 }
 
-fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
+fn map_maybe[T, U](value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
     match (value/23 : Maybe[T]) {
         Maybe::Some(inner/25: T) => Maybe::Some((f/24 : (T) -> U)((inner/25 : T))),
         Maybe::None => Maybe::None,

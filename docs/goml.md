@@ -14,7 +14,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 6. `if` is an expression; when `else` is omitted, the then branch must return `unit`.`match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
 8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while` and `for` as statements.
-9. Enumeration constructors and patterns prefer to write their full names, such as `Option::Some(value)`, to avoid name conflicts.
+9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package first and then write `use alias::Trait;`; when in doubt, use UFCS: `Trait::method(value)`.
 12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, Go `var` / `:=` or user `extern fn`.
@@ -58,12 +58,12 @@ The single `_` is a wildcard character, not an ordinary variable name.The curren
 - Structures, enumerations, traits, enumeration variants, generic parameters, and associated types must start with a capital letter;
 - Paths retain the appropriate case for the referenced name.
 
-Enumeration variants should be used via `Enum::Variant` to avoid name conflicts.
+Enumeration construction should use `Enum::Variant`.Patterns may omit `Enum::` because their expected type determines the variant owner.
 
 Common keywords include:
 
 ```text
-package use as pub fn struct enum trait impl for type where
+package use as pub fn struct enum trait impl for type const where
 let mut if else match while for in break continue return go dyn
 true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 float32 float64 string char extern
@@ -79,12 +79,14 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 | --- | --- | --- |
 | unit | `()` | Type is `unit` |
 | bool | `true`、`false` | Type is `bool` |
-| integer | `0`、`42`、`1_000` | Determined by context; defaults to `int` when unconstrained |
+| integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `int` when unconstrained |
 | floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `float64` when unconstrained |
 | string | `"text"` | Type is `string` |
+| interpolated string | `f"value={value}"` | Type is `string`; embedded values use `ToString` |
 | character | `'a'`、`'\n'`、`'\u0041'` | Type is `char`, representing a Unicode scalar value |
+| byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `uint8` |
 
-Numbers only support decimal form, no type suffix.The `_` delimiter can be used between two numbers; floating point numbers support `e`/`E` exponent and optional exponent sign.When using a decimal point, there must be digits on both sides of the decimal point.There are currently no hexadecimal or binary literals.Negative numbers are composed of unary `-` and positive numeric literals.
+Numbers have no type suffix.Integer literals support binary `0b`/`0B`, octal `0o`/`0O`, decimal, and hexadecimal `0x`/`0X` forms.The `_` delimiter can be used between two digits; floating point numbers support `e`/`E` exponent and optional exponent sign.When using a decimal point, there must be digits on both sides of the decimal point.Negative numbers are composed of unary `-` and positive numeric literals.
 
 Unsuffixed numbers can get the width from the context:
 
@@ -95,6 +97,16 @@ let values: [int16; 3] = [1, 2, 3];
 ```
 
 Strings support `\"`, `\\`, `\n`, `\r`, `\t`, `\b`, `\f`, `\/` and four-digit `\uXXXX` escaping; characters are escaped using the same set of control characters, and `\'` is used to represent single quotes. Ordinary strings cannot span lines.
+
+Interpolated strings use `f"..."`. Each `{expression}` is evaluated once from left to right and converted with `ToString`; a value that is already `string` is inserted directly. Write `{{` and `}}` for literal braces. Formatting specifications and interpolated multiline strings are not supported:
+
+```goml
+let name = "Ada";
+let count = 3;
+let message = f"{name} has {count} items {{ready}}";
+```
+
+Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes.Non-ASCII contents are rejected.There is no builtin `bytes` type or byte-string literal; `b"..."` is deliberately rejected pending a separate design.
 
 Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
 
@@ -127,7 +139,7 @@ target-dir = "_artifact"
 
 Dependency versions must use the strict `X.Y.Z` form. A dependency version is a minimum version requirement resolved using MVS; there is currently no `goml.lock`.
 
-`[build]` can be omitted; `build.target-dir` defaults to `_artifact` under the module root. The manifest value must be a non-empty relative path and cannot contain a `..` segment. `goml check`, `goml build`, `goml run`, and `goml test` can temporarily override it with `--target-dir <path>`; command-line overrides may be relative or absolute.
+`[build]` can be omitted; `build.target-dir` defaults to `_artifact` under the module root. The manifest value must be a non-empty relative path and cannot contain a `..` segment. `goml check`, `goml build`, `goml run`, and `goml test` can temporarily override it with `--target-dir <path>`; command-line overrides may be relative or absolute. `goml clean` removes the configured target directory. Its optional `--target-dir <path>` override must stay inside the module.
 
 Each module path segment must be non-empty and may contain ASCII letters, digits, `_`, and `-`. The current manifest parser does not reserve `main`, `builtin`, or `std` as module paths. The `[module]` section currently has no `name`, `kind`, `root`, or similar fields.
 
@@ -288,6 +300,7 @@ All files in the same package can use private top-level items.The trait impl met
 | raw integer | `int` | Corresponds to the `int` of the target Go platform and is also the default type of integers. |
 | signed integer | `int8`、`int16`、`int32`、`int64` | fixed width |
 | unsigned integer | `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `uint` has the target Go platform width; the others have fixed widths |
+| byte | `byte` | Transparent builtin alias of `uint8` |
 | floating point | `float32`、`float64` | IEEE floating point |
 | string | `string` | Go string backend |
 | character | `char` | Compile to Go `rune` |
@@ -319,9 +332,21 @@ let pair: [string; 2] = ["left", "right"];
 
 The number of array literal elements must match the array type.Empty arrays and empty generic containers usually require type annotations.
 
+### Type aliases
+
+Top-level aliases are transparent and may have type parameters:
+
+```goml
+type UserId = uint64;
+type Pair[T] = (T, T);
+pub type Names = Vec[string];
+```
+
+Aliases do not create nominally distinct types and recursive alias cycles are rejected.Public aliases can be referenced across packages.
+
 ### Type syntax not currently available
 
-GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, type aliases, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
+GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
 
 `A + B` is only allowed to appear in trait bound or supertrait lists, and cannot be written as ordinary parameters/return types, nor can it be written as `dyn A + B`.
 
@@ -336,8 +361,22 @@ The top level of an ordinary source code file should only contain:
 - `enum`
 - `trait`
 - `impl`
+- `type`
+- `const`
 
 `package` and `use` can only appear at the beginning of a file.The top level cannot write local variables or arbitrary execution statements.
+
+### Constants
+
+Top-level constants require an explicit type and a compile-time expression:
+
+```goml
+const base: int32 = 0x20;
+pub const answer: int32 = base + 10;
+const newline: byte = b'\n';
+```
+
+Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts.They may use forward references, but cycles are rejected.The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`.Public constants are available through package-qualified paths.
 
 ### Structure
 
@@ -368,7 +407,16 @@ Field access uses dot notation:
 let x = point.x;
 ```
 
-Currently, Rust's `..old` structure update syntax is not supported, nor is direct field assignment `point.x = value;` supported.When you need to update, you can rebuild the entire value, or put the modified content that needs to be shared into `Ref[T]`.
+Structure update copies omitted fields from a base value of the same structure type. The `..base` item must be last. Explicit field expressions are evaluated from left to right, followed by the base expression, and every expression is evaluated once:
+
+```goml
+let moved = Point {
+    x: point.x + 1,
+    ..point,
+};
+```
+
+Structure update is rejected when inaccessible fields prevent construction across a package boundary.
 
 Directly recursive structures will have infinite size and must be recursed through indirect layers such as `Ref` and `Vec`:
 
@@ -422,7 +470,7 @@ match named {
 }
 ```
 
-Naked variant names are available if they can be resolved uniquely, but multiple enumerations may define variants with the same name.Variant names must be uppercase; `Enum::Variant` is preferred when generating code.
+Patterns may omit the enum qualifier.When the expected pattern type is `Option[T]`, `Some(value)` and `None` resolve to `Option::Some(value)` and `Option::None`.The same rule applies to unit, tuple-like, and struct-like variants of user enums, including enums imported from another package and enums reached through a type alias.Duplicate variant names in unrelated enums are not ambiguous because the expected enum type selects the owner.Nested patterns are resolved recursively, so `Some(Ok(value))` uses the payload type of `Some` to resolve `Ok`.
 
 ## Functions and generics
 
@@ -484,9 +532,16 @@ let number = identity::[int32](1);
 let text = identity::[string]("text");
 ```
 
-Don't write `identity[int32](1)` or Rust's `identity::<int32>(1)`.Generic trait UFCS and associations with generic types also put `::[...]` before the member name, such as `Convert::[int32]::convert(value)` and `Channel::[string]::new(0)`.
+Don't write `identity[int32](1)` or Rust's `identity::<int32>(1)`. Generic arguments for an owner type or trait appear before the member name, while arguments owned by a method appear after it:
 
-Only top-level function declarations should introduce the function's own type parameters.Local named function does not exist; use closure.Closures do not have generics, and methods in impl should not declare their own type parameters.Structures, enumerations, traits, and impl themselves can have type parameters.
+```goml
+let inferred = value.convert(fallback);
+let explicit = value.convert::[string](fallback);
+let inherent = Box::[int32]::convert::[string](value, fallback);
+let trait_call = Convert::[int32]::convert::[string](value, fallback);
+```
+
+Top-level functions and methods may introduce their own type parameters. A method's parameters are distinct from the parameters of its enclosing trait or impl and may have their own bounds and `where` predicates. Local named functions do not exist; use closures. Closures do not have generics. Structures, enumerations, traits, and impl blocks can also have type parameters.
 
 GoML monomorphizes generic calls.Recursive generic code must produce a limited number of concrete instances and cannot continually change to a new nested type with each recursive call.
 
@@ -542,13 +597,15 @@ let mut count = 0;
 count = count + 1;
 ```
 
-Ordinary local bindings without `mut` cannot be reassigned.Currently ordinary assignment targets are mutable local variables or supported index locations; compound assignments, increment/decrement, or direct field assignments are not supported:
+Ordinary local bindings without `mut` cannot be reassigned.Assignment targets include mutable locals, tuple projections, structure fields, and supported index locations. Compound assignment supports `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `^=`, `<<=`, and `>>=`:
 
-```text
-x += 1
-x++
-point.x = 1
+```goml
+count += 1;
+point.x *= 2;
+values[index] <<= 1;
 ```
+
+The target root and each index are evaluated once before the right-hand side. `++` and `--` are not supported. Compound assignment through `HashMap` indexing is not supported because an indexed read returns `Option[V]`; use `get` and `set`, or ordinary indexed assignment.
 
 Array index assignment requires that the root value is a `let mut` local array, or comes from the built-in `Ref.get()`:
 
@@ -716,13 +773,24 @@ When you need to get values ​​from two branches, you must write `else` expli
 ```goml
 fn unwrap_or(value: Option[int32], fallback: int32) -> int32 {
     match value {
-        Option::Some(inner) => inner,
-        Option::None => fallback,
+        Some(inner) => inner,
+        None => fallback,
     }
 }
 ```
 
 The matched expression is evaluated only once, and the pattern is tried from top to bottom.All branches must produce compatible types, and the compiler is required to cover all possible values.
+
+An unqualified variant in a pattern is resolved only against the matched value's type.The compiler does not search unrelated enums for a fallback.If that type is not an enum, does not contain the variant, or cannot be inferred, the pattern is rejected.Fully qualified patterns remain available:
+
+```goml
+match value {
+    Option::Some(inner) => inner,
+    Option::None => fallback,
+}
+```
+
+The rule is shared by `match`, `if let`, `while let`, `let`, `for`, nested patterns, and or-patterns.Existing refutability requirements still apply to `let` and `for`.
 
 Branches can be guarded.guard must be a `bool`, and bindings introduced by this branching pattern can be used:
 
@@ -866,8 +934,9 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | Single element tuple | `(value,)` |
 | exact structure | `Point { x, y: other }` |
 | partial structure | `Point { x, .. }` |
-| Enumerate unloaded variants | `Color::Red` |
-| Enum load variants | `Option::Some(value)` |
+| Enum unit variant | `Color::Red` or contextual `Red` |
+| Enum tuple variant | `Option::Some(value)` or contextual `Some(value)` |
+| Enum struct-like variant | `Message::Named { value }` or contextual `Named { value }` |
 | Array, Vec or Slice | `[first, second]`、`[first, .., last]` |
 | rest binding | `[first, middle @ .., last]` |
 | Alias | `whole @ Option::Some(value)` |
@@ -926,7 +995,7 @@ let Point { x, .. } = point;
 
 `..` appears at most once in the structure pattern and must be the last item.Duplicate fields, unknown fields, and missing fields without writing `..` will all generate diagnoses.
 
-The number of constructor parameters of the enumeration mode must be consistent with the definition.Naked variant names are available if they can be resolved uniquely in the entire current package, including variants defined in other files in the same package; ambiguities are reported when there are multiple candidates.In order to make the source code stable and clear, `Enum::Variant` should still be written first.
+The number of constructor parameters of the enumeration pattern must be consistent with the definition.An unqualified variant is resolved from the expected enum type rather than from global uniqueness.For example, `Shared` in a pattern for `First` means `First::Shared` even when `Second::Shared` also exists.If `First` has no `Shared` variant, the compiler reports that error instead of selecting `Second::Shared`.Type aliases and imported enum types participate after normalization.Nested variant payloads supply the expected type for nested patterns.
 
 ### Fixed arrays, Vec and Slice
 
@@ -1091,7 +1160,15 @@ where
 }
 ```
 
-Currently, the trait method has no default implementation, and the method cannot declare its own type parameters.
+Trait methods have no default implementation. They may declare their own type parameters and constraints:
+
+```goml
+trait Convert {
+    fn convert[U: ToString](self, fallback: U) -> string;
+}
+```
+
+The corresponding impl method must have the same method-generic arity, signature, and constraints. Generic trait methods use static dispatch and make the trait unavailable as `dyn`.
 
 ### trait impl
 
@@ -1171,8 +1248,14 @@ impl[T] Box[T] {
     fn get(self: Self) -> T {
         self.value
     }
+
+    fn map[U](self: Self, map_fn: (T) -> U) -> Box[U] {
+        Box { value: map_fn(self.value) }
+    }
 }
 ```
+
+Method type arguments are normally inferred. Write `box_value.map::[string](convert)` when explicit arguments are needed, or `Box::[int32]::map::[string](box_value, convert)` in associated form.
 
 ### Method parsing and UFCS
 
@@ -1236,7 +1319,8 @@ Current dyn-safe conditions:
 - Traits cannot have type parameters;
 - Traits cannot declare associated types;
 - Each method must have a first receiver parameter of exactly type `Self`;
-- `Self` cannot appear in other parameters and return types.
+- `Self` cannot appear in other parameters and return types;
+- Methods cannot declare type parameters.
 
 Current limitations:
 
@@ -1414,7 +1498,19 @@ enum Result[T, E] {
 }
 ```
 
-It is recommended to always write `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err` when constructing and matching.
+Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`.Patterns may use either those full names or contextual `Some`, `None`, `Ok` and `Err`.
+
+`Option[T]` provides `is_some`, `is_none`, `unwrap_or`, and `unwrap_or_else`, plus type-changing generic methods:
+
+- `value.map(map_fn) -> Option[U]`
+- `value.and_then(next) -> Option[U]`
+- `value.ok_or(error) -> Result[T, E]`
+
+`Result[T, E]` provides `is_ok`, `is_err`, `unwrap_or`, and `unwrap_or_else`. Its type-changing generic methods are:
+
+- `value.map(map_fn) -> Result[U, E]`
+- `value.map_err(map_fn) -> Result[T, F]`
+- `value.and_then(next) -> Result[U, E]`
 
 ### Output and string conversion
 
@@ -1430,6 +1526,9 @@ It is recommended to always write `Option::Some`, `Option::None`, `Result::Ok` a
 - `string.to_bytes() -> Vec[uint8]`
 - `string.chars() -> FnIterator[char]`
 - `string.char_indices() -> FnIterator[(int, char)]`
+- `string.starts_with(prefix: string) -> bool`
+- `string.ends_with(suffix: string) -> bool`
+- `string.contains(expected: string) -> bool`
 
 The basic scalar types all implement `ToString`.String concatenation uses `+`.
 
@@ -1465,11 +1564,11 @@ The index type is `int`.The underlying `array_get` and `array_set` can also be c
 ### `Vec[T]`
 
 ```goml
-let values: Vec[int32] = Vec::new();
-values.push(1);
-values.push(2);
+let values = Vec::[1, 2, 3];
 let first = values.get(0);
 ```
+
+`Vec::[...]` creates a vector literal. Items are evaluated once from left to right. A trailing comma is allowed. An empty literal needs an expected element type, for example `let values: Vec[int32] = Vec::[];`.
 
 Commonly used methods:
 
@@ -1514,10 +1613,14 @@ Commonly used methods: `get`, `len`, `sub`, `iter`.`view[index]` can be written,
 The key type must implement both `Hash` and `Eq`:
 
 ```goml
-let counts: HashMap[string, int32] = HashMap::new();
-counts.set("a", 1);
+let counts = HashMap::{
+    "a" => 1,
+    "b" => 2,
+};
 let value: Option[int32] = counts.get("a");
 ```
+
+`HashMap::{ key => value, ... }` evaluates each key followed by its value, proceeding from left to right. A trailing comma is allowed. Later duplicate keys overwrite earlier entries. An empty literal needs an expected key and value type, for example `let counts: HashMap[string, int32] = HashMap::{};`. The `=>` spelling reuses the same token used by match arms.
 
 Commonly used methods: `new`, `get`, `set`, `remove`, `len`, `contains`, and `entries`. `entries()` returns a snapshot `Vec[(K, V)]`.
 
@@ -1573,8 +1676,16 @@ Commonly used APIs:
 - `iterator_map(iterator, fn)`
 - `iterator_filter(iterator, predicate)`
 - `iterator_take(iterator, count)`
+- `iterator_enumerate(iterator)`, yielding `(int, Item)`
+- `iterator_zip(left, right)`, ending when either input ends
+- `iterator_skip(iterator, count)`
+- `iterator_chain(first, second)`
 - `iterator_fold(iterator, initial, combine)`
 - `iterator_collect(iterator) -> Vec[T]`
+- `iterator_find(iterator, predicate) -> Option[T]`
+- `iterator_any(iterator, predicate) -> bool`
+- `iterator_all(iterator, predicate) -> bool`
+- `iterator_count(iterator) -> int`
 
 Iterators are single pass.`Vec[T]` and `Slice[T]` can be directly used in `for`, and the value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
 
@@ -1589,26 +1700,65 @@ use std::env;
 use std::fs;
 use std::io;
 use std::json;
+use std::num;
 use std::path;
 use std::process;
 use std::testing;
 use std::text;
+use std::time;
 ```
 
 Current public entrances include:
 
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
-- `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexVec`, `Interner`, and `Stack`
+- `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
+- `collections::sort_by`, `stable_sort_by`, `binary_search_by`, `position_by`, `contains`, `min_by`, `max_by`, `dedup_by`, and `dedup`
 - `env::args`, `current_dir`, `current_exe`, and `var`
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `json::Value`, `parse`, `encode`, `field`, and typed `as_*` accessors
+- `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
-- `text::StringBuilder`
+- `text::StringBuilder`, `find`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `to_ascii_lowercase`, and `to_ascii_uppercase`
+- `time::Duration`, `Instant`, `SystemTime`, and `sleep`
+
+### `collections::IndexMap[K, V]`
+
+`IndexMap` is an insertion-ordered hash map. Its key type must implement `Eq` and `Hash`:
+
+```goml
+use std::collections;
+
+let headers: collections::IndexMap[string, string] =
+    collections::IndexMap::new();
+headers.insert("content-type", "text/plain");
+headers.insert("content-length", "12");
+headers.insert("content-type", "application/json");
+
+for (name, value) in headers {
+    println(name + ": " + value)
+}
+```
+
+Inserting a new key appends it to the iteration order. Replacing an existing value does not move the key. Removing and inserting the key again appends it to the end.
+
+Common methods are `new`, `with_capacity`, `len`, `is_empty`, `contains`, `get`, `insert`, `remove`, `reserve`, `clear`, `entries`, `keys`, `values`, and `iter`. `insert` and `remove` return the previous value as `Option[V]`. `entries`, `keys`, and `values` return ordered snapshots, while `iter` and `for` traverse `(K, V)` pairs in insertion order.
+
+The implementation uses a sparse open-addressed index table and an insertion-ordered entry array. Deleted entries become tombstones and are compacted during later growth or when deletion density becomes high. Lookup, insertion, and removal are expected O(1); iteration and compaction are O(n). Structural mutation while an iterator is active is unsupported.
+
+`IndexMap` does not currently have literal or indexing syntax. Use `insert` and `get`.
 
 File system operations use `Result[..., string]` to report errors, and can be combined with `?`.
+
+Text search indices are UTF-8 byte offsets, matching the indices accepted by the built-in string APIs. Trimming recognizes ASCII whitespace. Splitting on an empty separator returns the original string as one item, while `split_once` with an empty separator returns `Option::None`.
+
+Numeric parsing returns `Result[_, string]`. Integer radix parsing accepts the host parser's supported radices and reports invalid radices, malformed input, and overflow as `Result::Err`.
+
+Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are stable; comparison functions return a negative value, zero, or a positive value. `binary_search_by` expects the vector to already be ordered and returns the first matching index.
+
+`Duration` stores a non-negative number of nanoseconds and offers constructors and whole-unit accessors for nanoseconds, microseconds, milliseconds, and seconds. Subtraction saturates at zero. `Instant` is monotonic and is suitable for elapsed-time measurement. `SystemTime` exposes Unix nanosecond, millisecond, and second timestamps. `time::sleep` blocks the current goroutine for a `Duration`.
 
 ## Comparison of common writing errors
 
@@ -1624,11 +1774,11 @@ File system operations use `Result[..., string]` to report errors, and can be co
 | `let Option::Some(x) = value;` | `if let Option::Some(x) = value { ... };` or `match` |
 | `let Point { x } = point;` | `let Point { x, .. } = point;` |
 | Endless `match` | Complete variant or `_` branch |
-| `x += 1`、`x++` | `x = x + 1;` |
-| `point.x = value` | Rebuild the structure or design the field as `Ref[T]` |
+| `x++`、`x--` | `x += 1;`、`x -= 1;` |
+| Assign through an immutable structure binding | Declare the binding with `let mut`, or create a new value with `Point { field: value, ..point }` |
 | `var x = 1`、`x := 1` | `let x = 1;` |
 | `loop { ... }` | `while true { ... }` |
-| `for i := 0; ...` | `while` , or `for i in range(start, end)` |
+| `for i := 0; ...` | `while`, or `for i in start..end` |
 | `switch` | `match` |
 | `null`、`nil` | `Option::None` |
 | `throw`, exception | `Result` and `?` |
@@ -1659,7 +1809,7 @@ visibility    = "pub"
 attribute     = "#[" attribute_body "]"
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
-method        = visibility? "fn" lower_ident param_list return_type? where_clause? block
+method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block
 generic_params = "[" generic_param ("," generic_param)* "]"
 generic_param = upper_ident (":" trait_set)?
 param_list    = "(" (parameter ("," parameter)*)? ")"
@@ -1680,13 +1830,13 @@ type_names    = "[" upper_ident ("," upper_ident)* "]"
 trait_def     = "trait" upper_ident generic_params? (":" trait_set)? where_clause?
                 "{" trait_member* "}"
 trait_member  = "type" upper_ident (":" trait_set)? ";"
-              | "fn" lower_ident param_list return_type? ";"
+              | "fn" lower_ident generic_params? param_list return_type? where_clause? ";"
 
 impl_def      = "impl" generic_params? trait_ref "for" type where_clause?
                 "{" impl_member* "}"
               | "impl" generic_params? type where_clause?
                 "{" method* "}"
-impl_member   = "type" upper_ident "=" type ";" | "fn" lower_ident param_list return_type? block
+impl_member   = "type" upper_ident "=" type ";" | method
 
 trait_set     = trait_ref ("+" trait_ref)*
 trait_ref     = path type_args?
@@ -1705,15 +1855,29 @@ type_list     = type ("," type)* ","?
 
 block         = "{" statement* expression? "}"
 statement     = "let" "mut"? pattern (":" type)? "=" expression ";"
-              | assign_target "=" expression ";"
+              | assign_target assignment_operator expression ";"
               | expression ";"
               | control_expression
 
-expression    = literal | path | tuple | array | struct_literal | closure
+assignment_operator = "=" | "+=" | "-=" | "*=" | "/=" | "%="
+                    | "&=" | "|=" | "^=" | "<<=" | ">>="
+
+expression    = literal | interpolated_string | path | tuple | array
+              | vec_literal | hashmap_literal | struct_literal | closure
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
               | if_expression | match_expression | while_expression | for_expression
               | "return" expression? | "break" | "continue" | "go" expression
+
+interpolated_string = "f\"" (string_text | "{{" | "}}" | "{" expression "}")* "\""
+vec_literal   = "Vec" "::" "[" (expression ("," expression)* ","?)? "]"
+hashmap_literal = "HashMap" "::" "{"
+                  (expression "=>" expression
+                   ("," expression "=>" expression)* ","?)?
+                  "}"
+struct_literal = path "{" (struct_literal_field ("," struct_literal_field)*
+                 ("," ".." expression)? ","? | ".." expression ","?)? "}"
+struct_literal_field = lower_ident (":" expression)?
 
 control_expression = if_expression | match_expression | while_expression | for_expression
 if_expression = "if" expression block ("else" (block | if_expression))?

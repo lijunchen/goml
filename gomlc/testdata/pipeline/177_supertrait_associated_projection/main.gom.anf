@@ -1,49 +1,49 @@
 fn trait_impl#Parent#Count#get(self/0: Count) -> int32 {
-  join ret65(retv66: int32) -> int32 {
-    retv66
+  join ret109(retv110: int32) -> int32 {
+    retv110
   } in
-  let t67 = Count.value(self/0) in
-  jump ret65(t67)
+  let t111 = Count.value(self/0) in
+  jump ret109(t111)
 }
 
 fn trait_impl#Child#Count#child(self/1: Count) -> unit {
-  join ret68() -> unit {
+  join ret112() -> unit {
     ()
   } in
-  jump ret68()
+  jump ret112()
 }
 
 fn main() -> unit {
-  join ret69() -> unit {
+  join ret113() -> unit {
     ()
   } in
-  let t70 = Count { value: 42 } in
-  let t71 = get_from_child__C_Count(t70) in
-  let _wild64 = println__T_int32(t71) in
-  jump ret69()
+  let t114 = Count { value: 42 } in
+  let t115 = get_from_child__C_Count(t114) in
+  let _wild108 = println__T_int32(t115) in
+  jump ret113()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret72() -> unit {
+  join ret116() -> unit {
     ()
   } in
-  let t73 = trait_impl#ToString#int32#to_string(value/1) in
-  let t74 = @runtime(core.string_println)(t73) in
-  jump ret72()
+  let t117 = trait_impl#ToString#int32#to_string(value/1) in
+  let t118 = @runtime(core.string_println)(t117) in
+  jump ret116()
 }
 
 fn get_from_child__C_Count(value/2: Count) -> int32 {
-  join ret75(retv76: int32) -> int32 {
-    retv76
+  join ret119(retv120: int32) -> int32 {
+    retv120
   } in
-  let t77 = trait_impl#Parent#Count#get(value/2) in
-  jump ret75(t77)
+  let t121 = trait_impl#Parent#Count#get(value/2) in
+  jump ret119(t121)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret78(retv79: string) -> string {
-    retv79
+  join ret122(retv123: string) -> string {
+    retv123
   } in
-  let t80 = @runtime(core.int32_to_string)(self/43) in
-  jump ret78(t80)
+  let t124 = @runtime(core.int32_to_string)(self/43) in
+  jump ret122(t124)
 }

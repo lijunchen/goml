@@ -1,72 +1,72 @@
 fn trait_impl#Mark#int32#marked(self/0: int32) -> string {
-  join ret65(retv66: string) -> string {
-    retv66
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  let t67 = inherent#int32#int32#to_string(self/0) in
-  let t68 = ("m" + t67) in
-  jump ret65(t68)
+  let t111 = inherent#int32#int32#to_string(self/0) in
+  let t112 = ("m" + t111) in
+  jump ret109(t112)
 }
 
 fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> int32 {
-  join ret69(retv70: int32) -> int32 {
-    retv70
+  join ret113(retv114: int32) -> int32 {
+    retv114
   } in
-  let t71 = LeftSource.value(self/1) in
-  jump ret69(t71)
+  let t115 = LeftSource.value(self/1) in
+  jump ret113(t115)
 }
 
 fn trait_impl#Source#RightSource#get(self/2: RightSource) -> int32 {
-  join ret72(retv73: int32) -> int32 {
-    retv73
+  join ret116(retv117: int32) -> int32 {
+    retv117
   } in
-  let t74 = RightSource.value(self/2) in
-  jump ret72(t74)
+  let t118 = RightSource.value(self/2) in
+  jump ret116(t118)
 }
 
 fn main() -> unit {
-  join ret75() -> unit {
+  join ret119() -> unit {
     ()
   } in
-  let t76 = LeftSource { value: 3 } in
-  let t77 = RightSource { value: 4 } in
-  let t78 = combine__A_LeftSource__B_RightSource(t76, t77) in
-  let _wild64 = println__T_string(t78) in
-  jump ret75()
+  let t120 = LeftSource { value: 3 } in
+  let t121 = RightSource { value: 4 } in
+  let t122 = combine__A_LeftSource__B_RightSource(t120, t121) in
+  let _wild108 = println__T_string(t122) in
+  jump ret119()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret123(retv124: string) -> string {
+    retv124
   } in
-  let t81 = @runtime(core.int32_to_string)(self/6) in
-  jump ret79(t81)
+  let t125 = @runtime(core.int32_to_string)(self/6) in
+  jump ret123(t125)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret82() -> unit {
+  join ret126() -> unit {
     ()
   } in
-  let t83 = trait_impl#ToString#string#to_string(value/1) in
-  let t84 = @runtime(core.string_println)(t83) in
-  jump ret82()
+  let t127 = trait_impl#ToString#string#to_string(value/1) in
+  let t128 = @runtime(core.string_println)(t127) in
+  jump ret126()
 }
 
 fn combine__A_LeftSource__B_RightSource(left/3: LeftSource, right/4: RightSource) -> string {
-  join ret85(retv86: string) -> string {
-    retv86
+  join ret129(retv130: string) -> string {
+    retv130
   } in
-  let t87 = trait_impl#Source#LeftSource#get(left/3) in
-  let t88 = trait_impl#Mark#int32#marked(t87) in
-  let t89 = (t88 + ":") in
-  let t90 = trait_impl#Source#RightSource#get(right/4) in
-  let t91 = trait_impl#Mark#int32#marked(t90) in
-  let t92 = (t89 + t91) in
-  jump ret85(t92)
+  let t131 = trait_impl#Source#LeftSource#get(left/3) in
+  let t132 = trait_impl#Mark#int32#marked(t131) in
+  let t133 = (t132 + ":") in
+  let t134 = trait_impl#Source#RightSource#get(right/4) in
+  let t135 = trait_impl#Mark#int32#marked(t134) in
+  let t136 = (t133 + t135) in
+  jump ret129(t136)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret93(retv94: string) -> string {
-    retv94
+  join ret137(retv138: string) -> string {
+    retv138
   } in
-  jump ret93(self/38)
+  jump ret137(self/38)
 }

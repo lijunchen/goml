@@ -9,7 +9,10 @@ fn is_expr_first(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::Float
         | lexer::TokenKind::Str
         | lexer::TokenKind::MultilineStr
+        | lexer::TokenKind::FStringStart
         | lexer::TokenKind::CharLit
+        | lexer::TokenKind::ByteCharLit
+        | lexer::TokenKind::UnsupportedByteStr
         | lexer::TokenKind::Ident
         | lexer::TokenKind::TrueKeyword
         | lexer::TokenKind::FalseKeyword
@@ -64,6 +67,26 @@ fn simple_expression(parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
     parser.close(marker, kind)
 }
 
+fn interpolated_string(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::FStringStart);
+    while parser.eof() == false && parser.at(lexer::TokenKind::FStringEnd) == false {
+        if parser.eat(lexer::TokenKind::FStringText) {
+            ()
+        } else if parser.eat(lexer::TokenKind::FStringExprStart) {
+            let part = parser.open();
+            expect_expr_with_message(parser, "expected an expression in interpolated string");
+            parser.expect(lexer::TokenKind::FStringExprEnd);
+            let _ = parser.close(part, cst::NodeKind::INTERPOLATED_STRING_EXPR);
+            ()
+        } else {
+            parser.advance_with_error("expected interpolated string text or expression")
+        }
+    };
+    parser.expect(lexer::TokenKind::FStringEnd);
+    parser.close(marker, cst::NodeKind::EXPR_INTERPOLATED_STRING)
+}
+
 fn array_literal(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
@@ -88,16 +111,87 @@ fn array_literal(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_ARRAY_LITERAL)
 }
 
+fn looks_like_vec_literal(parser: Parser) -> bool {
+    parser.at_contextual("Vec")
+        && token_is(parser.nth(1), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(2), lexer::TokenKind::LBracket)
+        && !parser.bracket_is_followed_by_colon_colon(2)
+}
+
+fn looks_like_hashmap_literal(parser: Parser) -> bool {
+    parser.at_contextual("HashMap")
+        && token_is(parser.nth(1), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(2), lexer::TokenKind::LBrace)
+}
+
+fn vec_literal(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    parser.expect(lexer::TokenKind::ColonColon);
+    parser.expect(lexer::TokenKind::LBracket);
+    let previous = parser.set_struct_literals_allowed(true);
+    let parsing = Ref::new(parser.at(lexer::TokenKind::RBracket) == false);
+    while parsing.get() && parser.eof() == false {
+        if expect_expr_with_message(parser, "expected an expression in Vec literal") == false {
+            parsing.set(false)
+        } else if parser.eat(lexer::TokenKind::Comma) {
+            if parser.at(lexer::TokenKind::RBracket) {
+                parsing.set(false)
+            } else {
+                ()
+            }
+        } else {
+            parsing.set(false)
+        }
+    };
+    parser.expect(lexer::TokenKind::RBracket);
+    parser.set_struct_literals_allowed(previous);
+    parser.close(marker, cst::NodeKind::EXPR_VEC_LITERAL)
+}
+
+fn hashmap_literal_entry(parser: Parser) -> unit {
+    let marker = parser.open();
+    expect_expr_with_message(parser, "expected a key expression in HashMap literal");
+    parser.expect(lexer::TokenKind::FatArrow);
+    expect_expr_with_message(parser, "expected a value expression in HashMap literal");
+    let _ = parser.close(marker, cst::NodeKind::HASHMAP_LITERAL_ENTRY);
+    ()
+}
+
+fn hashmap_literal(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    parser.expect(lexer::TokenKind::ColonColon);
+    parser.expect(lexer::TokenKind::LBrace);
+    let previous = parser.set_struct_literals_allowed(true);
+    let parsing = Ref::new(parser.at(lexer::TokenKind::RBrace) == false);
+    while parsing.get() && parser.eof() == false {
+        hashmap_literal_entry(parser);
+        if parser.eat(lexer::TokenKind::Comma) {
+            if parser.at(lexer::TokenKind::RBrace) {
+                parsing.set(false)
+            } else {
+                ()
+            }
+        } else {
+            parsing.set(false)
+        }
+    };
+    parser.expect(lexer::TokenKind::RBrace);
+    parser.set_struct_literals_allowed(previous);
+    parser.close(marker, cst::NodeKind::EXPR_HASHMAP_LITERAL)
+}
+
 fn ident_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     if path_has_type_args(parser) {
-        let owner = parser.open();
-        parse_path_always(parser);
-        parser.expect(lexer::TokenKind::ColonColon);
-        type_param_list(parser);
-        let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
+        type_applied_expression_path(parser);
         if parser.eat(lexer::TokenKind::ColonColon) {
-            parse_path_always(parser)
+            if path_has_type_args(parser) {
+                type_applied_expression_path(parser)
+            } else {
+                parse_path_always(parser)
+            }
         } else {
             ()
         }
@@ -118,6 +212,15 @@ fn ident_expression(parser: Parser) -> MarkerClosed {
     } else {
         parser.close(marker, cst::NodeKind::EXPR_IDENT)
     }
+}
+
+fn type_applied_expression_path(parser: Parser) -> unit {
+    let marker = parser.open();
+    parse_path_always(parser);
+    parser.expect(lexer::TokenKind::ColonColon);
+    type_param_list(parser);
+    let _ = parser.close(marker, cst::NodeKind::TYPE_TAPP);
+    ()
 }
 
 fn paren_expression(parser: Parser) -> MarkerClosed {
@@ -328,10 +431,24 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         lexer::TokenKind::LBracket => array_literal(parser),
         lexer::TokenKind::Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
         lexer::TokenKind::MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
+        lexer::TokenKind::FStringStart => interpolated_string(parser),
         lexer::TokenKind::CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
+        lexer::TokenKind::ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
+        lexer::TokenKind::UnsupportedByteStr => {
+            let marker = parser.open();
+            parser.error("byte string literals are not supported");
+            parser.advance();
+            parser.close(marker, cst::NodeKind::ErrorTree)
+        },
         lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
             simple_expression(parser, cst::NodeKind::EXPR_BOOL),
-        lexer::TokenKind::Ident => ident_expression(parser),
+        lexer::TokenKind::Ident => if looks_like_vec_literal(parser) {
+            vec_literal(parser)
+        } else if looks_like_hashmap_literal(parser) {
+            hashmap_literal(parser)
+        } else {
+            ident_expression(parser)
+        },
         lexer::TokenKind::LParen => paren_expression(parser),
         lexer::TokenKind::IfKeyword => if_expression(parser),
         lexer::TokenKind::MatchKeyword => match_expression(parser),
@@ -369,26 +486,26 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
         false
     } else {
         let depth = Ref::new(0);
-        let result = Ref::new(false);
-        let parsing = Ref::new(true);
-        while parsing.get() {
+        while true {
             match parser.nth(index.get()) {
                 lexer::TokenKind::LBracket => depth.set(depth.get() + 1),
                 lexer::TokenKind::RBracket => {
                     depth.set(depth.get() - 1);
                     if depth.get() == 0 {
-                        result.set(token_is(parser.nth(index.get() + 1), lexer::TokenKind::ColonColon));
-                        parsing.set(false)
+                        return token_is(
+                            parser.nth(index.get() + 1),
+                            lexer::TokenKind::ColonColon,
+                        )
                     } else {
                         ()
                     }
                 },
-                lexer::TokenKind::Eof => parsing.set(false),
+                lexer::TokenKind::Eof => return false,
                 _ => (),
             };
             index.set(index.get() + 1)
         };
-        result.get()
+        false
     }
 }
 
@@ -407,13 +524,12 @@ fn closure_param_list(parser: Parser) -> unit {
         ()
     } else {
         parser.expect(lexer::TokenKind::Pipe);
-        let parsing = Ref::new(true);
-        while parsing.get() && parser.at(lexer::TokenKind::Pipe) == false && parser.eof() == false {
+        while parser.at(lexer::TokenKind::Pipe) == false && parser.eof() == false {
             closure_param(parser);
             if parser.at(lexer::TokenKind::Comma) {
                 parser.expect(lexer::TokenKind::Comma)
             } else if parser.at(lexer::TokenKind::Pipe) {
-                parsing.set(false)
+                break
             } else {
                 parser.advance_with_error("expected `,` or `|` after closure parameter")
             }
@@ -508,7 +624,19 @@ fn struct_literal_field_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let previous = parser.set_struct_literals_allowed(true);
     while parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
-        if parser.at_lower_ident() {
+        if parser.at(lexer::TokenKind::DotDot) {
+            let update = parser.open();
+            parser.expect(lexer::TokenKind::DotDot);
+            expect_expr_with_message(parser, "expected a base expression after `..`");
+            let _ = parser.close(update, cst::NodeKind::STRUCT_LITERAL_UPDATE);
+            parser.eat(lexer::TokenKind::Comma);
+            if parser.at(lexer::TokenKind::RBrace) == false {
+                parser.error("struct update must be the last item in a struct literal")
+            } else {
+                ()
+            };
+            break
+        } else if parser.at_lower_ident() {
             struct_literal_field(parser);
             if parser.eat(lexer::TokenKind::Comma) {
                 ()
@@ -549,6 +677,7 @@ fn looks_like_struct_literal(parser: Parser) -> bool {
     } else {
         match parser.nth(1) {
             lexer::TokenKind::RBrace => true,
+            lexer::TokenKind::DotDot => true,
             lexer::TokenKind::Ident => match parser.nth(2) {
                 lexer::TokenKind::Colon | lexer::TokenKind::Comma => true,
                 lexer::TokenKind::RBrace => {
@@ -638,12 +767,11 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                 let lhs = Ref::new(value);
                 let parsed_range = Ref::new(false);
                 let parsed_comparison = Ref::new(false);
-                let parsing = Ref::new(true);
-                while parsing.get() && parser.eof() == false {
+                while parser.eof() == false {
                     let operator = parser.peek();
                     if token_is(operator, lexer::TokenKind::DotDot) {
                         if min_bp > 0 {
-                            parsing.set(false)
+                            break
                         } else if parsed_range.get() {
                             parser.advance_with_error("range expressions cannot be chained");
                             expect_expr_bp_with_message(
@@ -665,7 +793,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                     } else if token_is(operator, lexer::TokenKind::AsKeyword) {
                         let left_bp = 17;
                         if left_bp < min_bp {
-                            parsing.set(false)
+                            break
                         } else {
                             let marker = lhs.get().precede(parser);
                             parser.advance();
@@ -676,7 +804,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                         match postfix_binding_power(operator) {
                             Option::Some(left_bp) => {
                                 if left_bp < min_bp {
-                                    parsing.set(false)
+                                    break
                                 } else if parser.at(lexer::TokenKind::LParen) {
                                     let marker = lhs.get().precede(parser);
                                     arg_list(parser);
@@ -708,7 +836,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             Option::None => match infix_binding_power(operator) {
                                 Option::Some((left_bp, right_bp)) => {
                                     if left_bp < min_bp {
-                                        parsing.set(false)
+                                        break
                                     } else if is_comparison(operator) && parsed_comparison.get() {
                                         parser.advance_with_error("comparison operators cannot be chained");
                                         expect_expr_bp_with_message(
@@ -732,7 +860,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                         }
                                     }
                                 },
-                                Option::None => parsing.set(false),
+                                Option::None => break,
                             },
                         }
                     }
@@ -749,12 +877,11 @@ fn arg_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
     let previous = parser.set_struct_literals_allowed(true);
-    let parsing = Ref::new(true);
-    while parsing.get() && parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
+    while parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
         if is_expr_first(parser.peek()) {
             arg(parser)
         } else {
-            parsing.set(false)
+            break
         }
     };
     parser.expect(lexer::TokenKind::RParen);

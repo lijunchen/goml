@@ -94,19 +94,19 @@ fn bool_text(x/20: bool) -> string {
     }
 }
 
-fn show_both(x/21: T) -> string {
+fn show_both[T](x/21: T) -> string where T: Debug, T: Display {
     (Debug::show : (T) -> string)((x/21 : T)) + " / " + (Display::show : (T) -> string)((x/21 : T))
 }
 
-fn tag_text(tag/22: Q) -> string {
+fn tag_text[Q](tag/22: Q) -> string where Q: Debug, Q: MyHash {
     (Debug::show : (Q) -> string)((tag/22 : Q)) + "#" + (int32::to_string : (int32) -> string)((MyHash::hash : (Q) -> int32)((tag/22 : Q)))
 }
 
-fn combine_scaled(a/23: T, b/24: T, factor/25: int32) -> T {
+fn combine_scaled[T](a/23: T, b/24: T, factor/25: int32) -> T where T: Add, T: Scale {
     (Scale::scale : (T, int32) -> T)((Add::add : (T, T) -> T)((a/23 : T), (b/24 : T)), (factor/25 : int32))
 }
 
-fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
+fn report_pair[T, Q](tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string where T: Debug, T: Display, T: MyEq, T: MyHash, Q: Debug, Q: MyHash {
     let same/30: bool = (MyEq::eq : (T, T) -> bool)((a/27 : T), (b/28 : T));
     let header/31: string = (tag_text : (Q) -> string)((tag/26 : Q));
     let repr/32: string = (show_both : (T) -> string)((combined/29 : T));
@@ -114,12 +114,12 @@ fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
     (header/31 : string) + " " + (repr/32 : string) + " | eq=" + (bool_text : (bool) -> string)((same/30 : bool)) + " | hash=" + (int32::to_string : (int32) -> string)((h/33 : int32))
 }
 
-fn full_report(tag/34: Q, a/35: T, b/36: T) -> string {
+fn full_report[T, Q](tag/34: Q, a/35: T, b/36: T) -> string where T: Debug, T: MyHash, T: Display, T: MyEq, T: Add, T: Scale, Q: Debug, Q: MyHash {
     let combined/37: T = (combine_scaled : (T, T, int32) -> T)((a/35 : T), (b/36 : T), 2);
     (report_pair : (Q, T, T, T) -> string)((tag/34 : Q), (a/35 : T), (b/36 : T), (combined/37 : T))
 }
 
-fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
+fn sum_and_tag[T, Q](tag/38: Q, x/39: T, y/40: T, z/41: T) -> string where T: Add, T: MyHash, T: Inspect, Q: Debug, Q: MyHash {
     let total/42: T = (Add::add : (T, T) -> T)((Add::add : (T, T) -> T)((x/39 : T), (y/40 : T)), (z/41 : T));
     let header/43: string = (tag_text : (Q) -> string)((tag/38 : Q));
     let h/44: int32 = (MyHash::hash : (T) -> int32)((total/42 : T));

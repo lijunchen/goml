@@ -1,6 +1,7 @@
 package main;
 
 use gomlc::tast;
+use gomlc::vecs;
 
 struct ArtifactTypeContext {
     enum_names: Vec[string],
@@ -100,7 +101,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Type::Con { name } => if public_names_contain(context.enum_names, name) {
+        tast::Type::Con { name } => if vecs::contains(context.enum_names, name) {
             artifact_json_named_type(writer, "TEnum", "name", name)
         } else {
             artifact_json_named_type(writer, "TStruct", "name", name)

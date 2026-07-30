@@ -59,7 +59,7 @@ impl Describe for Record[string] {
   }
 }
 
-fn choose(flag: bool, when_true: T, when_false: T) -> T {
+fn choose[T](flag: bool, when_true: T, when_false: T) -> T {
     if flag {
         {
             when_true
@@ -71,7 +71,7 @@ fn choose(flag: bool, when_true: T, when_false: T) -> T {
     }
 }
 
-fn map_maybe(value: Maybe[T], f: (T) -> U) -> Maybe[U] {
+fn map_maybe[T, U](value: Maybe[T], f: (T) -> U) -> Maybe[U] {
     match value {
         Some(inner) => Some(f(inner)),
         None => None,

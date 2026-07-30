@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::vecs;
+
 fn artifact_decode_optional_string(
     value: ArtifactValue,
     expected: string,
@@ -97,7 +99,6 @@ fn artifact_test_descriptors_valid(
     values: Vec[TestDescriptor],
 ) -> bool {
     let ids = Vec::new();
-    let valid = Ref::new(true);
     for value in values {
         if value.package_name != package_name
             || value.id == ""
@@ -106,14 +107,14 @@ fn artifact_test_descriptors_valid(
             || value.source_path == ""
             || value.start > value.end
             || (!value.ignored && option_string_present(value.ignore_reason))
-            || public_names_contain(ids, value.id)
+            || vecs::contains(ids, value.id)
         {
-            valid.set(false)
+            return false
         } else {
             ids.push(value.id)
         }
     };
-    valid.get()
+    true
 }
 
 fn artifact_decode_core_value(

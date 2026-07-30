@@ -4,16 +4,16 @@ fn trait_impl#Display#int32#show(self/0: int32) -> string {
 
 fn render(value/1: Boxed) -> string {
   match value/1 {
-    Boxed::One(x64) => {
-      let x64 = Boxed::One._0(value/1) in
-      let inner/2 = x64 in
+    Boxed::One(x108) => {
+      let x108 = Boxed::One._0(value/1) in
+      let inner/2 = x108 in
       dyn_call[Display::show](inner/2)
     },
-    Boxed::Pair(x65, x66) => {
-      let x65 = Boxed::Pair._0(value/1) in
-      let x66 = Boxed::Pair._1(value/1) in
-      let right/4 = x66 in
-      let left/3 = x65 in
+    Boxed::Pair(x109, x110) => {
+      let x109 = Boxed::Pair._0(value/1) in
+      let x110 = Boxed::Pair._1(value/1) in
+      let right/4 = x110 in
+      let left/3 = x109 in
       ((dyn_call[Display::show](left/3) + "-") + dyn_call[Display::show](right/4))
     },
   }
@@ -23,8 +23,8 @@ fn main() -> unit {
   let one/5 = 42 in
   let left/6 = 7 in
   let right/7 = 9 in
-  let _wild67 = println__T_string(render(Boxed::One(to_dyn[Display]{int32}(one/5)))) in
-  let _wild68 = println__T_string(render(Boxed::Pair(to_dyn[Display]{int32}(left/6), to_dyn[Display]{int32}(right/7)))) in
+  let _wild111 = println__T_string(render(Boxed::One(to_dyn[Display]{int32}(one/5)))) in
+  let _wild112 = println__T_string(render(Boxed::Pair(to_dyn[Display]{int32}(left/6), to_dyn[Display]{int32}(right/7)))) in
   ()
 }
 

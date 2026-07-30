@@ -26,11 +26,11 @@ impl[T: ToString] Provider for Box[T] {
   }
 }
 
-fn read(provider: P) -> P::Item {
+fn read[P: Provider](provider: P) -> P::Item {
     provider.get()
 }
 
-fn read_as(provider: P) -> T {
+fn read_as[P, T](provider: P) -> T where P: Provider, P::Item = T {
     provider.get()
 }
 

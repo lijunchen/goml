@@ -350,13 +350,8 @@ fn lower_expr(
                 },
             },
             core::Expr::Return { expr: value, ty: _ } => lower_return(state, value),
-            core::Expr::Closure { params: _, body: _, ty: _ } | core::Expr::TraitCall {
-                trait_ref: _,
-                method_name: _,
-                receiver: _,
-                args: _,
-                ty: _,
-            } => {
+            core::Expr::Closure { params: _, body: _, ty: _ }
+            | core::Expr::TraitCall { .. } => {
                 k(unit_imm())
             },
             other => lower_imm(state, other, k),

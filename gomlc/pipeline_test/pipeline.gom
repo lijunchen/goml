@@ -67,6 +67,17 @@ fn has_out_snapshot(base: string) -> bool {
     fs::is_file(path::join(base, "main.gom.out"))
 }
 
+fn pipeline_case_insert_index(values: Vec[string], name: string) -> int {
+    for index in range(0, values.len()) {
+        if name < values.get(index) {
+            return index
+        } else {
+            ()
+        }
+    };
+    values.len()
+}
+
 fn tmp_dir() -> string {
     match env::var("TMPDIR") {
         Option::Some(value) => if value == "" { "/tmp" } else { value },
@@ -222,19 +233,11 @@ pub fn all_pipeline_cases() -> Vec[string] {
             if fs::is_dir(directory)
                 && fs::is_file(path::join(directory, "main.gom"))
             {
-                let inserted = Ref::new(false);
-                for index in range(0, result.len()) {
-                    if !(inserted.get()) && name < result.get(index) {
-                        result.insert(index, name);
-                        inserted.set(true)
-                    } else {
-                        ()
-                    }
-                };
-                if !(inserted.get()) {
+                let index = pipeline_case_insert_index(result, name);
+                if index == result.len() {
                     result.push(name)
                 } else {
-                    ()
+                    result.insert(index, name)
                 }
             } else {
                 ()
@@ -250,6 +253,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
 fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     let base = fixture_dir(name);
     let source_path = path::join(base, "main.gom");
+    let new_fixture = !fs::is_file(path::join(base, "main.gom.cst"));
     let source = match fs::read_file(source_path) {
         Result::Ok(value) => value,
         Result::Err(message) => {
@@ -272,21 +276,21 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     assert_snapshot(base, "anf", anf::encode(compilation.anf_value));
     assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
 
-    if has_out_snapshot(base) {
-        if can_run_go {
-            let go_source = go_backend::encode(compilation.go_value);
-            assert_snapshot(
-                base,
-                "out",
-                execute_go_and_read_stdout(
-                    go_source,
-                    read_snapshot(base, "out"),
-                    name,
-                ),
-            )
-        } else {
-            ()
-        }
+    if can_run_go && (has_out_snapshot(base) || (update_expected() && new_fixture)) {
+        let go_source = go_backend::encode(compilation.go_value);
+        assert_snapshot(
+            base,
+            "out",
+            execute_go_and_read_stdout(
+                go_source,
+                if has_out_snapshot(base) {
+                    read_snapshot(base, "out")
+                } else {
+                    ""
+                },
+                name,
+            ),
+        )
     } else {
         ()
     }

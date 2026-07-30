@@ -2,6 +2,7 @@ package compiler_test;
 
 use gomlc::cmd::gomlc as compiler_driver;
 use gomlc::go_backend;
+use gomlc::strings;
 use std::bytes;
 use std::env;
 use std::fs;
@@ -429,7 +430,10 @@ fn module_projects() -> Vec[string] {
     let result = Vec::new();
     for name in read_directory(directory) {
         let project = path::join(directory, name);
-        if fs::is_dir(project) && fs::is_file(path::join(project, "main.gom.out")) {
+        if fs::is_dir(project)
+            && (fs::is_file(path::join(project, "main.gom.out"))
+                || (update_expected() && fs::is_file(path::join(project, "goml.toml"))))
+        {
             result.push(project)
         } else {
             ()
@@ -439,7 +443,7 @@ fn module_projects() -> Vec[string] {
 }
 
 pub fn assert_module_count() -> unit {
-    testing::assert_eq(module_projects().len(), 34)
+    testing::assert_eq(module_projects().len(), 40)
 }
 
 pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
@@ -502,7 +506,7 @@ fn module_diagnostic_projects() -> Vec[string] {
 
 pub fn assert_module_diagnostics() -> unit {
     let projects = module_diagnostic_projects();
-    testing::assert_eq(projects.len(), 35);
+    testing::assert_eq(projects.len(), 36);
     for source_project in projects {
         let name = match path::file_name(source_project) {
             Option::Some(value) => value,
@@ -545,7 +549,7 @@ pub fn assert_module_diagnostics() -> unit {
             } else {
                 let output = bytes_text(process::Output::stdout(checked))
                     + bytes_text(process::Output::stderr(checked));
-                testing::assert(text_contains(output, expected))
+                testing::assert(strings::contains(output, expected))
             }
         }
     }
@@ -702,27 +706,6 @@ pub fn assert_crasher_runtime_shard(
     }
 }
 
-fn text_contains(value: string, expected: string) -> bool {
-    if expected.byte_len() == 0 {
-        return true
-    } else {
-        ()
-    };
-    if expected.byte_len() > value.byte_len() {
-        return false
-    } else {
-        ()
-    };
-    for index in range(0, value.byte_len() - expected.byte_len() + 1) {
-        if value.byte_slice(index, index + expected.byte_len()) == expected {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
-}
-
 pub fn assert_package_crasher() -> unit {
     let project = path::join(
         compiler_tests_root(),
@@ -738,7 +721,7 @@ pub fn assert_package_crasher() -> unit {
     );
     let combined = bytes_text(process::Output::stdout(output))
         + bytes_text(process::Output::stderr(output));
-    testing::assert(text_contains(
+    testing::assert(strings::contains(
         combined,
         "extern args_raw is not permitted in this source",
     ))

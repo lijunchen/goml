@@ -15,42 +15,42 @@ const (
 )
 
 func color_is_red(color__0 Color) bool {
-    var retv66 bool
-    var jp68 bool
+    var retv110 bool
+    var jp112 bool
     switch color__0 {
     case Color_Red:
-        jp68 = true
+        jp112 = true
     case Green:
-        jp68 = false
+        jp112 = false
     default:
         panic("non-exhaustive match")
     }
-    retv66 = jp68
-    return retv66
+    retv110 = jp112
+    return retv110
 }
 
 func toggle_signal(signal__1 Signal) Signal {
-    var retv70 Signal
-    var jp72 Signal
+    var retv114 Signal
+    var jp116 Signal
     switch signal__1 {
     case Signal_Red:
-        jp72 = Yellow
+        jp116 = Yellow
     case Yellow:
-        jp72 = Signal_Red
+        jp116 = Signal_Red
     default:
         panic("non-exhaustive match")
     }
-    retv70 = jp72
-    return retv70
+    retv114 = jp116
+    return retv114
 }
 
 func main0() Signal {
-    var retv74 Signal
+    var retv118 Signal
     var current__2 Color = Color_Red
     color_is_red(current__2)
-    var t75 Signal = toggle_signal(Signal_Red)
-    retv74 = t75
-    return retv74
+    var t119 Signal = toggle_signal(Signal_Red)
+    retv118 = t119
+    return retv118
 }
 
 func main() {

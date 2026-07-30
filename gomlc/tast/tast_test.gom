@@ -17,6 +17,7 @@ fn checked_file(source: string) -> File {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     }
@@ -80,6 +81,7 @@ fn checked_file_with_dependencies(source: string, dependencies: Vec[hir::File]) 
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     }
@@ -106,6 +108,7 @@ fn checked_package_file_with_dependencies(
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     }
@@ -268,17 +271,21 @@ fn diagnoses_duplicate_functions_across_package_files() -> unit {
 #[test]
 fn diagnoses_duplicate_declaration_names() -> unit {
     let diagnostics = checked_diagnostics(
-        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {}",
+        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } type Alias = int32; type Alias = string; struct Mixed {} type Mixed = int32; trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {} const repeated: int = 1; const repeated: int = 2; fn conflict() -> int { 1 } const conflict: int = 1;",
     );
     let expected = Vec::new();
     expected.push("variant A is defined multiple times in enum E");
     expected.push("field x is defined multiple times in struct S");
     expected.push("type Both is defined as both a struct and an enum");
+    expected.push("type alias Alias is defined multiple times");
+    expected.push("type Mixed is defined as both a struct and a type alias");
     expected.push("type parameter T is defined multiple times");
     expected.push("associated type Item is defined multiple times in trait T");
     expected.push("method f is defined multiple times in trait T");
     expected.push("parameter x is defined multiple times");
     expected.push("function duplicate is defined multiple times");
+    expected.push("constant repeated is defined multiple times");
+    expected.push("value conflict is defined as both a function and a constant");
     for message in expected {
         testing::assert(has_diagnostic(diagnostics, message))
     }
@@ -709,6 +716,10 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
 
 #[test]
 fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
+    testing::assert_eq(
+        coverage_decrement_magnitude("100000000000000000000"),
+        "99999999999999999999",
+    );
     let sequence_gap = check(hir::lower(
         ast::lower(parser::parse(
             "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0 } }",
@@ -851,6 +862,44 @@ fn checks_indexed_assignment_roots() -> unit {
         "fn main() -> unit { let mut values = [1, 2]; values[0] = 3; let cell = Ref::new([1, 2]); cell.get()[0] = 4; }",
     );
     testing::assert_eq(writable.len(), 0)
+}
+
+#[test]
+fn checks_practical_expression_syntax() -> unit {
+    let valid = checked_diagnostics(
+        "struct Point { x: int, y: int } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[int] = Vec::[]; let table: HashMap[string, int] = HashMap::{ \"x\" => 1 }; let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
+    );
+    testing::assert_eq(valid.len(), 0)
+}
+
+#[test]
+fn rejects_uninferred_collection_literals() -> unit {
+    let empty = checked_diagnostics(
+        "fn main() -> unit { let values = Vec::[]; let _ = values; }",
+    );
+    testing::assert(has_diagnostic(empty, "Could not infer type"))
+}
+
+#[test]
+fn rejects_hashmap_index_compound_assignment() -> unit {
+    let hashmap_compound = checked_diagnostics(
+        "fn main() -> unit { let values: HashMap[string, int] = HashMap::{ \"x\" => 1 }; values[\"x\"] += 2; }",
+    );
+    testing::assert(has_diagnostic(
+        hashmap_compound,
+        "compound assignment is not supported for HashMap indexing because reads return Option[V]",
+    ))
+}
+
+#[test]
+fn rejects_non_stringifiable_interpolation() -> unit {
+    let interpolation = checked_diagnostics(
+        "fn main() -> unit { let _ = f\"{|| ()}\"; }",
+    );
+    testing::assert(has_diagnostic(
+        interpolation,
+        "interpolated expression of type () -> unit does not implement ToString",
+    ))
 }
 
 #[test]
@@ -1100,7 +1149,11 @@ fn erases_indexed_assignment_read_types() -> unit {
     let file = checked_file("fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.stmts.get(1) {
-            Stmt::Assign { target: Expr::Index { base: _, index: _, ty: target_ty }, value } => {
+            Stmt::Assign {
+                target: Expr::Index { base: _, index: _, ty: target_ty },
+                op: _,
+                value,
+            } => {
                 match resolve_type(target_ty) {
                     Type::Unit => (),
                     _ => testing::fail("expected unit assignment target read type"),
@@ -1410,6 +1463,60 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
 }
 
 #[test]
+fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
+    let source = "enum First[T] { Shared(T), Empty, Named { value: T } } enum Second[T] { Shared(T) } type Alias = First[int32]; fn classify(value: Alias) -> int32 { match value { Shared(inner) => inner, Empty => 0, Named { value } => value } } fn nested(value: Option[Result[int32, string]]) -> int32 { match value { Some(Ok(inner)) => inner, Some(Err(_)) => -1, None => 0 } }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let shared = Ref::new(false);
+    let some = Ref::new(false);
+    let ok = Ref::new(false);
+    for reference in result.typeck_results.references {
+        match reference.target {
+            ReferenceTarget::Constructor(constructor) => {
+                if constructor.name == "First::Shared" {
+                    shared.set(true)
+                } else if constructor.name == "Option::Some" {
+                    some.set(true)
+                } else if constructor.name == "Result::Ok" {
+                    ok.set(true)
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    testing::assert(shared.get());
+    testing::assert(some.get());
+    testing::assert(ok.get());
+    let missing = checked_diagnostics(
+        "enum First { Shared } enum Second { Missing } fn classify(value: First) -> int32 { match value { Missing => 1 } }",
+    );
+    testing::assert(has_diagnostic(
+        missing,
+        "Enum First has no variant Missing",
+    ));
+    let non_enum = checked_diagnostics(
+        "fn classify(value: int32) -> int32 { match value { Some(inner) => inner } }",
+    );
+    testing::assert_eq(non_enum.len(), 1);
+    testing::assert_eq(
+        non_enum.get(0).message,
+        "Contextual variant Some cannot match value of type int32",
+    );
+    let unknown = checked_diagnostics(
+        "fn inspect() -> unit { let matcher = |value| match value { Some(_) => (), _ => () }; let _ = matcher; }",
+    );
+    testing::assert(has_diagnostic(
+        unknown,
+        "Could not infer enum type for variant Some",
+    ))
+}
+
+#[test]
 fn resolves_associated_types_and_bound_methods() -> unit {
     let source = "trait Provider { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> int32 { read(Number { value: 42 }) }";
     let file = checked_file(source);
@@ -1515,7 +1622,7 @@ fn rejects_unsatisfied_impl_equality_predicates() -> unit {
 
 #[test]
 fn checks_extended_builtin_method_catalog() -> unit {
-    let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
+    let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); let _ = text.starts_with(\"a\"); let _ = text.ends_with(\"z\"); let _ = text.contains(\"m\"); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1)
 }
@@ -2292,6 +2399,7 @@ fn normalizes_float_pattern_literals() -> unit {
 
 #[test]
 fn rounds_float32_literals() -> unit {
+    testing::assert_eq(increment_decimal("99999999999999999999"), "100000000000000000000");
     testing::assert_eq(normalized_float32_literal("3.1400001"), "3.14");
     testing::assert_eq(normalized_float32_literal("16777217"), "16777216");
     testing::assert_eq(normalized_float32_literal("1.23456789"), "1.2345679");
@@ -2494,4 +2602,43 @@ fn qualified_struct_variants_win_over_same_named_structs() -> unit {
     let _ = checked_file(
         "struct Path { segment: string } struct Block { value: int } enum Expr { Path { path: Path, span: int }, Block { block: Block, span: int } } fn span(value: Expr) -> int { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> unit { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
     );
+}
+
+#[test]
+fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
+    let file = checked_file(
+        "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw as int32; }",
+    );
+    testing::assert_eq(file.constants.len(), 3)
+}
+
+#[test]
+fn diagnoses_type_alias_cycles_and_wrong_arity() -> unit {
+    let cycle = checked_diagnostics(
+        "type First = Second; type Second = First; fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(cycle, "Cyclic type alias First"));
+    let arity = checked_diagnostics(
+        "type Pair[T] = (T, T); fn identity(value: Pair) -> Pair { value }",
+    );
+    testing::assert(has_diagnostic(
+        arity,
+        "Type alias Pair expects 1 type arguments, got 0",
+    ))
+}
+
+#[test]
+fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
+    let cycle = checked_diagnostics(
+        "const first: int = second; const second: int = first; fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(cycle, "Cyclic constant first"));
+    testing::assert(has_diagnostic(cycle, "Cyclic constant second"));
+    let call = checked_diagnostics(
+        "fn value() -> int { 1 } const answer: int = value(); fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(
+        call,
+        "constant values support only literals, constant references, unary operators, binary operators, and casts",
+    ))
 }

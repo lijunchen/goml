@@ -28,11 +28,11 @@ impl Source[int32] for Number{
   }
 }
 
-fn read(source/7: S) -> T {
+fn read[T, S](source/7: S) -> T where S: Source[T], S::Item = T {
     (Source[T]::get : (S) -> T)((source/7 : S))
 }
 
-impl Select[T] for S{
+impl[S, T] Select[T] for S where S: ItemSource, S::Item = T{
   fn select(self/8: S) -> T {
       (ItemSource::item : (S) -> T)((self/8 : S))
   }
@@ -44,11 +44,11 @@ impl ItemSource for Selected{
   }
 }
 
-fn invoke(source/10: S) -> T {
+fn invoke[T, S](source/10: S) -> T where S: Select[T] {
     (Select[T]::select : (S) -> T)((source/10 : S))
 }
 
-fn select_item(source/11: S) -> S::Item {
+fn select_item[S](source/11: S) -> S::Item where S: ItemSource {
     (invoke : (S) -> S::Item)((source/11 : S))
 }
 

@@ -1,0 +1,22 @@
+fn sum_pair(value/0: (int32, int32)) -> int32 {
+    (value/0 : (int32, int32)).0 + (value/0 : (int32, int32)).1
+}
+
+fn classify(value/1: uint8) -> string {
+    match (value/1 : uint8) {
+        10 => "newline",
+        65..=90 => "uppercase",
+        _ : uint8 => "other",
+    }
+}
+
+fn main() -> unit {
+    let user/2: uint64 = 255;
+    let pair/3: (int32, int32) = (10, 10);
+    let marker/4: uint8 = 65;
+    (println : (uint64) -> unit)((user/2 : uint64));
+    (println : (int32) -> unit)((sum_pair : ((int32, int32)) -> int32)((pair/3 : (int32, int32))));
+    (println : (uint8) -> unit)((marker/4 : uint8));
+    (println : (string) -> unit)((classify : (uint8) -> string)((marker/4 : uint8)));
+    (println : (string) -> unit)((classify : (uint8) -> string)(10))
+}

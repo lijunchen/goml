@@ -10,7 +10,7 @@ impl Source for TextSource{
   }
 }
 
-fn render(source/2: S) -> string {
+fn render[S](source/2: S) -> string where S: Source, S::Item: Label {
     (Label::label : (S::Item) -> string)((Source::get : (S) -> S::Item)((source/2 : S)))
 }
 

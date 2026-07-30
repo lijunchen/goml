@@ -4,7 +4,7 @@ impl Measure for Vec[int32]{
   }
 }
 
-fn read_measure(value/1: T) -> int {
+fn read_measure[T](value/1: T) -> int where T: Measure {
     (Measure::measure : (T) -> int)((value/1 : T))
 }
 

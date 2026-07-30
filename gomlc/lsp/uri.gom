@@ -1,5 +1,7 @@
 package lsp;
 
+use gomlc::strings;
+use std::bytes;
 use std::path;
 use std::text;
 
@@ -51,12 +53,10 @@ fn uri_hex_value(value: uint8) -> Option[uint8] {
 
 pub fn uri_to_path(value: string) -> Result[string, string] {
     let prefix = "file://";
-    if value.byte_len() < prefix.byte_len()
-        || value.byte_slice(0, prefix.byte_len()) != prefix
-    {
+    if !strings::starts_with(value, prefix) {
         Result::Err("unsupported URI: " + value)
     } else {
-        let bytes = Vec::new();
+        let decoded_bytes = Vec::new();
         let index = Ref::new(prefix.byte_len());
         while index.get() < value.byte_len() {
             let byte = value.byte_get(index.get());
@@ -69,22 +69,20 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
                         uri_hex_value(value.byte_get(index.get() + 2)),
                     ) {
                         (Option::Some(high), Option::Some(low)) => {
-                            bytes.push(high * 16 + low);
+                            decoded_bytes.push(high * 16 + low);
                             index.set(index.get() + 3)
                         },
                         _ => return Result::Err("invalid URI escape"),
                     }
                 }
             } else {
-                bytes.push(byte);
+                decoded_bytes.push(byte);
                 index.set(index.get() + 1)
             }
         };
-        let (valid, decoded) = string_from_utf8(bytes);
-        if valid {
-            Result::Ok(path::clean(decoded))
-        } else {
-            Result::Err("URI path is not valid UTF-8")
+        match bytes::Bytes::from_vec(decoded_bytes).to_string() {
+            Result::Ok(decoded) => Result::Ok(path::clean(decoded)),
+            Result::Err(_) => Result::Err("URI path is not valid UTF-8"),
         }
     }
 }

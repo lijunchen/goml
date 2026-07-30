@@ -1,0 +1,106 @@
+package strings;
+
+use std::text;
+
+fn region_matches(value: string, start: int, expected: string) -> bool {
+    if start < 0 || start + expected.byte_len() > value.byte_len() {
+        false
+    } else {
+        for offset in range(0, expected.byte_len()) {
+            if value.byte_get(start + offset) != expected.byte_get(offset) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
+pub fn starts_with(value: string, prefix: string) -> bool {
+    region_matches(value, 0, prefix)
+}
+
+pub fn starts_with_at(value: string, start: int, prefix: string) -> bool {
+    region_matches(value, start, prefix)
+}
+
+pub fn ends_with(value: string, suffix: string) -> bool {
+    region_matches(value, value.byte_len() - suffix.byte_len(), suffix)
+}
+
+pub fn find(value: string, expected: string) -> Option[int] {
+    if expected.byte_len() > value.byte_len() {
+        Option::None
+    } else {
+        for start in range(
+            0,
+            value.byte_len() - expected.byte_len() + 1,
+        ) {
+            if region_matches(value, start, expected) {
+                return Option::Some(start)
+            } else {
+                ()
+            }
+        };
+        Option::None
+    }
+}
+
+pub fn rfind(value: string, expected: string) -> Option[int] {
+    if expected.byte_len() > value.byte_len() {
+        Option::None
+    } else {
+        let start = Ref::new(value.byte_len() - expected.byte_len());
+        while start.get() >= 0 {
+            if region_matches(value, start.get(), expected) {
+                return Option::Some(start.get())
+            } else {
+                start.set(start.get() - 1)
+            }
+        };
+        Option::None
+    }
+}
+
+pub fn split(value: string, separator: string) -> Vec[string] {
+    let result = Vec::new();
+    if separator.byte_len() == 0 {
+        result.push(value);
+        result
+    } else {
+        let start = Ref::new(0);
+        let cursor = Ref::new(0);
+        while cursor.get() + separator.byte_len() <= value.byte_len() {
+            if region_matches(value, cursor.get(), separator) {
+                result.push(value.byte_slice(start.get(), cursor.get()));
+                cursor.set(cursor.get() + separator.byte_len());
+                start.set(cursor.get())
+            } else {
+                cursor.set(cursor.get() + 1)
+            }
+        };
+        result.push(value.byte_slice(start.get(), value.byte_len()));
+        result
+    }
+}
+
+pub fn contains(value: string, expected: string) -> bool {
+    match find(value, expected) {
+        Option::Some(_) => true,
+        Option::None => false,
+    }
+}
+
+pub fn join(values: Vec[string], separator: string) -> string {
+    let builder = text::StringBuilder::new();
+    for index in range(0, values.len()) {
+        if index > 0 {
+            builder.write_string(separator)
+        } else {
+            ()
+        };
+        builder.write_string(values.get(index))
+    };
+    builder.finish()
+}

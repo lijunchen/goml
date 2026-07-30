@@ -1,0 +1,63 @@
+package num;
+
+use std::internal::host;
+
+fn int_result(value: (bool, int, string)) -> Result[int, string] {
+    let (ok, parsed, error) = value;
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(error)
+    }
+}
+
+fn uint_result(value: (bool, uint, string)) -> Result[uint, string] {
+    let (ok, parsed, error) = value;
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(error)
+    }
+}
+
+fn float32_result(value: (bool, float32, string)) -> Result[float32, string] {
+    let (ok, parsed, error) = value;
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(error)
+    }
+}
+
+fn float64_result(value: (bool, float64, string)) -> Result[float64, string] {
+    let (ok, parsed, error) = value;
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(error)
+    }
+}
+
+pub fn parse_int(value: string) -> Result[int, string] {
+    parse_int_radix(value, 10)
+}
+
+pub fn parse_int_radix(value: string, radix: int) -> Result[int, string] {
+    int_result(host::parse_int(value, radix))
+}
+
+pub fn parse_uint(value: string) -> Result[uint, string] {
+    parse_uint_radix(value, 10)
+}
+
+pub fn parse_uint_radix(value: string, radix: int) -> Result[uint, string] {
+    uint_result(host::parse_uint(value, radix))
+}
+
+pub fn parse_float32(value: string) -> Result[float32, string] {
+    float32_result(host::parse_float32(value))
+}
+
+pub fn parse_float64(value: string) -> Result[float64, string] {
+    float64_result(host::parse_float64(value))
+}

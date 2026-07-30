@@ -75,66 +75,136 @@ fn function_parameter_names(value: ast::Function) -> Vec[string] {
     result
 }
 
+fn extern_parameter_names(value: ast::ExternFunction) -> Vec[string] {
+    let result = Vec::new();
+    for parameter in value.params {
+        result.push(parameter.0)
+    };
+    result
+}
+
+fn item_parameter_names(
+    value: ast::Item,
+    expected: string,
+    expected_owner: Option[string],
+) -> Option[Vec[string]] {
+    match value {
+        ast::Item::Function(function) => if function.name == expected {
+            Option::Some(function_parameter_names(function))
+        } else {
+            Option::None
+        },
+        ast::Item::ExternFunction(function) => if function.name == expected {
+            Option::Some(extern_parameter_names(function))
+        } else {
+            Option::None
+        },
+        ast::Item::ImplBlock(block) => {
+            match expected_owner {
+                Option::Some(owner) => match explicit_type_name(block.for_type) {
+                    Option::Some(actual) => if short_type_name(actual)
+                        != short_type_name(owner)
+                    {
+                        return Option::None
+                    } else {
+                        ()
+                    },
+                    Option::None => return Option::None,
+                },
+                Option::None => (),
+            };
+            let index = Ref::new(block.methods.len() - 1);
+            while index.get() >= 0 {
+                let method = block.methods.get(index.get());
+                if method.name == expected {
+                    return Option::Some(function_parameter_names(method))
+                } else {
+                    index.set(index.get() - 1)
+                }
+            };
+            Option::None
+        },
+        ast::Item::TraitDef(definition) => {
+            match expected_owner {
+                Option::Some(owner) => if short_type_name(definition.name)
+                    != short_type_name(owner)
+                {
+                    return Option::None
+                } else {
+                    ()
+                },
+                Option::None => (),
+            };
+            let index = Ref::new(definition.method_sigs.len() - 1);
+            while index.get() >= 0 {
+                let method = definition.method_sigs.get(index.get());
+                if method.name == expected {
+                    let names = Vec::new();
+                    for parameter in method.params {
+                        names.push(parameter.0)
+                    };
+                    return Option::Some(names)
+                } else {
+                    index.set(index.get() - 1)
+                }
+            };
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
+fn signature_target_owner(value: tast::ReferenceTarget) -> Option[string] {
+    match value {
+        tast::ReferenceTarget::Callable(
+            tast::Callable::TraitMethod { trait_ref, method_name: _ },
+        ) => Option::Some(trait_ref.name),
+        tast::ReferenceTarget::Callable(
+            tast::Callable::DynTraitMethod {
+                trait_name,
+                dispatch_name: _,
+                method_name: _,
+            },
+        ) => Option::Some(trait_name),
+        tast::ReferenceTarget::Callable(
+            tast::Callable::InherentMethod {
+                receiver_ty,
+                method_name: _,
+            },
+        ) => Option::Some(type_owner_name(receiver_ty)),
+        _ => Option::None,
+    }
+}
+
 fn signature_parameter_names(
     value: Analysis,
     fact: tast::CallFact,
 ) -> Option[Vec[string]] {
     let expected = short_type_name(call_target_name(value, fact));
-    let result = Ref::new(Option::None);
-    for source in value.sources {
+    let expected_owner = signature_target_owner(fact.target);
+    let source_index = Ref::new(value.sources.len() - 1);
+    while source_index.get() >= 0 {
+        let source = value.sources.get(source_index.get());
         let lowered = ast::lower(parser::parse(source.source));
         match lowered.ast {
-            Option::Some(file) => for item in file.items {
-                match item {
-                    ast::Item::Function(function) => {
-                        if function.name == expected {
-                            result.set(Option::Some(
-                                function_parameter_names(function),
-                            ))
-                        } else {
-                            ()
-                        }
-                    },
-                    ast::Item::ExternFunction(function) => {
-                        if function.name == expected {
-                            let names = Vec::new();
-                            for parameter in function.params {
-                                names.push(parameter.0)
-                            };
-                            result.set(Option::Some(names))
-                        } else {
-                            ()
-                        }
-                    },
-                    ast::Item::ImplBlock(block) => for method in block.methods {
-                        if method.name == expected {
-                            result.set(Option::Some(
-                                function_parameter_names(method),
-                            ))
-                        } else {
-                            ()
-                        }
-                    },
-                    ast::Item::TraitDef(definition) => for method in definition
-                        .method_sigs
-                    {
-                        if method.name == expected {
-                            let names = Vec::new();
-                            for parameter in method.params {
-                                names.push(parameter.0)
-                            };
-                            result.set(Option::Some(names))
-                        } else {
-                            ()
-                        }
-                    },
-                    _ => (),
+            Option::Some(file) => {
+                let item_index = Ref::new(file.items.len() - 1);
+                while item_index.get() >= 0 {
+                    match item_parameter_names(
+                        file.items.get(item_index.get()),
+                        expected,
+                        expected_owner,
+                    ) {
+                        Option::Some(names) => return Option::Some(names),
+                        Option::None => item_index.set(item_index.get() - 1),
+                    }
                 }
             },
             Option::None => (),
-        }
+        };
+        source_index.set(source_index.get() - 1)
     };
-    result.get()
+    Option::None
 }
 
 fn signature_parameters(
@@ -204,22 +274,29 @@ pub fn signature_help(
     value: Analysis,
     offset: int,
 ) -> Option[SignatureResult] {
-    let selected = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for fact in value.checked.typeck_results.calls {
+    let calls = value.checked.typeck_results.calls;
+    let best = Ref::new(-1);
+    for candidate in range(0, calls.len()) {
+        let fact = calls.get(candidate);
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path
             && fact.span.start <= offset
             && offset < fact.span.end
-            && fact_width <= width.get()
+            && (best.get() < 0
+                || fact_width
+                    <= calls.get(best.get()).span.end
+                        - calls.get(best.get()).span.start)
         {
-            selected.set(Option::Some(fact));
-            width.set(fact_width)
+            best.set(candidate)
         } else {
             ()
         }
     };
-    match selected.get() {
+    match if best.get() >= 0 {
+        Option::Some(calls.get(best.get()))
+    } else {
+        Option::None
+    } {
         Option::Some(fact) => match tast::resolve_type(fact.callee_ty) {
             tast::Type::Func { params, ret_ty } => {
                 let parameters = signature_parameters(value, fact, params);

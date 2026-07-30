@@ -63,12 +63,21 @@ fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
 
 fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
     match value {
-        Expr::Path { path, type_args, span: value_span } => {
+        Expr::Path {
+            path,
+            owner_type_args,
+            member_type_args,
+            span: value_span,
+        } => {
             encode_open(builder, "Expr.Path");
             encode_span(builder, value_span);
             encode_path(builder, path);
-            encode_list(builder, type_args.len());
-            for ty in type_args {
+            encode_list(builder, owner_type_args.len());
+            for ty in owner_type_args {
+                encode_type(builder, ty)
+            };
+            encode_list(builder, member_type_args.len());
+            for ty in member_type_args {
                 encode_type(builder, ty)
             }
         },
@@ -85,10 +94,30 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
         Expr::Float { value, span: value_span } => {
             encode_open(builder, "Expr.Float");
             encode_span(builder, value_span);
-            encode_string_value(builder, float64_hash(value).to_string())
+            encode_string_value(builder, Hash::hash(value).to_string())
         },
         Expr::String { value, span: value_span } => encode_literal_expr(builder, "String", value, value_span),
+        Expr::InterpolatedString { parts, span: value_span } => {
+            encode_open(builder, "Expr.InterpolatedString");
+            encode_span(builder, value_span);
+            encode_list(builder, parts.len());
+            for part in parts {
+                match part {
+                    InterpolatedStringPart::Text(value) => {
+                        encode_open(builder, "InterpolatedStringPart.Text");
+                        encode_string_value(builder, value);
+                        encode_close(builder)
+                    },
+                    InterpolatedStringPart::Expr(value) => {
+                        encode_open(builder, "InterpolatedStringPart.Expr");
+                        encode_expr(builder, value);
+                        encode_close(builder)
+                    },
+                }
+            }
+        },
         Expr::Char { value, span: value_span } => encode_literal_expr(builder, "Char", value, value_span),
+        Expr::Byte { value, span: value_span } => encode_literal_expr(builder, "Byte", value, value_span),
         Expr::ConstructorValue { constructor: path, span: value_span } => {
             encode_open(builder, "Expr.Constr");
             encode_span(builder, value_span);
@@ -101,7 +130,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_path(builder, path);
             encode_exprs(builder, args)
         },
-        Expr::StructLiteral { name: path, fields, span: value_span } => {
+        Expr::StructLiteral { name: path, fields, base, span: value_span } => {
             encode_open(builder, "Expr.StructLiteral");
             encode_span(builder, value_span);
             encode_path(builder, path);
@@ -112,6 +141,13 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
                 encode_string_value(builder, name);
                 encode_expr(builder, expr);
                 encode_close(builder)
+            };
+            match base {
+                Option::Some(value) => {
+                    encode_some(builder);
+                    encode_expr(builder, value)
+                },
+                Option::None => encode_none(builder),
             }
         },
         Expr::Tuple { items, span: value_span } => {
@@ -123,6 +159,22 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_open(builder, "Expr.Array");
             encode_span(builder, value_span);
             encode_exprs(builder, items)
+        },
+        Expr::VecLiteral { items, span: value_span } => {
+            encode_open(builder, "Expr.VecLiteral");
+            encode_span(builder, value_span);
+            encode_exprs(builder, items)
+        },
+        Expr::HashMapLiteral { entries, span: value_span } => {
+            encode_open(builder, "Expr.HashMapLiteral");
+            encode_span(builder, value_span);
+            encode_list(builder, entries.len());
+            for entry in entries {
+                encode_open(builder, "HashMapEntry");
+                encode_expr(builder, entry.0);
+                encode_expr(builder, entry.1);
+                encode_close(builder)
+            }
         },
         Expr::Closure { params, body, span: value_span } => {
             encode_open(builder, "Expr.Closure");
@@ -232,11 +284,20 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_expr(builder, expr);
             encode_int_value(builder, index)
         },
-        Expr::Field { expr, field_name: field, span: value_span } => {
+        Expr::Field {
+            expr,
+            field_name: field,
+            method_type_args,
+            span: value_span,
+        } => {
             encode_open(builder, "Expr.Field");
             encode_span(builder, value_span);
             encode_expr(builder, expr);
-            encode_string_value(builder, field)
+            encode_string_value(builder, field);
+            encode_list(builder, method_type_args.len());
+            for ty in method_type_args {
+                encode_type(builder, ty)
+            }
         },
         Expr::Index { base, index, span: value_span } => {
             encode_open(builder, "Expr.Index");
@@ -280,6 +341,7 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
         Pat::Float { value, span: value_span } => encode_literal_pat(builder, "Float", value, value_span),
         Pat::String { value, span: value_span } => encode_literal_pat(builder, "String", value, value_span),
         Pat::Char { value, span: value_span } => encode_literal_pat(builder, "Char", value, value_span),
+        Pat::Byte { value, span: value_span } => encode_literal_pat(builder, "Byte", value, value_span),
         Pat::Constr { constructor: path, args, span: value_span } => {
             encode_open(builder, "Pat.Constr");
             encode_span(builder, value_span);

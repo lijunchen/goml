@@ -1,5 +1,7 @@
 package util;
 
+use std::text;
+
 pub fn starts_with(value: string, prefix: string) -> bool {
     value.byte_len() >= prefix.byte_len()
         && value.byte_slice(0, prefix.byte_len()) == prefix
@@ -46,6 +48,28 @@ pub fn contains(value: string, needle: string) -> bool {
     };
     for index in range(0, value.byte_len() - needle.byte_len() + 1) {
         if value.byte_slice(index, index + needle.byte_len()) == needle {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+pub fn string_vec_contains(values: Vec[string], expected: string) -> bool {
+    for value in values {
+        if value == expected {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+pub fn int_vec_contains(values: Vec[int], expected: int) -> bool {
+    for value in values {
+        if value == expected {
             return true
         } else {
             ()
@@ -107,34 +131,37 @@ pub fn split(value: string, separator: string) -> Vec[string] {
 }
 
 pub fn join(values: Vec[string], separator: string) -> string {
-    let result = Ref::new("");
+    let builder = text::StringBuilder::new();
     for index in range(0, values.len()) {
         if index > 0 {
-            result.set(result.get() + separator)
+            builder.write_string(separator)
         } else {
             ()
         };
-        result.set(result.get() + values.get(index))
+        builder.write_string(values.get(index))
     };
-    result.get()
+    builder.finish()
+}
+
+fn string_insert_index(values: Vec[string], value: string) -> int {
+    for index in range(0, values.len()) {
+        if value < values.get(index) {
+            return index
+        } else {
+            ()
+        }
+    };
+    values.len()
 }
 
 pub fn sorted(values: Vec[string]) -> Vec[string] {
     let result = Vec::new();
     for value in values {
-        let inserted = Ref::new(false);
-        for index in range(0, result.len()) {
-            if !(inserted.get()) && value < result.get(index) {
-                result.insert(index, value);
-                inserted.set(true)
-            } else {
-                ()
-            }
-        };
-        if !(inserted.get()) {
+        let index = string_insert_index(result, value);
+        if index == result.len() {
             result.push(value)
         } else {
-            ()
+            result.insert(index, value)
         }
     };
     result
@@ -195,9 +222,10 @@ pub fn parse_positive_int(value: string) -> Result[int, string] {
     }
 }
 
-pub fn shell_escape(value: string) -> string {
-    if value.byte_len() > 0 {
-        let plain = Ref::new(true);
+fn shell_plain(value: string) -> bool {
+    if value.byte_len() == 0 {
+        false
+    } else {
         for index in range(0, value.byte_len()) {
             let byte = value.byte_get(index);
             if (byte >= 48 && byte <= 57)
@@ -211,24 +239,28 @@ pub fn shell_escape(value: string) -> string {
             {
                 ()
             } else {
-                plain.set(false)
+                return false
             }
         };
-        if plain.get() {
-            return value
-        } else {
-            ()
-        }
+        true
+    }
+}
+
+pub fn shell_escape(value: string) -> string {
+    if shell_plain(value) {
+        return value
     } else {
         ()
     };
-    let result = Ref::new("'");
-    for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 39 {
-            result.set(result.get() + "'\\''")
+    let builder = text::StringBuilder::with_capacity(value.byte_len() + 2);
+    builder.write_char('\'');
+    for character in value.chars() {
+        if character == '\'' {
+            builder.write_string("'\\''")
         } else {
-            result.set(result.get() + value.byte_slice(index, index + 1))
+            builder.write_char(character)
         }
     };
-    result.get() + "'"
+    builder.write_char('\'');
+    builder.finish()
 }

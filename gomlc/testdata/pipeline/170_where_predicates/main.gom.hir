@@ -18,21 +18,21 @@ file main.gom
       }
     }
     
-    impl[T] Selected for Wrap[T] {
+    impl[T] Selected for Wrap[T] where Vec[T]: Render {
       fn selected(local/1/1: Wrap[T]) -> string {
           "selected"
       }
     }
     
-    fn render_all(local/1/2: Vec[T]) -> string {
+    fn render_all[T](local/1/2: Vec[T]) -> string where Vec[T]: Render {
         values/2.render()
     }
     
-    fn same(local/1/3: T) -> U {
+    fn same[T, U](local/1/3: T) -> U where T = U {
         value/3
     }
     
-    fn require(local/1/4: T) -> string {
+    fn require[T: Selected](local/1/4: T) -> string {
         value/4.selected()
     }
     

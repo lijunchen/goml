@@ -204,6 +204,71 @@ fn project_uses_manifest_and_cli_target_directories() -> unit {
 }
 
 #[test]
+fn project_clean_removes_only_module_artifacts() -> unit {
+    let root = test_support::workspace("clean_artifacts");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \"out/generated\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nfn main() -> unit {}\n",
+    );
+    let nested = path::join(root, "src");
+    test_support::create_dir(nested);
+    let artifact_root = path::join(root, "out/generated");
+    test_support::write_file(
+        path::join(artifact_root, "cache/entry"),
+        "cached",
+    );
+    let override_root = path::join(root, "alternate");
+    test_support::write_file(
+        path::join(override_root, "cache/entry"),
+        "cached",
+    );
+    let override_output = test_support::run(
+        Vec::new()
+            .pushed("clean")
+            .pushed("--target-dir")
+            .pushed("alternate"),
+        nested,
+    );
+    test_support::assert_success(override_output);
+    testing::assert(!fs::exists(override_root));
+    testing::assert(fs::exists(artifact_root));
+    let output = test_support::run(
+        Vec::new().pushed("clean"),
+        nested,
+    );
+    test_support::assert_success(output);
+    testing::assert(!fs::exists(artifact_root));
+    testing::assert(fs::is_file(path::join(root, "main.gom")))
+}
+
+#[test]
+fn project_clean_rejects_module_directory() -> unit {
+    let root = test_support::workspace("clean_module_directory");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \".\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nfn main() -> unit {}\n",
+    );
+    let output = test_support::run(
+        Vec::new().pushed("clean"),
+        root,
+    );
+    test_support::assert_failure(output);
+    test_support::assert_contains(
+        test_support::stderr(output),
+        "clean target must stay inside the module",
+    );
+    testing::assert(fs::is_file(path::join(root, "main.gom")))
+}
+
+#[test]
 fn project_check_and_build_support_std_imports() -> unit {
     let root = test_support::workspace("std_imports");
     test_support::write_file(
@@ -745,27 +810,27 @@ fn project_commands_report_build_progress_on_stderr() -> unit {
     test_support::assert_success(checked);
     test_support::assert_contains(
         test_support::stderr(checked),
-        "[--------------------] 0/1 checking demo",
+        "[--------------------] 0/2 preparing compiler world",
     );
     test_support::assert_contains(
         test_support::stderr(checked),
-        "[####################] 1/1 finished",
+        "[####################] 2/2 finished",
     );
     let built = migration_build(root);
     test_support::assert_success(built);
     test_support::assert_contains(
         test_support::stderr(built),
-        "[--------------------] 0/3 compiling demo",
+        "[--------------------] 0/4 preparing compiler world",
     );
     test_support::assert_contains(
         test_support::stderr(built),
-        "[####################] 3/3 finished",
+        "[####################] 4/4 finished",
     );
     let cached = migration_build(root);
     test_support::assert_success(cached);
     test_support::assert_contains(
         test_support::stderr(cached),
-        "[####################] 3/3 finished",
+        "[####################] 4/4 finished",
     );
     let dry_run = test_support::project_command(
         "build",

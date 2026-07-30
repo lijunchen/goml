@@ -1,0 +1,17 @@
+struct Value {}
+
+struct Holder[T] {
+    value: T,
+}
+
+impl[T: ToString] Holder[T] {
+    fn keep[U](self: Holder[T], value: U) -> U {
+        let _ = self;
+        value
+    }
+}
+
+fn main() {
+    let holder = Holder { value: Value {} };
+    let _ = Holder::[Value]::keep::[int](holder, 1);
+}

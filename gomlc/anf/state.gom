@@ -114,6 +114,23 @@ fn expr_is_control(value: core::Expr) -> bool {
     }
 }
 
+fn match_has_catch_all(
+    arms: Vec[core::Arm],
+    default: Option[core::Expr],
+) -> bool {
+    match default {
+        Option::Some(_) => return true,
+        Option::None => (),
+    };
+    for arm in arms {
+        match arm.lhs {
+            core::Expr::Var { name: _, ty: _ } => return true,
+            _ => (),
+        }
+    };
+    false
+}
+
 fn expr_always_exits(value: core::Expr) -> bool {
     match value {
         core::Expr::Break { ty: _ } | core::Expr::Continue { ty: _ } | core::Expr::Return { expr: _, ty: _ } => true,
@@ -127,31 +144,27 @@ fn expr_always_exits(value: core::Expr) -> bool {
             expr_always_exits(then_) && expr_always_exits(else_)
         },
         core::Expr::Match { expr: _, arms, default, ty: _ } => {
-            let has_catch_all = Ref::new(match default {
-                Option::Some(_) => true,
-                Option::None => false,
-            });
-            let exits = Ref::new(true);
+            if !match_has_catch_all(arms, default) {
+                return false
+            } else {
+                ()
+            };
             for arm in arms {
-                match arm.lhs {
-                    core::Expr::Var { name: _, ty: _ } => has_catch_all.set(true),
-                    _ => (),
-                };
                 if expr_always_exits(arm.body) {
                     ()
                 } else {
-                    exits.set(false)
+                    return false
                 }
             };
             match default {
                 Option::Some(value) => if expr_always_exits(value) {
                     ()
                 } else {
-                    exits.set(false)
+                    return false
                 },
                 Option::None => (),
             };
-            has_catch_all.get() && exits.get()
+            true
         },
         core::Expr::While { cond, body: _, ty: _ } => expr_always_exits(cond),
         core::Expr::Go { expr, ty: _ }
@@ -171,7 +184,7 @@ fn expr_always_exits(value: core::Expr) -> bool {
             expr_always_exits(func) || exprs_always_exit(args)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
         core::Expr::Var { name: _, ty: _ }
@@ -181,28 +194,26 @@ fn expr_always_exits(value: core::Expr) -> bool {
 }
 
 fn exprs_always_exit(values: Vec[core::Expr]) -> bool {
-    let result = Ref::new(false);
     for value in values {
         if expr_always_exits(value) {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
-    result.get()
+    false
 }
 
 fn block_always_exits(value: core::Block) -> bool {
-    let result = Ref::new(false);
     for stmt in value.stmts {
         if expr_always_exits(stmt.value) {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
     match value.tail {
-        Option::Some(value) => result.get() || expr_always_exits(value),
-        Option::None => result.get(),
+        Option::Some(value) => expr_always_exits(value),
+        Option::None => false,
     }
 }

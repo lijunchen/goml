@@ -64,49 +64,49 @@ type Sample64 struct {
 func (_ Sample64) isFloatEvent() {}
 
 func summarize(event__0 FloatEvent) string {
-    var retv72 string
-    var jp74 string
+    var retv116 string
+    var jp118 string
     switch event__0.(type) {
     case Sample32:
-        var x64 string = event__0.(Sample32)._0
-        var x65 float32 = event__0.(Sample32)._1
-        var value__2 float32 = x65
-        var label__1 string = x64
-        var t75 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(value__2)
-        var t76 string = label__1 + t75
-        jp74 = t76
+        var x108 string = event__0.(Sample32)._0
+        var x109 float32 = event__0.(Sample32)._1
+        var value__2 float32 = x109
+        var label__1 string = x108
+        var t119 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(value__2)
+        var t120 string = label__1 + t119
+        jp118 = t120
     case Sample64:
-        var x66 string = event__0.(Sample64)._0
-        var x67 float64 = event__0.(Sample64)._1
-        var value__4 float64 = x67
-        var label__3 string = x66
-        var t77 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__4)
-        var t78 string = label__3 + t77
-        jp74 = t78
+        var x110 string = event__0.(Sample64)._0
+        var x111 float64 = event__0.(Sample64)._1
+        var value__4 float64 = x111
+        var label__3 string = x110
+        var t121 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__4)
+        var t122 string = label__3 + t121
+        jp118 = t122
     default:
         panic("non-exhaustive match")
     }
-    retv72 = jp74
-    return retv72
+    retv116 = jp118
+    return retv116
 }
 
 func compare(values__5 Tuple2_7float32_7float64) string {
-    var retv80 string
-    var x68 float32 = values__5._0
-    var x69 float64 = values__5._1
-    var right__7 float64 = x69
-    var left__6 float32 = x68
+    var retv124 string
+    var x112 float32 = values__5._0
+    var x113 float64 = values__5._1
+    var right__7 float64 = x113
+    var left__6 float32 = x112
     var limit32__8 float32 = 1
     var limit64__9 float64 = 5
     var less_left__10 bool = left__6 < limit32__8
     var less_right__11 bool = right__7 < limit64__9
-    var t81 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_left__10)
-    var t82 string = "left<1?=" + t81
-    var t83 string = t82 + ",right<5?="
-    var t84 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_right__11)
-    var t85 string = t83 + t84
-    retv80 = t85
-    return retv80
+    var t125 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_left__10)
+    var t126 string = "left<1?=" + t125
+    var t127 string = t126 + ",right<5?="
+    var t128 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_right__11)
+    var t129 string = t127 + t128
+    retv124 = t129
+    return retv124
 }
 
 func main0() struct{} {
@@ -133,50 +133,50 @@ func main0() struct{} {
         _0: 1.5,
         _1: 7.25,
     }
-    var t87 string = summarize(first__15)
-    var t88 string = summarize(second__16)
-    var t89 string = t87 + t88
-    var t90 string = summarize(third__17)
-    var t91 string = t89 + t90
-    var t92 string = compare(tuple__18)
-    var t93 string = t91 + t92
-    var t94 string = compare(tuple_other__19)
-    var message__20 string = t93 + t94
+    var t131 string = summarize(first__15)
+    var t132 string = summarize(second__16)
+    var t133 string = t131 + t132
+    var t134 string = summarize(third__17)
+    var t135 string = t133 + t134
+    var t136 string = compare(tuple__18)
+    var t137 string = t135 + t136
+    var t138 string = compare(tuple_other__19)
+    var message__20 string = t137 + t138
     println__T_string(message__20)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
-    var retv96 string
-    var t97 string = _goml_runtime_core_float32_to_string(self__49)
-    retv96 = t97
-    return retv96
+    var retv140 string
+    var t141 string = _goml_runtime_core_float32_to_string(self__49)
+    retv140 = t141
+    return retv140
 }
 
 func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
-    var retv99 string
-    var t100 string = _goml_runtime_core_float64_to_string(self__50)
-    retv99 = t100
-    return retv99
+    var retv143 string
+    var t144 string = _goml_runtime_core_float64_to_string(self__50)
+    retv143 = t144
+    return retv143
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv102 string
-    var t103 string = _goml_runtime_core_bool_to_string(self__37)
-    retv102 = t103
-    return retv102
+    var retv146 string
+    var t147 string = _goml_runtime_core_bool_to_string(self__37)
+    retv146 = t147
+    return retv146
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t105 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t105)
+    var t149 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t149)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv108 string
-    retv108 = self__38
-    return retv108
+    var retv152 string
+    retv152 = self__38
+    return retv152
 }
 
 func main() {

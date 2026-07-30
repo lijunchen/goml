@@ -41,6 +41,7 @@ pub struct Graph {
 pub struct Context {
     pub graph: Graph,
     pub compiler: string,
+    pub compiler_world_artifact: bool,
     pub artifact_root: string,
 }
 
@@ -50,23 +51,29 @@ pub struct ExternalTest {
 }
 
 pub enum Command {
+    PrepareWorld {
+        output: string,
+    },
     Compile {
         subcommand: string,
         package_name: string,
         input_files: Vec[string],
         interface_files: Vec[string],
         output: string,
+        world: Option[string],
     },
     Link {
         input_cores: Vec[string],
         entry_package: string,
         output: string,
+        world: Option[string],
     },
     TestLink {
         input_cores: Vec[string],
         packages: Vec[string],
         output: string,
         manifest: string,
+        world: Option[string],
     },
     GoBuild {
         input: string,

@@ -8,7 +8,7 @@ file main.gom
       fn parent(Self) -> T;
     }
     
-    trait Child[T: ToString]: Parent[T] + Render {
+    trait Child[T: ToString]: Parent[T] + Render where T: Eq {
       fn child(Self) -> string;
     }
     
@@ -34,7 +34,7 @@ file main.gom
       }
     }
     
-    fn describe(local/1/3: B) -> string {
+    fn describe[T, B: Child[T]](local/1/3: B) -> string {
         value/3.parent().to_string() + value/3.render() + value/3.child()
     }
     

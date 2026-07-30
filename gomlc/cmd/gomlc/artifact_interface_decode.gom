@@ -83,6 +83,14 @@ fn artifact_runtime_key_from_id(value: string) -> Option[string] {
         "std_process_status" => Option::Some("std.process.status"),
         "std_process_status_timeout" => Option::Some("std.process.status_timeout"),
         "std_testing_fail" => Option::Some("std.testing.fail"),
+        "std_num_parse_int" => Option::Some("std.num.parse_int"),
+        "std_num_parse_uint" => Option::Some("std.num.parse_uint"),
+        "std_num_parse_float32" => Option::Some("std.num.parse_float32"),
+        "std_num_parse_float64" => Option::Some("std.num.parse_float64"),
+        "std_time_monotonic_nanoseconds" =>
+            Option::Some("std.time.monotonic_nanoseconds"),
+        "std_time_unix_nanoseconds" => Option::Some("std.time.unix_nanoseconds"),
+        "std_time_sleep_nanoseconds" => Option::Some("std.time.sleep_nanoseconds"),
         "unit_to_string"
         | "bool_to_string"
         | "string_len"
@@ -437,6 +445,35 @@ fn artifact_decode_struct_def(
     })
 }
 
+fn artifact_decode_type_alias(
+    context: ArtifactDecodeContext,
+    name: string,
+    value: ArtifactValue,
+) -> Result[tast::TypeAliasInfo, string] {
+    let object = match artifact_json_object(value, "type alias") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let generics = match artifact_json_required_field(object, "generics") {
+        Result::Ok(value) => match artifact_decode_string_array(
+            value,
+            "type alias generics",
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    let ty = match artifact_json_required_field(object, "ty") {
+        Result::Ok(value) => match artifact_decode_type(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    Result::Ok(tast::TypeAliasInfo { name, generics, ty })
+}
+
 fn artifact_decode_associated_type_defs(
     context: ArtifactDecodeContext,
     value: ArtifactValue,
@@ -749,6 +786,17 @@ fn artifact_decode_package_exports(
             Result::Err(error) => return Result::Err(error),
         }
     };
+    let alias_map = match artifact_json_field_object(type_env, "aliases") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let type_aliases = Vec::new();
+    for item in alias_map {
+        match artifact_decode_type_alias(context, item.0, item.1) {
+            Result::Ok(value) => type_aliases.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
     let trait_env = match artifact_json_field_object(object, "trait_env") {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
@@ -789,15 +837,40 @@ fn artifact_decode_package_exports(
         },
         Result::Err(error) => return Result::Err(error),
     };
+    let constant_map = match artifact_json_field_object(value_env, "consts") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let constants = Vec::new();
+    for item in constant_map {
+        let definition = match artifact_json_object(item.1, "constant scheme") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let ty = match artifact_json_required_field(definition, "ty") {
+            Result::Ok(value) => match artifact_decode_type(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        constants.push(tast::ConstantScheme {
+            def_id: Option::None,
+            name: item.0,
+            ty,
+        })
+    };
     Result::Ok(ArtifactPackageExports {
         enum_type_names: context.enum_names,
         struct_type_names: context.struct_names,
+        type_aliases,
         enums,
         structs,
         traits,
         trait_impls,
         inherent_impls,
         functions,
+        constants,
     })
 }
 

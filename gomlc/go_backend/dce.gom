@@ -42,7 +42,10 @@ fn add_names(target: DceNames, values: DceNames) -> unit {
 }
 
 fn copy_names(values: DceNames) -> DceNames {
-    let result = new_dce_names();
+    let result = DceNames {
+        values: Vec::with_capacity(values.present.len()),
+        present: HashMap::new(),
+    };
     add_names(result, values);
     result
 }
@@ -370,15 +373,14 @@ fn emit_side_effect(value: Expr) -> Stmt {
 fn expr_has_side_effects(value: Expr) -> bool {
     match value {
         Expr::Call { func, args } => {
-            let nested = Ref::new(false);
             for arg in args {
                 if expr_has_side_effects(arg) {
-                    nested.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            append_call(func) || !call_result_must_be_used(func) || nested.get()
+            append_call(func) || !call_result_must_be_used(func)
         },
         Expr::Unary { op: _, expr } => expr_has_side_effects(expr),
         Expr::Binary { op: _, lhs, rhs } => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
@@ -391,38 +393,35 @@ fn expr_has_side_effects(value: Expr) -> bool {
         },
         Expr::Cast { expr, ty: _ } | Expr::Convert { ty: _, expr } => expr_has_side_effects(expr),
         Expr::Make { ty: _, args } => {
-            let found = Ref::new(false);
             for arg in args {
                 if expr_has_side_effects(arg) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Expr::Send { channel: _, value: _ } | Expr::Receive { channel: _ } => true,
         Expr::StructLiteral { ty: _, fields } => {
-            let found = Ref::new(false);
             for field in fields {
                 if expr_has_side_effects(field.1) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Expr::ArrayLiteral { ty: _, items } => {
-            let found = Ref::new(false);
             for item in items {
                 if expr_has_side_effects(item) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Expr::FuncLit { params: _, ret_ty: _, body: _ } => false,
         Expr::Nil
@@ -436,7 +435,7 @@ fn expr_has_side_effects(value: Expr) -> bool {
 }
 
 fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::with_capacity(values.len());
     for index in range(0, values.len()) {
         result.push(values.get(values.len() - index - 1))
     };
@@ -446,7 +445,7 @@ fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
 fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
     let live = copy_names(live_out);
     let needs_decl = new_dce_names();
-    let output: Vec[Stmt] = Vec::new();
+    let output: Vec[Stmt] = Vec::with_capacity(value.stmts.len());
     let index = Ref::new(value.stmts.len());
     while index.get() > 0 {
         index.set(index.get() - 1);
@@ -598,7 +597,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
             Stmt::BreakLabel { label } => output.push(Stmt::BreakLabel { label }),
             Stmt::Continue => output.push(Stmt::Continue),
             Stmt::Switch { expr, cases, default } => {
-                let lowered_cases: Vec[SwitchCase] = Vec::new();
+                let lowered_cases: Vec[SwitchCase] = Vec::with_capacity(cases.len());
                 for case in cases {
                     let result = dce_block_with_live(case.body, live);
                     add_expr_uses(live, case.value);
@@ -619,7 +618,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 output.push(Stmt::Switch { expr, cases: lowered_cases, default: lowered_default })
             },
             Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
-                let lowered_cases: Vec[TypeSwitchCase] = Vec::new();
+                let lowered_cases: Vec[TypeSwitchCase] = Vec::with_capacity(cases.len());
                 for case in cases {
                     let result = dce_block_with_live(case.body, live);
                     match bind {

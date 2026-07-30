@@ -31,6 +31,7 @@ fn project_context(entry_package: string) -> project::Context {
             order: Vec::new().pushed(entry_package),
         },
         compiler: "gomlc",
+        compiler_world_artifact: false,
         artifact_root: "_artifact",
     }
 }
@@ -41,6 +42,11 @@ fn utility_text_operations_are_deterministic() -> unit {
     testing::assert(util::starts_with("abc", "ab"));
     testing::assert(util::ends_with("abc", "bc"));
     testing::assert(util::contains("abcdef", "cde"));
+    testing::assert(util::string_vec_contains(
+        Vec::new().pushed("goml").pushed("gomlc"),
+        "gomlc",
+    ));
+    testing::assert(util::int_vec_contains(Vec::new().pushed(1).pushed(2), 2));
     testing::assert_eq(
         util::join(
             util::sorted_unique(
@@ -139,5 +145,6 @@ fn run_plan_places_executables_under_package_paths() -> unit {
 #[test]
 fn shell_escape_quotes_unsafe_arguments() -> unit {
     testing::assert_eq(util::shell_escape("plain/path"), "plain/path");
-    testing::assert_eq(util::shell_escape("two words"), "'two words'")
+    testing::assert_eq(util::shell_escape("two words"), "'two words'");
+    testing::assert_eq(util::shell_escape("你好's goml"), "'你好'\\''s goml'")
 }

@@ -4,7 +4,7 @@ The project you are currently working on is called goml.
 
 goml is a statically typed language with syntax similar to Rust, but it includes garbage collection (GC) and compiles to Go, so it does not require lifetime annotations and has no ownership system. In essence, it is closer in nature to OCaml or ML (Meta Language).
 
-In goml, top-level functions must have fully explicit type signatures, and only top-level functions support generic type parameters. Generics are denoted using square brackets. Closures can be defined within functions, but they must have a single concrete type — goml does not include let-polymorphism (a.k.a. let-generalization). goml also supports defining traits, as well as enums and structs similar to Rust, and allows user-defined traits.
+In goml, top-level functions must have fully explicit type signatures. Top-level functions and methods may declare their own generic type parameters; local closures cannot. Structs, enums, traits, impls, and top-level type aliases may also declare generic type parameters. Generics are denoted using square brackets. Closures can be defined within functions, but they must have a single concrete type — goml does not include let-polymorphism (a.k.a. let-generalization). goml also supports defining traits, as well as enums and structs similar to Rust, and allows user-defined traits.
 
 The generated Go code does not include generics — goml performs monomorphization by instantiating its own generic function calls. The generated code also does not contain Go closures — goml applies lambda lifting by performing lambda lifting (via lambda lifting) on its local functions.
 
@@ -287,6 +287,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 - `bootstrap/stage0.env` is the trust root for self-hosting. It pins the previous released Linux amd64 toolchain and its SHA-256 checksum.
 - The current stage0 must always be able to compile the current `gomlc/` and `goml/` sources. Every pull request must preserve this invariant and pass `just ci`.
+- `docs/goml.md` is the canonical user-facing language guide. Every change to syntax, language semantics, builtins, or public standard-library APIs must update the relevant prose, examples, limitations, comparison table, and informal grammar in that file in the same change.
 - Implement new syntax, builtins, standard-library APIs, traits, or type-system capabilities without using them in compiler or driver sources. Tests and fixtures may use the new capability immediately.
 - Release the implementation and advance stage0 to that release before using the new capability in compiler or driver sources.
 - Introduce a standard-library capability in two phases. First add its public source, embedded source, dependency selection, navigation, documentation, and external tests while retaining any compiler-owned fallback. After releasing and advancing stage0, migrate compiler and driver consumers and remove the fallback.
@@ -362,12 +363,14 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
-* Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint`, `uint8/16/32/64`, `float32/float64`, `string`, `char`. `byte` is a transparent builtin alias of `uint8`.
+* Literals: boolean, integer/unsigned/floating-point, string, char, and byte literals.
   * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `int` and unconstrained floating-point literals default to `float64`.
-  * Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
+  * Integer literals support binary `0b`, octal `0o`, decimal, and hexadecimal `0x` forms, including uppercase prefixes. Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
   * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
   * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
+  * Byte literals use `b'...'`, contain one ASCII byte, and support escapes such as `b'\n'` and `b'\xFF'`.
+  * There is no builtin `bytes` type or byte-string literal. `b"..."` is unsupported pending a separate design.
 * String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
 * Tuples `(a, b, c)` and the wildcard `_` are commonly used in bindings and pattern matching.
 
@@ -376,11 +379,17 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * `let name = expr;` allows shadowing of the same name. Type annotations are supported, e.g. `let x: int32 = 1;`. `let _ = expr;` discards the result.
 * `let` supports pattern destructuring: tuples, struct fields, enum constructors, and wildcards can be mixed.
 
+### Type Aliases and Constants
+
+* Transparent top-level aliases use `type Name = Type;` or `type Name[T] = Type;`. They do not introduce nominally distinct types, may be `pub`, and recursive alias cycles are rejected.
+* Top-level constants use `const name: Type = expr;` and may be `pub`. Their types must be explicit scalar types: `bool`, numeric types, `string`, `char`, or `byte`.
+* Constant expressions support scalar literals, references to constants, unary and binary operators, and casts. Forward references are allowed; cycles are rejected.
+
 ### Functions and Closures
 
 * Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
-* Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
-* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
+* Top-level functions and methods may declare their own generic parameters using square brackets, e.g. `fn id[T](x: T) -> T` and `fn map[U](self: Box[T], f: (T) -> U) -> Box[U]`.
+* Function and method generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
 
@@ -389,6 +398,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Structs: `struct Name { field: Type, ... }`. Construction supports key–value syntax or field shorthand. Field access uses `value.field`, and fields can be used for update reconstruction.
 * Enums: `enum Name { Variant, Variant(T1, T2), ... }`, with support for generics. Constructors may be uppercase or lowercase; namespaced access `Enum::Variant` avoids conflicts.
 * Pattern matching supports field patterns, shorthand, and wildcards for structs; enum matching can destructure payloads or match constructors directly.
+  * Enum variant patterns may omit the enum qualifier when the expected pattern type determines the enum: `Some(value)`, `None`, `Ok(value)`, `Data { field }`.
+  * Contextual resolution applies to `match`, `if let`, `while let`, `let`, `for`, nested patterns, and or-patterns. It normalizes type aliases and works with imported enums.
+  * The expected enum is authoritative. If it lacks the named variant, resolution must fail instead of selecting a same-named variant from another enum. Fully qualified `Enum::Variant` patterns remain supported.
 
 ### Built-in Containers and References
 
@@ -402,6 +414,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Single-pass iterators implement `Iterator` and bind its associated `Item` type.
   * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
   * `range(start, end)` creates a half-open `FnIterator[int]` over increasing values.
+  * Adapters include `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain`.
+  * Consumers include `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count`.
+* `Option[T]` provides `map`, `and_then`, and `ok_or`; `Result[T, E]` provides `map`, `map_err`, and `and_then`. Both also provide `is_*`, `unwrap_or`, and `unwrap_or_else`.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -416,16 +431,16 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Traits and `impl`
 
-* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits may declare type parameters, for example `trait Convert[T] { fn convert(Self) -> T; }`.
+* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits and trait methods may declare type parameters, for example `trait Convert[T] { fn convert[U](Self, U) -> T; }`.
 * Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[int32]` and `Convert[string]`.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert::[int32]::convert(value)`.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Method type arguments are inferred or written after the method name, such as `value.map::[string](f)`. Owner and method arguments remain separate in associated syntax: `Box::[int32]::convert::[string](value)` and `Convert::[int32]::convert::[string](value)`.
   * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use alias::Trait` after the defining package is imported (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
 * When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert::[int32]::convert(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
-  * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
+  * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type; generic methods are static-only.
   * Limitations (current): generic traits and traits with associated types are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
 
 ### Notes on `char`
@@ -450,7 +465,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Additional Conventions and Constraints
 
-* Top-level functions must have explicit type signatures; generics are limited to top-level functions.
+* Top-level functions must have explicit type signatures; top-level functions and methods may declare generics, but closures may not.
 * Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
 * The runtime uses garbage collection; manual ownership or lifetimes are not required.
 
@@ -471,10 +486,25 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * `Vec::[T]::iter() -> FnIterator[T]`
   * `Slice::[T]::iter() -> FnIterator[T]`
   * `range(start: int, end: int) -> FnIterator[int]`
-  * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
-  * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`
+  * `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain` return concrete adapter iterator types
+  * `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count` consume iterators
 * `range` is half-open and increasing; `start >= end` produces an empty iterator.
 * `Vec[T]` and `Slice[T]` implement `IntoIterator`, so `for value in values` and `for value in slice` work without an explicit `.iter()` conversion.
+
+### Practical Standard-Library APIs
+
+* `std::text` provides UTF-8 byte-indexed search, ASCII trimming and case conversion, splitting, lines, replacement, joining, and repetition.
+* `std::num` parses `int`, `uint`, `float32`, and `float64` values into `Result[_, string]`, including explicit-radix integer parsing.
+* `std::collections` provides insertion-ordered `IndexMap[K, V]`, stable in-place comparator sorting, comparator binary search, position and containment queries, min/max selection, and adjacent deduplication.
+* `std::time` provides non-negative `Duration`, monotonic `Instant`, Unix-based `SystemTime`, and blocking `sleep`.
+
+### Standard `IndexMap`
+
+* `std::collections::IndexMap[K, V]` requires `K: Eq + Hash` and preserves insertion order.
+* New keys append to the order, replacing an existing value keeps its position, and removing then reinserting a key moves it to the end.
+* The implementation uses a sparse open-addressed `Vec[int]` index table and an insertion-ordered entry array with deletion tombstones. Rebuilds compact entries without changing their relative order.
+* Public methods: `new`, `with_capacity`, `len`, `is_empty`, `contains`, `get`, `insert`, `remove`, `reserve`, `clear`, `entries`, `keys`, `values`, and `iter`.
+* `IndexMap[K, V]` implements `IntoIterator` with item type `(K, V)`. Structural mutation while an iterator is active is unsupported.
 
 ### Builtin `Slice`
 

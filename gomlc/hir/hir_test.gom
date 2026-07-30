@@ -113,7 +113,7 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
                     expr: Expr {
                                         kind: ExprKind::Call {
                                             func: Expr {
-                                                                        kind: ExprKind::StaticMember { owner, member, type_args: _, type_arg_spans: _ },
+                                                                        kind: ExprKind::StaticMember { owner, member, .. },
                                                                         span: _,
                                                                     },
                                             args: _,
@@ -128,7 +128,7 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
             };
             match value.body.tail {
                 Option::Some(Expr {
-                    kind: ExprKind::StructLiteral { name, fields: _ },
+                    kind: ExprKind::StructLiteral { name, fields: _, base: _ },
                     span: _,
                 }) => {
                     testing::assert_eq(name, "std::sample::Value")
@@ -247,9 +247,10 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
                 testing::assert_eq(arms.len(), 2);
                 match arms.get(0).pat.kind {
                     PatKind::Constr {
-                        constructor: ConstructorRef::Resolved {
+                        head: PatternHead::Resolved {
                                                 enum_def: definition,
                                                 variant_index: variant,
+                                                span: _,
                                             },
                         args,
                     } => {
@@ -296,28 +297,26 @@ fn resolves_cross_file_constructor_patterns() -> unit {
                 }) => {
                     match arms.get(0).pat.kind {
                         PatKind::Constr {
-                            constructor: ConstructorRef::Resolved {
-                                                        enum_def: definition,
-                                                        variant_index: variant,
-                                                    },
+                            head: PatternHead::Contextual {
+                                name,
+                                span: _,
+                            },
                             args,
                         } => {
-                            testing::assert_eq(definition.index, 0);
-                            testing::assert_eq(variant, 0);
+                            testing::assert_eq(name, "Idle");
                             testing::assert_eq(args.len(), 0)
                         },
                         _ => testing::fail("expected resolved Idle pattern"),
                     };
                     match arms.get(1).pat.kind {
                         PatKind::Constr {
-                            constructor: ConstructorRef::Resolved {
-                                                        enum_def: definition,
-                                                        variant_index: variant,
-                                                    },
+                            head: PatternHead::Contextual {
+                                name,
+                                span: _,
+                            },
                             args,
                         } => {
-                            testing::assert_eq(definition.index, 0);
-                            testing::assert_eq(variant, 1);
+                            testing::assert_eq(name, "Busy");
                             testing::assert_eq(args.len(), 1)
                         },
                         _ => testing::fail("expected resolved Busy pattern"),
@@ -355,4 +354,10 @@ fn rejects_invalid_derives() -> unit {
         generic.diagnostics.get(0).message,
         "`#[derive(ToString)]` is not supported for generic struct `Box`",
     )
+}
+
+#[test]
+fn extracts_basename_from_unicode_paths() -> unit {
+    testing::assert_eq(basename("/tmp/目录/main.gom"), "main.gom");
+    testing::assert_eq(basename("目录.gom"), "目录.gom")
 }

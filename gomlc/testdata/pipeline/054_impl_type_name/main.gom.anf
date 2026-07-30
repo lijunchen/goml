@@ -1,95 +1,95 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  join ret71(retv72: string) -> string {
-    retv72
+  join ret115(retv116: string) -> string {
+    retv116
   } in
-  let mtmp64 = self/0 in
-  let x65 = Point.x(mtmp64) in
-  let x66 = Point.y(mtmp64) in
-  let y/2 = x66 in
-  let x/1 = x65 in
-  let t73 = inherent#int32#int32#to_string(x/1) in
-  let prefix/3 = ("Point(" + t73) in
-  let t74 = (prefix/3 + ", ") in
-  let t75 = inherent#int32#int32#to_string(y/2) in
-  let t76 = (t74 + t75) in
-  let t77 = (t76 + ")") in
-  jump ret71(t77)
+  let mtmp108 = self/0 in
+  let x109 = Point.x(mtmp108) in
+  let x110 = Point.y(mtmp108) in
+  let y/2 = x110 in
+  let x/1 = x109 in
+  let t117 = inherent#int32#int32#to_string(x/1) in
+  let prefix/3 = ("Point(" + t117) in
+  let t118 = (prefix/3 + ", ") in
+  let t119 = inherent#int32#int32#to_string(y/2) in
+  let t120 = (t118 + t119) in
+  let t121 = (t120 + ")") in
+  jump ret115(t121)
 }
 
 fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
-  join ret78(retv79: string) -> string {
-    retv79
+  join ret122(retv123: string) -> string {
+    retv123
   } in
-  join k80(jp81: string) -> string {
-    jump ret78(jp81)
+  join k124(jp125: string) -> string {
+    jump ret122(jp125)
   } in
   match self/4 {
     Tag_0 => {
-      jump k80("Unit")
+      jump k124("Unit")
     },
     Tag_1 => {
-      let x67 = Shape::Location._0(self/4) in
-      let point/5 = x67 in
-      let t82 = trait_impl#TypeName#Point#type_name(point/5) in
-      let t83 = ("Shape::" + t82) in
-      jump k80(t83)
+      let x111 = Shape::Location._0(self/4) in
+      let point/5 = x111 in
+      let t126 = trait_impl#TypeName#Point#type_name(point/5) in
+      let t127 = ("Shape::" + t126) in
+      jump k124(t127)
     },
   }
 }
 
 fn show_point(point/6: Point) -> string {
-  join ret84(retv85: string) -> string {
-    retv85
+  join ret128(retv129: string) -> string {
+    retv129
   } in
-  let t86 = trait_impl#TypeName#Point#type_name(point/6) in
-  jump ret84(t86)
+  let t130 = trait_impl#TypeName#Point#type_name(point/6) in
+  jump ret128(t130)
 }
 
 fn show_shape(shape/7: Shape) -> string {
-  join ret87(retv88: string) -> string {
-    retv88
+  join ret131(retv132: string) -> string {
+    retv132
   } in
-  let t89 = trait_impl#TypeName#Shape#type_name(shape/7) in
-  jump ret87(t89)
+  let t133 = trait_impl#TypeName#Shape#type_name(shape/7) in
+  jump ret131(t133)
 }
 
 fn main() -> unit {
-  join ret90() -> unit {
+  join ret134() -> unit {
     ()
   } in
   let point/8 = Point { x: 7, y: 9 } in
-  let t91 = show_point(point/8) in
-  let mtmp68 = println__T_string(t91) in
+  let t135 = show_point(point/8) in
+  let mtmp112 = println__T_string(t135) in
   let unit_shape/9 = Tag_0 in
-  let t92 = show_shape(unit_shape/9) in
-  let mtmp69 = println__T_string(t92) in
-  let t93 = Point { x: 1, y: 2 } in
-  let location_shape/10 = Shape::Location(t93) in
-  let t94 = show_shape(location_shape/10) in
-  let mtmp70 = println__T_string(t94) in
-  jump ret90()
+  let t136 = show_shape(unit_shape/9) in
+  let mtmp113 = println__T_string(t136) in
+  let t137 = Point { x: 1, y: 2 } in
+  let location_shape/10 = Shape::Location(t137) in
+  let t138 = show_shape(location_shape/10) in
+  let mtmp114 = println__T_string(t138) in
+  jump ret134()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret95(retv96: string) -> string {
-    retv96
+  join ret139(retv140: string) -> string {
+    retv140
   } in
-  let t97 = @runtime(core.int32_to_string)(self/6) in
-  jump ret95(t97)
+  let t141 = @runtime(core.int32_to_string)(self/6) in
+  jump ret139(t141)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret98() -> unit {
+  join ret142() -> unit {
     ()
   } in
-  let t99 = trait_impl#ToString#string#to_string(value/1) in
-  let t100 = @runtime(core.string_println)(t99) in
-  jump ret98()
+  let t143 = trait_impl#ToString#string#to_string(value/1) in
+  let t144 = @runtime(core.string_println)(t143) in
+  jump ret142()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret101(retv102: string) -> string {
-    retv102
+  join ret145(retv146: string) -> string {
+    retv146
   } in
-  jump ret101(self/38)
+  jump ret145(self/38)
 }

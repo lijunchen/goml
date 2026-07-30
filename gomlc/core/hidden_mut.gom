@@ -1,21 +1,10 @@
 package core;
 
 use gomlc::tast;
-
-fn contains_name(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
+use gomlc::vecs;
 
 fn push_name(values: Vec[string], value: string) -> unit {
-    if contains_name(values, value) {
+    if vecs::contains(values, value) {
         ()
     } else {
         values.push(value)
@@ -23,19 +12,14 @@ fn push_name(values: Vec[string], value: string) -> unit {
 }
 
 fn push_mutable(values: Vec[(string, tast::Type)], name: string, ty: tast::Type) -> unit {
-    let found = Ref::new(false);
     for value in values {
         if value.0 == name {
-            found.set(true)
+            return ()
         } else {
             ()
         }
     };
-    if found.get() {
-        ()
-    } else {
-        values.push((name, ty))
-    }
+    values.push((name, ty))
 }
 
 fn collect_mutable_exprs(values: Vec[tast::Expr], result: Vec[(string, tast::Type)]) -> unit {
@@ -58,7 +42,7 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
                 };
                 collect_mutable_expr(expr, result)
             },
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_mutable_expr(target, result);
                 collect_mutable_expr(expr, result)
             },
@@ -188,7 +172,7 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
                 collect_pattern_names(pattern, result);
                 collect_bound_expr(expr, result)
             },
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_bound_expr(target, result);
                 collect_bound_expr(expr, result)
             },
@@ -283,7 +267,7 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
             tast::Stmt::Let { is_mut: _, pat: _, value: expr } => collect_reference_expr(expr, result),
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_reference_expr(target, result);
                 collect_reference_expr(expr, result)
             },
@@ -376,7 +360,7 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
             tast::Stmt::Let { is_mut: _, pat: _, value: expr } => collect_capture_expr(expr, result),
-            tast::Stmt::Assign { target, value: expr } => {
+            tast::Stmt::Assign { target, op: _, value: expr } => {
                 collect_capture_expr(target, result);
                 collect_capture_expr(expr, result)
             },
@@ -402,7 +386,7 @@ fn collect_closure_captures(
     let references: Vec[string] = Vec::new();
     collect_reference_expr(body, references);
     for name in references {
-        if contains_name(bound, name) {
+        if vecs::contains(bound, name) {
             ()
         } else {
             push_name(result, name)
@@ -488,7 +472,7 @@ fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
     collect_capture_block(value, captures);
     let result: Vec[(string, tast::Type)] = Vec::new();
     for value in mutables {
-        if contains_name(captures, value.0) {
+        if vecs::contains(captures, value.0) {
             result.push(value)
         } else {
             ()
@@ -502,15 +486,16 @@ fn hidden_cell_type(value: tast::Type) -> tast::Type {
 }
 
 fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[tast::Type] {
-    let result: Ref[Option[tast::Type]] = Ref::new(Option::None);
-    for value in cells {
+    let index = Ref::new(cells.len() - 1);
+    while index.get() >= 0 {
+        let value = cells.get(index.get());
         if value.0 == name {
-            result.set(Option::Some(value.1))
+            return Option::Some(value.1)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn intrinsic_expr(name: string, params: Vec[tast::Type], ret_ty: tast::Type) -> Expr {
@@ -687,9 +672,17 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             args: lower_hidden_exprs(args, cells),
             ty,
         },
-        Expr::TraitCall { trait_ref: reference, method_name: name, receiver, args, ty } => Expr::TraitCall {
+        Expr::TraitCall {
             trait_ref: reference,
             method_name: name,
+            instance_name,
+            receiver,
+            args,
+            ty,
+        } => Expr::TraitCall {
+            trait_ref: reference,
+            method_name: name,
+            instance_name,
             receiver: lower_hidden_expr(receiver, cells),
             args: lower_hidden_exprs(args, cells),
             ty,

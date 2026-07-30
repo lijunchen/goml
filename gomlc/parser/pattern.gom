@@ -15,7 +15,8 @@ fn is_pattern_first(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::IntLit
         | lexer::TokenKind::Float
         | lexer::TokenKind::Str
-        | lexer::TokenKind::CharLit => true,
+        | lexer::TokenKind::CharLit
+        | lexer::TokenKind::ByteCharLit => true,
         _ => false,
     }
 }
@@ -38,13 +39,12 @@ fn or_pattern(parser: Parser) -> Option[MarkerClosed] {
                 Option::Some(initial)
             } else {
                 let marker = initial.precede(parser);
-                let parsing = Ref::new(true);
-                while parsing.get() && parser.eat(lexer::TokenKind::Pipe) {
+                while parser.eat(lexer::TokenKind::Pipe) {
                     if is_pattern_first(parser.peek()) {
                         let _ = alias_pattern(parser);
                     } else {
                         parser.error("expected a pattern after `|`");
-                        parsing.set(false)
+                        break
                     }
                 };
                 Option::Some(marker.completed(parser, cst::NodeKind::PATTERN_OR))
@@ -102,19 +102,18 @@ fn parse_pattern_list(parser: Parser) -> unit {
         ()
     } else {
         let _ = pattern(parser);
-        let parsing = Ref::new(true);
-        while parsing.get() {
+        while true {
             if parser.at(lexer::TokenKind::Comma) {
                 parser.expect(lexer::TokenKind::Comma);
                 if parser.at(lexer::TokenKind::RParen) {
-                    parsing.set(false)
+                    break
                 } else if is_pattern_first(parser.peek()) {
                     let _ = pattern(parser);
                 } else {
                     parser.advance_with_error("expected a pattern")
                 }
             } else if parser.at(lexer::TokenKind::RParen) || parser.eof() {
-                parsing.set(false)
+                break
             } else if is_pattern_first(parser.peek()) {
                 parser.advance_with_error("expected `,` between patterns");
                 let _ = pattern(parser);
@@ -166,6 +165,7 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
             lexer::TokenKind::Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
             lexer::TokenKind::Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
             lexer::TokenKind::CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
+            lexer::TokenKind::ByteCharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_BYTE),
             lexer::TokenKind::WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),
             lexer::TokenKind::LParen => tuple_pattern(parser),
             lexer::TokenKind::LBracket => array_pattern(parser),

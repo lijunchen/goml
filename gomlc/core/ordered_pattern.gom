@@ -12,44 +12,41 @@ fn pattern_requires_ordered(value: tast::Pat) -> bool {
             ty: _,
         } => true,
         tast::Pat::Or { pats: patterns, ty: _ } => {
-            let result = Ref::new(false);
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
-                    result.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            result.get()
+            false
         },
         tast::Pat::Constr { constructor: _, args: patterns, ty: _ } | tast::Pat::Tuple { items: patterns, ty: _ } => {
-            let result = Ref::new(false);
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
-                    result.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            result.get()
+            false
         },
         _ => false,
     }
 }
 
 fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
-    let result = Ref::new(false);
     for arm in arms {
         match arm.guard {
-            Option::Some(_) => result.set(true),
+            Option::Some(_) => return true,
             Option::None => if pattern_requires_ordered(arm.pat) {
-                result.set(true)
+                return true
             } else {
                 ()
             },
         }
     };
-    result.get()
+    false
 }
 
 fn ordered_int(value: int) -> Expr {

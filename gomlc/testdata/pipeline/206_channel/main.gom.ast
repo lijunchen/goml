@@ -3,7 +3,7 @@ fn make_string_channel() -> Channel[string] {
     Channel::[string]::new(0)
 }
 
-fn roundtrip(channel: Channel[T], value: T) -> Option[T] {
+fn roundtrip[T](channel: Channel[T], value: T) -> Option[T] {
     go || channel.send(value);
     channel.recv()
 }

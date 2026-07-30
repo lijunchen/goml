@@ -133,6 +133,7 @@ fn compile_commands(
             output_root,
             output_root,
             command,
+            compiler_world_path(context),
         ) {
             Result::Ok(value) => value,
             Result::Err(message) => return Result::Err(message),
@@ -142,6 +143,36 @@ fn compile_commands(
     Result::Ok(result)
 }
 
+fn compiler_world_path(context: Context) -> Option[string] {
+    if context.compiler_world_artifact {
+        Option::Some(module_relative(
+            context.graph.module_dir,
+            path::join(
+                path::join(context.artifact_root, "compiler"),
+                "world-v1.gaf",
+            ),
+        ))
+    } else {
+        Option::None
+    }
+}
+
+fn commands_with_world(
+    context: Context,
+    commands: Vec[Command],
+) -> Vec[Command] {
+    match compiler_world_path(context) {
+        Option::Some(output) => {
+            let result = Vec::new().pushed(Command::PrepareWorld { output });
+            for command in commands {
+                result.push(command)
+            };
+            result
+        },
+        Option::None => commands,
+    }
+}
+
 fn compile_package_command(
     graph: Graph,
     module_dir: string,
@@ -149,6 +180,7 @@ fn compile_package_command(
     interface_root: string,
     output_root: string,
     command: string,
+    world: Option[string],
 ) -> Result[Command, string] {
     let package_value = match package_by_name(graph, package_name) {
         Option::Some(value) => value,
@@ -179,6 +211,7 @@ fn compile_package_command(
             module_dir,
             package_artifact_base(output_root, graph, package_name),
         ),
+        world,
     })
 }
 
@@ -189,6 +222,7 @@ fn compile_test_package_command(
     dependency_root: string,
     output_root: string,
     production_interface: bool,
+    world: Option[string],
 ) -> Result[Command, string] {
     let compiled = match compile_package_command(
         graph,
@@ -197,6 +231,7 @@ fn compile_test_package_command(
         dependency_root,
         output_root,
         "test-build",
+        world,
     ) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
@@ -208,6 +243,7 @@ fn compile_test_package_command(
             input_files,
             interface_files,
             output,
+            world,
         } => {
             if production_interface {
                 interface_files.push(module_relative(
@@ -230,6 +266,7 @@ fn compile_test_package_command(
                 input_files,
                 interface_files,
                 output,
+                world,
             })
         },
         _ => Result::Err("test package did not produce a compile command"),
@@ -274,6 +311,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             let target = Context {
                 graph,
                 compiler: context.compiler,
+                compiler_world_artifact: context.compiler_world_artifact,
                 artifact_root: context.artifact_root,
             };
             let values = match compile_commands(
@@ -297,6 +335,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             let target = Context {
                 graph: test.graph,
                 compiler: context.compiler,
+                compiler_world_artifact: context.compiler_world_artifact,
                 artifact_root: context.artifact_root,
             };
             let values = match compile_commands(
@@ -316,7 +355,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
         ()
     };
     Result::Ok(Plan {
-        commands,
+        commands: commands_with_world(context, commands),
         executable: Option::None,
         test_groups: Vec::new(),
     })
@@ -355,6 +394,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
             input_cores: core_outputs(context, output_root),
             entry_package,
             output: module_relative(context.graph.module_dir, main_go),
+            world: compiler_world_path(context),
         });
         let executable = executable_path_for(context, entry_package);
         commands.push(Command::GoBuild {
@@ -363,7 +403,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         })
     };
     Result::Ok(Plan {
-        commands,
+        commands: commands_with_world(context, commands),
         executable: Option::None,
         test_groups: Vec::new(),
     })
@@ -389,6 +429,7 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
         input_cores: core_outputs(context, output_root),
         entry_package: context.graph.entry_package,
         output: module_relative(context.graph.module_dir, main_go),
+        world: compiler_world_path(context),
     });
     let executable = executable_path_for(
         context,
@@ -399,7 +440,7 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
         output: module_relative(context.graph.module_dir, executable),
     });
     Result::Ok(Plan {
-        commands,
+        commands: commands_with_world(context, commands),
         executable: Option::Some(executable),
         test_groups: Vec::new(),
     })
@@ -426,6 +467,7 @@ fn append_test_package(
                 dependency_root,
                 dependency_root,
                 "build",
+                compiler_world_path(context),
             ) {
                 Result::Ok(value) => value,
                 Result::Err(message) => return Result::Err(message),
@@ -441,6 +483,7 @@ fn append_test_package(
         dependency_root,
         output_root,
         compiled_dependencies.contains(graph.entry_package),
+        compiler_world_path(context),
     ) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
@@ -512,6 +555,7 @@ fn append_test_group(
         packages,
         output: module_relative(context.graph.module_dir, main_go),
         manifest: module_relative(context.graph.module_dir, manifest),
+        world: compiler_world_path(context),
     });
     let runner = path::join(output_root, "runner");
     commands.push(Command::GoBuild {
@@ -636,28 +680,38 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
         ()
     };
     Result::Ok(Plan {
-        commands,
+        commands: commands_with_world(context, commands),
         executable: Option::None,
         test_groups: groups,
     })
 }
 
 fn display_args(program: string, args: Vec[string]) -> string {
-    let result = Ref::new(program);
+    let builder = text::StringBuilder::new();
+    builder.write_string(program);
     for argument in args {
-        result.set(result.get() + " " + util::shell_escape(argument))
+        builder.write_char(' ');
+        builder.write_string(util::shell_escape(argument))
     };
-    result.get()
+    builder.finish()
 }
 
 fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
+        Command::PrepareWorld { output } => (
+            "gomlc",
+            Vec::new()
+                .pushed("prepare-world")
+                .pushed("--output")
+                .pushed(output),
+        ),
         Command::Compile {
             subcommand,
             package_name,
             input_files,
             interface_files,
             output,
+            world,
         } => {
             let args = Vec::new();
             args.push(subcommand);
@@ -673,12 +727,20 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             };
             args.push("--output");
             args.push(output);
+            match world {
+                Option::Some(value) => {
+                    args.push("--world");
+                    args.push(value)
+                },
+                Option::None => (),
+            };
             ("gomlc", args)
         },
         Command::Link {
             input_cores,
             entry_package,
             output,
+            world,
         } => {
             let args = Vec::new();
             args.push("link");
@@ -690,6 +752,13 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push(output);
             args.push("--entry");
             args.push(entry_package);
+            match world {
+                Option::Some(value) => {
+                    args.push("--world");
+                    args.push(value)
+                },
+                Option::None => (),
+            };
             ("gomlc", args)
         },
         Command::TestLink {
@@ -697,6 +766,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             packages,
             output,
             manifest,
+            world,
         } => {
             let args = Vec::new();
             args.push("test-link");
@@ -711,6 +781,13 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             for package_name in packages {
                 args.push("--package");
                 args.push(package_name)
+            };
+            match world {
+                Option::Some(value) => {
+                    args.push("--world");
+                    args.push(value)
+                },
+                Option::None => (),
             };
             ("gomlc", args)
         },
@@ -732,6 +809,7 @@ pub fn display_command(value: Command) -> string {
 
 fn progress_label(value: Command) -> string {
     match value {
+        Command::PrepareWorld { .. } => "preparing compiler world",
         Command::Compile {
             subcommand,
             package_name,
@@ -783,7 +861,8 @@ fn display_progress(completed: int, total: int, label: string) -> unit {
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
     let output = match value {
-        Command::Compile { output, .. }
+        Command::PrepareWorld { output }
+        | Command::Compile { output, .. }
         | Command::Link { output, .. }
         | Command::TestLink { output, .. }
         | Command::GoBuild { output, .. } => output,
@@ -832,11 +911,21 @@ fn execute_command(
     }
 }
 
-fn execute_cached_command(
+struct PreparedCache {
+    spec: CacheSpec,
+    fingerprint: string,
+}
+
+enum CachePreparation {
+    Fresh,
+    Execute(Option[PreparedCache]),
+}
+
+fn prepare_cached_command(
     context: Context,
     command: Command,
     identity: string,
-) -> Result[unit, string] {
+) -> Result[CachePreparation, string] {
     match cache_spec(command) {
         Option::Some(spec) => {
             let fingerprint = match command_fingerprint(
@@ -856,85 +945,119 @@ fn execute_cached_command(
                 Result::Err(message) => return Result::Err(message),
             };
             if fresh {
-                Result::Ok(())
+                Result::Ok(CachePreparation::Fresh)
             } else {
                 match prepare_cache_execution(context, spec) {
                     Result::Ok(()) => (),
                     Result::Err(message) => return Result::Err(message),
                 };
-                match execute_command(context, command) {
-                    Result::Ok(()) => (),
-                    Result::Err(message) => {
-                        let _ = prepare_cache_execution(context, spec);
-                        return Result::Err(message)
+                Result::Ok(CachePreparation::Execute(Option::Some(
+                    PreparedCache {
+                        spec,
+                        fingerprint,
                     },
-                };
-                match store_cache(
-                    context,
-                    spec,
-                    identity,
-                    fingerprint,
-                ) {
-                    Result::Ok(()) => Result::Ok(()),
-                    Result::Err(message) => Result::Err(message),
-                }
+                )))
             }
         },
-        Option::None => execute_command(context, command),
+        Option::None => Result::Ok(CachePreparation::Execute(Option::None)),
     }
 }
 
-fn contains_index(values: Vec[int], target: int) -> bool {
-    for value in values {
-        if value == target {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
+fn execute_prepared_command(
+    context: Context,
+    command: Command,
+    cache: Option[PreparedCache],
+) -> Result[unit, string] {
+    match execute_command(context, command) {
+        Result::Ok(()) => Result::Ok(()),
+        Result::Err(message) => {
+            match cache {
+                Option::Some(value) => {
+                    let _ = prepare_cache_execution(
+                        context,
+                        value.spec,
+                    );
+                },
+                Option::None => (),
+            };
+            Result::Err(message)
+        },
+    }
+}
+
+fn finish_prepared_command(
+    context: Context,
+    identity: string,
+    cache: Option[PreparedCache],
+) -> Result[unit, string] {
+    match cache {
+        Option::Some(value) => store_cache(
+                    context,
+                    value.spec,
+                    identity,
+                    value.fingerprint,
+                ),
+        Option::None => Result::Ok(()),
+    }
+}
+
+fn discard_prepared_command(
+    context: Context,
+    cache: Option[PreparedCache],
+) -> unit {
+    match cache {
+        Option::Some(value) => {
+            let _ = prepare_cache_execution(context, value.spec);
+        },
+        Option::None => (),
+    }
 }
 
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
+    let producers: HashMap[string, Vec[int]] = HashMap::new();
+    for index in range(0, commands.len()) {
+        match cache_spec(commands.get(index)) {
+            Option::Some(spec) => for output in spec.outputs {
+                match producers.get(output) {
+                    Option::Some(values) => values.push(index),
+                    Option::None => producers.set(
+                        output,
+                        Vec::new().pushed(index),
+                    ),
+                }
+            },
+            Option::None => (),
+        }
+    };
     let result = Vec::new();
     for index in range(0, commands.len()) {
         let command = commands.get(index);
         let dependencies = Vec::new();
         match cache_spec(command) {
             Option::Some(spec) => for input in spec.inputs {
-                let producer = Ref::new(-1);
-                for candidate in range(0, commands.len()) {
-                    if candidate == index {
-                        ()
-                    } else {
-                        match cache_spec(commands.get(candidate)) {
-                            Option::Some(candidate_spec) => {
-                                for output in candidate_spec.outputs {
-                                    if input == output {
-                                        if candidate < index
-                                            && (producer.get() < 0
-                                                || producer.get() > index
-                                                || candidate > producer.get())
-                                        {
-                                            producer.set(candidate)
-                                        } else if producer.get() < 0 {
-                                            producer.set(candidate)
-                                        } else {
-                                            ()
-                                        }
-                                    } else {
-                                        ()
-                                    }
-                                }
-                            },
-                            Option::None => (),
+                let previous = Ref::new(-1);
+                let following = Ref::new(-1);
+                match producers.get(input) {
+                    Option::Some(values) => for candidate in values {
+                        if candidate < index && candidate > previous.get() {
+                            previous.set(candidate)
+                        } else if candidate > index && following.get() < 0 {
+                            following.set(candidate)
+                        } else {
+                            ()
                         }
-                    }
+                    },
+                    Option::None => (),
                 };
-                if producer.get() >= 0
-                    && !contains_index(dependencies, producer.get())
+                let producer = if previous.get() >= 0 {
+                    previous.get()
+                } else {
+                    following.get()
+                };
+                if producer >= 0
+                    && !util::int_vec_contains(dependencies, producer)
                 {
-                    dependencies.push(producer.get())
+                    dependencies.push(producer)
                 } else {
                     ()
                 }
@@ -944,22 +1067,18 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
         match cache_spec(command) {
             Option::Some(spec) => for output in spec.outputs {
                 let previous = Ref::new(-1);
-                for candidate in range(0, index) {
-                    match cache_spec(commands.get(candidate)) {
-                        Option::Some(candidate_spec) => {
-                            for candidate_output in candidate_spec.outputs {
-                                if output == candidate_output {
-                                    previous.set(candidate)
-                                } else {
-                                    ()
-                                }
-                            }
-                        },
-                        Option::None => (),
-                    }
+                match producers.get(output) {
+                    Option::Some(values) => for candidate in values {
+                        if candidate < index && candidate > previous.get() {
+                            previous.set(candidate)
+                        } else {
+                            ()
+                        }
+                    },
+                    Option::None => (),
                 };
                 if previous.get() >= 0
-                    && !contains_index(dependencies, previous.get())
+                    && !util::int_vec_contains(dependencies, previous.get())
                 {
                     dependencies.push(previous.get())
                 } else {
@@ -988,9 +1107,9 @@ fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
     Option::None
 }
 
-fn build_node_ready(node: BuildNode, pending: Vec[int]) -> bool {
+fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
     for dependency in node.dependencies {
-        if contains_index(pending, dependency) {
+        if !util::int_vec_contains(completed, dependency) {
             return false
         } else {
             ()
@@ -999,21 +1118,35 @@ fn build_node_ready(node: BuildNode, pending: Vec[int]) -> bool {
     true
 }
 
+struct BuildWork {
+    index: int,
+    command: Command,
+    cache: Option[PreparedCache],
+}
+
+struct BuildWorkResult {
+    index: int,
+    cache: Option[PreparedCache],
+    result: Result[unit, string],
+}
+
 fn execute_plan_worker(
     context: Context,
-    identity: string,
-    work: Channel[Command],
-    results: Channel[Result[unit, string]],
+    work: Channel[BuildWork],
+    results: Channel[BuildWorkResult],
 ) -> unit {
-    let running = Ref::new(true);
-    while running.get() {
+    while true {
         match work.recv() {
-            Option::Some(command) => results.send(execute_cached_command(
-                context,
-                command,
-                identity,
-            )),
-            Option::None => running.set(false),
+            Option::Some(value) => results.send(BuildWorkResult {
+                index: value.index,
+                cache: value.cache,
+                result: execute_prepared_command(
+                    context,
+                    value.command,
+                    value.cache,
+                ),
+            }),
+            Option::None => break,
         }
     }
 }
@@ -1022,7 +1155,13 @@ pub fn execute_plan(
     context: Context,
     plan: Plan,
     dry_run: bool,
+    jobs: int,
 ) -> Result[unit, string] {
+    if !dry_run && jobs < 1 {
+        return Result::Err("build jobs must be greater than zero")
+    } else {
+        ()
+    };
     let total = plan.commands.len();
     let completed = Ref::new(0);
     let identity = if dry_run {
@@ -1047,8 +1186,19 @@ pub fn execute_plan(
             initial.push(node.index)
         };
         let pending = Ref::new(initial);
-        while pending.get().len() > 0 {
-            let ready_nodes = Vec::new();
+        let completed_nodes = Vec::new();
+        let running = Ref::new(0);
+        let worker_count = if jobs < total { jobs } else { total };
+        let work: Channel[BuildWork] = Channel::new(total);
+        let results: Channel[BuildWorkResult] = Channel::new(total);
+        for _ in range(0, worker_count) {
+            go || execute_plan_worker(
+                context,
+                work,
+                results,
+            )
+        };
+        while pending.get().len() > 0 || running.get() > 0 {
             let blocked = Vec::new();
             for index in pending.get() {
                 let node = match build_node(graph.nodes, index) {
@@ -1057,65 +1207,116 @@ pub fn execute_plan(
                         "build graph omitted node " + index.to_string(),
                     ),
                 };
-                if build_node_ready(node, pending.get()) {
-                    ready_nodes.push(node)
+                if running.get() < worker_count
+                    && !build_node_ready(node, completed_nodes)
+                {
+                    blocked.push(index)
+                } else if running.get() < worker_count {
+                    display_progress(
+                        completed.get(),
+                        total,
+                        progress_label(node.command),
+                    );
+                    match prepare_cached_command(
+                        context,
+                        node.command,
+                        identity,
+                    ) {
+                        Result::Ok(CachePreparation::Fresh) => {
+                            completed_nodes.push(node.index);
+                            completed.set(completed.get() + 1)
+                        },
+                        Result::Ok(CachePreparation::Execute(cache)) => {
+                            work.send(BuildWork {
+                                index: node.index,
+                                command: node.command,
+                                cache,
+                            });
+                            running.set(running.get() + 1)
+                        },
+                        Result::Err(message) => {
+                            work.close();
+                            for _ in range(0, running.get()) {
+                                match results.recv() {
+                                    Option::Some(value) => discard_prepared_command(
+                                        context,
+                                        value.cache,
+                                    ),
+                                    Option::None => (),
+                                }
+                            };
+                            results.close();
+                            return Result::Err(message)
+                        },
+                    }
                 } else {
                     blocked.push(index)
                 }
             };
-            if ready_nodes.len() == 0 {
+            pending.set(blocked);
+            if running.get() == 0 && pending.get().len() > 0 {
+                work.close();
+                results.close();
                 return Result::Err("build plan contains a dependency cycle")
             } else {
                 ()
             };
-            pending.set(blocked);
-            for node in ready_nodes {
-                display_progress(
-                    completed.get(),
-                    total,
-                    progress_label(node.command),
-                )
-            };
-            let work: Channel[Command] = Channel::new(ready_nodes.len());
-            let results: Channel[Result[unit, string]] = Channel::new(
-                ready_nodes.len(),
-            );
-            for node in ready_nodes {
-                work.send(node.command)
-            };
-            work.close();
-            for _ in range(0, ready_nodes.len()) {
-                go || execute_plan_worker(
-                    context,
-                    identity,
-                    work,
-                    results,
-                )
-            };
-            let failure: Ref[Option[string]] = Ref::new(Option::None);
-            for _ in range(0, ready_nodes.len()) {
+            if running.get() > 0 {
                 match results.recv() {
-                    Option::Some(Result::Ok(())) => {
-                        completed.set(completed.get() + 1)
-                    },
-                    Option::Some(Result::Err(message)) => {
-                        completed.set(completed.get() + 1);
-                        match failure.get() {
-                            Option::Some(_) => (),
-                            Option::None => failure.set(Option::Some(message)),
-                        }
+                    Option::Some(value) => match value.result {
+                        Result::Ok(()) => match finish_prepared_command(
+                            context,
+                            identity,
+                            value.cache,
+                        ) {
+                            Result::Ok(()) => {
+                                completed_nodes.push(value.index);
+                                completed.set(completed.get() + 1)
+                            },
+                            Result::Err(message) => {
+                                completed.set(completed.get() + 1);
+                                running.set(running.get() - 1);
+                                work.close();
+                                for _ in range(0, running.get()) {
+                                    match results.recv() {
+                                        Option::Some(other) => {
+                                            discard_prepared_command(
+                                                context,
+                                                other.cache,
+                                            )
+                                        },
+                                        Option::None => (),
+                                    }
+                                };
+                                results.close();
+                                return Result::Err(message)
+                            },
+                        },
+                        Result::Err(message) => {
+                            completed.set(completed.get() + 1);
+                            running.set(running.get() - 1);
+                            work.close();
+                            for _ in range(0, running.get()) {
+                                match results.recv() {
+                                    Option::Some(_) => (),
+                                    Option::None => (),
+                                }
+                            };
+                            results.close();
+                            return Result::Err(message)
+                        },
                     },
                     Option::None => return Result::Err(
                         "build result channel closed early",
                     ),
-                }
-            };
-            results.close();
-            match failure.get() {
-                Option::Some(message) => return Result::Err(message),
-                Option::None => (),
+                };
+                running.set(running.get() - 1)
+            } else {
+                ()
             }
-        }
+        };
+        work.close();
+        results.close()
     };
     if dry_run {
         ()

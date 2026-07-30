@@ -1,5 +1,5 @@
 fn main() -> unit {
-  let _wild64 = if true {
+  let _wild108 = if true {
       {
         @runtime(core.string_println)("if")
       }
@@ -8,9 +8,9 @@ fn main() -> unit {
         @runtime(core.string_println)("else")
       }
   } in
-  let _wild66 = {
-    let mtmp65 = 1 in
-    match mtmp65 {
+  let _wild110 = {
+    let mtmp109 = 1 in
+    match mtmp109 {
       1 => {
         @runtime(core.string_println)("match")
       },
@@ -18,24 +18,24 @@ fn main() -> unit {
     }
   } in
   let index/0 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild68 = while (inherent#Ref#Ref[T]#get__T_int(index/0) < 2) {
+  let _wild112 = while (inherent#Ref#Ref[T]#get__T_int(index/0) < 2) {
       {
-        let _wild67 = @runtime(core.string_println)(inherent#int#int#to_string(inherent#Ref#Ref[T]#get__T_int(index/0))) in
+        let _wild111 = @runtime(core.string_println)(inherent#int#int#to_string(inherent#Ref#Ref[T]#get__T_int(index/0))) in
         inherent#Ref#Ref[T]#set__T_int(index/0, (inherent#Ref#Ref[T]#get__T_int(index/0) + 1))
       }
   } in
   let values/1 = inherent#Vec#Vec[T]#new__T_string() in
-  let _wild69 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
-  let _wild75 = {
-    let for_source70 = values/1 in
-    let for_limit71 = @intrinsic(vec.len)(for_source70) in
-    let for_index72 = 0 in
-    while (for_index72 < for_limit71) {
+  let _wild113 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
+  let _wild119 = {
+    let for_source114 = values/1 in
+    let for_limit115 = @intrinsic(vec.len)(for_source114) in
+    let for_index116 = 0 in
+    while (for_index116 < for_limit115) {
         {
-          let for_item73 = @intrinsic(vec.get)(for_source70, for_index72) in
-          let _wild74 = for_index72 = (for_index72 + 1) in
+          let for_item117 = @intrinsic(vec.get)(for_source114, for_index116) in
+          let _wild118 = for_index116 = (for_index116 + 1) in
           {
-            let value/2 = for_item73 in
+            let value/2 = for_item117 in
             {
               @runtime(core.string_println)(value/2)
             }
@@ -46,28 +46,28 @@ fn main() -> unit {
   @runtime(core.string_println)("done")
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/209)
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/210)
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/208)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
   @runtime(core.int_to_string)(self/5)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  @intrinsic(ref.set)(self/211, value/212)
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/128: Vec[string], elem/129: string) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
+fn inherent#Vec#Vec[T]#push__T_string(self/126: Vec[string], elem/127: string) -> unit {
+  @intrinsic(vec.push)(self/126, elem/127)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {

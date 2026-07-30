@@ -15,23 +15,23 @@ fn pair(ok/1: bool) -> Result__(string,string)__string {
 }
 
 fn render(ok/2: bool) -> Result__string__string {
-  let mtmp67 = {
-    let mtmp64 = pair(ok/2) in
-    match mtmp64 {
-      Result__(string,string)__string::Ok(x65) => {
+  let mtmp111 = {
+    let mtmp108 = pair(ok/2) in
+    match mtmp108 {
+      Result__(string,string)__string::Ok(x109) => {
         {
-          let x65 = Result__(string,string)__string::Ok._0(mtmp64) in
+          let x109 = Result__(string,string)__string::Ok._0(mtmp108) in
           {
-            let try_value/17 = x65 in
+            let try_value/17 = x109 in
             try_value/17
           }
         }
       },
-      Result__(string,string)__string::Err(x66) => {
+      Result__(string,string)__string::Err(x110) => {
         {
-          let x66 = Result__(string,string)__string::Err._0(mtmp64) in
+          let x110 = Result__(string,string)__string::Err._0(mtmp108) in
           {
-            let try_residual/17 = x66 in
+            let try_residual/17 = x110 in
             return Result__string__string::Err(try_residual/17)
           }
         }
@@ -39,12 +39,12 @@ fn render(ok/2: bool) -> Result__string__string {
     }
   } in
   {
-    let x68 = mtmp67.0 in
-    let x69 = mtmp67.1 in
+    let x112 = mtmp111.0 in
+    let x113 = mtmp111.1 in
     {
-      let port/4 = x69 in
+      let port/4 = x113 in
       {
-        let host/3 = x68 in
+        let host/3 = x112 in
         {
           Result__string__string::Ok(((host/3 + "=") + port/4))
         }
@@ -55,20 +55,20 @@ fn render(ok/2: bool) -> Result__string__string {
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x70) => {
+    Result__string__string::Ok(x114) => {
       {
-        let x70 = Result__string__string::Ok._0(res/5) in
+        let x114 = Result__string__string::Ok._0(res/5) in
         {
-          let value/6 = x70 in
+          let value/6 = x114 in
           ("ok " + value/6)
         }
       }
     },
-    Result__string__string::Err(x71) => {
+    Result__string__string::Err(x115) => {
       {
-        let x71 = Result__string__string::Err._0(res/5) in
+        let x115 = Result__string__string::Err._0(res/5) in
         {
-          let err/7 = x71 in
+          let err/7 = x115 in
           ("err " + err/7)
         }
       }
@@ -77,8 +77,8 @@ fn show(res/5: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild72 = println__T_string(show(render(true))) in
-  let _wild73 = println__T_string(show(render(false))) in
+  let _wild116 = println__T_string(show(render(true))) in
+  let _wild117 = println__T_string(show(render(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {

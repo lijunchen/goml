@@ -281,13 +281,13 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_unit(result/0: Result__unit__string) -> string {
   match result/0 {
-    Result__unit__string::Ok(x64) => {
-      let x64 = Result__unit__string::Ok._0(result/0) in
+    Result__unit__string::Ok(x108) => {
+      let x108 = Result__unit__string::Ok._0(result/0) in
       "ok"
     },
-    Result__unit__string::Err(x65) => {
-      let x65 = Result__unit__string::Err._0(result/0) in
-      let err/1 = x65 in
+    Result__unit__string::Err(x109) => {
+      let x109 = Result__unit__string::Err._0(result/0) in
+      let err/1 = x109 in
       ("err " + err/1)
     },
   }
@@ -295,25 +295,25 @@ fn show_unit(result/0: Result__unit__string) -> string {
 
 fn show_string(result/2: Result__string__string) -> string {
   match result/2 {
-    Result__string__string::Ok(x66) => {
-      let x66 = Result__string__string::Ok._0(result/2) in
-      let value/3 = x66 in
+    Result__string__string::Ok(x110) => {
+      let x110 = Result__string__string::Ok._0(result/2) in
+      let value/3 = x110 in
       value/3
     },
-    Result__string__string::Err(x67) => {
-      let x67 = Result__string__string::Err._0(result/2) in
-      let err/4 = x67 in
+    Result__string__string::Err(x111) => {
+      let x111 = Result__string__string::Err._0(result/2) in
+      let err/4 = x111 in
       ("err " + err/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild68 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
-  let _wild69 = std::io::eprint__T_string("") in
-  let _wild70 = std::io::eprintln__T_string("") in
-  let _wild71 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
-  let _wild72 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
+  let _wild112 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
+  let _wild113 = std::io::eprint__T_string("") in
+  let _wild114 = std::io::eprintln__T_string("") in
+  let _wild115 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
+  let _wild116 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
   std::io::println__T_string(show_string(std::fs::read_file("goml-self-host/nested/output.txt")))
 }
 
@@ -321,63 +321,63 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/127: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/127)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/125: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/125)
 }
 
 fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/24)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/139: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/139)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/137: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/137)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/140: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/140)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/138: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/138)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/141: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/141), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/139: Vec[uint8]) -> bool {
+  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/139), 0)
 }
 
-fn inherent#Vec#Vec[T]#get__T_uint8(self/134: Vec[uint8], index/135: int) -> uint8 {
-  @intrinsic(vec.get)(self/134, index/135)
+fn inherent#Vec#Vec[T]#get__T_uint8(self/132: Vec[uint8], index/133: int) -> uint8 {
+  @intrinsic(vec.get)(self/132, index/133)
 }
 
-fn inherent#Vec#Vec[T]#set__T_uint8(self/136: Vec[uint8], index/137: int, elem/138: uint8) -> unit {
-  @intrinsic(vec.set)(self/136, index/137, elem/138)
+fn inherent#Vec#Vec[T]#set__T_uint8(self/134: Vec[uint8], index/135: int, elem/136: uint8) -> unit {
+  @intrinsic(vec.set)(self/134, index/135, elem/136)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/128: Vec[uint8], elem/129: uint8) -> unit {
-  @intrinsic(vec.push)(self/128, elem/129)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/126: Vec[uint8], elem/127: uint8) -> unit {
+  @intrinsic(vec.push)(self/126, elem/127)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/149: Vec[uint8]) -> Option__uint8 {
-  let len/150 = inherent#Vec#Vec[T]#len__T_uint8(self/149) in
-  if trait_impl#Eq#int#eq(len/150, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/147: Vec[uint8]) -> Option__uint8 {
+  let len/148 = inherent#Vec#Vec[T]#len__T_uint8(self/147) in
+  if trait_impl#Eq#int#eq(len/148, 0) {
       Option__uint8::None
   } else {
-      let value/151 = inherent#Vec#Vec[T]#get__T_uint8(self/149, (len/150 - 1)) in
-      let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/149, (len/150 - 1)) in
-      Option__uint8::Some(value/151)
+      let value/149 = inherent#Vec#Vec[T]#get__T_uint8(self/147, (len/148 - 1)) in
+      let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/147, (len/148 - 1)) in
+      Option__uint8::Some(value/149)
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/142: Vec[uint8], additional/143: int) -> unit {
-  @intrinsic(vec.reserve)(self/142, additional/143)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/140: Vec[uint8], additional/141: int) -> unit {
+  @intrinsic(vec.reserve)(self/140, additional/141)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/144: Vec[uint8], len/145: int) -> unit {
-  @intrinsic(vec.truncate)(self/144, len/145)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/142: Vec[uint8], len/143: int) -> unit {
+  @intrinsic(vec.truncate)(self/142, len/143)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/146: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/146, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/144: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/144, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/177: Vec[uint8], start/178: int, end/179: int) -> Slice[uint8] {
-  @intrinsic(slice.new)(self/177, start/178, end/179)
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/175: Vec[uint8], start/176: int, end/177: int) -> Slice[uint8] {
+  @intrinsic(slice.new)(self/175, start/176, end/177)
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {

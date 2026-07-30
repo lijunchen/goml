@@ -1,52 +1,52 @@
 fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
-  join ret65(retv66: string) -> string {
-    retv66
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  let t67 = Worker.name(self/0) in
-  let t68 = (t67 + ":ready") in
-  jump ret65(t68)
+  let t111 = Worker.name(self/0) in
+  let t112 = (t111 + ":ready") in
+  jump ret109(t112)
 }
 
 fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
-  join ret69(retv70: Worker) -> Worker {
-    retv70
+  join ret113(retv114: Worker) -> Worker {
+    retv114
   } in
-  let t71 = Station.worker(self/1) in
-  jump ret69(t71)
+  let t115 = Station.worker(self/1) in
+  jump ret113(t115)
 }
 
 fn main() -> unit {
-  join ret72() -> unit {
+  join ret116() -> unit {
     ()
   } in
-  let t73 = Worker { name: "build" } in
-  let t74 = Station { worker: t73 } in
-  let t75 = describe__S_Station__T_Worker(t74) in
-  let _wild64 = println__T_string(t75) in
-  jump ret72()
+  let t117 = Worker { name: "build" } in
+  let t118 = Station { worker: t117 } in
+  let t119 = describe__S_Station__T_Worker(t118) in
+  let _wild108 = println__T_string(t119) in
+  jump ret116()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret76() -> unit {
+  join ret120() -> unit {
     ()
   } in
-  let t77 = trait_impl#ToString#string#to_string(value/1) in
-  let t78 = @runtime(core.string_println)(t77) in
-  jump ret76()
+  let t121 = trait_impl#ToString#string#to_string(value/1) in
+  let t122 = @runtime(core.string_println)(t121) in
+  jump ret120()
 }
 
 fn describe__S_Station__T_Worker(service/2: Station) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret123(retv124: string) -> string {
+    retv124
   } in
-  let t81 = trait_impl#Service#[Worker]@Station#get(service/2) in
-  let t82 = trait_impl#Ready#Worker#state(t81) in
-  jump ret79(t82)
+  let t125 = trait_impl#Service#[Worker]@Station#get(service/2) in
+  let t126 = trait_impl#Ready#Worker#state(t125) in
+  jump ret123(t126)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret83(retv84: string) -> string {
-    retv84
+  join ret127(retv128: string) -> string {
+    retv128
   } in
-  jump ret83(self/38)
+  jump ret127(self/38)
 }
