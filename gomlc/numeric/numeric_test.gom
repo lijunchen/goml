@@ -1,0 +1,19 @@
+package numeric;
+
+use std::testing;
+
+#[test]
+fn parses_valid_and_invalid_floats() -> unit {
+    match parse_float32("3.5") {
+        Option::Some(value) => testing::assert(value == 3.5),
+        Option::None => testing::fail("expected float32"),
+    };
+    match parse_float64("-2.25e2") {
+        Option::Some(value) => testing::assert(value == -225.0),
+        Option::None => testing::fail("expected float64"),
+    };
+    match parse_float64("not-a-number") {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected invalid float"),
+    }
+}

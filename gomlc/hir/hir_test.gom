@@ -356,3 +356,9 @@ fn rejects_invalid_derives() -> unit {
         "`#[derive(ToString)]` is not supported for generic struct `Box`",
     )
 }
+
+#[test]
+fn extracts_basename_from_unicode_paths() -> unit {
+    testing::assert_eq(basename("/tmp/目录/main.gom"), "main.gom");
+    testing::assert_eq(basename("目录.gom"), "目录.gom")
+}

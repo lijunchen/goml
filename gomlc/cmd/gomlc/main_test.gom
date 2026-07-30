@@ -1848,6 +1848,12 @@ fn renders_all_parser_diagnostics_with_spans() -> unit {
 }
 
 #[test]
+fn renders_unicode_diagnostic_text() -> unit {
+    testing::assert_eq(diagnostic_visual_width("你\tx"), 5);
+    testing::assert_eq(expand_diagnostic_tabs("你\tx"), "你   x")
+}
+
+#[test]
 fn renders_source_path_for_spanless_diagnostics() -> unit {
     let diagnostics = Vec::new();
     diagnostics.push(tast::Diagnostic {

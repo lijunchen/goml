@@ -2,6 +2,7 @@ package query;
 
 use gomlc::cst;
 use gomlc::lexer;
+use gomlc::strings;
 use std::fs;
 use std::testing;
 use std::text;
@@ -176,7 +177,7 @@ fn resolves_definitions_in_local_dependencies() -> unit {
                 let analysis = analyze(main_path, source);
                 match goto_definition(analysis, offset) {
                     Option::Some(definition) => {
-                        testing::assert(string_ends_with(
+                        testing::assert(strings::ends_with(
                             definition.source_path,
                             "/lib/lib.gom",
                         ));
@@ -317,6 +318,29 @@ fn resolves_builtin_method_definitions() -> unit {
             Option::None => testing::fail("expected builtin method definition"),
         },
         Option::None => testing::fail("expected builtin method"),
+    };
+    let string_source = "fn main() -> bool { \"abc\".contains(\"b\") }";
+    match last_substring(string_source, "contains") {
+        Option::Some(offset) => match goto_definition(
+            analyze("main.gom", string_source),
+            offset,
+        ) {
+            Option::Some(definition) => match source_by_path(
+                analyze("main.gom", string_source).sources,
+                definition.source_path,
+            ) {
+                Option::Some(target) => testing::assert_eq(
+                    target.source.byte_slice(
+                        definition.span.start,
+                        definition.span.end,
+                    ),
+                    "contains",
+                ),
+                Option::None => testing::fail("expected builtin source"),
+            },
+            Option::None => testing::fail("expected string method definition"),
+        },
+        Option::None => testing::fail("expected string method"),
     };
     let static_source = "fn main() -> Vec[int32] { Vec::new() }";
     match last_substring(static_source, "new") {
@@ -584,6 +608,20 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
             testing::fail("expected int to_string completion")
         },
         Option::None => testing::fail("expected int member"),
+    };
+    let string_source = "fn main(value: string) -> unit { value.con }";
+    match last_substring(string_source, "value.con") {
+        Option::Some(offset) => if has_completion(completions(
+                analyze("main.gom", string_source),
+                offset + "value.con".byte_len(),
+            ),
+            "contains",
+        ) {
+            ()
+        } else {
+            testing::fail("expected string contains completion")
+        },
+        Option::None => testing::fail("expected string member"),
     };
     let vec_source = "fn main() -> unit { let values: Vec[int32] = Vec::new(); values.p }";
     match last_substring(vec_source, "values.p") {

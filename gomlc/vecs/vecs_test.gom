@@ -1,0 +1,9 @@
+package vecs;
+
+use std::testing;
+
+#[test]
+fn checks_membership_with_element_equality() -> unit {
+    testing::assert(contains(Vec::new().pushed("goml").pushed("gomlc"), "gomlc"));
+    testing::assert(!contains(Vec::new().pushed("goml"), "rust"))
+}

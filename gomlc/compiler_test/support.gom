@@ -2,6 +2,7 @@ package compiler_test;
 
 use gomlc::cmd::gomlc as compiler_driver;
 use gomlc::go_backend;
+use gomlc::strings;
 use std::bytes;
 use std::env;
 use std::fs;
@@ -545,7 +546,7 @@ pub fn assert_module_diagnostics() -> unit {
             } else {
                 let output = bytes_text(process::Output::stdout(checked))
                     + bytes_text(process::Output::stderr(checked));
-                testing::assert(text_contains(output, expected))
+                testing::assert(strings::contains(output, expected))
             }
         }
     }
@@ -702,27 +703,6 @@ pub fn assert_crasher_runtime_shard(
     }
 }
 
-fn text_contains(value: string, expected: string) -> bool {
-    if expected.byte_len() == 0 {
-        return true
-    } else {
-        ()
-    };
-    if expected.byte_len() > value.byte_len() {
-        return false
-    } else {
-        ()
-    };
-    for index in range(0, value.byte_len() - expected.byte_len() + 1) {
-        if value.byte_slice(index, index + expected.byte_len()) == expected {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
-}
-
 pub fn assert_package_crasher() -> unit {
     let project = path::join(
         compiler_tests_root(),
@@ -738,7 +718,7 @@ pub fn assert_package_crasher() -> unit {
     );
     let combined = bytes_text(process::Output::stdout(output))
         + bytes_text(process::Output::stderr(output));
-    testing::assert(text_contains(
+    testing::assert(strings::contains(
         combined,
         "extern args_raw is not permitted in this source",
     ))

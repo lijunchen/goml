@@ -80,6 +80,13 @@ fn converts_utf16_positions_and_file_uris() -> unit {
             testing::assert_eq(value, "/tmp/GoML 语言/main.gom")
         },
         Result::Err(error) => testing::fail(error),
+    };
+    match uri_to_path("file:///tmp/%FF.gom") {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "URI path is not valid UTF-8",
+        ),
+        Result::Ok(_) => testing::fail("expected invalid UTF-8 URI"),
     }
 }
 

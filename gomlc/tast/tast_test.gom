@@ -709,6 +709,10 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
 
 #[test]
 fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
+    testing::assert_eq(
+        coverage_decrement_magnitude("100000000000000000000"),
+        "99999999999999999999",
+    );
     let sequence_gap = check(hir::lower(
         ast::lower(parser::parse(
             "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0 } }",
@@ -1515,7 +1519,7 @@ fn rejects_unsatisfied_impl_equality_predicates() -> unit {
 
 #[test]
 fn checks_extended_builtin_method_catalog() -> unit {
-    let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
+    let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); let _ = text.starts_with(\"a\"); let _ = text.ends_with(\"z\"); let _ = text.contains(\"m\"); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1)
 }
@@ -2292,6 +2296,7 @@ fn normalizes_float_pattern_literals() -> unit {
 
 #[test]
 fn rounds_float32_literals() -> unit {
+    testing::assert_eq(increment_decimal("99999999999999999999"), "100000000000000000000");
     testing::assert_eq(normalized_float32_literal("3.1400001"), "3.14");
     testing::assert_eq(normalized_float32_literal("16777217"), "16777216");
     testing::assert_eq(normalized_float32_literal("1.23456789"), "1.2345679");

@@ -67,6 +67,17 @@ fn has_out_snapshot(base: string) -> bool {
     fs::is_file(path::join(base, "main.gom.out"))
 }
 
+fn pipeline_case_insert_index(values: Vec[string], name: string) -> int {
+    for index in range(0, values.len()) {
+        if name < values.get(index) {
+            return index
+        } else {
+            ()
+        }
+    };
+    values.len()
+}
+
 fn tmp_dir() -> string {
     match env::var("TMPDIR") {
         Option::Some(value) => if value == "" { "/tmp" } else { value },
@@ -222,19 +233,11 @@ pub fn all_pipeline_cases() -> Vec[string] {
             if fs::is_dir(directory)
                 && fs::is_file(path::join(directory, "main.gom"))
             {
-                let inserted = Ref::new(false);
-                for index in range(0, result.len()) {
-                    if !(inserted.get()) && name < result.get(index) {
-                        result.insert(index, name);
-                        inserted.set(true)
-                    } else {
-                        ()
-                    }
-                };
-                if !(inserted.get()) {
+                let index = pipeline_case_insert_index(result, name);
+                if index == result.len() {
                     result.push(name)
                 } else {
-                    ()
+                    result.insert(index, name)
                 }
             } else {
                 ()
