@@ -319,6 +319,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
 fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSignature] {
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => {
+            let (generics, generic_bounds) = lower_generics(ctx, node);
             let params = match first_child(node, cst::NodeKind::PARAM_LIST) {
                 Option::Some(_) => lower_params(
                     ctx,
@@ -365,6 +366,9 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
             match ret_ty {
                 Option::Some(value) => Option::Some(TraitMethodSignature {
                     name: name_token.token.text,
+                    generics,
+                    generic_bounds,
+                    predicates: lower_where_clause(ctx, node),
                     params,
                     ret_ty: value,
                 }),

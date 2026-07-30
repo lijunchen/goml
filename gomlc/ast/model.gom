@@ -183,6 +183,9 @@ pub enum Predicate {
 
 pub struct TraitMethodSignature {
     pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
     pub params: Vec[(string, TypeExpr)],
     pub ret_ty: TypeExpr,
 }
@@ -260,7 +263,12 @@ pub enum InterpolatedStringPart {
 }
 
 pub enum Expr {
-    Path { path: Path, type_args: Vec[TypeExpr], span: Span },
+    Path {
+        path: Path,
+        owner_type_args: Vec[TypeExpr],
+        member_type_args: Vec[TypeExpr],
+        span: Span,
+    },
     Unit { span: Span },
     Bool { value: bool, span: Span },
     Int { value: string, span: Span },
@@ -297,7 +305,12 @@ pub enum Expr {
     Range { start: Expr, end: Expr, span: Span },
     Binary { op: BinaryOp, lhs: Expr, rhs: Expr, span: Span },
     Proj { tuple: Expr, index: int, span: Span },
-    Field { expr: Expr, field_name: string, span: Span },
+    Field {
+        expr: Expr,
+        field_name: string,
+        method_type_args: Vec[TypeExpr],
+        span: Span,
+    },
     Index { base: Expr, index: Expr, span: Span },
     Block { block: Block, span: Span },
 }

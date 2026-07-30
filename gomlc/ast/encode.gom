@@ -328,6 +328,9 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
     for method in value.method_sigs {
         encode_open(builder, "TraitMethod");
         encode_string_value(builder, method.name);
+        encode_generics(builder, method.generics);
+        encode_generic_bounds(builder, method.generic_bounds);
+        encode_predicates(builder, method.predicates);
         encode_list(builder, method.params.len());
         for param in method.params {
             encode_string_value(builder, param.0);

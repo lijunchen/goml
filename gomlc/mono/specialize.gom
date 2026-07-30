@@ -911,7 +911,13 @@ fn matching_trait_selections(
                         true
                     };
                     if candidate_matches
-                        && complete_bindings(ctx, function, impl_bindings)
+                        && complete_bindings_up_to(
+                            ctx,
+                            function,
+                            impl_bindings,
+                            metadata.generic_count,
+                            metadata.predicate_count,
+                        )
                     {
                         let application = substitute_trait_ref(
                             metadata.trait_ref,
@@ -1017,7 +1023,13 @@ fn matching_projection_types(
                             reference.args,
                             bindings,
                         )
-                        && complete_bindings(ctx, function, bindings)
+                        && complete_bindings_up_to(
+                            ctx,
+                            function,
+                            bindings,
+                            metadata.generic_count,
+                            metadata.predicate_count,
+                        )
                     {
                         for associated in metadata.associated_types {
                             if associated.0 == name {
@@ -1250,14 +1262,17 @@ fn specialize_named_types(
     result
 }
 
-fn complete_function_bindings(
+fn complete_function_bindings_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
+    generic_count: int,
+    predicate_count: int,
 ) -> unit {
-    for _ in range(0, value.generics.len() + 1) {
+    for _ in range(0, generic_count + 1) {
         let previous_len = bindings.len();
-        for predicate in value.predicates {
+        for index in range(0, predicate_count) {
+            let predicate = value.predicates.get(index);
             match predicate {
                 tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
                     let for_ty = substitute_type(for_ty, bindings);
@@ -1325,12 +1340,14 @@ fn complete_function_bindings(
     }
 }
 
-fn predicates_are_satisfied(
+fn predicates_are_satisfied_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
+    predicate_count: int,
 ) -> bool {
-    for predicate in value.predicates {
+    for index in range(0, predicate_count) {
+        let predicate = value.predicates.get(index);
         match predicate {
             tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
                 let for_ty = substitute_type(for_ty, bindings);
@@ -1421,13 +1438,22 @@ fn builtin_trait_satisfied(
     }
 }
 
-fn complete_bindings(
+fn complete_bindings_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
+    generic_count: int,
+    predicate_count: int,
 ) -> bool {
-    complete_function_bindings(ctx, value, bindings);
-    for generic in value.generics {
+    complete_function_bindings_up_to(
+        ctx,
+        value,
+        bindings,
+        generic_count,
+        predicate_count,
+    );
+    for index in range(0, generic_count) {
+        let generic = value.generics.get(index);
         match find_binding(bindings, generic) {
             Option::Some(ty) => if type_is_concrete(ty) {
                 ()
@@ -1437,7 +1463,21 @@ fn complete_bindings(
             Option::None => return false,
         }
     };
-    predicates_are_satisfied(ctx, value, bindings)
+    predicates_are_satisfied_up_to(ctx, value, bindings, predicate_count)
+}
+
+fn complete_bindings(
+    ctx: SpecializeCtx,
+    value: core::Function,
+    bindings: Vec[TypeBinding],
+) -> bool {
+    complete_bindings_up_to(
+        ctx,
+        value,
+        bindings,
+        value.generics.len(),
+        value.predicates.len(),
+    )
 }
 
 fn specialize_callable(
@@ -1598,8 +1638,9 @@ fn ensure_trait_method_instance(
     method_name: string,
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
-) -> tast::TraitRef {
+) -> (tast::TraitRef, Option[string]) {
     let resolved = Ref::new(reference);
+    let instance_name: Ref[Option[string]] = Ref::new(Option::None);
     for function in indexed_functions(
         ctx.trait_method_index,
         lookup_pair_key(reference.name, method_name),
@@ -1615,7 +1656,24 @@ fn ensure_trait_method_instance(
                 function,
                 bindings,
             ) {
-                ensure_instance(ctx, function.name, bindings);
+                let base_name = trait_instance_name(
+                    ctx,
+                    function,
+                    bindings,
+                );
+                let name = ensure_instance(
+                    ctx,
+                    function.name,
+                    bindings,
+                );
+                match base_name {
+                    Option::Some(base) => if base != name {
+                        instance_name.set(Option::Some(name))
+                    } else {
+                        ()
+                    },
+                    Option::None => (),
+                };
                 resolved.set(specialize_trait_ref(
                     ctx,
                     reference,
@@ -1627,7 +1685,7 @@ fn ensure_trait_method_instance(
             Option::None => (),
         }
     };
-    resolved.get()
+    (resolved.get(), instance_name.get())
 }
 
 fn ensure_trait_call_instance(
@@ -1637,7 +1695,7 @@ fn ensure_trait_call_instance(
     receiver: core::Expr,
     args: Vec[core::Expr],
     ret_ty: tast::Type,
-) -> tast::TraitRef {
+) -> (tast::TraitRef, Option[string]) {
     ensure_trait_method_instance(
         ctx,
         reference,
@@ -1886,12 +1944,19 @@ fn specialize_expr(
                 ty: specialize_type(ctx, ty, bindings),
             }
         },
-        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
+        core::Expr::TraitCall {
+            trait_ref: reference,
+            method_name,
+            instance_name: _,
+            receiver,
+            args,
+            ty,
+        } => {
             let reference = specialize_trait_ref(ctx, reference, bindings);
             let receiver = specialize_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
             let ty = specialize_type(ctx, ty, bindings);
-            let reference = ensure_trait_call_instance(
+            let resolved = ensure_trait_call_instance(
                 ctx,
                 reference,
                 method_name,
@@ -1899,7 +1964,14 @@ fn specialize_expr(
                 args,
                 ty,
             );
-            core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty }
+            core::Expr::TraitCall {
+                trait_ref: resolved.0,
+                method_name,
+                instance_name: resolved.1,
+                receiver,
+                args,
+                ty,
+            }
         },
         core::Expr::Proj { tuple, index, ty } => core::Expr::Proj {
             tuple: specialize_expr(ctx, bindings, tuple),
@@ -2081,7 +2153,7 @@ fn ensure_runtime_trait_impls_for_expr(
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
@@ -2136,6 +2208,8 @@ fn specialize_function(
                     metadata.associated_types,
                     instance.bindings,
                 ),
+                generic_count: 0,
+                predicate_count: 0,
             }),
             Option::None => Option::None,
         },

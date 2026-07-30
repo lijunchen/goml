@@ -30,12 +30,13 @@ enum NamedFieldConstructorResolution {
 struct ResolvedCallable {
     callable: Callable,
     ty: Type,
+    predicates: Vec[TypePredicate],
 }
 
 struct MethodCandidate {
     owner: Type,
     callable: ResolvedCallable,
-    predicates: Vec[TypePredicate],
+    owner_predicates: Vec[TypePredicate],
 }
 
 fn short_name(value: string) -> string {
@@ -636,13 +637,104 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
     }
 }
 
-fn instantiate_method_candidate(ctx: Checker, value: MethodInfo) -> MethodCandidate {
-    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
-    let predicates = expand_implied_predicates(
+fn append_type_substitutions(
+    first: Vec[TypeSubst],
+    second: Vec[TypeSubst],
+) -> Vec[TypeSubst] {
+    let result = first;
+    for substitution in second {
+        result.push(substitution)
+    };
+    result
+}
+
+fn validate_explicit_method_type_arguments(
+    ctx: Checker,
+    name: string,
+    label: string,
+    params: Vec[string],
+    explicit: Vec[Type],
+) -> unit {
+    if explicit.len() > 0 && explicit.len() != params.len() {
+        push_diagnostic(
+            ctx,
+            "Method "
+                + name
+                + " expects "
+                + params.len().to_string()
+                + " "
+                + label
+                + " type arguments, but got "
+                + explicit.len().to_string(),
+        )
+    } else {
+        ()
+    }
+}
+
+fn method_substitutions(
+    ctx: Checker,
+    value: MethodInfo,
+    owner_explicit: Vec[Type],
+    method_explicit: Vec[Type],
+) -> Vec[TypeSubst] {
+    validate_explicit_method_type_arguments(
         ctx,
-        substitute_predicates(value.function.predicates, substitutions),
+        value.function.name,
+        "owner",
+        value.owner_generics,
+        owner_explicit,
     );
-    apply_predicate_equalities(predicates);
+    validate_explicit_method_type_arguments(
+        ctx,
+        value.function.name,
+        "method",
+        value.method_generics,
+        method_explicit,
+    );
+    append_type_substitutions(
+        instantiate_substitutions(
+            ctx.counter,
+            value.owner_generics,
+            owner_explicit,
+        ),
+        instantiate_substitutions(
+            ctx.counter,
+            value.method_generics,
+            method_explicit,
+        ),
+    )
+}
+
+fn instantiate_method_candidate(
+    ctx: Checker,
+    value: MethodInfo,
+    owner_explicit: Vec[Type],
+    method_explicit: Vec[Type],
+) -> MethodCandidate {
+    let substitutions = method_substitutions(
+        ctx,
+        value,
+        owner_explicit,
+        method_explicit,
+    );
+    let predicates = substitute_predicates(
+        value.function.predicates,
+        substitutions,
+    );
+    let owner_declared = Vec::new();
+    let method_declared = Vec::new();
+    for index in range(0, predicates.len()) {
+        if index < value.owner_predicate_count {
+            owner_declared.push(predicates.get(index))
+        } else {
+            method_declared.push(predicates.get(index))
+        }
+    };
+    let owner_predicates = expand_implied_predicates(ctx, owner_declared);
+    let method_predicates = expand_implied_predicates(ctx, method_declared);
+    apply_predicate_equalities(owner_predicates);
+    apply_predicate_equalities(method_predicates);
     let owner = substitute_type(value.for_type, substitutions);
     let params: Vec[Type] = Vec::new();
     for param in value.function.params {
@@ -656,14 +748,10 @@ fn instantiate_method_candidate(ctx: Checker, value: MethodInfo) -> MethodCandid
                 params,
                 ret_ty: substitute_type(value.function.ret_ty, substitutions),
             },
+            predicates: method_predicates,
         },
-        predicates,
+        owner_predicates,
     }
-}
-
-fn instantiate_method(ctx: Checker, value: MethodInfo) -> (Type, ResolvedCallable) {
-    let candidate = instantiate_method_candidate(ctx, value);
-    (candidate.owner, candidate.callable)
 }
 
 fn resolve_user_method(
@@ -672,6 +760,8 @@ fn resolve_user_method(
     name: string,
     trait_name: Option[string],
     allow_bare_owner: bool,
+    owner_explicit: Vec[Type],
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     for value in ctx.methods {
         let trait_matches = match (trait_name, value.trait_ref) {
@@ -683,14 +773,26 @@ fn resolve_user_method(
         };
         if trait_matches && value.function.name == name
             && receiver_matches(value.for_type, receiver) {
-            let (owner, callable) = instantiate_method(ctx, value);
+            let candidate = instantiate_method_candidate(
+                ctx,
+                value,
+                owner_explicit,
+                method_explicit,
+            );
             if (allow_bare_owner
-                && value.generics.len() > 0
+                && value.owner_generics.len() > 0
                 && match prune(receiver) {
                     Type::Con { name: _ } => true,
                     _ => false,
-                }) || unify(owner, receiver) {
-                return Option::Some(callable)
+                }) || unify(candidate.owner, receiver) {
+                return Option::Some(ResolvedCallable {
+                    callable: candidate.callable.callable,
+                    ty: candidate.callable.ty,
+                    predicates: append_predicates(
+                        candidate.owner_predicates,
+                        candidate.callable.predicates,
+                    ),
+                })
             } else {
                 ()
             }
@@ -1660,6 +1762,7 @@ fn deferred_method_candidate(
     name: string,
     args: Vec[Type],
     expected: Option[Type],
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let matches = Ref::new(0);
     let candidate_ty = Ref::new(Type::Error);
@@ -1671,7 +1774,12 @@ fn deferred_method_candidate(
                 Option::None => false,
             }
         {
-            let candidate = instantiate_method_candidate(ctx, value);
+            let candidate = instantiate_method_candidate(
+                ctx,
+                value,
+                Vec::new(),
+                method_explicit,
+            );
             if method_matches_call(
                 ctx,
                 candidate.callable,
@@ -1701,6 +1809,7 @@ fn deferred_method_candidate(
                         "__goml_deferred_method:" + name,
                     ),
                     ty: Type::Func { params, ret_ty },
+                    predicates: Vec::new(),
                 })
             },
             _ => Option::None,
@@ -1716,6 +1825,7 @@ fn resolve_user_method_for_call(
     name: string,
     args: Vec[Type],
     expected: Option[Type],
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let inherent: Vec[ResolvedCallable] = Vec::new();
     let trait_methods: Vec[ResolvedCallable] = Vec::new();
@@ -1724,7 +1834,12 @@ fn resolve_user_method_for_call(
             && receiver_matches(value.for_type, receiver)
             && method_trait_in_scope(ctx, value)
         {
-            let candidate = instantiate_method_candidate(ctx, value);
+            let candidate = instantiate_method_candidate(
+                ctx,
+                value,
+                Vec::new(),
+                method_explicit,
+            );
             let matches = match value.trait_ref {
                 Option::Some(_) => {
                     method_matches_call(
@@ -1734,11 +1849,24 @@ fn resolve_user_method_for_call(
                         args,
                         expected,
                     ) && unify(candidate.owner, receiver)
-                        && method_predicates_satisfied(ctx, candidate.predicates)
+                        && method_predicates_satisfied(
+                            ctx,
+                            candidate.owner_predicates,
+                        )
                 },
                 Option::None => {
                     unify(candidate.owner, receiver)
-                        && method_predicates_satisfied(ctx, candidate.predicates)
+                        && method_matches_call(
+                            ctx,
+                            candidate.callable,
+                            receiver,
+                            args,
+                            expected,
+                        )
+                        && method_predicates_satisfied(
+                            ctx,
+                            candidate.owner_predicates,
+                        )
                 },
             };
             if matches {
@@ -1778,6 +1906,7 @@ fn inherent_callable(owner: Type, name: string, params: Vec[Type], ret_ty: Type)
     ResolvedCallable {
         callable: Callable::InherentMethod { receiver_ty: owner, method_name: name },
         ty: callable_type(params, ret_ty),
+        predicates: Vec::new(),
     }
 }
 
@@ -1797,12 +1926,25 @@ fn trait_callable(
             method_name: name,
         },
         ty: callable_type(params, ret_ty),
+        predicates: Vec::new(),
     }
 }
 
-fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string) -> Option[ResolvedCallable] {
+fn resolve_builtin_method(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+    method_explicit: Vec[Type],
+) -> Option[ResolvedCallable] {
     let receiver = prune(normalize_type(ctx, receiver));
     if name == "to_string" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            method_explicit,
+        );
         if is_integer_type(receiver) {
             if match receiver {
                 Type::Var(_) => true,
@@ -1860,7 +2002,12 @@ fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string) -> Option[
             }
         }
     } else {
-        resolve_builtin_container_method(ctx, receiver, name)
+        resolve_builtin_container_method(
+            ctx,
+            receiver,
+            name,
+            method_explicit,
+        )
     }
 }
 
@@ -1868,8 +2015,9 @@ fn resolve_builtin_container_method(
     ctx: Checker,
     receiver: Type,
     name: string,
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    match receiver {
+    let result = match receiver {
         Type::VecType { elem } => resolve_vec_method(receiver, elem, name),
         Type::Slice { elem } => resolve_slice_method(receiver, elem, name),
         Type::RefType { elem } => resolve_ref_method(receiver, elem, name),
@@ -1878,7 +2026,298 @@ fn resolve_builtin_container_method(
             resolve_hashmap_method(ctx, receiver, key, value, name)
         },
         Type::String => resolve_string_method(receiver, name),
+        Type::App { ty: Type::Con { name: owner }, args } => {
+            resolve_option_result_method(
+                ctx,
+                receiver,
+                owner,
+                args,
+                name,
+                method_explicit,
+            )
+        },
         _ => Option::None,
+    };
+    match result {
+        Option::Some(value) => {
+            match receiver {
+                Type::App { ty: Type::Con { name: owner }, args: _ } => {
+                    if short_name(owner) == "Option"
+                        || short_name(owner) == "Result"
+                    {
+                        ()
+                    } else {
+                        validate_explicit_method_type_arguments(
+                            ctx,
+                            name,
+                            "method",
+                            Vec::new(),
+                            method_explicit,
+                        )
+                    }
+                },
+                _ => validate_explicit_method_type_arguments(
+                    ctx,
+                    name,
+                    "method",
+                    Vec::new(),
+                    method_explicit,
+                ),
+            };
+            Option::Some(value)
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn builtin_method_type_parameter(
+    ctx: Checker,
+    name: string,
+    parameter: string,
+    explicit: Vec[Type],
+) -> Type {
+    validate_explicit_method_type_arguments(
+        ctx,
+        name,
+        "method",
+        Vec::new().pushed(parameter),
+        explicit,
+    );
+    if explicit.len() == 1 {
+        explicit.get(0)
+    } else {
+        fresh_type(ctx.counter, VarKind::Any)
+    }
+}
+
+fn resolve_option_method(
+    ctx: Checker,
+    receiver: Type,
+    elem: Type,
+    name: string,
+    explicit: Vec[Type],
+) -> Option[ResolvedCallable] {
+    if name == "is_some" || name == "is_none" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            explicit,
+        );
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            one_type(receiver),
+            Type::Bool,
+        ))
+    } else if name == "unwrap_or" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            explicit,
+        );
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(receiver, elem),
+            elem,
+        ))
+    } else if name == "unwrap_or_else" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            explicit,
+        );
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: Vec::new(),
+                    ret_ty: elem,
+                },
+            ),
+            elem,
+        ))
+    } else if name == "map" {
+        let mapped = builtin_method_type_parameter(ctx, name, "U", explicit);
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: one_type(elem),
+                    ret_ty: mapped,
+                },
+            ),
+            nominal_type("Option", one_type(mapped)),
+        ))
+    } else if name == "and_then" {
+        let mapped = builtin_method_type_parameter(ctx, name, "U", explicit);
+        let result = nominal_type("Option", one_type(mapped));
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: one_type(elem),
+                    ret_ty: result,
+                },
+            ),
+            result,
+        ))
+    } else if name == "ok_or" {
+        let error = builtin_method_type_parameter(ctx, name, "E", explicit);
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(receiver, error),
+            nominal_type("Result", two_types(elem, error)),
+        ))
+    } else {
+        Option::None
+    }
+}
+
+fn resolve_result_method(
+    ctx: Checker,
+    receiver: Type,
+    ok: Type,
+    error: Type,
+    name: string,
+    explicit: Vec[Type],
+) -> Option[ResolvedCallable] {
+    if name == "is_ok" || name == "is_err" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            explicit,
+        );
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            one_type(receiver),
+            Type::Bool,
+        ))
+    } else if name == "unwrap_or" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            explicit,
+        );
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(receiver, ok),
+            ok,
+        ))
+    } else if name == "unwrap_or_else" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            explicit,
+        );
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: one_type(error),
+                    ret_ty: ok,
+                },
+            ),
+            ok,
+        ))
+    } else if name == "map" {
+        let mapped = builtin_method_type_parameter(ctx, name, "U", explicit);
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: one_type(ok),
+                    ret_ty: mapped,
+                },
+            ),
+            nominal_type("Result", two_types(mapped, error)),
+        ))
+    } else if name == "map_err" {
+        let mapped = builtin_method_type_parameter(ctx, name, "F", explicit);
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: one_type(error),
+                    ret_ty: mapped,
+                },
+            ),
+            nominal_type("Result", two_types(ok, mapped)),
+        ))
+    } else if name == "and_then" {
+        let mapped = builtin_method_type_parameter(ctx, name, "U", explicit);
+        let result = nominal_type("Result", two_types(mapped, error));
+        Option::Some(inherent_callable(
+            receiver,
+            name,
+            two_types(
+                receiver,
+                Type::Func {
+                    params: one_type(ok),
+                    ret_ty: result,
+                },
+            ),
+            result,
+        ))
+    } else {
+        Option::None
+    }
+}
+
+fn resolve_option_result_method(
+    ctx: Checker,
+    receiver: Type,
+    owner: string,
+    args: Vec[Type],
+    name: string,
+    explicit: Vec[Type],
+) -> Option[ResolvedCallable] {
+    if short_name(owner) == "Option" && args.len() == 1 {
+        resolve_option_method(
+            ctx,
+            receiver,
+            args.get(0),
+            name,
+            explicit,
+        )
+    } else if short_name(owner) == "Result" && args.len() == 2 {
+        resolve_result_method(
+            ctx,
+            receiver,
+            args.get(0),
+            args.get(1),
+            name,
+            explicit,
+        )
+    } else {
+        Option::None
     }
 }
 
@@ -2167,6 +2606,7 @@ fn dyn_method_callable(
             method_name: name,
         },
         ty: value.ty,
+        predicates: value.predicates,
     }
 }
 
@@ -2175,6 +2615,7 @@ fn resolve_dyn_method(
     owner: string,
     receiver: Type,
     name: string,
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let applications = trait_ref_closure(
         ctx,
@@ -2191,6 +2632,7 @@ fn resolve_dyn_method(
             applications.get(0),
             name,
             Option::Some(receiver),
+            method_explicit,
         ) {
             Option::Some(value) => Option::Some(dyn_method_callable(owner, name, value)),
             Option::None => {
@@ -2202,6 +2644,7 @@ fn resolve_dyn_method(
                         applications.get(index),
                         name,
                         Option::Some(receiver),
+                        method_explicit,
                     ) {
                         Option::Some(value) => {
                             candidates.push(short_name(
@@ -2234,6 +2677,7 @@ fn resolve_dyn_method(
                                 params: Vec::new().pushed(receiver),
                                 ret_ty: Type::Error,
                             },
+                            predicates: Vec::new(),
                         })
                     } else {
                         Option::None
@@ -2250,13 +2694,30 @@ fn resolve_method(
     name: string,
     args: Vec[Type],
     expected: Option[Type],
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let receiver = normalize_type(ctx, receiver);
     match receiver {
-        Type::Dyn { trait_name: owner } => resolve_dyn_method(ctx, owner, receiver, name),
-        _ => match resolve_predicate_method(ctx, receiver, name) {
+        Type::Dyn { trait_name: owner } => resolve_dyn_method(
+            ctx,
+            owner,
+            receiver,
+            name,
+            method_explicit,
+        ),
+        _ => match resolve_predicate_method(
+            ctx,
+            receiver,
+            name,
+            method_explicit,
+        ) {
             Option::Some(value) => Option::Some(value),
-            Option::None => match resolve_builtin_container_method(ctx, receiver, name) {
+            Option::None => match resolve_builtin_container_method(
+                ctx,
+                receiver,
+                name,
+                method_explicit,
+            ) {
                 Option::Some(value) => Option::Some(value),
                 Option::None => match resolve_user_method_for_call(
                     ctx,
@@ -2264,9 +2725,15 @@ fn resolve_method(
                     name,
                     args,
                     expected,
+                    method_explicit,
                 ) {
                     Option::Some(value) => Option::Some(value),
-                    Option::None => resolve_builtin_method(ctx, receiver, name),
+                    Option::None => resolve_builtin_method(
+                        ctx,
+                        receiver,
+                        name,
+                        method_explicit,
+                    ),
                 },
             },
         },
@@ -2372,6 +2839,8 @@ fn builtin_trait_method(
 ) -> TraitMethodInfo {
     TraitMethodInfo {
         name,
+        generics: Vec::new(),
+        predicates: Vec::new(),
         params,
         ret_ty,
     }
@@ -3058,6 +3527,19 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
         )
     } else {
         for method in info.methods {
+            if method.generics.len() > 0 {
+                push_diagnostic_at(
+                    ctx,
+                    "Trait "
+                        + info.name
+                        + "::"
+                        + method.name
+                        + " is not dyn-safe: generic methods are not supported",
+                    Option::None,
+                )
+            } else {
+                ()
+            };
             if method.params.len() == 0 {
                 push_diagnostic_at(ctx,
                     "Trait "
@@ -3442,6 +3924,7 @@ fn resolve_trait_reference_method(
     reference: TraitRef,
     name: string,
     self_ty: Option[Type],
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     match find_trait(ctx, reference.name) {
         Option::Some(info) => if info.generics.len() == reference.args.len() {
@@ -3455,23 +3938,50 @@ fn resolve_trait_reference_method(
                             Option::None
                         },
                     };
-                    let substitutions = trait_substitutions(
+                    validate_explicit_method_type_arguments(
                         ctx,
-                        info,
-                        reference,
-                        resolved_self_ty,
+                        method.name,
+                        "method",
+                        method.generics,
+                        method_explicit,
+                    );
+                    let substitutions = append_type_substitutions(
+                        trait_substitutions(
+                            ctx,
+                            info,
+                            reference,
+                            resolved_self_ty,
+                        ),
+                        instantiate_substitutions(
+                            ctx.counter,
+                            method.generics,
+                            method_explicit,
+                        ),
                     );
                     let params: Vec[Type] = Vec::new();
                     for param in method.params {
                         params.push(substitute_type(param, substitutions))
                     };
-                    Option::Some(trait_callable(
+                    let callable = trait_callable(
                         reference.name,
                         reference.args,
                         name,
                         params,
                         substitute_type(method.ret_ty, substitutions),
-                    ))
+                    );
+                    let predicates = expand_implied_predicates(
+                        ctx,
+                        substitute_predicates(
+                            method.predicates,
+                            substitutions,
+                        ),
+                    );
+                    apply_predicate_equalities(predicates);
+                    Option::Some(ResolvedCallable {
+                        callable: callable.callable,
+                        ty: callable.ty,
+                        predicates,
+                    })
                 },
                 Option::None => Option::None,
             }
@@ -3545,6 +4055,7 @@ fn resolve_predicate_method(
     ctx: Checker,
     receiver: Type,
     name: string,
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let resolved: Vec[ResolvedCallable] = Vec::new();
     let candidates = text::StringBuilder::new();
@@ -3557,6 +4068,7 @@ fn resolve_predicate_method(
                         reference,
                         name,
                         Option::Some(receiver),
+                        method_explicit,
                     ) {
                         Option::Some(value) => {
                             if candidates.is_empty() {
@@ -3601,6 +4113,7 @@ fn resolve_predicate_method(
             Option::Some(ResolvedCallable {
                 callable: Callable::Function("<error>"),
                 ty: Type::Error,
+                predicates: Vec::new(),
             })
         } else {
             Option::None
@@ -3613,8 +4126,16 @@ fn resolve_trait_static(
     owner: string,
     name: string,
     explicit: Vec[Type],
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     if owner == "ToString" && name == "to_string" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            method_explicit,
+        );
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(trait_callable(
             owner,
@@ -3624,6 +4145,13 @@ fn resolve_trait_static(
             Type::String,
         ))
     } else if owner == "Eq" && name == "eq" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            method_explicit,
+        );
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(trait_callable(
             owner,
@@ -3633,6 +4161,13 @@ fn resolve_trait_static(
             Type::Bool,
         ))
     } else if owner == "Hash" && name == "hash" {
+        validate_explicit_method_type_arguments(
+            ctx,
+            name,
+            "method",
+            Vec::new(),
+            method_explicit,
+        );
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(trait_callable(
             owner,
@@ -3665,6 +4200,7 @@ fn resolve_trait_static(
                     return Option::Some(ResolvedCallable {
                         callable: Callable::Function("<error>"),
                         ty: fresh_unresolved_inference(ctx),
+                        predicates: Vec::new(),
                     })
                 } else {
                     ()
@@ -3690,6 +4226,7 @@ fn resolve_trait_static(
                     reference,
                     name,
                     Option::None,
+                    method_explicit,
                 ) {
                     Option::Some(value) => Option::Some(value),
                     Option::None => {
@@ -3703,6 +4240,7 @@ fn resolve_trait_static(
                                     candidate,
                                     name,
                                     Option::None,
+                                    method_explicit,
                                 ) {
                                     Option::Some(value) => resolved.push(value),
                                     Option::None => (),
@@ -3739,23 +4277,44 @@ fn resolve_static_member(
     ctx: Checker,
     owner: string,
     member: string,
-    type_args: Vec[hir::TypeExpr],
+    owner_type_args: Vec[hir::TypeExpr],
+    member_type_args: Vec[hir::TypeExpr],
 ) -> Option[ResolvedCallable] {
-    let explicit = explicit_types(ctx, type_args);
-    let bare_owner = explicit.len() == 0;
+    let owner_explicit = explicit_types(ctx, owner_type_args);
+    let method_explicit = explicit_types(ctx, member_type_args);
+    let bare_owner = owner_explicit.len() == 0;
     match explicit_function_scheme(ctx, owner, member) {
         Option::Some(scheme) => {
-            let value = instantiate_scheme_candidate(ctx, scheme, explicit);
+            let value = instantiate_scheme_candidate(
+                ctx,
+                scheme,
+                method_explicit,
+            );
             Option::Some(ResolvedCallable {
                 callable: value.callable,
                 ty: value.ty,
+                predicates: value.predicates,
             })
         },
-        Option::None => match resolve_trait_static(ctx, owner, member, explicit) {
+        Option::None => match resolve_trait_static(
+            ctx,
+            owner,
+            member,
+            owner_explicit,
+            method_explicit,
+        ) {
             Option::Some(value) => Option::Some(value),
             Option::None => {
-                let owner_ty = nominal_type(owner, explicit);
-                match resolve_user_method(ctx, owner_ty, member, Option::None, true) {
+                let owner_ty = nominal_type(owner, owner_explicit);
+                match resolve_user_method(
+                    ctx,
+                    owner_ty,
+                    member,
+                    Option::None,
+                    true,
+                    owner_explicit,
+                    method_explicit,
+                ) {
                     Option::Some(value) => if bare_owner && nominal_type_is_defined(ctx, owner) {
                         Option::Some(ResolvedCallable {
                             callable: match value.callable {
@@ -3768,11 +4327,17 @@ fn resolve_static_member(
                                 other => other,
                             },
                             ty: value.ty,
+                            predicates: value.predicates,
                         })
                     } else {
                         Option::Some(value)
                     },
-                    Option::None => resolve_builtin_static(ctx, owner_ty, member),
+                    Option::None => resolve_builtin_static(
+                        ctx,
+                        owner_ty,
+                        member,
+                        method_explicit,
+                    ),
                 }
             },
         },
@@ -3783,6 +4348,7 @@ fn resolve_builtin_static(
     ctx: Checker,
     owner: Type,
     name: string,
+    method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let owner = match prune(owner) {
         Type::Con { name: owner_name } => if owner_name == "Vec" {
@@ -3837,7 +4403,18 @@ fn resolve_builtin_static(
             Option::None
         },
         Type::App { ty: base, args } => match type_constructor_name(base) {
-            Option::Some(owner_name) => if owner_name == "FnIterator"
+            Option::Some(owner_name) => if short_name(owner_name) == "Option"
+                || short_name(owner_name) == "Result"
+            {
+                resolve_option_result_method(
+                    ctx,
+                    owner,
+                    owner_name,
+                    args,
+                    name,
+                    method_explicit,
+                )
+            } else if owner_name == "FnIterator"
                 && args.len() == 1
                 && name == "from_fn" {
                 let item = args.get(0);
@@ -3853,6 +4430,7 @@ fn resolve_builtin_static(
                         }),
                         owner,
                     ),
+                    predicates: Vec::new(),
                 })
             } else {
                 Option::None

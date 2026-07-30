@@ -4,7 +4,7 @@ The project you are currently working on is called goml.
 
 goml is a statically typed language with syntax similar to Rust, but it includes garbage collection (GC) and compiles to Go, so it does not require lifetime annotations and has no ownership system. In essence, it is closer in nature to OCaml or ML (Meta Language).
 
-In goml, top-level functions must have fully explicit type signatures, and generic functions may only be declared at the top level. Structs, enums, traits, impls, and top-level type aliases may also declare generic type parameters. Generics are denoted using square brackets. Closures can be defined within functions, but they must have a single concrete type — goml does not include let-polymorphism (a.k.a. let-generalization). goml also supports defining traits, as well as enums and structs similar to Rust, and allows user-defined traits.
+In goml, top-level functions must have fully explicit type signatures. Top-level functions and methods may declare their own generic type parameters; local closures cannot. Structs, enums, traits, impls, and top-level type aliases may also declare generic type parameters. Generics are denoted using square brackets. Closures can be defined within functions, but they must have a single concrete type — goml does not include let-polymorphism (a.k.a. let-generalization). goml also supports defining traits, as well as enums and structs similar to Rust, and allows user-defined traits.
 
 The generated Go code does not include generics — goml performs monomorphization by instantiating its own generic function calls. The generated code also does not contain Go closures — goml applies lambda lifting by performing lambda lifting (via lambda lifting) on its local functions.
 
@@ -388,8 +388,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Functions and Closures
 
 * Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
-* Generic functions may only be declared at the top level, using square brackets, e.g. `fn id[T](x: T) -> T`.
-* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
+* Top-level functions and methods may declare their own generic parameters using square brackets, e.g. `fn id[T](x: T) -> T` and `fn map[U](self: Box[T], f: (T) -> U) -> Box[U]`.
+* Function and method generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
 
@@ -413,7 +413,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * `range(start, end)` creates a half-open `FnIterator[int]` over increasing values.
   * Adapters include `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain`.
   * Consumers include `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count`.
-* `Option[T]` and `Result[T, E]` provide `is_*`, `unwrap_or`, and `unwrap_or_else`; type-changing operations use the top-level `option_*` and `result_*` generic functions.
+* `Option[T]` provides `map`, `and_then`, and `ok_or`; `Result[T, E]` provides `map`, `map_err`, and `and_then`. Both also provide `is_*`, `unwrap_or`, and `unwrap_or_else`.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -428,16 +428,16 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Traits and `impl`
 
-* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits may declare type parameters, for example `trait Convert[T] { fn convert(Self) -> T; }`.
+* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits and trait methods may declare type parameters, for example `trait Convert[T] { fn convert[U](Self, U) -> T; }`.
 * Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[int32]` and `Convert[string]`.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert::[int32]::convert(value)`.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Method type arguments are inferred or written after the method name, such as `value.map::[string](f)`. Owner and method arguments remain separate in associated syntax: `Box::[int32]::convert::[string](value)` and `Convert::[int32]::convert::[string](value)`.
   * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use alias::Trait` after the defining package is imported (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
 * When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert::[int32]::convert(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
-  * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
+  * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type; generic methods are static-only.
   * Limitations (current): generic traits and traits with associated types are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
 
 ### Notes on `char`
@@ -462,7 +462,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Additional Conventions and Constraints
 
-* Top-level functions must have explicit type signatures; generic functions are limited to the top level.
+* Top-level functions must have explicit type signatures; top-level functions and methods may declare generics, but closures may not.
 * Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
 * The runtime uses garbage collection; manual ownership or lifetimes are not required.
 

@@ -532,9 +532,16 @@ let number = identity::[int32](1);
 let text = identity::[string]("text");
 ```
 
-Don't write `identity[int32](1)` or Rust's `identity::<int32>(1)`.Generic trait UFCS and associations with generic types also put `::[...]` before the member name, such as `Convert::[int32]::convert(value)` and `Channel::[string]::new(0)`.
+Don't write `identity[int32](1)` or Rust's `identity::<int32>(1)`. Generic arguments for an owner type or trait appear before the member name, while arguments owned by a method appear after it:
 
-Only top-level function declarations should introduce the function's own type parameters.Local named function does not exist; use closure.Closures do not have generics, and methods in impl should not declare their own type parameters.Structures, enumerations, traits, and impl themselves can have type parameters.
+```goml
+let inferred = value.convert(fallback);
+let explicit = value.convert::[string](fallback);
+let inherent = Box::[int32]::convert::[string](value, fallback);
+let trait_call = Convert::[int32]::convert::[string](value, fallback);
+```
+
+Top-level functions and methods may introduce their own type parameters. A method's parameters are distinct from the parameters of its enclosing trait or impl and may have their own bounds and `where` predicates. Local named functions do not exist; use closures. Closures do not have generics. Structures, enumerations, traits, and impl blocks can also have type parameters.
 
 GoML monomorphizes generic calls.Recursive generic code must produce a limited number of concrete instances and cannot continually change to a new nested type with each recursive call.
 
@@ -1141,7 +1148,15 @@ where
 }
 ```
 
-Currently, the trait method has no default implementation, and the method cannot declare its own type parameters.
+Trait methods have no default implementation. They may declare their own type parameters and constraints:
+
+```goml
+trait Convert {
+    fn convert[U: ToString](self, fallback: U) -> string;
+}
+```
+
+The corresponding impl method must have the same method-generic arity, signature, and constraints. Generic trait methods use static dispatch and make the trait unavailable as `dyn`.
 
 ### trait impl
 
@@ -1221,8 +1236,14 @@ impl[T] Box[T] {
     fn get(self: Self) -> T {
         self.value
     }
+
+    fn map[U](self: Self, map_fn: (T) -> U) -> Box[U] {
+        Box { value: map_fn(self.value) }
+    }
 }
 ```
+
+Method type arguments are normally inferred. Write `box_value.map::[string](convert)` when explicit arguments are needed, or `Box::[int32]::map::[string](box_value, convert)` in associated form.
 
 ### Method parsing and UFCS
 
@@ -1286,7 +1307,8 @@ Current dyn-safe conditions:
 - Traits cannot have type parameters;
 - Traits cannot declare associated types;
 - Each method must have a first receiver parameter of exactly type `Self`;
-- `Self` cannot appear in other parameters and return types.
+- `Self` cannot appear in other parameters and return types;
+- Methods cannot declare type parameters.
 
 Current limitations:
 
@@ -1466,19 +1488,17 @@ enum Result[T, E] {
 
 It is recommended to always write `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err` when constructing and matching.
 
-`Option[T]` provides `is_some`, `is_none`, `unwrap_or`, and `unwrap_or_else`. Transformations whose result has another type are top-level generic functions:
+`Option[T]` provides `is_some`, `is_none`, `unwrap_or`, and `unwrap_or_else`, plus type-changing generic methods:
 
-- `option_map(value, map_fn) -> Option[U]`
-- `option_and_then(value, next) -> Option[U]`
-- `option_ok_or(value, error) -> Result[T, E]`
+- `value.map(map_fn) -> Option[U]`
+- `value.and_then(next) -> Option[U]`
+- `value.ok_or(error) -> Result[T, E]`
 
-`Result[T, E]` provides `is_ok`, `is_err`, `unwrap_or`, and `unwrap_or_else`. Its type-changing operations are:
+`Result[T, E]` provides `is_ok`, `is_err`, `unwrap_or`, and `unwrap_or_else`. Its type-changing generic methods are:
 
-- `result_map(value, map_fn) -> Result[U, E]`
-- `result_map_err(value, map_fn) -> Result[T, F]`
-- `result_and_then(value, next) -> Result[U, E]`
-
-These functions are top-level because GoML methods cannot declare generic parameters in addition to those of their enclosing `impl`.
+- `value.map(map_fn) -> Result[U, E]`
+- `value.map_err(map_fn) -> Result[T, F]`
+- `value.and_then(next) -> Result[U, E]`
 
 ### Output and string conversion
 
@@ -1751,7 +1771,7 @@ visibility    = "pub"
 attribute     = "#[" attribute_body "]"
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
-method        = visibility? "fn" lower_ident param_list return_type? where_clause? block
+method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block
 generic_params = "[" generic_param ("," generic_param)* "]"
 generic_param = upper_ident (":" trait_set)?
 param_list    = "(" (parameter ("," parameter)*)? ")"
@@ -1772,13 +1792,13 @@ type_names    = "[" upper_ident ("," upper_ident)* "]"
 trait_def     = "trait" upper_ident generic_params? (":" trait_set)? where_clause?
                 "{" trait_member* "}"
 trait_member  = "type" upper_ident (":" trait_set)? ";"
-              | "fn" lower_ident param_list return_type? ";"
+              | "fn" lower_ident generic_params? param_list return_type? where_clause? ";"
 
 impl_def      = "impl" generic_params? trait_ref "for" type where_clause?
                 "{" impl_member* "}"
               | "impl" generic_params? type where_clause?
                 "{" method* "}"
-impl_member   = "type" upper_ident "=" type ";" | "fn" lower_ident param_list return_type? block
+impl_member   = "type" upper_ident "=" type ";" | method
 
 trait_set     = trait_ref ("+" trait_ref)*
 trait_ref     = path type_args?

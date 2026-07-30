@@ -104,28 +104,24 @@ fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> 
 fn pretty_write_path_expr(
     builder: text::StringBuilder,
     path: Path,
-    type_args: Vec[TypeExpr],
+    owner_type_args: Vec[TypeExpr],
+    member_type_args: Vec[TypeExpr],
 ) -> unit {
-    if type_args.len() == 0 {
+    if owner_type_args.len() == 0 {
         pretty_write_path(builder, path)
     } else {
         let last = path.segments.len() - 1;
-        if last == 0 {
-            builder.write_string(path.segments.get(0).ident);
-            builder.write_string("::")
-        } else {
-            for index in range(0, last) {
-                if index > 0 {
-                    builder.write_string("::")
-                } else {
-                    ()
-                };
-                builder.write_string(path.segments.get(index).ident)
+        for index in range(0, last) {
+            if index > 0 {
+                builder.write_string("::")
+            } else {
+                ()
             };
-            builder.write_string("::")
+            builder.write_string(path.segments.get(index).ident)
         };
+        builder.write_string("::");
         builder.write_char('[');
-        pretty_write_types(builder, type_args, ", ");
+        pretty_write_types(builder, owner_type_args, ", ");
         builder.write_char(']');
         if last > 0 {
             builder.write_string("::");
@@ -133,6 +129,13 @@ fn pretty_write_path_expr(
         } else {
             ()
         }
+    };
+    if member_type_args.len() > 0 {
+        builder.write_string("::[");
+        pretty_write_types(builder, member_type_args, ", ");
+        builder.write_char(']')
+    } else {
+        ()
     }
 }
 
@@ -164,7 +167,17 @@ fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -
 
 fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
-        Expr::Path { path, type_args, span: _ } => pretty_write_path_expr(builder, path, type_args),
+        Expr::Path {
+            path,
+            owner_type_args,
+            member_type_args,
+            span: _,
+        } => pretty_write_path_expr(
+            builder,
+            path,
+            owner_type_args,
+            member_type_args,
+        ),
         Expr::Unit { span: _ } => builder.write_string("()"),
         Expr::Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
         Expr::Int { value, span: _ } => builder.write_string(value),
@@ -390,10 +403,22 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('.');
             builder.write_string(index.to_string())
         },
-        Expr::Field { expr, field_name: field, span: _ } => {
+        Expr::Field {
+            expr,
+            field_name: field,
+            method_type_args,
+            span: _,
+        } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('.');
-            builder.write_string(field)
+            builder.write_string(field);
+            if method_type_args.len() > 0 {
+                builder.write_string("::[");
+                pretty_write_types(builder, method_type_args, ", ");
+                builder.write_char(']')
+            } else {
+                ()
+            }
         },
         Expr::Index { base, index, span: _ } => {
             pretty_write_expr(builder, base, indent);

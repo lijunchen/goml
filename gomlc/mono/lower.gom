@@ -686,6 +686,7 @@ fn lower_trait_call(
     ctx: TypeCtx,
     reference: tast::TraitRef,
     method_name: string,
+    instance_name: Option[string],
     receiver: core::Expr,
     args: Vec[core::Expr],
     ty: tast::Type,
@@ -700,16 +701,31 @@ fn lower_trait_call(
             if reference.args.len() == 0 && reference.name == name {
                 core::Expr::DynCall { trait_name: name, method_name, receiver, args, ty }
             } else {
-                lower_static_trait_call(reference, method_name, receiver, args, ty)
+                lower_static_trait_call(
+                    reference,
+                    method_name,
+                    instance_name,
+                    receiver,
+                    args,
+                    ty,
+                )
             }
         },
-        _ => lower_static_trait_call(reference, method_name, receiver, args, ty),
+        _ => lower_static_trait_call(
+            reference,
+            method_name,
+            instance_name,
+            receiver,
+            args,
+            ty,
+        ),
     }
 }
 
 fn lower_static_trait_call(
     reference: tast::TraitRef,
     method_name: string,
+    instance_name: Option[string],
     receiver: core::Expr,
     args: Vec[core::Expr],
     ty: tast::Type,
@@ -723,7 +739,10 @@ fn lower_static_trait_call(
         params.push(core::expr_type(arg));
         call_args.push(arg)
     };
-    let name = trait_impl_name(reference, receiver_ty, method_name);
+    let name = match instance_name {
+        Option::Some(value) => value,
+        Option::None => trait_impl_name(reference, receiver_ty, method_name),
+    };
     core::Expr::Call {
         func: core::Expr::Var { name, ty: tast::Type::Func { params, ret_ty: ty } },
         args: call_args,
@@ -850,8 +869,23 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
                 ty: collapse_type(ctx, ty),
             }
         },
-        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
-            lower_trait_call(ctx, reference, method_name, receiver, args, ty)
+        core::Expr::TraitCall {
+            trait_ref: reference,
+            method_name,
+            instance_name,
+            receiver,
+            args,
+            ty,
+        } => {
+            lower_trait_call(
+                ctx,
+                reference,
+                method_name,
+                instance_name,
+                receiver,
+                args,
+                ty,
+            )
         },
         core::Expr::Proj { tuple, index, ty } => {
             core::Expr::Proj {
@@ -1030,7 +1064,12 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             collect_expr_type_names(ctx, receiver);
             collect_exprs_type_names(ctx, args)
         },
-        core::Expr::TraitCall { trait_ref: reference, method_name: _, receiver, args, ty: _ } => {
+        core::Expr::TraitCall {
+            trait_ref: reference,
+            receiver,
+            args,
+            ..
+        } => {
             collect_trait_ref_type_names(ctx, reference);
             collect_expr_type_names(ctx, receiver);
             collect_exprs_type_names(ctx, args)
@@ -1078,6 +1117,8 @@ fn lower_trait_impl(
             trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
             for_ty: collapse_type(ctx, metadata.for_ty),
             associated_types: collapse_named_types(ctx, metadata.associated_types),
+            generic_count: metadata.generic_count,
+            predicate_count: metadata.predicate_count,
         }),
         Option::None => Option::None,
     }

@@ -532,6 +532,11 @@ fn trait_method(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::FnKeyword);
     parser.expect_lower_ident("method name");
+    if parser.at(lexer::TokenKind::LBracket) {
+        generic_list(parser, true)
+    } else {
+        ()
+    };
     if parser.at(lexer::TokenKind::LParen) {
         param_list(parser)
     } else {
@@ -539,6 +544,11 @@ fn trait_method(parser: Parser) -> unit {
     };
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)
+    } else {
+        ()
+    };
+    if parser.at(lexer::TokenKind::WhereKeyword) {
+        where_clause(parser)
     } else {
         ()
     };

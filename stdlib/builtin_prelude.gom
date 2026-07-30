@@ -1081,30 +1081,6 @@ impl [T] Option[T] {
     }
 }
 
-fn option_map[T, U](value: Option[T], map_fn: (T) -> U) -> Option[U] {
-    match value {
-        Option::Some(inner) => Option::Some(map_fn(inner)),
-        Option::None => Option::None,
-    }
-}
-
-fn option_and_then[T, U](
-    value: Option[T],
-    next: (T) -> Option[U],
-) -> Option[U] {
-    match value {
-        Option::Some(inner) => next(inner),
-        Option::None => Option::None,
-    }
-}
-
-fn option_ok_or[T, E](value: Option[T], error: E) -> Result[T, E] {
-    match value {
-        Option::Some(inner) => Result::Ok(inner),
-        Option::None => Result::Err(error),
-    }
-}
-
 impl [T, E] Result[T, E] {
     fn is_ok(self: Result[T, E]) -> bool {
         match self {
@@ -1132,32 +1108,60 @@ impl [T, E] Result[T, E] {
     }
 }
 
-fn result_map[T, E, U](
-    value: Result[T, E],
-    map_fn: (T) -> U,
-) -> Result[U, E] {
-    match value {
-        Result::Ok(inner) => Result::Ok(map_fn(inner)),
-        Result::Err(error) => Result::Err(error),
+impl [T] Option[T] {
+    fn map[U](self: Option[T], map_fn: (T) -> U) -> Option[U] {
+        match self {
+            Option::Some(value) => Option::Some(map_fn(value)),
+            Option::None => Option::None,
+        }
+    }
+
+    fn and_then[U](
+        self: Option[T],
+        next: (T) -> Option[U],
+    ) -> Option[U] {
+        match self {
+            Option::Some(value) => next(value),
+            Option::None => Option::None,
+        }
+    }
+
+    fn ok_or[E](self: Option[T], error: E) -> Result[T, E] {
+        match self {
+            Option::Some(value) => Result::Ok(value),
+            Option::None => Result::Err(error),
+        }
     }
 }
 
-fn result_map_err[T, E, F](
-    value: Result[T, E],
-    map_fn: (E) -> F,
-) -> Result[T, F] {
-    match value {
-        Result::Ok(inner) => Result::Ok(inner),
-        Result::Err(error) => Result::Err(map_fn(error)),
+impl [T, E] Result[T, E] {
+    fn map[U](
+        self: Result[T, E],
+        map_fn: (T) -> U,
+    ) -> Result[U, E] {
+        match self {
+            Result::Ok(value) => Result::Ok(map_fn(value)),
+            Result::Err(error) => Result::Err(error),
+        }
     }
-}
 
-fn result_and_then[T, E, U](
-    value: Result[T, E],
-    next: (T) -> Result[U, E],
-) -> Result[U, E] {
-    match value {
-        Result::Ok(inner) => next(inner),
-        Result::Err(error) => Result::Err(error),
+    fn map_err[F](
+        self: Result[T, E],
+        map_fn: (E) -> F,
+    ) -> Result[T, F] {
+        match self {
+            Result::Ok(value) => Result::Ok(value),
+            Result::Err(error) => Result::Err(map_fn(error)),
+        }
+    }
+
+    fn and_then[U](
+        self: Result[T, E],
+        next: (T) -> Result[U, E],
+    ) -> Result[U, E] {
+        match self {
+            Result::Ok(value) => next(value),
+            Result::Err(error) => Result::Err(error),
+        }
     }
 }

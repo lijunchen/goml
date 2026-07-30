@@ -184,7 +184,7 @@ fn expr_always_exits(value: core::Expr) -> bool {
             expr_always_exits(func) || exprs_always_exit(args)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
         core::Expr::Var { name: _, ty: _ }

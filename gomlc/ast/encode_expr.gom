@@ -63,12 +63,21 @@ fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
 
 fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
     match value {
-        Expr::Path { path, type_args, span: value_span } => {
+        Expr::Path {
+            path,
+            owner_type_args,
+            member_type_args,
+            span: value_span,
+        } => {
             encode_open(builder, "Expr.Path");
             encode_span(builder, value_span);
             encode_path(builder, path);
-            encode_list(builder, type_args.len());
-            for ty in type_args {
+            encode_list(builder, owner_type_args.len());
+            for ty in owner_type_args {
+                encode_type(builder, ty)
+            };
+            encode_list(builder, member_type_args.len());
+            for ty in member_type_args {
                 encode_type(builder, ty)
             }
         },
@@ -275,11 +284,20 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_expr(builder, expr);
             encode_int_value(builder, index)
         },
-        Expr::Field { expr, field_name: field, span: value_span } => {
+        Expr::Field {
+            expr,
+            field_name: field,
+            method_type_args,
+            span: value_span,
+        } => {
             encode_open(builder, "Expr.Field");
             encode_span(builder, value_span);
             encode_expr(builder, expr);
-            encode_string_value(builder, field)
+            encode_string_value(builder, field);
+            encode_list(builder, method_type_args.len());
+            for ty in method_type_args {
+                encode_type(builder, ty)
+            }
         },
         Expr::Index { base, index, span: value_span } => {
             encode_open(builder, "Expr.Index");

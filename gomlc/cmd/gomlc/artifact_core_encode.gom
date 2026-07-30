@@ -820,7 +820,14 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::TraitCall { trait_ref, method_name, receiver, args, ty } => {
+        core::Expr::TraitCall {
+            trait_ref,
+            method_name,
+            receiver,
+            args,
+            ty,
+            ..
+        } => {
             artifact_json_name(writer, "ETraitCall");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "trait_ref");
@@ -886,6 +893,10 @@ fn artifact_json_core_trait_impl(
             artifact_json_trait_ref(writer, context, value.trait_ref);
             artifact_json_name(writer, "for_ty");
             artifact_json_type(writer, context, value.for_ty);
+            artifact_json_name(writer, "generic_count");
+            artifact_json_number(writer, value.generic_count.to_string());
+            artifact_json_name(writer, "predicate_count");
+            artifact_json_number(writer, value.predicate_count.to_string());
             artifact_json_end_object(writer)
         },
         Option::None => artifact_json_null(writer),

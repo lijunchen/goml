@@ -349,49 +349,89 @@ fn reject_trailing(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr], m
     }
 }
 
-fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[(Path, Vec[TypeExpr])] {
-    match first_child(node, cst::NodeKind::TYPE_TAPP) {
-        Option::Some(owner_node) => match first_child(owner_node, cst::NodeKind::PATH) {
-            Option::Some(owner_path_node) => match lower_path(ctx, owner_path_node) {
-                Option::Some(owner_path) => {
-                    let paths = children_of_kind(node, cst::NodeKind::PATH);
-                    if paths.len() > 0 {
-                        match lower_path(ctx, paths.get(0)) {
-                            Option::Some(member_path) => {
-                                let segments = owner_path.segments;
-                                for segment in member_path.segments {
-                                    segments.push(segment)
-                                };
-                                let args = match first_child(owner_node, cst::NodeKind::TYPE_PARAM_LIST) {
-                                    Option::Some(list) => lower_type_list(ctx, list),
-                                    Option::None => Vec::new(),
-                                };
-                                Option::Some((Path { segments }, args))
-                            },
-                            Option::None => Option::None,
-                        }
-                    } else {
-                        let args = match first_child(owner_node, cst::NodeKind::TYPE_PARAM_LIST) {
-                            Option::Some(list) => lower_type_list(ctx, list),
-                            Option::None => Vec::new(),
-                        };
-                        Option::Some((owner_path, args))
-                    }
-                },
-                Option::None => Option::None,
-            },
-            Option::None => Option::None,
-        },
-        Option::None => match first_child(node, cst::NodeKind::PATH) {
+struct LowerIdentParts {
+    path: Path,
+    owner_type_args: Vec[TypeExpr],
+    member_type_args: Vec[TypeExpr],
+}
+
+fn lower_type_application_args(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
+    match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
+        Option::Some(list) => lower_type_list(ctx, list),
+        Option::None => Vec::new(),
+    }
+}
+
+fn append_path_segments(base: Path, suffix: Path) -> Path {
+    let segments = base.segments;
+    for segment in suffix.segments {
+        segments.push(segment)
+    };
+    Path { segments }
+}
+
+fn lower_type_application_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
+    match first_child(node, cst::NodeKind::PATH) {
+        Option::Some(path_node) => lower_path(ctx, path_node),
+        Option::None => Option::None,
+    }
+}
+
+fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts] {
+    let applications = children_of_kind(node, cst::NodeKind::TYPE_TAPP);
+    if applications.len() == 0 {
+        match first_child(node, cst::NodeKind::PATH) {
             Option::Some(path_node) => match lower_path(ctx, path_node) {
-                Option::Some(path) => Option::Some((path, Vec::new())),
+                Option::Some(path) => Option::Some(LowerIdentParts {
+                    path,
+                    owner_type_args: Vec::new(),
+                    member_type_args: Vec::new(),
+                }),
                 Option::None => Option::None,
             },
             Option::None => {
                 push_error(ctx, node_span(node), "Missing identifier in expression");
                 Option::None
             },
-        },
+        }
+    } else {
+        match lower_type_application_path(ctx, applications.get(0)) {
+            Option::Some(first_path) => {
+                let first_args = lower_type_application_args(ctx, applications.get(0));
+                if applications.len() > 1 {
+                    match lower_type_application_path(ctx, applications.get(1)) {
+                        Option::Some(member_path) => Option::Some(LowerIdentParts {
+                            path: append_path_segments(first_path, member_path),
+                            owner_type_args: first_args,
+                            member_type_args: lower_type_application_args(
+                                ctx,
+                                applications.get(1),
+                            ),
+                        }),
+                        Option::None => Option::None,
+                    }
+                } else {
+                    let paths = children_of_kind(node, cst::NodeKind::PATH);
+                    if paths.len() > 0 {
+                        match lower_path(ctx, paths.get(0)) {
+                            Option::Some(member_path) => Option::Some(LowerIdentParts {
+                                path: append_path_segments(first_path, member_path),
+                                owner_type_args: first_args,
+                                member_type_args: Vec::new(),
+                            }),
+                            Option::None => Option::None,
+                        }
+                    } else {
+                        Option::Some(LowerIdentParts {
+                            path: first_path,
+                            owner_type_args: Vec::new(),
+                            member_type_args: first_args,
+                        })
+                    }
+                }
+            },
+            Option::None => Option::None,
+        }
     }
 }
 
@@ -493,7 +533,8 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                                             name_token.token.text,
                                             Expr::Path {
                                                 path: path_from_single_ident(name_token.token.text),
-                                                type_args: Vec::new(),
+                                                owner_type_args: Vec::new(),
+                                                member_type_args: Vec::new(),
                                                 span: node_span(field),
                                             },
                                         ))
@@ -838,15 +879,23 @@ fn lower_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
 
 fn lower_ident_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     match lower_ident_parts(ctx, node) {
-        Option::Some((path, type_args)) => match path_last(path) {
+        Option::Some(parts) => match path_last(parts.path) {
             Option::Some(last) => {
-                let base = if type_args.len() == 0 && ident_starts_upper(last) {
+                let base = if parts.owner_type_args.len() == 0
+                    && parts.member_type_args.len() == 0
+                    && ident_starts_upper(last)
+                {
                     Expr::ConstructorValue {
-                        constructor: path,
+                        constructor: parts.path,
                         span: node_span(node),
                     }
                 } else {
-                    Expr::Path { path, type_args, span: node_span(node) }
+                    Expr::Path {
+                        path: parts.path,
+                        owner_type_args: parts.owner_type_args,
+                        member_type_args: parts.member_type_args,
+                        span: node_span(node),
+                    }
                 };
                 apply_trailing_args(ctx, base, trailing_args, node_span(node))
             },

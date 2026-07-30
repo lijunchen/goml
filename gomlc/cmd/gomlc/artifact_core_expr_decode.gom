@@ -508,6 +508,7 @@ fn artifact_decode_core_expr_tail(
             Result::Ok(ty) => Result::Ok(core::Expr::TraitCall {
                 trait_ref,
                 method_name,
+                instance_name: Option::None,
                 receiver,
                 args,
                 ty,
@@ -596,10 +597,26 @@ fn artifact_decode_core_trait_impl(
                 Result::Ok(value) => value,
                 Result::Err(error) => return Result::Err(error),
             };
+            let generic_count = match artifact_decode_core_index_field(
+                object,
+                "generic_count",
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            };
+            let predicate_count = match artifact_decode_core_index_field(
+                object,
+                "predicate_count",
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            };
             Result::Ok(Option::Some(core::TraitImpl {
                 trait_ref,
                 for_ty,
                 associated_types: Vec::new(),
+                generic_count,
+                predicate_count,
             }))
         },
     }

@@ -672,9 +672,17 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             args: lower_hidden_exprs(args, cells),
             ty,
         },
-        Expr::TraitCall { trait_ref: reference, method_name: name, receiver, args, ty } => Expr::TraitCall {
+        Expr::TraitCall {
             trait_ref: reference,
             method_name: name,
+            instance_name,
+            receiver,
+            args,
+            ty,
+        } => Expr::TraitCall {
+            trait_ref: reference,
+            method_name: name,
+            instance_name,
             receiver: lower_hidden_expr(receiver, cells),
             args: lower_hidden_exprs(args, cells),
             ty,

@@ -201,6 +201,38 @@ fn pretty_write_bounded_generics(
     }
 }
 
+fn pretty_write_predicates(
+    builder: text::StringBuilder,
+    values: Vec[Predicate],
+) -> unit {
+    if values.len() > 0 {
+        builder.write_string(" where ");
+        let index = Ref::new(0);
+        for value in values {
+            if index.get() > 0 {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            match value {
+                Predicate::Trait { ty, trait_ref } => {
+                    pretty_write_type(builder, ty);
+                    builder.write_string(": ");
+                    pretty_write_trait_ref(builder, trait_ref)
+                },
+                Predicate::Equality { lhs, rhs } => {
+                    pretty_write_type(builder, lhs);
+                    builder.write_string(" = ");
+                    pretty_write_type(builder, rhs)
+                },
+            };
+            index.set(index.get() + 1)
+        }
+    } else {
+        ()
+    }
+}
+
 fn pretty_write_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> unit {
     let index = Ref::new(0);
     for value in values {
@@ -399,6 +431,11 @@ fn pretty_write_trait_method(
 ) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
+    pretty_write_bounded_generics(
+        builder,
+        value.generics,
+        value.generic_bounds,
+    );
     builder.write_char('(');
     for index in range(0, value.params.len()) {
         if index > 0 {
@@ -413,6 +450,7 @@ fn pretty_write_trait_method(
     };
     builder.write_string(") -> ");
     pretty_write_type(builder, value.ret_ty);
+    pretty_write_predicates(builder, value.predicates);
     builder.write_char(';')
 }
 
@@ -428,6 +466,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
     } else {
         ()
     };
+    pretty_write_predicates(builder, value.predicates);
     builder.write_string(" {");
     if value.associated_types.len() == 0 && value.method_sigs.len() == 0 {
         builder.write_string("\n\n");
@@ -459,6 +498,11 @@ fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: 
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("fn ");
     builder.write_string(value.name);
+    pretty_write_bounded_generics(
+        builder,
+        value.generics,
+        value.generic_bounds,
+    );
     builder.write_char('(');
     let index = Ref::new(0);
     for param in value.params {
@@ -480,6 +524,7 @@ fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: 
         },
         Option::None => (),
     };
+    pretty_write_predicates(builder, value.predicates);
     builder.write_char(' ');
     pretty_write_block(builder, value.body, indent)
 }
@@ -489,6 +534,11 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("extern fn ");
     builder.write_string(value.name);
+    pretty_write_bounded_generics(
+        builder,
+        value.generics,
+        value.generic_bounds,
+    );
     builder.write_char('(');
     let index = Ref::new(0);
     for param in value.params {
@@ -509,7 +559,8 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
             pretty_write_type(builder, ty)
         },
         Option::None => (),
-    }
+    };
+    pretty_write_predicates(builder, value.predicates)
 }
 
 fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
@@ -525,6 +576,7 @@ fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int
         Option::None => (),
     };
     pretty_write_type(builder, value.for_type);
+    pretty_write_predicates(builder, value.predicates);
     builder.write_string(" {");
     if value.associated_types.len() == 0 && value.methods.len() == 0 {
         builder.write_string("\n\n");

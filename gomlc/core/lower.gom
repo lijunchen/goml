@@ -338,6 +338,7 @@ fn lower_call(
             Expr::TraitCall {
                 trait_ref: reference,
                 method_name: name,
+                instance_name: Option::None,
                 receiver: args.get(0),
                 args: arguments_after_first(args),
                 ty,
@@ -1176,6 +1177,7 @@ fn lower_iterator_for(
     let iterator_value = Expr::TraitCall {
         trait_ref: into_iterator,
         method_name: "into_iter",
+        instance_name: Option::None,
         receiver: lower_expr(ctx, iterator),
         args: no_args,
         ty: iterator_ty,
@@ -1184,6 +1186,7 @@ fn lower_iterator_for(
     let next_value = Expr::TraitCall {
         trait_ref: iterator_trait,
         method_name: "next",
+        instance_name: Option::None,
         receiver: Expr::Var { name: iterator_name, ty: iterator_ty },
         args: next_args,
         ty: option_ty,
@@ -1661,6 +1664,8 @@ fn lower_file_with_types(
                         trait_ref: reference,
                         for_ty: block.for_type,
                         associated_types: block.associated_types,
+                        generic_count: block.generics.len(),
+                        predicate_count: block.predicates.len(),
                     }),
                     Option::None => Option::None,
                 };

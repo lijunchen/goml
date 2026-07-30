@@ -168,10 +168,18 @@ fn artifact_trait_def(
     };
     let methods = Vec::new();
     for method in value.methods {
+        let constraints = Vec::new();
+        for predicate in method.predicates {
+            constraints.push(artifact_trait_definition_predicate(
+                predicate,
+                value.name,
+                trait_names,
+            ))
+        };
         methods.push(ArtifactFnScheme {
             name: method.name,
-            type_params: Vec::new(),
-            constraints: Vec::new(),
+            type_params: method.generics,
+            constraints,
             ty: artifact_trait_definition_type(
                 tast::Type::Func { params: method.params, ret_ty: method.ret_ty },
                 value.name,
@@ -219,11 +227,16 @@ fn artifact_method_constraints(
 
 fn artifact_method_scheme(
     value: tast::Function,
+    owner_generic_count: int,
     constraint_start: int,
 ) -> ArtifactFnScheme {
+    let type_params = Vec::new();
+    for index in range(owner_generic_count, value.generics.len()) {
+        type_params.push(value.generics.get(index))
+    };
     ArtifactFnScheme {
         name: value.name,
-        type_params: value.generics,
+        type_params,
         constraints: artifact_method_constraints(value, constraint_start),
         ty: artifact_function_type(value.params, value.ret_ty),
         body: tast::Callable::Function(value.name),
@@ -239,13 +252,18 @@ fn artifact_method_is_public(value: tast::Function) -> bool {
 
 fn artifact_impl_methods(
     value: tast::ImplBlock,
+    owner_generic_count: int,
     constraint_start: int,
     public_only: bool,
 ) -> Vec[ArtifactFnScheme] {
     let result = Vec::new();
     for method in value.methods {
         if !public_only || artifact_method_is_public(method) {
-            result.push(artifact_method_scheme(method, constraint_start))
+            result.push(artifact_method_scheme(
+                method,
+                owner_generic_count,
+                constraint_start,
+            ))
         } else {
             ()
         }
@@ -271,7 +289,12 @@ fn artifact_trait_impl(value: tast::ImplBlock) -> ArtifactTraitImpl {
             params: value.generics,
             constraints: value.predicates,
             associated_types: value.associated_types,
-            methods: artifact_impl_methods(value, value.predicates.len(), false),
+            methods: artifact_impl_methods(
+                value,
+                value.generics.len(),
+                value.predicates.len(),
+                false,
+            ),
             valid: true,
         },
     }
@@ -309,6 +332,7 @@ fn artifact_inherent_impl(
             associated_types: Vec::new(),
             methods: artifact_impl_methods(
                 value,
+                value.generics.len(),
                 value.predicates.len(),
                 public_only,
             ),

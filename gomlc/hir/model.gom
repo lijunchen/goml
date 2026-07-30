@@ -73,6 +73,9 @@ pub struct AssociatedType {
 
 pub struct TraitMethodSignature {
     pub name: string,
+    pub generics: Vec[string],
+    pub generic_bounds: Vec[(string, Vec[TraitRef])],
+    pub predicates: Vec[Predicate],
     pub params: Vec[TypeExpr],
     pub ret_ty: TypeExpr,
     pub ret_ty_span: Option[ast::Span],
@@ -241,8 +244,10 @@ pub enum ExprKind {
     StaticMember {
         owner: string,
         member: string,
-        type_args: Vec[TypeExpr],
-        type_arg_spans: Vec[Option[ast::Span]],
+        owner_type_args: Vec[TypeExpr],
+        owner_type_arg_spans: Vec[Option[ast::Span]],
+        member_type_args: Vec[TypeExpr],
+        member_type_arg_spans: Vec[Option[ast::Span]],
     },
     Unit,
     Bool { value: bool },
@@ -279,7 +284,11 @@ pub enum ExprKind {
     Range { start: Expr, end: Expr },
     Binary { op: ast::BinaryOp, lhs: Expr, rhs: Expr },
     Proj { tuple: Expr, index: int },
-    Field { expr: Expr, field_name: string },
+    Field {
+        expr: Expr,
+        field_name: string,
+        method_type_args: Vec[TypeExpr],
+    },
     Index { base: Expr, index: Expr },
     Block { block: Block },
 }

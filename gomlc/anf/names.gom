@@ -141,7 +141,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_exprs(maximum, args)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },

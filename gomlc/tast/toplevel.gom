@@ -199,6 +199,7 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                                 name,
                                 arg_types,
                                 Option::Some(ty),
+                                Vec::new(),
                             ) {
                                 Option::Some(value) => Expr::Callable {
                                     callable: value.callable,
@@ -409,7 +410,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
         | hir::ExprKind::Cast { expr, ty: _ }
         | hir::ExprKind::Try { depth: _, expr }
         | hir::ExprKind::Proj { tuple: expr, index: _ }
-        | hir::ExprKind::Field { expr, field_name: _ }
+        | hir::ExprKind::Field { expr, .. }
         | hir::ExprKind::Go { expr } => report_unresolved_expr(ctx, expr),
         hir::ExprKind::Range { start, end }
         | hir::ExprKind::Binary { op: _, lhs: start, rhs: end }
@@ -428,7 +429,6 @@ fn check_function(
     inherited_generics: Vec[string],
     inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
-    ignore_generic_bounds: bool,
 ) -> Function {
     match self_ty {
         Option::None => if value.name == "main" {
@@ -460,9 +460,8 @@ fn check_function(
         Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
         Option::None => Type::Unit,
     };
-    let predicates = resolve_signature_predicates(base, if ignore_generic_bounds {
-        inherited_predicates
-    } else {
+    let predicates = resolve_signature_predicates(
+        base,
         append_predicates(
             inherited_predicates,
             predicates_from_hir(
@@ -471,8 +470,9 @@ fn check_function(
                 type_params,
                 self_ty,
             ),
-        )
-    }, true);
+        ),
+        true,
+    );
     let previous_span = base.current_span.get();
     base.current_span.set(value.ret_ty_span);
     let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
@@ -1028,33 +1028,13 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         Option::None => (),
     };
     let methods: Vec[Function] = Vec::new();
-    let generic_method_names: Vec[string] = Vec::new();
     for method in value.methods {
-        match trait_ref {
-            Option::Some(reference) => if method.generics.len() > 0 {
-                invalid.set(true);
-                generic_method_names.push(method.name);
-                push_diagnostic_at(
-                    base,
-                    "Trait method implementation "
-                        + short_name(reference.name)
-                        + "::"
-                        + method.name
-                        + " cannot declare type parameters",
-                    Option::None,
-                )
-            } else {
-                ()
-            },
-            Option::None => (),
-        };
         methods.push(check_function(
             base,
             method,
             value.generics,
             predicates,
             Option::Some(for_type),
-            method.generics.len() > 0,
         ))
     };
     match trait_ref {
@@ -1066,7 +1046,8 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 for_type,
                 associated_types,
                 methods,
-                generic_method_names,
+                value.generics.len(),
+                predicates.len(),
             );
             if base.diagnostics.len() > validation_start {
                 invalid.set(true)
@@ -1095,13 +1076,81 @@ fn type_matches(ctx: Checker, left: Type, right: Type) -> bool {
     types_equal(normalize_type(ctx, left), normalize_type(ctx, right))
 }
 
+fn contains_type_predicate(
+    values: Vec[TypePredicate],
+    expected: TypePredicate,
+) -> bool {
+    for value in values {
+        if predicate_equal(value, expected) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn type_predicate_sets_equal(
+    left: Vec[TypePredicate],
+    right: Vec[TypePredicate],
+) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for value in left {
+            if !contains_type_predicate(right, value) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
 fn validate_method_signature(
     ctx: Checker,
     trait_name: string,
     expected: TraitMethodInfo,
     actual: Function,
     substitutions: Vec[TypeSubst],
+    owner_generic_count: int,
+    owner_predicate_count: int,
 ) -> unit {
+    let actual_method_generics = Vec::new();
+    for index in range(owner_generic_count, actual.generics.len()) {
+        actual_method_generics.push(actual.generics.get(index))
+    };
+    if expected.generics.len() != actual_method_generics.len() {
+        push_diagnostic(
+            ctx,
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " expects "
+                + expected.generics.len().to_string()
+                + " method type parameters but impl has "
+                + actual_method_generics.len().to_string(),
+        )
+    } else {
+        ()
+    };
+    let generic_count = if expected.generics.len()
+        < actual_method_generics.len()
+    {
+        expected.generics.len()
+    } else {
+        actual_method_generics.len()
+    };
+    for index in range(0, generic_count) {
+        substitutions.push(TypeSubst {
+            name: expected.generics.get(index),
+            ty: Type::Param {
+                name: actual_method_generics.get(index),
+            },
+        })
+    };
     let expected_params: Vec[Type] = Vec::new();
     for param in expected.params {
         expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
@@ -1160,6 +1209,32 @@ fn validate_method_signature(
                 + type_text(expected_ret)
                 + " but found "
                 + type_text(actual_ret),
+        )
+    } else {
+        ()
+    };
+    let expected_predicates: Vec[TypePredicate] = Vec::new();
+    for predicate in expected.predicates {
+        expected_predicates.push(substitute_predicate(
+            predicate,
+            substitutions,
+        ))
+    };
+    let actual_predicates: Vec[TypePredicate] = Vec::new();
+    for index in range(owner_predicate_count, actual.predicates.len()) {
+        actual_predicates.push(actual.predicates.get(index))
+    };
+    if !type_predicate_sets_equal(
+        expected_predicates,
+        actual_predicates,
+    ) {
+        push_diagnostic(
+            ctx,
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " method bounds do not match the trait declaration",
         )
     } else {
         ()
@@ -1612,7 +1687,8 @@ fn validate_trait_impl(
     for_type: Type,
     associated_types: Vec[(string, Type)],
     methods: Vec[Function],
-    generic_method_names: Vec[string],
+    owner_generic_count: int,
+    owner_predicate_count: int,
 ) -> unit {
     match find_trait(ctx, reference.name) {
         Option::Some(info) => {
@@ -1660,17 +1736,15 @@ fn validate_trait_impl(
                         )
                     } else {
                         seen.push(method.name);
-                        if vecs::contains(generic_method_names, method.name) {
-                            ()
-                        } else {
-                            validate_method_signature(
-                                ctx,
-                                reference.name,
-                                expected,
-                                method,
-                                substitutions,
-                            )
-                        }
+                        validate_method_signature(
+                            ctx,
+                            reference.name,
+                            expected,
+                            method,
+                            substitutions,
+                            owner_generic_count,
+                            owner_predicate_count,
+                        )
                     },
                     Option::None => push_diagnostic(ctx,
                         "Method "
@@ -1912,6 +1986,21 @@ fn validate_local_definitions(
             }
         };
         for method in info.methods {
+            for predicate in method.predicates {
+                match predicate {
+                    TypePredicate::Trait {
+                        for_ty,
+                        trait_ref: reference,
+                    } => {
+                        validate_signature_type(ctx, for_ty);
+                        validate_trait_reference(ctx, reference)
+                    },
+                    TypePredicate::Equality { lhs, rhs } => {
+                        validate_signature_type(ctx, lhs);
+                        validate_signature_type(ctx, rhs)
+                    },
+                }
+            };
             for param in method.params {
                 validate_signature_type(ctx, param)
             };
@@ -2208,7 +2297,16 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
             },
             hir::Item::TraitDef(definition) => {
                 validate_type_parameter_names(ctx, definition.generics);
-                validate_trait_member_names(ctx, definition)
+                validate_trait_member_names(ctx, definition);
+                for method in definition.method_sigs {
+                    validate_type_parameter_names(
+                        ctx,
+                        append_names(
+                            definition.generics,
+                            method.generics,
+                        ),
+                    )
+                }
             },
             hir::Item::ImplBlock(block) => {
                 validate_type_parameter_names(ctx, block.generics);
@@ -2643,18 +2741,33 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
         hir::ExprKind::StaticMember {
             owner: _,
             member: _,
-            type_args,
-            type_arg_spans,
-        } => for index in range(0, type_args.len()) {
-            attach_type_diagnostic_span(
-                ctx,
-                type_args.get(index),
-                if index < type_arg_spans.len() {
-                    type_arg_spans.get(index)
-                } else {
-                    Option::None
-                },
-            )
+            owner_type_args,
+            owner_type_arg_spans,
+            member_type_args,
+            member_type_arg_spans,
+        } => {
+            for index in range(0, owner_type_args.len()) {
+                attach_type_diagnostic_span(
+                    ctx,
+                    owner_type_args.get(index),
+                    if index < owner_type_arg_spans.len() {
+                        owner_type_arg_spans.get(index)
+                    } else {
+                        Option::None
+                    },
+                )
+            };
+            for index in range(0, member_type_args.len()) {
+                attach_type_diagnostic_span(
+                    ctx,
+                    member_type_args.get(index),
+                    if index < member_type_arg_spans.len() {
+                        member_type_arg_spans.get(index)
+                    } else {
+                        Option::None
+                    },
+                )
+            }
         },
         hir::ExprKind::ConstructorValue { constructor: _ } => (),
         hir::ExprKind::Constr { constructor: _, args }
@@ -2689,7 +2802,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
         | hir::ExprKind::Cast { expr: body, ty: _ }
         | hir::ExprKind::Try { depth: _, expr: body }
         | hir::ExprKind::Proj { tuple: body, index: _ }
-        | hir::ExprKind::Field { expr: body, field_name: _ }
+        | hir::ExprKind::Field { expr: body, .. }
         | hir::ExprKind::Go { expr: body } => {
             attach_expr_diagnostic_spans(ctx, body)
         },
@@ -2920,7 +3033,6 @@ fn check_file_with_package(
                 Vec::new(),
                 Vec::new(),
                 Option::None,
-                false,
             ))),
             _ => (),
         }

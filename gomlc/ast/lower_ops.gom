@@ -125,8 +125,18 @@ fn apply_trailing_args(
         Option::Some(expression)
     } else {
         match expression {
-            Expr::Path { path, type_args, span: expr_span } => Option::Some(Expr::Call {
-                func: Expr::Path { path, type_args, span: expr_span },
+            Expr::Path {
+                path,
+                owner_type_args,
+                member_type_args,
+                span: expr_span,
+            } => Option::Some(Expr::Call {
+                func: Expr::Path {
+                    path,
+                    owner_type_args,
+                    member_type_args,
+                    span: expr_span,
+                },
                 args: trailing_args,
                 span: expr_span,
             }),
@@ -161,8 +171,18 @@ fn apply_trailing_args(
                 };
                 Option::Some(Expr::Constr { constructor: path, args, span: expr_span })
             },
-            Expr::Field { expr: base, field_name: field, span: expr_span } => Option::Some(Expr::Call {
-                func: Expr::Field { expr: base, field_name: field, span: expr_span },
+            Expr::Field {
+                expr: base,
+                field_name: field,
+                method_type_args,
+                span: expr_span,
+            } => Option::Some(Expr::Call {
+                func: Expr::Field {
+                    expr: base,
+                    field_name: field,
+                    method_type_args,
+                    span: expr_span,
+                },
                 args: trailing_args,
                 span: expr_span,
             }),
@@ -259,13 +279,25 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         let callee = callees.get(0);
         if cst::node_kind_equal(node_kind(callee), cst::NodeKind::EXPR_IDENT) {
             match lower_ident_parts(ctx, callee) {
-                Option::Some((path, type_args)) => match path_last(path) {
+                Option::Some(parts) => match path_last(parts.path) {
                     Option::Some(last) => {
-                        let call = if type_args.len() == 0 && ident_starts_upper(last) {
-                            Expr::Constr { constructor: path, args, span: node_span(node) }
+                        let call = if parts.owner_type_args.len() == 0
+                            && parts.member_type_args.len() == 0
+                            && ident_starts_upper(last)
+                        {
+                            Expr::Constr {
+                                constructor: parts.path,
+                                args,
+                                span: node_span(node),
+                            }
                         } else {
                             Expr::Call {
-                                func: Expr::Path { path, type_args, span: node_span(callee) },
+                                func: Expr::Path {
+                                    path: parts.path,
+                                    owner_type_args: parts.owner_type_args,
+                                    member_type_args: parts.member_type_args,
+                                    span: node_span(callee),
+                                },
                                 args,
                                 span: node_span(node),
                             }
@@ -488,16 +520,18 @@ fn lower_dot_expr(
             },
         }
     } else if cst::node_kind_equal(node_kind(rhs), cst::NodeKind::EXPR_IDENT) {
-        match first_child(rhs, cst::NodeKind::PATH) {
-            Option::Some(path_node) => {
-                let names = tokens_of_kind(path_node, lexer::TokenKind::Ident);
-                if names.len() == 0 {
+        match lower_ident_parts(ctx, rhs) {
+            Option::Some(parts) => {
+                if parts.path.segments.len() == 0 {
                     push_error(ctx, node_span(rhs), "Field access missing name");
                     Option::None
                 } else {
                     let field = Expr::Field {
                         expr: lhs,
-                        field_name: names.get(names.len() - 1).token.text,
+                        field_name: parts.path.segments
+                            .get(parts.path.segments.len() - 1)
+                            .ident,
+                        method_type_args: parts.member_type_args,
                         span: node_span(node),
                     };
                     if trailing_args.len() == 0 {

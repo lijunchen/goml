@@ -186,7 +186,7 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_expr(values, expr)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
@@ -431,7 +431,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_exprs(maximum, args)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
@@ -703,10 +703,18 @@ fn transform_expr(
                 ty,
             }
         },
-        core::Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty } => {
+        core::Expr::TraitCall {
+            trait_ref: reference,
+            method_name,
+            instance_name,
+            receiver,
+            args,
+            ty,
+        } => {
             core::Expr::TraitCall {
                 trait_ref: reference,
                 method_name,
+                instance_name,
                 receiver: transform_expr(state, scope, receiver, context),
                 args: transform_exprs(state, scope, args, context),
                 ty,
@@ -842,7 +850,7 @@ fn collect_captured(
             collect_captured_exprs(args, bound, captured, scope)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },

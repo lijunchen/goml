@@ -198,7 +198,12 @@ fn validate_file_derives(
 }
 
 fn var_expr(name: string) -> ast::Expr {
-    ast::Expr::Path { path: one_segment_path(name), type_args: Vec::new(), span: dummy_span() }
+    ast::Expr::Path {
+        path: one_segment_path(name),
+        owner_type_args: Vec::new(),
+        member_type_args: Vec::new(),
+        span: dummy_span(),
+    }
 }
 
 fn string_expr(value: string) -> ast::Expr {
@@ -214,7 +219,12 @@ fn uint64_expr(value: string) -> ast::Expr {
 }
 
 fn field_expr(value: ast::Expr, field: string) -> ast::Expr {
-    ast::Expr::Field { expr: value, field_name: field, span: dummy_span() }
+    ast::Expr::Field {
+        expr: value,
+        field_name: field,
+        method_type_args: Vec::new(),
+        span: dummy_span(),
+    }
 }
 
 fn call_expr(func: ast::Expr, args: Vec[ast::Expr]) -> ast::Expr {
@@ -225,7 +235,8 @@ fn trait_call(trait_name: string, method_name: string, args: Vec[ast::Expr]) -> 
     call_expr(
         ast::Expr::Path {
             path: two_segment_path(trait_name, method_name),
-            type_args: Vec::new(),
+            owner_type_args: Vec::new(),
+            member_type_args: Vec::new(),
             span: dummy_span(),
         },
         args,

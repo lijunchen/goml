@@ -185,13 +185,13 @@ fn hashmap_literal(parser: Parser) -> MarkerClosed {
 fn ident_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     if path_has_type_args(parser) {
-        let owner = parser.open();
-        parse_path_always(parser);
-        parser.expect(lexer::TokenKind::ColonColon);
-        type_param_list(parser);
-        let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
+        type_applied_expression_path(parser);
         if parser.eat(lexer::TokenKind::ColonColon) {
-            parse_path_always(parser)
+            if path_has_type_args(parser) {
+                type_applied_expression_path(parser)
+            } else {
+                parse_path_always(parser)
+            }
         } else {
             ()
         }
@@ -212,6 +212,15 @@ fn ident_expression(parser: Parser) -> MarkerClosed {
     } else {
         parser.close(marker, cst::NodeKind::EXPR_IDENT)
     }
+}
+
+fn type_applied_expression_path(parser: Parser) -> unit {
+    let marker = parser.open();
+    parse_path_always(parser);
+    parser.expect(lexer::TokenKind::ColonColon);
+    type_param_list(parser);
+    let _ = parser.close(marker, cst::NodeKind::TYPE_TAPP);
+    ()
 }
 
 fn paren_expression(parser: Parser) -> MarkerClosed {

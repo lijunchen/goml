@@ -68,6 +68,14 @@ fn copy_strings(values: Vec[string]) -> Vec[string] {
     result
 }
 
+fn append_strings(first: Vec[string], second: Vec[string]) -> Vec[string] {
+    let result = copy_strings(first);
+    for value in second {
+        result.push(value)
+    };
+    result
+}
+
 fn copy_bindings(values: Vec[(string, LocalId)]) -> Vec[(string, LocalId)] {
     let result: Vec[(string, LocalId)] = Vec::new();
     for value in values {
@@ -283,8 +291,10 @@ fn path_text(ctx: LowerCtx, path: ast::Path) -> string {
 
 fn static_member(
     parts: Vec[string],
-    type_args: Vec[TypeExpr],
-    type_arg_spans: Vec[Option[ast::Span]],
+    owner_type_args: Vec[TypeExpr],
+    owner_type_arg_spans: Vec[Option[ast::Span]],
+    member_type_args: Vec[TypeExpr],
+    member_type_arg_spans: Vec[Option[ast::Span]],
 ) -> ExprKind {
     let owner_parts: Vec[string] = Vec::new();
     if parts.len() > 1 {
@@ -300,8 +310,10 @@ fn static_member(
                     Option::Some(member) => member,
                     Option::None => "<error>",
         },
-        type_args,
-        type_arg_spans,
+        owner_type_args,
+        owner_type_arg_spans,
+        member_type_args,
+        member_type_arg_spans,
     }
 }
 
@@ -891,15 +903,32 @@ fn lower_expr_value(
     type_params: Vec[string],
 ) -> ExprKind {
     match value {
-        ast::Expr::Path { path, type_args, span: _ } => {
-            if type_args.len() > 0 {
-                let args: Vec[TypeExpr] = Vec::new();
-                let arg_spans: Vec[Option[ast::Span]] = Vec::new();
-                for arg in type_args {
-                    arg_spans.push(ast_type_head_span(arg));
-                    args.push(lower_type(ctx, arg, type_params))
+        ast::Expr::Path {
+            path,
+            owner_type_args,
+            member_type_args,
+            span: _,
+        } => {
+            if owner_type_args.len() > 0 || member_type_args.len() > 0 {
+                let owner_args: Vec[TypeExpr] = Vec::new();
+                let owner_arg_spans: Vec[Option[ast::Span]] = Vec::new();
+                for arg in owner_type_args {
+                    owner_arg_spans.push(ast_type_head_span(arg));
+                    owner_args.push(lower_type(ctx, arg, type_params))
                 };
-                static_member(qualified_segments(ctx, path), args, arg_spans)
+                let member_args: Vec[TypeExpr] = Vec::new();
+                let member_arg_spans: Vec[Option[ast::Span]] = Vec::new();
+                for arg in member_type_args {
+                    member_arg_spans.push(ast_type_head_span(arg));
+                    member_args.push(lower_type(ctx, arg, type_params))
+                };
+                static_member(
+                    qualified_segments(ctx, path),
+                    owner_args,
+                    owner_arg_spans,
+                    member_args,
+                    member_arg_spans,
+                )
             } else {
                 match constructor_ref(ctx, path) {
                     Option::Some(constructor) => ExprKind::ConstructorValue { constructor },
@@ -927,6 +956,8 @@ fn lower_expr_value(
                                 },
                                 Option::None => static_member(
                                     parts,
+                                    Vec::new(),
+                                    Vec::new(),
                                     Vec::new(),
                                     Vec::new(),
                                 ),
@@ -1090,7 +1121,7 @@ fn lower_expr_value(
         },
         ast::Expr::Call { func, args, span: _ } => {
             match func {
-                ast::Expr::Path { path, type_args: _, span: _ } => match constructor_ref(ctx, path) {
+                ast::Expr::Path { path, .. } => match constructor_ref(ctx, path) {
                     Option::Some(constructor) => {
                         let result: Vec[Expr] = Vec::new();
                         for arg in args {
@@ -1140,8 +1171,21 @@ fn lower_expr_value(
         ast::Expr::Proj { tuple: expr, index, span: _ } => {
             ExprKind::Proj { tuple: lower_expr(ctx, expr, env, type_params), index }
         },
-        ast::Expr::Field { expr, field_name: field, span: _ } => {
-            ExprKind::Field { expr: lower_expr(ctx, expr, env, type_params), field_name: field }
+        ast::Expr::Field {
+            expr,
+            field_name: field,
+            method_type_args,
+            span: _,
+        } => {
+            let args = Vec::new();
+            for arg in method_type_args {
+                args.push(lower_type(ctx, arg, type_params))
+            };
+            ExprKind::Field {
+                expr: lower_expr(ctx, expr, env, type_params),
+                field_name: field,
+                method_type_args: args,
+            }
         },
         ast::Expr::Index { base, index, span: _ } => ExprKind::Index {
             base: lower_expr(ctx, base, env, type_params),
@@ -1350,15 +1394,33 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
     };
     let method_sigs: Vec[TraitMethodSignature] = Vec::new();
     for method in value.method_sigs {
+        let method_type_params = append_strings(type_params, method.generics);
         let params: Vec[TypeExpr] = Vec::new();
         for param in method.params {
-            params.push(lower_type(ctx, param.1, type_params))
+            params.push(lower_type(ctx, param.1, method_type_params))
+        };
+        let method_predicates = Vec::new();
+        for predicate in method.predicates {
+            method_predicates.push(lower_predicate(
+                ctx,
+                predicate,
+                method_type_params,
+                false,
+            ))
         };
         method_sigs.push(TraitMethodSignature {
             name: method.name,
+            generics: method.generics,
+            generic_bounds: lower_bounds(
+                ctx,
+                method.generic_bounds,
+                method_type_params,
+                false,
+            ),
+            predicates: method_predicates,
             params,
             ret_ty_span: ast_type_head_span(method.ret_ty),
-            ret_ty: lower_type(ctx, method.ret_ty, type_params),
+            ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
         })
     };
     TraitDef {

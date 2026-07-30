@@ -414,7 +414,13 @@ fn write_expr(
             };
             builder.write_char(')')
         },
-        Expr::TraitCall { trait_ref: reference, method_name, receiver, args, ty: _ } => {
+        Expr::TraitCall {
+            trait_ref: reference,
+            method_name,
+            receiver,
+            args,
+            ..
+        } => {
             builder.write_string("trait_call[");
             tast::write_trait_ref(builder, reference);
             builder.write_string("::");
@@ -445,6 +451,20 @@ fn write_function(
 ) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
+    if value.generics.len() > 0 {
+        builder.write_char('[');
+        for index in range(0, value.generics.len()) {
+            if index > 0 {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            builder.write_string(value.generics.get(index))
+        };
+        builder.write_char(']')
+    } else {
+        ()
+    };
     builder.write_char('(');
     for index in range(0, value.params.len()) {
         if index > 0 {

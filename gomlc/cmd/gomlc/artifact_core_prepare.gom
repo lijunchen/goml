@@ -100,6 +100,8 @@ fn artifact_prepare_core_function_metadata(
     let trait_impl = match value.trait_impl {
         Option::Some(metadata) => {
             let associated_types = Ref::new(metadata.associated_types);
+            let generic_count = Ref::new(metadata.generic_count);
+            let predicate_count = Ref::new(metadata.predicate_count);
             let method_name = artifact_core_method_name(value.name);
             for implementation in exports.trait_impls {
                 if implementation.definition.valid
@@ -113,6 +115,8 @@ fn artifact_prepare_core_function_metadata(
                     )
                 {
                     associated_types.set(implementation.definition.associated_types);
+                    generic_count.set(implementation.definition.params.len());
+                    predicate_count.set(implementation.definition.constraints.len());
                     match method_name {
                         Option::Some(method_name) => for method in implementation.definition.methods {
                             if method.name == method_name
@@ -136,6 +140,8 @@ fn artifact_prepare_core_function_metadata(
                 trait_ref: metadata.trait_ref,
                 for_ty: metadata.for_ty,
                 associated_types: associated_types.get(),
+                generic_count: generic_count.get(),
+                predicate_count: predicate_count.get(),
             })
         },
         Option::None => {
@@ -281,7 +287,7 @@ fn artifact_prepare_core_expr(
             artifact_prepare_core_expr(expr, definitions)
         },
         core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { trait_ref: _, method_name: _, receiver, args, ty: _ } => {
+        | core::Expr::TraitCall { receiver, args, .. } => {
             artifact_prepare_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },

@@ -3,6 +3,7 @@ package query;
 use gomlc::ast;
 use gomlc::strings;
 use gomlc::tast;
+use std::text;
 
 pub struct HoverResult {
     pub contents: string,
@@ -17,6 +18,35 @@ fn hover_text(value: tast::Type) -> Option[string] {
     match tast::resolve_type(value) {
         tast::Type::Error => Option::None,
         ty => Option::Some(tast::diagnostic_type_text(ty)),
+    }
+}
+
+fn hover_function_text(
+    generics: Vec[string],
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
+) -> Option[string] {
+    match hover_text(tast::Type::Func { params, ret_ty }) {
+        Option::Some(signature) => if generics.len() == 0 {
+            Option::Some(signature)
+        } else {
+            let builder = text::StringBuilder::new();
+            builder.write_char('[');
+            let index = Ref::new(0);
+            for generic in generics {
+                if index.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                builder.write_string(short_type_name(generic));
+                index.set(index.get() + 1)
+            };
+            builder.write_string("] ");
+            builder.write_string(signature);
+            Option::Some(builder.finish())
+        },
+        Option::None => Option::None,
     }
 }
 
@@ -40,6 +70,26 @@ fn symbol_owner(value: string) -> string {
     }
 }
 
+fn method_owner(value: tast::MethodInfo) -> string {
+    match value.trait_ref {
+        Option::Some(reference) => reference.name,
+        Option::None => type_owner_name(value.for_type),
+    }
+}
+
+fn method_matches_symbol(
+    value: tast::MethodInfo,
+    symbol: Symbol,
+) -> bool {
+    let expected_owner = symbol_owner(symbol.qualified_name);
+    let actual_owner = method_owner(value);
+    (value.function.name == symbol.qualified_name
+        || short_type_name(value.function.name) == symbol.name)
+        && (actual_owner == expected_owner
+            || short_type_name(actual_owner)
+                == short_type_name(expected_owner))
+}
+
 fn symbol_hover_type(
     value: Analysis,
     symbol: Symbol,
@@ -55,10 +105,11 @@ fn symbol_hover_type(
                     if function.name == symbol.qualified_name
                         || short_type_name(function.name) == symbol.name
                     {
-                        return hover_text(tast::Type::Func {
-                            params: function.params,
-                            ret_ty: function.ret_ty,
-                        })
+                        return hover_function_text(
+                            function.generics,
+                            function.params,
+                            function.ret_ty,
+                        )
                     } else {
                         function_index.set(function_index.get() - 1)
                     }
@@ -74,13 +125,12 @@ fn symbol_hover_type(
                 let method_index = Ref::new(environment.methods.len() - 1);
                 while method_index.get() >= 0 {
                     let method = environment.methods.get(method_index.get());
-                    if method.function.name == symbol.qualified_name
-                        || short_type_name(method.function.name) == symbol.name
-                    {
-                        return hover_text(tast::Type::Func {
-                            params: method.function.params,
-                            ret_ty: method.function.ret_ty,
-                        })
+                    if method_matches_symbol(method, symbol) {
+                        return hover_function_text(
+                            method.method_generics,
+                            method.function.params,
+                            method.function.ret_ty,
+                        )
                     } else {
                         method_index.set(method_index.get() - 1)
                     }
