@@ -5,55 +5,55 @@ use gomlc::lexer;
 
 fn is_type_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::UnitKeyword
-        | lexer::TokenKind::BoolKeyword
-        | lexer::TokenKind::IntKeyword
-        | lexer::TokenKind::Int8Keyword
-        | lexer::TokenKind::Int16Keyword
-        | lexer::TokenKind::Int32Keyword
-        | lexer::TokenKind::Int64Keyword
-        | lexer::TokenKind::UintKeyword
-        | lexer::TokenKind::Uint8Keyword
-        | lexer::TokenKind::Uint16Keyword
-        | lexer::TokenKind::Uint32Keyword
-        | lexer::TokenKind::Uint64Keyword
-        | lexer::TokenKind::Float32Keyword
-        | lexer::TokenKind::Float64Keyword
-        | lexer::TokenKind::StringKeyword
-        | lexer::TokenKind::CharKeyword
-        | lexer::TokenKind::DynKeyword
-        | lexer::TokenKind::LBracket
-        | lexer::TokenKind::LParen
-        | lexer::TokenKind::Ident => true,
+        UnitKeyword
+        | BoolKeyword
+        | IntKeyword
+        | Int8Keyword
+        | Int16Keyword
+        | Int32Keyword
+        | Int64Keyword
+        | UintKeyword
+        | Uint8Keyword
+        | Uint16Keyword
+        | Uint32Keyword
+        | Uint64Keyword
+        | Float32Keyword
+        | Float64Keyword
+        | StringKeyword
+        | CharKeyword
+        | DynKeyword
+        | LBracket
+        | LParen
+        | Ident => true,
         _ => false,
     }
 }
 
 fn is_param_list_recovery(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::Arrow
-        | lexer::TokenKind::LBrace
-        | lexer::TokenKind::FnKeyword => true,
+        Arrow
+        | LBrace
+        | FnKeyword => true,
         _ => false,
     }
 }
 
 fn is_block_recovery(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::Pound
-        | lexer::TokenKind::PubKeyword
-        | lexer::TokenKind::ModKeyword
-        | lexer::TokenKind::FnKeyword
-        | lexer::TokenKind::ExternKeyword
-        | lexer::TokenKind::StructKeyword
-        | lexer::TokenKind::EnumKeyword
-        | lexer::TokenKind::TraitKeyword
-        | lexer::TokenKind::ImplKeyword
-        | lexer::TokenKind::TypeKeyword
-        | lexer::TokenKind::ConstKeyword
-        | lexer::TokenKind::PackageKeyword
-        | lexer::TokenKind::UseKeyword
-        | lexer::TokenKind::ImportKeyword => true,
+        Pound
+        | PubKeyword
+        | ModKeyword
+        | FnKeyword
+        | ExternKeyword
+        | StructKeyword
+        | EnumKeyword
+        | TraitKeyword
+        | ImplKeyword
+        | TypeKeyword
+        | ConstKeyword
+        | PackageKeyword
+        | UseKeyword
+        | ImportKeyword => true,
         _ => false,
     }
 }
@@ -889,11 +889,11 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
         Option::None
     } else {
         match type_atom(parser) {
-            Option::None => {
+            None => {
                 parser.leave_type();
                 Option::None
             },
-            Option::Some(initial) => {
+            Some(initial) => {
                 let lhs = Ref::new(initial);
                 while parser.eof() == false {
                     if parser.at(lexer::TokenKind::Arrow) {
@@ -926,71 +926,71 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
 fn type_atom(parser: Parser) -> Option[MarkerClosed] {
     let marker = parser.open();
     let result = match parser.peek() {
-        lexer::TokenKind::UnitKeyword => {
+        UnitKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UNIT)
         },
-        lexer::TokenKind::BoolKeyword => {
+        BoolKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_BOOL)
         },
-        lexer::TokenKind::IntKeyword => {
+        IntKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT)
         },
-        lexer::TokenKind::Int8Keyword => {
+        Int8Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT8)
         },
-        lexer::TokenKind::Int16Keyword => {
+        Int16Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT16)
         },
-        lexer::TokenKind::Int32Keyword => {
+        Int32Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT32)
         },
-        lexer::TokenKind::Int64Keyword => {
+        Int64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT64)
         },
-        lexer::TokenKind::UintKeyword => {
+        UintKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT)
         },
-        lexer::TokenKind::Uint8Keyword => {
+        Uint8Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT8)
         },
-        lexer::TokenKind::Uint16Keyword => {
+        Uint16Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT16)
         },
-        lexer::TokenKind::Uint32Keyword => {
+        Uint32Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT32)
         },
-        lexer::TokenKind::Uint64Keyword => {
+        Uint64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT64)
         },
-        lexer::TokenKind::Float32Keyword => {
+        Float32Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_FLOAT32)
         },
-        lexer::TokenKind::Float64Keyword => {
+        Float64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_FLOAT64)
         },
-        lexer::TokenKind::StringKeyword => {
+        StringKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_STRING)
         },
-        lexer::TokenKind::CharKeyword => {
+        CharKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_CHAR)
         },
-        lexer::TokenKind::LParen => {
+        LParen => {
             let empty = token_is(parser.nth(1), lexer::TokenKind::RParen);
             type_list(parser);
             if empty && parser.at(lexer::TokenKind::Arrow) == false {
@@ -1000,7 +1000,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             };
             parser.close(marker, cst::NodeKind::TYPE_TUPLE)
         },
-        lexer::TokenKind::LBracket => {
+        LBracket => {
             parser.expect(lexer::TokenKind::LBracket);
             if is_type_first(parser.peek()) {
                 if marker_is_none(type_expr_bp(parser, 0)) {
@@ -1028,7 +1028,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             };
             parser.close(marker, cst::NodeKind::TYPE_ARRAY)
         },
-        lexer::TokenKind::Ident => {
+        Ident => {
             parse_path_always(parser);
             if parser.at(lexer::TokenKind::LBracket) {
                 type_param_list(parser)
@@ -1037,7 +1037,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             };
             parser.close(marker, cst::NodeKind::TYPE_TAPP)
         },
-        lexer::TokenKind::DynKeyword => {
+        DynKeyword => {
             parser.expect(lexer::TokenKind::DynKeyword);
             if parser.at(lexer::TokenKind::Ident) {
                 parse_path_always(parser)
@@ -1091,34 +1091,34 @@ fn block(parser: Parser) -> unit {
             ()
         } else if is_expr_first(parser.peek()) {
             let semicolon_optional = match parser.peek() {
-                lexer::TokenKind::IfKeyword
-                | lexer::TokenKind::MatchKeyword
-                | lexer::TokenKind::WhileKeyword
-                | lexer::TokenKind::ForKeyword => true,
+                IfKeyword
+                | MatchKeyword
+                | WhileKeyword
+                | ForKeyword => true,
                 _ => false,
             };
             match expr(parser) {
-                Option::Some(expr_marker) => {
+                Some(expr_marker) => {
                     let assignment_operator = match parser.peek() {
-                        lexer::TokenKind::Eq
-                        | lexer::TokenKind::PlusEq
-                        | lexer::TokenKind::MinusEq
-                        | lexer::TokenKind::StarEq
-                        | lexer::TokenKind::SlashEq
-                        | lexer::TokenKind::PercentEq
-                        | lexer::TokenKind::AmpEq
-                        | lexer::TokenKind::PipeEq
-                        | lexer::TokenKind::CaretEq
-                        | lexer::TokenKind::LessLessEq
-                        | lexer::TokenKind::GreaterGreaterEq => Option::Some(parser.peek()),
+                        Eq
+                        | PlusEq
+                        | MinusEq
+                        | StarEq
+                        | SlashEq
+                        | PercentEq
+                        | AmpEq
+                        | PipeEq
+                        | CaretEq
+                        | LessLessEq
+                        | GreaterGreaterEq => Option::Some(parser.peek()),
                         _ => Option::None,
                     };
                     match assignment_operator {
-                        Option::Some(operator) => {
+                        Some(operator) => {
                             let _ = finish_assign_stmt(parser, expr_marker, operator);
                             ()
                         },
-                        Option::None => if parser.eat(lexer::TokenKind::Semi) {
+                        None => if parser.eat(lexer::TokenKind::Semi) {
                             let _ = wrap_expr_stmt(parser, expr_marker);
                             ()
                         } else if semicolon_optional
@@ -1131,7 +1131,7 @@ fn block(parser: Parser) -> unit {
                         },
                     }
                 },
-                Option::None => parsing.set(false),
+                None => parsing.set(false),
             }
         } else if parser.eat(lexer::TokenKind::Semi) {
             ()

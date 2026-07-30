@@ -183,8 +183,8 @@ pub fn node_byte_len(value: CstNode) -> int {
 
 pub fn element_byte_len(value: CstElement) -> int {
     match value {
-        CstElement::Node(node_value) => node_value.byte_len,
-        CstElement::Token(token) => token.text.byte_len(),
+        Node(node_value) => node_value.byte_len,
+        Token(token) => token.text.byte_len(),
     }
 }
 
@@ -312,13 +312,13 @@ fn debug_write_node(
     let cursor = Ref::new(start);
     for child in value.children {
         match child {
-            CstElement::Node(child_node) => cursor.set(debug_write_node(
+            Node(child_node) => cursor.set(debug_write_node(
                 child_node,
                 cursor.get(),
                 depth + 1,
                 builder,
             )),
-            CstElement::Token(token) => {
+            Token(token) => {
                 let token_end = cursor.get() + token.text.byte_len();
                 debug_write_spaces(builder, depth + 1);
                 builder.write_string(cst_token_kind_name(token.kind));
@@ -355,8 +355,8 @@ fn encode_node(value: CstNode, start: int, builder: text::StringBuilder) -> int 
     let cursor = Ref::new(start);
     for child in value.children {
         match child {
-            CstElement::Node(child_node) => cursor.set(encode_node(child_node, cursor.get(), builder)),
-            CstElement::Token(token) => {
+            Node(child_node) => cursor.set(encode_node(child_node, cursor.get(), builder)),
+            Token(token) => {
                 builder.write_string("T\t");
                 builder.write_string(cst_token_kind_name(token.kind));
                 builder.write_string("\t");

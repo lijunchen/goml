@@ -63,33 +63,33 @@ fn pretty_write_types(
 
 fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
     match value {
-        TypeExpr::Unit => builder.write_string("unit"),
-        TypeExpr::Bool => builder.write_string("bool"),
-        TypeExpr::Int => builder.write_string("int"),
-        TypeExpr::Int8 => builder.write_string("int8"),
-        TypeExpr::Int16 => builder.write_string("int16"),
-        TypeExpr::Int32 => builder.write_string("int32"),
-        TypeExpr::Int64 => builder.write_string("int64"),
-        TypeExpr::Uint => builder.write_string("uint"),
-        TypeExpr::Uint8 => builder.write_string("uint8"),
-        TypeExpr::Uint16 => builder.write_string("uint16"),
-        TypeExpr::Uint32 => builder.write_string("uint32"),
-        TypeExpr::Uint64 => builder.write_string("uint64"),
-        TypeExpr::Float32 => builder.write_string("float32"),
-        TypeExpr::Float64 => builder.write_string("float64"),
-        TypeExpr::String => builder.write_string("string"),
-        TypeExpr::Char => builder.write_string("char"),
-        TypeExpr::Tuple { items: values } => {
+        Unit => builder.write_string("unit"),
+        Bool => builder.write_string("bool"),
+        Int => builder.write_string("int"),
+        Int8 => builder.write_string("int8"),
+        Int16 => builder.write_string("int16"),
+        Int32 => builder.write_string("int32"),
+        Int64 => builder.write_string("int64"),
+        Uint => builder.write_string("uint"),
+        Uint8 => builder.write_string("uint8"),
+        Uint16 => builder.write_string("uint16"),
+        Uint32 => builder.write_string("uint32"),
+        Uint64 => builder.write_string("uint64"),
+        Float32 => builder.write_string("float32"),
+        Float64 => builder.write_string("float64"),
+        String => builder.write_string("string"),
+        Char => builder.write_string("char"),
+        Tuple { items: values } => {
             builder.write_char('(');
             pretty_write_types(builder, values, ", ");
             builder.write_char(')')
         },
-        TypeExpr::Con { path } => pretty_write_path(builder, path),
-        TypeExpr::Dyn { trait_path: path } => {
+        Con { path } => pretty_write_path(builder, path),
+        Dyn { trait_path: path } => {
             builder.write_string("dyn ");
             pretty_write_path(builder, path)
         },
-        TypeExpr::App { ty: base, args } => {
+        App { ty: base, args } => {
             pretty_write_type(builder, base);
             if args.len() > 0 {
                 builder.write_char('[');
@@ -99,14 +99,14 @@ fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
                 ()
             }
         },
-        TypeExpr::Array { len: length, elem: element } => {
+        Array { len: length, elem: element } => {
             builder.write_char('[');
             pretty_write_type(builder, element);
             builder.write_string("; ");
             builder.write_string(length);
             builder.write_char(']')
         },
-        TypeExpr::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             builder.write_char('(');
             pretty_write_types(builder, params, ", ");
             builder.write_string(") -> ");
@@ -185,13 +185,13 @@ fn pretty_write_bounded_generics(
             };
             builder.write_string(generic);
             match pretty_find_bounds(bounds, generic) {
-                Option::Some(values) => if values.len() > 0 {
+                Some(values) => if values.len() > 0 {
                     builder.write_string(": ");
                     pretty_write_trait_refs(builder, values, " + ")
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             };
             index.set(index.get() + 1)
         };
@@ -215,12 +215,12 @@ fn pretty_write_predicates(
                 ()
             };
             match value {
-                Predicate::Trait { ty, trait_ref } => {
+                Trait { ty, trait_ref } => {
                     pretty_write_type(builder, ty);
                     builder.write_string(": ");
                     pretty_write_trait_ref(builder, trait_ref)
                 },
-                Predicate::Equality { lhs, rhs } => {
+                Equality { lhs, rhs } => {
                     pretty_write_type(builder, lhs);
                     builder.write_string(" = ");
                     pretty_write_type(builder, rhs)
@@ -248,8 +248,8 @@ fn pretty_write_attributes(builder: text::StringBuilder, values: Vec[Attribute])
 
 fn pretty_write_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
     match value {
-        Visibility::Private => (),
-        Visibility::Public => builder.write_string("pub "),
+        Private => (),
+        Public => builder.write_string("pub "),
     }
 }
 
@@ -327,32 +327,32 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> un
 
 fn pretty_unary_symbol(value: UnaryOp) -> string {
     match value {
-        UnaryOp::Neg => "-",
-        UnaryOp::Not => "!",
-        UnaryOp::BitNot => "~",
+        Neg => "-",
+        Not => "!",
+        BitNot => "~",
     }
 }
 
 fn pretty_binary_symbol(value: BinaryOp) -> string {
     match value {
-        BinaryOp::Add => "+",
-        BinaryOp::Sub => "-",
-        BinaryOp::Mul => "*",
-        BinaryOp::Div => "/",
-        BinaryOp::Rem => "%",
-        BinaryOp::BitAnd => "&",
-        BinaryOp::BitOr => "|",
-        BinaryOp::BitXor => "^",
-        BinaryOp::Shl => "<<",
-        BinaryOp::Shr => ">>",
-        BinaryOp::And => "&&",
-        BinaryOp::Or => "||",
-        BinaryOp::Less => "<",
-        BinaryOp::Greater => ">",
-        BinaryOp::LessEq => "<=",
-        BinaryOp::GreaterEq => ">=",
-        BinaryOp::Eq => "==",
-        BinaryOp::NotEq => "!=",
+        Add => "+",
+        Sub => "-",
+        Mul => "*",
+        Div => "/",
+        Rem => "%",
+        BitAnd => "&",
+        BitOr => "|",
+        BitXor => "^",
+        Shl => "<<",
+        Shr => ">>",
+        And => "&&",
+        Or => "||",
+        Less => "<",
+        Greater => ">",
+        LessEq => "<=",
+        GreaterEq => ">=",
+        Eq => "==",
+        NotEq => "!=",
     }
 }
 
@@ -373,13 +373,13 @@ fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) 
         pretty_newline(builder, indent + 4);
         builder.write_string(variant.name);
         match variant.fields {
-            EnumVariantFields::Unit => (),
-            EnumVariantFields::Tuple(types) => {
+            Unit => (),
+            Tuple(types) => {
                 builder.write_char('(');
                 pretty_write_types(builder, types, ", ");
                 builder.write_char(')')
             },
-            EnumVariantFields::Struct(fields) => {
+            Struct(fields) => {
                 builder.write_string(" { ");
                 let field_index = Ref::new(0);
                 for field in fields {
@@ -518,11 +518,11 @@ fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: 
     };
     builder.write_char(')');
     match value.ret_ty {
-        Option::Some(ty) => {
+        Some(ty) => {
             builder.write_string(" -> ");
             pretty_write_type(builder, ty)
         },
-        Option::None => (),
+        None => (),
     };
     pretty_write_predicates(builder, value.predicates);
     builder.write_char(' ');
@@ -554,11 +554,11 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
     };
     builder.write_char(')');
     match value.ret_ty {
-        Option::Some(ty) => {
+        Some(ty) => {
             builder.write_string(" -> ");
             pretty_write_type(builder, ty)
         },
-        Option::None => (),
+        None => (),
     };
     pretty_write_predicates(builder, value.predicates)
 }
@@ -569,11 +569,11 @@ fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char(' ');
     match value.trait_ref {
-        Option::Some(trait_ref) => {
+        Some(trait_ref) => {
             pretty_write_trait_ref(builder, trait_ref);
             builder.write_string(" for ")
         },
-        Option::None => (),
+        None => (),
     };
     pretty_write_type(builder, value.for_type);
     pretty_write_predicates(builder, value.predicates);
@@ -624,14 +624,14 @@ fn pretty_write_constant(builder: text::StringBuilder, value: Constant) -> unit 
 
 fn pretty_write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
     match value {
-        Item::EnumDef(value) => pretty_write_enum(builder, value, indent),
-        Item::StructDef(value) => pretty_write_struct(builder, value, indent),
-        Item::TraitDef(value) => pretty_write_trait(builder, value, indent),
-        Item::ImplBlock(value) => pretty_write_impl(builder, value, indent),
-        Item::Function(value) => pretty_write_function(builder, value, indent),
-        Item::ExternFunction(value) => pretty_write_extern(builder, value),
-        Item::TypeAlias(value) => pretty_write_type_alias(builder, value),
-        Item::Constant(value) => pretty_write_constant(builder, value),
+        EnumDef(value) => pretty_write_enum(builder, value, indent),
+        StructDef(value) => pretty_write_struct(builder, value, indent),
+        TraitDef(value) => pretty_write_trait(builder, value, indent),
+        ImplBlock(value) => pretty_write_impl(builder, value, indent),
+        Function(value) => pretty_write_function(builder, value, indent),
+        ExternFunction(value) => pretty_write_extern(builder, value),
+        TypeAlias(value) => pretty_write_type_alias(builder, value),
+        Constant(value) => pretty_write_constant(builder, value),
     }
 }
 
@@ -646,11 +646,11 @@ fn pretty_file(value: File) -> string {
             builder.write_string("use ");
             pretty_write_path(builder, use_decl.path);
             match use_decl.alias {
-                Option::Some(alias) => {
+                Some(alias) => {
                     builder.write_string(" as ");
                     builder.write_string(alias)
                 },
-                Option::None => (),
+                None => (),
             };
             builder.write_char(';');
             pretty_newline(builder, 0)
@@ -669,8 +669,8 @@ fn pretty_file(value: File) -> string {
 
 pub fn pretty(value: LowerResult) -> string {
     match value.ast {
-        Option::Some(file) => pretty_file(file),
-        Option::None => {
+        Some(file) => pretty_file(file),
+        None => {
             let builder = text::StringBuilder::new();
             for diagnostic in value.diagnostics {
                 builder.write_string(diagnostic.message);

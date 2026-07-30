@@ -23,8 +23,8 @@ fn package_artifact_base(
     package_name: string,
 ) -> string {
     let package_value = match package_by_name(graph, package_name) {
-        Option::Some(value) => value,
-        Option::None => return path::join(root, package_name),
+        Some(value) => value,
+        None => return path::join(root, package_name),
     };
     let result = Ref::new(path::join(root, package_value.artifact_prefix));
     for segment in util::split(package_name, "::") {
@@ -35,8 +35,8 @@ fn package_artifact_base(
 
 fn linked_go_output(root: string, graph: Graph, package_name: string) -> string {
     match path::parent(package_artifact_base(root, graph, package_name)) {
-        Option::Some(value) => path::join(value, "goml_generated.go"),
-        Option::None => path::join(root, "goml_generated.go"),
+        Some(value) => path::join(value, "goml_generated.go"),
+        None => path::join(root, "goml_generated.go"),
     }
 }
 
@@ -70,8 +70,8 @@ fn collect_dependencies(
     result: Vec[string],
 ) -> Result[unit, string] {
     let package_value = match package_by_name(graph, package_name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("missing package " + package_name),
+        Some(value) => value,
+        None => return Result::Err("missing package " + package_name),
     };
     for dependency in package_value.imports {
         if seen.contains(dependency) {
@@ -80,8 +80,8 @@ fn collect_dependencies(
             seen.set(dependency, true);
             result.push(dependency);
             match collect_dependencies(graph, dependency, seen, result) {
-                Result::Ok(()) => (),
-                Result::Err(message) => return Result::Err(message),
+                Ok(()) => (),
+                Err(message) => return Result::Err(message),
             }
         }
     };
@@ -100,8 +100,8 @@ fn dependency_interfaces(
         HashMap::new(),
         names,
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let result = Vec::new();
     for name in util::sorted_unique(names) {
@@ -135,8 +135,8 @@ fn compile_commands(
             command,
             compiler_world_path(context),
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         result.push(compiled)
     };
@@ -162,14 +162,14 @@ fn commands_with_world(
     commands: Vec[Command],
 ) -> Vec[Command] {
     match compiler_world_path(context) {
-        Option::Some(output) => {
+        Some(output) => {
             let result = Vec::new().pushed(Command::PrepareWorld { output });
             for command in commands {
                 result.push(command)
             };
             result
         },
-        Option::None => commands,
+        None => commands,
     }
 }
 
@@ -183,8 +183,8 @@ fn compile_package_command(
     world: Option[string],
 ) -> Result[Command, string] {
     let package_value = match package_by_name(graph, package_name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("missing package " + package_name),
+        Some(value) => value,
+        None => return Result::Err("missing package " + package_name),
     };
     let inputs = Vec::new();
     for file in package_value.files {
@@ -195,8 +195,8 @@ fn compile_package_command(
         package_name,
         interface_root,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let relative_interfaces = Vec::new();
     for value in interfaces {
@@ -233,11 +233,11 @@ fn compile_test_package_command(
         "test-build",
         world,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     match compiled {
-        Command::Compile {
+        Compile {
             subcommand,
             package_name,
             input_files,
@@ -299,13 +299,13 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
         "check",
         "check",
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if include_tests {
         let internal = match internal_test_graphs(context) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         for graph in internal {
             let target = Context {
@@ -320,16 +320,16 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
                 "test-check",
                 "check",
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             for value in values {
                 commands.push(value)
             }
         };
         let external = match external_test_graphs(context) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         for test in external {
             let target = Context {
@@ -344,8 +344,8 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
                 "test-check",
                 "check",
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             for value in values {
                 commands.push(value)
@@ -369,14 +369,14 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         "build",
         "build",
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let entries = Vec::new();
     for package_name in context.graph.order {
         let package_value = match package_by_name(context.graph, package_name) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err("missing package " + package_name),
+            Some(value) => value,
+            None => return Result::Err("missing package " + package_name),
         };
         if package_value.declared_name == "main" {
             entries.push(package_name)
@@ -417,8 +417,8 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
         "build",
         "build",
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let main_go = linked_go_output(
         output_root,
@@ -469,8 +469,8 @@ fn append_test_package(
                 "build",
                 compiler_world_path(context),
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             commands.push(compiled);
             compiled_dependencies.set(package_name, true)
@@ -485,8 +485,8 @@ fn append_test_package(
         compiled_dependencies.contains(graph.entry_package),
         compiler_world_path(context),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     commands.push(compiled);
     Result::Ok(())
@@ -580,8 +580,8 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
         "build",
         "build",
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let compiled_dependencies = HashMap::new();
     for package_name in context.graph.order {
@@ -590,8 +590,8 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let groups = Vec::new();
     let internal = if kind == "internal" || kind == "all" {
         match internal_test_graphs(context) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         }
     } else {
         Vec::new()
@@ -612,11 +612,11 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             compiled_dependencies,
             commands,
         ) {
-            Result::Ok(()) => {
+            Ok(()) => {
                 internal_graphs.push(graph);
                 internal_packages.push(package_name)
             },
-            Result::Err(message) => return Result::Err(message),
+            Err(message) => return Result::Err(message),
         }
     };
     if internal_graphs.len() > 0 {
@@ -635,8 +635,8 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     };
     let external = if kind == "external" || kind == "all" {
         match external_test_graphs(context) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         }
     } else {
         Vec::new()
@@ -657,12 +657,12 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             compiled_dependencies,
             commands,
         ) {
-            Result::Ok(()) => {
+            Ok(()) => {
                 external_graphs.push(test.graph);
                 external_packages.push(package_name);
                 external_packages.push(test.target_package)
             },
-            Result::Err(message) => return Result::Err(message),
+            Err(message) => return Result::Err(message),
         }
     };
     if external_graphs.len() > 0 {
@@ -698,14 +698,14 @@ fn display_args(program: string, args: Vec[string]) -> string {
 
 fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
-        Command::PrepareWorld { output } => (
+        PrepareWorld { output } => (
             "gomlc",
             Vec::new()
                 .pushed("prepare-world")
                 .pushed("--output")
                 .pushed(output),
         ),
-        Command::Compile {
+        Compile {
             subcommand,
             package_name,
             input_files,
@@ -728,15 +728,15 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push("--output");
             args.push(output);
             match world {
-                Option::Some(value) => {
+                Some(value) => {
                     args.push("--world");
                     args.push(value)
                 },
-                Option::None => (),
+                None => (),
             };
             ("gomlc", args)
         },
-        Command::Link {
+        Link {
             input_cores,
             entry_package,
             output,
@@ -753,15 +753,15 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push("--entry");
             args.push(entry_package);
             match world {
-                Option::Some(value) => {
+                Some(value) => {
                     args.push("--world");
                     args.push(value)
                 },
-                Option::None => (),
+                None => (),
             };
             ("gomlc", args)
         },
-        Command::TestLink {
+        TestLink {
             input_cores,
             packages,
             output,
@@ -783,15 +783,15 @@ fn command_args(value: Command) -> (string, Vec[string]) {
                 args.push(package_name)
             };
             match world {
-                Option::Some(value) => {
+                Some(value) => {
                     args.push("--world");
                     args.push(value)
                 },
-                Option::None => (),
+                None => (),
             };
             ("gomlc", args)
         },
-        Command::GoBuild { input, output } => (
+        GoBuild { input, output } => (
             "go",
             Vec::new()
                 .pushed("build")
@@ -809,8 +809,8 @@ pub fn display_command(value: Command) -> string {
 
 fn progress_label(value: Command) -> string {
     match value {
-        Command::PrepareWorld { .. } => "preparing compiler world",
-        Command::Compile {
+        PrepareWorld { .. } => "preparing compiler world",
+        Compile {
             subcommand,
             package_name,
             ..
@@ -825,9 +825,9 @@ fn progress_label(value: Command) -> string {
         } else {
             subcommand + " " + package_name
         },
-        Command::Link { entry_package, .. } => "linking " + entry_package,
-        Command::TestLink { .. } => "linking test runner",
-        Command::GoBuild { .. } => "building executable",
+        Link { entry_package, .. } => "linking " + entry_package,
+        TestLink { .. } => "linking test runner",
+        GoBuild { .. } => "building executable",
     }
 }
 
@@ -861,11 +861,11 @@ fn display_progress(completed: int, total: int, label: string) -> unit {
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
     let output = match value {
-        Command::PrepareWorld { output }
-        | Command::Compile { output, .. }
-        | Command::Link { output, .. }
-        | Command::TestLink { output, .. }
-        | Command::GoBuild { output, .. } => output,
+        PrepareWorld { output }
+        | Compile { output, .. }
+        | Link { output, .. }
+        | TestLink { output, .. }
+        | GoBuild { output, .. } => output,
     };
     let absolute = if path::is_absolute(output) {
         output
@@ -873,8 +873,8 @@ fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, stri
         path::join(module_dir, output)
     };
     match path::parent(absolute) {
-        Option::Some(parent) => fs::create_dir_all(parent),
-        Option::None => Result::Ok(()),
+        Some(parent) => fs::create_dir_all(parent),
+        None => Result::Ok(()),
     }
 }
 
@@ -883,8 +883,8 @@ fn execute_command(
     value: Command,
 ) -> Result[unit, string] {
     match ensure_output_parent(value, context.graph.module_dir) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let command = command_args(value);
     let program = if command.0 == "gomlc" {
@@ -902,12 +902,12 @@ fn execute_command(
         ()
     };
     match process.status() {
-        Result::Ok(status) => if process::ExitStatus::success(status) {
+        Ok(status) => if process::ExitStatus::success(status) {
             Result::Ok(())
         } else {
             Result::Err(display_command(value) + " failed")
         },
-        Result::Err(message) => Result::Err(message),
+        Err(message) => Result::Err(message),
     }
 }
 
@@ -927,29 +927,29 @@ fn prepare_cached_command(
     identity: string,
 ) -> Result[CachePreparation, string] {
     match cache_spec(command) {
-        Option::Some(spec) => {
+        Some(spec) => {
             let fingerprint = match command_fingerprint(
                 context,
                 identity,
                 spec,
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             let fresh = match cache_is_fresh(
                 context,
                 spec,
                 fingerprint,
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if fresh {
                 Result::Ok(CachePreparation::Fresh)
             } else {
                 match prepare_cache_execution(context, spec) {
-                    Result::Ok(()) => (),
-                    Result::Err(message) => return Result::Err(message),
+                    Ok(()) => (),
+                    Err(message) => return Result::Err(message),
                 };
                 Result::Ok(CachePreparation::Execute(Option::Some(
                     PreparedCache {
@@ -959,7 +959,7 @@ fn prepare_cached_command(
                 )))
             }
         },
-        Option::None => Result::Ok(CachePreparation::Execute(Option::None)),
+        None => Result::Ok(CachePreparation::Execute(Option::None)),
     }
 }
 
@@ -969,16 +969,16 @@ fn execute_prepared_command(
     cache: Option[PreparedCache],
 ) -> Result[unit, string] {
     match execute_command(context, command) {
-        Result::Ok(()) => Result::Ok(()),
-        Result::Err(message) => {
+        Ok(()) => Result::Ok(()),
+        Err(message) => {
             match cache {
-                Option::Some(value) => {
+                Some(value) => {
                     let _ = prepare_cache_execution(
                         context,
                         value.spec,
                     );
                 },
-                Option::None => (),
+                None => (),
             };
             Result::Err(message)
         },
@@ -991,13 +991,13 @@ fn finish_prepared_command(
     cache: Option[PreparedCache],
 ) -> Result[unit, string] {
     match cache {
-        Option::Some(value) => store_cache(
+        Some(value) => store_cache(
                     context,
                     value.spec,
                     identity,
                     value.fingerprint,
                 ),
-        Option::None => Result::Ok(()),
+        None => Result::Ok(()),
     }
 }
 
@@ -1006,10 +1006,10 @@ fn discard_prepared_command(
     cache: Option[PreparedCache],
 ) -> unit {
     match cache {
-        Option::Some(value) => {
+        Some(value) => {
             let _ = prepare_cache_execution(context, value.spec);
         },
-        Option::None => (),
+        None => (),
     }
 }
 
@@ -1017,16 +1017,16 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     let producers: HashMap[string, Vec[int]] = HashMap::new();
     for index in range(0, commands.len()) {
         match cache_spec(commands.get(index)) {
-            Option::Some(spec) => for output in spec.outputs {
+            Some(spec) => for output in spec.outputs {
                 match producers.get(output) {
-                    Option::Some(values) => values.push(index),
-                    Option::None => producers.set(
+                    Some(values) => values.push(index),
+                    None => producers.set(
                         output,
                         Vec::new().pushed(index),
                     ),
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     let result = Vec::new();
@@ -1034,11 +1034,11 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
         let command = commands.get(index);
         let dependencies = Vec::new();
         match cache_spec(command) {
-            Option::Some(spec) => for input in spec.inputs {
+            Some(spec) => for input in spec.inputs {
                 let previous = Ref::new(-1);
                 let following = Ref::new(-1);
                 match producers.get(input) {
-                    Option::Some(values) => for candidate in values {
+                    Some(values) => for candidate in values {
                         if candidate < index && candidate > previous.get() {
                             previous.set(candidate)
                         } else if candidate > index && following.get() < 0 {
@@ -1047,7 +1047,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                             ()
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 };
                 let producer = if previous.get() >= 0 {
                     previous.get()
@@ -1062,20 +1062,20 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     ()
                 }
             },
-            Option::None => (),
+            None => (),
         };
         match cache_spec(command) {
-            Option::Some(spec) => for output in spec.outputs {
+            Some(spec) => for output in spec.outputs {
                 let previous = Ref::new(-1);
                 match producers.get(output) {
-                    Option::Some(values) => for candidate in values {
+                    Some(values) => for candidate in values {
                         if candidate < index && candidate > previous.get() {
                             previous.set(candidate)
                         } else {
                             ()
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 };
                 if previous.get() >= 0
                     && !util::int_vec_contains(dependencies, previous.get())
@@ -1085,7 +1085,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     ()
                 }
             },
-            Option::None => (),
+            None => (),
         };
         result.push(BuildNode {
             index,
@@ -1137,7 +1137,7 @@ fn execute_plan_worker(
 ) -> unit {
     while true {
         match work.recv() {
-            Option::Some(value) => results.send(BuildWorkResult {
+            Some(value) => results.send(BuildWorkResult {
                 index: value.index,
                 cache: value.cache,
                 result: execute_prepared_command(
@@ -1146,7 +1146,7 @@ fn execute_plan_worker(
                     value.cache,
                 ),
             }),
-            Option::None => break,
+            None => break,
         }
     }
 }
@@ -1168,8 +1168,8 @@ pub fn execute_plan(
         ""
     } else {
         match compiler_digest(context) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         }
     };
     if dry_run {
@@ -1178,8 +1178,8 @@ pub fn execute_plan(
         }
     } else {
         let graph = match build_graph(plan.commands) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let initial = Vec::new();
         for node in graph.nodes {
@@ -1202,8 +1202,8 @@ pub fn execute_plan(
             let blocked = Vec::new();
             for index in pending.get() {
                 let node = match build_node(graph.nodes, index) {
-                    Option::Some(value) => value,
-                    Option::None => return Result::Err(
+                    Some(value) => value,
+                    None => return Result::Err(
                         "build graph omitted node " + index.to_string(),
                     ),
                 };
@@ -1222,11 +1222,11 @@ pub fn execute_plan(
                         node.command,
                         identity,
                     ) {
-                        Result::Ok(CachePreparation::Fresh) => {
+                        Ok(Fresh) => {
                             completed_nodes.push(node.index);
                             completed.set(completed.get() + 1)
                         },
-                        Result::Ok(CachePreparation::Execute(cache)) => {
+                        Ok(Execute(cache)) => {
                             work.send(BuildWork {
                                 index: node.index,
                                 command: node.command,
@@ -1234,15 +1234,15 @@ pub fn execute_plan(
                             });
                             running.set(running.get() + 1)
                         },
-                        Result::Err(message) => {
+                        Err(message) => {
                             work.close();
                             for _ in range(0, running.get()) {
                                 match results.recv() {
-                                    Option::Some(value) => discard_prepared_command(
+                                    Some(value) => discard_prepared_command(
                                         context,
                                         value.cache,
                                     ),
-                                    Option::None => (),
+                                    None => (),
                                 }
                             };
                             results.close();
@@ -1263,50 +1263,50 @@ pub fn execute_plan(
             };
             if running.get() > 0 {
                 match results.recv() {
-                    Option::Some(value) => match value.result {
-                        Result::Ok(()) => match finish_prepared_command(
+                    Some(value) => match value.result {
+                        Ok(()) => match finish_prepared_command(
                             context,
                             identity,
                             value.cache,
                         ) {
-                            Result::Ok(()) => {
+                            Ok(()) => {
                                 completed_nodes.push(value.index);
                                 completed.set(completed.get() + 1)
                             },
-                            Result::Err(message) => {
+                            Err(message) => {
                                 completed.set(completed.get() + 1);
                                 running.set(running.get() - 1);
                                 work.close();
                                 for _ in range(0, running.get()) {
                                     match results.recv() {
-                                        Option::Some(other) => {
+                                        Some(other) => {
                                             discard_prepared_command(
                                                 context,
                                                 other.cache,
                                             )
                                         },
-                                        Option::None => (),
+                                        None => (),
                                     }
                                 };
                                 results.close();
                                 return Result::Err(message)
                             },
                         },
-                        Result::Err(message) => {
+                        Err(message) => {
                             completed.set(completed.get() + 1);
                             running.set(running.get() - 1);
                             work.close();
                             for _ in range(0, running.get()) {
                                 match results.recv() {
-                                    Option::Some(_) => (),
-                                    Option::None => (),
+                                    Some(_) => (),
+                                    None => (),
                                 }
                             };
                             results.close();
                             return Result::Err(message)
                         },
                     },
-                    Option::None => return Result::Err(
+                    None => return Result::Err(
                         "build result channel closed early",
                     ),
                 };
@@ -1342,17 +1342,17 @@ pub fn run_executable(
             .current_dir(context.graph.module_dir)
             .status()
         {
-        Result::Ok(status) => if process::ExitStatus::success(status) {
+        Ok(status) => if process::ExitStatus::success(status) {
                 Result::Ok(())
             } else {
                 match process::ExitStatus::code(status) {
-                    Option::Some(code) => Result::Err(
+                    Some(code) => Result::Err(
                         "program exited with status " + code.to_string(),
                     ),
-                    Option::None => Result::Err("program terminated by signal"),
+                    None => Result::Err("program terminated by signal"),
                 }
             },
-            Result::Err(message) => Result::Err(message),
+            Err(message) => Result::Err(message),
         }
     }
 }

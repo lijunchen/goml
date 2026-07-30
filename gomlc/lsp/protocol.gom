@@ -22,27 +22,27 @@ fn push_json_field(
 
 pub fn parse_rpc_message(value: json::Value) -> Result[RpcMessage, string] {
     match json::field(value, "jsonrpc") {
-        Option::Some(json::Value::String(version)) => if version != "2.0" {
+        Some(String(version)) => if version != "2.0" {
             return Result::Err("JSON-RPC version must be 2.0")
         } else {
             ()
         },
-        Option::Some(_) => return Result::Err(
+        Some(_) => return Result::Err(
             "JSON-RPC version must be a string",
         ),
-        Option::None => return Result::Err("JSON-RPC message has no version"),
+        None => return Result::Err("JSON-RPC message has no version"),
     };
     let method = match json::field(value, "method") {
-        Option::Some(method) => match json::as_string(method) {
-            Option::Some(method) => method,
-            Option::None => return Result::Err("JSON-RPC method must be a string"),
+        Some(method) => match json::as_string(method) {
+            Some(method) => method,
+            None => return Result::Err("JSON-RPC method must be a string"),
         },
-        Option::None => return Result::Err("JSON-RPC message has no method"),
+        None => return Result::Err("JSON-RPC message has no method"),
     };
     let id = json::field(value, "id");
     let params = match json::field(value, "params") {
-        Option::Some(params) => params,
-        Option::None => json::Value::Null,
+        Some(params) => params,
+        None => json::Value::Null,
     };
     Result::Ok(RpcMessage { id, method, params })
 }
@@ -189,38 +189,38 @@ pub fn range_json(value: Range) -> json::Value {
 
 pub fn parse_position(value: json::Value) -> Result[Position, string] {
     let line = match json::field(value, "line") {
-        Option::Some(line) => match json::as_int(line) {
-            Option::Some(line) => line,
-            Option::None => return Result::Err("position line must be an integer"),
+        Some(line) => match json::as_int(line) {
+            Some(line) => line,
+            None => return Result::Err("position line must be an integer"),
         },
-        Option::None => return Result::Err("position has no line"),
+        None => return Result::Err("position has no line"),
     };
     let character = match json::field(value, "character") {
-        Option::Some(character) => match json::as_int(character) {
-            Option::Some(character) => character,
-            Option::None => {
+        Some(character) => match json::as_int(character) {
+            Some(character) => character,
+            None => {
                 return Result::Err("position character must be an integer")
             },
         },
-        Option::None => return Result::Err("position has no character"),
+        None => return Result::Err("position has no character"),
     };
     Result::Ok(Position { line, character })
 }
 
 pub fn parse_range(value: json::Value) -> Result[Range, string] {
     let start = match json::field(value, "start") {
-        Option::Some(value) => match parse_position(value) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+        Some(value) => match parse_position(value) {
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         },
-        Option::None => return Result::Err("range has no start"),
+        None => return Result::Err("range has no start"),
     };
     let end = match json::field(value, "end") {
-        Option::Some(value) => match parse_position(value) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+        Some(value) => match parse_position(value) {
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         },
-        Option::None => return Result::Err("range has no end"),
+        None => return Result::Err("range has no end"),
     };
     Result::Ok(Range { start, end })
 }

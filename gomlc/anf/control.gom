@@ -70,8 +70,8 @@ fn lower_core_stmts(
 ) -> Block {
     if index >= stmts.len() {
         match tail {
-            Option::Some(value) => lower_expr(state, value, k),
-            Option::None => k(unit_imm()),
+            Some(value) => lower_expr(state, value, k),
+            None => k(unit_imm()),
         }
     } else {
         let stmt = stmts.get(index);
@@ -213,14 +213,14 @@ fn lower_match(
             takes_arg,
         );
         let lowered_default = match default {
-            Option::Some(value) => Option::Some(lower_branch(
+            Some(value) => Option::Some(lower_branch(
                 state,
                 value,
                 join_id,
                 ret_ty,
                 takes_arg,
             )),
-            Option::None => Option::None,
+            None => Option::None,
         };
         Block {
             binds: one_bind(Bind::Join(join)),
@@ -289,16 +289,16 @@ fn lower_return(
     value: Option[core::Expr],
 ) -> Block {
     match state.return_ctx.get() {
-        Option::Some(ctx) => match value {
-            Option::Some(value) => lower_expr(state, value, |value| {
+        Some(ctx) => match value {
+            Some(value) => lower_expr(state, value, |value| {
                 jump_block(ctx.join_id, value, ctx.takes_arg, ctx.ret_ty)
             }),
-            Option::None => Block {
+            None => Block {
                 binds: no_binds(),
                 term: Term::Jump { target: ctx.join_id, args: no_imms(), ret_ty: ctx.ret_ty },
             },
         },
-        Option::None => Block {
+        None => Block {
             binds: no_binds(),
             term: Term::Unreachable { ty: tast::Type::Error },
         },
@@ -311,18 +311,18 @@ fn lower_expr(
     k: (Imm) -> Block,
 ) -> Block {
     match try_imm(value) {
-        Option::Some(value) => k(value),
-        Option::None => match value {
-            core::Expr::Block { block, ty: _ } => lower_core_block(state, block, k),
-            core::Expr::If { cond, then_branch: then_, else_branch: else_, ty } => {
+        Some(value) => k(value),
+        None => match value {
+            Block { block, ty: _ } => lower_core_block(state, block, k),
+            If { cond, then_branch: then_, else_branch: else_, ty } => {
                 lower_if(state, cond, then_, else_, ty, k)
             },
-            core::Expr::Match { expr: scrutinee, arms, default, ty } => {
+            Match { expr: scrutinee, arms, default, ty } => {
                 lower_match(state, scrutinee, arms, default, ty, k)
             },
-            core::Expr::While { cond, body, ty: _ } => lower_while(state, cond, body, k),
-            core::Expr::Break { ty: _ } => match state.loop_ctx.get() {
-                Option::Some(ctx) => Block {
+            While { cond, body, ty: _ } => lower_while(state, cond, body, k),
+            Break { ty: _ } => match state.loop_ctx.get() {
+                Some(ctx) => Block {
                     binds: no_binds(),
                     term: Term::Jump {
                         target: ctx.exit_id,
@@ -330,13 +330,13 @@ fn lower_expr(
                         ret_ty: ctx.exit_ret_ty,
                     },
                 },
-                Option::None => Block {
+                None => Block {
                     binds: no_binds(),
                     term: Term::Unreachable { ty: tast::Type::Error },
                 },
             },
-            core::Expr::Continue { ty: _ } => match state.loop_ctx.get() {
-                Option::Some(ctx) => Block {
+            Continue { ty: _ } => match state.loop_ctx.get() {
+                Some(ctx) => Block {
                     binds: no_binds(),
                     term: Term::Jump {
                         target: ctx.loop_id,
@@ -344,14 +344,14 @@ fn lower_expr(
                         ret_ty: ctx.exit_ret_ty,
                     },
                 },
-                Option::None => Block {
+                None => Block {
                     binds: no_binds(),
                     term: Term::Unreachable { ty: tast::Type::Error },
                 },
             },
-            core::Expr::Return { expr: value, ty: _ } => lower_return(state, value),
-            core::Expr::Closure { params: _, body: _, ty: _ }
-            | core::Expr::TraitCall { .. } => {
+            Return { expr: value, ty: _ } => lower_return(state, value),
+            Closure { params: _, body: _, ty: _ }
+            | TraitCall { .. } => {
                 k(unit_imm())
             },
             other => lower_imm(state, other, k),

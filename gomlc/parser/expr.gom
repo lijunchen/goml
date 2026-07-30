@@ -5,32 +5,32 @@ use gomlc::lexer;
 
 fn is_expr_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::IntLit
-        | lexer::TokenKind::Float
-        | lexer::TokenKind::Str
-        | lexer::TokenKind::MultilineStr
-        | lexer::TokenKind::FStringStart
-        | lexer::TokenKind::CharLit
-        | lexer::TokenKind::ByteCharLit
-        | lexer::TokenKind::UnsupportedByteStr
-        | lexer::TokenKind::Ident
-        | lexer::TokenKind::TrueKeyword
-        | lexer::TokenKind::FalseKeyword
-        | lexer::TokenKind::Minus
-        | lexer::TokenKind::Bang
-        | lexer::TokenKind::Tilde
-        | lexer::TokenKind::LParen
-        | lexer::TokenKind::LBracket
-        | lexer::TokenKind::IfKeyword
-        | lexer::TokenKind::MatchKeyword
-        | lexer::TokenKind::WhileKeyword
-        | lexer::TokenKind::ForKeyword
-        | lexer::TokenKind::BreakKeyword
-        | lexer::TokenKind::ContinueKeyword
-        | lexer::TokenKind::ReturnKeyword
-        | lexer::TokenKind::Pipe
-        | lexer::TokenKind::OrOr
-        | lexer::TokenKind::GoKeyword => true,
+        IntLit
+        | Float
+        | Str
+        | MultilineStr
+        | FStringStart
+        | CharLit
+        | ByteCharLit
+        | UnsupportedByteStr
+        | Ident
+        | TrueKeyword
+        | FalseKeyword
+        | Minus
+        | Bang
+        | Tilde
+        | LParen
+        | LBracket
+        | IfKeyword
+        | MatchKeyword
+        | WhileKeyword
+        | ForKeyword
+        | BreakKeyword
+        | ContinueKeyword
+        | ReturnKeyword
+        | Pipe
+        | OrOr
+        | GoKeyword => true,
         _ => false,
     }
 }
@@ -383,12 +383,12 @@ fn for_expression(parser: Parser) -> MarkerClosed {
 
 fn return_stops_expression(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::Semi
-        | lexer::TokenKind::Comma
-        | lexer::TokenKind::RParen
-        | lexer::TokenKind::RBracket
-        | lexer::TokenKind::RBrace
-        | lexer::TokenKind::Eof => true,
+        Semi
+        | Comma
+        | RParen
+        | RBracket
+        | RBrace
+        | Eof => true,
         _ => false,
     }
 }
@@ -426,39 +426,39 @@ fn go_expression(parser: Parser) -> MarkerClosed {
 
 fn atom(parser: Parser) -> Option[MarkerClosed] {
     let result = match parser.peek() {
-        lexer::TokenKind::IntLit => simple_expression(parser, cst::NodeKind::EXPR_INT),
-        lexer::TokenKind::Float => simple_expression(parser, cst::NodeKind::EXPR_FLOAT),
-        lexer::TokenKind::LBracket => array_literal(parser),
-        lexer::TokenKind::Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
-        lexer::TokenKind::MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
-        lexer::TokenKind::FStringStart => interpolated_string(parser),
-        lexer::TokenKind::CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
-        lexer::TokenKind::ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
-        lexer::TokenKind::UnsupportedByteStr => {
+        IntLit => simple_expression(parser, cst::NodeKind::EXPR_INT),
+        Float => simple_expression(parser, cst::NodeKind::EXPR_FLOAT),
+        LBracket => array_literal(parser),
+        Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
+        MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
+        FStringStart => interpolated_string(parser),
+        CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
+        ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
+        UnsupportedByteStr => {
             let marker = parser.open();
             parser.error("byte string literals are not supported");
             parser.advance();
             parser.close(marker, cst::NodeKind::ErrorTree)
         },
-        lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
+        TrueKeyword | FalseKeyword =>
             simple_expression(parser, cst::NodeKind::EXPR_BOOL),
-        lexer::TokenKind::Ident => if looks_like_vec_literal(parser) {
+        Ident => if looks_like_vec_literal(parser) {
             vec_literal(parser)
         } else if looks_like_hashmap_literal(parser) {
             hashmap_literal(parser)
         } else {
             ident_expression(parser)
         },
-        lexer::TokenKind::LParen => paren_expression(parser),
-        lexer::TokenKind::IfKeyword => if_expression(parser),
-        lexer::TokenKind::MatchKeyword => match_expression(parser),
-        lexer::TokenKind::WhileKeyword => while_expression(parser),
-        lexer::TokenKind::ForKeyword => for_expression(parser),
-        lexer::TokenKind::BreakKeyword => simple_expression(parser, cst::NodeKind::EXPR_BREAK),
-        lexer::TokenKind::ContinueKeyword => simple_expression(parser, cst::NodeKind::EXPR_CONTINUE),
-        lexer::TokenKind::ReturnKeyword => return_expression(parser),
-        lexer::TokenKind::GoKeyword => go_expression(parser),
-        lexer::TokenKind::Pipe | lexer::TokenKind::OrOr => closure_expr(parser),
+        LParen => paren_expression(parser),
+        IfKeyword => if_expression(parser),
+        MatchKeyword => match_expression(parser),
+        WhileKeyword => while_expression(parser),
+        ForKeyword => for_expression(parser),
+        BreakKeyword => simple_expression(parser, cst::NodeKind::EXPR_BREAK),
+        ContinueKeyword => simple_expression(parser, cst::NodeKind::EXPR_CONTINUE),
+        ReturnKeyword => return_expression(parser),
+        GoKeyword => go_expression(parser),
+        Pipe | OrOr => closure_expr(parser),
         _ => return Option::None,
     };
     Option::Some(result)
@@ -488,8 +488,8 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
         let depth = Ref::new(0);
         while true {
             match parser.nth(index.get()) {
-                lexer::TokenKind::LBracket => depth.set(depth.get() + 1),
-                lexer::TokenKind::RBracket => {
+                LBracket => depth.set(depth.get() + 1),
+                RBracket => {
                     depth.set(depth.get() - 1);
                     if depth.get() == 0 {
                         return token_is(
@@ -500,7 +500,7 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
                         ()
                     }
                 },
-                lexer::TokenKind::Eof => return false,
+                Eof => return false,
                 _ => (),
             };
             index.set(index.get() + 1)
@@ -676,11 +676,11 @@ fn looks_like_struct_literal(parser: Parser) -> bool {
         false
     } else {
         match parser.nth(1) {
-            lexer::TokenKind::RBrace => true,
-            lexer::TokenKind::DotDot => true,
-            lexer::TokenKind::Ident => match parser.nth(2) {
-                lexer::TokenKind::Colon | lexer::TokenKind::Comma => true,
-                lexer::TokenKind::RBrace => {
+            RBrace => true,
+            DotDot => true,
+            Ident => match parser.nth(2) {
+                Colon | Comma => true,
+                RBrace => {
                     let following = parser.nth(3);
                     token_is(following, lexer::TokenKind::ElseKeyword) == false
                         && token_is(following, lexer::TokenKind::LBrace) == false
@@ -694,49 +694,49 @@ fn looks_like_struct_literal(parser: Parser) -> bool {
 
 fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int] {
     match kind {
-        lexer::TokenKind::LParen | lexer::TokenKind::LBracket => Option::Some(21),
-        lexer::TokenKind::Question => Option::Some(22),
+        LParen | LBracket => Option::Some(21),
+        Question => Option::Some(22),
         _ => Option::None,
     }
 }
 
 fn prefix_binding_power(kind: lexer::TokenKind) -> Option[int] {
     match kind {
-        lexer::TokenKind::Minus | lexer::TokenKind::Bang | lexer::TokenKind::Tilde => Option::Some(23),
+        Minus | Bang | Tilde => Option::Some(23),
         _ => Option::None,
     }
 }
 
 fn infix_binding_power(kind: lexer::TokenKind) -> Option[(int, int)] {
     match kind {
-        lexer::TokenKind::OrOr => Option::Some((1, 2)),
-        lexer::TokenKind::AndAnd => Option::Some((3, 4)),
-        lexer::TokenKind::EqEq
-        | lexer::TokenKind::NotEq
-        | lexer::TokenKind::Less
-        | lexer::TokenKind::Greater
-        | lexer::TokenKind::LessEq
-        | lexer::TokenKind::GreaterEq => Option::Some((5, 6)),
-        lexer::TokenKind::Pipe => Option::Some((7, 8)),
-        lexer::TokenKind::Caret => Option::Some((8, 9)),
-        lexer::TokenKind::Amp => Option::Some((9, 10)),
-        lexer::TokenKind::LessLess | lexer::TokenKind::GreaterGreater => Option::Some((12, 13)),
-        lexer::TokenKind::Plus | lexer::TokenKind::Minus => Option::Some((13, 14)),
-        lexer::TokenKind::Star | lexer::TokenKind::Slash | lexer::TokenKind::Percent =>
+        OrOr => Option::Some((1, 2)),
+        AndAnd => Option::Some((3, 4)),
+        EqEq
+        | NotEq
+        | Less
+        | Greater
+        | LessEq
+        | GreaterEq => Option::Some((5, 6)),
+        Pipe => Option::Some((7, 8)),
+        Caret => Option::Some((8, 9)),
+        Amp => Option::Some((9, 10)),
+        LessLess | GreaterGreater => Option::Some((12, 13)),
+        Plus | Minus => Option::Some((13, 14)),
+        Star | Slash | Percent =>
             Option::Some((15, 16)),
-        lexer::TokenKind::Dot => Option::Some((23, 24)),
+        Dot => Option::Some((23, 24)),
         _ => Option::None,
     }
 }
 
 fn is_comparison(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::EqEq
-        | lexer::TokenKind::NotEq
-        | lexer::TokenKind::Less
-        | lexer::TokenKind::Greater
-        | lexer::TokenKind::LessEq
-        | lexer::TokenKind::GreaterEq => true,
+        EqEq
+        | NotEq
+        | Less
+        | Greater
+        | LessEq
+        | GreaterEq => true,
         _ => false,
     }
 }
@@ -750,20 +750,20 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
         Option::None
     } else {
         let initial = match prefix_binding_power(parser.peek()) {
-            Option::Some(right_bp) => {
+            Some(right_bp) => {
                 let marker = parser.open();
                 parser.advance();
                 expect_expr_bp_with_message(parser, right_bp, "expected an operand for prefix operator");
                 Option::Some(parser.close(marker, cst::NodeKind::EXPR_PREFIX))
             },
-            Option::None => atom(parser),
+            None => atom(parser),
         };
         match initial {
-            Option::None => {
+            None => {
                 parser.leave_expr();
                 Option::None
             },
-            Option::Some(value) => {
+            Some(value) => {
                 let lhs = Ref::new(value);
                 let parsed_range = Ref::new(false);
                 let parsed_comparison = Ref::new(false);
@@ -802,7 +802,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                         }
                     } else {
                         match postfix_binding_power(operator) {
-                            Option::Some(left_bp) => {
+                            Some(left_bp) => {
                                 if left_bp < min_bp {
                                     break
                                 } else if parser.at(lexer::TokenKind::LParen) {
@@ -833,8 +833,8 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                     )
                                 }
                             },
-                            Option::None => match infix_binding_power(operator) {
-                                Option::Some((left_bp, right_bp)) => {
+                            None => match infix_binding_power(operator) {
+                                Some((left_bp, right_bp)) => {
                                     if left_bp < min_bp {
                                         break
                                     } else if is_comparison(operator) && parsed_comparison.get() {
@@ -860,7 +860,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                         }
                                     }
                                 },
-                                Option::None => break,
+                                None => break,
                             },
                         }
                     }

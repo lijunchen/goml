@@ -20,8 +20,8 @@ fn write_artifact_interface(
     value: ArtifactInterfaceUnit,
 ) -> Result[unit, string] {
     match encode_artifact_interface_binary(value) {
-        Result::Ok(data) => fs::write_bytes(path_value, data),
-        Result::Err(error) => Result::Err(error),
+        Ok(data) => fs::write_bytes(path_value, data),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -30,7 +30,7 @@ fn write_artifact_core(
     value: ArtifactCoreUnit,
 ) -> Result[unit, string] {
     match encode_artifact_core_binary(value) {
-        Result::Ok(data) => fs::write_bytes(path_value, data),
-        Result::Err(error) => Result::Err(error),
+        Ok(data) => fs::write_bytes(path_value, data),
+        Err(error) => Result::Err(error),
     }
 }

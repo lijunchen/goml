@@ -84,8 +84,8 @@ fn project_build_loads_transitive_public_type_interfaces() -> unit {
     let execution = match process::Command::new(
         path::join(root, "_artifact/bin/transitive_types"),
     ).output() {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             output
         },
@@ -136,8 +136,8 @@ fn project_check_resolves_compiler_from_path() -> unit {
     let root = test_support::workspace("compiler_from_path");
     test_support::write_basic_project(root, "demo");
     let compiler_dir = match path::parent(test_support::gomlc_binary()) {
-        Option::Some(value) => value,
-        Option::None => {
+        Some(value) => value,
+        None => {
             testing::fail("compiler path has no parent");
             root
         },
@@ -148,8 +148,8 @@ fn project_check_resolves_compiler_from_path() -> unit {
         .env("PATH", compiler_dir)
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             test_support::run(Vec::new().pushed("version"), root)
         },
@@ -388,8 +388,8 @@ fn project_build_creates_and_runs_the_native_binary() -> unit {
     let output = match process::Command::new(
         path::join(root, "_artifact/bin/demo"),
     ).output() {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             test_support::run(Vec::new().pushed("version"), root)
         },
@@ -726,13 +726,13 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
     test_support::assert_success(migration_check(root));
     testing::assert_eq(test_support::read_file(fingerprint), initial);
     match fs::write_bytes(artifact, bytes::Bytes::from_string("corrupt")) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(message),
+        Ok(()) => (),
+        Err(message) => testing::fail(message),
     };
     test_support::assert_success(migration_check(root));
     let restored = match fs::read_bytes(artifact) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             bytes::Bytes::new()
         },
@@ -740,8 +740,8 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
     testing::assert(restored.len() > 8);
     testing::assert_eq(test_support::read_file(fingerprint), initial);
     match fs::remove_file(artifact) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(message),
+        Ok(()) => (),
+        Err(message) => testing::fail(message),
     };
     test_support::assert_success(migration_check(root));
     testing::assert(fs::is_file(artifact));
@@ -1208,8 +1208,8 @@ fn home_creates_and_prints_the_layout() -> unit {
         .current_dir(root)
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
@@ -1238,8 +1238,8 @@ fn registry_command(
         .current_dir(directory)
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             return
         },
@@ -1316,8 +1316,8 @@ fn run_with_home(
         .current_dir(directory)
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
@@ -1416,8 +1416,8 @@ fn cached_registry_dependencies_build_with_mvs_layout() -> unit {
     let execution = match process::Command::new(
         path::join(project, "_artifact/bin/demo"),
     ).output() {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             built
         },

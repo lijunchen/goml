@@ -13,7 +13,7 @@ fn artifact_function_type_parts(
     value: tast::Type,
 ) -> Result[ArtifactFunctionType, string] {
     match tast::resolve_type(value) {
-        tast::Type::Func { params, ret_ty } => Result::Ok(ArtifactFunctionType {
+        Func { params, ret_ty } => Result::Ok(ArtifactFunctionType {
             params,
             ret_ty,
         }),
@@ -38,58 +38,58 @@ fn artifact_dependency_optional_trait_ref(
     value: Option[tast::TraitRef],
 ) -> Option[tast::TraitRef] {
     match value {
-        Option::Some(value) => Option::Some(artifact_dependency_trait_ref(value)),
-        Option::None => Option::None,
+        Some(value) => Option::Some(artifact_dependency_trait_ref(value)),
+        None => Option::None,
     }
 }
 
 fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Con { name } => if name == "Self" {
+        Con { name } => if name == "Self" {
             tast::Type::Param { name }
         } else {
             tast::Type::Con { name }
         },
-        tast::Type::Tuple { items: values } => {
+        Tuple { items: values } => {
             let result = Vec::new();
             for value in values {
                 result.push(artifact_dependency_trait_type(value))
             };
             tast::Type::Tuple { items: result }
         },
-        tast::Type::Projection { for_ty, name, trait_ref } => tast::Type::Projection {
+        Projection { for_ty, name, trait_ref } => tast::Type::Projection {
             for_ty: artifact_dependency_trait_type(for_ty),
             name,
             trait_ref: artifact_dependency_optional_trait_ref(trait_ref),
         },
-        tast::Type::App { ty: base, args } => {
+        App { ty: base, args } => {
             let result = Vec::new();
             for arg in args {
                 result.push(artifact_dependency_trait_type(arg))
             };
             tast::Type::App { ty: artifact_dependency_trait_type(base), args: result }
         },
-        tast::Type::Array { len: length, elem: element } => tast::Type::Array {
+        Array { len: length, elem: element } => tast::Type::Array {
             len: length,
             elem: artifact_dependency_trait_type(element),
         },
-        tast::Type::Slice { elem: element } => tast::Type::Slice {
+        Slice { elem: element } => tast::Type::Slice {
             elem: artifact_dependency_trait_type(element),
         },
-        tast::Type::VecType { elem: element } => tast::Type::VecType {
+        VecType { elem: element } => tast::Type::VecType {
             elem: artifact_dependency_trait_type(element),
         },
-        tast::Type::RefType { elem: element } => tast::Type::RefType {
+        RefType { elem: element } => tast::Type::RefType {
             elem: artifact_dependency_trait_type(element),
         },
-        tast::Type::Channel { elem: element } => tast::Type::Channel {
+        Channel { elem: element } => tast::Type::Channel {
             elem: artifact_dependency_trait_type(element),
         },
-        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+        HashMap { key, value } => tast::Type::HashMap {
             key: artifact_dependency_trait_type(key),
             value: artifact_dependency_trait_type(value),
         },
-        tast::Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             let result = Vec::new();
             for param in params {
                 result.push(artifact_dependency_trait_type(param))
@@ -104,11 +104,11 @@ fn artifact_dependency_trait_predicate(
     value: tast::TypePredicate,
 ) -> tast::TypePredicate {
     match value {
-        tast::TypePredicate::Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
+        Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
             for_ty: artifact_dependency_trait_type(for_ty),
             trait_ref: artifact_dependency_trait_ref(trait_ref),
         },
-        tast::TypePredicate::Equality { lhs: left, rhs: right } => tast::TypePredicate::Equality {
+        Equality { lhs: left, rhs: right } => tast::TypePredicate::Equality {
             lhs: artifact_dependency_trait_type(left),
             rhs: artifact_dependency_trait_type(right),
         },
@@ -132,8 +132,8 @@ fn artifact_dependency_function_scheme(
     callable: tast::Callable,
 ) -> Result[tast::FunctionScheme, string] {
     let function_type = match artifact_function_type_parts(value.ty) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let predicates = Vec::new();
     for predicate in inherited {
@@ -179,8 +179,8 @@ fn artifact_dependency_trait(
         let function_type = match artifact_function_type_parts(
             artifact_dependency_trait_type(method.ty),
         ) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         methods.push(tast::TraitMethodInfo {
             name: method.name,
@@ -237,8 +237,8 @@ fn artifact_dependency_inherent_for_type(
     value: ArtifactInherentImpl,
 ) -> tast::Type {
     match value.key {
-        ArtifactInherentImplKey::Exact(value) => value,
-        ArtifactInherentImplKey::Constr(name) => {
+        Exact(value) => value,
+        Constr(name) => {
             let generics = Vec::new();
             for generic in value.definition.params {
                 generics.push(tast::Type::Param { name: generic })
@@ -266,8 +266,8 @@ fn artifact_dependency_environment_from_exports(
     let traits = Vec::new();
     for definition in value.traits {
         match artifact_dependency_trait(definition) {
-            Result::Ok(value) => traits.push(value),
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => traits.push(value),
+            Err(error) => return Result::Err(error),
         }
     };
     let functions = Vec::new();
@@ -279,8 +279,8 @@ fn artifact_dependency_environment_from_exports(
             Vec::new(),
             callable,
         ) {
-            Result::Ok(value) => functions.push(value),
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => functions.push(value),
+            Err(error) => return Result::Err(error),
         }
     };
     let constants = Vec::new();
@@ -315,7 +315,7 @@ fn artifact_dependency_environment_from_exports(
                     implementation.definition.constraints,
                     callable,
                 ) {
-                    Result::Ok(function) => methods.push(tast::MethodInfo {
+                    Ok(function) => methods.push(tast::MethodInfo {
                         owner_generics: implementation.definition.params,
                         method_generics: method.type_params,
                         owner_predicate_count: implementation.definition.constraints.len(),
@@ -323,7 +323,7 @@ fn artifact_dependency_environment_from_exports(
                         for_type: implementation.for_ty,
                         function,
                     }),
-                    Result::Err(error) => return Result::Err(error),
+                    Err(error) => return Result::Err(error),
                 }
             }
         } else {
@@ -344,7 +344,7 @@ fn artifact_dependency_environment_from_exports(
                     implementation.definition.constraints,
                     callable,
                 ) {
-                    Result::Ok(function) => methods.push(tast::MethodInfo {
+                    Ok(function) => methods.push(tast::MethodInfo {
                         owner_generics: implementation.definition.params,
                         method_generics: method.type_params,
                         owner_predicate_count: implementation.definition.constraints.len(),
@@ -352,7 +352,7 @@ fn artifact_dependency_environment_from_exports(
                         for_type,
                         function,
                     }),
-                    Result::Err(error) => return Result::Err(error),
+                    Err(error) => return Result::Err(error),
                 }
             }
         } else {

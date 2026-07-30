@@ -123,11 +123,11 @@ fn containing_use(
 ) -> bool {
     let current = Ref::new(node.parent);
     while match current.get() {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     } {
         match current.get() {
-            Option::Some(id) => {
+            Some(id) => {
                 let parent = value.syntax.nodes.get(id);
                 if cst::node_kind_equal(parent.kind, cst::NodeKind::USE) {
                     return true
@@ -135,7 +135,7 @@ fn containing_use(
                     current.set(parent.parent)
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     false
@@ -173,7 +173,7 @@ fn canonical_path_at(
         raw
     } else {
         match namespace_target(value, identifiers.get(0).text) {
-            Option::Some(package_name) => if token_index == 0 {
+            Some(package_name) => if token_index == 0 {
                 package_name
             } else {
                 package_name
@@ -182,7 +182,7 @@ fn canonical_path_at(
                         raw.byte_len(),
                     )
             },
-            Option::None => raw,
+            None => raw,
         }
     }
 }
@@ -268,10 +268,10 @@ fn identifier_index_at(
 fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     let result = Vec::new();
     match path_node_at(value, offset) {
-        Option::Some(node) => {
+        Some(node) => {
             let identifiers = node_identifiers(value, node);
             match identifier_index_at(identifiers, offset) {
-                Option::Some(index) => {
+                Some(index) => {
                     let canonical = canonical_path_at(
                         value,
                         node,
@@ -279,14 +279,14 @@ fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                         index,
                     );
                     match longest_package_prefix(value, canonical) {
-                        Option::Some(package_name) => if canonical
+                        Some(package_name) => if canonical
                             == package_name
                         {
                             match package_definition(value, package_name) {
-                                Option::Some(definition) => {
+                                Some(definition) => {
                                     result.push(definition)
                                 },
-                                Option::None => (),
+                                None => (),
                             }
                         } else {
                             for definition in symbol_definitions(
@@ -298,7 +298,7 @@ fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                                 result.push(definition)
                             }
                         },
-                        Option::None => for definition in symbol_definitions(
+                        None => for definition in symbol_definitions(
                             value,
                             canonical,
                             identifiers.get(index).text,
@@ -308,10 +308,10 @@ fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                         },
                     }
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Option::None => (),
+        None => (),
     };
     result
 }
@@ -327,16 +327,16 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     let exact = Vec::new();
     let fallback = Vec::new();
     match token_at(value.syntax, offset) {
-        Option::Some(token) => if token.start > 0
+        Some(token) => if token.start > 0
             && value.source.byte_get(token.start - 1) == 46
         {
             match receiver_type(value, token.start - 1) {
-                Option::Some(receiver) => {
+                Some(receiver) => {
                     let owner = type_owner_name(receiver);
                     for symbol in build_symbol_index(value).symbols {
                         if symbol.name == token.text
                             && match symbol.kind {
-                                SymbolKind::Field | SymbolKind::Method => true,
+                                Field | Method => true,
                                 _ => false,
                             }
                             && (symbol.package_name == value.package_name
@@ -366,12 +366,12 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                         }
                     }
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
         },
-        Option::None => (),
+        None => (),
     };
     if exact.len() > 0 { exact } else { fallback }
 }
@@ -431,17 +431,17 @@ fn struct_field_definitions(
     let exact = Vec::new();
     let fallback = Vec::new();
     match token_at(value.syntax, offset) {
-        Option::Some(token) => match containing_struct_literal(value, offset) {
-            Option::Some(literal) => match struct_literal_owner(
+        Some(token) => match containing_struct_literal(value, offset) {
+            Some(literal) => match struct_literal_owner(
                 value,
                 literal,
             ) {
-                Option::Some(owner) => for symbol in build_symbol_index(
+                Some(owner) => for symbol in build_symbol_index(
                     value,
                 ).symbols {
                     if symbol.name == token.text
                         && match symbol.kind {
-                            SymbolKind::Field => true,
+                            Field => true,
                             _ => false,
                         }
                         && (symbol.package_name == value.package_name
@@ -470,11 +470,11 @@ fn struct_field_definitions(
                         ()
                     }
                 },
-                Option::None => (),
+                None => (),
             },
-            Option::None => (),
+            None => (),
         },
-        Option::None => (),
+        None => (),
     };
     if exact.len() > 0 { exact } else { fallback }
 }
@@ -488,11 +488,11 @@ fn local_definition_span(
         let fact = facts.get(facts.len() - 1 - distance);
         if same_local(fact.local, local) {
             match fact.span {
-                Option::Some(span) => match source_by_path(
+                Some(span) => match source_by_path(
                     value.sources,
                     fact.source_path,
                 ) {
-                    Option::Some(source) => {
+                    Some(source) => {
                         let syntax = syntax_index(parser::parse(source.source).root);
                         let best = Ref::new(Option::None);
                         let width = Ref::new(2147483647);
@@ -521,18 +521,18 @@ fn local_definition_span(
                             }
                         };
                         match best.get() {
-                            Option::Some(definition_span) => return Option::Some(
+                            Some(definition_span) => return Option::Some(
                                 DefinitionResult {
                                     source_path: fact.source_path,
                                     span: definition_span,
                                 },
                             ),
-                            Option::None => (),
+                            None => (),
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
@@ -543,31 +543,31 @@ fn local_definition_span(
 
 fn type_owner_name(value: tast::Type) -> string {
     match tast::resolve_type(value) {
-        tast::Type::Con { name } => name,
-        tast::Type::App { ty, args: _ } => type_owner_name(ty),
-        tast::Type::VecType { elem: _ } => "Vec",
-        tast::Type::RefType { elem: _ } => "Ref",
-        tast::Type::Slice { elem: _ } => "Slice",
-        tast::Type::HashMap { key: _, value: _ } => "HashMap",
-        tast::Type::Channel { elem: _ } => "Channel",
+        Con { name } => name,
+        App { ty, args: _ } => type_owner_name(ty),
+        VecType { elem: _ } => "Vec",
+        RefType { elem: _ } => "Ref",
+        Slice { elem: _ } => "Slice",
+        HashMap { key: _, value: _ } => "HashMap",
+        Channel { elem: _ } => "Channel",
         other => tast::diagnostic_type_text(other),
     }
 }
 
 fn callable_name(value: tast::Callable) -> string {
     match value {
-        tast::Callable::Function(name)
-        | tast::Callable::Runtime(name)
-        | tast::Callable::Intrinsic(name) => name,
-        tast::Callable::TraitMethod { trait_ref, method_name } => {
+        Function(name)
+        | Runtime(name)
+        | Intrinsic(name) => name,
+        TraitMethod { trait_ref, method_name } => {
             trait_ref.name + "::" + method_name
         },
-        tast::Callable::DynTraitMethod {
+        DynTraitMethod {
             trait_name,
             dispatch_name: _,
             method_name,
         } => trait_name + "::" + method_name,
-        tast::Callable::InherentMethod {
+        InherentMethod {
             receiver_ty,
             method_name,
         } => type_owner_name(receiver_ty) + "::" + method_name,
@@ -576,8 +576,8 @@ fn callable_name(value: tast::Callable) -> string {
 
 fn token_text(value: Analysis, offset: int) -> Option[string] {
     match token_at(value.syntax, offset) {
-        Option::Some(token) => Option::Some(token.text),
-        Option::None => Option::None,
+        Some(token) => Option::Some(token.text),
+        None => Option::None,
     }
 }
 
@@ -587,20 +587,20 @@ fn target_symbol_name(
     offset: int,
 ) -> Option[string] {
     match target {
-        tast::ReferenceTarget::Local(_) => Option::None,
-        tast::ReferenceTarget::Definition(_) => match token_text(value, offset) {
-            Option::Some(name) => Option::Some(
+        Local(_) => Option::None,
+        Definition(_) => match token_text(value, offset) {
+            Some(name) => Option::Some(
                 value.package_name + "::" + name,
             ),
-            Option::None => Option::None,
+            None => Option::None,
         },
-        tast::ReferenceTarget::Callable(callable) => {
+        Callable(callable) => {
             Option::Some(callable_name(callable))
         },
-        tast::ReferenceTarget::Constructor(constructor) => {
+        Constructor(constructor) => {
             Option::Some(constructor.name)
         },
-        tast::ReferenceTarget::Unresolved(_) => Option::None,
+        Unresolved(_) => Option::None,
     }
 }
 
@@ -624,25 +624,25 @@ fn semantic_definition(
         }
     };
     match reference.get() {
-        Option::Some(fact) => match fact.target {
-            tast::ReferenceTarget::Local(local) => {
+        Some(fact) => match fact.target {
+            Local(local) => {
                 local_definition_span(value, local)
             },
             target => match target_symbol_name(value, target, offset) {
-                Option::Some(name) => match find_symbol(
+                Some(name) => match find_symbol(
                     build_symbol_index(value),
                     name,
                 ) {
-                    Option::Some(symbol) => Option::Some(DefinitionResult {
+                    Some(symbol) => Option::Some(DefinitionResult {
                         source_path: symbol.source_path,
                         span: symbol.span,
                     }),
-                    Option::None => Option::None,
+                    None => Option::None,
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -677,15 +677,15 @@ pub fn goto_definitions(
         ()
     };
     match reference.get() {
-        Option::Some(fact) => match fact.target {
-            tast::ReferenceTarget::Local(_)
-            | tast::ReferenceTarget::Constructor(_) => if result.len() == 0 {
+        Some(fact) => match fact.target {
+            Local(_)
+            | Constructor(_) => if result.len() == 0 {
                 match semantic_definition(
                 value,
                 offset,
             ) {
-                Option::Some(definition) => result.push(definition),
-                Option::None => (),
+                Some(definition) => result.push(definition),
+                None => (),
                 }
             } else {
                 ()
@@ -698,7 +698,7 @@ pub fn goto_definitions(
                 ()
             },
         },
-        Option::None => if result.len() == 0 {
+        None => if result.len() == 0 {
             for definition in path_definitions(value, offset) {
                 push_definition(result, definition)
             }
@@ -708,8 +708,8 @@ pub fn goto_definitions(
     };
     if result.len() == 0 {
         match semantic_definition(value, offset) {
-            Option::Some(definition) => result.push(definition),
-            Option::None => (),
+            Some(definition) => result.push(definition),
+            None => (),
         }
     } else {
         ()

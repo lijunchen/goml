@@ -49,13 +49,13 @@ fn path_last(path: Path) -> Option[string] {
 fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
     let attrs: Vec[Attribute] = Vec::new();
     match first_child(node, cst::NodeKind::ATTRIBUTE_LIST) {
-        Option::Some(list) => for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
+        Some(list) => for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
             attrs.push(Attribute {
                 span: node_span(attr),
                 text: node_text(attr),
             })
         },
-        Option::None => (),
+        None => (),
     };
     attrs
 }
@@ -104,11 +104,11 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
         };
         let path_text = text_value.byte_slice(start, index.get());
         match strings::rfind(path_text, "::") {
-            Option::Some(separator) => {
+            Some(separator) => {
                 path_text.byte_slice(separator + 2, path_text.byte_len())
                     == expected
             },
-            Option::None => path_text == expected,
+            None => path_text == expected,
         }
     }
 }
@@ -128,8 +128,8 @@ fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
     let result: Vec[TypeExpr] = Vec::new();
     for child in type_children(node) {
         match lower_ty(ctx, child) {
-            Option::Some(value) => result.push(value),
-            Option::None => (),
+            Some(value) => result.push(value),
+            None => (),
         }
     };
     result
@@ -169,24 +169,24 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
     } else {
         ctx.type_depth.set(ctx.type_depth.get() + 1);
         let result = match node_kind(node) {
-            cst::NodeKind::TYPE_UNIT => Option::Some(TypeExpr::Unit),
-            cst::NodeKind::TYPE_BOOL => Option::Some(TypeExpr::Bool),
-            cst::NodeKind::TYPE_INT => Option::Some(TypeExpr::Int),
-            cst::NodeKind::TYPE_INT8 => Option::Some(TypeExpr::Int8),
-            cst::NodeKind::TYPE_INT16 => Option::Some(TypeExpr::Int16),
-            cst::NodeKind::TYPE_INT32 => Option::Some(TypeExpr::Int32),
-            cst::NodeKind::TYPE_INT64 => Option::Some(TypeExpr::Int64),
-            cst::NodeKind::TYPE_UINT => Option::Some(TypeExpr::Uint),
-            cst::NodeKind::TYPE_UINT8 => Option::Some(TypeExpr::Uint8),
-            cst::NodeKind::TYPE_UINT16 => Option::Some(TypeExpr::Uint16),
-            cst::NodeKind::TYPE_UINT32 => Option::Some(TypeExpr::Uint32),
-            cst::NodeKind::TYPE_UINT64 => Option::Some(TypeExpr::Uint64),
-            cst::NodeKind::TYPE_FLOAT32 => Option::Some(TypeExpr::Float32),
-            cst::NodeKind::TYPE_FLOAT64 => Option::Some(TypeExpr::Float64),
-            cst::NodeKind::TYPE_STRING => Option::Some(TypeExpr::String),
-            cst::NodeKind::TYPE_CHAR => Option::Some(TypeExpr::Char),
-            cst::NodeKind::TYPE_TUPLE => match first_child(node, cst::NodeKind::TYPE_LIST) {
-                Option::Some(list) => {
+            TYPE_UNIT => Option::Some(TypeExpr::Unit),
+            TYPE_BOOL => Option::Some(TypeExpr::Bool),
+            TYPE_INT => Option::Some(TypeExpr::Int),
+            TYPE_INT8 => Option::Some(TypeExpr::Int8),
+            TYPE_INT16 => Option::Some(TypeExpr::Int16),
+            TYPE_INT32 => Option::Some(TypeExpr::Int32),
+            TYPE_INT64 => Option::Some(TypeExpr::Int64),
+            TYPE_UINT => Option::Some(TypeExpr::Uint),
+            TYPE_UINT8 => Option::Some(TypeExpr::Uint8),
+            TYPE_UINT16 => Option::Some(TypeExpr::Uint16),
+            TYPE_UINT32 => Option::Some(TypeExpr::Uint32),
+            TYPE_UINT64 => Option::Some(TypeExpr::Uint64),
+            TYPE_FLOAT32 => Option::Some(TypeExpr::Float32),
+            TYPE_FLOAT64 => Option::Some(TypeExpr::Float64),
+            TYPE_STRING => Option::Some(TypeExpr::String),
+            TYPE_CHAR => Option::Some(TypeExpr::Char),
+            TYPE_TUPLE => match first_child(node, cst::NodeKind::TYPE_LIST) {
+                Some(list) => {
                     let types = lower_type_list(ctx, list);
                     if types.len() == 0 {
                         Option::Some(TypeExpr::Unit)
@@ -196,13 +196,13 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                         Option::Some(TypeExpr::Tuple { items: types })
                     }
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
-            cst::NodeKind::TYPE_TAPP => match first_child(node, cst::NodeKind::PATH) {
-                Option::Some(path_node) => match lower_path(ctx, path_node) {
-                    Option::Some(path) => {
+            TYPE_TAPP => match first_child(node, cst::NodeKind::PATH) {
+                Some(path_node) => match lower_path(ctx, path_node) {
+                    Some(path) => {
                         match path_last(path) {
-                            Option::Some(name) => if ident_starts_upper(name) == false
+                            Some(name) => if ident_starts_upper(name) == false
                                 && name != "byte"
                             {
                                 push_error(
@@ -213,11 +213,11 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                             } else {
                                 ()
                             },
-                            Option::None => (),
+                            None => (),
                         };
                         let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
-                            Option::Some(list) => lower_type_list(ctx, list),
-                            Option::None => Vec::new(),
+                            Some(list) => lower_type_list(ctx, list),
+                            None => Vec::new(),
                         };
                         let base = TypeExpr::Con { path };
                         if args.len() == 0 {
@@ -226,71 +226,71 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                             Option::Some(TypeExpr::App { ty: base, args })
                         }
                     },
-                    Option::None => Option::None,
+                    None => Option::None,
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
-            cst::NodeKind::TYPE_DYN => match first_child(node, cst::NodeKind::PATH) {
-                Option::Some(path_node) => match lower_path(ctx, path_node) {
-                    Option::Some(path) => Option::Some(TypeExpr::Dyn { trait_path: path }),
-                    Option::None => Option::None,
+            TYPE_DYN => match first_child(node, cst::NodeKind::PATH) {
+                Some(path_node) => match lower_path(ctx, path_node) {
+                    Some(path) => Option::Some(TypeExpr::Dyn { trait_path: path }),
+                    None => Option::None,
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
-            cst::NodeKind::TYPE_ARRAY => {
+            TYPE_ARRAY => {
                 let types = type_children(node);
                 match first_token(node, lexer::TokenKind::IntLit) {
-                    Option::Some(length_token) => match normalized_array_length(
+                    Some(length_token) => match normalized_array_length(
                         strip_suffix(length_token.token.text, ""),
                     ) {
-                        Option::Some(length) => if types.len() > 0 {
+                        Some(length) => if types.len() > 0 {
                             match lower_ty(ctx, types.get(0)) {
-                                Option::Some(element) => Option::Some(TypeExpr::Array {
+                                Some(element) => Option::Some(TypeExpr::Array {
                                     len: length,
                                     elem: element,
                                 }),
-                                Option::None => Option::None,
+                                None => Option::None,
                             }
                         } else {
                             push_error(ctx, node_span(node), "Array type missing element type");
                             Option::None
                         },
-                        Option::None => {
+                        None => {
                             push_error(ctx, token_span(length_token), "Invalid array length: " + length_token.token.text);
                             Option::None
                         },
                     },
-                    Option::None => {
+                    None => {
                         push_error(ctx, node_span(node), "Array type missing length");
                         Option::None
                     },
                 }
             },
-            cst::NodeKind::TYPE_FUNC => {
+            TYPE_FUNC => {
                 let types = type_children(node);
                 if types.len() < 2 {
                     push_error(ctx, node_span(node), "Function type missing return type");
                     Option::None
                 } else {
                     match lower_ty(ctx, types.get(1)) {
-                        Option::Some(ret_ty) => {
+                        Some(ret_ty) => {
                             let param_node = types.get(0);
                             let params = if cst::node_kind_equal(node_kind(param_node), cst::NodeKind::TYPE_TUPLE) {
                                 match first_child(param_node, cst::NodeKind::TYPE_LIST) {
-                                    Option::Some(list) => lower_type_list(ctx, list),
-                                    Option::None => Vec::new(),
+                                    Some(list) => lower_type_list(ctx, list),
+                                    None => Vec::new(),
                                 }
                             } else {
                                 let values: Vec[TypeExpr] = Vec::new();
                                 match lower_ty(ctx, param_node) {
-                                    Option::Some(value) => values.push(value),
-                                    Option::None => (),
+                                    Some(value) => values.push(value),
+                                    None => (),
                                 };
                                 values
                             };
                             Option::Some(TypeExpr::Func { params, ret_ty })
                         },
-                        Option::None => Option::None,
+                        None => Option::None,
                     }
                 }
             },
@@ -307,17 +307,17 @@ fn lower_trait_ref(ctx: LowerCtx, node: LocatedNode) -> Option[TraitRef] {
         Option::None
     } else {
         match first_child(node, cst::NodeKind::PATH) {
-            Option::Some(path_node) => match lower_path(ctx, path_node) {
-                Option::Some(path) => {
+            Some(path_node) => match lower_path(ctx, path_node) {
+                Some(path) => {
                     let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
-                        Option::Some(list) => lower_type_list(ctx, list),
-                        Option::None => Vec::new(),
+                        Some(list) => lower_type_list(ctx, list),
+                        None => Vec::new(),
                     };
                     Option::Some(TraitRef { path, args })
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -326,8 +326,8 @@ fn lower_trait_set(ctx: LowerCtx, node: LocatedNode) -> Vec[TraitRef] {
     let result: Vec[TraitRef] = Vec::new();
     for child in type_children(node) {
         match lower_trait_ref(ctx, child) {
-            Option::Some(value) => result.push(value),
-            Option::None => (),
+            Some(value) => result.push(value),
+            None => (),
         }
     };
     result
@@ -337,20 +337,20 @@ fn lower_generics(ctx: LowerCtx, node: LocatedNode) -> (Vec[string], Vec[(string
     let generics: Vec[string] = Vec::new();
     let bounds: Vec[(string, Vec[TraitRef])] = Vec::new();
     match first_child(node, cst::NodeKind::GENERIC_LIST) {
-        Option::Some(list) => for generic in children_of_kind(list, cst::NodeKind::GENERIC) {
+        Some(list) => for generic in children_of_kind(list, cst::NodeKind::GENERIC) {
             match first_token(generic, lexer::TokenKind::Ident) {
-                Option::Some(token) => {
+                Some(token) => {
                     let name = token.token.text;
                     generics.push(name);
                     match first_child(generic, cst::NodeKind::TRAIT_SET) {
-                        Option::Some(set) => bounds.push((name, lower_trait_set(ctx, set))),
-                        Option::None => (),
+                        Some(set) => bounds.push((name, lower_trait_set(ctx, set))),
+                        None => (),
                     }
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Option::None => (),
+        None => (),
     };
     (generics, bounds)
 }
@@ -358,51 +358,51 @@ fn lower_generics(ctx: LowerCtx, node: LocatedNode) -> (Vec[string], Vec[(string
 fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
     let result: Vec[Predicate] = Vec::new();
     match first_child(node, cst::NodeKind::WHERE_CLAUSE) {
-        Option::Some(clause) => for predicate in children_of_kind(clause, cst::NodeKind::WHERE_PREDICATE) {
+        Some(clause) => for predicate in children_of_kind(clause, cst::NodeKind::WHERE_PREDICATE) {
             let types = type_children(predicate);
             if types.len() == 0 {
                 push_error(ctx, node_span(predicate), "Where predicate is missing a type")
             } else {
                 match lower_ty(ctx, types.get(0)) {
-                    Option::Some(lhs) => match first_child(predicate, cst::NodeKind::TRAIT_SET) {
-                        Option::Some(set) => for trait_ref in lower_trait_set(ctx, set) {
+                    Some(lhs) => match first_child(predicate, cst::NodeKind::TRAIT_SET) {
+                        Some(set) => for trait_ref in lower_trait_set(ctx, set) {
                             result.push(Predicate::Trait { ty: lhs, trait_ref })
                         },
-                        Option::None => if types.len() > 1 {
+                        None => if types.len() > 1 {
                             match lower_ty(ctx, types.get(1)) {
-                                Option::Some(rhs) => result.push(Predicate::Equality { lhs, rhs }),
-                                Option::None => (),
+                                Some(rhs) => result.push(Predicate::Equality { lhs, rhs }),
+                                None => (),
                             }
                         } else {
                             push_error(ctx, node_span(predicate), "Equality predicate is missing its right-hand type")
                         },
                     },
-                    Option::None => (),
+                    None => (),
                 }
             }
         },
-        Option::None => (),
+        None => (),
     };
     result
 }
 
 fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
     match first_child(node, cst::NodeKind::PATH) {
-        Option::Some(path_node) => match lower_path(ctx, path_node) {
-            Option::Some(path) => {
+        Some(path_node) => match lower_path(ctx, path_node) {
+            Some(path) => {
                 let alias = if has_token(node, lexer::TokenKind::AsKeyword) {
                     match first_token(node, lexer::TokenKind::Ident) {
-                        Option::Some(token) => Option::Some(token.token.text),
-                        Option::None => Option::None,
+                        Some(token) => Option::Some(token.token.text),
+                        None => Option::None,
                     }
                 } else {
                     Option::None
                 };
                 Option::Some(UseDecl { path, alias })
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
-        Option::None => {
+        None => {
             push_error(ctx, node_span(node), "use declaration missing path");
             Option::None
         },
@@ -428,24 +428,24 @@ fn lower_result(result: cst::ParseResult) -> LowerResult {
         let package_node = first_child(root, cst::NodeKind::PACKAGE);
         let package_explicit = option_node_is_none(package_node) == false;
         let package_name = match package_node {
-            Option::Some(node) => match first_token(node, lexer::TokenKind::Ident) {
-                Option::Some(token) => token.token.text,
-                Option::None => "main",
+            Some(node) => match first_token(node, lexer::TokenKind::Ident) {
+                Some(token) => token.token.text,
+                None => "main",
             },
-            Option::None => "main",
+            None => "main",
         };
         let uses: Vec[UseDecl] = Vec::new();
         for use_node in children_of_kind(root, cst::NodeKind::USE) {
             match lower_use(ctx, use_node) {
-                Option::Some(value) => uses.push(value),
-                Option::None => (),
+                Some(value) => uses.push(value),
+                None => (),
             }
         };
         let items: Vec[Item] = Vec::new();
         for item_node in item_children(root) {
             match lower_item(ctx, item_node) {
-                Option::Some(value) => items.push(value),
-                Option::None => (),
+                Some(value) => items.push(value),
+                None => (),
             }
         };
         let ast = if ctx.diagnostics.len() == 0 {

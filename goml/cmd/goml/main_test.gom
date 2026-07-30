@@ -13,7 +13,7 @@ fn project_context(entry_package: string) -> project::Context {
             module_dir: ".",
             module_path: "alice::demo",
             entry_package,
-            packages: Vec::new().pushed(project::Package {
+            packages: Vec::[project::Package {
                 name: entry_package,
                 declared_name: "main",
                 module_name: "alice::demo",
@@ -21,14 +21,14 @@ fn project_context(entry_package: string) -> project::Context {
                 artifact_prefix: "pkg",
                 files: Vec::new(),
                 imports: Vec::new(),
-            }),
-            sources: Vec::new().pushed(project::ModuleSource {
+            }],
+            sources: Vec::[project::ModuleSource {
                 name: "alice::demo",
                 directory: ".",
                 artifact_prefix: "pkg",
                 dependencies: Vec::new(),
-            }),
-            order: Vec::new().pushed(entry_package),
+            }],
+            order: Vec::[entry_package],
         },
         compiler: "gomlc",
         compiler_world_artifact: false,
@@ -43,14 +43,14 @@ fn utility_text_operations_are_deterministic() -> unit {
     testing::assert(util::ends_with("abc", "bc"));
     testing::assert(util::contains("abcdef", "cde"));
     testing::assert(util::string_vec_contains(
-        Vec::new().pushed("goml").pushed("gomlc"),
+        Vec::["goml", "gomlc"],
         "gomlc",
     ));
-    testing::assert(util::int_vec_contains(Vec::new().pushed(1).pushed(2), 2));
+    testing::assert(util::int_vec_contains(Vec::[1, 2], 2));
     testing::assert_eq(
         util::join(
             util::sorted_unique(
-                Vec::new().pushed("b").pushed("a").pushed("b"),
+                Vec::["b", "a", "b"],
             ),
             ",",
         ),
@@ -63,69 +63,69 @@ fn json_parser_reads_package_info_shape() -> unit {
     let value = match json::parse(
         "{\"files\":[{\"package\":\"main\",\"uses\":[]}],\"protocol_version\":1}",
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             json::Value::Null
         },
     };
     match json::field(value, "protocol_version") {
-        Option::Some(json::Value::Number(value)) => {
+        Some(Number(value)) => {
             testing::assert_eq(value, "1")
         },
         _ => testing::fail("missing protocol version"),
     };
     match json::field(value, "files") {
-        Option::Some(value) => match json::as_array(value) {
-            Option::Some(values) => testing::assert_eq(values.len(), 1),
-            Option::None => testing::fail("files was not an array"),
+        Some(value) => match json::as_array(value) {
+            Some(values) => testing::assert_eq(values.len(), 1),
+            None => testing::fail("files was not an array"),
         },
-        Option::None => testing::fail("missing files"),
+        None => testing::fail("missing files"),
     }
 }
 
 #[test]
 fn manifest_parser_reads_project_manifest() -> unit {
     match manifest::load("goml.toml") {
-        Result::Ok(value) => {
+        Ok(value) => {
             testing::assert_eq(
                 value.module_path,
                 "gomlang::bootstrap_goml",
             );
             testing::assert_eq(value.target_dir, "_artifact")
         },
-        Result::Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message),
     }
 }
 
 #[test]
 fn run_plan_places_executables_under_package_paths() -> unit {
     let root = match project::run_plan(project_context("alice::demo")) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             return ()
         },
     };
     match root.executable {
-        Option::Some(value) => testing::assert_eq(
+        Some(value) => testing::assert_eq(
             value,
             path::join(path::join("_artifact", "bin"), "demo"),
         ),
-        Option::None => testing::fail("missing root executable"),
+        None => testing::fail("missing root executable"),
     };
 
     let nested = match project::run_plan(
         project_context("alice::demo::cmd::server"),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             return ()
         },
     };
     match nested.executable {
-        Option::Some(value) => testing::assert_eq(
+        Some(value) => testing::assert_eq(
             value,
             path::join(
                 path::join(
@@ -138,7 +138,7 @@ fn run_plan_places_executables_under_package_paths() -> unit {
                 "server",
             ),
         ),
-        Option::None => testing::fail("missing nested executable"),
+        None => testing::fail("missing nested executable"),
     }
 }
 

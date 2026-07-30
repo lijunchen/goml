@@ -25,7 +25,7 @@ fn starts_fresh_names_from_shared_counter() -> unit {
     let counter = Ref::new(61);
     let file = lower_with_counter(lowered, counter);
     match file.functions.get(0).body.binds.get(0) {
-        Bind::Join(value) => testing::assert_eq(value.name, "ret61"),
+        Join(value) => testing::assert_eq(value.name, "ret61"),
         _ => testing::fail("expected return join"),
     }
 }

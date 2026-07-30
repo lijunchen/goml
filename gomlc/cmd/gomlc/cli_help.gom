@@ -326,12 +326,12 @@ fn unexpected_cli_option_error_with_usage(
     usage: string,
 ) -> string {
     match similar_cli_argument(command, argument) {
-        Option::Some(similar) => unexpected_similar_argument_error(
+        Some(similar) => unexpected_similar_argument_error(
             argument,
             similar,
             similar_cli_argument_usage(command, similar),
         ),
-        Option::None => unexpected_argument_error_with_usage(
+        None => unexpected_argument_error_with_usage(
             argument,
             false,
             usage,
@@ -365,8 +365,8 @@ fn missing_required_arguments_error(command: string, arguments: Vec[string]) -> 
 
 fn value_required_error(argument: string, possible_values: Option[string]) -> string {
     let values = match possible_values {
-        Option::Some(values) => "\n  [possible values: " + values + "]",
-        Option::None => "",
+        Some(values) => "\n  [possible values: " + values + "]",
+        None => "",
     };
     "error: a value is required for '"
         + argument
@@ -604,12 +604,12 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     let similar: Vec[CliSimilarity] = Vec::new();
     for candidate in candidates {
         match cli_jaro_similarity(command, candidate) {
-            Option::Some(value) => if value.numerator * 10 >= value.denominator * 7 {
+            Some(value) => if value.numerator * 10 >= value.denominator * 7 {
                 similar.push(value)
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         }
     };
     for index in range(1, similar.len()) {
@@ -676,8 +676,8 @@ fn fail_unknown_subcommand(command: string) -> unit {
 fn handle_cli_parse_error(command: string, error: string) -> unit {
     if is_cli_help_signal(error) {
         match command_help(command) {
-            Option::Some(help) => print_cli_help(help),
-            Option::None => (),
+            Some(help) => print_cli_help(help),
+            None => (),
         };
         process::exit(0)
     } else {
@@ -690,13 +690,13 @@ fn run_help_command(args: Vec[string]) -> unit {
         print_cli_help(top_level_help())
     } else if args.len() == 3 {
         match command_help(args.get(2)) {
-            Option::Some(help) => print_cli_help(help),
-            Option::None => fail_unknown_subcommand(args.get(2)),
+            Some(help) => print_cli_help(help),
+            None => fail_unknown_subcommand(args.get(2)),
         }
     } else {
         let command = args.get(2);
         match command_help(command) {
-            Option::Some(_) => {
+            Some(_) => {
                 let usage = if command == "help" {
                     "gomlc help [COMMAND]..."
                 } else {
@@ -715,7 +715,7 @@ fn run_help_command(args: Vec[string]) -> unit {
                         + footer,
                 )
             },
-            Option::None => fail_unknown_subcommand(command),
+            None => fail_unknown_subcommand(command),
         }
     }
 }

@@ -142,7 +142,7 @@ fn std_import(value: string) -> bool {
 
 fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
     match value.ast {
-        Option::Some(file) => {
+        Some(file) => {
             for use_decl in file.uses {
                 let package_path = import_path_text(use_decl.path);
                 if !std_import(package_path) {
@@ -153,13 +153,13 @@ fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
             };
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
 fn imports_package(value: ast::LowerResult, expected: string) -> bool {
     match value.ast {
-        Option::Some(file) => {
+        Some(file) => {
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == expected {
                     return true
@@ -169,13 +169,13 @@ fn imports_package(value: ast::LowerResult, expected: string) -> bool {
             };
             false
         },
-        Option::None => false,
+        None => false,
     }
 }
 
 fn has_standard_import(value: ast::LowerResult) -> bool {
     match value.ast {
-        Option::Some(file) => {
+        Some(file) => {
             for use_decl in file.uses {
                 if std_import(import_path_text(use_decl.path)) {
                     return true
@@ -185,7 +185,7 @@ fn has_standard_import(value: ast::LowerResult) -> bool {
             };
             false
         },
-        Option::None => false,
+        None => false,
     }
 }
 
@@ -246,8 +246,8 @@ fn compile_standard_package(
         ()
     };
     let hir_file = match hir_value.hir {
-        Option::Some(file) => file,
-        Option::None => {
+        Some(file) => file,
+        None => {
             fail("error[compile]: missing standard package " + package_name);
             hir::File {
                 package_name,
@@ -276,8 +276,8 @@ fn compile_standard_package(
     };
     let signatures = tast::package_signatures(hir_file);
     let tast_file = match tast_value.tast {
-        Option::Some(value) => value,
-        Option::None => {
+        Some(value) => value,
+        None => {
             fail("error[compile]: missing typed standard package " + package_name);
             tast::File {
                 items: Vec::new(),
@@ -341,8 +341,8 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         "builtin_contract.gom",
     );
     let signatures = match lowered.hir {
-        Option::Some(file) => tast::package_signatures(file),
-        Option::None => {
+        Some(file) => tast::package_signatures(file),
+        None => {
             fail("error[compile]: failed to lower builtin package");
             tast::PackageSignatures {
                 traits: Vec::new(),
@@ -368,8 +368,8 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         .pushed("ToString")
     {
         match tast::builtin_trait_info(name) {
-            Option::Some(value) => traits.push(value),
-            Option::None => fail("error[compile]: missing builtin trait " + name),
+            Some(value) => traits.push(value),
+            None => fail("error[compile]: missing builtin trait " + name),
         }
     };
     let signatures = tast::PackageSignatures {
@@ -456,8 +456,8 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
     let functions = Vec::new();
     for name in contract_functions {
         match tast::builtin_function_scheme(name) {
-            Option::Some(value) => functions.push(value),
-            Option::None => fail("error[compile]: missing builtin function " + name),
+            Some(value) => functions.push(value),
+            None => fail("error[compile]: missing builtin function " + name),
         }
     };
     for value in signatures.functions {
@@ -471,8 +471,8 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
     };
     let checked = tast::check(lowered);
     let file = match checked.tast {
-        Option::Some(file) => file,
-        Option::None => {
+        Some(file) => file,
+        None => {
             fail("error[compile]: failed to typecheck builtin package");
             tast::File {
                 items: Vec::new(),
@@ -962,15 +962,15 @@ fn hir_diagnostics(
 
 fn diagnostic_span_start(value: tast::Diagnostic) -> int {
     match value.span {
-        Option::Some(span) => span.start,
-        Option::None => if value.source_path == "" { 2147483647 } else { 0 },
+        Some(span) => span.start,
+        None => if value.source_path == "" { 2147483647 } else { 0 },
     }
 }
 
 fn diagnostic_span_end(value: tast::Diagnostic) -> int {
     match value.span {
-        Option::Some(span) => span.end,
-        Option::None => if value.source_path == "" { 2147483647 } else { 0 },
+        Some(span) => span.end,
+        None => if value.source_path == "" { 2147483647 } else { 0 },
     }
 }
 
@@ -1022,8 +1022,8 @@ fn diagnostic_source(
         fallback_source
     } else {
         match fs::read_file(source_path) {
-            Result::Ok(source) => source,
-            Result::Err(_) => "",
+            Ok(source) => source,
+            Err(_) => "",
         }
     }
 }
@@ -1124,11 +1124,11 @@ fn render_diagnostic_label(
         builder.write_string("..");
         builder.write_string(span.end.to_string());
         match message {
-            Option::Some(value) => {
+            Some(value) => {
                 builder.write_string(": ");
                 builder.write_string(value)
             },
-            Option::None => (),
+            None => (),
         }
     } else {
         let start = source_position(source, span.start);
@@ -1145,11 +1145,11 @@ fn render_diagnostic_label(
             ()
         };
         match message {
-            Option::Some(value) => {
+            Some(value) => {
                 builder.write_string(": ");
                 builder.write_string(value)
             },
-            Option::None => (),
+            None => (),
         };
         let line_number = (start.line + 1).to_string();
         let gutter = line_number.len();
@@ -1194,15 +1194,15 @@ fn render_typer_diagnostic(
 ) -> string {
     let builder = text::StringBuilder::new();
     builder.write_string(match value.severity {
-        tast::DiagnosticSeverity::Error => "error[",
-        tast::DiagnosticSeverity::Warning => "warning[",
+        Error => "error[",
+        Warning => "warning[",
     });
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
     let inference = value.message == "Could not infer type";
     match if inference { Option::None } else { value.span } {
-        Option::Some(span) => render_diagnostic_label(
+        Some(span) => render_diagnostic_label(
             builder,
             "primary",
             value.source_path,
@@ -1211,7 +1211,7 @@ fn render_typer_diagnostic(
             fallback_path,
             fallback_source,
         ),
-        Option::None => if value.source_path != "" && !inference {
+        None => if value.source_path != "" && !inference {
             builder.write_string("\nat: ");
             builder.write_string(value.source_path)
         } else {
@@ -1319,14 +1319,14 @@ fn compact_diagnostic_line(
     source: string,
 ) -> unit {
     match span {
-        Option::Some(value) => {
+        Some(value) => {
             let position = source_position(source, value.start);
             builder.write_string((position.line + 1).to_string());
             builder.write_char(':');
             builder.write_string((position.column + 1).to_string());
             builder.write_string(": ")
         },
-        Option::None => (),
+        None => (),
     };
     builder.write_string(message);
     builder.write_char('\n')
@@ -1460,8 +1460,8 @@ fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagno
     let result: Vec[tast::Diagnostic] = Vec::new();
     for value in values {
         match value.severity {
-            tast::DiagnosticSeverity::Error => result.push(value),
-            tast::DiagnosticSeverity::Warning => (),
+            Error => result.push(value),
+            Warning => (),
         }
     };
     for index in range(1, result.len()) {
@@ -1481,8 +1481,8 @@ fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagno
 fn typer_diagnostics_have_errors(diagnostics: Vec[tast::Diagnostic]) -> bool {
     for diagnostic in diagnostics {
         match diagnostic.severity {
-            tast::DiagnosticSeverity::Error => return true,
-            tast::DiagnosticSeverity::Warning => (),
+            Error => return true,
+            Warning => (),
         }
     };
     false
@@ -1519,10 +1519,10 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         ()
     };
     match single_file_project_import(ast_value) {
-        Option::Some(package_path) => return "single-file compilation cannot use project package "
+        Some(package_path) => return "single-file compilation cannot use project package "
             + package_path
             + "\n",
-        Option::None => (),
+        None => (),
     };
     let ast_value = hir::expand_derives(ast_value);
     if ast_value.diagnostics.len() > 0 {
@@ -1547,12 +1547,12 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         Option::None
     };
     let hir_dependencies = match standard {
-        Option::Some(value) => selected_standard_hir(ast_value, value),
-        Option::None => Vec::new(),
+        Some(value) => selected_standard_hir(ast_value, value),
+        None => Vec::new(),
     };
     let core_dependencies = match standard {
-        Option::Some(value) => selected_standard_core(ast_value, value),
-        Option::None => Vec::new(),
+        Some(value) => selected_standard_core(ast_value, value),
+        None => Vec::new(),
     };
     let tast_value = tast::check_for_link_with_dependencies(
         hir_value,
@@ -1581,8 +1581,8 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     );
     let mono_result = mono::lower_checked(core_value);
     match mono_result.error {
-        Option::Some(error) => error + "\n",
-        Option::None => "",
+        Some(error) => error + "\n",
+        None => "",
     }
 }
 
@@ -1601,20 +1601,20 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
 fn lower_mono_or_fail(value: core::File) -> core::File {
     let result = mono::lower_checked(value);
     match result.error {
-        Option::Some(error) => {
+        Some(error) => {
             fail("error[compile]: " + error);
             result.file
         },
-        Option::None => result.file,
+        None => result.file,
     }
 }
 
 fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
     match value.tast {
-        Option::Some(file) => {
+        Some(file) => {
             for item in file.items {
                 match item {
-                    tast::Item::Function(function) => if function.name == "main" {
+                    Function(function) => if function.name == "main" {
                         return true
                     } else {
                         ()
@@ -1624,7 +1624,7 @@ fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
             };
             false
         },
-        Option::None => false,
+        None => false,
     }
 }
 
@@ -1642,10 +1642,10 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let ast_value = ast::lower(parsed);
     fail_on_ast_diagnostics(ast_value.diagnostics, "lower", source_path, source);
     match single_file_project_import(ast_value) {
-        Option::Some(package_path) => fail(
+        Some(package_path) => fail(
             "error[compile]: single-file compilation cannot use project package " + package_path,
         ),
-        Option::None => (),
+        None => (),
     };
     let ast_value = hir::expand_derives(ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
@@ -1661,12 +1661,12 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
         Option::None
     };
     let hir_dependencies = match standard {
-        Option::Some(value) => selected_standard_hir(ast_value, value),
-        Option::None => Vec::new(),
+        Some(value) => selected_standard_hir(ast_value, value),
+        None => Vec::new(),
     };
     let core_dependencies = match standard {
-        Option::Some(value) => selected_standard_core(ast_value, value),
-        Option::None => Vec::new(),
+        Some(value) => selected_standard_core(ast_value, value),
+        None => Vec::new(),
     };
     let tast_value = tast::check_for_link_with_dependencies(
         hir_value,
@@ -1722,12 +1722,12 @@ pub fn compile_source_or_diagnostics(
         ()
     };
     match single_file_project_import(ast_value) {
-        Option::Some(package_path) => return SourceCompilation::Diagnostics(
+        Some(package_path) => return SourceCompilation::Diagnostics(
             "single-file compilation cannot use project package "
                 + package_path
                 + "\n",
         ),
-        Option::None => (),
+        None => (),
     };
     let ast_value = hir::expand_derives(ast_value);
     if ast_value.diagnostics.len() > 0 {
@@ -1756,12 +1756,12 @@ pub fn compile_source_or_diagnostics(
         Option::None
     };
     let hir_dependencies = match standard {
-        Option::Some(value) => selected_standard_hir(ast_value, value),
-        Option::None => Vec::new(),
+        Some(value) => selected_standard_hir(ast_value, value),
+        None => Vec::new(),
     };
     let core_dependencies = match standard {
-        Option::Some(value) => selected_standard_core(ast_value, value),
-        Option::None => Vec::new(),
+        Some(value) => selected_standard_core(ast_value, value),
+        None => Vec::new(),
     };
     let tast_value = tast::check_for_link_with_dependencies(
         hir_value,
@@ -1791,8 +1791,8 @@ pub fn compile_source_or_diagnostics(
     );
     let mono_result = mono::lower_checked(core_value);
     match mono_result.error {
-        Option::Some(error) => SourceCompilation::Diagnostics(error + "\n"),
-        Option::None => {
+        Some(error) => SourceCompilation::Diagnostics(error + "\n"),
+        None => {
             let mono_value = mono_result.file;
             let lift_value = lift::lower_with_counter(mono_value, counter);
             let anf_value = anf::lower_with_counter(lift_value, counter);
@@ -1896,15 +1896,15 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> un
 
 fn write_stdout(data: bytes::Bytes) -> unit {
     match io::write_stdout(data) {
-        Result::Ok(()) => (),
-        Result::Err(error) => fail(error),
+        Ok(()) => (),
+        Err(error) => fail(error),
     }
 }
 
 fn bytes_to_string(data: bytes::Bytes) -> string {
     match data.to_string() {
-        Result::Ok(value) => value,
-        Result::Err(error) => fail_string(error),
+        Ok(value) => value,
+        Err(error) => fail_string(error),
     }
 }
 
@@ -1932,16 +1932,16 @@ fn trim_ascii(value: string) -> string {
 
 fn temp_root() -> string {
     match env::var("TMPDIR") {
-        Option::Some(value) => if value == "" { "/tmp" } else { value },
-        Option::None => "/tmp",
+        Some(value) => if value == "" { "/tmp" } else { value },
+        None => "/tmp",
     }
 }
 
 fn temp_go_path(source_path: string, source: string) -> string {
     let directory = path::join(temp_root(), "gomlc-selfhost");
     match fs::create_dir_all(directory) {
-        Result::Ok(()) => (),
-        Result::Err(error) => fail(error),
+        Ok(()) => (),
+        Err(error) => fail(error),
     };
     let name = Hash::hash(source_path + "\n" + source).to_string() + ".go";
     path::join(directory, name)
@@ -1953,8 +1953,8 @@ fn command_succeeded(output: process::Output) -> bool {
 
 fn try_execute_with_yaegi(directory: string, go_file: string) -> bool {
     let available = match process::Command::new("yaegi").arg("help").output() {
-        Result::Ok(output) => command_succeeded(output),
-        Result::Err(_) => false,
+        Ok(output) => command_succeeded(output),
+        Err(_) => false,
     };
     if !available {
         false
@@ -1966,13 +1966,13 @@ fn try_execute_with_yaegi(directory: string, go_file: string) -> bool {
             .env("TZ", "UTC")
             .output()
         {
-            Result::Ok(output) => if command_succeeded(output) {
+            Ok(output) => if command_succeeded(output) {
                 write_stdout(process::Output::stdout(output));
                 true
             } else {
                 false
             },
-            Result::Err(_) => false,
+            Err(_) => false,
         }
     }
 }
@@ -1992,7 +1992,7 @@ fn execute_with_go_run(directory: string, go_file: string) -> unit {
         .env("GO111MODULE", "off")
         .output()
     {
-        Result::Ok(output) => if command_succeeded(output) {
+        Ok(output) => if command_succeeded(output) {
             write_stdout(process::Output::stdout(output))
         } else {
             fail(
@@ -2000,19 +2000,19 @@ fn execute_with_go_run(directory: string, go_file: string) -> unit {
                     + trim_ascii(bytes_to_string(process::Output::stderr(output))),
             )
         },
-        Result::Err(error) => fail("failed to execute go run: " + error),
+        Err(error) => fail("failed to execute go run: " + error),
     }
 }
 
 fn execute_go_source(source_path: string, source: string) -> unit {
     let go_file = temp_go_path(source_path, source);
     match fs::write_file(go_file, source) {
-        Result::Ok(()) => (),
-        Result::Err(error) => fail(error),
+        Ok(()) => (),
+        Err(error) => fail(error),
     };
     let directory = match path::parent(go_file) {
-        Option::Some(value) => value,
-        Option::None => temp_root(),
+        Some(value) => value,
+        None => temp_root(),
     };
     if try_execute_with_yaegi(directory, go_file) {
         ()

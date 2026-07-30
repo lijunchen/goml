@@ -87,8 +87,8 @@ fn lower_package(value: Project) -> LoweredPackage {
             ))
         };
         match value.hir {
-            Option::Some(file) => files.push(file),
-            Option::None => (),
+            Some(file) => files.push(file),
+            None => (),
         }
     };
     LoweredPackage {
@@ -110,20 +110,20 @@ fn dependency_sources(
     overrides: Vec[SourceOverride],
 ) -> Result[Vec[SourceFile], string] {
     match standard_library_source(package_name) {
-        Option::Some(file) => {
+        Some(file) => {
             let files = Vec::new();
             files.push(file);
             Result::Ok(files)
         },
-        Option::None => if is_local_package(module_path, package_name) {
+        None => if is_local_package(module_path, package_name) {
             match dependency_project(
                 module_root,
                 module_path,
                 package_name,
                 overrides,
             ) {
-                Result::Ok(project) => Result::Ok(project.files),
-                Result::Err(error) => Result::Err(error),
+                Ok(project) => Result::Ok(project.files),
+                Err(error) => Result::Err(error),
             }
         } else {
             external_package_sources(
@@ -156,7 +156,7 @@ fn collect_dependency(
             package_name,
             overrides,
         ) {
-            Result::Ok(sources) => {
+            Ok(sources) => {
                 for source in sources {
                     all_sources.push(source)
                 };
@@ -190,7 +190,7 @@ fn collect_dependency(
                     dependencies.push(file)
                 }
             },
-            Result::Err(error) => diagnostics.push(query_diagnostic(
+            Err(error) => diagnostics.push(query_diagnostic(
                 source_path,
                 "project",
                 error,
@@ -263,12 +263,12 @@ fn single_file_analysis(
 ) -> Analysis {
     let lowered = hir::lower(ast::lower(parsed), source_path);
     let package_name = match lowered.hir {
-        Option::Some(file) => if file.package_name == "" {
+        Some(file) => if file.package_name == "" {
             "main"
         } else {
             file.package_name
         },
-        Option::None => "main",
+        None => "main",
     };
     let files = Vec::new();
     files.push(SourceFile {
@@ -308,7 +308,7 @@ pub fn analyze_with_overrides(
     let parsed = parser::parse(source);
     let syntax = syntax_index(parsed.root);
     match discover_project(source_path, source, overrides) {
-        Result::Ok(Option::Some(project)) => {
+        Ok(Some(project)) => {
             let package_name = project.package_name;
             let result = check_project(project, overrides);
             Analysis {
@@ -323,7 +323,7 @@ pub fn analyze_with_overrides(
                 checked: result.checked,
             }
         },
-        Result::Ok(Option::None) => {
+        Ok(None) => {
             single_file_analysis(
                 source_path,
                 source,
@@ -332,7 +332,7 @@ pub fn analyze_with_overrides(
                 overrides,
             )
         },
-        Result::Err(error) => Analysis {
+        Err(error) => Analysis {
             source_path,
             source,
             package_name: "",

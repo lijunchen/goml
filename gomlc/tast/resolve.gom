@@ -41,8 +41,8 @@ struct MethodCandidate {
 
 fn short_name(value: string) -> string {
     match strings::rfind(value, "::") {
-        Option::Some(index) => value.byte_slice(index + 2, value.byte_len()),
-        Option::None => value,
+        Some(index) => value.byte_slice(index + 2, value.byte_len()),
+        None => value,
     }
 }
 
@@ -59,8 +59,8 @@ fn add_name_index(
     exact.set(name, index);
     let short_name = short_name(name);
     match short.get(short_name) {
-        Option::Some(_) => short.set(short_name, -1),
-        Option::None => short.set(short_name, index),
+        Some(_) => short.set(short_name, -1),
+        None => short.set(short_name, index),
     }
 }
 
@@ -73,12 +73,12 @@ fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
             values.get(index).name
         };
         match result.get(name) {
-            Option::Some(_) => if short {
+            Some(_) => if short {
                 result.set(name, -1)
             } else {
                 result.set(name, index)
             },
-            Option::None => result.set(name, index),
+            None => result.set(name, index),
         }
     };
     result
@@ -111,12 +111,12 @@ fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, in
             values.get(index).name
         };
         match result.get(name) {
-            Option::Some(_) => if short {
+            Some(_) => if short {
                 result.set(name, -1)
             } else {
                 result.set(name, index)
             },
-            Option::None => result.set(name, index),
+            None => result.set(name, index),
         }
     };
     result
@@ -135,14 +135,14 @@ fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
 
 fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
     match ctx.enum_names.get(name) {
-        Option::Some(index) => Option::Some(ctx.enums.get(index)),
-        Option::None => match ctx.enum_short_names.get(short_name(name)) {
-            Option::Some(index) => if index >= 0 {
+        Some(index) => Option::Some(ctx.enums.get(index)),
+        None => match ctx.enum_short_names.get(short_name(name)) {
+            Some(index) => if index >= 0 {
                 Option::Some(ctx.enums.get(index))
             } else {
                 Option::None
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
     }
 }
@@ -160,14 +160,14 @@ fn find_enum_by_exact_name(ctx: Checker, name: string) -> Option[EnumInfo] {
 
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
     match ctx.struct_names.get(name) {
-        Option::Some(index) => Option::Some(ctx.structs.get(index)),
-        Option::None => match ctx.struct_short_names.get(short_name(name)) {
-            Option::Some(index) => if index >= 0 {
+        Some(index) => Option::Some(ctx.structs.get(index)),
+        None => match ctx.struct_short_names.get(short_name(name)) {
+            Some(index) => if index >= 0 {
                 Option::Some(ctx.structs.get(index))
             } else {
                 Option::None
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
     }
 }
@@ -188,20 +188,20 @@ fn find_struct_by_exact_name(
 
 fn find_expected_enum(ctx: Checker, name: string) -> Option[EnumInfo] {
     match find_enum_by_exact_name(ctx, name) {
-        Option::Some(value) => Option::Some(value),
-        Option::None => match find_struct_by_exact_name(ctx, name) {
-            Option::Some(_) => Option::None,
-            Option::None => find_enum_by_name(ctx, name),
+        Some(value) => Option::Some(value),
+        None => match find_struct_by_exact_name(ctx, name) {
+            Some(_) => Option::None,
+            None => find_enum_by_name(ctx, name),
         },
     }
 }
 
 fn find_expected_struct(ctx: Checker, name: string) -> Option[StructInfo] {
     match find_struct_by_exact_name(ctx, name) {
-        Option::Some(value) => Option::Some(value),
-        Option::None => match find_enum_by_exact_name(ctx, name) {
-            Option::Some(_) => Option::None,
-            Option::None => find_struct_by_name(ctx, name),
+        Some(value) => Option::Some(value),
+        None => match find_enum_by_exact_name(ctx, name) {
+            Some(_) => Option::None,
+            None => find_struct_by_name(ctx, name),
         },
     }
 }
@@ -209,20 +209,20 @@ fn find_expected_struct(ctx: Checker, name: string) -> Option[StructInfo] {
 fn pattern_owner_is_builtin_enum(ctx: Checker, name: string) -> bool {
     (name == "Option" || name == "Result")
         && match find_enum_by_exact_name(ctx, name) {
-            Option::Some(_) => false,
-            Option::None => match find_struct_by_exact_name(ctx, name) {
-                Option::Some(_) => false,
-                Option::None => true,
+            Some(_) => false,
+            None => match find_struct_by_exact_name(ctx, name) {
+                Some(_) => false,
+                None => true,
             },
         }
 }
 
 fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
     match find_struct_by_name(ctx, name) {
-        Option::Some(_) => true,
-        Option::None => match find_enum_by_name(ctx, name) {
-            Option::Some(_) => true,
-            Option::None => false,
+        Some(_) => true,
+        None => match find_enum_by_name(ctx, name) {
+            Some(_) => true,
+            None => false,
         },
     }
 }
@@ -240,8 +240,8 @@ fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
     let args: Vec[Type] = Vec::new();
     for generic in value.generics {
         match find_substitution(substitutions, generic) {
-            Option::Some(ty) => args.push(ty),
-            Option::None => (),
+            Some(ty) => args.push(ty),
+            None => (),
         }
     };
     (nominal_type(value.name, args), substitutions)
@@ -253,7 +253,7 @@ fn resolve_user_constructor(
     variant_index: int,
 ) -> Option[ResolvedConstructor] {
     match find_variant(value, variant_index) {
-        Option::Some(variant) => {
+        Some(variant) => {
             let (ty, substitutions) = instantiate_enum(ctx, value);
             let fields: Vec[Type] = Vec::new();
             for field in enum_variant_field_types(variant.fields) {
@@ -269,12 +269,12 @@ fn resolve_user_constructor(
                 fields,
                 ty,
                 named: match variant.fields {
-                    EnumVariantFields::Struct(_) => true,
+                    Struct(_) => true,
                     _ => false,
                 },
             })
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -284,7 +284,7 @@ fn resolve_named_constructor(
     variant_name: string,
 ) -> Option[ResolvedConstructor] {
     match find_enum_by_name(ctx, enum_name) {
-        Option::Some(value) => {
+        Some(value) => {
             for index in range(0, value.variants.len()) {
                 if value.variants.get(index).name == variant_name {
                     return resolve_user_constructor(ctx, value, index)
@@ -294,13 +294,13 @@ fn resolve_named_constructor(
             };
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
 fn split_constructor_name(value: string) -> Option[(string, string)] {
     match strings::rfind(value, "::") {
-        Option::Some(index) => if index > 0 && index + 2 < value.byte_len() {
+        Some(index) => if index > 0 && index + 2 < value.byte_len() {
             Option::Some((
                 value.byte_slice(0, index),
                 value.byte_slice(index + 2, value.byte_len()),
@@ -308,7 +308,7 @@ fn split_constructor_name(value: string) -> Option[(string, string)] {
         } else {
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -356,15 +356,15 @@ fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedCon
 
 fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[ResolvedConstructor] {
     match value {
-        hir::ConstructorRef::Resolved { enum_def: id, variant_index: variant } => match find_enum_by_def(ctx, id) {
-            Option::Some(info) => resolve_user_constructor(ctx, info, variant),
-            Option::None => Option::None,
+        Resolved { enum_def: id, variant_index: variant } => match find_enum_by_def(ctx, id) {
+            Some(info) => resolve_user_constructor(ctx, info, variant),
+            None => Option::None,
         },
-        hir::ConstructorRef::Unresolved(name) => match resolve_builtin_constructor(ctx, name) {
-            Option::Some(value) => Option::Some(value),
-            Option::None => match split_constructor_name(name) {
-                Option::Some(parts) => resolve_named_constructor(ctx, parts.0, parts.1),
-                Option::None => Option::None,
+        Unresolved(name) => match resolve_builtin_constructor(ctx, name) {
+            Some(value) => Option::Some(value),
+            None => match split_constructor_name(name) {
+                Some(parts) => resolve_named_constructor(ctx, parts.0, parts.1),
+                None => Option::None,
             },
         },
     }
@@ -372,31 +372,31 @@ fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[Resol
 
 fn pattern_head_span(value: hir::PatternHead) -> ast::Span {
     match value {
-        hir::PatternHead::Resolved {
+        Resolved {
             enum_def: _,
             variant_index: _,
             span,
         }
-        | hir::PatternHead::Qualified { name: _, span }
-        | hir::PatternHead::Contextual { name: _, span } => span,
+        | Qualified { name: _, span }
+        | Contextual { name: _, span } => span,
     }
 }
 
 fn pattern_head_name(ctx: Checker, value: hir::PatternHead) -> string {
     match value {
-        hir::PatternHead::Resolved {
+        Resolved {
             enum_def,
             variant_index,
             span: _,
         } => match find_enum_by_def(ctx, enum_def) {
-            Option::Some(info) => match find_variant(info, variant_index) {
-                Option::Some(variant) => info.name + "::" + variant.name,
-                Option::None => "<resolved>",
+            Some(info) => match find_variant(info, variant_index) {
+                Some(variant) => info.name + "::" + variant.name,
+                None => "<resolved>",
             },
-            Option::None => "<resolved>",
+            None => "<resolved>",
         },
-        hir::PatternHead::Qualified { name, span: _ }
-        | hir::PatternHead::Contextual { name, span: _ } => name,
+        Qualified { name, span: _ }
+        | Contextual { name, span: _ } => name,
     }
 }
 
@@ -414,8 +414,8 @@ fn resolve_contextual_constructor(
     expected: Type,
 ) -> Option[ResolvedConstructor] {
     match pattern_expected_owner(ctx, expected) {
-        Option::Some(owner) => match find_expected_enum(ctx, owner) {
-            Option::Some(value) => {
+        Some(owner) => match find_expected_enum(ctx, owner) {
+            Some(value) => {
                 for index in range(0, value.variants.len()) {
                     if value.variants.get(index).name == name {
                         return resolve_user_constructor(ctx, value, index)
@@ -425,13 +425,13 @@ fn resolve_contextual_constructor(
                 };
                 Option::None
             },
-            Option::None => if pattern_owner_is_builtin_enum(ctx, owner) {
+            None => if pattern_owner_is_builtin_enum(ctx, owner) {
                 resolve_builtin_constructor(ctx, owner + "::" + name)
             } else {
                 Option::None
             },
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -441,7 +441,7 @@ fn resolve_pattern_constructor(
     expected: Type,
 ) -> Option[ResolvedConstructor] {
     match head {
-        hir::PatternHead::Resolved {
+        Resolved {
             enum_def,
             variant_index,
             span: _,
@@ -452,10 +452,10 @@ fn resolve_pattern_constructor(
                 variant_index,
             },
         ),
-        hir::PatternHead::Qualified { name, span: _ } => {
+        Qualified { name, span: _ } => {
             resolve_constructor(ctx, hir::ConstructorRef::Unresolved(name))
         },
-        hir::PatternHead::Contextual { name, span: _ } => {
+        Contextual { name, span: _ } => {
             resolve_contextual_constructor(ctx, name, expected)
         },
     }
@@ -466,8 +466,8 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
     let args: Vec[Type] = Vec::new();
     for generic in value.generics {
         match find_substitution(substitutions, generic) {
-            Option::Some(ty) => args.push(ty),
-            Option::None => (),
+            Some(ty) => args.push(ty),
+            None => (),
         }
     };
     let fields: Vec[(string, Type)] = Vec::new();
@@ -491,8 +491,8 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
 
 fn resolve_struct(ctx: Checker, name: string) -> Option[ResolvedStruct] {
     match find_struct_by_name(ctx, name) {
-        Option::Some(value) => Option::Some(instantiate_struct(ctx, value)),
-        Option::None => Option::None,
+        Some(value) => Option::Some(instantiate_struct(ctx, value)),
+        None => Option::None,
     }
 }
 
@@ -532,10 +532,10 @@ fn resolve_named_variant_in(
         let variant = value.variants.get(index);
         if variant.name == variant_name {
             return match enum_variant_named_fields(variant.fields) {
-                Option::Some(fields) => NamedFieldConstructorResolution::Found(
+                Some(fields) => NamedFieldConstructorResolution::Found(
                     instantiate_named_variant(ctx, value, index, fields),
                 ),
-                Option::None => NamedFieldConstructorResolution::WrongStyle,
+                None => NamedFieldConstructorResolution::WrongStyle,
             }
         } else {
             ()
@@ -550,8 +550,8 @@ fn resolve_named_variant_at(
     variant_index: int,
 ) -> NamedFieldConstructorResolution {
     match find_variant(value, variant_index) {
-        Option::Some(variant) => match enum_variant_named_fields(variant.fields) {
-            Option::Some(fields) => NamedFieldConstructorResolution::Found(
+        Some(variant) => match enum_variant_named_fields(variant.fields) {
+            Some(fields) => NamedFieldConstructorResolution::Found(
                 instantiate_named_variant(
                     ctx,
                     value,
@@ -559,9 +559,9 @@ fn resolve_named_variant_at(
                     fields,
                 ),
             ),
-            Option::None => NamedFieldConstructorResolution::WrongStyle,
+            None => NamedFieldConstructorResolution::WrongStyle,
         },
-        Option::None => NamedFieldConstructorResolution::Missing,
+        None => NamedFieldConstructorResolution::Missing,
     }
 }
 
@@ -570,18 +570,18 @@ fn resolve_named_field_constructor(
     name: string,
 ) -> NamedFieldConstructorResolution {
     match split_constructor_name(name) {
-        Option::Some(parts) => match find_enum_by_name(ctx, parts.0) {
-            Option::Some(value) => match resolve_named_variant_in(ctx, value, parts.1) {
-                NamedFieldConstructorResolution::Missing => (),
+        Some(parts) => match find_enum_by_name(ctx, parts.0) {
+            Some(value) => match resolve_named_variant_in(ctx, value, parts.1) {
+                Missing => (),
                 result => return result,
             },
-            Option::None => (),
+            None => (),
         },
-        Option::None => (),
+        None => (),
     };
     match resolve_struct(ctx, name) {
-        Option::Some(value) => return NamedFieldConstructorResolution::Found(value),
-        Option::None => (),
+        Some(value) => return NamedFieldConstructorResolution::Found(value),
+        None => (),
     };
     let candidates: Vec[(EnumInfo, int)] = Vec::new();
     for value in ctx.enums {
@@ -602,7 +602,7 @@ fn resolve_named_field_constructor(
         let value = candidate.0;
         let variant = value.variants.get(candidate.1);
         match enum_variant_named_fields(variant.fields) {
-            Option::Some(fields) => NamedFieldConstructorResolution::Found(
+            Some(fields) => NamedFieldConstructorResolution::Found(
                 instantiate_named_variant(
                     ctx,
                     value,
@@ -610,7 +610,7 @@ fn resolve_named_field_constructor(
                     fields,
                 ),
             ),
-            Option::None => NamedFieldConstructorResolution::WrongStyle,
+            None => NamedFieldConstructorResolution::WrongStyle,
         }
     }
 }
@@ -621,20 +621,20 @@ fn resolve_contextual_named_field_constructor(
     expected: Type,
 ) -> NamedFieldConstructorResolution {
     match pattern_expected_owner(ctx, expected) {
-        Option::Some(owner) => match find_expected_enum(ctx, owner) {
-            Option::Some(value) => resolve_named_variant_in(ctx, value, name),
-            Option::None => match find_expected_struct(ctx, owner) {
-                Option::Some(value) => if names_match(value.name, name) {
+        Some(owner) => match find_expected_enum(ctx, owner) {
+            Some(value) => resolve_named_variant_in(ctx, value, name),
+            None => match find_expected_struct(ctx, owner) {
+                Some(value) => if names_match(value.name, name) {
                     NamedFieldConstructorResolution::Found(
                         instantiate_struct(ctx, value),
                     )
                 } else {
                     NamedFieldConstructorResolution::Missing
                 },
-                Option::None => NamedFieldConstructorResolution::Missing,
+                None => NamedFieldConstructorResolution::Missing,
             },
         },
-        Option::None => NamedFieldConstructorResolution::Missing,
+        None => NamedFieldConstructorResolution::Missing,
     }
 }
 
@@ -644,20 +644,20 @@ fn resolve_pattern_named_field_constructor(
     expected: Type,
 ) -> NamedFieldConstructorResolution {
     match head {
-        hir::PatternHead::Resolved {
+        Resolved {
             enum_def,
             variant_index,
             span: _,
         } => match find_enum_by_def(ctx, enum_def) {
-            Option::Some(value) => {
+            Some(value) => {
                 resolve_named_variant_at(ctx, value, variant_index)
             },
-            Option::None => NamedFieldConstructorResolution::Missing,
+            None => NamedFieldConstructorResolution::Missing,
         },
-        hir::PatternHead::Qualified { name, span: _ } => {
+        Qualified { name, span: _ } => {
             resolve_named_field_constructor(ctx, name)
         },
-        hir::PatternHead::Contextual { name, span: _ } => {
+        Contextual { name, span: _ } => {
             resolve_contextual_named_field_constructor(ctx, name, expected)
         },
     }
@@ -665,12 +665,12 @@ fn resolve_pattern_named_field_constructor(
 
 fn nominal_arguments(value: Type) -> Vec[Type] {
     match prune(value) {
-        Type::App { ty: _, args } => args,
-        Type::VecType { elem }
-        | Type::Slice { elem }
-        | Type::RefType { elem }
-        | Type::Channel { elem } => one_type(elem),
-        Type::HashMap { key, value: item } => two_types(key, item),
+        App { ty: _, args } => args,
+        VecType { elem }
+        | Slice { elem }
+        | RefType { elem }
+        | Channel { elem } => one_type(elem),
+        HashMap { key, value: item } => two_types(key, item),
         _ => Vec::new(),
     }
 }
@@ -697,8 +697,8 @@ fn substitutions_for_nominal(
 fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] {
     let receiver = normalize_type(ctx, receiver);
     match type_constructor_name(receiver) {
-        Option::Some(owner) => match find_struct_by_name(ctx, owner) {
-            Option::Some(info) => {
+        Some(owner) => match find_struct_by_name(ctx, owner) {
+            Some(info) => {
                 let substitutions = substitutions_for_nominal(info.generics, receiver);
                 for offset in range(0, info.fields.len()) {
                     let field = info.fields.get(info.fields.len() - 1 - offset);
@@ -710,9 +710,9 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
                 };
                 Option::None
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -741,9 +741,9 @@ fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[h
 
 fn receiver_matches(owner: Type, receiver: Type) -> bool {
     match prune(owner) {
-        Type::Param { name: _ } | Type::Var(_) => true,
+        Param { name: _ } | Var(_) => true,
         owner => match (type_constructor_name(owner), type_constructor_name(receiver)) {
-            (Option::Some(first), Option::Some(second)) => names_match(first, second),
+            (Some(first), Some(second)) => names_match(first, second),
             _ => false,
         },
     }
@@ -766,16 +766,16 @@ fn call_type_lists_compatible(left: Vec[Type], right: Vec[Type]) -> bool {
 
 fn variable_accepts_type(variable: Ref[TypeVar], value: Type) -> bool {
     match variable.get() {
-        TypeVar::Link(inner) => call_types_compatible(inner, value),
-        TypeVar::Unbound { id: _, kind } => match prune(value) {
-            Type::Var(other) => match other.get() {
-                TypeVar::Link(inner) => variable_accepts_type(variable, inner),
-                TypeVar::Unbound { id: _, kind: other_kind } => match merge_var_kind(kind, other_kind) {
-                    Option::Some(_) => true,
-                    Option::None => false,
+        Link(inner) => call_types_compatible(inner, value),
+        Unbound { id: _, kind } => match prune(value) {
+            Var(other) => match other.get() {
+                Link(inner) => variable_accepts_type(variable, inner),
+                Unbound { id: _, kind: other_kind } => match merge_var_kind(kind, other_kind) {
+                    Some(_) => true,
+                    None => false,
                 },
             },
-            Type::Param { name: _ } | Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
+            Param { name: _ } | Projection { for_ty: _, name: _, trait_ref: _ } => true,
             other => kind_accepts(kind, other),
         },
     }
@@ -783,55 +783,55 @@ fn variable_accepts_type(variable: Ref[TypeVar], value: Type) -> bool {
 
 fn call_types_compatible(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
-        (Type::Error, _) | (_, Type::Error) => true,
-        (Type::Var(variable), value) => variable_accepts_type(variable, value),
-        (value, Type::Var(variable)) => variable_accepts_type(variable, value),
-        (Type::Param { name: _ }, _) | (_, Type::Param { name: _ }) => true,
-        (Type::Projection { for_ty: _, name: _, trait_ref: _ }, _) | (_, Type::Projection { for_ty: _, name: _, trait_ref: _ }) => true,
-        (Type::Unit, Type::Unit)
-        | (Type::Bool, Type::Bool)
-        | (Type::Int, Type::Int)
-        | (Type::Int8, Type::Int8)
-        | (Type::Int16, Type::Int16)
-        | (Type::Int32, Type::Int32)
-        | (Type::Int64, Type::Int64)
-        | (Type::Uint, Type::Uint)
-        | (Type::Uint8, Type::Uint8)
-        | (Type::Uint16, Type::Uint16)
-        | (Type::Uint32, Type::Uint32)
-        | (Type::Uint64, Type::Uint64)
-        | (Type::Float32, Type::Float32)
-        | (Type::Float64, Type::Float64)
-        | (Type::String, Type::String)
-        | (Type::Char, Type::Char) => true,
-        (Type::Tuple { items: left }, Type::Tuple { items: right }) => {
+        (Error, _) | (_, Error) => true,
+        (Var(variable), value) => variable_accepts_type(variable, value),
+        (value, Var(variable)) => variable_accepts_type(variable, value),
+        (Param { name: _ }, _) | (_, Param { name: _ }) => true,
+        (Projection { for_ty: _, name: _, trait_ref: _ }, _) | (_, Projection { for_ty: _, name: _, trait_ref: _ }) => true,
+        (Unit, Unit)
+        | (Bool, Bool)
+        | (Int, Int)
+        | (Int8, Int8)
+        | (Int16, Int16)
+        | (Int32, Int32)
+        | (Int64, Int64)
+        | (Uint, Uint)
+        | (Uint8, Uint8)
+        | (Uint16, Uint16)
+        | (Uint32, Uint32)
+        | (Uint64, Uint64)
+        | (Float32, Float32)
+        | (Float64, Float64)
+        | (String, String)
+        | (Char, Char) => true,
+        (Tuple { items: left }, Tuple { items: right }) => {
             call_type_lists_compatible(left, right)
         },
-        (Type::Con { name: left }, Type::Con { name: right }) | (Type::Dyn { trait_name: left }, Type::Dyn { trait_name: right }) => {
+        (Con { name: left }, Con { name: right }) | (Dyn { trait_name: left }, Dyn { trait_name: right }) => {
             names_match(left, right)
         },
-        (Type::App { ty: left_base, args: left_args }, Type::App { ty: right_base, args: right_args }) => {
+        (App { ty: left_base, args: left_args }, App { ty: right_base, args: right_args }) => {
             call_types_compatible(left_base, right_base)
                 && call_type_lists_compatible(left_args, right_args)
         },
-        (Type::Array { len: left_len, elem: left_elem }, Type::Array { len: right_len, elem: right_elem }) => {
+        (Array { len: left_len, elem: left_elem }, Array { len: right_len, elem: right_elem }) => {
             (left_len < 0 || right_len < 0 || left_len == right_len)
                 && call_types_compatible(left_elem, right_elem)
         },
-        (Type::Slice { elem: left }, Type::Slice { elem: right })
-        | (Type::VecType { elem: left }, Type::VecType { elem: right })
-        | (Type::RefType { elem: left }, Type::RefType { elem: right })
-        | (Type::Channel { elem: left }, Type::Channel { elem: right }) => {
+        (Slice { elem: left }, Slice { elem: right })
+        | (VecType { elem: left }, VecType { elem: right })
+        | (RefType { elem: left }, RefType { elem: right })
+        | (Channel { elem: left }, Channel { elem: right }) => {
             call_types_compatible(left, right)
         },
         (
-            Type::HashMap { key: left_key, value: left_value },
-            Type::HashMap { key: right_key, value: right_value },
+            HashMap { key: left_key, value: left_value },
+            HashMap { key: right_key, value: right_value },
         ) => {
             call_types_compatible(left_key, right_key)
                 && call_types_compatible(left_value, right_value)
         },
-        (Type::Func { params: left_params, ret_ty: left_ret }, Type::Func { params: right_params, ret_ty: right_ret }) => {
+        (Func { params: left_params, ret_ty: left_ret }, Func { params: right_params, ret_ty: right_ret }) => {
             call_type_lists_compatible(left_params, right_params)
                 && call_types_compatible(left_ret, right_ret)
         },
@@ -967,10 +967,10 @@ fn resolve_user_method(
 ) -> Option[ResolvedCallable] {
     for value in ctx.methods {
         let trait_matches = match (trait_name, value.trait_ref) {
-            (Option::Some(expected), Option::Some(reference)) => {
+            (Some(expected), Some(reference)) => {
                 names_match(expected, reference.name)
             },
-            (Option::None, _) => true,
+            (None, _) => true,
             _ => false,
         };
         if trait_matches && value.function.name == name
@@ -984,7 +984,7 @@ fn resolve_user_method(
             if (allow_bare_owner
                 && value.owner_generics.len() > 0
                 && match prune(receiver) {
-                    Type::Con { name: _ } => true,
+                    Con { name: _ } => true,
                     _ => false,
                 }) || unify(candidate.owner, receiver) {
                 return Option::Some(ResolvedCallable {
@@ -1013,7 +1013,7 @@ fn method_matches_call(
     expected: Option[Type],
 ) -> bool {
     match prune(value.ty) {
-        Type::Func { params, ret_ty } => if params.len() == args.len() + 1 {
+        Func { params, ret_ty } => if params.len() == args.len() + 1 {
             let matches = Ref::new(call_types_compatible(
                 normalize_type(ctx, params.get(0)),
                 normalize_type(ctx, receiver),
@@ -1029,7 +1029,7 @@ fn method_matches_call(
                 }
             };
             match expected {
-                Option::Some(ty) => if !call_types_compatible(
+                Some(ty) => if !call_types_compatible(
                     normalize_type(ctx, ret_ty),
                     normalize_type(ctx, ty),
                 ) {
@@ -1037,7 +1037,7 @@ fn method_matches_call(
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             };
             matches.get()
         } else {
@@ -1056,7 +1056,7 @@ fn context_trait_bound_satisfied(
     let reference = normalize_trait_ref(ctx, reference);
     for predicate in ctx.predicates {
         match predicate {
-            TypePredicate::Trait { for_ty: candidate_ty, trait_ref: candidate_ref } => {
+            Trait { for_ty: candidate_ty, trait_ref: candidate_ref } => {
                 if types_equal(normalize_type(ctx, candidate_ty), bound_ty)
                     && trait_ref_equal(normalize_trait_ref(ctx, candidate_ref), reference) {
                     return true
@@ -1064,7 +1064,7 @@ fn context_trait_bound_satisfied(
                     ()
                 }
             },
-            TypePredicate::Equality { lhs: _, rhs: _ } => (),
+            Equality { lhs: _, rhs: _ } => (),
         }
     };
     false
@@ -1077,14 +1077,14 @@ fn predicates_satisfied_at(
 ) -> bool {
     for predicate in predicates {
         match predicate {
-            TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
+            Trait { for_ty: bound_ty, trait_ref: reference } => {
                 if !trait_bound_satisfied_at(ctx, bound_ty, reference, depth) {
                     return false
                 } else {
                     ()
                 }
             },
-            TypePredicate::Equality { lhs: left, rhs: right } => {
+            Equality { lhs: left, rhs: right } => {
                 if !unify(normalize_type(ctx, left), normalize_type(ctx, right)) {
                     return false
                 } else {
@@ -1120,12 +1120,12 @@ fn require_predicate(
 
 fn contains_unbound_any_variable(value: Type) -> bool {
     match prune(value) {
-        Type::Var(variable) => match variable.get() {
-            TypeVar::Unbound { id: _, kind: VarKind::Any } => true,
-            TypeVar::Unbound { id: _, kind: _ } => false,
-            TypeVar::Link(inner) => contains_unbound_any_variable(inner),
+        Var(variable) => match variable.get() {
+            Unbound { id: _, kind: Any } => true,
+            Unbound { id: _, kind: _ } => false,
+            Link(inner) => contains_unbound_any_variable(inner),
         },
-        Type::Tuple { items: values } => {
+        Tuple { items: values } => {
             for value in values {
                 if contains_unbound_any_variable(value) {
                     return true
@@ -1135,24 +1135,24 @@ fn contains_unbound_any_variable(value: Type) -> bool {
             };
             false
         },
-        Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
+        Projection { for_ty: base, name: _, trait_ref: reference } => {
             if contains_unbound_any_variable(base) {
                 true
             } else {
                 match reference {
-                Option::Some(reference) => for value in reference.args {
+                Some(reference) => for value in reference.args {
                     if contains_unbound_any_variable(value) {
                         return true
                     } else {
                         ()
                     }
                 },
-                Option::None => (),
+                None => (),
                 };
                 false
             }
         },
-        Type::App { ty: base, args } => {
+        App { ty: base, args } => {
             if contains_unbound_any_variable(base) {
                 true
             } else {
@@ -1166,16 +1166,16 @@ fn contains_unbound_any_variable(value: Type) -> bool {
                 false
             }
         },
-        Type::Array { len: _, elem }
-        | Type::Slice { elem }
-        | Type::VecType { elem }
-        | Type::RefType { elem }
-        | Type::Channel { elem } => contains_unbound_any_variable(elem),
-        Type::HashMap { key, value } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => contains_unbound_any_variable(elem),
+        HashMap { key, value } => {
             contains_unbound_any_variable(key)
                 || contains_unbound_any_variable(value)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             if contains_unbound_any_variable(ret_ty) {
                 true
             } else {
@@ -1200,7 +1200,7 @@ fn predicate_requirement_message(
 ) -> string {
     if fallback == "type predicate not satisfied" {
         match value {
-            TypePredicate::Trait { for_ty, trait_ref: reference } => {
+            Trait { for_ty, trait_ref: reference } => {
                 let unresolved = Ref::new(contains_unbound_type_variable(for_ty));
                 let ambiguous = Ref::new(contains_unbound_any_variable(for_ty));
                 for value in reference.args {
@@ -1229,7 +1229,7 @@ fn predicate_requirement_message(
                         + ">"
                 }
             },
-            TypePredicate::Equality { lhs: _, rhs: _ } => fallback,
+            Equality { lhs: _, rhs: _ } => fallback,
         }
     } else {
         fallback
@@ -1238,8 +1238,8 @@ fn predicate_requirement_message(
 
 fn type_contains_error(value: Type) -> bool {
     match prune(value) {
-        Type::Error => true,
-        Type::Tuple { items: values } => {
+        Error => true,
+        Tuple { items: values } => {
             for value in values {
                 if type_contains_error(value) {
                     return true
@@ -1249,8 +1249,8 @@ fn type_contains_error(value: Type) -> bool {
             };
             false
         },
-        Type::Projection { for_ty: base, name: _, trait_ref: _ } => type_contains_error(base),
-        Type::App { ty: base, args } => {
+        Projection { for_ty: base, name: _, trait_ref: _ } => type_contains_error(base),
+        App { ty: base, args } => {
             if type_contains_error(base) {
                 true
             } else {
@@ -1264,15 +1264,15 @@ fn type_contains_error(value: Type) -> bool {
                 false
             }
         },
-        Type::Array { len: _, elem }
-        | Type::Slice { elem }
-        | Type::VecType { elem }
-        | Type::RefType { elem }
-        | Type::Channel { elem } => type_contains_error(elem),
-        Type::HashMap { key, value } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => type_contains_error(elem),
+        HashMap { key, value } => {
             type_contains_error(key) || type_contains_error(value)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             if type_contains_error(ret_ty) {
                 true
             } else {
@@ -1292,7 +1292,7 @@ fn type_contains_error(value: Type) -> bool {
 
 fn predicate_contains_error(value: TypePredicate) -> bool {
     match value {
-        TypePredicate::Trait { for_ty, trait_ref: reference } => {
+        Trait { for_ty, trait_ref: reference } => {
             if type_contains_error(for_ty) {
                 true
             } else {
@@ -1306,7 +1306,7 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
                 false
             }
         },
-        TypePredicate::Equality { lhs: left, rhs: right } => {
+        Equality { lhs: left, rhs: right } => {
             type_contains_error(left) || type_contains_error(right)
         },
     }
@@ -1314,47 +1314,47 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
 
 fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> unit {
     match prune(value) {
-        Type::Var(variable) => match variable.get() {
-            TypeVar::Unbound { id: _, kind: VarKind::Any } => {
+        Var(variable) => match variable.get() {
+            Unbound { id: _, kind: Any } => {
                 if unresolved_inference_var(ctx, variable) {
                     ()
                 } else {
                     ctx.unresolved_inference_vars.push(variable)
                 }
             },
-            TypeVar::Link(inner) => mark_unresolved_inference_type(ctx, inner),
+            Link(inner) => mark_unresolved_inference_type(ctx, inner),
             _ => (),
         },
-        Type::Tuple { items } => for item in items {
+        Tuple { items } => for item in items {
             mark_unresolved_inference_type(ctx, item)
         },
-        Type::Projection { for_ty, name: _, trait_ref } => {
+        Projection { for_ty, name: _, trait_ref } => {
             mark_unresolved_inference_type(ctx, for_ty);
             match trait_ref {
-                Option::Some(reference) => for arg in reference.args {
+                Some(reference) => for arg in reference.args {
                     mark_unresolved_inference_type(ctx, arg)
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Type::App { ty, args } => {
+        App { ty, args } => {
             mark_unresolved_inference_type(ctx, ty);
             for arg in args {
                 mark_unresolved_inference_type(ctx, arg)
             }
         },
-        Type::Array { len: _, elem }
-        | Type::Slice { elem }
-        | Type::VecType { elem }
-        | Type::RefType { elem }
-        | Type::Channel { elem } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => {
             mark_unresolved_inference_type(ctx, elem)
         },
-        Type::HashMap { key, value } => {
+        HashMap { key, value } => {
             mark_unresolved_inference_type(ctx, key);
             mark_unresolved_inference_type(ctx, value)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             for param in params {
                 mark_unresolved_inference_type(ctx, param)
             };
@@ -1369,13 +1369,13 @@ fn mark_unresolved_inference_predicate(
     value: TypePredicate,
 ) -> unit {
     match value {
-        TypePredicate::Trait { for_ty, trait_ref } => {
+        Trait { for_ty, trait_ref } => {
             mark_unresolved_inference_type(ctx, for_ty);
             for arg in trait_ref.args {
                 mark_unresolved_inference_type(ctx, arg)
             }
         },
-        TypePredicate::Equality { lhs, rhs } => {
+        Equality { lhs, rhs } => {
             mark_unresolved_inference_type(ctx, lhs);
             mark_unresolved_inference_type(ctx, rhs)
         },
@@ -1403,13 +1403,13 @@ fn predicate_message_present(
 fn resolve_required_predicates(ctx: Checker) -> bool {
     for requirement in ctx.required_predicates {
         match requirement.predicate {
-            TypePredicate::Trait { for_ty, trait_ref } => {
+            Trait { for_ty, trait_ref } => {
                 let _ = default_numeric_type(for_ty);
                 for arg in trait_ref.args {
                     let _ = default_numeric_type(arg);
                 };
             },
-            TypePredicate::Equality { lhs, rhs } => {
+            Equality { lhs, rhs } => {
                 let _ = default_numeric_type(lhs);
                 let _ = default_numeric_type(rhs);
             },
@@ -1428,7 +1428,7 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
     let spans: Vec[Option[ast::Span]] = Vec::new();
     for requirement in ctx.required_predicates {
         match requirement.predicate {
-            TypePredicate::Trait { for_ty, trait_ref: _ } => {
+            Trait { for_ty, trait_ref: _ } => {
                 if contains_unbound_type_variable(for_ty)
                     && is_numeric_type(for_ty)
                 {
@@ -1437,7 +1437,7 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
                     ()
                 }
             },
-            TypePredicate::Equality { lhs: _, rhs: _ } => (),
+            Equality { lhs: _, rhs: _ } => (),
         };
         if predicate_contains_error(requirement.predicate)
             || predicates_satisfied_at(
@@ -1491,27 +1491,27 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
 
 fn builtin_value_trait_type(value: Type) -> bool {
     match prune(value) {
-        Type::Unit
-        | Type::Bool
-        | Type::Int
-        | Type::Int8
-        | Type::Int16
-        | Type::Int32
-        | Type::Int64
-        | Type::Uint
-        | Type::Uint8
-        | Type::Uint16
-        | Type::Uint32
-        | Type::Uint64
-        | Type::Float32
-        | Type::Float64
-        | Type::String
-        | Type::Char => true,
-        Type::Var(variable) => match variable.get() {
-            TypeVar::Unbound { id: _, kind: VarKind::Integer }
-            | TypeVar::Unbound { id: _, kind: VarKind::Float } => true,
-            TypeVar::Link(inner) => builtin_value_trait_type(inner),
-            TypeVar::Unbound { id: _, kind: VarKind::Any } => false,
+        Unit
+        | Bool
+        | Int
+        | Int8
+        | Int16
+        | Int32
+        | Int64
+        | Uint
+        | Uint8
+        | Uint16
+        | Uint32
+        | Uint64
+        | Float32
+        | Float64
+        | String
+        | Char => true,
+        Var(variable) => match variable.get() {
+            Unbound { id: _, kind: Integer }
+            | Unbound { id: _, kind: Float } => true,
+            Link(inner) => builtin_value_trait_type(inner),
+            Unbound { id: _, kind: Any } => false,
         },
         _ => false,
     }
@@ -1538,7 +1538,7 @@ fn builtin_iterator_bound_satisfied(
     depth: int,
 ) -> bool {
     match prune(normalize_type(ctx, bound_ty)) {
-        Type::App { ty: Type::Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
+        App { ty: Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
             true
         } else if name == "MapIterator" && args.len() == 3 {
             let iterator = args.get(2);
@@ -1619,7 +1619,7 @@ fn builtin_trait_bound_satisfied(
         let trait_name = short_name(reference.name);
         let bound_ty = prune(normalize_type(ctx, bound_ty));
         match bound_ty {
-            Type::Dyn { trait_name: name } => {
+            Dyn { trait_name: name } => {
                 for application in trait_ref_closure(
                     ctx,
                     TraitRef {
@@ -1640,7 +1640,7 @@ fn builtin_trait_bound_satisfied(
                     true
                 } else {
                     match bound_ty {
-                        Type::RefType { elem: inner } => trait_bound_satisfied_at(
+                        RefType { elem: inner } => trait_bound_satisfied_at(
                             ctx,
                             inner,
                             TraitRef {
@@ -1658,8 +1658,8 @@ fn builtin_trait_bound_satisfied(
                         true
                     } else {
                         match bound_ty {
-                            Type::RefType { elem: _ } => true,
-                            Type::Tuple { items: values } => {
+                            RefType { elem: _ } => true,
+                            Tuple { items: values } => {
                                 for value in values {
                                     if !trait_bound_satisfied_at(
                                         ctx,
@@ -1677,7 +1677,7 @@ fn builtin_trait_bound_satisfied(
                                 };
                                 true
                             },
-                            Type::Array { len: _, elem: element } => trait_bound_satisfied_at(
+                            Array { len: _, elem: element } => trait_bound_satisfied_at(
                                 ctx,
                                 element,
                                 TraitRef {
@@ -1691,7 +1691,7 @@ fn builtin_trait_bound_satisfied(
                     }
                 } else {
                     builtin_value_trait_type(bound_ty) || match bound_ty {
-                        Type::RefType { elem: _ } => true,
+                        RefType { elem: _ } => true,
                         _ => false,
                     }
                 }
@@ -1699,7 +1699,7 @@ fn builtin_trait_bound_satisfied(
                 builtin_iterator_bound_satisfied(ctx, bound_ty, depth)
             } else if trait_name == "IntoIterator" {
                 match bound_ty {
-                    Type::VecType { elem: _ } | Type::Slice { elem: _ } => true,
+                    VecType { elem: _ } | Slice { elem: _ } => true,
                     _ => trait_bound_satisfied_at(
                         ctx,
                         bound_ty,
@@ -1916,15 +1916,15 @@ fn validate_builtin_impl_overlaps(ctx: Checker, value: hir::File) -> unit {
     if value.package_name != "builtin" {
         for item in value.items {
             match item {
-                hir::Item::ImplBlock(block) => match block.trait_ref {
-                    Option::Some(reference) => {
+                ImplBlock(block) => match block.trait_ref {
+                    Some(reference) => {
                         let for_type = type_from_hir(
                             block.for_type,
                             block.generics,
                             Option::None,
                         );
                         match (for_type, builtin_ref_impl_origin(reference.name)) {
-                            (Type::RefType { elem: _ }, Option::Some(origin)) => push_diagnostic_at(
+                            (RefType { elem: _ }, Some(origin)) => push_diagnostic_at(
                                 ctx,
                                 "Trait "
                                     + short_name(reference.name)
@@ -1937,7 +1937,7 @@ fn validate_builtin_impl_overlaps(ctx: Checker, value: hir::File) -> unit {
                             _ => (),
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 },
                 _ => (),
             }
@@ -1953,8 +1953,8 @@ fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> 
 
 fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
     match value.trait_ref {
-        Option::Some(reference) => vecs::contains(ctx.in_scope_traits, reference.name),
-        Option::None => true,
+        Some(reference) => vecs::contains(ctx.in_scope_traits, reference.name),
+        None => true,
     }
 }
 
@@ -1972,8 +1972,8 @@ fn deferred_method_candidate(
         if value.function.name == name
             && method_trait_in_scope(ctx, value)
             && match value.trait_ref {
-                Option::Some(_) => true,
-                Option::None => false,
+                Some(_) => true,
+                None => false,
             }
         {
             let candidate = instantiate_method_candidate(
@@ -2004,7 +2004,7 @@ fn deferred_method_candidate(
     };
     if matches.get() > 1 {
         match prune(candidate_ty.get()) {
-            Type::Func { params, ret_ty } => {
+            Func { params, ret_ty } => {
                 params.set(0, receiver);
                 Option::Some(ResolvedCallable {
                     callable: Callable::Function(
@@ -2043,7 +2043,7 @@ fn resolve_user_method_for_call(
                 method_explicit,
             );
             let matches = match value.trait_ref {
-                Option::Some(_) => {
+                Some(_) => {
                     method_matches_call(
                         ctx,
                         candidate.callable,
@@ -2056,7 +2056,7 @@ fn resolve_user_method_for_call(
                             candidate.owner_predicates,
                         )
                 },
-                Option::None => {
+                None => {
                     unify(candidate.owner, receiver)
                         && method_matches_call(
                             ctx,
@@ -2073,8 +2073,8 @@ fn resolve_user_method_for_call(
             };
             if matches {
                 match value.trait_ref {
-                    Option::Some(_) => trait_methods.push(candidate.callable),
-                    Option::None => inherent.push(candidate.callable),
+                    Some(_) => trait_methods.push(candidate.callable),
+                    None => inherent.push(candidate.callable),
                 }
             } else {
                 ()
@@ -2149,7 +2149,7 @@ fn resolve_builtin_method(
         );
         if is_integer_type(receiver) {
             if match receiver {
-                Type::Var(_) => true,
+                Var(_) => true,
                 _ => false,
             } {
                 expect_type(ctx, receiver, Type::Int)
@@ -2158,7 +2158,7 @@ fn resolve_builtin_method(
             };
             let owner = resolve_type(receiver);
             if match owner {
-                Type::Int | Type::Int32 => true,
+                Int | Int32 => true,
                 _ => false,
             } {
                 Option::Some(inherent_callable(
@@ -2177,7 +2177,7 @@ fn resolve_builtin_method(
                 ))
             }
         } else if match receiver {
-            Type::Char => true,
+            Char => true,
             _ => false,
         } {
             Option::Some(inherent_callable(
@@ -2220,15 +2220,15 @@ fn resolve_builtin_container_method(
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let result = match receiver {
-        Type::VecType { elem } => resolve_vec_method(receiver, elem, name),
-        Type::Slice { elem } => resolve_slice_method(receiver, elem, name),
-        Type::RefType { elem } => resolve_ref_method(receiver, elem, name),
-        Type::Channel { elem } => resolve_channel_method(receiver, elem, name),
-        Type::HashMap { key, value } => {
+        VecType { elem } => resolve_vec_method(receiver, elem, name),
+        Slice { elem } => resolve_slice_method(receiver, elem, name),
+        RefType { elem } => resolve_ref_method(receiver, elem, name),
+        Channel { elem } => resolve_channel_method(receiver, elem, name),
+        HashMap { key, value } => {
             resolve_hashmap_method(ctx, receiver, key, value, name)
         },
-        Type::String => resolve_string_method(receiver, name),
-        Type::App { ty: Type::Con { name: owner }, args } => {
+        String => resolve_string_method(receiver, name),
+        App { ty: Con { name: owner }, args } => {
             resolve_option_result_method(
                 ctx,
                 receiver,
@@ -2241,9 +2241,9 @@ fn resolve_builtin_container_method(
         _ => Option::None,
     };
     match result {
-        Option::Some(value) => {
+        Some(value) => {
             match receiver {
-                Type::App { ty: Type::Con { name: owner }, args: _ } => {
+                App { ty: Con { name: owner }, args: _ } => {
                     if short_name(owner) == "Option"
                         || short_name(owner) == "Result"
                     {
@@ -2268,7 +2268,7 @@ fn resolve_builtin_container_method(
             };
             Option::Some(value)
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -2798,7 +2798,7 @@ fn dyn_method_callable(
     value: ResolvedCallable,
 ) -> ResolvedCallable {
     let dispatch = match value.callable {
-        Callable::TraitMethod { trait_ref: reference, method_name: _ } => reference.name,
+        TraitMethod { trait_ref: reference, method_name: _ } => reference.name,
         _ => owner,
     };
     ResolvedCallable {
@@ -2836,8 +2836,8 @@ fn resolve_dyn_method(
             Option::Some(receiver),
             method_explicit,
         ) {
-            Option::Some(value) => Option::Some(dyn_method_callable(owner, name, value)),
-            Option::None => {
+            Some(value) => Option::Some(dyn_method_callable(owner, name, value)),
+            None => {
                 let resolved: Vec[ResolvedCallable] = Vec::new();
                 let candidates = Vec::new();
                 for index in range(1, applications.len()) {
@@ -2848,13 +2848,13 @@ fn resolve_dyn_method(
                         Option::Some(receiver),
                         method_explicit,
                     ) {
-                        Option::Some(value) => {
+                        Some(value) => {
                             candidates.push(short_name(
                                 applications.get(index).name,
                             ));
                             resolved.push(dyn_method_callable(owner, name, value))
                         },
-                        Option::None => (),
+                        None => (),
                     }
                 };
                 if resolved.len() == 1 {
@@ -2900,7 +2900,7 @@ fn resolve_method(
 ) -> Option[ResolvedCallable] {
     let receiver = normalize_type(ctx, receiver);
     match receiver {
-        Type::Dyn { trait_name: owner } => resolve_dyn_method(
+        Dyn { trait_name: owner } => resolve_dyn_method(
             ctx,
             owner,
             receiver,
@@ -2913,15 +2913,15 @@ fn resolve_method(
             name,
             method_explicit,
         ) {
-            Option::Some(value) => Option::Some(value),
-            Option::None => match resolve_builtin_container_method(
+            Some(value) => Option::Some(value),
+            None => match resolve_builtin_container_method(
                 ctx,
                 receiver,
                 name,
                 method_explicit,
             ) {
-                Option::Some(value) => Option::Some(value),
-                Option::None => match resolve_user_method_for_call(
+                Some(value) => Option::Some(value),
+                None => match resolve_user_method_for_call(
                     ctx,
                     receiver,
                     name,
@@ -2929,8 +2929,8 @@ fn resolve_method(
                     expected,
                     method_explicit,
                 ) {
-                    Option::Some(value) => Option::Some(value),
-                    Option::None => resolve_builtin_method(
+                    Some(value) => Option::Some(value),
+                    None => resolve_builtin_method(
                         ctx,
                         receiver,
                         name,
@@ -2944,7 +2944,7 @@ fn resolve_method(
 
 fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
     match find_enum_by_name(ctx, "Option") {
-        Option::Some(info) => if info.generics.len() == 1 && info.variants.len() == 2 {
+        Some(info) => if info.generics.len() == 1 && info.variants.len() == 2 {
             let empty = Ref::new(0);
             let payload = Ref::new(0);
             for variant in info.variants {
@@ -2966,13 +2966,13 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
         } else {
             false
         },
-        Option::None => true,
+        None => true,
     }
 }
 
 fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
     match prune(normalize_type(ctx, value)) {
-        Type::HashMap { key, value: _ } => {
+        HashMap { key, value: _ } => {
             require_predicate(
                 ctx,
                 TypePredicate::Trait {
@@ -3185,12 +3185,12 @@ fn contains_trait_ref(values: Vec[TraitRef], expected: TraitRef) -> bool {
 fn predicate_equal(left: TypePredicate, right: TypePredicate) -> bool {
     match (left, right) {
         (
-            TypePredicate::Trait { for_ty: left_ty, trait_ref: left_ref },
-            TypePredicate::Trait { for_ty: right_ty, trait_ref: right_ref },
+            Trait { for_ty: left_ty, trait_ref: left_ref },
+            Trait { for_ty: right_ty, trait_ref: right_ref },
         ) => types_equal(left_ty, right_ty) && trait_ref_equal(left_ref, right_ref),
         (
-            TypePredicate::Equality { lhs: left_lhs, rhs: left_rhs },
-            TypePredicate::Equality { lhs: right_lhs, rhs: right_rhs },
+            Equality { lhs: left_lhs, rhs: left_rhs },
+            Equality { lhs: right_lhs, rhs: right_rhs },
         ) => types_equal(left_lhs, right_lhs) && types_equal(left_rhs, right_rhs),
         _ => false,
     }
@@ -3215,7 +3215,7 @@ fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
         let current = result.get(index.get());
         index.set(index.get() + 1);
         match find_trait(ctx, current.name) {
-            Option::Some(info) => if info.generics.len() == current.args.len() {
+            Some(info) => if info.generics.len() == current.args.len() {
                 let substitutions = instantiate_substitutions(
                     ctx.counter,
                     info.generics,
@@ -3232,7 +3232,7 @@ fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         }
     };
     result
@@ -3250,8 +3250,8 @@ fn trait_substitutions(
         explicit.push(arg)
     };
     match self_ty {
-        Option::Some(ty) => explicit.push(ty),
-        Option::None => (),
+        Some(ty) => explicit.push(ty),
+        None => (),
     };
     instantiate_substitutions(ctx.counter, params, explicit)
 }
@@ -3269,11 +3269,11 @@ fn projection_candidates_from_predicates(
     let result = Vec::new();
     for predicate in predicates {
         match predicate {
-            TypePredicate::Trait { for_ty, trait_ref } => match find_trait(
+            Trait { for_ty, trait_ref } => match find_trait(
                 ctx,
                 trait_ref.name,
             ) {
-                Option::Some(info) => {
+                Some(info) => {
                     let associated_names = Vec::new();
                     for associated in info.associated_types {
                         associated_names.push(associated.name)
@@ -3284,9 +3284,9 @@ fn projection_candidates_from_predicates(
                         associated_names,
                     })
                 },
-                Option::None => (),
+                None => (),
             },
-            TypePredicate::Equality { lhs: _, rhs: _ } => (),
+            Equality { lhs: _, rhs: _ } => (),
         }
     };
     result
@@ -3328,16 +3328,16 @@ fn resolve_projection_type(
     report: bool,
 ) -> Type {
     match resolve_type(value) {
-        Type::Projection { for_ty, name, trait_ref } => {
+        Projection { for_ty, name, trait_ref } => {
             let for_ty = resolve_projection_type(ctx, for_ty, candidates, report);
             let trait_ref = match trait_ref {
-                Option::Some(value) => Option::Some(resolve_projection_trait_ref(
+                Some(value) => Option::Some(resolve_projection_trait_ref(
                     ctx,
                     value,
                     candidates,
                     report,
                 )),
-                Option::None => {
+                None => {
                     let matches = Vec::new();
                     for candidate in candidates {
                         if types_equal(candidate.for_ty, for_ty)
@@ -3385,7 +3385,7 @@ fn resolve_projection_type(
             };
             Type::Projection { for_ty, name, trait_ref }
         },
-        Type::Tuple { items: values } => Type::Tuple {
+        Tuple { items: values } => Type::Tuple {
             items: resolve_projection_types(
                         ctx,
                         values,
@@ -3393,15 +3393,15 @@ fn resolve_projection_type(
                         report,
                     ),
         },
-        Type::App { ty: base, args } => Type::App {
+        App { ty: base, args } => Type::App {
             ty: resolve_projection_type(ctx, base, candidates, report),
             args: resolve_projection_types(ctx, args, candidates, report),
         },
-        Type::Array { len: length, elem } => Type::Array {
+        Array { len: length, elem } => Type::Array {
             len: length,
             elem: resolve_projection_type(ctx, elem, candidates, report),
         },
-        Type::Slice { elem } => Type::Slice {
+        Slice { elem } => Type::Slice {
             elem: resolve_projection_type(
                         ctx,
                         elem,
@@ -3409,7 +3409,7 @@ fn resolve_projection_type(
                         report,
                     ),
         },
-        Type::VecType { elem } => Type::VecType {
+        VecType { elem } => Type::VecType {
             elem: resolve_projection_type(
                         ctx,
                         elem,
@@ -3417,7 +3417,7 @@ fn resolve_projection_type(
                         report,
                     ),
         },
-        Type::RefType { elem } => Type::RefType {
+        RefType { elem } => Type::RefType {
             elem: resolve_projection_type(
                         ctx,
                         elem,
@@ -3425,7 +3425,7 @@ fn resolve_projection_type(
                         report,
                     ),
         },
-        Type::Channel { elem } => Type::Channel {
+        Channel { elem } => Type::Channel {
             elem: resolve_projection_type(
                         ctx,
                         elem,
@@ -3433,11 +3433,11 @@ fn resolve_projection_type(
                         report,
                     ),
         },
-        Type::HashMap { key, value } => Type::HashMap {
+        HashMap { key, value } => Type::HashMap {
             key: resolve_projection_type(ctx, key, candidates, report),
             value: resolve_projection_type(ctx, value, candidates, report),
         },
-        Type::Func { params, ret_ty } => Type::Func {
+        Func { params, ret_ty } => Type::Func {
             params: resolve_projection_types(ctx, params, candidates, report),
             ret_ty: resolve_projection_type(ctx, ret_ty, candidates, report),
         },
@@ -3454,11 +3454,11 @@ fn resolve_projection_predicates(
     let result = Vec::new();
     for predicate in predicates {
         result.push(match predicate {
-            TypePredicate::Trait { for_ty, trait_ref } => TypePredicate::Trait {
+            Trait { for_ty, trait_ref } => TypePredicate::Trait {
                 for_ty: resolve_projection_type(ctx, for_ty, candidates, report),
                 trait_ref: resolve_projection_trait_ref(ctx, trait_ref, candidates, report),
             },
-            TypePredicate::Equality { lhs: left, rhs: right } => TypePredicate::Equality {
+            Equality { lhs: left, rhs: right } => TypePredicate::Equality {
                 lhs: resolve_projection_type(ctx, left, candidates, report),
                 rhs: resolve_projection_type(ctx, right, candidates, report),
             },
@@ -3476,11 +3476,11 @@ fn resolve_signature_predicates(
     if report {
         for predicate in predicates {
             match predicate {
-                TypePredicate::Trait { for_ty, trait_ref: reference } => {
+                Trait { for_ty, trait_ref: reference } => {
                     validate_signature_type(ctx, for_ty);
                     validate_trait_reference(ctx, reference)
                 },
-                TypePredicate::Equality { lhs: left, rhs: right } => {
+                Equality { lhs: left, rhs: right } => {
                     validate_signature_type(ctx, left);
                     validate_signature_type(ctx, right)
                 },
@@ -3523,24 +3523,24 @@ fn builtin_nominal_arity(name: string) -> Option[int] {
 
 fn nominal_arity(ctx: Checker, name: string) -> Option[int] {
     match find_enum_by_name(ctx, name) {
-        Option::Some(value) => Option::Some(value.generics.len()),
-        Option::None => match find_struct_by_name(ctx, name) {
-            Option::Some(value) => Option::Some(value.generics.len()),
-            Option::None => builtin_nominal_arity(short_name(name)),
+        Some(value) => Option::Some(value.generics.len()),
+        None => match find_struct_by_name(ctx, name) {
+            Some(value) => Option::Some(value.generics.len()),
+            None => builtin_nominal_arity(short_name(name)),
         },
     }
 }
 
 fn nominal_application_has_wrong_arity(ctx: Checker, value: Type) -> bool {
     match prune(value) {
-        Type::Con { name } => match nominal_arity(ctx, name) {
-            Option::Some(expected) => expected != 0,
-            Option::None => false,
+        Con { name } => match nominal_arity(ctx, name) {
+            Some(expected) => expected != 0,
+            None => false,
         },
-        Type::App { ty: base, args } => match prune(base) {
-            Type::Con { name } => match nominal_arity(ctx, name) {
-                Option::Some(expected) => expected != args.len(),
-                Option::None => false,
+        App { ty: base, args } => match prune(base) {
+            Con { name } => match nominal_arity(ctx, name) {
+                Some(expected) => expected != args.len(),
+                None => false,
             },
             _ => false,
         },
@@ -3554,11 +3554,11 @@ fn validate_nominal_application(
     args: Vec[Type],
 ) -> unit {
     match nominal_arity(ctx, name) {
-        Option::Some(expected) => if expected != args.len() {
+        Some(expected) => if expected != args.len() {
             let category = if expected == 0 && args.len() > 0 {
                 match find_struct_by_name(ctx, name) {
-                    Option::Some(_) => "Struct",
-                    Option::None => "Type",
+                    Some(_) => "Struct",
+                    None => "Type",
                 }
             } else {
                 "Type"
@@ -3576,17 +3576,17 @@ fn validate_nominal_application(
         } else {
             ()
         },
-        Option::None => match split_constructor_name(name) {
-            Option::Some(parts) => {
+        None => match split_constructor_name(name) {
+            Some(parts) => {
                 let span = match ctx.current_span.get() {
-                    Option::Some(value) => Option::Some(ast::span(
+                    Some(value) => Option::Some(ast::span(
                         value.start + parts.0.byte_len() + 2,
                         value.start
                             + parts.0.byte_len()
                             + 2
                             + short_name(name).byte_len(),
                     )),
-                    Option::None => Option::None,
+                    None => Option::None,
                 };
                 push_diagnostic_at(
                     ctx,
@@ -3599,7 +3599,7 @@ fn validate_nominal_application(
                     Option::None,
                 )
             },
-            Option::None => push_diagnostic(
+            None => push_diagnostic(
                 ctx,
                 "Unknown type constructor " + name,
             ),
@@ -3612,7 +3612,7 @@ fn validate_nominal_application(
 
 fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
     match find_trait(ctx, reference.name) {
-        Option::Some(info) => if info.generics.len() != reference.args.len() {
+        Some(info) => if info.generics.len() != reference.args.len() {
             push_diagnostic(
                 ctx,
                 "Trait "
@@ -3625,7 +3625,7 @@ fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
         } else {
             ()
         },
-        Option::None => push_diagnostic(ctx, "Unknown trait " + reference.name),
+        None => push_diagnostic(ctx, "Unknown trait " + reference.name),
     };
     for arg in reference.args {
         validate_signature_type(ctx, arg)
@@ -3634,8 +3634,8 @@ fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
 
 fn type_contains_parameter(value: Type, expected: string) -> bool {
     match prune(value) {
-        Type::Param { name } => name == expected,
-        Type::Tuple { items: values } => {
+        Param { name } => name == expected,
+        Tuple { items: values } => {
             for value in values {
                 if type_contains_parameter(value, expected) {
                     return true
@@ -3645,24 +3645,24 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
             };
             false
         },
-        Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
+        Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             if type_contains_parameter(base, expected) {
                 true
             } else {
                 match qualifier {
-                Option::Some(reference) => for arg in reference.args {
+                Some(reference) => for arg in reference.args {
                     if type_contains_parameter(arg, expected) {
                         return true
                     } else {
                         ()
                     }
                 },
-                Option::None => (),
+                None => (),
                 };
                 false
             }
         },
-        Type::App { ty: base, args } => {
+        App { ty: base, args } => {
             if type_contains_parameter(base, expected) {
                 true
             } else {
@@ -3676,16 +3676,16 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
                 false
             }
         },
-        Type::Array { len: _, elem }
-        | Type::Slice { elem }
-        | Type::VecType { elem }
-        | Type::RefType { elem }
-        | Type::Channel { elem } => type_contains_parameter(elem, expected),
-        Type::HashMap { key, value } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => type_contains_parameter(elem, expected),
+        HashMap { key, value } => {
             type_contains_parameter(key, expected)
                 || type_contains_parameter(value, expected)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             if type_contains_parameter(ret_ty, expected) {
                 true
             } else {
@@ -3799,9 +3799,9 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
 
 fn validate_signature_type(ctx: Checker, value: Type) -> unit {
     match prune(value) {
-        Type::Con { name } => validate_nominal_application(ctx, name, Vec::new()),
-        Type::App { ty: base, args } => match prune(base) {
-            Type::Con { name } => validate_nominal_application(ctx, name, args),
+        Con { name } => validate_nominal_application(ctx, name, Vec::new()),
+        App { ty: base, args } => match prune(base) {
+            Con { name } => validate_nominal_application(ctx, name, args),
             _ => {
                 push_diagnostic(
                     ctx,
@@ -3813,8 +3813,8 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
                 }
             },
         },
-        Type::Dyn { trait_name: name } => match find_trait(ctx, name) {
-            Option::Some(info) => if info.generics.len() > 0 {
+        Dyn { trait_name: name } => match find_trait(ctx, name) {
+            Some(info) => if info.generics.len() > 0 {
                 push_diagnostic_at(
                     ctx,
                     "Generic trait "
@@ -3825,28 +3825,28 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
             } else {
                 validate_dyn_trait(ctx, info)
             },
-            Option::None => push_diagnostic(ctx, "Unknown trait " + name),
+            None => push_diagnostic(ctx, "Unknown trait " + name),
         },
-        Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
+        Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             validate_signature_type(ctx, base);
             match qualifier {
-                Option::Some(reference) => validate_trait_reference(ctx, reference),
-                Option::None => (),
+                Some(reference) => validate_trait_reference(ctx, reference),
+                None => (),
             }
         },
-        Type::Tuple { items: values } => for value in values {
+        Tuple { items: values } => for value in values {
             validate_signature_type(ctx, value)
         },
-        Type::Array { len: _, elem: element }
-        | Type::Slice { elem: element }
-        | Type::VecType { elem: element }
-        | Type::RefType { elem: element }
-        | Type::Channel { elem: element } => validate_signature_type(ctx, element),
-        Type::HashMap { key, value } => {
+        Array { len: _, elem: element }
+        | Slice { elem: element }
+        | VecType { elem: element }
+        | RefType { elem: element }
+        | Channel { elem: element } => validate_signature_type(ctx, element),
+        HashMap { key, value } => {
             validate_signature_type(ctx, key);
             validate_signature_type(ctx, value)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             for param in params {
                 validate_signature_type(ctx, param)
             };
@@ -3869,8 +3869,8 @@ fn find_type_alias(ctx: Checker, name: string) -> Option[TypeAliasInfo] {
     for value in ctx.type_aliases {
         if short_name(value.name) == short_name(canonical) {
             match found.get() {
-                Option::Some(_) => return Option::None,
-                Option::None => found.set(Option::Some(value)),
+                Some(_) => return Option::None,
+                None => found.set(Option::Some(value)),
             }
         } else {
             ()
@@ -3886,8 +3886,8 @@ fn expand_type_alias_inner(
     report: bool,
 ) -> Type {
     match prune(value) {
-        Type::Con { name } => match find_type_alias(ctx, name) {
-            Option::Some(alias) => if vecs::contains(stack, alias.name) {
+        Con { name } => match find_type_alias(ctx, name) {
+            Some(alias) => if vecs::contains(stack, alias.name) {
                 if report {
                     push_diagnostic(ctx, "Cyclic type alias " + short_name(alias.name))
                 } else {
@@ -3916,16 +3916,16 @@ fn expand_type_alias_inner(
                 next.push(alias.name);
                 expand_type_alias_inner(ctx, alias.ty, next, report)
             },
-            Option::None => Type::Con { name: canonical_imported_name(ctx, name) },
+            None => Type::Con { name: canonical_imported_name(ctx, name) },
         },
-        Type::App { ty: base, args } => {
+        App { ty: base, args } => {
             let expanded_args = Vec::new();
             for arg in args {
                 expanded_args.push(expand_type_alias_inner(ctx, arg, stack, report))
             };
             match prune(base) {
-                Type::Con { name } => match find_type_alias(ctx, name) {
-                    Option::Some(alias) => if vecs::contains(stack, alias.name) {
+                Con { name } => match find_type_alias(ctx, name) {
+                    Some(alias) => if vecs::contains(stack, alias.name) {
                         if report {
                             push_diagnostic(ctx, "Cyclic type alias " + short_name(alias.name))
                         } else {
@@ -3967,7 +3967,7 @@ fn expand_type_alias_inner(
                             report,
                         )
                     },
-                    Option::None => Type::App {
+                    None => Type::App {
                         ty: expand_type_alias_inner(ctx, base, stack, report),
                         args: expanded_args,
                     },
@@ -3978,18 +3978,18 @@ fn expand_type_alias_inner(
                 },
             }
         },
-        Type::Tuple { items: values } => {
+        Tuple { items: values } => {
             let result = Vec::new();
             for item in values {
                 result.push(expand_type_alias_inner(ctx, item, stack, report))
             };
             Type::Tuple { items: result }
         },
-        Type::Projection { for_ty, name, trait_ref } => Type::Projection {
+        Projection { for_ty, name, trait_ref } => Type::Projection {
             for_ty: expand_type_alias_inner(ctx, for_ty, stack, report),
             name,
             trait_ref: match trait_ref {
-                Option::Some(reference) => Option::Some(TraitRef {
+                Some(reference) => Option::Some(TraitRef {
                     name: reference.name,
                     args: expand_type_alias_types(
                         ctx,
@@ -3998,30 +3998,30 @@ fn expand_type_alias_inner(
                         report,
                     ),
                 }),
-                Option::None => Option::None,
+                None => Option::None,
             },
         },
-        Type::Array { len, elem } => Type::Array {
+        Array { len, elem } => Type::Array {
             len,
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
-        Type::Slice { elem } => Type::Slice {
+        Slice { elem } => Type::Slice {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
-        Type::VecType { elem } => Type::VecType {
+        VecType { elem } => Type::VecType {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
-        Type::RefType { elem } => Type::RefType {
+        RefType { elem } => Type::RefType {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
-        Type::Channel { elem } => Type::Channel {
+        Channel { elem } => Type::Channel {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
-        Type::HashMap { key, value } => Type::HashMap {
+        HashMap { key, value } => Type::HashMap {
             key: expand_type_alias_inner(ctx, key, stack, report),
             value: expand_type_alias_inner(ctx, value, stack, report),
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             let result = Vec::new();
             for param in params {
                 result.push(expand_type_alias_inner(ctx, param, stack, report))
@@ -4076,11 +4076,11 @@ fn expand_type_alias_predicates(
     let result = Vec::new();
     for value in values {
         result.push(match value {
-            TypePredicate::Trait { for_ty, trait_ref } => TypePredicate::Trait {
+            Trait { for_ty, trait_ref } => TypePredicate::Trait {
                 for_ty: expand_type_aliases(ctx, for_ty, report),
                 trait_ref: expand_type_alias_trait_ref(ctx, trait_ref, report),
             },
-            TypePredicate::Equality { lhs, rhs } => TypePredicate::Equality {
+            Equality { lhs, rhs } => TypePredicate::Equality {
                 lhs: expand_type_aliases(ctx, lhs, report),
                 rhs: expand_type_aliases(ctx, rhs, report),
             },
@@ -4129,12 +4129,12 @@ fn resolve_trait_reference_method(
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     match find_trait(ctx, reference.name) {
-        Option::Some(info) => if info.generics.len() == reference.args.len() {
+        Some(info) => if info.generics.len() == reference.args.len() {
             match find_trait_method(info, name) {
-                Option::Some(method) => {
+                Some(method) => {
                     let resolved_self_ty = match self_ty {
-                        Option::Some(ty) => Option::Some(ty),
-                        Option::None => if method.params.len() == 0 {
+                        Some(ty) => Option::Some(ty),
+                        None => if method.params.len() == 0 {
                             Option::Some(Type::Unit)
                         } else {
                             Option::None
@@ -4185,12 +4185,12 @@ fn resolve_trait_reference_method(
                         predicates,
                     })
                 },
-                Option::None => Option::None,
+                None => Option::None,
             }
         } else {
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -4207,11 +4207,11 @@ fn expand_implied_predicates(
         let predicate = result.get(index.get());
         index.set(index.get() + 1);
         match predicate {
-            TypePredicate::Trait { for_ty, trait_ref: reference } => {
+            Trait { for_ty, trait_ref: reference } => {
                 for application in trait_ref_closure(ctx, reference) {
                     push_predicate(result, TypePredicate::Trait { for_ty, trait_ref: application });
                     match find_trait(ctx, application.name) {
-                        Option::Some(info) => if info.generics.len() == application.args.len() {
+                        Some(info) => if info.generics.len() == application.args.len() {
                             let substitutions = trait_substitutions(
                                 ctx,
                                 info,
@@ -4243,11 +4243,11 @@ fn expand_implied_predicates(
                         } else {
                             ()
                         },
-                        Option::None => (),
+                        None => (),
                     }
                 }
             },
-            TypePredicate::Equality { lhs: _, rhs: _ } => (),
+            Equality { lhs: _, rhs: _ } => (),
         }
     };
     result
@@ -4263,7 +4263,7 @@ fn resolve_predicate_method(
     let candidates = text::StringBuilder::new();
     for predicate in ctx.predicates {
         match predicate {
-            TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
+            Trait { for_ty: bound_ty, trait_ref: reference } => {
                 if types_equal(normalize_type(ctx, bound_ty), receiver) {
                     match resolve_trait_reference_method(
                         ctx,
@@ -4272,7 +4272,7 @@ fn resolve_predicate_method(
                         Option::Some(receiver),
                         method_explicit,
                     ) {
-                        Option::Some(value) => {
+                        Some(value) => {
                             if candidates.is_empty() {
                                 ()
                             } else {
@@ -4283,13 +4283,13 @@ fn resolve_predicate_method(
                             );
                             resolved.push(value)
                         },
-                        Option::None => (),
+                        None => (),
                     }
                 } else {
                     ()
                 }
             },
-            TypePredicate::Equality { lhs: _, rhs: _ } => (),
+            Equality { lhs: _, rhs: _ } => (),
         }
     };
     if resolved.len() == 1 {
@@ -4380,7 +4380,7 @@ fn resolve_trait_static(
         ))
     } else {
         match find_trait(ctx, owner) {
-            Option::Some(info) => {
+            Some(info) => {
                 let diagnostics_start = ctx.diagnostics.len();
                 for value in explicit {
                     validate_signature_type(ctx, value)
@@ -4415,8 +4415,8 @@ fn resolve_trait_static(
                 let args: Vec[Type] = Vec::new();
                 for generic in info.generics {
                     match find_substitution(substitutions, generic) {
-                        Option::Some(ty) => args.push(ty),
-                        Option::None => (),
+                        Some(ty) => args.push(ty),
+                        None => (),
                     }
                 };
                 let reference = TraitRef {
@@ -4430,8 +4430,8 @@ fn resolve_trait_static(
                     Option::None,
                     method_explicit,
                 ) {
-                    Option::Some(value) => Option::Some(value),
-                    Option::None => {
+                    Some(value) => Option::Some(value),
+                    None => {
                         let resolved: Vec[ResolvedCallable] = Vec::new();
                         for candidate in trait_ref_closure(ctx, reference) {
                             if trait_ref_equal(candidate, reference) {
@@ -4444,8 +4444,8 @@ fn resolve_trait_static(
                                     Option::None,
                                     method_explicit,
                                 ) {
-                                    Option::Some(value) => resolved.push(value),
-                                    Option::None => (),
+                                    Some(value) => resolved.push(value),
+                                    None => (),
                                 }
                             }
                         };
@@ -4462,7 +4462,7 @@ fn resolve_trait_static(
                     },
                 }
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -4486,7 +4486,7 @@ fn resolve_static_member(
     let method_explicit = explicit_types(ctx, member_type_args);
     let bare_owner = owner_explicit.len() == 0;
     match explicit_function_scheme(ctx, owner, member) {
-        Option::Some(scheme) => {
+        Some(scheme) => {
             let value = instantiate_scheme_candidate(
                 ctx,
                 scheme,
@@ -4498,15 +4498,15 @@ fn resolve_static_member(
                 predicates: value.predicates,
             })
         },
-        Option::None => match resolve_trait_static(
+        None => match resolve_trait_static(
             ctx,
             owner,
             member,
             owner_explicit,
             method_explicit,
         ) {
-            Option::Some(value) => Option::Some(value),
-            Option::None => {
+            Some(value) => Option::Some(value),
+            None => {
                 let owner_ty = nominal_type(owner, owner_explicit);
                 match resolve_user_method(
                     ctx,
@@ -4517,10 +4517,10 @@ fn resolve_static_member(
                     owner_explicit,
                     method_explicit,
                 ) {
-                    Option::Some(value) => if bare_owner && nominal_type_is_defined(ctx, owner) {
+                    Some(value) => if bare_owner && nominal_type_is_defined(ctx, owner) {
                         Option::Some(ResolvedCallable {
                             callable: match value.callable {
-                                Callable::InherentMethod { receiver_ty: _, method_name: name } => {
+                                InherentMethod { receiver_ty: _, method_name: name } => {
                                     Callable::InherentMethod {
                                         receiver_ty: owner_ty,
                                         method_name: name,
@@ -4534,7 +4534,7 @@ fn resolve_static_member(
                     } else {
                         Option::Some(value)
                     },
-                    Option::None => resolve_builtin_static(
+                    None => resolve_builtin_static(
                         ctx,
                         owner_ty,
                         member,
@@ -4553,7 +4553,7 @@ fn resolve_builtin_static(
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
     let owner = match prune(owner) {
-        Type::Con { name: owner_name } => if owner_name == "Vec" {
+        Con { name: owner_name } => if owner_name == "Vec" {
             Type::VecType { elem: fresh_type(ctx.counter, VarKind::Any) }
         } else if owner_name == "Ref" {
             Type::RefType { elem: fresh_type(ctx.counter, VarKind::Any) }
@@ -4577,19 +4577,19 @@ fn resolve_builtin_static(
         other => other,
     };
     match owner {
-        Type::VecType { elem } => if name == "new" {
+        VecType { elem } => if name == "new" {
             Option::Some(inherent_callable(owner, name, Vec::new(), owner))
         } else if name == "with_capacity" {
             Option::Some(inherent_callable(owner, name, one_type(Type::Int), owner))
         } else {
             Option::None
         },
-        Type::RefType { elem } => if name == "new" {
+        RefType { elem } => if name == "new" {
             Option::Some(inherent_callable(owner, name, one_type(elem), owner))
         } else {
             Option::None
         },
-        Type::Channel { elem: _ } => if name == "new" {
+        Channel { elem: _ } => if name == "new" {
             Option::Some(inherent_callable(
                 owner,
                 name,
@@ -4599,13 +4599,13 @@ fn resolve_builtin_static(
         } else {
             Option::None
         },
-        Type::HashMap { key: _, value: _ } => if name == "new" {
+        HashMap { key: _, value: _ } => if name == "new" {
             Option::Some(inherent_callable(owner, name, Vec::new(), owner))
         } else {
             Option::None
         },
-        Type::App { ty: base, args } => match type_constructor_name(base) {
-            Option::Some(owner_name) => if short_name(owner_name) == "Option"
+        App { ty: base, args } => match type_constructor_name(base) {
+            Some(owner_name) => if short_name(owner_name) == "Option"
                 || short_name(owner_name) == "Result"
             {
                 resolve_option_result_method(
@@ -4637,7 +4637,7 @@ fn resolve_builtin_static(
             } else {
                 Option::None
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
         _ => Option::None,
     }

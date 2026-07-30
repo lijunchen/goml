@@ -441,8 +441,8 @@ fn scan_string(source: string, start: int) -> (bool, int) {
             return (false, index.get())
         } else if value == 92 {
             match scan_escape_end(source, index.get(), 34) {
-                Option::Some(next) => index.set(next),
-                Option::None => return (false, index.get()),
+                Some(next) => index.set(next),
+                None => return (false, index.get()),
             }
         } else {
             index.set(index.get() + utf8_width(value))
@@ -467,8 +467,8 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
             && byte_at(source, position + 1) == 34
         {
             match scan_fstring_end(source, position) {
-                Option::Some(end) => index.set(end),
-                Option::None => return Option::None,
+                Some(end) => index.set(end),
+                None => return Option::None,
             }
         } else if value == 98
             && position + 1 < source.byte_len()
@@ -492,13 +492,13 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
             && byte_at(source, position + 1) == 39
         {
             match scan_byte_char_end(source, position) {
-                Option::Some(end) => index.set(end),
-                Option::None => return Option::None,
+                Some(end) => index.set(end),
+                None => return Option::None,
             }
         } else if value == 39 {
             match scan_char_end(source, position) {
-                Option::Some(end) => index.set(end),
-                Option::None => return Option::None,
+                Some(end) => index.set(end),
+                None => return Option::None,
             }
         } else if value == 123 {
             depth.set(depth.get() + 1);
@@ -530,16 +530,16 @@ fn scan_fstring_end(source: string, start: int) -> Option[int] {
             return Option::None
         } else if value == 92 {
             match scan_escape_end(source, position, 34) {
-                Option::Some(next) => index.set(next),
-                Option::None => return Option::None,
+                Some(next) => index.set(next),
+                None => return Option::None,
             }
         } else if value == 123 {
             if position + 1 < source.byte_len() && byte_at(source, position + 1) == 123 {
                 index.set(position + 2)
             } else {
                 match scan_interpolation_expr_end(source, position + 1) {
-                    Option::Some(end) => index.set(end + 1),
-                    Option::None => return Option::None,
+                    Some(end) => index.set(end + 1),
+                    None => return Option::None,
                 }
             }
         } else if value == 125 {
@@ -569,14 +569,14 @@ fn scan_char_end(source: string, start: int) -> Option[int] {
             Option::Some(content + utf8_width(value))
         };
         match content_end {
-            Option::Some(end) => {
+            Some(end) => {
                 if end < source.byte_len() && byte_at(source, end) == 39 {
                     Option::Some(end + 1)
                 } else {
                     Option::None
                 }
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -624,14 +624,14 @@ fn scan_byte_char_end(source: string, start: int) -> Option[int] {
             Option::Some(content + 1)
         };
         match content_end {
-            Option::Some(end) => {
+            Some(end) => {
                 if end < source.byte_len() && byte_at(source, end) == 39 {
                     Option::Some(end + 1)
                 } else {
                     Option::None
                 }
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -776,8 +776,8 @@ fn scan_symbol(source: string, start: int) -> Option[(TokenKind, int)] {
             _ => Option::None,
         };
         match kind {
-            Option::Some(value) => Option::Some((value, start + 1)),
-            Option::None => Option::None,
+            Some(value) => Option::Some((value, start + 1)),
+            None => Option::None,
         }
     }
 }
@@ -832,8 +832,8 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
             return position + 1
         } else if value == 92 {
             match scan_escape_end(source, position, 34) {
-                Option::Some(next) => index.set(next),
-                Option::None => {
+                Some(next) => index.set(next),
+                None => {
                     if text_start.get() < position {
                         push_token(tokens, source, TokenKind::FStringText, text_start.get(), position)
                     } else {
@@ -854,13 +854,13 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
                 };
                 push_token(tokens, source, TokenKind::FStringExprStart, position, position + 1);
                 match scan_interpolation_expr_end(source, position + 1) {
-                    Option::Some(end) => {
+                    Some(end) => {
                         append_fragment_tokens(tokens, source, position + 1, end);
                         push_token(tokens, source, TokenKind::FStringExprEnd, end, end + 1);
                         index.set(end + 1);
                         text_start.set(end + 1)
                     },
-                    Option::None => {
+                    None => {
                         push_token(tokens, source, TokenKind::Error, position + 1, source.byte_len());
                         return source.byte_len()
                     },
@@ -911,11 +911,11 @@ pub fn lex(source: string) -> Vec[Token] {
             push_token(tokens, source, TokenKind::Comment, start, index.get())
         } else if strings::starts_with_at(source, start, "\\\\") {
             match scan_multiline_string_end(source, start) {
-                Option::Some(end) => {
+                Some(end) => {
                     index.set(end);
                     push_token(tokens, source, TokenKind::MultilineStr, start, end)
                 },
-                Option::None => {
+                None => {
                     index.set(start + 2);
                     push_token(tokens, source, TokenKind::Error, start, start + 2)
                 },
@@ -930,11 +930,11 @@ pub fn lex(source: string) -> Vec[Token] {
             && byte_at(source, start + 1) == 39
         {
             match scan_byte_char_end(source, start) {
-                Option::Some(end) => {
+                Some(end) => {
                     index.set(end);
                     push_token(tokens, source, TokenKind::ByteCharLit, start, end)
                 },
-                Option::None => {
+                None => {
                     let end = scan_invalid_prefixed_literal_end(source, start, 39);
                     index.set(end);
                     push_token(tokens, source, TokenKind::Error, start, end)
@@ -967,11 +967,11 @@ pub fn lex(source: string) -> Vec[Token] {
             }
         } else if value == 39 {
             match scan_char_end(source, start) {
-                Option::Some(end) => {
+                Some(end) => {
                     index.set(end);
                     push_token(tokens, source, TokenKind::CharLit, start, end)
                 },
-                Option::None => {
+                None => {
                     index.set(start + 1);
                     push_token(tokens, source, TokenKind::Error, start, start + 1)
                 },
@@ -993,11 +993,11 @@ pub fn lex(source: string) -> Vec[Token] {
             push_token(tokens, source, kind, start, end)
         } else {
             match scan_symbol(source, start) {
-                Option::Some((kind, end)) => {
+                Some((kind, end)) => {
                     index.set(end);
                     push_token(tokens, source, kind, start, end)
                 },
-                Option::None => {
+                None => {
                     let end = start + utf8_width(value);
                     index.set(end);
                     push_token(tokens, source, TokenKind::Error, start, end)
@@ -1015,122 +1015,122 @@ pub fn token_kind_name(kind: TokenKind) -> string {
 
 pub fn token_kind_display(kind: TokenKind) -> string {
     match kind {
-        TokenKind::LParen => "(",
-        TokenKind::RParen => ")",
-        TokenKind::LBrace => "{",
-        TokenKind::RBrace => "}",
-        TokenKind::LBracket => "[",
-        TokenKind::RBracket => "]",
-        TokenKind::Eq => "=",
-        TokenKind::Semi => ";",
-        TokenKind::Comma => ",",
-        TokenKind::ColonColon => "::",
-        TokenKind::Colon => ":",
-        TokenKind::Arrow => "->",
-        TokenKind::FatArrow => "=>",
-        TokenKind::Plus => "+",
-        TokenKind::PlusEq => "+=",
-        TokenKind::Minus => "-",
-        TokenKind::MinusEq => "-=",
-        TokenKind::Star => "*",
-        TokenKind::StarEq => "*=",
-        TokenKind::Slash => "/",
-        TokenKind::SlashEq => "/=",
-        TokenKind::Percent => "%",
-        TokenKind::PercentEq => "%=",
-        TokenKind::Dot => ".",
-        TokenKind::DotDotEq => "..=",
-        TokenKind::DotDot => "..",
-        TokenKind::At => "@",
-        TokenKind::AndAnd => "&&",
-        TokenKind::Amp => "&",
-        TokenKind::AmpEq => "&=",
-        TokenKind::OrOr => "||",
-        TokenKind::Pipe => "|",
-        TokenKind::PipeEq => "|=",
-        TokenKind::Caret => "^",
-        TokenKind::CaretEq => "^=",
-        TokenKind::Tilde => "~",
-        TokenKind::Bang => "!",
-        TokenKind::Less => "<",
-        TokenKind::LessLess => "<<",
-        TokenKind::LessLessEq => "<<=",
-        TokenKind::Greater => ">",
-        TokenKind::GreaterGreater => ">>",
-        TokenKind::GreaterGreaterEq => ">>=",
-        TokenKind::GreaterEq => ">=",
-        TokenKind::LessEq => "<=",
-        TokenKind::EqEq => "==",
-        TokenKind::NotEq => "!=",
-        TokenKind::Question => "?",
-        TokenKind::Pound => "#",
-        TokenKind::ExternKeyword => "extern",
-        TokenKind::PackageKeyword => "package",
-        TokenKind::UseKeyword => "use",
-        TokenKind::ImportKeyword => "import",
-        TokenKind::AsKeyword => "as",
-        TokenKind::PubKeyword => "pub",
-        TokenKind::ModKeyword => "mod",
-        TokenKind::CrateKeyword => "crate",
-        TokenKind::SuperKeyword => "super",
-        TokenKind::FnKeyword => "fn",
-        TokenKind::TraitKeyword => "trait",
-        TokenKind::ImplKeyword => "impl",
-        TokenKind::ForKeyword => "for",
-        TokenKind::EnumKeyword => "enum",
-        TokenKind::StructKeyword => "struct",
-        TokenKind::TypeKeyword => "type",
-        TokenKind::ConstKeyword => "const",
-        TokenKind::WhereKeyword => "where",
-        TokenKind::MatchKeyword => "match",
-        TokenKind::IfKeyword => "if",
-        TokenKind::ElseKeyword => "else",
-        TokenKind::LetKeyword => "let",
-        TokenKind::MutKeyword => "mut",
-        TokenKind::InKeyword => "in",
-        TokenKind::ReturnKeyword => "return",
-        TokenKind::GoKeyword => "go",
-        TokenKind::WhileKeyword => "while",
-        TokenKind::BreakKeyword => "break",
-        TokenKind::ContinueKeyword => "continue",
-        TokenKind::DynKeyword => "dyn",
-        TokenKind::TrueKeyword => "true",
-        TokenKind::FalseKeyword => "false",
-        TokenKind::WildcardKeyword => "_",
-        TokenKind::UnitKeyword => "unit",
-        TokenKind::BoolKeyword => "bool",
-        TokenKind::IntKeyword => "int",
-        TokenKind::Int8Keyword => "int8",
-        TokenKind::Int16Keyword => "int16",
-        TokenKind::Int32Keyword => "int32",
-        TokenKind::Int64Keyword => "int64",
-        TokenKind::UintKeyword => "uint",
-        TokenKind::Uint8Keyword => "uint8",
-        TokenKind::Uint16Keyword => "uint16",
-        TokenKind::Uint32Keyword => "uint32",
-        TokenKind::Uint64Keyword => "uint64",
-        TokenKind::Float32Keyword => "float32",
-        TokenKind::Float64Keyword => "float64",
-        TokenKind::StringKeyword => "string",
-        TokenKind::CharKeyword => "char",
-        TokenKind::ArrayKeyword => "array",
-        TokenKind::Ident => "ident",
-        TokenKind::Float => "float",
-        TokenKind::IntLit => "int_lit",
-        TokenKind::Str => "str",
-        TokenKind::MultilineStr => "multiline_str",
-        TokenKind::FStringStart => "f\"",
-        TokenKind::FStringText => "interpolated string text",
-        TokenKind::FStringExprStart => "{",
-        TokenKind::FStringExprEnd => "}",
-        TokenKind::FStringEnd => "\"",
-        TokenKind::CharLit => "char_lit",
-        TokenKind::ByteCharLit => "byte_char_lit",
-        TokenKind::UnsupportedByteStr => "unsupported_byte_str",
-        TokenKind::Whitespace => "whitespace",
-        TokenKind::Comment => "comment",
-        TokenKind::Error => "unknown token",
-        TokenKind::Eof => "end of file",
+        LParen => "(",
+        RParen => ")",
+        LBrace => "{",
+        RBrace => "}",
+        LBracket => "[",
+        RBracket => "]",
+        Eq => "=",
+        Semi => ";",
+        Comma => ",",
+        ColonColon => "::",
+        Colon => ":",
+        Arrow => "->",
+        FatArrow => "=>",
+        Plus => "+",
+        PlusEq => "+=",
+        Minus => "-",
+        MinusEq => "-=",
+        Star => "*",
+        StarEq => "*=",
+        Slash => "/",
+        SlashEq => "/=",
+        Percent => "%",
+        PercentEq => "%=",
+        Dot => ".",
+        DotDotEq => "..=",
+        DotDot => "..",
+        At => "@",
+        AndAnd => "&&",
+        Amp => "&",
+        AmpEq => "&=",
+        OrOr => "||",
+        Pipe => "|",
+        PipeEq => "|=",
+        Caret => "^",
+        CaretEq => "^=",
+        Tilde => "~",
+        Bang => "!",
+        Less => "<",
+        LessLess => "<<",
+        LessLessEq => "<<=",
+        Greater => ">",
+        GreaterGreater => ">>",
+        GreaterGreaterEq => ">>=",
+        GreaterEq => ">=",
+        LessEq => "<=",
+        EqEq => "==",
+        NotEq => "!=",
+        Question => "?",
+        Pound => "#",
+        ExternKeyword => "extern",
+        PackageKeyword => "package",
+        UseKeyword => "use",
+        ImportKeyword => "import",
+        AsKeyword => "as",
+        PubKeyword => "pub",
+        ModKeyword => "mod",
+        CrateKeyword => "crate",
+        SuperKeyword => "super",
+        FnKeyword => "fn",
+        TraitKeyword => "trait",
+        ImplKeyword => "impl",
+        ForKeyword => "for",
+        EnumKeyword => "enum",
+        StructKeyword => "struct",
+        TypeKeyword => "type",
+        ConstKeyword => "const",
+        WhereKeyword => "where",
+        MatchKeyword => "match",
+        IfKeyword => "if",
+        ElseKeyword => "else",
+        LetKeyword => "let",
+        MutKeyword => "mut",
+        InKeyword => "in",
+        ReturnKeyword => "return",
+        GoKeyword => "go",
+        WhileKeyword => "while",
+        BreakKeyword => "break",
+        ContinueKeyword => "continue",
+        DynKeyword => "dyn",
+        TrueKeyword => "true",
+        FalseKeyword => "false",
+        WildcardKeyword => "_",
+        UnitKeyword => "unit",
+        BoolKeyword => "bool",
+        IntKeyword => "int",
+        Int8Keyword => "int8",
+        Int16Keyword => "int16",
+        Int32Keyword => "int32",
+        Int64Keyword => "int64",
+        UintKeyword => "uint",
+        Uint8Keyword => "uint8",
+        Uint16Keyword => "uint16",
+        Uint32Keyword => "uint32",
+        Uint64Keyword => "uint64",
+        Float32Keyword => "float32",
+        Float64Keyword => "float64",
+        StringKeyword => "string",
+        CharKeyword => "char",
+        ArrayKeyword => "array",
+        Ident => "ident",
+        Float => "float",
+        IntLit => "int_lit",
+        Str => "str",
+        MultilineStr => "multiline_str",
+        FStringStart => "f\"",
+        FStringText => "interpolated string text",
+        FStringExprStart => "{",
+        FStringExprEnd => "}",
+        FStringEnd => "\"",
+        CharLit => "char_lit",
+        ByteCharLit => "byte_char_lit",
+        UnsupportedByteStr => "unsupported_byte_str",
+        Whitespace => "whitespace",
+        Comment => "comment",
+        Error => "unknown token",
+        Eof => "end of file",
     }
 }
 

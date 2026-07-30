@@ -13,8 +13,8 @@ fn world_metadata(counter: int) -> bytes::Bytes {
 fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
     let reader = new_artifact_binary_reader(data);
     let value = match artifact_binary_read_u64(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if value > 2147483647 {
         Result::Err("world artifact counter exceeds supported size")
@@ -48,8 +48,8 @@ fn world_add_package_sections(
     value: ArtifactStandardPackage,
 ) -> Result[unit, string] {
     let interface = match encode_artifact_interface_binary(value.interface_unit) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let core = match encode_artifact_core_binary(world_core_unit(
         value.interface_unit.package_name,
@@ -58,8 +58,8 @@ fn world_add_package_sections(
         value.environment_exports,
         value.core_value,
     )) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     sections.push(ArtifactBinarySection {
         id: section_id,
@@ -101,8 +101,8 @@ fn world_add_standard_sections(
             package_value.0,
             package_value.1,
         ) {
-            Result::Ok(()) => (),
-            Result::Err(error) => return Result::Err(error),
+            Ok(()) => (),
+            Err(error) => return Result::Err(error),
         }
     };
     Result::Ok(())
@@ -112,8 +112,8 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
     let builtin_interface = match encode_artifact_interface_binary(
         value.builtin_interface,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let builtin_core = match encode_artifact_core_binary(world_core_unit(
         "builtin",
@@ -122,8 +122,8 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
         value.builtin_interface.exports,
         value.builtins,
     )) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let sections = Vec::new()
         .pushed(ArtifactBinarySection {
@@ -145,8 +145,8 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
             data: builtin_core,
         });
     match world_add_standard_sections(sections, value.standard) {
-        Result::Ok(()) => (),
-        Result::Err(error) => return Result::Err(error),
+        Ok(()) => (),
+        Err(error) => return Result::Err(error),
     };
     encode_artifact_binary_container(3, sections)
 }
@@ -156,14 +156,14 @@ fn world_required_section(
     id: uint16,
 ) -> Result[ArtifactBinarySection, string] {
     match artifact_binary_find_section(value, id) {
-        Option::Some(section) => if section.version != 1
+        Some(section) => if section.version != 1
             || section.flags != artifact_binary_required_section_flag()
         {
             Result::Err("invalid world artifact section")
         } else {
             Result::Ok(section)
         },
-        Option::None => Result::Err("world artifact is missing a required section"),
+        None => Result::Err("world artifact is missing a required section"),
     }
 }
 
@@ -173,20 +173,20 @@ fn world_decode_package(
     expected_name: string,
 ) -> Result[ArtifactStandardPackage, string] {
     let interface_section = match world_required_section(value, section_id) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let core_section = match world_required_section(value, section_id + 1) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let interface = match decode_artifact_interface_binary(interface_section.data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let core = match decode_artifact_core_binary(core_section.data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if interface.package_name != expected_name
         || core.package_name != expected_name
@@ -204,8 +204,8 @@ fn world_decode_package(
 
 fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let container = match decode_artifact_binary_container(data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if container.kind != 3 {
         return Result::Err("binary artifact is not a compiler world")
@@ -213,30 +213,30 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
         ()
     };
     let counter_section = match world_required_section(container, 1) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let counter = match world_decode_counter(counter_section.data) {
-        Result::Ok(value) => Ref::new(value),
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => Ref::new(value),
+        Err(error) => return Result::Err(error),
     };
     let builtin_interface_section = match world_required_section(container, 2) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let builtin_core_section = match world_required_section(container, 3) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let builtin_interface = match decode_artifact_interface_binary(
         builtin_interface_section.data,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let builtin_core = match decode_artifact_core_binary(builtin_core_section.data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if builtin_interface.package_name != "builtin"
         || builtin_core.package_name != "builtin"
@@ -247,60 +247,60 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
         ()
     };
     let root = match world_decode_package(container, 10, "std") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let host = match world_decode_package(container, 12, "std::internal::host") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let bytes = match world_decode_package(container, 14, "std::bytes") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let collections = match world_decode_package(container, 16, "std::collections") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let env = match world_decode_package(container, 18, "std::env") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let fs_value = match world_decode_package(container, 20, "std::fs") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let io_value = match world_decode_package(container, 22, "std::io") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let json = match world_decode_package(container, 24, "std::json") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let path_value = match world_decode_package(container, 26, "std::path") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let process = match world_decode_package(container, 28, "std::process") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let testing = match world_decode_package(container, 30, "std::testing") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let text_value = match world_decode_package(container, 32, "std::text") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let num = match world_decode_package(container, 34, "std::num") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let time_value = match world_decode_package(container, 36, "std::time") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let world = PackageWorld {
         counter,
@@ -329,14 +329,14 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
 
 fn read_package_world(path: string) -> Result[PackageWorld, string] {
     let data = match fs::read_bytes(path) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(
+        Ok(value) => value,
+        Err(error) => return Result::Err(
             "failed to read compiler world " + path + ": " + error,
         ),
     };
     match decode_package_world(data) {
-        Result::Ok(value) => Result::Ok(value),
-        Result::Err(error) => Result::Err(
+        Ok(value) => Result::Ok(value),
+        Err(error) => Result::Err(
             "failed to parse compiler world " + path + ": " + error,
         ),
     }
@@ -344,12 +344,12 @@ fn read_package_world(path: string) -> Result[PackageWorld, string] {
 
 fn write_package_world(path: string, value: PackageWorld) -> Result[unit, string] {
     let data = match encode_package_world(value) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     match ensure_parent(path) {
-        Result::Ok(()) => fs::write_bytes(path, data),
-        Result::Err(error) => Result::Err(error),
+        Ok(()) => fs::write_bytes(path, data),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -401,8 +401,8 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
         }
     };
     match output.get() {
-        Option::Some(value) => Result::Ok(value),
-        Option::None => {
+        Some(value) => Result::Ok(value),
+        None => {
             let missing: Vec[string] = Vec::new().pushed("--output <OUTPUT>");
             Result::Err(missing_required_arguments_error(
                 "prepare-world",
@@ -414,10 +414,10 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
 
 fn run_prepare_world(args: Vec[string]) -> unit {
     match parse_prepare_world_args(args) {
-        Result::Ok(output) => match write_package_world(output, package_world()) {
-            Result::Ok(()) => (),
-            Result::Err(error) => fail("error[compile]: " + error),
+        Ok(output) => match write_package_world(output, package_world()) {
+            Ok(()) => (),
+            Err(error) => fail("error[compile]: " + error),
         },
-        Result::Err(error) => handle_cli_parse_error("prepare-world", error),
+        Err(error) => handle_cli_parse_error("prepare-world", error),
     }
 }

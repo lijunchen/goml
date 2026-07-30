@@ -20,14 +20,14 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
     let current = Ref::new(path::clean(source_path));
     while true {
         match path::parent(current.get()) {
-            Option::Some(parent) => {
+            Some(parent) => {
                 match path::file_name(parent) {
-                    Option::Some(name) => if name == "tests" {
+                    Some(name) => if name == "tests" {
                         return Option::Some(TestItemKind::External)
                     } else {
                         ()
                     },
-                    Option::None => (),
+                    None => (),
                 };
                 if parent == current.get() {
                     break
@@ -35,7 +35,7 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
                     current.set(parent)
                 }
             },
-            Option::None => break,
+            None => break,
         }
     };
     if strings::ends_with(source_path, "_test.gom") {
@@ -69,7 +69,7 @@ fn function_symbol_span(
         if symbol.source_path == source_path
             && symbol.name == name
             && match symbol.kind {
-                SymbolKind::Function => true,
+                Function => true,
                 _ => false,
             }
         {
@@ -84,10 +84,10 @@ fn function_symbol_span(
 pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
     let result = Vec::new();
     match test_path_kind(source_path) {
-        Option::Some(kind) => {
+        Some(kind) => {
             let lowered = ast::lower(parser::parse(source));
             match lowered.ast {
-                Option::Some(file) => {
+                Some(file) => {
                     let source_file = SourceFile {
                         path: source_path,
                         source,
@@ -100,7 +100,7 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
                     );
                     for item in file.items {
                         match item {
-                            ast::Item::Function(function) => if has_test_attribute(
+                            Function(function) => if has_test_attribute(
                                 function.attrs,
                             ) {
                                 result.push(TestItem {
@@ -119,10 +119,10 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
                         }
                     }
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Option::None => (),
+        None => (),
     };
     result
 }

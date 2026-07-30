@@ -361,61 +361,61 @@ pub fn span(start: int, end: int) -> Span {
 
 pub fn expr_span(value: Expr) -> Span {
     match value {
-        Expr::Path { span, .. }
-        | Expr::Unit { span }
-        | Expr::Bool { span, .. }
-        | Expr::Int { span, .. }
-        | Expr::Float { span, .. }
-        | Expr::String { span, .. }
-        | Expr::InterpolatedString { span, .. }
-        | Expr::Char { span, .. }
-        | Expr::Byte { span, .. }
-        | Expr::ConstructorValue { span, .. }
-        | Expr::Constr { span, .. }
-        | Expr::StructLiteral { span, .. }
-        | Expr::Tuple { span, .. }
-        | Expr::Array { span, .. }
-        | Expr::VecLiteral { span, .. }
-        | Expr::HashMapLiteral { span, .. }
-        | Expr::Closure { span, .. }
-        | Expr::Match { span, .. }
-        | Expr::If { span, .. }
-        | Expr::While { span, .. }
-        | Expr::For { span, .. }
-        | Expr::Break { span }
-        | Expr::Continue { span }
-        | Expr::Return { span, .. }
-        | Expr::Go { span, .. }
-        | Expr::Call { span, .. }
-        | Expr::Unary { span, .. }
-        | Expr::Cast { span, .. }
-        | Expr::Try { span, .. }
-        | Expr::Range { span, .. }
-        | Expr::Binary { span, .. }
-        | Expr::Proj { span, .. }
-        | Expr::Field { span, .. }
-        | Expr::Index { span, .. }
-        | Expr::Block { span, .. } => span,
+        Path { span, .. }
+        | Unit { span }
+        | Bool { span, .. }
+        | Int { span, .. }
+        | Float { span, .. }
+        | String { span, .. }
+        | InterpolatedString { span, .. }
+        | Char { span, .. }
+        | Byte { span, .. }
+        | ConstructorValue { span, .. }
+        | Constr { span, .. }
+        | StructLiteral { span, .. }
+        | Tuple { span, .. }
+        | Array { span, .. }
+        | VecLiteral { span, .. }
+        | HashMapLiteral { span, .. }
+        | Closure { span, .. }
+        | Match { span, .. }
+        | If { span, .. }
+        | While { span, .. }
+        | For { span, .. }
+        | Break { span }
+        | Continue { span }
+        | Return { span, .. }
+        | Go { span, .. }
+        | Call { span, .. }
+        | Unary { span, .. }
+        | Cast { span, .. }
+        | Try { span, .. }
+        | Range { span, .. }
+        | Binary { span, .. }
+        | Proj { span, .. }
+        | Field { span, .. }
+        | Index { span, .. }
+        | Block { span, .. } => span,
     }
 }
 
 pub fn pat_span(value: Pat) -> Span {
     match value {
-        Pat::Var { span, .. }
-        | Pat::Unit { span }
-        | Pat::Bool { span, .. }
-        | Pat::Int { span, .. }
-        | Pat::Float { span, .. }
-        | Pat::String { span, .. }
-        | Pat::Char { span, .. }
-        | Pat::Byte { span, .. }
-        | Pat::Constr { span, .. }
-        | Pat::Struct { span, .. }
-        | Pat::Tuple { span, .. }
-        | Pat::Array { span, .. }
-        | Pat::Alias { span, .. }
-        | Pat::Or { span, .. }
-        | Pat::Range { span, .. }
-        | Pat::Wild { span } => span,
+        Var { span, .. }
+        | Unit { span }
+        | Bool { span, .. }
+        | Int { span, .. }
+        | Float { span, .. }
+        | String { span, .. }
+        | Char { span, .. }
+        | Byte { span, .. }
+        | Constr { span, .. }
+        | Struct { span, .. }
+        | Tuple { span, .. }
+        | Array { span, .. }
+        | Alias { span, .. }
+        | Or { span, .. }
+        | Range { span, .. }
+        | Wild { span } => span,
     }
 }

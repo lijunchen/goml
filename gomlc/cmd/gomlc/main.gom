@@ -41,8 +41,8 @@ fn fail(message: string) -> unit {
 
 fn read_source(path: string) -> string {
     match fs::read_file(path) {
-        Result::Ok(source) => source,
-        Result::Err(_) => {
+        Ok(source) => source,
+        Err(_) => {
             fail("error reading goml file: " + path);
             ""
         },
@@ -72,18 +72,15 @@ fn inline_dump_argument(value: string) -> Option[(string, string)] {
     names.push("--dump-go");
     for name in names {
         match inline_cli_value(value, name) {
-            Option::Some(argument) => return Option::Some((name, argument)),
-            Option::None => (),
+            Some(argument) => return Option::Some((name, argument)),
+            None => (),
         }
     };
     Option::None
 }
 
 fn inline_dump_argument_present(value: Option[(string, string)]) -> bool {
-    match value {
-        Option::Some(_) => true,
-        Option::None => false,
-    }
+    value.is_some()
 }
 
 fn selected_run_usage(used_dumps: Vec[string]) -> string {
@@ -116,8 +113,8 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             && option_string_present(inline_cli_value(argument, "--help"))
         {
             let value = match inline_cli_value(argument, "--help") {
-                Option::Some(value) => value,
-                Option::None => "",
+                Some(value) => value,
+                None => "",
             };
             let usage = if used_dumps.len() == 0 {
                 "gomlc run-single --help <FILE>"
@@ -144,17 +141,17 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             && inline_dump_argument_present(inline_dump_argument(argument))
         {
             match inline_dump_argument(argument) {
-                Option::Some((name, value)) => return Result::Err(unexpected_value_error(
+                Some((name, value)) => return Result::Err(unexpected_value_error(
                     "run-single",
                     value,
                     name,
                     name + " <FILE>",
                 )),
-                Option::None => (),
+                None => (),
             }
         } else if positional.get() == false && cli_option(argument) {
             match similar_cli_argument("run-single", argument) {
-                Option::Some(similar) => {
+                Some(similar) => {
                     let usage = if similar == "--help" {
                         "gomlc run-single --help <FILE>"
                     } else {
@@ -171,7 +168,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                         usage,
                     ))
                 },
-                Option::None => (),
+                None => (),
             };
             let usage = if used_dumps.len() > 0
                 || option_string_present(file.get())
@@ -187,12 +184,12 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             ))
         } else {
             match file.get() {
-                Option::Some(_) => return Result::Err(unexpected_argument_error(
+                Some(_) => return Result::Err(unexpected_argument_error(
                     "run-single",
                     argument,
                     false,
                 )),
-                Option::None => {
+                None => {
                     file.set(Option::Some(argument));
                     index.set(index.get() + 1)
                 },
@@ -200,7 +197,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
         }
     };
     match file.get() {
-        Option::Some(value) => Result::Ok(RunArgs {
+        Some(value) => Result::Ok(RunArgs {
             file: value,
             dump_ast: seen.contains("--dump-ast"),
             dump_hir: seen.contains("--dump-hir"),
@@ -211,7 +208,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             dump_anf: seen.contains("--dump-anf"),
             dump_go: seen.contains("--dump-go"),
         }),
-        Option::None => {
+        None => {
             let missing = Vec::new();
             missing.push("<FILE>");
             Result::Err(missing_required_arguments_error_with_usage(
@@ -314,8 +311,8 @@ fn main() -> unit {
         print_cli_help(top_level_help())
     } else if option_string_present(inline_cli_value(args.get(1), "--help")) {
         let value = match inline_cli_value(args.get(1), "--help") {
-            Option::Some(value) => value,
-            Option::None => "",
+            Some(value) => value,
+            None => "",
         };
         fail_cli(unexpected_value_error_with_usage(
             value,
@@ -360,19 +357,19 @@ fn main() -> unit {
         run_test_diagnostics(args)
     } else if args.get(1) == "run-single" {
         match parse_run_args(args) {
-            Result::Ok(run_args) => run_single(run_args),
-            Result::Err(error) => handle_cli_parse_error("run-single", error),
+            Ok(run_args) => run_single(run_args),
+            Err(error) => handle_cli_parse_error("run-single", error),
         }
     } else if is_debug_stage(args.get(1)) {
         run_stage(args)
     } else if cli_option(args.get(1)) {
         match similar_cli_argument("", args.get(1)) {
-            Option::Some(similar) => fail_cli(unexpected_similar_argument_error(
+            Some(similar) => fail_cli(unexpected_similar_argument_error(
                 args.get(1),
                 similar,
                 similar_cli_argument_usage("", similar),
             )),
-            Option::None => fail_cli(unexpected_argument_error("", args.get(1), false)),
+            None => fail_cli(unexpected_argument_error("", args.get(1), false)),
         }
     } else {
         fail_unknown_subcommand(args.get(1))

@@ -12,8 +12,8 @@ use std::text;
 
 fn required_field(value: json::Value, name: string) -> Result[json::Value, string] {
     match json::field(value, name) {
-        Option::Some(field) => Result::Ok(field),
-        Option::None => Result::Err("missing field " + name),
+        Some(field) => Result::Ok(field),
+        None => Result::Err("missing field " + name),
     }
 }
 
@@ -22,21 +22,21 @@ fn required_string_field(
     name: string,
 ) -> Result[string, string] {
     match required_field(value, name) {
-        Result::Ok(field) => match json::as_string(field) {
-            Option::Some(text) => Result::Ok(text),
-            Option::None => Result::Err("field " + name + " must be a string"),
+        Ok(field) => match json::as_string(field) {
+            Some(text) => Result::Ok(text),
+            None => Result::Err("field " + name + " must be a string"),
         },
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 
 fn optional_int_field(value: json::Value, name: string, fallback: int) -> int {
     match json::field(value, name) {
-        Option::Some(field) => match json::as_int(field) {
-            Option::Some(number) => number,
-            Option::None => fallback,
+        Some(field) => match json::as_int(field) {
+            Some(number) => number,
+            None => fallback,
         },
-        Option::None => fallback,
+        None => fallback,
     }
 }
 
@@ -46,8 +46,8 @@ fn text_document(value: json::Value) -> Result[json::Value, string] {
 
 fn text_document_uri(value: json::Value) -> Result[string, string] {
     match text_document(value) {
-        Result::Ok(document) => required_string_field(document, "uri"),
-        Result::Err(error) => Result::Err(error),
+        Ok(document) => required_string_field(document, "uri"),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -56,19 +56,19 @@ fn request_document(
     params: json::Value,
 ) -> Result[Document, string] {
     let uri = match text_document_uri(params) {
-        Result::Ok(uri) => uri,
-        Result::Err(error) => return Result::Err(error),
+        Ok(uri) => uri,
+        Err(error) => return Result::Err(error),
     };
     match server_document(server, uri) {
-        Option::Some(document) => Result::Ok(document),
-        Option::None => Result::Err("document is not open: " + uri),
+        Some(document) => Result::Ok(document),
+        None => Result::Err("document is not open: " + uri),
     }
 }
 
 fn request_position(params: json::Value) -> Result[Position, string] {
     match required_field(params, "position") {
-        Result::Ok(position) => parse_position(position),
-        Result::Err(error) => Result::Err(error),
+        Ok(position) => parse_position(position),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -77,8 +77,8 @@ fn request_offset(
     position: Position,
 ) -> Result[int, string] {
     match position_to_offset_checked(document.text, position) {
-        Option::Some(offset) => Result::Ok(offset),
-        Option::None => Result::Err("position is outside the document"),
+        Some(offset) => Result::Ok(offset),
+        None => Result::Err("position is outside the document"),
     }
 }
 
@@ -205,15 +205,15 @@ fn source_for_path(
         }
     };
     match fs::read_file(source_path) {
-        Result::Ok(source) => Option::Some(source),
-        Result::Err(_) => Option::None,
+        Ok(source) => Option::Some(source),
+        Err(_) => Option::None,
     }
 }
 
 fn diagnostic_text(value: tast::Diagnostic) -> string {
     match value.primary_label {
-        Option::Some(label) => value.message + "\n" + label,
-        Option::None => value.message,
+        Some(label) => value.message + "\n" + label,
+        None => value.message,
     }
 }
 
@@ -224,12 +224,12 @@ fn diagnostic_contains_offset(
 ) -> bool {
     (value.source_path == "" || value.source_path == source_path)
         && match value.span {
-            Option::Some(span) => if span.start == span.end {
+            Some(span) => if span.start == span.end {
                 offset == span.start
             } else {
                 span.start <= offset && offset < span.end
             },
-            Option::None => offset == 0,
+            None => offset == 0,
         }
 }
 
@@ -251,24 +251,24 @@ fn hover_response(
     params: json::Value,
 ) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let position = match request_position(params) {
-        Result::Ok(position) => position,
-        Result::Err(error) => return Result::Err(error),
+        Ok(position) => position,
+        Err(error) => return Result::Err(error),
     };
     let analysis = document_analysis(server, document);
     let offset = match request_offset(document, position) {
-        Result::Ok(offset) => offset,
-        Result::Err(error) => return Result::Err(error),
+        Ok(offset) => offset,
+        Err(error) => return Result::Err(error),
     };
     let sections = Vec::new();
     match query::hover(analysis, offset) {
-        Option::Some(hover) => sections.push(
+        Some(hover) => sections.push(
             "```goml\n" + hover.contents + "\n```",
         ),
-        Option::None => (),
+        None => (),
     };
     let diagnostic_lines = Vec::new();
     for diagnostic in analysis.checked.diagnostics {
@@ -278,8 +278,8 @@ fn hover_response(
             offset,
         ) {
             let line = match diagnostic.severity {
-                tast::DiagnosticSeverity::Error => "- ",
-                tast::DiagnosticSeverity::Warning => "+ ",
+                Error => "- ",
+                Warning => "+ ",
             } + diagnostic_text(diagnostic);
             if vecs::contains(diagnostic_lines, line) {
                 ()
@@ -325,16 +325,16 @@ fn hover_response(
 
 fn completion_kind(value: query::CompletionKind) -> int {
     match value {
-        query::CompletionKind::Package => 9,
-        query::CompletionKind::Method => 2,
-        query::CompletionKind::Function => 3,
-        query::CompletionKind::Field => 5,
-        query::CompletionKind::Variable => 6,
-        query::CompletionKind::Keyword => 14,
-        query::CompletionKind::Trait => 8,
-        query::CompletionKind::Enum => 13,
-        query::CompletionKind::Variant => 20,
-        query::CompletionKind::Struct => 22,
+        Package => 9,
+        Method => 2,
+        Function => 3,
+        Field => 5,
+        Variable => 6,
+        Keyword => 14,
+        Trait => 8,
+        Enum => 13,
+        Variant => 20,
+        Struct => 22,
     }
 }
 
@@ -343,17 +343,17 @@ fn completion_response(
     params: json::Value,
 ) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let position = match request_position(params) {
-        Result::Ok(position) => position,
-        Result::Err(error) => return Result::Err(error),
+        Ok(position) => position,
+        Err(error) => return Result::Err(error),
     };
     let analysis = document_analysis(server, document);
     let offset = match request_offset(document, position) {
-        Result::Ok(offset) => offset,
-        Result::Err(error) => return Result::Err(error),
+        Ok(offset) => offset,
+        Err(error) => return Result::Err(error),
     };
     let result = Vec::new();
     for item in query::completions(analysis, offset) {
@@ -383,20 +383,20 @@ fn signature_response(
     params: json::Value,
 ) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let position = match request_position(params) {
-        Result::Ok(position) => position,
-        Result::Err(error) => return Result::Err(error),
+        Ok(position) => position,
+        Err(error) => return Result::Err(error),
     };
     let analysis = document_analysis(server, document);
     let offset = match request_offset(document, position) {
-        Result::Ok(offset) => offset,
-        Result::Err(error) => return Result::Err(error),
+        Ok(offset) => offset,
+        Err(error) => return Result::Err(error),
     };
     match query::signature_help(analysis, offset) {
-        Option::Some(signature) => {
+        Some(signature) => {
             let parameters = Vec::new();
             for parameter in signature.parameters {
                 let fields = Vec::new();
@@ -440,7 +440,7 @@ fn signature_response(
             );
             Result::Ok(json::Value::Object(result))
         },
-        Option::None => Result::Ok(json::Value::Null),
+        None => Result::Ok(json::Value::Null),
     }
 }
 
@@ -449,26 +449,26 @@ fn inlay_response(
     params: json::Value,
 ) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let requested_range = match required_field(params, "range") {
-        Result::Ok(value) => match parse_range(value) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+        Ok(value) => match parse_range(value) {
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     let range_start = match request_offset(
         document,
         requested_range.start,
     ) {
-        Result::Ok(offset) => offset,
-        Result::Err(error) => return Result::Err(error),
+        Ok(offset) => offset,
+        Err(error) => return Result::Err(error),
     };
     let range_end = match request_offset(document, requested_range.end) {
-        Result::Ok(offset) => offset,
-        Result::Err(error) => return Result::Err(error),
+        Ok(offset) => offset,
+        Err(error) => return Result::Err(error),
     };
     let analysis = document_analysis(server, document);
     let result = Vec::new();
@@ -514,22 +514,22 @@ fn definition_response(
     params: json::Value,
 ) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let position = match request_position(params) {
-        Result::Ok(position) => position,
-        Result::Err(error) => return Result::Err(error),
+        Ok(position) => position,
+        Err(error) => return Result::Err(error),
     };
     let analysis = document_analysis(server, document);
     let offset = match request_offset(document, position) {
-        Result::Ok(offset) => offset,
-        Result::Err(error) => return Result::Err(error),
+        Ok(offset) => offset,
+        Err(error) => return Result::Err(error),
     };
     let locations = Vec::new();
     for definition in query::goto_definitions(analysis, offset) {
         match source_for_path(analysis, definition.source_path) {
-            Option::Some(source) => {
+            Some(source) => {
                 let location = Vec::new();
                 push_json_field(
                     location,
@@ -549,7 +549,7 @@ fn definition_response(
                 );
                 locations.push(json::Value::Object(location))
             },
-            Option::None => (),
+            None => (),
         }
     };
     if locations.len() == 0 {
@@ -563,8 +563,8 @@ fn definition_response(
 
 fn test_kind_name(value: query::TestItemKind) -> string {
     match value {
-        query::TestItemKind::Internal => "internal",
-        query::TestItemKind::External => "external",
+        Internal => "internal",
+        External => "external",
     }
 }
 
@@ -573,8 +573,8 @@ fn code_lens_response(
     params: json::Value,
 ) -> Result[json::Value, string] {
     let document = match request_document(server, params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let result = Vec::new();
     for item in query::test_items(document.path, document.text) {
@@ -623,32 +623,32 @@ fn fix_action(
     fix: json::Value,
 ) -> Option[json::Value] {
     let uri = match json::field(fix, "uri") {
-        Option::Some(value) => match json::as_string(value) {
-            Option::Some(value) => value,
-            Option::None => return Option::None,
+        Some(value) => match json::as_string(value) {
+            Some(value) => value,
+            None => return Option::None,
         },
-        Option::None => return Option::None,
+        None => return Option::None,
     };
     let range = match json::field(fix, "range") {
-        Option::Some(value) => value,
-        Option::None => return Option::None,
+        Some(value) => value,
+        None => return Option::None,
     };
     let replacement = match json::field(fix, "replacement") {
-        Option::Some(value) => match json::as_string(value) {
-            Option::Some(value) => value,
-            Option::None => return Option::None,
+        Some(value) => match json::as_string(value) {
+            Some(value) => value,
+            None => return Option::None,
         },
-        Option::None => return Option::None,
+        None => return Option::None,
     };
     let title = match json::field(fix, "title") {
-        Option::Some(value) => match json::as_string(value) {
-            Option::Some(value) => value,
-            Option::None => "Apply suggested fix",
+        Some(value) => match json::as_string(value) {
+            Some(value) => value,
+            None => "Apply suggested fix",
         },
-        Option::None => "Apply suggested fix",
+        None => "Apply suggested fix",
     };
     let preferred = match json::field(fix, "preferred") {
-        Option::Some(json::Value::Bool(value)) => value,
+        Some(Bool(value)) => value,
         _ => false,
     };
     let edit = Vec::new();
@@ -697,29 +697,29 @@ fn fix_action(
 
 fn code_action_response(params: json::Value) -> Result[json::Value, string] {
     let context = match required_field(params, "context") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let diagnostics = match required_field(context, "diagnostics") {
-        Result::Ok(json::Value::Array(values)) => values,
-        Result::Ok(_) => return Result::Err(
+        Ok(Array(values)) => values,
+        Ok(_) => return Result::Err(
             "field diagnostics must be an array",
         ),
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     let actions = Vec::new();
     for diagnostic in diagnostics {
         match json::field(diagnostic, "data") {
-            Option::Some(data) => match json::field(data, "fixes") {
-                Option::Some(json::Value::Array(fixes)) => for fix in fixes {
+            Some(data) => match json::field(data, "fixes") {
+                Some(Array(fixes)) => for fix in fixes {
                     match fix_action(diagnostic, fix) {
-                        Option::Some(action) => actions.push(action),
-                        Option::None => (),
+                        Some(action) => actions.push(action),
+                        None => (),
                     }
                 },
                 _ => (),
             },
-            Option::None => (),
+            None => (),
         }
     };
     if actions.len() == 0 {
@@ -731,8 +731,8 @@ fn code_action_response(params: json::Value) -> Result[json::Value, string] {
 
 fn diagnostic_severity(value: tast::DiagnosticSeverity) -> int {
     match value {
-        tast::DiagnosticSeverity::Error => 1,
-        tast::DiagnosticSeverity::Warning => 2,
+        Error => 1,
+        Warning => 2,
     }
 }
 
@@ -742,8 +742,8 @@ fn diagnostic_json(
     value: tast::Diagnostic,
 ) -> json::Value {
     let span = match value.span {
-        Option::Some(span) => span,
-        Option::None => ast::span(0, 0),
+        Some(span) => span,
+        None => ast::span(0, 0),
     };
     let fields = Vec::new();
     push_json_field(
@@ -773,7 +773,7 @@ fn diagnostic_json(
     let related = Vec::new();
     for label in value.secondary_labels {
         match source_for_path(analysis, label.source_path) {
-            Option::Some(source) => {
+            Some(source) => {
                 let location = Vec::new();
                 push_json_field(
                     location,
@@ -802,7 +802,7 @@ fn diagnostic_json(
                 );
                 related.push(json::Value::Object(information))
             },
-            Option::None => (),
+            None => (),
         }
     };
     if related.len() > 0 {
@@ -865,20 +865,20 @@ fn publish_all_diagnostics(server: Server) -> Vec[json::Value] {
 
 fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] {
     let text_document = match text_document(params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let uri = match required_string_field(text_document, "uri") {
-        Result::Ok(uri) => uri,
-        Result::Err(error) => return Result::Err(error),
+        Ok(uri) => uri,
+        Err(error) => return Result::Err(error),
     };
     let path = match uri_to_path(uri) {
-        Result::Ok(path) => path,
-        Result::Err(error) => return Result::Err(error),
+        Ok(path) => path,
+        Err(error) => return Result::Err(error),
     };
     let text = match required_string_field(text_document, "text") {
-        Result::Ok(text) => text,
-        Result::Err(error) => return Result::Err(error),
+        Ok(text) => text,
+        Err(error) => return Result::Err(error),
     };
     let document = Document {
         uri,
@@ -892,22 +892,22 @@ fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] 
 
 fn did_change(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = match text_document_uri(params) {
-        Result::Ok(uri) => uri,
-        Result::Err(error) => return Result::Err(error),
+        Ok(uri) => uri,
+        Err(error) => return Result::Err(error),
     };
     let text_document = match text_document(params) {
-        Result::Ok(document) => document,
-        Result::Err(error) => return Result::Err(error),
+        Ok(document) => document,
+        Err(error) => return Result::Err(error),
     };
     let version = optional_int_field(text_document, "version", 0);
     let changes = match required_field(params, "contentChanges") {
-        Result::Ok(changes) => match json::as_array(changes) {
-            Option::Some(changes) => changes,
-            Option::None => {
+        Ok(changes) => match json::as_array(changes) {
+            Some(changes) => changes,
+            None => {
                 return Result::Err("contentChanges must be an array")
             },
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     if changes.len() == 0 {
         return Result::Err("contentChanges must not be empty")
@@ -918,22 +918,22 @@ fn did_change(server: Server, params: json::Value) -> Result[json::Value, string
         changes.get(changes.len() - 1),
         "text",
     ) {
-        Result::Ok(text) => text,
-        Result::Err(error) => return Result::Err(error),
+        Ok(text) => text,
+        Err(error) => return Result::Err(error),
     };
     change_document(server, uri, text, version);
     match server_document(server, uri) {
-        Option::Some(document) => {
+        Some(document) => {
             Result::Ok(publish_diagnostics(server, document))
         },
-        Option::None => Result::Err("document is not open: " + uri),
+        None => Result::Err("document is not open: " + uri),
     }
 }
 
 fn did_close(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = match text_document_uri(params) {
-        Result::Ok(uri) => uri,
-        Result::Err(error) => return Result::Err(error),
+        Ok(uri) => uri,
+        Err(error) => return Result::Err(error),
     };
     close_document(server, uri);
     let diagnostic_params = Vec::new();
@@ -955,15 +955,15 @@ fn did_close(server: Server, params: json::Value) -> Result[json::Value, string]
 
 fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
     let uri = match text_document_uri(params) {
-        Result::Ok(uri) => uri,
-        Result::Err(error) => return Result::Err(error),
+        Ok(uri) => uri,
+        Err(error) => return Result::Err(error),
     };
     match server_document(server, uri) {
-        Option::Some(_) => {
+        Some(_) => {
             invalidate_analyses(server);
             Result::Ok(())
         },
-        Option::None => Result::Err("document is not open: " + uri),
+        None => Result::Err("document is not open: " + uri),
     }
 }
 
@@ -998,16 +998,16 @@ fn request_result(
 pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
     let output = Vec::new();
     match parse_rpc_message(value) {
-        Result::Ok(message) => if server.shutdown.get()
+        Ok(message) => if server.shutdown.get()
             && message.method != "exit"
         {
             match message.id {
-                Option::Some(id) => output.push(rpc_error(
+                Some(id) => output.push(rpc_error(
                     id,
                     -32600,
                     "server has shut down",
                 )),
-                Option::None => (),
+                None => (),
             }
         } else if message.method == "exit" {
             server.running.set(false)
@@ -1015,46 +1015,46 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
             ()
         } else if message.method == "textDocument/didOpen" {
             match did_open(server, message.params) {
-                Result::Ok(_) => for notification in publish_all_diagnostics(
+                Ok(_) => for notification in publish_all_diagnostics(
                     server,
                 ) {
                     output.push(notification)
                 },
-                Result::Err(_) => (),
+                Err(_) => (),
             }
         } else if message.method == "textDocument/didChange" {
             match did_change(server, message.params) {
-                Result::Ok(_) => for notification in publish_all_diagnostics(
+                Ok(_) => for notification in publish_all_diagnostics(
                     server,
                 ) {
                     output.push(notification)
                 },
-                Result::Err(_) => (),
+                Err(_) => (),
             }
         } else if message.method == "textDocument/didClose" {
             match did_close(server, message.params) {
-                Result::Ok(notification) => {
+                Ok(notification) => {
                     output.push(notification);
                     for current in publish_all_diagnostics(server) {
                         output.push(current)
                     }
                 },
-                Result::Err(_) => (),
+                Err(_) => (),
             }
         } else if message.method == "textDocument/didSave" {
             match did_save(server, message.params) {
-                Result::Ok(()) => for notification in publish_all_diagnostics(
+                Ok(()) => for notification in publish_all_diagnostics(
                     server,
                 ) {
                     output.push(notification)
                 },
-                Result::Err(_) => (),
+                Err(_) => (),
             }
         } else {
             match message.id {
-                Option::Some(id) => match request_result(server, message) {
-                    Result::Ok(result) => output.push(rpc_success(id, result)),
-                    Result::Err(error) => output.push(rpc_error(
+                Some(id) => match request_result(server, message) {
+                    Ok(result) => output.push(rpc_success(id, result)),
+                    Err(error) => output.push(rpc_error(
                         id,
                         if strings::starts_with(error, "method not found:") {
                             -32601
@@ -1064,10 +1064,10 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
                         error,
                     )),
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Result::Err(error) => output.push(rpc_error(
+        Err(error) => output.push(rpc_error(
             json::Value::Null,
             -32600,
             error,
@@ -1081,8 +1081,8 @@ pub fn handle_payload(
     payload: string,
 ) -> Result[Vec[json::Value], string] {
     match json::parse(payload) {
-        Result::Ok(value) => Result::Ok(handle_json(server, value)),
-        Result::Err(error) => Result::Ok(Vec::new().pushed(rpc_error(
+        Ok(value) => Result::Ok(handle_json(server, value)),
+        Err(error) => Result::Ok(Vec::new().pushed(rpc_error(
             json::Value::Null,
             -32700,
             error,
@@ -1094,17 +1094,17 @@ pub fn run_server() -> Result[unit, string] {
     let server = new_server();
     while server_running(server) {
         let payload = match read_rpc_payload() {
-            Result::Ok(payload) => payload,
-            Result::Err(error) => return Result::Err(error),
+            Ok(payload) => payload,
+            Err(error) => return Result::Err(error),
         };
         match handle_payload(server, payload) {
-            Result::Ok(messages) => for message in messages {
+            Ok(messages) => for message in messages {
                 match write_rpc_message(message) {
-                    Result::Ok(()) => (),
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(()) => (),
+                    Err(error) => return Result::Err(error),
                 }
             },
-            Result::Err(error) => return Result::Err(error),
+            Err(error) => return Result::Err(error),
         }
     };
     if server.shutdown.get() {

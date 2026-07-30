@@ -76,50 +76,50 @@ fn write_string_literal(builder: text::StringBuilder, value: string) -> unit {
 
 fn write_type(builder: text::StringBuilder, value: Type) -> unit {
     match value {
-        Type::Void => builder.write_string("void"),
-        Type::Any => builder.write_string("any"),
-        Type::Unit => builder.write_string("struct{}"),
-        Type::Bool => builder.write_string("bool"),
-        Type::Int => builder.write_string("int"),
-        Type::Int8 => builder.write_string("int8"),
-        Type::Int16 => builder.write_string("int16"),
-        Type::Int32 => builder.write_string("int32"),
-        Type::Int64 => builder.write_string("int64"),
-        Type::Uint => builder.write_string("uint"),
-        Type::Uint8 => builder.write_string("uint8"),
-        Type::Uint16 => builder.write_string("uint16"),
-        Type::Uint32 => builder.write_string("uint32"),
-        Type::Uint64 => builder.write_string("uint64"),
-        Type::Float32 => builder.write_string("float32"),
-        Type::Float64 => builder.write_string("float64"),
-        Type::String => builder.write_string("string"),
-        Type::Char => builder.write_string("rune"),
-        Type::Named { name } => builder.write_string(name),
-        Type::Pointer { elem: inner } => {
+        Void => builder.write_string("void"),
+        Any => builder.write_string("any"),
+        Unit => builder.write_string("struct{}"),
+        Bool => builder.write_string("bool"),
+        Int => builder.write_string("int"),
+        Int8 => builder.write_string("int8"),
+        Int16 => builder.write_string("int16"),
+        Int32 => builder.write_string("int32"),
+        Int64 => builder.write_string("int64"),
+        Uint => builder.write_string("uint"),
+        Uint8 => builder.write_string("uint8"),
+        Uint16 => builder.write_string("uint16"),
+        Uint32 => builder.write_string("uint32"),
+        Uint64 => builder.write_string("uint64"),
+        Float32 => builder.write_string("float32"),
+        Float64 => builder.write_string("float64"),
+        String => builder.write_string("string"),
+        Char => builder.write_string("rune"),
+        Named { name } => builder.write_string(name),
+        Pointer { elem: inner } => {
             builder.write_char('*');
             write_type(builder, inner)
         },
-        Type::Array { len: length, elem: inner } => {
+        Array { len: length, elem: inner } => {
             builder.write_char('[');
             builder.write_string(length.to_string());
             builder.write_char(']');
             write_type(builder, inner)
         },
-        Type::Slice { elem: inner } => {
+        Slice { elem: inner } => {
             builder.write_string("[]");
             write_type(builder, inner)
         },
-        Type::Map { key, value } => {
+        Map { key, value } => {
             builder.write_string("map[");
             write_type(builder, key);
             builder.write_char(']');
             write_type(builder, value)
         },
-        Type::Chan { elem } => {
+        Chan { elem } => {
             builder.write_string("chan ");
             write_type(builder, elem)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             builder.write_string("func(");
             for index in range(0, params.len()) {
                 if index > 0 {
@@ -131,14 +131,14 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
             };
             builder.write_char(')');
             match ret_ty {
-                Type::Void => (),
+                Void => (),
                 _ => {
                     builder.write_char(' ');
                     write_type(builder, ret_ty)
                 },
             }
         },
-        Type::Multi { items: values } => {
+        Multi { items: values } => {
             builder.write_char('(');
             for index in range(0, values.len()) {
                 if index > 0 {
@@ -155,34 +155,34 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
 
 fn write_unary(builder: text::StringBuilder, value: UnaryOp) -> unit {
     builder.write_string(match value {
-        UnaryOp::Neg => "-",
-        UnaryOp::Not => "!",
-        UnaryOp::BitNot => "^",
-        UnaryOp::Address => "&",
-        UnaryOp::Deref => "*",
+        Neg => "-",
+        Not => "!",
+        BitNot => "^",
+        Address => "&",
+        Deref => "*",
     })
 }
 
 fn write_binary(builder: text::StringBuilder, value: BinaryOp) -> unit {
     builder.write_string(match value {
-        BinaryOp::Add => "+",
-        BinaryOp::Sub => "-",
-        BinaryOp::Mul => "*",
-        BinaryOp::Div => "/",
-        BinaryOp::Rem => "%",
-        BinaryOp::BitAnd => "&",
-        BinaryOp::BitOr => "|",
-        BinaryOp::BitXor => "^",
-        BinaryOp::Shl => "<<",
-        BinaryOp::Shr => ">>",
-        BinaryOp::Less => "<",
-        BinaryOp::Greater => ">",
-        BinaryOp::LessEq => "<=",
-        BinaryOp::GreaterEq => ">=",
-        BinaryOp::Eq => "==",
-        BinaryOp::NotEq => "!=",
-        BinaryOp::And => "&&",
-        BinaryOp::Or => "||",
+        Add => "+",
+        Sub => "-",
+        Mul => "*",
+        Div => "/",
+        Rem => "%",
+        BitAnd => "&",
+        BitOr => "|",
+        BitXor => "^",
+        Shl => "<<",
+        Shr => ">>",
+        Less => "<",
+        Greater => ">",
+        LessEq => "<=",
+        GreaterEq => ">=",
+        Eq => "==",
+        NotEq => "!=",
+        And => "&&",
+        Or => "||",
     })
 }
 
@@ -199,41 +199,41 @@ fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> 
 
 fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
-        Expr::Nil => builder.write_string("nil"),
-        Expr::Unit => builder.write_string("struct{}{}"),
-        Expr::Var { name } => builder.write_string(name),
-        Expr::Bool { value } => builder.write_string(if value { "true" } else { "false" }),
-        Expr::Int { value } | Expr::Float { value } => builder.write_string(value),
-        Expr::String { value } => write_string_literal(builder, value),
-        Expr::Call { func, args } => {
+        Nil => builder.write_string("nil"),
+        Unit => builder.write_string("struct{}{}"),
+        Var { name } => builder.write_string(name),
+        Bool { value } => builder.write_string(if value { "true" } else { "false" }),
+        Int { value } | Float { value } => builder.write_string(value),
+        String { value } => write_string_literal(builder, value),
+        Call { func, args } => {
             write_expr(builder, func, indent);
             builder.write_char('(');
             write_exprs(builder, args, indent);
             builder.write_char(')')
         },
-        Expr::Unary { op, expr } => {
+        Unary { op, expr } => {
             write_unary(builder, op);
             write_expr(builder, expr, indent)
         },
-        Expr::Binary { op, lhs, rhs } => {
+        Binary { op, lhs, rhs } => {
             write_expr(builder, lhs, indent);
             builder.write_char(' ');
             write_binary(builder, op);
             builder.write_char(' ');
             write_expr(builder, rhs, indent)
         },
-        Expr::Field { expr: value, field_name: field } => {
+        Field { expr: value, field_name: field } => {
             write_expr(builder, value, indent);
             builder.write_char('.');
             builder.write_string(field)
         },
-        Expr::Index { base: value, index } => {
+        Index { base: value, index } => {
             write_expr(builder, value, indent);
             builder.write_char('[');
             write_expr(builder, index, indent);
             builder.write_char(']')
         },
-        Expr::Slice { base: value, start, end } => {
+        Slice { base: value, start, end } => {
             write_expr(builder, value, indent);
             builder.write_char('[');
             write_expr(builder, start, indent);
@@ -241,19 +241,19 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             write_expr(builder, end, indent);
             builder.write_char(']')
         },
-        Expr::Cast { expr, ty } => {
+        Cast { expr, ty } => {
             write_expr(builder, expr, indent);
             builder.write_string(".(");
             write_type(builder, ty);
             builder.write_char(')')
         },
-        Expr::Convert { ty, expr } => {
+        Convert { ty, expr } => {
             write_type(builder, ty);
             builder.write_char('(');
             write_expr(builder, expr, indent);
             builder.write_char(')')
         },
-        Expr::Make { ty, args } => {
+        Make { ty, args } => {
             builder.write_string("make(");
             write_type(builder, ty);
             if args.len() > 0 {
@@ -264,16 +264,16 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             };
             builder.write_char(')')
         },
-        Expr::Send { channel, value } => {
+        Send { channel, value } => {
             write_expr(builder, channel, indent);
             builder.write_string(" <- ");
             write_expr(builder, value, indent)
         },
-        Expr::Receive { channel } => {
+        Receive { channel } => {
             builder.write_string("<-");
             write_expr(builder, channel, indent)
         },
-        Expr::StructLiteral { ty, fields } => {
+        StructLiteral { ty, fields } => {
             write_type(builder, ty);
             builder.write_char('{');
             for field in fields {
@@ -290,13 +290,13 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             };
             builder.write_char('}')
         },
-        Expr::ArrayLiteral { ty, items: values } => {
+        ArrayLiteral { ty, items: values } => {
             write_type(builder, ty);
             builder.write_char('{');
             write_exprs(builder, values, indent);
             builder.write_char('}')
         },
-        Expr::FuncLit { params, ret_ty, body } => {
+        FuncLit { params, ret_ty, body } => {
             builder.write_string("func(");
             for index in range(0, params.len()) {
                 if index > 0 {
@@ -333,44 +333,44 @@ fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit 
 
 fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
-        Stmt::Expr { expr } => write_expr(builder, expr, indent),
-        Stmt::Go { call: expr } => {
+        Expr { expr } => write_expr(builder, expr, indent),
+        Go { call: expr } => {
             builder.write_string("go ");
             write_expr(builder, expr, indent)
         },
-        Stmt::Var { name, ty, value: initial } => {
+        Var { name, ty, value: initial } => {
             builder.write_string("var ");
             builder.write_string(name);
             builder.write_char(' ');
             write_type(builder, ty);
             match initial {
-                Option::Some(expr) => {
+                Some(expr) => {
                     builder.write_string(" = ");
                     write_expr(builder, expr, indent)
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Stmt::Assign { name, value: expr } => {
+        Assign { name, value: expr } => {
             builder.write_string(name);
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::FieldAssign { target, field_name: field, value: expr } => {
+        FieldAssign { target, field_name: field, value: expr } => {
             write_expr(builder, target, indent);
             builder.write_char('.');
             builder.write_string(field);
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::IndexAssign { base: target, index, value: expr } => {
+        IndexAssign { base: target, index, value: expr } => {
             write_expr(builder, target, indent);
             builder.write_char('[');
             write_expr(builder, index, indent);
             builder.write_string("] = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::MultiAssign { names, value: expr } => {
+        MultiAssign { names, value: expr } => {
             for index in range(0, names.len()) {
                 if index > 0 {
                     builder.write_string(", ")
@@ -382,45 +382,45 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
-        Stmt::Return { expr } => {
+        Return { expr } => {
             builder.write_string("return");
             match expr {
-                Option::Some(value) => {
+                Some(value) => {
                     builder.write_char(' ');
                     write_expr(builder, value, indent)
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Stmt::ReturnMulti { exprs: values } => {
+        ReturnMulti { exprs: values } => {
             builder.write_string("return ");
             write_exprs(builder, values, indent)
         },
-        Stmt::If { cond, then_, else_ } => {
+        If { cond, then_, else_ } => {
             builder.write_string("if ");
             write_expr(builder, cond, indent);
             builder.write_char(' ');
             write_block(builder, then_, indent);
             match else_ {
-                Option::Some(value) => {
+                Some(value) => {
                     builder.write_string(" else ");
                     write_block(builder, value, indent)
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        Stmt::Loop { body } => {
+        Loop { body } => {
             builder.write_string("for ");
             write_block(builder, body, indent)
         },
-        Stmt::LabeledLoop { label, body } => {
+        LabeledLoop { label, body } => {
             builder.write_string(label);
             builder.write_string(":\n");
             write_spaces(builder, indent);
             builder.write_string("for ");
             write_block(builder, body, indent)
         },
-        Stmt::Range { names, expr, body } => {
+        Range { names, expr, body } => {
             builder.write_string("for ");
             for index in range(0, names.len()) {
                 if index > 0 {
@@ -435,13 +435,13 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
             builder.write_char(' ');
             write_block(builder, body, indent)
         },
-        Stmt::Break => builder.write_string("break"),
-        Stmt::BreakLabel { label } => {
+        Break => builder.write_string("break"),
+        BreakLabel { label } => {
             builder.write_string("break ");
             builder.write_string(label)
         },
-        Stmt::Continue => builder.write_string("continue"),
-        Stmt::Switch { expr, cases, default } => {
+        Continue => builder.write_string("continue"),
+        Switch { expr, cases, default } => {
             builder.write_string("switch ");
             write_expr(builder, expr, indent);
             builder.write_string(" {");
@@ -456,7 +456,7 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                 }
             };
             match default {
-                Option::Some(body) => {
+                Some(body) => {
                     newline(builder, indent);
                     builder.write_string("default:");
                     for stmt in body.stmts {
@@ -464,19 +464,19 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                         write_stmt(builder, stmt, indent + 4)
                     }
                 },
-                Option::None => (),
+                None => (),
             };
             newline(builder, indent);
             builder.write_char('}')
         },
-        Stmt::TypeSwitch { binding: bind, expr, cases, default } => {
+        TypeSwitch { binding: bind, expr, cases, default } => {
             builder.write_string("switch ");
             match bind {
-                Option::Some(name) => {
+                Some(name) => {
                     builder.write_string(name);
                     builder.write_string(" := ")
                 },
-                Option::None => (),
+                None => (),
             };
             write_expr(builder, expr, indent);
             builder.write_string(".(type) {");
@@ -491,7 +491,7 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                 }
             };
             match default {
-                Option::Some(body) => {
+                Some(body) => {
                     newline(builder, indent);
                     builder.write_string("default:");
                     for stmt in body.stmts {
@@ -499,17 +499,17 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                         write_stmt(builder, stmt, indent + 4)
                     }
                 },
-                Option::None => (),
+                None => (),
             };
             newline(builder, indent);
             builder.write_char('}')
         },
-        Stmt::Panic { message } => {
+        Panic { message } => {
             builder.write_string("panic(");
             write_string_literal(builder, message);
             builder.write_char(')')
         },
-        Stmt::Unreachable => builder.write_string("panic(\"unreachable\")"),
+        Unreachable => builder.write_string("panic(\"unreachable\")"),
     }
 }
 
@@ -549,11 +549,11 @@ fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
         };
         builder.write_char(')');
         match method.ret_ty {
-            Option::Some(ty) => {
+            Some(ty) => {
                 builder.write_char(' ');
                 write_type(builder, ty)
             },
-            Option::None => (),
+            None => (),
         }
     };
     if value.methods.len() > 0 {
@@ -620,11 +620,11 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     };
     builder.write_char(')');
     match value.ret_ty {
-        Option::Some(ty) => {
+        Some(ty) => {
             builder.write_char(' ');
             write_type(builder, ty)
         },
-        Option::None => (),
+        None => (),
     };
     builder.write_char(' ');
     write_block(builder, value.body, 0)
@@ -634,11 +634,11 @@ fn write_global(builder: text::StringBuilder, value: Global) -> unit {
     builder.write_string("var ");
     builder.write_string(value.name);
     match value.ty {
-        Option::Some(ty) => {
+        Some(ty) => {
             builder.write_char(' ');
             write_type(builder, ty)
         },
-        Option::None => (),
+        None => (),
     };
     builder.write_string(" = ");
     write_expr(builder, value.value, 0)
@@ -665,11 +665,11 @@ fn write_method(builder: text::StringBuilder, value: Method) -> unit {
     };
     builder.write_char(')');
     match value.ret_ty {
-        Option::Some(ty) => {
+        Some(ty) => {
             builder.write_char(' ');
             write_type(builder, ty)
         },
-        Option::None => (),
+        None => (),
     };
     builder.write_char(' ');
     write_block(builder, value.body, 0)
@@ -677,14 +677,14 @@ fn write_method(builder: text::StringBuilder, value: Method) -> unit {
 
 fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
-        Item::ImportGroup(value) => write_import_group(builder, value),
-        Item::TypeDef(value) => write_type_def(builder, value),
-        Item::ConstGroup(value) => write_const_group(builder, value),
-        Item::Global(value) => write_global(builder, value),
-        Item::Interface(value) => write_interface(builder, value),
-        Item::Struct(value) => write_struct(builder, value),
-        Item::Function(value) => write_function(builder, value),
-        Item::Method(value) => write_method(builder, value),
+        ImportGroup(value) => write_import_group(builder, value),
+        TypeDef(value) => write_type_def(builder, value),
+        ConstGroup(value) => write_const_group(builder, value),
+        Global(value) => write_global(builder, value),
+        Interface(value) => write_interface(builder, value),
+        Struct(value) => write_struct(builder, value),
+        Function(value) => write_function(builder, value),
+        Method(value) => write_method(builder, value),
     }
 }
 

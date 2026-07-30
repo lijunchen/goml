@@ -61,8 +61,8 @@ fn completion_labels(values: Vec[CompletionItem]) -> string {
 
 fn write_query_fixture(path: string, source: string) -> unit {
     match fs::write_file(path, source) {
-        Result::Ok(()) => (),
-        Result::Err(error) => testing::fail(error),
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -71,18 +71,18 @@ fn parses_module_paths_and_package_names() -> unit {
     match manifest_module_path(
         "[build]\ntarget-dir = \"out\"\n\n[module]\npath = \"alice::tools\"\n",
     ) {
-        Option::Some(value) => testing::assert_eq(value, "alice::tools"),
-        Option::None => testing::fail("expected module path"),
+        Some(value) => testing::assert_eq(value, "alice::tools"),
+        None => testing::fail("expected module path"),
     };
     match package_name(
         "/workspace/tools",
         "alice::tools",
         "/workspace/tools/lsp/server",
     ) {
-        Result::Ok(value) => {
+        Ok(value) => {
             testing::assert_eq(value, "alice::tools::lsp::server")
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -104,8 +104,8 @@ fn analyzes_package_files_with_unsaved_overrides() -> unit {
     );
     testing::assert_eq(analysis.checked.diagnostics.len(), 0);
     match fs::read_file(main_path) {
-        Result::Ok(on_disk) => testing::assert(on_disk != source),
-        Result::Err(error) => testing::fail(error),
+        Ok(on_disk) => testing::assert(on_disk != source),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -114,12 +114,12 @@ fn analyzes_local_package_dependencies() -> unit {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
     match fs::read_file(main_path) {
-        Result::Ok(source) => {
+        Ok(source) => {
             let analysis = analyze(main_path, source);
             testing::assert_eq(analysis.package_name, "project001");
             assert_no_diagnostics(analysis)
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -138,32 +138,32 @@ fn resolves_local_and_function_definitions() -> unit {
     let local_source = "fn main() -> int32 { let value = 42; value }";
     let local_analysis = analyze("main.gom", local_source);
     match goto_definition(local_analysis, local_source.byte_len() - 3) {
-        Option::Some(definition) => testing::assert_eq(
+        Some(definition) => testing::assert_eq(
             local_source.byte_slice(
                 definition.span.start,
                 definition.span.end,
             ),
             "value",
         ),
-        Option::None => testing::fail("expected local definition"),
+        None => testing::fail("expected local definition"),
     };
     let function_source = "fn helper() -> int32 { 42 } fn main() -> int32 { helper() }";
     let function_analysis = analyze("main.gom", function_source);
     match last_substring(function_source, "helper") {
-        Option::Some(offset) => match goto_definition(
+        Some(offset) => match goto_definition(
             function_analysis,
             offset,
         ) {
-            Option::Some(definition) => testing::assert_eq(
+            Some(definition) => testing::assert_eq(
                 function_source.byte_slice(
                     definition.span.start,
                     definition.span.end,
                 ),
                 "helper",
             ),
-            Option::None => testing::fail("expected function definition"),
+            None => testing::fail("expected function definition"),
         },
-        Option::None => testing::fail("expected helper call"),
+        None => testing::fail("expected helper call"),
     }
 }
 
@@ -172,34 +172,34 @@ fn resolves_definitions_in_local_dependencies() -> unit {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
     match fs::read_file(main_path) {
-        Result::Ok(source) => match last_substring(source, "sum_point") {
-            Option::Some(offset) => {
+        Ok(source) => match last_substring(source, "sum_point") {
+            Some(offset) => {
                 let analysis = analyze(main_path, source);
                 match goto_definition(analysis, offset) {
-                    Option::Some(definition) => {
+                    Some(definition) => {
                         testing::assert(strings::ends_with(
                             definition.source_path,
                             "/lib/lib.gom",
                         ));
                         match fs::read_file(definition.source_path) {
-                            Result::Ok(target_source) => testing::assert_eq(
+                            Ok(target_source) => testing::assert_eq(
                                 target_source.byte_slice(
                                     definition.span.start,
                                     definition.span.end,
                                 ),
                                 "sum_point",
                             ),
-                            Result::Err(error) => testing::fail(error),
+                            Err(error) => testing::fail(error),
                         }
                     },
-                    Option::None => {
+                    None => {
                         testing::fail("expected dependency definition")
                     },
                 }
             },
-            Option::None => testing::fail("expected sum_point call"),
+            None => testing::fail("expected sum_point call"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -208,89 +208,89 @@ fn resolves_package_type_variant_and_field_definitions() -> unit {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
     let source = match fs::read_file(main_path) {
-        Result::Ok(source) => source,
-        Result::Err(error) => {
+        Ok(source) => source,
+        Err(error) => {
             testing::fail(error);
             ""
         },
     };
     let analysis = analyze(main_path, source);
     match last_substring(source, "lib::Point") {
-        Option::Some(offset) => match goto_definition(
+        Some(offset) => match goto_definition(
             analysis,
             offset + "lib::".byte_len(),
         ) {
-            Option::Some(definition) => match source_by_path(
+            Some(definition) => match source_by_path(
                 analysis.sources,
                 definition.source_path,
             ) {
-                Option::Some(target) => testing::assert_eq(
+                Some(target) => testing::assert_eq(
                     target.source.byte_slice(
                         definition.span.start,
                         definition.span.end,
                     ),
                     "Point",
                 ),
-                Option::None => testing::fail("expected type source"),
+                None => testing::fail("expected type source"),
             },
-            Option::None => testing::fail("expected type definition"),
+            None => testing::fail("expected type definition"),
         },
-        Option::None => testing::fail("expected Point path"),
+        None => testing::fail("expected Point path"),
     };
     match last_substring(source, "Green") {
-        Option::Some(offset) => match goto_definition(analysis, offset) {
-            Option::Some(definition) => match source_by_path(
+        Some(offset) => match goto_definition(analysis, offset) {
+            Some(definition) => match source_by_path(
                 analysis.sources,
                 definition.source_path,
             ) {
-                Option::Some(target) => testing::assert_eq(
+                Some(target) => testing::assert_eq(
                     target.source.byte_slice(
                         definition.span.start,
                         definition.span.end,
                     ),
                     "Green",
                 ),
-                Option::None => testing::fail("expected variant source"),
+                None => testing::fail("expected variant source"),
             },
-            Option::None => testing::fail("expected variant definition"),
+            None => testing::fail("expected variant definition"),
         },
-        Option::None => testing::fail("expected Green path"),
+        None => testing::fail("expected Green path"),
     };
     match last_substring(source, "x: 20") {
-        Option::Some(offset) => match goto_definition(analysis, offset) {
-            Option::Some(definition) => match source_by_path(
+        Some(offset) => match goto_definition(analysis, offset) {
+            Some(definition) => match source_by_path(
                 analysis.sources,
                 definition.source_path,
             ) {
-                Option::Some(target) => testing::assert_eq(
+                Some(target) => testing::assert_eq(
                     target.source.byte_slice(
                         definition.span.start,
                         definition.span.end,
                     ),
                     "x",
                 ),
-                Option::None => testing::fail("expected field source"),
+                None => testing::fail("expected field source"),
             },
-            Option::None => testing::fail("expected field definition"),
+            None => testing::fail("expected field definition"),
         },
-        Option::None => testing::fail("expected struct field"),
+        None => testing::fail("expected struct field"),
     };
     let use_path = "use project001::lib";
     match last_substring(source, use_path) {
-        Option::Some(offset) => match goto_definition(
+        Some(offset) => match goto_definition(
             analysis,
             offset + use_path.byte_len() - 1,
         ) {
-            Option::Some(definition) => {
+            Some(definition) => {
                 testing::assert(
                     definition.source_path.byte_len()
                         >= "lib.gom".byte_len(),
                 );
                 testing::assert_eq(definition.span.start, 0)
             },
-            Option::None => testing::fail("expected package definition"),
+            None => testing::fail("expected package definition"),
         },
-        Option::None => testing::fail("expected use path"),
+        None => testing::fail("expected use path"),
     }
 }
 
@@ -299,8 +299,8 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
     let root = "../gomlc/testdata/module/project041_contextual_enum_patterns";
     let main_path = root + "/main.gom";
     let source = match fs::read_file(main_path) {
-        Result::Ok(source) => source,
-        Result::Err(error) => {
+        Ok(source) => source,
+        Err(error) => {
             testing::fail(error);
             ""
         },
@@ -308,9 +308,9 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
     let analysis = analyze(main_path, source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "Ready(number)") {
-        Option::Some(offset) => {
+        Some(offset) => {
             match goto_definition(analysis, offset) {
-                Option::Some(definition) => {
+                Some(definition) => {
                     if strings::ends_with(
                         definition.source_path,
                         "/events/events.gom",
@@ -326,24 +326,24 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
                         analysis.sources,
                         definition.source_path,
                     ) {
-                        Option::Some(target) => testing::assert_eq(
+                        Some(target) => testing::assert_eq(
                             target.source.byte_slice(
                                 definition.span.start,
                                 definition.span.end,
                             ),
                             "Ready",
                         ),
-                        Option::None => {
+                        None => {
                             testing::fail("expected contextual variant source")
                         },
                     }
                 },
-                Option::None => {
+                None => {
                     testing::fail("expected contextual variant definition")
                 },
             };
             match hover(analysis, offset) {
-                Option::Some(result) => if strings::contains(
+                Some(result) => if strings::contains(
                     result.contents,
                     "Event",
                 ) {
@@ -354,12 +354,12 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
                             + result.contents,
                     )
                 },
-                Option::None => testing::fail(
+                None => testing::fail(
                     "expected contextual variant hover",
                 ),
             }
         },
-        Option::None => testing::fail("expected contextual Ready pattern"),
+        None => testing::fail("expected contextual Ready pattern"),
     }
 }
 
@@ -367,53 +367,53 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
 fn resolves_builtin_method_definitions() -> unit {
     let source = "fn main() -> string { let value = 1; value.to_string() }";
     match last_substring(source, "to_string") {
-        Option::Some(offset) => match goto_definition(
+        Some(offset) => match goto_definition(
             analyze("main.gom", source),
             offset,
         ) {
-            Option::Some(definition) => match source_by_path(
+            Some(definition) => match source_by_path(
                 analyze("main.gom", source).sources,
                 definition.source_path,
             ) {
-                Option::Some(target) => testing::assert_eq(
+                Some(target) => testing::assert_eq(
                     target.source.byte_slice(
                         definition.span.start,
                         definition.span.end,
                     ),
                     "to_string",
                 ),
-                Option::None => testing::fail("expected builtin source"),
+                None => testing::fail("expected builtin source"),
             },
-            Option::None => testing::fail("expected builtin method definition"),
+            None => testing::fail("expected builtin method definition"),
         },
-        Option::None => testing::fail("expected builtin method"),
+        None => testing::fail("expected builtin method"),
     };
     let string_source = "fn main() -> bool { \"abc\".contains(\"b\") }";
     match last_substring(string_source, "contains") {
-        Option::Some(offset) => match goto_definition(
+        Some(offset) => match goto_definition(
             analyze("main.gom", string_source),
             offset,
         ) {
-            Option::Some(definition) => match source_by_path(
+            Some(definition) => match source_by_path(
                 analyze("main.gom", string_source).sources,
                 definition.source_path,
             ) {
-                Option::Some(target) => testing::assert_eq(
+                Some(target) => testing::assert_eq(
                     target.source.byte_slice(
                         definition.span.start,
                         definition.span.end,
                     ),
                     "contains",
                 ),
-                Option::None => testing::fail("expected builtin source"),
+                None => testing::fail("expected builtin source"),
             },
-            Option::None => testing::fail("expected string method definition"),
+            None => testing::fail("expected string method definition"),
         },
-        Option::None => testing::fail("expected string method"),
+        None => testing::fail("expected string method"),
     };
     let static_source = "fn main() -> Vec[int32] { Vec::new() }";
     match last_substring(static_source, "new") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let analysis = analyze("main.gom", static_source);
             let definitions = goto_definitions(analysis, offset);
             testing::assert_eq(definitions.len(), 1);
@@ -426,7 +426,7 @@ fn resolves_builtin_method_definitions() -> unit {
                 }
             };
             match expected.get() {
-                Option::Some(span) => {
+                Some(span) => {
                     testing::assert_eq(
                         definitions.get(0).span.start,
                         span.start,
@@ -436,14 +436,14 @@ fn resolves_builtin_method_definitions() -> unit {
                         span.end,
                     )
                 },
-                Option::None => testing::fail("expected Vec new symbol"),
+                None => testing::fail("expected Vec new symbol"),
             }
         },
-        Option::None => testing::fail("expected builtin static method"),
+        None => testing::fail("expected builtin static method"),
     };
     let ref_source = "fn main() -> int32 { let value = Ref::new(1 as int32); value.get() }";
     match last_substring(ref_source, "get") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let analysis = analyze("main.gom", ref_source);
             let definitions = goto_definitions(analysis, offset);
             testing::assert_eq(definitions.len(), 1);
@@ -456,7 +456,7 @@ fn resolves_builtin_method_definitions() -> unit {
                 }
             };
             match expected.get() {
-                Option::Some(span) => {
+                Some(span) => {
                     testing::assert_eq(
                         definitions.get(0).span.start,
                         span.start,
@@ -466,10 +466,10 @@ fn resolves_builtin_method_definitions() -> unit {
                         span.end,
                     )
                 },
-                Option::None => testing::fail("expected Ref get symbol"),
+                None => testing::fail("expected Ref get symbol"),
             }
         },
-        Option::None => testing::fail("expected Ref get method"),
+        None => testing::fail("expected Ref get method"),
     }
 }
 
@@ -477,7 +477,7 @@ fn resolves_builtin_method_definitions() -> unit {
 fn resolves_qualified_standard_library_definitions() -> unit {
     let source = "use std::io; fn main() -> unit { io::println(\"x\") }";
     match last_substring(source, "println") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let analysis = analyze("/tmp/qualified-std.gom", source);
             assert_no_diagnostics(analysis);
             let definitions = goto_definitions(analysis, offset);
@@ -486,7 +486,7 @@ fn resolves_qualified_standard_library_definitions() -> unit {
                 analysis.sources,
                 definitions.get(0).source_path,
             ) {
-                Option::Some(target) => {
+                Some(target) => {
                     testing::assert_eq(target.package_name, "std::io");
                     testing::assert_eq(
                         target.source.byte_slice(
@@ -496,10 +496,10 @@ fn resolves_qualified_standard_library_definitions() -> unit {
                         "println",
                     )
                 },
-                Option::None => testing::fail("expected std source"),
+                None => testing::fail("expected std source"),
             }
         },
-        Option::None => testing::fail("expected println call"),
+        None => testing::fail("expected println call"),
     }
 }
 
@@ -507,7 +507,7 @@ fn resolves_qualified_standard_library_definitions() -> unit {
 fn resolves_index_map_standard_library_definitions() -> unit {
     let source = "use std::collections; fn main() -> unit { let values: collections::IndexMap[string, int] = collections::IndexMap::new(); values.insert(\"key\", 1); }";
     match last_substring(source, "insert") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let analysis = analyze("/tmp/index-map-std.gom", source);
             assert_no_diagnostics(analysis);
             let definitions = goto_definitions(analysis, offset);
@@ -516,7 +516,7 @@ fn resolves_index_map_standard_library_definitions() -> unit {
                 analysis.sources,
                 definitions.get(0).source_path,
             ) {
-                Option::Some(target) => {
+                Some(target) => {
                     testing::assert_eq(target.package_name, "std::collections");
                     testing::assert_eq(
                         target.source.byte_slice(
@@ -526,10 +526,10 @@ fn resolves_index_map_standard_library_definitions() -> unit {
                         "insert",
                     )
                 },
-                Option::None => testing::fail("expected IndexMap source"),
+                None => testing::fail("expected IndexMap source"),
             }
         },
-        Option::None => testing::fail("expected IndexMap insert call"),
+        None => testing::fail("expected IndexMap insert call"),
     }
 }
 
@@ -538,11 +538,11 @@ fn returns_signature_help_for_active_arguments() -> unit {
     let source = "fn combine(left: int32, right: string) -> bool { true } fn main() -> bool { combine(1, \"x\") }";
     let analysis = analyze("main.gom", source);
     match last_substring(source, "\"x\"") {
-        Option::Some(offset) => match signature_help(
+        Some(offset) => match signature_help(
             analysis,
             offset + 1,
         ) {
-            Option::Some(signature) => {
+            Some(signature) => {
                 testing::assert_eq(
                     signature.label,
                     "(left: int32, right: string) -> bool",
@@ -550,9 +550,9 @@ fn returns_signature_help_for_active_arguments() -> unit {
                 testing::assert_eq(signature.parameters.len(), 2);
                 testing::assert_eq(signature.active_parameter, 1)
             },
-            Option::None => testing::fail("expected signature help"),
+            None => testing::fail("expected signature help"),
         },
-        Option::None => testing::fail("expected second argument"),
+        None => testing::fail("expected second argument"),
     }
 }
 
@@ -560,17 +560,17 @@ fn returns_signature_help_for_active_arguments() -> unit {
 fn hides_method_receivers_in_signature_help() -> unit {
     let source = "fn main() -> string { let value = 1; value.to_string() }";
     match last_substring(source, "to_string()") {
-        Option::Some(offset) => match signature_help(
+        Some(offset) => match signature_help(
             analyze("main.gom", source),
             offset + "to_string(".byte_len(),
         ) {
-            Option::Some(signature) => {
+            Some(signature) => {
                 testing::assert_eq(signature.label, "() -> string");
                 testing::assert_eq(signature.parameters.len(), 0)
             },
-            Option::None => testing::fail("expected method signature"),
+            None => testing::fail("expected method signature"),
         },
-        Option::None => testing::fail("expected method call"),
+        None => testing::fail("expected method call"),
     }
 }
 
@@ -618,11 +618,11 @@ fn completes_scope_and_struct_members() -> unit {
     let member_source = "struct Point { x: int32, y: int32 } fn main() -> int32 { let point = Point { x: 1, y: 2 }; point.x }";
     let member_analysis = analyze("main.gom", member_source);
     match last_substring(member_source, "point.x") {
-        Option::Some(offset) => testing::assert(has_completion(
+        Some(offset) => testing::assert(has_completion(
             completions(member_analysis, offset + "point.x".byte_len()),
             "x",
         )),
-        Option::None => testing::fail("expected member expression"),
+        None => testing::fail("expected member expression"),
     }
 }
 
@@ -638,7 +638,7 @@ fn completes_incomplete_member_and_enum_paths() -> unit {
     ));
     let enum_source = "enum Color { Red, Green } fn main() -> unit { let value = Color::; () }";
     match last_substring(enum_source, "Color::") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let items = completions(
                 analyze("main.gom", enum_source),
                 offset + "Color::".byte_len(),
@@ -646,7 +646,7 @@ fn completes_incomplete_member_and_enum_paths() -> unit {
             testing::assert(has_completion(items, "Red"));
             testing::assert(has_completion(items, "Green"))
         },
-        Option::None => testing::fail("expected enum path"),
+        None => testing::fail("expected enum path"),
     }
 }
 
@@ -681,7 +681,7 @@ fn completes_standard_library_import_paths() -> unit {
 fn completes_builtin_and_dyn_trait_members() -> unit {
     let static_source = "fn main() -> unit { let _ = Vec::with_; () }";
     match last_substring(static_source, "with_") {
-        Option::Some(offset) => if has_completion(
+        Some(offset) => if has_completion(
             completions(
                 analyze("main.gom", static_source),
                 offset + "with_".byte_len(),
@@ -692,11 +692,11 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         } else {
             testing::fail("expected Vec with_capacity completion")
         },
-        Option::None => testing::fail("expected Vec static member"),
+        None => testing::fail("expected Vec static member"),
     };
     let int_source = "fn main() -> string { let value = 1; value.to_ }";
     match last_substring(int_source, "to_") {
-        Option::Some(offset) => if has_completion(completions(
+        Some(offset) => if has_completion(completions(
                 analyze("main.gom", int_source),
                 offset + 3,
             ),
@@ -706,11 +706,11 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         } else {
             testing::fail("expected int to_string completion")
         },
-        Option::None => testing::fail("expected int member"),
+        None => testing::fail("expected int member"),
     };
     let string_source = "fn main(value: string) -> unit { value.con }";
     match last_substring(string_source, "value.con") {
-        Option::Some(offset) => if has_completion(completions(
+        Some(offset) => if has_completion(completions(
                 analyze("main.gom", string_source),
                 offset + "value.con".byte_len(),
             ),
@@ -720,11 +720,11 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         } else {
             testing::fail("expected string contains completion")
         },
-        Option::None => testing::fail("expected string member"),
+        None => testing::fail("expected string member"),
     };
     let vec_source = "fn main() -> unit { let values: Vec[int32] = Vec::new(); values.p }";
     match last_substring(vec_source, "values.p") {
-        Option::Some(offset) => if has_completion(completions(
+        Some(offset) => if has_completion(completions(
                 analyze("main.gom", vec_source),
                 offset + "values.p".byte_len(),
             ),
@@ -734,18 +734,18 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         } else {
             testing::fail("expected Vec push completion")
         },
-        Option::None => testing::fail("expected Vec member"),
+        None => testing::fail("expected Vec member"),
     };
     let dyn_source = "trait Showable { fn show(Self) -> string; } fn render(value: dyn Showable) -> string { value.sh }";
     match last_substring(dyn_source, "value.sh") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let analysis = analyze("main.gom", dyn_source);
             match explicit_receiver_type(
                 analysis,
                 offset + "value".byte_len(),
             ) {
-                Option::Some(name) => testing::assert_eq(name, "Showable"),
-                Option::None => testing::fail("expected explicit dyn type"),
+                Some(name) => testing::assert_eq(name, "Showable"),
+                None => testing::fail("expected explicit dyn type"),
             };
             let method_found = Ref::new(false);
             for symbol in build_symbol_index(analysis).symbols {
@@ -769,7 +769,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
                 )
             }
         },
-        Option::None => testing::fail("expected dyn member"),
+        None => testing::fail("expected dyn member"),
     }
 }
 
@@ -778,17 +778,17 @@ fn completes_imported_package_namespaces() -> unit {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
     match fs::read_file(main_path) {
-        Result::Ok(source) => match last_substring(source, "sum_point") {
-            Option::Some(offset) => {
+        Ok(source) => match last_substring(source, "sum_point") {
+            Some(offset) => {
                 let analysis = analyze(main_path, source);
                 testing::assert(has_completion(
                     completions(analysis, offset + 2),
                     "sum_point",
                 ))
             },
-            Option::None => testing::fail("expected sum_point"),
+            None => testing::fail("expected sum_point"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -796,34 +796,34 @@ fn completes_imported_package_namespaces() -> unit {
 fn filters_completion_scope_and_suggests_keywords() -> unit {
     let source = "fn first() -> int32 { let hidden = 1; hidden }\nfn second() -> int32 { let visible = 2; vis }";
     match last_substring(source, "vis") {
-        Option::Some(offset) => {
+        Some(offset) => {
             let items = completions(analyze("main.gom", source), offset + 3);
             testing::assert(has_completion(items, "visible"));
             testing::assert(!has_completion(items, "hidden"))
         },
-        Option::None => testing::fail("expected completion prefix"),
+        None => testing::fail("expected completion prefix"),
     };
     let keyword_source = "fn main() -> unit { ma }";
     match last_substring(keyword_source, "ma") {
-        Option::Some(offset) => testing::assert(has_completion(
+        Some(offset) => testing::assert(has_completion(
             completions(
                 analyze("main.gom", keyword_source),
                 offset + 2,
             ),
             "match",
         )),
-        Option::None => testing::fail("expected keyword prefix"),
+        None => testing::fail("expected keyword prefix"),
     };
     let call_source = "fn use_value(value: int32) -> unit { () } fn main() -> unit { use_value( }";
     match last_substring(call_source, "use_value(") {
-        Option::Some(offset) => testing::assert_eq(
+        Some(offset) => testing::assert_eq(
             completions(
                 analyze("main.gom", call_source),
                 offset + "use_value(".byte_len(),
             ).len(),
             0,
         ),
-        Option::None => testing::fail("expected call"),
+        None => testing::fail("expected call"),
     }
 }
 
@@ -836,26 +836,26 @@ fn indexes_syntax_with_absolute_ranges_and_parents() -> unit {
     testing::assert(analysis.syntax.nodes.len() > 1);
     testing::assert(analysis.syntax.tokens.len() > 1);
     match token_at(analysis.syntax, 3) {
-        Option::Some(token) => {
+        Some(token) => {
             testing::assert(lexer::token_kind_equal(
                 token.kind,
                 lexer::TokenKind::Ident,
             ));
             testing::assert_eq(token.text, "main")
         },
-        Option::None => testing::fail("expected token"),
+        None => testing::fail("expected token"),
     };
     match node_at(analysis.syntax, 3) {
-        Option::Some(node) => {
+        Some(node) => {
             testing::assert(
                 !cst::node_kind_equal(node.kind, cst::NodeKind::FILE),
             );
             match parent_node(analysis.syntax, node) {
-                Option::Some(_) => (),
-                Option::None => testing::fail("expected parent node"),
+                Some(_) => (),
+                None => testing::fail("expected parent node"),
             }
         },
-        Option::None => testing::fail("expected node"),
+        None => testing::fail("expected node"),
     }
 }
 
@@ -865,14 +865,14 @@ fn returns_hover_from_typecheck_facts() -> unit {
     let analysis = analyze("main.gom", source);
     testing::assert_eq(analysis.checked.diagnostics.len(), 0);
     match hover(analysis, source.byte_len() - 3) {
-        Option::Some(result) => {
+        Some(result) => {
             testing::assert_eq(result.contents, "int32");
             testing::assert_eq(
                 source.byte_slice(result.span.start, result.span.end),
                 "value",
             )
         },
-        Option::None => testing::fail("expected hover"),
+        None => testing::fail("expected hover"),
     }
 }
 
@@ -880,23 +880,23 @@ fn returns_hover_from_typecheck_facts() -> unit {
 fn returns_function_hover_on_declarations_and_calls() -> unit {
     let source = "fn add(x: int32, y: int32) -> int32 { x + y }\nfn main() -> int32 { add(1, 2) }";
     match hover(analyze("main.gom", source), 3) {
-        Option::Some(result) => {
+        Some(result) => {
             testing::assert_eq(result.contents, "(int32, int32) -> int32")
         },
-        Option::None => testing::fail("expected declaration hover"),
+        None => testing::fail("expected declaration hover"),
     };
     match last_substring(source, "add") {
-        Option::Some(offset) => match hover(
+        Some(offset) => match hover(
             analyze("main.gom", source),
             offset,
         ) {
-            Option::Some(result) => testing::assert_eq(
+            Some(result) => testing::assert_eq(
                 result.contents,
                 "(int32, int32) -> int32",
             ),
-            Option::None => testing::fail("expected call hover"),
+            None => testing::fail("expected call hover"),
         },
-        Option::None => testing::fail("expected function call"),
+        None => testing::fail("expected function call"),
     }
 }
 
@@ -906,27 +906,27 @@ fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> uni
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "map[U]") {
-        Option::Some(offset) => match hover(analysis, offset) {
-            Option::Some(result) => testing::assert_eq(
+        Some(offset) => match hover(analysis, offset) {
+            Some(result) => testing::assert_eq(
                 result.contents,
                 "[U] (gomlc::Box[T], (T) -> U) -> gomlc::Box[U]",
             ),
-            Option::None => testing::fail("expected generic method hover"),
+            None => testing::fail("expected generic method hover"),
         },
-        Option::None => testing::fail("expected method declaration"),
+        None => testing::fail("expected method declaration"),
     };
     match last_substring(source, "map(") {
-        Option::Some(offset) => match signature_help(
+        Some(offset) => match signature_help(
             analysis,
             offset + "map(".byte_len(),
         ) {
-            Option::Some(signature) => testing::assert_eq(
+            Some(signature) => testing::assert_eq(
                 signature.label,
                 "(convert: (int) -> string) -> gomlc::Box[string]",
             ),
-            Option::None => testing::fail("expected generic method signature"),
+            None => testing::fail("expected generic method signature"),
         },
-        Option::None => testing::fail("expected method call"),
+        None => testing::fail("expected method call"),
     }
 }
 
@@ -939,12 +939,12 @@ fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
     let constant_found = Ref::new(false);
     for symbol in build_symbol_index(analysis).symbols {
         match symbol.kind {
-            SymbolKind::TypeAlias => if symbol.name == "Count" {
+            TypeAlias => if symbol.name == "Count" {
                 alias_found.set(true)
             } else {
                 ()
             },
-            SymbolKind::Constant => if symbol.name == "answer" {
+            Constant => if symbol.name == "answer" {
                 constant_found.set(true)
             } else {
                 ()
@@ -955,22 +955,22 @@ fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
     testing::assert(alias_found.get());
     testing::assert(constant_found.get());
     match last_substring(source, "ans") {
-        Option::Some(offset) => testing::assert(has_completion(
+        Some(offset) => testing::assert(has_completion(
             completions(analysis, offset + 3),
             "answer",
         )),
-        Option::None => testing::fail("expected constant prefix"),
+        None => testing::fail("expected constant prefix"),
     };
     match last_substring(source, "answer") {
-        Option::Some(offset) => match hover(analysis, offset) {
-            Option::Some(value) => testing::assert_eq(value.contents, "int32"),
-            Option::None => testing::fail("expected constant hover"),
+        Some(offset) => match hover(analysis, offset) {
+            Some(value) => testing::assert_eq(value.contents, "int32"),
+            None => testing::fail("expected constant hover"),
         },
-        Option::None => testing::fail("expected constant declaration"),
+        None => testing::fail("expected constant declaration"),
     };
     match hover(analysis, "type ".byte_len()) {
-        Option::Some(value) => testing::assert_eq(value.contents, "int32"),
-        Option::None => testing::fail("expected type alias hover"),
+        Some(value) => testing::assert_eq(value.contents, "int32"),
+        None => testing::fail("expected type alias hover"),
     }
 }
 
@@ -981,14 +981,14 @@ fn discovers_internal_and_external_test_items() -> unit {
     testing::assert_eq(internal.len(), 1);
     testing::assert_eq(internal.get(0).name, "works");
     match internal.get(0).kind {
-        TestItemKind::Internal => (),
-        TestItemKind::External => testing::fail("expected internal test"),
+        Internal => (),
+        External => testing::fail("expected internal test"),
     };
     let external = test_items("/tmp/project/tests/api_test.gom", source);
     testing::assert_eq(external.len(), 1);
     match external.get(0).kind {
-        TestItemKind::External => (),
-        TestItemKind::Internal => testing::fail("expected external test"),
+        External => (),
+        Internal => testing::fail("expected external test"),
     };
     testing::assert_eq(test_items("/tmp/value.gom", source).len(), 0)
 }
@@ -1008,8 +1008,8 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
         .pushed(shared_two)
     {
         match fs::create_dir_all(directory) {
-            Result::Ok(()) => (),
-            Result::Err(error) => testing::fail(error),
+            Ok(()) => (),
+            Err(error) => testing::fail(error),
         }
     };
     write_query_fixture(
@@ -1050,14 +1050,14 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
         "alice::http",
         Vec::new(),
     ) {
-        Result::Ok(files) => {
+        Ok(files) => {
             testing::assert_eq(files.len(), 1);
             testing::assert_eq(files.get(0).package_name, "alice::http")
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     };
     match resolve_external_modules_at(project, registry) {
-        Result::Ok(modules) => {
+        Ok(modules) => {
             let selected = Ref::new("");
             for module in modules {
                 if module.name == "alice::shared" {
@@ -1068,6 +1068,6 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
             };
             testing::assert_eq(selected.get(), "2.0.0")
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }

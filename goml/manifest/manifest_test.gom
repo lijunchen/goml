@@ -5,7 +5,7 @@ use std::testing;
 #[test]
 fn parses_escaped_unicode_manifest_strings() -> unit {
     match parse_string("\"工具\\\\\\\"路径\"") {
-        Result::Ok(value) => testing::assert_eq(value, "工具\\\"路径"),
-        Result::Err(error) => testing::fail(error),
+        Ok(value) => testing::assert_eq(value, "工具\\\"路径"),
+        Err(error) => testing::fail(error),
     }
 }

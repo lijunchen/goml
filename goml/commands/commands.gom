@@ -8,81 +8,81 @@ use std::path;
 
 fn create_directory(value: string) -> Result[unit, string] {
     match fs::create_dir_all(value) {
-        Result::Ok(()) => Result::Ok(()),
-        Result::Err(message) => Result::Err(message),
+        Ok(()) => Result::Ok(()),
+        Err(message) => Result::Err(message),
     }
 }
 
 fn write_file(value: string, content: string) -> Result[unit, string] {
     match fs::write_file(value, content) {
-        Result::Ok(()) => Result::Ok(()),
-        Result::Err(message) => Result::Err(message),
+        Ok(()) => Result::Ok(()),
+        Err(message) => Result::Err(message),
     }
 }
 
 pub fn home_directory() -> Result[string, string] {
     match env::var("GOML_HOME") {
-        Option::Some(value) => if value != "" {
+        Some(value) => if value != "" {
             return Result::Ok(value)
         } else {
             ()
         },
-        Option::None => (),
+        None => (),
     };
     match env::var("HOME") {
-        Option::Some(value) => if value != "" {
+        Some(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
         } else {
             ()
         },
-        Option::None => (),
+        None => (),
     };
     match env::var("USERPROFILE") {
-        Option::Some(value) => if value != "" {
+        Some(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
         } else {
             ()
         },
-        Option::None => (),
+        None => (),
     };
     Result::Err("failed to determine home directory")
 }
 
 pub fn print_home() -> Result[unit, string] {
     let home = match home_directory() {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     match ensure_home_layout() {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let bin = path::join(home, "bin");
     let lib = path::join(home, "lib");
     let std = path::join(lib, "std");
     let cache = path::join(home, "cache");
-    io::println("GOML_HOME=" + home);
-    io::println("bin=" + bin);
-    io::println("lib=" + lib);
-    io::println("std=" + std);
-    io::println("cache=" + cache);
+    io::println(f"GOML_HOME={home}");
+    io::println(f"bin={bin}");
+    io::println(f"lib={lib}");
+    io::println(f"std={std}");
+    io::println(f"cache={cache}");
     Result::Ok(())
 }
 
 pub fn ensure_home_layout() -> Result[unit, string] {
     let home = match home_directory() {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
-    for directory in Vec::new()
-        .pushed(home)
-        .pushed(path::join(home, "bin"))
-        .pushed(path::join(home, "lib"))
-        .pushed(path::join(home, "cache"))
-    {
+    for directory in Vec::[
+        home,
+        path::join(home, "bin"),
+        path::join(home, "lib"),
+        path::join(home, "cache"),
+    ] {
         match create_directory(directory) {
-            Result::Ok(()) => (),
-            Result::Err(message) => return Result::Err(message),
+            Ok(()) => (),
+            Err(message) => return Result::Err(message),
         }
     };
     Result::Ok(())
@@ -139,8 +139,8 @@ fn ensure_project_directory(value: string) -> Result[unit, string] {
         )
     } else if fs::is_dir(value) {
         let entries = match fs::read_dir(value) {
-            Result::Ok(entries) => entries,
-            Result::Err(message) => return Result::Err(message),
+            Ok(entries) => entries,
+            Err(message) => return Result::Err(message),
         };
         if entries.len() > 0 {
             return Result::Err(
@@ -156,29 +156,29 @@ fn ensure_project_directory(value: string) -> Result[unit, string] {
 
 pub fn new_project(name: string, base: string) -> Result[unit, string] {
     match validate_project_name(name) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let project = path::join(base, name);
     match ensure_project_directory(project) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let lib = path::join(project, "lib");
     match create_directory(lib) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     match write_file(
         path::join(project, "goml.toml"),
         "[module]\npath = \"" + name + "\"\n",
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     match write_file(path::join(project, ".gitignore"), "/_artifact/\n") {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     match write_file(
         path::join(project, "main.gom"),
@@ -186,15 +186,15 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
             + name
             + "::lib;\n\nfn main() -> unit {\n    println(lib::message())\n}\n",
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     match write_file(
         path::join(lib, "lib.gom"),
         "package lib;\n\npub fn message() -> string {\n    \"hello from lib\"\n}\n",
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     io::println("Created project at " + project);
     io::println("Next steps:");
@@ -229,10 +229,10 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
             return Result::Err("unknown option " + argument)
         } else {
             match name.get() {
-                Option::Some(_) => return Result::Err(
+                Some(_) => return Result::Err(
                     "unexpected argument " + argument,
                 ),
-                Option::None => {
+                None => {
                     name.set(Option::Some(argument));
                     index.set(index.get() + 1)
                 },
@@ -240,7 +240,7 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
         }
     };
     match name.get() {
-        Option::Some(value) => new_project(value, base.get()),
-        Option::None => Result::Err("project name is required"),
+        Some(value) => new_project(value, base.get()),
+        None => Result::Err("project name is required"),
     }
 }

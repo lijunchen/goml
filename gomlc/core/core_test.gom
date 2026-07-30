@@ -87,9 +87,9 @@ fn lowers_or_patterns_in_match_matrices() -> unit {
 fn allocates_statement_names_after_lowering_the_value() -> unit {
     let file = lower_source("fn f(flag: bool) -> int32 { while true { if flag { return 1 } else { break }; }; 2 }");
     match file.functions.get(0).body.stmts.get(0) {
-        LetStmt { name, value: Expr::While {
+        LetStmt { name, value: While {
             cond: _,
-            body: Expr::Block { block: body, ty: _ },
+            body: Block { block: body, ty: _ },
             ty: _,
         }, ty: _ } => {
             testing::assert_eq(name, "_wild1");
@@ -104,26 +104,26 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
     let source = "fn build() -> Option[() -> int32] { Option::Some(|| 1) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
     let file = lower_source(source);
     match file.functions.get(1).body.tail {
-        Option::Some(Expr::Block { block, ty: _ }) => {
+        Some(Block { block, ty: _ }) => {
             testing::assert_eq(block.stmts.get(0).name, "mtmp0");
             match block.tail {
-                Option::Some(Expr::Match { expr: _, arms, default: Option::None, ty: _ }) => {
+                Some(Match { expr: _, arms, default: None, ty: _ }) => {
                     match arms.get(0).lhs {
-                        Expr::Constr { constructor, args: _, ty: _ } => {
+                        Constr { constructor, args: _, ty: _ } => {
                             testing::assert_eq(constructor.name, "Option::None");
                             match constructor.tag {
-                                Option::Some(tag) => testing::assert_eq(tag, 0),
-                                Option::None => testing::fail("expected None tag"),
+                                Some(tag) => testing::assert_eq(tag, 0),
+                                None => testing::fail("expected None tag"),
                             }
                         },
                         _ => testing::fail("expected None arm"),
                     };
                     match arms.get(1).lhs {
-                        Expr::Constr { constructor, args: _, ty: _ } => {
+                        Constr { constructor, args: _, ty: _ } => {
                             testing::assert_eq(constructor.name, "Option::Some");
                             match constructor.tag {
-                                Option::Some(tag) => testing::assert_eq(tag, 1),
-                                Option::None => testing::fail("expected Some tag"),
+                                Some(tag) => testing::assert_eq(tag, 1),
+                                None => testing::fail("expected Some tag"),
                             }
                         },
                         _ => testing::fail("expected Some arm"),
@@ -150,19 +150,19 @@ fn lowers_linked_builtin_option_payload_patterns() -> unit {
         builtins.structs,
     );
     match user.functions.get(0).body.tail {
-        Option::Some(Expr::Match { expr: _, arms, default: Option::None, ty: _ }) => {
+        Some(Match { expr: _, arms, default: None, ty: _ }) => {
             match arms.get(1).lhs {
-                Expr::Constr { constructor, args: _, ty: _ } => {
+                Constr { constructor, args: _, ty: _ } => {
                     testing::assert_eq(constructor.name, "Option::Some")
                 },
                 _ => testing::fail("expected Some arm"),
             };
             match arms.get(1).body {
-                Expr::Block { block: extraction, ty: _ } => match extraction.tail {
-                    Option::Some(Expr::Block { block: binding, ty: _ }) => {
+                Block { block: extraction, ty: _ } => match extraction.tail {
+                    Some(Block { block: binding, ty: _ }) => {
                         testing::assert_eq(binding.stmts.get(0).name, "value/1");
                         match binding.tail {
-                            Option::Some(Expr::Var { name, ty: _ }) => {
+                            Some(Var { name, ty: _ }) => {
                                 testing::assert_eq(name, "value/1")
                             },
                             _ => testing::fail("expected bound payload result"),
@@ -191,22 +191,22 @@ fn binds_nested_match_sources_before_lowering_them() -> unit {
     let source = "fn main() -> bool { match match Option::Some(true) { Option::Some(value) => value, Option::None => false, } { false => false, true => true, } }";
     let file = lower_source(source);
     match file.functions.get(0).body.tail {
-        Option::Some(Expr::Block { block: outer, ty: _ }) => {
+        Some(Block { block: outer, ty: _ }) => {
             testing::assert_eq(outer.stmts.get(0).name, "mtmp0");
             match outer.stmts.get(0).value {
-                Expr::Block { block: inner, ty: _ } => testing::assert_eq(inner.stmts.get(0).name, "mtmp1"),
+                Block { block: inner, ty: _ } => testing::assert_eq(inner.stmts.get(0).name, "mtmp1"),
                 _ => testing::fail("expected inner match binding"),
             };
             match outer.tail {
-                Option::Some(Expr::Match { expr: _, arms, default: Option::None, ty: _ }) => {
+                Some(Match { expr: _, arms, default: None, ty: _ }) => {
                     match arms.get(0).lhs {
-                        Expr::Prim { value: tast::Primitive::Bool { value }, ty: _ } => {
+                        Prim { value: Bool { value }, ty: _ } => {
                             testing::assert_eq(value, true)
                         },
                         _ => testing::fail("expected true arm"),
                     };
                     match arms.get(1).lhs {
-                        Expr::Prim { value: tast::Primitive::Bool { value }, ty: _ } => {
+                        Prim { value: Bool { value }, ty: _ } => {
                             testing::assert_eq(value, false)
                         },
                         _ => testing::fail("expected false arm"),
@@ -225,16 +225,16 @@ fn evaluates_index_assignment_places_once() -> unit {
     let body = file.functions.get(0).body;
     testing::assert_eq(body.stmts.get(1).name, "_wild4");
     match body.stmts.get(1).value {
-        Expr::Block { block: place, ty: _ } => {
+        Block { block: place, ty: _ } => {
             testing::assert_eq(place.stmts.get(0).name, "place_root0");
             testing::assert_eq(place.stmts.get(1).name, "index1");
             testing::assert_eq(place.stmts.get(2).name, "place2");
             testing::assert_eq(place.stmts.get(3).name, "value3");
             match place.tail {
-                Option::Some(Expr::Assign {
+                Some(Assign {
                     name,
-                    value: Expr::Call {
-                                        func: Expr::Callable { callable: tast::Callable::Intrinsic(intrinsic), ty: _ },
+                    value: Call {
+                                        func: Callable { callable: Intrinsic(intrinsic), ty: _ },
                                         args: _,
                                         ty: _,
                                     },

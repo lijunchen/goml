@@ -32,7 +32,7 @@ fn artifact_core_function_matches_scheme(
     scheme: ArtifactFnScheme,
 ) -> bool {
     match artifact_function_type_parts(scheme.ty) {
-        Result::Ok(function_type) => if value.params.len() != function_type.params.len()
+        Ok(function_type) => if value.params.len() != function_type.params.len()
             || !artifact_core_types_equal(value.ret_ty, function_type.ret_ty)
         {
             false
@@ -49,7 +49,7 @@ fn artifact_core_function_matches_scheme(
             };
             true
         },
-        Result::Err(_) => false,
+        Err(_) => false,
     }
 }
 
@@ -98,7 +98,7 @@ fn artifact_prepare_core_function_metadata(
         }
     };
     let trait_impl = match value.trait_impl {
-        Option::Some(metadata) => {
+        Some(metadata) => {
             let associated_types = Ref::new(metadata.associated_types);
             let generic_count = Ref::new(metadata.generic_count);
             let predicate_count = Ref::new(metadata.predicate_count);
@@ -118,7 +118,7 @@ fn artifact_prepare_core_function_metadata(
                     generic_count.set(implementation.definition.params.len());
                     predicate_count.set(implementation.definition.constraints.len());
                     match method_name {
-                        Option::Some(method_name) => for method in implementation.definition.methods {
+                        Some(method_name) => for method in implementation.definition.methods {
                             if method.name == method_name
                                 && artifact_core_function_matches_scheme(value, method)
                             {
@@ -130,7 +130,7 @@ fn artifact_prepare_core_function_metadata(
                                 ()
                             }
                         },
-                        Option::None => (),
+                        None => (),
                     }
                 } else {
                     ()
@@ -144,10 +144,10 @@ fn artifact_prepare_core_function_metadata(
                 predicate_count: predicate_count.get(),
             })
         },
-        Option::None => {
+        None => {
             let method_name = artifact_core_method_name(value.name);
             match method_name {
-                Option::Some(method_name) => for implementation in exports.inherent_impls {
+                Some(method_name) => for implementation in exports.inherent_impls {
                     if implementation.definition.valid {
                         for method in implementation.definition.methods {
                             if method.name == method_name
@@ -165,7 +165,7 @@ fn artifact_prepare_core_function_metadata(
                         ()
                     }
                 },
-                Option::None => (),
+                None => (),
             };
             Option::None
         },
@@ -215,8 +215,8 @@ fn artifact_prepare_optional_core_expr(
     definitions: Vec[tast::StructDef],
 ) -> unit {
     match value {
-        Option::Some(value) => artifact_prepare_core_expr(value, definitions),
-        Option::None => (),
+        Some(value) => artifact_prepare_core_expr(value, definitions),
+        None => (),
     }
 }
 
@@ -235,16 +235,16 @@ fn artifact_prepare_core_expr(
     definitions: Vec[tast::StructDef],
 ) -> unit {
     match value {
-        core::Expr::Constr { constructor, args, ty: _ } => {
+        Constr { constructor, args, ty: _ } => {
             artifact_fill_constructor_fields(constructor, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
+        Tuple { items, ty: _ } | Array { items, ty: _ } => {
             artifact_prepare_core_exprs(items, definitions)
         },
-        core::Expr::Closure { params: _, body, ty: _ } => artifact_prepare_core_expr(body, definitions),
-        core::Expr::Block { block, ty: _ } => artifact_prepare_core_block(block, definitions),
-        core::Expr::Match { expr, arms, default, ty: _ } => {
+        Closure { params: _, body, ty: _ } => artifact_prepare_core_expr(body, definitions),
+        Block { block, ty: _ } => artifact_prepare_core_block(block, definitions),
+        Match { expr, arms, default, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions);
             for arm in arms {
                 artifact_prepare_core_expr(arm.lhs, definitions);
@@ -252,50 +252,50 @@ fn artifact_prepare_core_expr(
             };
             artifact_prepare_optional_core_expr(default, definitions)
         },
-        core::Expr::If { cond, then_branch, else_branch, ty: _ } => {
+        If { cond, then_branch, else_branch, ty: _ } => {
             artifact_prepare_core_expr(cond, definitions);
             artifact_prepare_core_expr(then_branch, definitions);
             artifact_prepare_core_expr(else_branch, definitions)
         },
-        core::Expr::While { cond, body, ty: _ } => {
+        While { cond, body, ty: _ } => {
             artifact_prepare_core_expr(cond, definitions);
             artifact_prepare_core_expr(body, definitions)
         },
-        core::Expr::Return { expr, ty: _ } => {
+        Return { expr, ty: _ } => {
             artifact_prepare_optional_core_expr(expr, definitions)
         },
-        core::Expr::Go { expr, ty: _ }
-        | core::Expr::Unary { op: _, expr, ty: _ }
-        | core::Expr::Cast { expr, ty: _ }
-        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => artifact_prepare_core_expr(expr, definitions),
-        core::Expr::ConstrGet { expr, constructor, field_index: _, ty: _ } => {
+        Go { expr, ty: _ }
+        | Unary { op: _, expr, ty: _ }
+        | Cast { expr, ty: _ }
+        | Proj { tuple: expr, index: _, ty: _ } => artifact_prepare_core_expr(expr, definitions),
+        ConstrGet { expr, constructor, field_index: _, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions);
             artifact_fill_constructor_fields(constructor, definitions)
         },
-        core::Expr::Binary { op: _, lhs, rhs, ty: _ } => {
+        Binary { op: _, lhs, rhs, ty: _ } => {
             artifact_prepare_core_expr(lhs, definitions);
             artifact_prepare_core_expr(rhs, definitions)
         },
-        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => {
+        Assign { name: _, value: expr, target_ty: _, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions)
         },
-        core::Expr::Call { func, args, ty: _ } => {
+        Call { func, args, ty: _ } => {
             artifact_prepare_core_expr(func, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
+        ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions)
         },
-        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | TraitCall { receiver, args, .. } => {
             artifact_prepare_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        core::Expr::Var { name: _, ty: _ }
-        | core::Expr::Callable { callable: _, ty: _ }
-        | core::Expr::Prim { value: _, ty: _ }
-        | core::Expr::Break { ty: _ }
-        | core::Expr::Continue { ty: _ } => (),
+        Var { name: _, ty: _ }
+        | Callable { callable: _, ty: _ }
+        | Prim { value: _, ty: _ }
+        | Break { ty: _ }
+        | Continue { ty: _ } => (),
     }
 }
 

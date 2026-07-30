@@ -12,22 +12,22 @@ fn artifact_binary_expect_ok[T: Eq + ToString](
     expected: T,
 ) -> unit {
     match value {
-        Result::Ok(actual) => testing::assert_eq(actual, expected),
-        Result::Err(error) => testing::fail(error),
+        Ok(actual) => testing::assert_eq(actual, expected),
+        Err(error) => testing::fail(error),
     }
 }
 
 fn artifact_binary_expect_unit(value: Result[unit, string]) -> unit {
     match value {
-        Result::Ok(()) => (),
-        Result::Err(error) => testing::fail(error),
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
     }
 }
 
 fn artifact_binary_expect_err[T](value: Result[T, string]) -> unit {
     match value {
-        Result::Ok(_) => testing::fail("expected binary artifact error"),
-        Result::Err(_) => (),
+        Ok(_) => testing::fail("expected binary artifact error"),
+        Err(_) => (),
     }
 }
 

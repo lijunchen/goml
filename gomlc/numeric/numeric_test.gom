@@ -5,62 +5,62 @@ use std::testing;
 #[test]
 fn normalizes_integer_bases_without_machine_width_limits() -> unit {
     match normalize_integer("0b1111_0000") {
-        Option::Some(value) => testing::assert_eq(value, "240"),
-        Option::None => testing::fail("expected binary integer"),
+        Some(value) => testing::assert_eq(value, "240"),
+        None => testing::fail("expected binary integer"),
     };
     match normalize_integer("0o17_777") {
-        Option::Some(value) => testing::assert_eq(value, "8191"),
-        Option::None => testing::fail("expected octal integer"),
+        Some(value) => testing::assert_eq(value, "8191"),
+        None => testing::fail("expected octal integer"),
     };
     match normalize_integer("0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF") {
-        Option::Some(value) => testing::assert_eq(
+        Some(value) => testing::assert_eq(
             value,
             "340282366920938463463374607431768211455",
         ),
-        Option::None => testing::fail("expected hexadecimal integer"),
+        None => testing::fail("expected hexadecimal integer"),
     };
     match normalize_integer("1_000_000") {
-        Option::Some(value) => testing::assert_eq(value, "1000000"),
-        Option::None => testing::fail("expected decimal integer"),
+        Some(value) => testing::assert_eq(value, "1000000"),
+        None => testing::fail("expected decimal integer"),
     }
 }
 
 #[test]
 fn rejects_invalid_normalized_integers() -> unit {
     match normalize_integer("0x") {
-        Option::None => (),
-        Option::Some(_) => testing::fail("expected missing hexadecimal digits"),
+        None => (),
+        Some(_) => testing::fail("expected missing hexadecimal digits"),
     };
     match normalize_integer("0b102") {
-        Option::None => (),
-        Option::Some(_) => testing::fail("expected invalid binary digit"),
+        None => (),
+        Some(_) => testing::fail("expected invalid binary digit"),
     };
     match normalize_integer("0o8") {
-        Option::None => (),
-        Option::Some(_) => testing::fail("expected invalid octal digit"),
+        None => (),
+        Some(_) => testing::fail("expected invalid octal digit"),
     };
     match normalize_integer("0x_1") {
-        Option::None => (),
-        Option::Some(_) => testing::fail("expected invalid leading separator"),
+        None => (),
+        Some(_) => testing::fail("expected invalid leading separator"),
     };
     match normalize_integer("10_") {
-        Option::None => (),
-        Option::Some(_) => testing::fail("expected invalid trailing separator"),
+        None => (),
+        Some(_) => testing::fail("expected invalid trailing separator"),
     }
 }
 
 #[test]
 fn parses_valid_and_invalid_floats() -> unit {
     match parse_float32("3.5") {
-        Option::Some(value) => testing::assert(value == 3.5),
-        Option::None => testing::fail("expected float32"),
+        Some(value) => testing::assert(value == 3.5),
+        None => testing::fail("expected float32"),
     };
     match parse_float64("-2.25e2") {
-        Option::Some(value) => testing::assert(value == -225.0),
-        Option::None => testing::fail("expected float64"),
+        Some(value) => testing::assert(value == -225.0),
+        None => testing::fail("expected float64"),
     };
     match parse_float64("not-a-number") {
-        Option::None => (),
-        Option::Some(_) => testing::fail("expected invalid float"),
+        None => (),
+        Some(_) => testing::fail("expected invalid float"),
     }
 }

@@ -13,8 +13,8 @@ fn absolute(value: string) -> string {
         value
     } else {
         match path::absolute(value) {
-            Result::Ok(value) => value,
-            Result::Err(message) => {
+            Ok(value) => value,
+            Err(message) => {
                 testing::fail(message);
                 value
             },
@@ -24,8 +24,8 @@ fn absolute(value: string) -> string {
 
 pub fn module_root() -> string {
     match env::current_dir() {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             "."
         },
@@ -34,22 +34,22 @@ pub fn module_root() -> string {
 
 pub fn repository_root() -> string {
     match env::var("GOML_REPO") {
-        Option::Some(value) => absolute(value),
-        Option::None => absolute(path::join(module_root(), "..")),
+        Some(value) => absolute(value),
+        None => absolute(path::join(module_root(), "..")),
     }
 }
 
 pub fn goml_binary() -> string {
     match env::var("GOML_TEST_GOML") {
-        Option::Some(value) => absolute(value),
-        Option::None => path::join(repository_root(), "bin/stage2/goml"),
+        Some(value) => absolute(value),
+        None => path::join(repository_root(), "bin/stage2/goml"),
     }
 }
 
 pub fn gomlc_binary() -> string {
     match env::var("GOML_TEST_GOMLC") {
-        Option::Some(value) => absolute(value),
-        Option::None => path::join(repository_root(), "bin/stage2/gomlc"),
+        Some(value) => absolute(value),
+        None => path::join(repository_root(), "bin/stage2/gomlc"),
     }
 }
 
@@ -60,15 +60,15 @@ pub fn workspace(name: string) -> string {
     );
     if fs::exists(result) {
         match fs::remove_dir_all(result) {
-            Result::Ok(()) => (),
-            Result::Err(message) => testing::fail(message),
+            Ok(()) => (),
+            Err(message) => testing::fail(message),
         }
     } else {
         ()
     };
     match fs::create_dir_all(result) {
-        Result::Ok(()) => result,
-        Result::Err(message) => {
+        Ok(()) => result,
+        Err(message) => {
             testing::fail(message);
             result
         },
@@ -77,26 +77,26 @@ pub fn workspace(name: string) -> string {
 
 pub fn create_dir(value: string) -> unit {
     match fs::create_dir_all(value) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(message),
+        Ok(()) => (),
+        Err(message) => testing::fail(message),
     }
 }
 
 pub fn write_file(file: string, content: string) -> unit {
     match path::parent(file) {
-        Option::Some(parent) => create_dir(parent),
-        Option::None => (),
+        Some(parent) => create_dir(parent),
+        None => (),
     };
     match fs::write_file(file, content) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(message),
+        Ok(()) => (),
+        Err(message) => testing::fail(message),
     }
 }
 
 pub fn read_file(file: string) -> string {
     match fs::read_file(file) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             ""
         },
@@ -105,8 +105,8 @@ pub fn read_file(file: string) -> string {
 
 fn bytes_text(value: bytes::Bytes) -> string {
     match value.to_string() {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             ""
         },
@@ -172,8 +172,8 @@ pub fn run(args: Vec[string], directory: string) -> process::Output {
         .current_dir(directory)
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },

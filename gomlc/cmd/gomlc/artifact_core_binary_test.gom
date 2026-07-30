@@ -19,22 +19,22 @@ fn binary_core_fixture() -> ArtifactCoreUnit {
 #[test]
 fn binary_core_artifact_is_deterministic_and_independent() -> unit {
     let first = match encode_artifact_core_binary(binary_core_fixture()) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
     let second = match encode_artifact_core_binary(binary_core_fixture()) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
     testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
     match decode_artifact_core_binary(first) {
-        Result::Ok(value) => {
+        Ok(value) => {
             testing::assert_eq(value.interface_hash, "0123456789abcdef");
             testing::assert_eq(value.declared_name, "value");
             testing::assert_eq(
@@ -42,6 +42,6 @@ fn binary_core_artifact_is_deterministic_and_independent() -> unit {
                 encode_artifact_core_unit(binary_core_fixture(), false),
             )
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }

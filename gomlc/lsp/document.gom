@@ -56,15 +56,15 @@ fn document_index(value: Server, uri: string) -> Option[int] {
 
 pub fn server_document(value: Server, uri: string) -> Option[Document] {
     match document_index(value, uri) {
-        Option::Some(index) => Option::Some(value.documents.get(index)),
-        Option::None => Option::None,
+        Some(index) => Option::Some(value.documents.get(index)),
+        None => Option::None,
     }
 }
 
 pub fn open_document(value: Server, document: Document) -> unit {
     match document_index(value, document.uri) {
-        Option::Some(index) => value.documents.set(index, document),
-        Option::None => value.documents.push(document),
+        Some(index) => value.documents.set(index, document),
+        None => value.documents.push(document),
     };
     invalidate_analyses(value)
 }
@@ -76,7 +76,7 @@ pub fn change_document(
     version: int,
 ) -> unit {
     match document_index(value, uri) {
-        Option::Some(index) => {
+        Some(index) => {
             let current = value.documents.get(index);
             value.documents.set(index, Document {
                 uri: current.uri,
@@ -86,17 +86,17 @@ pub fn change_document(
             });
             invalidate_analyses(value)
         },
-        Option::None => (),
+        None => (),
     }
 }
 
 pub fn close_document(value: Server, uri: string) -> unit {
     match document_index(value, uri) {
-        Option::Some(index) => {
+        Some(index) => {
             let _ = value.documents.remove(index);
             invalidate_analyses(value)
         },
-        Option::None => (),
+        None => (),
     }
 }
 

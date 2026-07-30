@@ -16,72 +16,72 @@ fn initializes_and_answers_hover_requests() -> unit {
         server,
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{}}",
     ) {
-        Result::Ok(messages) => {
+        Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
             match response_result(messages.get(0)) {
-                Option::Some(result) => match json::field(result, "serverInfo") {
-                    Option::Some(info) => match json::field(info, "name") {
-                        Option::Some(name) => match json::as_string(name) {
-                            Option::Some(name) => {
+                Some(result) => match json::field(result, "serverInfo") {
+                    Some(info) => match json::field(info, "name") {
+                        Some(name) => match json::as_string(name) {
+                            Some(name) => {
                                 testing::assert_eq(name, "gomllsp");
                                 match json::field(info, "version") {
-                                    Option::Some(value) => match json::as_string(value) {
-                                        Option::Some(value) => testing::assert_eq(
+                                    Some(value) => match json::as_string(value) {
+                                        Some(value) => testing::assert_eq(
                                             value,
                                             version::current(),
                                         ),
-                                        Option::None => testing::fail(
+                                        None => testing::fail(
                                             "expected server version",
                                         ),
                                     },
-                                    Option::None => testing::fail(
+                                    None => testing::fail(
                                         "expected server version",
                                     ),
                                 }
                             },
-                            Option::None => testing::fail("expected server name"),
+                            None => testing::fail("expected server name"),
                         },
-                        Option::None => testing::fail("expected server name"),
+                        None => testing::fail("expected server name"),
                     },
-                    Option::None => testing::fail("expected server info"),
+                    None => testing::fail("expected server info"),
                 },
-                Option::None => testing::fail("expected initialize result"),
+                None => testing::fail("expected initialize result"),
             }
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     };
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { let value = 42; value }\"}}}";
     match handle_payload(server, open) {
-        Result::Ok(messages) => testing::assert_eq(messages.len(), 1),
-        Result::Err(error) => testing::fail(error),
+        Ok(messages) => testing::assert_eq(messages.len(), 1),
+        Err(error) => testing::fail(error),
     };
     let hover = "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"textDocument/hover\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-test.gom\"},\"position\":{\"line\":0,\"character\":38}}}";
     match handle_payload(server, hover) {
-        Result::Ok(messages) => {
+        Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
             match response_result(messages.get(0)) {
-                Option::Some(result) => match json::field(result, "contents") {
-                    Option::Some(contents) => match json::field(
+                Some(result) => match json::field(result, "contents") {
+                    Some(contents) => match json::field(
                         contents,
                         "value",
                     ) {
-                        Option::Some(value) => match json::as_string(value) {
-                            Option::Some(value) => {
+                        Some(value) => match json::as_string(value) {
+                            Some(value) => {
                                 testing::assert_eq(
                                     value,
                                     "```goml\nint32\n```",
                                 )
                             },
-                            Option::None => testing::fail("expected hover text"),
+                            None => testing::fail("expected hover text"),
                         },
-                        Option::None => testing::fail("expected hover value"),
+                        None => testing::fail("expected hover value"),
                     },
-                    Option::None => testing::fail("expected hover contents"),
+                    None => testing::fail("expected hover contents"),
                 },
-                Option::None => testing::fail("expected hover result"),
+                None => testing::fail("expected hover result"),
             }
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -90,22 +90,22 @@ fn applies_full_document_changes_and_stops_on_exit() -> unit {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { 1 }\"}}}";
     match handle_payload(server, open) {
-        Result::Ok(_) => (),
-        Result::Err(error) => testing::fail(error),
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
     };
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\"fn main() -> int32 { 2 }\"}]}}";
     match handle_payload(server, change) {
-        Result::Ok(_) => match server_document(
+        Ok(_) => match server_document(
             server,
             "file:///tmp/gomllsp-change.gom",
         ) {
-            Option::Some(document) => {
+            Some(document) => {
                 testing::assert_eq(document.version, 2);
                 testing::assert_eq(document.text, "fn main() -> int32 { 2 }")
             },
-            Option::None => testing::fail("expected changed document"),
+            None => testing::fail("expected changed document"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     };
     let _ = handle_payload(
         server,
@@ -119,38 +119,38 @@ fn returns_run_test_code_lenses() -> unit {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/value_test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"package value;\\n#[test]\\nfn works() -> unit { () }\\n\"}}}";
     match handle_payload(server, open) {
-        Result::Ok(_) => (),
-        Result::Err(error) => testing::fail(error),
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
     };
     let request = "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"textDocument/codeLens\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/value_test.gom\"}}}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json::as_array(result) {
-                Option::Some(lenses) => {
+        Ok(messages) => match response_result(messages.get(0)) {
+            Some(result) => match json::as_array(result) {
+                Some(lenses) => {
                     testing::assert_eq(lenses.len(), 1);
                     match json::field(lenses.get(0), "command") {
-                        Option::Some(command) => match json::field(
+                        Some(command) => match json::field(
                             command,
                             "command",
                         ) {
-                            Option::Some(value) => match json::as_string(value) {
-                                Option::Some(value) => {
+                            Some(value) => match json::as_string(value) {
+                                Some(value) => {
                                     testing::assert_eq(value, "goml.runTest")
                                 },
-                                Option::None => {
+                                None => {
                                     testing::fail("expected command name")
                                 },
                             },
-                            Option::None => testing::fail("expected command"),
+                            None => testing::fail("expected command"),
                         },
-                        Option::None => testing::fail("expected code lens command"),
+                        None => testing::fail("expected code lens command"),
                     }
                 },
-                Option::None => testing::fail("expected code lenses"),
+                None => testing::fail("expected code lenses"),
             },
-            Option::None => testing::fail("expected code lens result"),
+            None => testing::fail("expected code lens result"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -159,25 +159,25 @@ fn converts_diagnostic_fixes_to_code_actions() -> unit {
     let server = new_server();
     let request = "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"textDocument/codeAction\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/main.gom\"},\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"context\":{\"diagnostics\":[{\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"message\":\"replace\",\"data\":{\"fixes\":[{\"uri\":\"file:///tmp/main.gom\",\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"replacement\":\"x\",\"title\":\"Replace value\",\"preferred\":true}]}}]}}}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json::as_array(result) {
-                Option::Some(actions) => {
+        Ok(messages) => match response_result(messages.get(0)) {
+            Some(result) => match json::as_array(result) {
+                Some(actions) => {
                     testing::assert_eq(actions.len(), 1);
                     match json::field(actions.get(0), "title") {
-                        Option::Some(value) => match json::as_string(value) {
-                            Option::Some(value) => {
+                        Some(value) => match json::as_string(value) {
+                            Some(value) => {
                                 testing::assert_eq(value, "Replace value")
                             },
-                            Option::None => testing::fail("expected title"),
+                            None => testing::fail("expected title"),
                         },
-                        Option::None => testing::fail("expected action title"),
+                        None => testing::fail("expected action title"),
                     }
                 },
-                Option::None => testing::fail("expected code actions"),
+                None => testing::fail("expected code actions"),
             },
-            Option::None => testing::fail("expected code action result"),
+            None => testing::fail("expected code action result"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -186,12 +186,12 @@ fn returns_null_when_no_code_actions_apply() -> unit {
     let server = new_server();
     let request = "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"textDocument/codeAction\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/main.gom\"},\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"context\":{\"diagnostics\":[]}}}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(json::Value::Null) => (),
-            Option::Some(_) => testing::fail("expected null code actions"),
-            Option::None => testing::fail("expected code action result"),
+        Ok(messages) => match response_result(messages.get(0)) {
+            Some(Null) => (),
+            Some(_) => testing::fail("expected null code actions"),
+            None => testing::fail("expected code action result"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -199,36 +199,36 @@ fn returns_null_when_no_code_actions_apply() -> unit {
 fn reports_json_rpc_parse_and_invalid_request_errors() -> unit {
     let server = new_server();
     match handle_payload(server, "{") {
-        Result::Ok(messages) => {
+        Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
             match json::field(messages.get(0), "error") {
-                Option::Some(error) => match json::field(error, "code") {
-                    Option::Some(code) => match json::as_int(code) {
-                        Option::Some(code) => testing::assert_eq(code, -32700),
-                        Option::None => testing::fail("expected parse code"),
+                Some(error) => match json::field(error, "code") {
+                    Some(code) => match json::as_int(code) {
+                        Some(code) => testing::assert_eq(code, -32700),
+                        None => testing::fail("expected parse code"),
                     },
-                    Option::None => testing::fail("expected parse error code"),
+                    None => testing::fail("expected parse error code"),
                 },
-                Option::None => testing::fail("expected parse error"),
+                None => testing::fail("expected parse error"),
             }
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     };
     match handle_payload(
         server,
         "{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}",
     ) {
-        Result::Ok(messages) => match json::field(messages.get(0), "error") {
-            Option::Some(error) => match json::field(error, "code") {
-                Option::Some(code) => match json::as_int(code) {
-                    Option::Some(code) => testing::assert_eq(code, -32600),
-                    Option::None => testing::fail("expected request code"),
+        Ok(messages) => match json::field(messages.get(0), "error") {
+            Some(error) => match json::field(error, "code") {
+                Some(code) => match json::as_int(code) {
+                    Some(code) => testing::assert_eq(code, -32600),
+                    None => testing::fail("expected request code"),
                 },
-                Option::None => testing::fail("expected request error code"),
+                None => testing::fail("expected request error code"),
             },
-            Option::None => testing::fail("expected invalid request error"),
+            None => testing::fail("expected invalid request error"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -237,30 +237,30 @@ fn filters_inlay_hints_to_the_requested_range() -> unit {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/inlay.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> unit {\\n    let first = 1;\\n    let second = 2;\\n    ()\\n}\"}}}";
     match handle_payload(server, open) {
-        Result::Ok(_) => (),
-        Result::Err(error) => testing::fail(error),
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
     };
     let request = "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"textDocument/inlayHint\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/inlay.gom\"},\"range\":{\"start\":{\"line\":2,\"character\":0},\"end\":{\"line\":3,\"character\":0}}}}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json::as_array(result) {
-                Option::Some(hints) => {
+        Ok(messages) => match response_result(messages.get(0)) {
+            Some(result) => match json::as_array(result) {
+                Some(hints) => {
                     testing::assert_eq(hints.len(), 1);
                     match json::field(hints.get(0), "label") {
-                        Option::Some(label) => match json::as_string(label) {
-                            Option::Some(label) => {
+                        Some(label) => match json::as_string(label) {
+                            Some(label) => {
                                 testing::assert_eq(label, ": int")
                             },
-                            Option::None => testing::fail("expected hint label"),
+                            None => testing::fail("expected hint label"),
                         },
-                        Option::None => testing::fail("expected hint"),
+                        None => testing::fail("expected hint"),
                     }
                 },
-                Option::None => testing::fail("expected inlay hints"),
+                None => testing::fail("expected inlay hints"),
             },
-            Option::None => testing::fail("expected inlay result"),
+            None => testing::fail("expected inlay result"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -269,22 +269,22 @@ fn rejects_requests_after_shutdown() -> unit {
     let server = new_server();
     let shutdown = "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"shutdown\"}";
     match handle_payload(server, shutdown) {
-        Result::Ok(messages) => testing::assert_eq(messages.len(), 1),
-        Result::Err(error) => testing::fail(error),
+        Ok(messages) => testing::assert_eq(messages.len(), 1),
+        Err(error) => testing::fail(error),
     };
     let request = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"initialize\"}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match json::field(messages.get(0), "error") {
-            Option::Some(error) => match json::field(error, "code") {
-                Option::Some(code) => match json::as_int(code) {
-                    Option::Some(code) => testing::assert_eq(code, -32600),
-                    Option::None => testing::fail("expected shutdown code"),
+        Ok(messages) => match json::field(messages.get(0), "error") {
+            Some(error) => match json::field(error, "code") {
+                Some(code) => match json::as_int(code) {
+                    Some(code) => testing::assert_eq(code, -32600),
+                    None => testing::fail("expected shutdown code"),
                 },
-                Option::None => testing::fail("expected shutdown error code"),
+                None => testing::fail("expected shutdown error code"),
             },
-            Option::None => testing::fail("expected shutdown error"),
+            None => testing::fail("expected shutdown error"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -293,27 +293,27 @@ fn includes_diagnostics_in_hover() -> unit {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { missing }\"}}}";
     match handle_payload(server, open) {
-        Result::Ok(_) => (),
-        Result::Err(error) => testing::fail(error),
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
     };
     let request = "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"textDocument/hover\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\"},\"position\":{\"line\":0,\"character\":21}}}";
     match handle_payload(server, request) {
-        Result::Ok(messages) => match response_result(messages.get(0)) {
-            Option::Some(result) => match json::field(result, "contents") {
-                Option::Some(contents) => match json::field(contents, "value") {
-                    Option::Some(value) => match json::as_string(value) {
-                        Option::Some(value) => testing::assert(strings::contains(
+        Ok(messages) => match response_result(messages.get(0)) {
+            Some(result) => match json::field(result, "contents") {
+                Some(contents) => match json::field(contents, "value") {
+                    Some(value) => match json::as_string(value) {
+                        Some(value) => testing::assert(strings::contains(
                             value,
                             "**Diagnostics**",
                         )),
-                        Option::None => testing::fail("expected hover text"),
+                        None => testing::fail("expected hover text"),
                     },
-                    Option::None => testing::fail("expected hover value"),
+                    None => testing::fail("expected hover value"),
                 },
-                Option::None => testing::fail("expected hover contents"),
+                None => testing::fail("expected hover contents"),
             },
-            Option::None => testing::fail("expected hover result"),
+            None => testing::fail("expected hover result"),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }

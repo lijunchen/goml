@@ -28,11 +28,11 @@ fn quoted_values(value: string) -> Vec[string] {
     for index in range(0, value.byte_len()) {
         if value.byte_get(index) == 34 {
             match start.get() {
-                Option::Some(offset) => {
+                Some(offset) => {
                     result.push(value.byte_slice(offset, index));
                     start.set(Option::None)
                 },
-                Option::None => start.set(Option::Some(index + 1)),
+                None => start.set(Option::Some(index + 1)),
             }
         } else {
             ()
@@ -109,18 +109,18 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
         Option::None
     } else {
         match decimal_number(parts.get(0)) {
-            Option::Some(major) => match decimal_number(parts.get(1)) {
-                Option::Some(minor) => match decimal_number(parts.get(2)) {
-                    Option::Some(patch) => Option::Some(SemVersion {
+            Some(major) => match decimal_number(parts.get(1)) {
+                Some(minor) => match decimal_number(parts.get(2)) {
+                    Some(patch) => Option::Some(SemVersion {
                         major,
                         minor,
                         patch,
                     }),
-                    Option::None => Option::None,
+                    None => Option::None,
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -139,24 +139,24 @@ fn sem_version_at_least(left: SemVersion, right: SemVersion) -> bool {
 
 fn registry_home() -> Result[string, string] {
     match env::var("GOML_HOME") {
-        Option::Some(value) => if value != "" {
+        Some(value) => if value != "" {
             Result::Ok(value)
         } else {
             Result::Err("GOML_HOME is empty")
         },
-        Option::None => match env::var("HOME") {
-            Option::Some(value) => if value != "" {
+        None => match env::var("HOME") {
+            Some(value) => if value != "" {
                 Result::Ok(path::join(value, ".goml"))
             } else {
                 Result::Err("HOME is empty")
             },
-            Option::None => match env::var("USERPROFILE") {
-                Option::Some(value) => if value != "" {
+            None => match env::var("USERPROFILE") {
+                Some(value) => if value != "" {
                     Result::Ok(path::join(value, ".goml"))
                 } else {
                     Result::Err("USERPROFILE is empty")
                 },
-                Option::None => {
+                None => {
                     Result::Err("failed to determine GoML home directory")
                 },
             },
@@ -166,11 +166,11 @@ fn registry_home() -> Result[string, string] {
 
 fn registry_root() -> Result[string, string] {
     match registry_home() {
-        Result::Ok(home) => Result::Ok(path::join(
+        Ok(home) => Result::Ok(path::join(
             path::join(home, "cache"),
             "registry",
         )),
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -180,8 +180,8 @@ fn registry_versions(
 ) -> Result[Vec[string], string] {
     let index_path = path::join(root, "index.toml");
     let source = match fs::read_file(index_path) {
-        Result::Ok(source) => source,
-        Result::Err(error) => return Result::Err(error),
+        Ok(source) => source,
+        Err(error) => return Result::Err(error),
     };
     let result = Vec::new();
     let cursor = Ref::new(0);
@@ -230,39 +230,39 @@ fn select_registry_version(
     requirement: DependencyRequirement,
 ) -> Result[string, string] {
     let minimum = match parse_sem_version(requirement.version) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err(
+        Some(value) => value,
+        None => return Result::Err(
             "invalid semver `" + requirement.version + "`",
         ),
     };
     let versions = match registry_versions(root, requirement.name) {
-        Result::Ok(values) => values,
-        Result::Err(error) => return Result::Err(error),
+        Ok(values) => values,
+        Err(error) => return Result::Err(error),
     };
     let selected = Ref::new(Option::None);
     let selected_version = Ref::new(Option::None);
     for version in versions {
         match parse_sem_version(version) {
-            Option::Some(parsed) => if sem_version_at_least(
+            Some(parsed) => if sem_version_at_least(
                 parsed,
                 minimum,
             ) && match selected_version.get() {
-                Option::Some(current) => sem_version_less(parsed, current),
-                Option::None => true,
+                Some(current) => sem_version_less(parsed, current),
+                None => true,
             } {
                 selected.set(Option::Some(version));
                 selected_version.set(Option::Some(parsed))
             } else {
                 ()
             },
-            Option::None => return Result::Err(
+            None => return Result::Err(
                 "invalid registry semver `" + version + "`",
             ),
         }
     };
     match selected.get() {
-        Option::Some(version) => Result::Ok(version),
-        Option::None => Result::Err(
+        Some(version) => Result::Ok(version),
+        None => Result::Err(
             "registry has no version for "
                 + requirement.name
                 + " satisfying >= "
@@ -273,11 +273,11 @@ fn select_registry_version(
 
 fn module_segments(value: string) -> Option[(string, string)] {
     match strings::find(value, "::") {
-        Option::Some(separator) => Option::Some((
+        Some(separator) => Option::Some((
             value.byte_slice(0, separator),
             value.byte_slice(separator + 2, value.byte_len()),
         )),
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -287,14 +287,14 @@ fn module_directory(
     version: string,
 ) -> Result[string, string] {
     match module_segments(module_name) {
-        Option::Some((owner, module)) => Result::Ok(path::join(
+        Some((owner, module)) => Result::Ok(path::join(
             path::join(
                 path::join(registry, owner),
                 module,
             ),
             version,
         )),
-        Option::None => Result::Err(
+        None => Result::Err(
             "invalid module coordinate `" + module_name + "`",
         ),
     }
@@ -323,8 +323,8 @@ fn resolve_external_modules_at(
         module_root,
         "goml.toml",
     )) {
-        Result::Ok(source) => source,
-        Result::Err(error) => return Result::Err(error),
+        Ok(source) => source,
+        Err(error) => return Result::Err(error),
     };
     let queue = manifest_dependencies(manifest);
     let cursor = Ref::new(0);
@@ -336,12 +336,12 @@ fn resolve_external_modules_at(
             registry,
             requirement,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         let parsed = match parse_sem_version(version) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err(
+            Some(value) => value,
+            None => return Result::Err(
                 "invalid registry semver `" + version + "`",
             ),
         };
@@ -349,13 +349,13 @@ fn resolve_external_modules_at(
             selected,
             requirement.name,
         ) {
-            Option::Some(index) => match parse_sem_version(
+            Some(index) => match parse_sem_version(
                 selected.get(index).version,
             ) {
-                Option::Some(current) => sem_version_less(current, parsed),
-                Option::None => true,
+                Some(current) => sem_version_less(current, parsed),
+                None => true,
             },
-            Option::None => true,
+            None => true,
         };
         if update {
             let root = match module_directory(
@@ -363,18 +363,18 @@ fn resolve_external_modules_at(
                 requirement.name,
                 version,
             ) {
-                Result::Ok(value) => value,
-                Result::Err(error) => return Result::Err(error),
+                Ok(value) => value,
+                Err(error) => return Result::Err(error),
             };
             let module_manifest = match fs::read_file(path::join(
                 root,
                 "goml.toml",
             )) {
-                Result::Ok(source) => source,
-                Result::Err(error) => return Result::Err(error),
+                Ok(source) => source,
+                Err(error) => return Result::Err(error),
             };
             match manifest_module_path(module_manifest) {
-                Option::Some(name) => if name != requirement.name {
+                Some(name) => if name != requirement.name {
                     return Result::Err(
                         "registry module "
                             + requirement.name
@@ -384,19 +384,19 @@ fn resolve_external_modules_at(
                 } else {
                     ()
                 },
-                Option::None => return Result::Err(
+                None => return Result::Err(
                     "registry module "
                         + requirement.name
                         + " has no module path",
                 ),
             };
             match selected_module_index(selected, requirement.name) {
-                Option::Some(index) => selected.set(index, ResolvedModule {
+                Some(index) => selected.set(index, ResolvedModule {
                     name: requirement.name,
                     version,
                     root,
                 }),
-                Option::None => selected.push(ResolvedModule {
+                None => selected.push(ResolvedModule {
                     name: requirement.name,
                     version,
                     root,
@@ -416,11 +416,11 @@ fn resolve_external_modules(
     module_root: string,
 ) -> Result[Vec[ResolvedModule], string] {
     match registry_root() {
-        Result::Ok(registry) => resolve_external_modules_at(
+        Ok(registry) => resolve_external_modules_at(
             module_root,
             registry,
         ),
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -469,21 +469,21 @@ fn external_package_sources(
     overrides: Vec[SourceOverride],
 ) -> Result[Vec[SourceFile], string] {
     let modules = match resolve_external_modules(module_root) {
-        Result::Ok(values) => values,
-        Result::Err(error) => return Result::Err(error),
+        Ok(values) => values,
+        Err(error) => return Result::Err(error),
     };
     for module in modules {
         match external_package_directory(module, package_name) {
-            Option::Some(directory) => match collect_dependency_files(
+            Some(directory) => match collect_dependency_files(
                 directory,
                 overrides,
             ) {
-                Result::Ok(files) => return Result::Ok(
+                Ok(files) => return Result::Ok(
                     source_files_with_package(files, package_name),
                 ),
-                Result::Err(error) => return Result::Err(error),
+                Err(error) => return Result::Err(error),
             },
-            Option::None => (),
+            None => (),
         }
     };
     Result::Err(
@@ -503,21 +503,21 @@ fn external_package_sources_at(
         module_root,
         registry,
     ) {
-        Result::Ok(values) => values,
-        Result::Err(error) => return Result::Err(error),
+        Ok(values) => values,
+        Err(error) => return Result::Err(error),
     };
     for module in modules {
         match external_package_directory(module, package_name) {
-            Option::Some(directory) => match collect_dependency_files(
+            Some(directory) => match collect_dependency_files(
                 directory,
                 overrides,
             ) {
-                Result::Ok(files) => return Result::Ok(
+                Ok(files) => return Result::Ok(
                     source_files_with_package(files, package_name),
                 ),
-                Result::Err(error) => return Result::Err(error),
+                Err(error) => return Result::Err(error),
             },
-            Option::None => (),
+            None => (),
         }
     };
     Result::Err(

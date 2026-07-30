@@ -5,13 +5,13 @@ use gomlc::tast;
 
 fn pattern_requires_ordered(value: tast::Pat) -> bool {
     match value {
-        tast::Pat::Array { prefix: _, rest: _, suffix: _, ty: _ } | tast::Pat::Alias { name: _, pat: _, ty: _ } | tast::Pat::Range {
+        Array { prefix: _, rest: _, suffix: _, ty: _ } | Alias { name: _, pat: _, ty: _ } | Range {
             start: _,
             end: _,
             inclusive: _,
             ty: _,
         } => true,
-        tast::Pat::Or { pats: patterns, ty: _ } => {
+        Or { pats: patterns, ty: _ } => {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
                     return true
@@ -21,7 +21,7 @@ fn pattern_requires_ordered(value: tast::Pat) -> bool {
             };
             false
         },
-        tast::Pat::Constr { constructor: _, args: patterns, ty: _ } | tast::Pat::Tuple { items: patterns, ty: _ } => {
+        Constr { constructor: _, args: patterns, ty: _ } | Tuple { items: patterns, ty: _ } => {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
                     return true
@@ -38,8 +38,8 @@ fn pattern_requires_ordered(value: tast::Pat) -> bool {
 fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
     for arm in arms {
         match arm.guard {
-            Option::Some(_) => return true,
-            Option::None => if pattern_requires_ordered(arm.pat) {
+            Some(_) => return true,
+            None => if pattern_requires_ordered(arm.pat) {
                 return true
             } else {
                 ()
@@ -79,8 +79,8 @@ fn bind_ordered_value(name: string, value: Expr, body: Expr, ty: tast::Type) -> 
 
 fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
     match tast::resolve_type(container_ty) {
-        tast::Type::Array { len: length, elem: _ } => Option::Some(ordered_int(length)),
-        tast::Type::VecType { elem: _ } => {
+        Array { len: length, elem: _ } => Option::Some(ordered_int(length)),
+        VecType { elem: _ } => {
             let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
             let args: Vec[Expr] = Vec::new();
@@ -92,7 +92,7 @@ fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
                 args,
             ))
         },
-        tast::Type::Slice { elem: _ } => {
+        Slice { elem: _ } => {
             let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
             let args: Vec[Expr] = Vec::new();
@@ -112,8 +112,8 @@ fn ordered_container_parts(
     container_ty: tast::Type,
 ) -> Option[(tast::Type, Option[int])] {
     match tast::resolve_type(container_ty) {
-        tast::Type::Array { len: length, elem } => Option::Some((elem, Option::Some(length))),
-        tast::Type::VecType { elem } | tast::Type::Slice { elem } => {
+        Array { len: length, elem } => Option::Some((elem, Option::Some(length))),
+        VecType { elem } | Slice { elem } => {
             Option::Some((elem, Option::None))
         },
         _ => Option::None,
@@ -131,11 +131,11 @@ fn ordered_rest_value(
     rest_ty: tast::Type,
 ) -> Expr {
     match tast::resolve_type(container_ty) {
-        tast::Type::Array { len: _, elem: _ } => {
+        Array { len: _, elem: _ } => {
             let items: Vec[Expr] = Vec::new();
             let end = match fixed_len {
-                Option::Some(length) => length - suffix_len,
-                Option::None => prefix_len,
+                Some(length) => length - suffix_len,
+                None => prefix_len,
             };
             for index in range(prefix_len, end) {
                 items.push(place_index_read(
@@ -147,7 +147,7 @@ fn ordered_rest_value(
             };
             Expr::Array { items, ty: rest_ty }
         },
-        tast::Type::VecType { elem: _ } => {
+        VecType { elem: _ } => {
             let end = if suffix_len == 0 {
                 len_expr
             } else {
@@ -168,7 +168,7 @@ fn ordered_rest_value(
             args.push(end);
             place_intrinsic_call("slice.new", params, rest_ty, args)
         },
-        tast::Type::Slice { elem: _ } => {
+        Slice { elem: _ } => {
             let end = if suffix_len == 0 {
                 len_expr
             } else {
@@ -200,8 +200,8 @@ fn ordered_suffix_index(
     offset: int,
 ) -> Expr {
     match fixed_len {
-        Option::Some(length) => ordered_int(length - suffix_len + offset),
-        Option::None => ordered_binary(
+        Some(length) => ordered_int(length - suffix_len + offset),
+        None => ordered_binary(
             ast::BinaryOp::Add,
             ordered_binary(
                 ast::BinaryOp::Sub,
@@ -227,12 +227,12 @@ fn lower_ordered_array_pattern(
     result_ty: tast::Type,
 ) -> Expr {
     match ordered_container_parts(container_ty) {
-        Option::Some((elem_ty, fixed_len)) => match ordered_len(value, container_ty) {
-            Option::Some(len_expr) => {
+        Some((elem_ty, fixed_len)) => match ordered_len(value, container_ty) {
+            Some(len_expr) => {
                 let next = Ref::new(success);
                 match rest {
-                    Option::Some(rest_value) => match rest_value.binding {
-                        Option::Some(binding) => next.set(bind_ordered_value(
+                    Some(rest_value) => match rest_value.binding {
+                        Some(binding) => next.set(bind_ordered_value(
                             binding,
                             ordered_rest_value(
                                 value,
@@ -247,9 +247,9 @@ fn lower_ordered_array_pattern(
                             next.get(),
                             result_ty,
                         )),
-                        Option::None => (),
+                        None => (),
                     },
-                    Option::None => (),
+                    None => (),
                 };
                 for offset in range(0, suffix.len()) {
                     let index = suffix.len() - 1 - offset;
@@ -291,11 +291,11 @@ fn lower_ordered_array_pattern(
                     ))
                 };
                 match fixed_len {
-                    Option::Some(_) => next.get(),
-                    Option::None => {
+                    Some(_) => next.get(),
+                    None => {
                         let op = match rest {
-                            Option::Some(_) => ast::BinaryOp::GreaterEq,
-                            Option::None => ast::BinaryOp::Eq,
+                            Some(_) => ast::BinaryOp::GreaterEq,
+                            None => ast::BinaryOp::Eq,
                         };
                         ordered_if(
                             ordered_binary(
@@ -311,9 +311,9 @@ fn lower_ordered_array_pattern(
                     },
                 }
             },
-            Option::None => failure,
+            None => failure,
         },
-        Option::None => failure,
+        None => failure,
     }
 }
 
@@ -326,9 +326,9 @@ fn lower_ordered_pattern(
     result_ty: tast::Type,
 ) -> Expr {
     match pattern {
-        tast::Pat::Wild { ty: _ } => success,
-        tast::Pat::Var { name, ty: _ } => bind_ordered_value(name, value, success, result_ty),
-        tast::Pat::Alias { name, pat: inner, ty } => {
+        Wild { ty: _ } => success,
+        Var { name, ty: _ } => bind_ordered_value(name, value, success, result_ty),
+        Alias { name, pat: inner, ty } => {
             let matched = lower_ordered_pattern(
                 ctx,
                 inner,
@@ -339,7 +339,7 @@ fn lower_ordered_pattern(
             );
             bind_ordered_value(name, value, matched, result_ty)
         },
-        tast::Pat::Or { pats: patterns, ty: _ } => {
+        Or { pats: patterns, ty: _ } => {
             let next = Ref::new(failure);
             for offset in range(0, patterns.len()) {
                 let index = patterns.len() - 1 - offset;
@@ -354,7 +354,7 @@ fn lower_ordered_pattern(
             };
             next.get()
         },
-        tast::Pat::Prim { value: expected, ty } => ordered_if(
+        Prim { value: expected, ty } => ordered_if(
             ordered_binary(
                 ast::BinaryOp::Eq,
                 value,
@@ -365,7 +365,7 @@ fn lower_ordered_pattern(
             failure,
             result_ty,
         ),
-        tast::Pat::Range { start, end, inclusive, ty } => {
+        Range { start, end, inclusive, ty } => {
             let upper_op = if inclusive {
                 ast::BinaryOp::LessEq
             } else {
@@ -394,8 +394,8 @@ fn lower_ordered_pattern(
                 result_ty,
             )
         },
-        tast::Pat::Tuple { items, ty: tuple_ty } => match tast::resolve_type(tuple_ty) {
-            tast::Type::Tuple { items: types } => {
+        Tuple { items, ty: tuple_ty } => match tast::resolve_type(tuple_ty) {
+            Tuple { items: types } => {
                 let next = Ref::new(success);
                 for offset in range(0, items.len()) {
                     let index = items.len() - 1 - offset;
@@ -412,7 +412,7 @@ fn lower_ordered_pattern(
             },
             _ => failure,
         },
-        tast::Pat::Constr { constructor, args, ty: pattern_ty } => {
+        Constr { constructor, args, ty: pattern_ty } => {
             let next = Ref::new(success);
             for offset in range(0, args.len()) {
                 let index = args.len() - 1 - offset;
@@ -446,7 +446,7 @@ fn lower_ordered_pattern(
                 Expr::Match { expr: value, arms, default: Option::Some(failure), ty: result_ty }
             }
         },
-        tast::Pat::Array { prefix, rest, suffix, ty: container_ty } => {
+        Array { prefix, rest, suffix, ty: container_ty } => {
             lower_ordered_array_pattern(
                 ctx,
                 prefix,
@@ -478,13 +478,13 @@ fn lower_ordered_match(
         let arm = arms.get(index);
         let body = lower_expr(ctx, arm.body);
         let success = match arm.guard {
-            Option::Some(guard) => ordered_if(
+            Some(guard) => ordered_if(
                 lower_expr(ctx, guard),
                 body,
                 next.get(),
                 ty,
             ),
-            Option::None => body,
+            None => body,
         };
         next.set(lower_ordered_pattern(
             ctx,

@@ -8,8 +8,8 @@ fn lowered_file(source: string) -> File {
     let result = lower(ast::lower(parser::parse(source)), "main.gom");
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.hir {
-        Option::Some(file) => file,
-        Option::None => {
+        Some(file) => file,
+        None => {
             testing::fail("expected HIR");
             File {
                 package_name: "",
@@ -33,8 +33,8 @@ fn lowered_package_file(source: string, package_name: string) -> File {
     );
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.hir {
-        Option::Some(file) => file,
-        Option::None => {
+        Some(file) => file,
+        None => {
             testing::fail("expected package HIR");
             File {
                 package_name: "",
@@ -64,8 +64,8 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
         "Variable value is bound more than once in the same pattern",
     );
     match duplicate.hir {
-        Option::Some(_) => (),
-        Option::None => testing::fail("expected duplicate pattern HIR"),
+        Some(_) => (),
+        None => testing::fail("expected duplicate pattern HIR"),
     };
     let inconsistent = lower(
         ast::lower(parser::parse(
@@ -79,8 +79,8 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
         "Or-pattern alternatives must bind the same variables: missing inner",
     );
     match inconsistent.hir {
-        Option::Some(_) => (),
-        Option::None => testing::fail("expected inconsistent pattern HIR"),
+        Some(_) => (),
+        None => testing::fail("expected inconsistent pattern HIR"),
     }
 }
 
@@ -102,18 +102,18 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
     testing::assert_eq(file.import_aliases.get(0).alias, "output");
     testing::assert_eq(file.import_aliases.get(0).package_name, "std::io");
     match file.items.get(1) {
-        Item::Function(value) => {
+        Function(value) => {
             testing::assert_eq(value.name, "std::sample::emit");
             match value.params.get(0).1 {
-                TypeExpr::Con { name } => testing::assert_eq(name, "std::sample::Value"),
+                Con { name } => testing::assert_eq(name, "std::sample::Value"),
                 _ => testing::fail("expected qualified parameter type"),
             };
             match value.body.stmts.get(0) {
-                Stmt::Expr {
+                Expr {
                     expr: Expr {
-                                        kind: ExprKind::Call {
+                                        kind: Call {
                                             func: Expr {
-                                                                        kind: ExprKind::StaticMember { owner, member, .. },
+                                                                        kind: StaticMember { owner, member, .. },
                                                                         span: _,
                                                                     },
                                             args: _,
@@ -127,8 +127,8 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
                 _ => testing::fail("expected qualified package call"),
             };
             match value.body.tail {
-                Option::Some(Expr {
-                    kind: ExprKind::StructLiteral { name, fields: _, base: _ },
+                Some(Expr {
+                    kind: StructLiteral { name, fields: _, base: _ },
                     span: _,
                 }) => {
                     testing::assert_eq(name, "std::sample::Value")
@@ -159,24 +159,24 @@ fn exposes_derived_impls_without_lowering_them_twice() -> unit {
         "#[derive(Eq, Hash)] struct Key { value: int32 }",
     )));
     match expanded.ast {
-        Option::Some(file) => {
+        Some(file) => {
             testing::assert_eq(file.items.len(), 3);
             match file.items.get(1) {
-                ast::Item::ImplBlock(_) => (),
+                ImplBlock(_) => (),
                 _ => testing::fail("expected derived Eq impl"),
             };
             match file.items.get(2) {
-                ast::Item::ImplBlock(_) => (),
+                ImplBlock(_) => (),
                 _ => testing::fail("expected derived Hash impl"),
             }
         },
-        Option::None => testing::fail("expected expanded AST"),
+        None => testing::fail("expected expanded AST"),
     };
     let result = lower_expanded(expanded, "main.gom");
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.hir {
-        Option::Some(file) => testing::assert_eq(file.items.len(), 3),
-        Option::None => testing::fail("expected HIR"),
+        Some(file) => testing::assert_eq(file.items.len(), 3),
+        None => testing::fail("expected HIR"),
     }
 }
 
@@ -186,17 +186,17 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
     let file = lowered_file(source);
     testing::assert_eq(file.items.len(), 2);
     match file.items.get(1) {
-        Item::Function(value) => {
+        Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Let {
+                Let {
                     is_mut: _,
                     pat: Pat {
-                                        kind: PatKind::Var { name: local },
+                                        kind: Var { name: local },
                                         span: _,
                                     },
                     annotation: _,
                     value: Expr {
-                                        kind: ExprKind::Int { value: number },
+                                        kind: Int { value: number },
                                         span: _,
                                     },
                 } => {
@@ -207,12 +207,12 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
                 _ => testing::fail("expected local binding"),
             };
             match value.body.tail {
-                Option::Some(Expr {
-                    kind: ExprKind::Call { func: function, args },
+                Some(Expr {
+                    kind: Call { func: function, args },
                     span: _,
                 }) => {
                     match function.kind {
-                        ExprKind::NameRef { name_ref: NameRef::Def(definition) } => {
+                        NameRef { name_ref: Def(definition) } => {
                             testing::assert_eq(definition.pkg, 1);
                             testing::assert_eq(definition.index, 0)
                         },
@@ -220,7 +220,7 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
                     };
                     testing::assert_eq(args.len(), 1);
                     match args.get(0).kind {
-                        ExprKind::NameRef { name_ref: NameRef::Local(local) } => {
+                        NameRef { name_ref: Local(local) } => {
                             testing::assert_eq(local.pkg, 1);
                             testing::assert_eq(local.index, 1)
                         },
@@ -239,15 +239,15 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
     let source = "enum Choice { None, Some(int32) } fn unwrap(value: Choice) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
     let file = lowered_file(source);
     match file.items.get(1) {
-        Item::Function(value) => match value.body.tail {
-            Option::Some(Expr {
-                kind: ExprKind::Match { expr: _, arms },
+        Function(value) => match value.body.tail {
+            Some(Expr {
+                kind: Match { expr: _, arms },
                 span: _,
             }) => {
                 testing::assert_eq(arms.len(), 2);
                 match arms.get(0).pat.kind {
-                    PatKind::Constr {
-                        head: PatternHead::Resolved {
+                    Constr {
+                        head: Resolved {
                                                 enum_def: definition,
                                                 variant_index: variant,
                                                 span: _,
@@ -262,7 +262,7 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
                     _ => testing::fail("expected resolved constructor pattern"),
                 };
                 match arms.get(0).body.kind {
-                    ExprKind::NameRef { name_ref: NameRef::Local(local) } => {
+                    NameRef { name_ref: Local(local) } => {
                         testing::assert_eq(local.pkg, 1);
                         testing::assert_eq(local.index, 1)
                     },
@@ -289,15 +289,15 @@ fn resolves_cross_file_constructor_patterns() -> unit {
     let lowered = lower_package_files(inputs, "main");
     testing::assert_eq(lowered.len(), 2);
     match lowered.get(1).hir {
-        Option::Some(file) => match file.items.get(0) {
-            Item::Function(function) => match function.body.tail {
-                Option::Some(Expr {
-                    kind: ExprKind::Match { expr: _, arms },
+        Some(file) => match file.items.get(0) {
+            Function(function) => match function.body.tail {
+                Some(Expr {
+                    kind: Match { expr: _, arms },
                     span: _,
                 }) => {
                     match arms.get(0).pat.kind {
-                        PatKind::Constr {
-                            head: PatternHead::Contextual {
+                        Constr {
+                            head: Contextual {
                                 name,
                                 span: _,
                             },
@@ -309,8 +309,8 @@ fn resolves_cross_file_constructor_patterns() -> unit {
                         _ => testing::fail("expected resolved Idle pattern"),
                     };
                     match arms.get(1).pat.kind {
-                        PatKind::Constr {
-                            head: PatternHead::Contextual {
+                        Constr {
+                            head: Contextual {
                                 name,
                                 span: _,
                             },
@@ -326,7 +326,7 @@ fn resolves_cross_file_constructor_patterns() -> unit {
             },
             _ => testing::fail("expected label function"),
         },
-        Option::None => testing::fail("expected cross-file HIR"),
+        None => testing::fail("expected cross-file HIR"),
     }
 }
 

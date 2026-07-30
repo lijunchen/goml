@@ -7,8 +7,8 @@ use std::text;
 fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> unit {
     for child in cst::node_children(node) {
         match child {
-            cst::CstElement::Node(inner) => append_source(inner, builder),
-            cst::CstElement::Token(token) => builder.write_string(token.text),
+            Node(inner) => append_source(inner, builder),
+            Token(token) => builder.write_string(token.text),
         }
     }
 }
@@ -17,8 +17,8 @@ fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
     let count = Ref::new(if cst::node_kind_equal(cst::node_kind(node), kind) { 1 } else { 0 });
     for child in cst::node_children(node) {
         match child {
-            cst::CstElement::Node(inner) => count.set(count.get() + count_nodes(inner, kind)),
-            cst::CstElement::Token(_) => (),
+            Node(inner) => count.set(count.get() + count_nodes(inner, kind)),
+            Token(_) => (),
         }
     };
     count.get()

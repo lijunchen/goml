@@ -133,8 +133,8 @@ fn validate_target_dir(value: string) -> Result[unit, string] {
 
 pub fn load(path: string) -> Result[Manifest, string] {
     let source = match fs::read_file(path) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let section = Ref::new("");
     let module_path: Ref[Option[string]] = Ref::new(Option::None);
@@ -168,8 +168,8 @@ pub fn load(path: string) -> Result[Manifest, string] {
                 equals.get() + 1,
                 line.byte_len(),
             )) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if section.get() == "module" && key == "path" {
                 module_path.set(Option::Some(value))
@@ -177,8 +177,8 @@ pub fn load(path: string) -> Result[Manifest, string] {
                 target_dir.set(value)
             } else if section.get() == "dependencies" {
                 let name = match parse_string(key) {
-                    Result::Ok(value) => value,
-                    Result::Err(message) => return Result::Err(message),
+                    Ok(value) => value,
+                    Err(message) => return Result::Err(message),
                 };
                 dependencies.push(Dependency { name, version: value })
             } else {
@@ -187,19 +187,19 @@ pub fn load(path: string) -> Result[Manifest, string] {
         }
     };
     let module_path = match module_path.get() {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("goml.toml is missing [module].path"),
+        Some(value) => value,
+        None => return Result::Err("goml.toml is missing [module].path"),
     };
     match validate_module_path(module_path) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     match validate_target_dir(target_dir.get()) {
-        Result::Ok(()) => Result::Ok(Manifest {
+        Ok(()) => Result::Ok(Manifest {
             module_path,
             target_dir: target_dir.get(),
             dependencies,
         }),
-        Result::Err(message) => Result::Err(message),
+        Err(message) => Result::Err(message),
     }
 }

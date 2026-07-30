@@ -14,8 +14,8 @@ fn lowered_standard_hir(source: string, path: string, package_name: string) -> h
     );
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.hir {
-        Option::Some(file) => file,
-        Option::None => {
+        Some(file) => file,
+        None => {
             testing::fail("expected standard package HIR");
             hir::File {
                 package_name,

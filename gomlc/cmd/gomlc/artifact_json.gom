@@ -149,8 +149,8 @@ fn artifact_binary_stream_error(
     result: Result[unit, string],
 ) -> unit {
     match result {
-        Result::Ok(()) => (),
-        Result::Err(error) => value.binary_error.set(Option::Some(error)),
+        Ok(()) => (),
+        Err(error) => value.binary_error.set(Option::Some(error)),
     }
 }
 
@@ -192,8 +192,8 @@ fn artifact_binary_stream_finish(
     value: ArtifactJsonWriter,
 ) -> Result[bytes::Bytes, string] {
     match value.binary_error.get() {
-        Option::Some(error) => Result::Err(error),
-        Option::None => if value.binary_scopes.len() == 0 {
+        Some(error) => Result::Err(error),
+        None => if value.binary_scopes.len() == 0 {
             Result::Ok(artifact_binary_writer_finish(value.binary_writer))
         } else {
             Result::Err("unfinished binary artifact value")
@@ -211,16 +211,16 @@ fn artifact_captured_push(
         match writer.captured_containers.get(
             writer.captured_containers.len() - 1,
         ) {
-            ArtifactCapturedContainer::Object { fields, name } => {
+            Object { fields, name } => {
                 match name.get() {
-                    Option::Some(name_value) => {
+                    Some(name_value) => {
                         fields.push((name_value, value));
                         name.set(Option::None)
                     },
-                    Option::None => (),
+                    None => (),
                 }
             },
-            ArtifactCapturedContainer::Array(values) => values.push(value),
+            Array(values) => values.push(value),
         }
     }
 }
@@ -360,10 +360,10 @@ fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
         match value.captured_containers.remove(
             value.captured_containers.len() - 1,
         ) {
-            ArtifactCapturedContainer::Object { fields, .. } => {
+            Object { fields, .. } => {
                 artifact_captured_push(value, ArtifactValue::Object(fields))
             },
-            ArtifactCapturedContainer::Array(_) => (),
+            Array(_) => (),
         }
     } else {
         value.depth.set(value.depth.get() - 1);
@@ -405,10 +405,10 @@ fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
         match value.captured_containers.remove(
             value.captured_containers.len() - 1,
         ) {
-            ArtifactCapturedContainer::Array(values) => {
+            Array(values) => {
                 artifact_captured_push(value, ArtifactValue::Array(values))
             },
-            ArtifactCapturedContainer::Object { .. } => (),
+            Object { .. } => (),
         }
     } else {
         value.depth.set(value.depth.get() - 1);
@@ -445,10 +445,10 @@ fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
         match value.captured_containers.get(
             value.captured_containers.len() - 1,
         ) {
-            ArtifactCapturedContainer::Object { name: captured, .. } => {
+            Object { name: captured, .. } => {
                 captured.set(Option::Some(name))
             },
-            ArtifactCapturedContainer::Array(_) => (),
+            Array(_) => (),
         }
     } else {
         let index = value.first_values.len() - 1;

@@ -42,8 +42,8 @@ fn token_is(left: lexer::TokenKind, right: lexer::TokenKind) -> bool {
 
 fn marker_is_none(value: Option[MarkerClosed]) -> bool {
     match value {
-        Option::Some(_) => false,
-        Option::None => true,
+        Some(_) => false,
+        None => true,
     }
 }
 
@@ -427,7 +427,7 @@ impl MarkerClosed {
     pub fn precede(self: MarkerClosed, parser: Parser) -> MarkerOpened {
         let marker = parser.open();
         match parser.events.get(self.index) {
-            Event::Open { kind, forward_parent: _ } => parser.events.set(
+            Open { kind, forward_parent: _ } => parser.events.set(
                 self.index,
                 Event::Open { kind, forward_parent: Option::Some(marker.index - self.index) },
             ),
@@ -466,14 +466,14 @@ fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
 
 fn element_byte_len(element: cst::CstElement) -> int {
     match element {
-        cst::CstElement::Node(value) => value.byte_len,
-        cst::CstElement::Token(value) => value.text.byte_len(),
+        Node(value) => value.byte_len,
+        Token(value) => value.text.byte_len(),
     }
 }
 
 fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
     match stack.pop() {
-        Option::Some(value) => {
+        Some(value) => {
             let byte_len = Ref::new(0);
             for child in value.children {
                 byte_len.set(byte_len.get() + element_byte_len(child))
@@ -485,7 +485,7 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
                 roots.push(complete)
             }
         },
-        Option::None => (),
+        None => (),
     }
 }
 
@@ -499,7 +499,7 @@ fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
 
 fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
     match event {
-        Event::Open { kind, forward_parent: parent } => Option::Some((kind, parent)),
+        Open { kind, forward_parent: parent } => Option::Some((kind, parent)),
         _ => Option::None,
     }
 }
@@ -513,26 +513,26 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
         let event = parser.events.get(index.get());
         parser.events.set(index.get(), event_tombstone());
         match event {
-            Event::Open { kind, forward_parent } => {
+            Open { kind, forward_parent } => {
                 let kinds: Vec[cst::NodeKind] = Vec::new();
                 kinds.push(kind);
                 let event_index = Ref::new(index.get());
                 let parent = Ref::new(forward_parent);
                 while true {
                     match parent.get() {
-                        Option::Some(distance) => {
+                        Some(distance) => {
                             event_index.set(event_index.get() + distance);
                             let parent_event = parser.events.get(event_index.get());
                             parser.events.set(event_index.get(), event_tombstone());
                             match event_open(parent_event) {
-                                Option::Some((parent_kind, next)) => {
+                                Some((parent_kind, next)) => {
                                     kinds.push(parent_kind);
                                     parent.set(next)
                                 },
-                                Option::None => break,
+                                None => break,
                             }
                         },
-                        Option::None => break,
+                        None => break,
                     }
                 };
                 let kind_index = Ref::new(kinds.len() - 1);
@@ -546,8 +546,8 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                     kind_index.set(kind_index.get() - 1)
                 }
             },
-            Event::Close => finish_node(stack, roots),
-            Event::Advance => {
+            Close => finish_node(stack, roots),
+            Advance => {
                 if cursor.get() < parser.tokens.len() {
                     push_token(stack, parser.tokens.get(cursor.get()));
                     cursor.set(cursor.get() + 1)
@@ -555,7 +555,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                     ()
                 }
             },
-            Event::Error(message) => {
+            Error(message) => {
                 let range = if cursor.get() < parser.tokens.len() {
                     let token = parser.tokens.get(cursor.get());
                     (token.start, token.end)

@@ -100,30 +100,30 @@ pub struct Arm {
 
 pub fn expr_type(value: Expr) -> tast::Type {
     match value {
-        Expr::Var { ty, .. }
-        | Expr::Callable { ty, .. }
-        | Expr::Prim { ty, .. }
-        | Expr::Constr { ty, .. }
-        | Expr::Tuple { ty, .. }
-        | Expr::Array { ty, .. }
-        | Expr::Closure { ty, .. }
-        | Expr::Block { ty, .. }
-        | Expr::Match { ty, .. }
-        | Expr::If { ty, .. }
-        | Expr::While { ty, .. }
-        | Expr::Break { ty }
-        | Expr::Continue { ty }
-        | Expr::Return { ty, .. }
-        | Expr::Go { ty, .. }
-        | Expr::ConstrGet { ty, .. }
-        | Expr::Unary { ty, .. }
-        | Expr::Cast { ty, .. }
-        | Expr::Binary { ty, .. }
-        | Expr::Assign { ty, .. }
-        | Expr::Call { ty, .. }
-        | Expr::ToDyn { ty, .. }
-        | Expr::DynCall { ty, .. }
-        | Expr::TraitCall { ty, .. }
-        | Expr::Proj { ty, .. } => ty,
+        Var { ty, .. }
+        | Callable { ty, .. }
+        | Prim { ty, .. }
+        | Constr { ty, .. }
+        | Tuple { ty, .. }
+        | Array { ty, .. }
+        | Closure { ty, .. }
+        | Block { ty, .. }
+        | Match { ty, .. }
+        | If { ty, .. }
+        | While { ty, .. }
+        | Break { ty }
+        | Continue { ty }
+        | Return { ty, .. }
+        | Go { ty, .. }
+        | ConstrGet { ty, .. }
+        | Unary { ty, .. }
+        | Cast { ty, .. }
+        | Binary { ty, .. }
+        | Assign { ty, .. }
+        | Call { ty, .. }
+        | ToDyn { ty, .. }
+        | DynCall { ty, .. }
+        | TraitCall { ty, .. }
+        | Proj { ty, .. } => ty,
     }
 }

@@ -51,16 +51,16 @@ pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
         ()
     };
     let major = match decimal_number(parts.get(0)) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("invalid semver `" + value + "`"),
+        Some(value) => value,
+        None => return Result::Err("invalid semver `" + value + "`"),
     };
     let minor = match decimal_number(parts.get(1)) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("invalid semver `" + value + "`"),
+        Some(value) => value,
+        None => return Result::Err("invalid semver `" + value + "`"),
     };
     let patch = match decimal_number(parts.get(2)) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("invalid semver `" + value + "`"),
+        Some(value) => value,
+        None => return Result::Err("invalid semver `" + value + "`"),
     };
     Result::Ok(SemVersion { major, minor, patch })
 }
@@ -84,11 +84,11 @@ fn quoted_values(value: string) -> Vec[string] {
     for index in range(0, value.byte_len()) {
         if value.byte_get(index) == 34 {
             match start.get() {
-                Option::Some(offset) => {
+                Some(offset) => {
                     result.push(value.byte_slice(offset, index));
                     start.set(Option::None)
                 },
-                Option::None => start.set(Option::Some(index + 1)),
+                None => start.set(Option::Some(index + 1)),
             }
         } else {
             ()
@@ -99,8 +99,8 @@ fn quoted_values(value: string) -> Vec[string] {
 
 fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
     let source = match fs::read_file(path::join(root, "index.toml")) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let entries = Vec::new();
     let current: Ref[Option[string]] = Ref::new(Option::None);
@@ -120,7 +120,7 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
             }
         } else {
             match current.get() {
-                Option::Some(_) => if util::starts_with(line, "latest") {
+                Some(_) => if util::starts_with(line, "latest") {
                     let values = quoted_values(line);
                     if values.len() != 1 {
                         return Result::Err("invalid registry latest value")
@@ -144,7 +144,7 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             }
         }
     };
@@ -230,32 +230,32 @@ pub fn module_directory(
     version: string,
 ) -> Result[string, string] {
     match validate_coordinate(name) {
-        Result::Ok(()) => Result::Ok(
+        Ok(()) => Result::Ok(
             module_directory_unchecked(root, name, version),
         ),
-        Result::Err(message) => Result::Err(message),
+        Err(message) => Result::Err(message),
     }
 }
 
 pub fn validate(root: string) -> Result[unit, string] {
     let entries = match load_index(root) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     for entry in entries {
         match validate_coordinate(entry.name) {
-            Result::Ok(()) => (),
-            Result::Err(message) => return Result::Err(message),
+            Ok(()) => (),
+            Err(message) => return Result::Err(message),
         };
         let latest = match parse_sem_version(entry.latest) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let latest_matches: Vec[string] = Vec::new();
         for version in entry.versions {
             let parsed = match parse_sem_version(version) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if version_equal(parsed, latest) {
                 latest_matches.push(version)
@@ -295,19 +295,19 @@ pub fn validate(root: string) -> Result[unit, string] {
 
 pub fn latest_version(root: string, name: string) -> Result[string, string] {
     match validate_coordinate(name) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let entries = match load_index(root) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     match find_entry(entries, name) {
-        Option::Some(entry) => match parse_sem_version(entry.latest) {
-            Result::Ok(_) => Result::Ok(entry.latest),
-            Result::Err(message) => Result::Err(message),
+        Some(entry) => match parse_sem_version(entry.latest) {
+            Ok(_) => Result::Ok(entry.latest),
+            Err(message) => Result::Err(message),
         },
-        Option::None => Result::Err(
+        None => Result::Err(
             "module " + name + " not found in registry index",
         ),
     }
@@ -319,20 +319,20 @@ pub fn select_version(
     minimum: string,
 ) -> Result[string, string] {
     match validate_coordinate(name) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     let minimum_value = match parse_sem_version(minimum) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let entries = match load_index(root) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let entry = match find_entry(entries, name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err(
+        Some(value) => value,
+        None => return Result::Err(
             "module " + name + " not found in registry index",
         ),
     };
@@ -340,13 +340,13 @@ pub fn select_version(
     let selected_value: Ref[Option[SemVersion]] = Ref::new(Option::None);
     for version in entry.versions {
         let parsed = match parse_sem_version(version) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         if !version_less(parsed, minimum_value)
             && match selected_value.get() {
-                Option::Some(current) => version_less(parsed, current),
-                Option::None => true,
+                Some(current) => version_less(parsed, current),
+                None => true,
             }
         {
             selected.set(Option::Some(version));
@@ -356,8 +356,8 @@ pub fn select_version(
         }
     };
     match selected.get() {
-        Option::Some(value) => Result::Ok(value),
-        Option::None => Result::Err(
+        Some(value) => Result::Ok(value),
+        None => Result::Err(
             "registry has no version for "
                 + name
                 + " satisfying >= "
@@ -368,28 +368,28 @@ pub fn select_version(
 
 pub fn cached_root() -> Result[string, string] {
     let home = match env::var("GOML_HOME") {
-        Option::Some(value) => if value != "" {
+        Some(value) => if value != "" {
             Option::Some(value)
         } else {
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     };
     let home = match home {
-        Option::Some(value) => value,
-        Option::None => match env::var("HOME") {
-            Option::Some(value) => if value != "" {
+        Some(value) => value,
+        None => match env::var("HOME") {
+            Some(value) => if value != "" {
                 path::join(value, ".goml")
             } else {
                 return Result::Err("failed to determine home directory")
             },
-            Option::None => match env::var("USERPROFILE") {
-                Option::Some(value) => if value != "" {
+            None => match env::var("USERPROFILE") {
+                Some(value) => if value != "" {
                     path::join(value, ".goml")
                 } else {
                     return Result::Err("failed to determine home directory")
                 },
-                Option::None => return Result::Err(
+                None => return Result::Err(
                     "failed to determine home directory",
                 ),
             },
@@ -420,8 +420,8 @@ pub fn resolve_at(
         module_root,
         "goml.toml",
     )) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let queue = root_manifest.dependencies;
     let cursor = Ref::new(0);
@@ -434,24 +434,24 @@ pub fn resolve_at(
             requirement.name,
             requirement.version,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let parsed = match parse_sem_version(version) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let update = match selected_index(selected, requirement.name) {
-            Option::Some(index) => {
+            Some(index) => {
                 let current = match parse_sem_version(
                     selected.get(index).version,
                 ) {
-                    Result::Ok(value) => value,
-                    Result::Err(message) => return Result::Err(message),
+                    Ok(value) => value,
+                    Err(message) => return Result::Err(message),
                 };
                 version_less(current, parsed)
             },
-            Option::None => true,
+            None => true,
         };
         if update {
             let directory = module_directory_unchecked(
@@ -463,8 +463,8 @@ pub fn resolve_at(
                 directory,
                 "goml.toml",
             )) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if module_manifest.module_path != requirement.name {
                 return Result::Err(
@@ -483,8 +483,8 @@ pub fn resolve_at(
                 dependencies: module_manifest.dependencies,
             };
             match selected_index(selected, requirement.name) {
-                Option::Some(index) => selected.set(index, resolved),
-                Option::None => selected.push(resolved),
+                Some(index) => selected.set(index, resolved),
+                None => selected.push(resolved),
             };
             for dependency in module_manifest.dependencies {
                 queue.push(dependency)
@@ -498,8 +498,8 @@ pub fn resolve_at(
 
 pub fn resolve(module_root: string) -> Result[Vec[ResolvedModule], string] {
     let root = match cached_root() {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if !fs::is_dir(root) {
         return Result::Err(
