@@ -502,10 +502,7 @@ fn coverage_sequence_patterns(
     ty: Type,
 ) -> Vec[CoveragePat] {
     let result = Vec::new();
-    let has_rest = match rest {
-        Some(_) => true,
-        None => false,
-    };
+    let has_rest = rest.is_some();
     for prefix_values in coverage_lists(prefix) {
         for suffix_values in coverage_lists(suffix) {
             let fields = coverage_join(prefix_values, suffix_values);

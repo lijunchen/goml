@@ -86,10 +86,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
 }
 
 pub fn contains(value: string, expected: string) -> bool {
-    match find(value, expected) {
-        Some(_) => true,
-        None => false,
-    }
+    find(value, expected).is_some()
 }
 
 pub fn join(values: Vec[string], separator: string) -> string {

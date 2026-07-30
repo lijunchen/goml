@@ -43,10 +43,7 @@ pub fn read_snapshot(base: string, extension: string) -> string {
 }
 
 fn update_expected() -> bool {
-    match env::var("UPDATE_EXPECT") {
-        Some(_) => true,
-        None => false,
-    }
+    env::var("UPDATE_EXPECT").is_some()
 }
 
 fn assert_snapshot(base: string, extension: string, actual: string) -> unit {

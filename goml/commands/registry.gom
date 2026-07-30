@@ -198,35 +198,23 @@ pub fn update_registry(args: Vec[string]) -> Result[unit, string] {
         } else {
             ()
         };
-        match run_git(
-            Vec::new()
-                .pushed("-C")
-                .pushed(cache)
-                .pushed("remote")
-                .pushed("set-url")
-                .pushed("origin")
-                .pushed(source),
-        ) {
+        match run_git(Vec::[
+            "-C",
+            cache,
+            "remote",
+            "set-url",
+            "origin",
+            source,
+        ]) {
             Ok(()) => (),
             Err(message) => return Result::Err(message),
         };
-        match run_git(
-            Vec::new()
-                .pushed("-C")
-                .pushed(cache)
-                .pushed("pull")
-                .pushed("--ff-only"),
-        ) {
+        match run_git(Vec::["-C", cache, "pull", "--ff-only"]) {
             Ok(()) => (),
             Err(message) => return Result::Err(message),
         }
     } else {
-        match run_git(
-            Vec::new()
-                .pushed("clone")
-                .pushed(source)
-                .pushed(cache),
-        ) {
+        match run_git(Vec::["clone", source, cache]) {
             Ok(()) => (),
             Err(message) => return Result::Err(message),
         }

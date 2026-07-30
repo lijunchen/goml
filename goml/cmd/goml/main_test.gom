@@ -13,7 +13,7 @@ fn project_context(entry_package: string) -> project::Context {
             module_dir: ".",
             module_path: "alice::demo",
             entry_package,
-            packages: Vec::new().pushed(project::Package {
+            packages: Vec::[project::Package {
                 name: entry_package,
                 declared_name: "main",
                 module_name: "alice::demo",
@@ -21,14 +21,14 @@ fn project_context(entry_package: string) -> project::Context {
                 artifact_prefix: "pkg",
                 files: Vec::new(),
                 imports: Vec::new(),
-            }),
-            sources: Vec::new().pushed(project::ModuleSource {
+            }],
+            sources: Vec::[project::ModuleSource {
                 name: "alice::demo",
                 directory: ".",
                 artifact_prefix: "pkg",
                 dependencies: Vec::new(),
-            }),
-            order: Vec::new().pushed(entry_package),
+            }],
+            order: Vec::[entry_package],
         },
         compiler: "gomlc",
         compiler_world_artifact: false,
@@ -43,14 +43,14 @@ fn utility_text_operations_are_deterministic() -> unit {
     testing::assert(util::ends_with("abc", "bc"));
     testing::assert(util::contains("abcdef", "cde"));
     testing::assert(util::string_vec_contains(
-        Vec::new().pushed("goml").pushed("gomlc"),
+        Vec::["goml", "gomlc"],
         "gomlc",
     ));
-    testing::assert(util::int_vec_contains(Vec::new().pushed(1).pushed(2), 2));
+    testing::assert(util::int_vec_contains(Vec::[1, 2], 2));
     testing::assert_eq(
         util::join(
             util::sorted_unique(
-                Vec::new().pushed("b").pushed("a").pushed("b"),
+                Vec::["b", "a", "b"],
             ),
             ",",
         ),

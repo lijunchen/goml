@@ -258,10 +258,7 @@ fn execute_go(
 }
 
 fn update_expected() -> bool {
-    match env::var("UPDATE_EXPECT") {
-        Some(_) => true,
-        None => false,
-    }
+    env::var("UPDATE_EXPECT").is_some()
 }
 
 fn assert_text(actual: string, expected_path: string, source: string) -> unit {

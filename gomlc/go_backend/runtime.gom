@@ -1995,10 +1995,7 @@ fn hashmap_items(
 fn option_available(instances: Vec[core::TypeInstance], value: tast::Type) -> bool {
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
-    match find_instance(instances, "Option", args) {
-        Some(_) => true,
-        None => false,
-    }
+    find_instance(instances, "Option", args).is_some()
 }
 
 fn dyn_vtable_name(trait_name: string) -> string {

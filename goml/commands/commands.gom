@@ -61,11 +61,11 @@ pub fn print_home() -> Result[unit, string] {
     let lib = path::join(home, "lib");
     let std = path::join(lib, "std");
     let cache = path::join(home, "cache");
-    io::println("GOML_HOME=" + home);
-    io::println("bin=" + bin);
-    io::println("lib=" + lib);
-    io::println("std=" + std);
-    io::println("cache=" + cache);
+    io::println(f"GOML_HOME={home}");
+    io::println(f"bin={bin}");
+    io::println(f"lib={lib}");
+    io::println(f"std={std}");
+    io::println(f"cache={cache}");
     Result::Ok(())
 }
 
@@ -74,12 +74,12 @@ pub fn ensure_home_layout() -> Result[unit, string] {
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
-    for directory in Vec::new()
-        .pushed(home)
-        .pushed(path::join(home, "bin"))
-        .pushed(path::join(home, "lib"))
-        .pushed(path::join(home, "cache"))
-    {
+    for directory in Vec::[
+        home,
+        path::join(home, "bin"),
+        path::join(home, "lib"),
+        path::join(home, "cache"),
+    ] {
         match create_directory(directory) {
             Ok(()) => (),
             Err(message) => return Result::Err(message),

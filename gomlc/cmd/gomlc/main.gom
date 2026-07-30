@@ -80,10 +80,7 @@ fn inline_dump_argument(value: string) -> Option[(string, string)] {
 }
 
 fn inline_dump_argument_present(value: Option[(string, string)]) -> bool {
-    match value {
-        Some(_) => true,
-        None => false,
-    }
+    value.is_some()
 }
 
 fn selected_run_usage(used_dumps: Vec[string]) -> string {

@@ -106,10 +106,7 @@ fn inline_cli_value(argument: string, name: string) -> Option[string] {
 }
 
 fn option_string_present(value: Option[string]) -> bool {
-    match value {
-        Some(_) => true,
-        None => false,
-    }
+    value.is_some()
 }
 
 fn option_string_empty(value: Option[string]) -> bool {

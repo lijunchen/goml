@@ -170,10 +170,7 @@ fn first_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToke
 }
 
 fn has_token(value: LocatedNode, kind: lexer::TokenKind) -> bool {
-    match first_token(value, kind) {
-        Some(_) => true,
-        None => false,
-    }
+    first_token(value, kind).is_some()
 }
 
 fn token_span(value: LocatedToken) -> Span {
