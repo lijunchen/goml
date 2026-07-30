@@ -129,15 +129,21 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     let h5 = Ref::new(2600822924);
     let h6 = Ref::new(528734635);
     let h7 = Ref::new(1541459225);
+    let words: Vec[uint32] = Vec::with_capacity(64);
+    for _ in range(0, 64) {
+        words.push(0)
+    };
     for chunk in range(0, padded_len.get() / 64) {
-        let words: Vec[uint32] = Vec::new();
         for index in range(0, 16) {
-            words.push(message_word(
-                value,
-                chunk * 64 + index * 4,
-                padded_len.get(),
-                bit_len,
-            ))
+            words.set(
+                index,
+                message_word(
+                    value,
+                    chunk * 64 + index * 4,
+                    padded_len.get(),
+                    bit_len,
+                ),
+            )
         };
         for index in range(16, 64) {
             let first = words.get(index - 15);
@@ -148,8 +154,12 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
             let sigma1 = rotate_right(second, 17)
                 ^ rotate_right(second, 19)
                 ^ (second >> 10);
-            words.push(
-                words.get(index - 16) + sigma0 + words.get(index - 7) + sigma1,
+            words.set(
+                index,
+                words.get(index - 16)
+                    + sigma0
+                    + words.get(index - 7)
+                    + sigma1,
             )
         };
         let a = Ref::new(h0.get());

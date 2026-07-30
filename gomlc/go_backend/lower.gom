@@ -2682,24 +2682,23 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
 
 struct CollectedTypes {
     values: Vec[tast::Type],
-    names: HashMap[string, unit],
 }
 
 fn new_collected_types() -> CollectedTypes {
     CollectedTypes {
         values: Vec::new(),
-        names: HashMap::new(),
     }
 }
 
 fn add_collected_type(result: CollectedTypes, value: tast::Type) -> unit {
-    let name = type_name(value);
-    if result.names.contains(name) == false {
-        result.names.set(name, ());
-        result.values.push(value)
-    } else {
-        ()
+    for present in result.values {
+        if tast::types_equal(present, value) {
+            return ()
+        } else {
+            ()
+        }
     }
+    result.values.push(value)
 }
 
 fn collect_type(result: CollectedTypes, value: tast::Type) -> unit {

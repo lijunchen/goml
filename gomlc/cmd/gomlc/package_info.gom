@@ -1,7 +1,6 @@
 package main;
 
-use gomlc::ast;
-use gomlc::parser;
+use gomlc::lexer;
 use std::io;
 
 struct PackageInfoArgs {
@@ -134,19 +133,194 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
     }
 }
 
-fn package_info_path(value: ast::Path) -> string {
-    let result = Ref::new("");
-    let index = Ref::new(0);
-    for segment in value.segments {
-        if index.get() > 0 {
-            result.set(result.get() + "::")
+struct PackageInfoUse {
+    alias: Option[string],
+    path: string,
+}
+
+struct PackageInfoFile {
+    package_name: string,
+    package_explicit: bool,
+    uses: Vec[PackageInfoUse],
+}
+
+fn package_info_trivia(kind: lexer::TokenKind) -> bool {
+    lexer::token_kind_equal(kind, lexer::TokenKind::Whitespace)
+        || lexer::token_kind_equal(kind, lexer::TokenKind::Comment)
+}
+
+fn package_info_skip_trivia(tokens: Vec[lexer::Token], index: Ref[int]) -> unit {
+    while index.get() < tokens.len()
+        && package_info_trivia(tokens.get(index.get()).kind)
+    {
+        index.set(index.get() + 1)
+    }
+}
+
+fn package_info_at(
+    tokens: Vec[lexer::Token],
+    index: int,
+    kind: lexer::TokenKind,
+) -> bool {
+    index < tokens.len() && lexer::token_kind_equal(tokens.get(index).kind, kind)
+}
+
+fn package_info_lower_ident(value: string) -> bool {
+    if value.byte_len() == 0 {
+        false
+    } else {
+        let first = value.byte_get(0);
+        (first >= 97 && first <= 122) || first == 95
+    }
+}
+
+fn package_info_error(source_path: string, message: string) -> string {
+    "error[parser]: " + source_path + ": " + message
+}
+
+fn package_info_expect(
+    tokens: Vec[lexer::Token],
+    index: Ref[int],
+    kind: lexer::TokenKind,
+    source_path: string,
+    message: string,
+) -> Result[unit, string] {
+    package_info_skip_trivia(tokens, index);
+    if package_info_at(tokens, index.get(), kind) {
+        index.set(index.get() + 1);
+        Result::Ok(())
+    } else {
+        Result::Err(package_info_error(source_path, message))
+    }
+}
+
+fn package_info_parse_use(
+    tokens: Vec[lexer::Token],
+    index: Ref[int],
+    source_path: string,
+) -> Result[PackageInfoUse, string] {
+    index.set(index.get() + 1);
+    package_info_skip_trivia(tokens, index);
+    if !package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
+        Result::Err(package_info_error(
+            source_path,
+            "expected a path after `use`",
+        ))
+    } else {
+        let path: Ref[string] = Ref::new(tokens.get(index.get()).text);
+        index.set(index.get() + 1);
+        package_info_skip_trivia(tokens, index);
+        while package_info_at(tokens, index.get(), lexer::TokenKind::ColonColon) {
+            index.set(index.get() + 1);
+            package_info_skip_trivia(tokens, index);
+            if package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
+                path.set(path.get() + "::" + tokens.get(index.get()).text);
+                index.set(index.get() + 1);
+                package_info_skip_trivia(tokens, index)
+            } else {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "expected a path segment after '::'",
+                ))
+            }
+        };
+        let alias: Ref[Option[string]] = Ref::new(Option::None);
+        if package_info_at(tokens, index.get(), lexer::TokenKind::AsKeyword) {
+            index.set(index.get() + 1);
+            package_info_skip_trivia(tokens, index);
+            if package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
+                let value = tokens.get(index.get()).text;
+                if package_info_lower_ident(value) {
+                    alias.set(Option::Some(value));
+                    index.set(index.get() + 1)
+                } else {
+                    return Result::Err(package_info_error(
+                        source_path,
+                        "use alias must start with a lowercase letter or `_`",
+                    ))
+                }
+            } else {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "expected use alias",
+                ))
+            }
         } else {
             ()
         };
-        result.set(result.get() + segment.ident);
-        index.set(index.get() + 1)
+        match package_info_expect(
+            tokens,
+            index,
+            lexer::TokenKind::Semi,
+            source_path,
+            "expected ';'",
+        ) {
+            Result::Ok(_) => Result::Ok(PackageInfoUse {
+                alias: alias.get(),
+                path: path.get(),
+            }),
+            Result::Err(error) => Result::Err(error),
+        }
+    }
+}
+
+fn parse_package_info_file(
+    source_path: string,
+    source: string,
+) -> Result[PackageInfoFile, string] {
+    let tokens = lexer::lex(source);
+    let index = Ref::new(0);
+    package_info_skip_trivia(tokens, index);
+    let package_name: Ref[string] = Ref::new("main");
+    let package_explicit: Ref[bool] = Ref::new(false);
+    if package_info_at(tokens, index.get(), lexer::TokenKind::PackageKeyword) {
+        package_explicit.set(true);
+        index.set(index.get() + 1);
+        package_info_skip_trivia(tokens, index);
+        if !package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
+            return Result::Err(package_info_error(
+                source_path,
+                "expected package name",
+            ))
+        } else {
+            let value = tokens.get(index.get()).text;
+            if !package_info_lower_ident(value) {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "package name must start with a lowercase letter or `_`",
+                ))
+            } else {
+                package_name.set(value);
+                index.set(index.get() + 1)
+            }
+        };
+        match package_info_expect(
+            tokens,
+            index,
+            lexer::TokenKind::Semi,
+            source_path,
+            "expected ';'",
+        ) {
+            Result::Ok(_) => (),
+            Result::Err(error) => return Result::Err(error),
+        }
+    } else {
+        ()
     };
-    result.get()
+    let uses = Vec::new();
+    package_info_skip_trivia(tokens, index);
+    while package_info_at(tokens, index.get(), lexer::TokenKind::UseKeyword) {
+        match package_info_parse_use(tokens, index, source_path) {
+            Result::Ok(value) => uses.push(value),
+            Result::Err(error) => return Result::Err(error),
+        };
+        package_info_skip_trivia(tokens, index)
+    };
+    Result::Ok(PackageInfoFile {
+        package_name: package_name.get(),
+        package_explicit: package_explicit.get(),
+        uses,
+    })
 }
 
 fn package_info_json(args: PackageInfoArgs) -> string {
@@ -156,30 +330,14 @@ fn package_info_json(args: PackageInfoArgs) -> string {
     artifact_json_begin_array(writer);
     for source_path in args.inputs {
         let source = read_source(source_path);
-        let parsed = parser::parse(source);
-        fail_on_ast_diagnostics(
-            parsed.diagnostics,
-            "parser",
-            source_path,
-            source,
-        );
-        let lowered = ast::lower(parsed);
-        fail_on_ast_diagnostics(
-            lowered.diagnostics,
-            "lower",
-            source_path,
-            source,
-        );
-        let file = match lowered.ast {
-            Option::Some(value) => value,
-            Option::None => {
-                fail("error[compile]: missing AST for " + source_path);
-                ast::File {
+        let file = match parse_package_info_file(source_path, source) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                fail(error);
+                PackageInfoFile {
                     package_name: "",
                     package_explicit: false,
                     uses: Vec::new(),
-                    items: Vec::new(),
-                    invalid_self_type_spans: Vec::new(),
                 }
             },
         };
@@ -200,7 +358,7 @@ fn package_info_json(args: PackageInfoArgs) -> string {
                 Option::None => artifact_json_null(writer),
             };
             artifact_json_name(writer, "path");
-            artifact_json_string(writer, package_info_path(use_decl.path));
+            artifact_json_string(writer, use_decl.path);
             artifact_json_end_object(writer)
         };
         artifact_json_end_array(writer);

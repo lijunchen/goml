@@ -688,7 +688,10 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
     }
 }
 
-fn coverage_domain(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
+fn coverage_domain_uncached(
+    ctx: Checker,
+    ty: Type,
+) -> Option[Vec[CoverageConstructor]] {
     match prune(ty) {
         Type::Unit => Option::Some(Vec::new().pushed(CoverageConstructor {
             key: "unit",
@@ -745,6 +748,21 @@ fn coverage_type_key(value: Type) -> string {
     let builder = text::StringBuilder::new();
     write_type(builder, value);
     builder.finish()
+}
+
+fn coverage_domain(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
+    let resolved = prune(ty);
+    let key = coverage_type_key(resolved);
+    match ctx.coverage_domains.get(key) {
+        Option::Some(value) => Option::Some(value),
+        Option::None => match coverage_domain_uncached(ctx, resolved) {
+            Option::Some(value) => {
+                ctx.coverage_domains.set(key, value);
+                Option::Some(value)
+            },
+            Option::None => Option::None,
+        },
+    }
 }
 
 fn coverage_copy_strings(values: Vec[string]) -> Vec[string] {
@@ -809,7 +827,21 @@ fn coverage_type_inhabited_at(
 }
 
 fn coverage_type_inhabited(ctx: Checker, ty: Type) -> bool {
-    coverage_type_inhabited_at(ctx, ty, Vec::new(), 0)
+    let resolved = prune(ty);
+    let key = coverage_type_key(resolved);
+    match ctx.coverage_inhabited.get(key) {
+        Option::Some(value) => value,
+        Option::None => {
+            let value = coverage_type_inhabited_at(
+                ctx,
+                resolved,
+                Vec::new(),
+                0,
+            );
+            ctx.coverage_inhabited.set(key, value);
+            value
+        },
+    }
 }
 
 fn coverage_inhabited_domain(

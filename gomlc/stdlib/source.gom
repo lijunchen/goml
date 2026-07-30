@@ -1938,36 +1938,34 @@ pub fn text_source() -> string {
         \\use std::bytes;
         \\
         \\pub struct StringBuilder {
-        \\    pub parts: Vec[string],
-        \\    pub byte_len: Ref[int],
+        \\    pub values: Vec[uint8],
         \\}
         \\
         \\impl StringBuilder {
         \\    pub fn new() -> StringBuilder {
         \\        StringBuilder {
-        \\            parts: Vec::new(),
-        \\            byte_len: Ref::new(0),
+        \\            values: Vec::new(),
         \\        }
         \\    }
         \\
-        \\    pub fn with_capacity(part_capacity: int) -> StringBuilder {
+        \\    pub fn with_capacity(capacity: int) -> StringBuilder {
         \\        StringBuilder {
-        \\            parts: Vec::with_capacity(part_capacity),
-        \\            byte_len: Ref::new(0),
+        \\            values: Vec::with_capacity(capacity),
         \\        }
         \\    }
         \\
         \\    pub fn len(self: StringBuilder) -> int {
-        \\        self.byte_len.get()
+        \\        self.values.len()
         \\    }
         \\
         \\    pub fn is_empty(self: StringBuilder) -> bool {
-        \\        self.byte_len.get() == 0
+        \\        self.values.len() == 0
         \\    }
         \\
         \\    pub fn write_string(self: StringBuilder, value: string) -> unit {
-        \\        self.parts.push(value);
-        \\        self.byte_len.set(self.byte_len.get() + value.byte_len())
+        \\        for index in range(0, value.byte_len()) {
+        \\            self.values.push(value.byte_get(index))
+        \\        }
         \\    }
         \\
         \\    pub fn write_char(self: StringBuilder, value: char) -> unit {
@@ -1990,12 +1988,12 @@ pub fn text_source() -> string {
         \\    }
         \\
         \\    pub fn clear(self: StringBuilder) -> unit {
-        \\        self.parts.clear();
-        \\        self.byte_len.set(0)
+        \\        self.values.clear()
         \\    }
         \\
         \\    pub fn finish(self: StringBuilder) -> string {
-        \\        string_concat(self.parts)
+        \\        let (_, value) = string_from_utf8(self.values);
+        \\        value
         \\    }
         \\}
         \\

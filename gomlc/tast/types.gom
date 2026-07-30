@@ -503,7 +503,7 @@ fn trait_refs_equal(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
     }
 }
 
-fn types_equal(left: Type, right: Type) -> bool {
+pub fn types_equal(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
         (Type::Var(first), Type::Var(second)) => ptr_eq(first, second),
         (Type::Unit, Type::Unit)

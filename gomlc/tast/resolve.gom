@@ -53,6 +53,78 @@ fn names_match(left: string, right: string) -> bool {
     left == right || short_name(left) == short_name(right)
 }
 
+fn add_name_index(
+    exact: HashMap[string, int],
+    short: HashMap[string, int],
+    name: string,
+    index: int,
+) -> unit {
+    exact.set(name, index);
+    let short_name = short_name(name);
+    match short.get(short_name) {
+        Option::Some(_) => short.set(short_name, -1),
+        Option::None => short.set(short_name, index),
+    }
+}
+
+fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
+    let result: HashMap[string, int] = HashMap::new();
+    for index in range(0, values.len()) {
+        let name = if short {
+            short_name(values.get(index).name)
+        } else {
+            values.get(index).name
+        };
+        match result.get(name) {
+            Option::Some(_) => if short {
+                result.set(name, -1)
+            } else {
+                result.set(name, index)
+            },
+            Option::None => result.set(name, index),
+        }
+    };
+    result
+}
+
+fn index_enum_name(ctx: Checker, value: EnumInfo, index: int) -> unit {
+    add_name_index(
+        ctx.enum_names,
+        ctx.enum_short_names,
+        value.name,
+        index,
+    )
+}
+
+fn index_struct_name(ctx: Checker, value: StructInfo, index: int) -> unit {
+    add_name_index(
+        ctx.struct_names,
+        ctx.struct_short_names,
+        value.name,
+        index,
+    )
+}
+
+fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, int] {
+    let result: HashMap[string, int] = HashMap::new();
+    for index in range(0, values.len()) {
+        let name = if short {
+            short_name(values.get(index).name)
+        } else {
+            values.get(index).name
+        };
+        match result.get(name) {
+            Option::Some(_) => if short {
+                result.set(name, -1)
+            } else {
+                result.set(name, index)
+            },
+            Option::None => result.set(name, index),
+        }
+    };
+    result
+}
+
 fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
     let result = Ref::new(Option::None);
     for value in ctx.enums {
@@ -66,53 +138,29 @@ fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
 }
 
 fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
-    let exact: Ref[Option[EnumInfo]] = Ref::new(Option::None);
-    let short: Ref[Option[EnumInfo]] = Ref::new(Option::None);
-    let short_ambiguous = Ref::new(false);
-    for value in ctx.enums {
-        if value.name == name {
-            exact.set(Option::Some(value))
-        } else if short_name(value.name) == short_name(name) {
-            match short.get() {
-                Option::Some(_) => short_ambiguous.set(true),
-                Option::None => short.set(Option::Some(value)),
-            }
-        } else {
-            ()
-        }
-    };
-    match exact.get() {
-        Option::Some(value) => Option::Some(value),
-        Option::None => if short_ambiguous.get() {
-            Option::None
-        } else {
-            short.get()
+    match ctx.enum_names.get(name) {
+        Option::Some(index) => Option::Some(ctx.enums.get(index)),
+        Option::None => match ctx.enum_short_names.get(short_name(name)) {
+            Option::Some(index) => if index >= 0 {
+                Option::Some(ctx.enums.get(index))
+            } else {
+                Option::None
+            },
+            Option::None => Option::None,
         },
     }
 }
 
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
-    let exact: Ref[Option[StructInfo]] = Ref::new(Option::None);
-    let short: Ref[Option[StructInfo]] = Ref::new(Option::None);
-    let short_ambiguous = Ref::new(false);
-    for value in ctx.structs {
-        if value.name == name {
-            exact.set(Option::Some(value))
-        } else if short_name(value.name) == short_name(name) {
-            match short.get() {
-                Option::Some(_) => short_ambiguous.set(true),
-                Option::None => short.set(Option::Some(value)),
-            }
-        } else {
-            ()
-        }
-    };
-    match exact.get() {
-        Option::Some(value) => Option::Some(value),
-        Option::None => if short_ambiguous.get() {
-            Option::None
-        } else {
-            short.get()
+    match ctx.struct_names.get(name) {
+        Option::Some(index) => Option::Some(ctx.structs.get(index)),
+        Option::None => match ctx.struct_short_names.get(short_name(name)) {
+            Option::Some(index) => if index >= 0 {
+                Option::Some(ctx.structs.get(index))
+            } else {
+                Option::None
+            },
+            Option::None => Option::None,
         },
     }
 }
