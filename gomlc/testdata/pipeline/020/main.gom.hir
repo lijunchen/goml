@@ -17,9 +17,9 @@ file main.gom
     
     fn bounce_int(local/1/0: Shape[int32]) -> Shape[int32] {
         match shape/0 {
-            ctor(def/1/2::v0)(local/1/1) => ctor(def/1/2::v0)(point/1),
-            ctor(def/1/2::v1)(local/1/2) => ctor(def/1/2::v1)(inner/2),
-            ctor(def/1/2::v2) => ctor(def/1/2::v2),
+            Dot(local/1/1) => ctor(def/1/2::v0)(point/1),
+            Wrapped(local/1/2) => ctor(def/1/2::v1)(inner/2),
+            Origin => ctor(def/1/2::v2),
         }
     }
     
@@ -36,9 +36,9 @@ file main.gom
     
     fn describe[T](local/1/7: Shape[T]) -> int32 {
         match shape/7 {
-            ctor(def/1/2::v0)(_) => 1,
-            ctor(def/1/2::v1)(_) => 2,
-            ctor(def/1/2::v2) => 0,
+            Dot(_) => 1,
+            Wrapped(_) => 2,
+            Origin => 0,
         }
     }
     
@@ -64,29 +64,29 @@ file main.gom
     
     fn shape_int32_to_string(local/1/20: Shape[int32]) -> string {
         match shape/20 {
-            ctor(def/1/2::v0)(local/1/21) => {
+            Dot(local/1/21) => {
                   let local/1/22 = "Shape::Dot(" + def/1/7(point/21);
                   prefix/22 + ")"
               },
-            ctor(def/1/2::v1)(local/1/23) => {
+            Wrapped(local/1/23) => {
                   let local/1/24 = "Shape::Wrapped(" + def/1/8(wrapper/23);
                   prefix/24 + ")"
               },
-            ctor(def/1/2::v2) => "Shape::Origin",
+            Origin => "Shape::Origin",
         }
     }
     
     fn shape_unit_to_string(local/1/25: Shape[unit]) -> string {
         match shape/25 {
-            ctor(def/1/2::v0)(local/1/26) => {
+            Dot(local/1/26) => {
                   let local/1/27 = "Shape::Dot(" + def/1/7(point/26);
                   prefix/27 + ")"
               },
-            ctor(def/1/2::v1)(local/1/28) => {
+            Wrapped(local/1/28) => {
                   let local/1/29 = "Shape::Wrapped(" + def/1/9(wrapper/28);
                   prefix/29 + ")"
               },
-            ctor(def/1/2::v2) => "Shape::Origin",
+            Origin => "Shape::Origin",
         }
     }
     

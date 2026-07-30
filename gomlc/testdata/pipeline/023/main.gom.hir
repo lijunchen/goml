@@ -18,14 +18,14 @@ file main.gom
     
     fn match_mixed_enum(local/1/1: Mixed) -> int32 {
         match value/1 {
-            ctor(def/1/1::v0)(0) => 6,
-            ctor(def/1/1::v0)(_) => 7,
-            ctor(def/1/1::v1)("zero") => 8,
-            ctor(def/1/1::v1)(_) => 9,
-            ctor(def/1/1::v2)(0, "zero") => 10,
-            ctor(def/1/1::v2)(0, _) => 11,
-            ctor(def/1/1::v2)(_, "zero") => 12,
-            ctor(def/1/1::v2)(_, _) => 13,
+            OnlyInt(0) => 6,
+            OnlyInt(_) => 7,
+            OnlyStr("zero") => 8,
+            OnlyStr(_) => 9,
+            Both(0, "zero") => 10,
+            Both(0, _) => 11,
+            Both(_, "zero") => 12,
+            Both(_, _) => 13,
         }
     }
     

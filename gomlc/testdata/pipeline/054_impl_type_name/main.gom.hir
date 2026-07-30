@@ -25,8 +25,8 @@ file main.gom
     impl TypeName for Shape {
       fn type_name(local/1/4: Self) -> string {
           match self/4 {
-              ctor(def/1/1::v0) => "Unit",
-              ctor(def/1/1::v1)(local/1/5) => "Shape::" + TypeName::type_name(point/5),
+              Unit => "Unit",
+              Location(local/1/5) => "Shape::" + TypeName::type_name(point/5),
           }
       }
     }
