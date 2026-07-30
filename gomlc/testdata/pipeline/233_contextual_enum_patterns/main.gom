@@ -1,0 +1,92 @@
+enum First[T] {
+    Shared(T),
+    Idle,
+    Data {
+        value: T,
+        label: string,
+    },
+}
+
+enum Second {
+    Shared(int),
+}
+
+enum Boxed[T] {
+    Value(T),
+}
+
+type FirstInt = First[int];
+
+fn classify(value: FirstInt) -> string {
+    match value {
+        Shared(number) => "shared:" + number.to_string(),
+        Idle => "idle",
+        Data { value, label } => label + ":" + value.to_string(),
+    }
+}
+
+fn nested(value: Option[Result[int, string]]) -> string {
+    match value {
+        Some(Ok(number)) => "ok:" + number.to_string(),
+        Some(Err(message)) => "err:" + message,
+        None => "none",
+    }
+}
+
+fn optional_number(value: Option[int]) -> int {
+    if let Some(number) = value {
+        number
+    } else {
+        0
+    }
+}
+
+fn is_non_shared(value: FirstInt) -> bool {
+    match value {
+        Idle | Data { .. } => true,
+        Shared(_) => false,
+    }
+}
+
+fn take_once(value: Option[int]) -> int {
+    let current = Ref::new(value);
+    let result = Ref::new(0);
+    while let Some(number) = current.get() {
+        result.set(number);
+        current.set(Option::None);
+    };
+    result.get()
+}
+
+fn unbox(value: Boxed[int]) -> int {
+    let Value(number) = value;
+    number
+}
+
+fn sum_boxed(values: Vec[Boxed[int]]) -> int {
+    let result = Ref::new(0);
+    for Value(number) in values {
+        result.set(result.get() + number);
+    };
+    result.get()
+}
+
+fn main() -> unit {
+    let boxed: Vec[Boxed[int]] = Vec::[
+        Boxed::Value(19),
+        Boxed::Value(23),
+    ];
+    println(classify(First::Shared(7)));
+    println(classify(First::Idle));
+    println(classify(First::Data { value: 9, label: "data" }));
+    println(nested(Option::Some(Result::Ok(11))));
+    println(nested(Option::Some(Result::Err("bad"))));
+    println(nested(Option::None));
+    println(optional_number(Option::Some(13)));
+    println(optional_number(Option::None));
+    println(is_non_shared(First::Idle));
+    println(is_non_shared(First::Shared(1)));
+    println(take_once(Option::Some(15)));
+    println(unbox(Boxed::Value(17)));
+    println(sum_boxed(boxed))
+}

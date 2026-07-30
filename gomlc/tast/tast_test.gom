@@ -1463,6 +1463,60 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
 }
 
 #[test]
+fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
+    let source = "enum First[T] { Shared(T), Empty, Named { value: T } } enum Second[T] { Shared(T) } type Alias = First[int32]; fn classify(value: Alias) -> int32 { match value { Shared(inner) => inner, Empty => 0, Named { value } => value } } fn nested(value: Option[Result[int32, string]]) -> int32 { match value { Some(Ok(inner)) => inner, Some(Err(_)) => -1, None => 0 } }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let shared = Ref::new(false);
+    let some = Ref::new(false);
+    let ok = Ref::new(false);
+    for reference in result.typeck_results.references {
+        match reference.target {
+            ReferenceTarget::Constructor(constructor) => {
+                if constructor.name == "First::Shared" {
+                    shared.set(true)
+                } else if constructor.name == "Option::Some" {
+                    some.set(true)
+                } else if constructor.name == "Result::Ok" {
+                    ok.set(true)
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    testing::assert(shared.get());
+    testing::assert(some.get());
+    testing::assert(ok.get());
+    let missing = checked_diagnostics(
+        "enum First { Shared } enum Second { Missing } fn classify(value: First) -> int32 { match value { Missing => 1 } }",
+    );
+    testing::assert(has_diagnostic(
+        missing,
+        "Enum First has no variant Missing",
+    ));
+    let non_enum = checked_diagnostics(
+        "fn classify(value: int32) -> int32 { match value { Some(inner) => inner, _ => 0 } }",
+    );
+    testing::assert_eq(non_enum.len(), 1);
+    testing::assert_eq(
+        non_enum.get(0).message,
+        "Contextual variant Some cannot match value of type int32",
+    );
+    let unknown = checked_diagnostics(
+        "fn inspect() -> unit { let matcher = |value| match value { Some(_) => (), _ => () }; let _ = matcher; }",
+    );
+    testing::assert(has_diagnostic(
+        unknown,
+        "Could not infer enum type for variant Some",
+    ))
+}
+
+#[test]
 fn resolves_associated_types_and_bound_methods() -> unit {
     let source = "trait Provider { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> int32 { read(Number { value: 42 }) }";
     let file = checked_file(source);

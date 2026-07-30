@@ -295,6 +295,75 @@ fn resolves_package_type_variant_and_field_definitions() -> unit {
 }
 
 #[test]
+fn resolves_contextual_pattern_variant_definitions() -> unit {
+    let root = "../gomlc/testdata/module/project041_contextual_enum_patterns";
+    let main_path = root + "/main.gom";
+    let source = match fs::read_file(main_path) {
+        Result::Ok(source) => source,
+        Result::Err(error) => {
+            testing::fail(error);
+            ""
+        },
+    };
+    let analysis = analyze(main_path, source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "Ready(number)") {
+        Option::Some(offset) => {
+            match goto_definition(analysis, offset) {
+                Option::Some(definition) => {
+                    if strings::ends_with(
+                        definition.source_path,
+                        "/events/events.gom",
+                    ) {
+                        ()
+                    } else {
+                        testing::fail(
+                            "unexpected contextual variant source "
+                                + definition.source_path,
+                        )
+                    };
+                    match source_by_path(
+                        analysis.sources,
+                        definition.source_path,
+                    ) {
+                        Option::Some(target) => testing::assert_eq(
+                            target.source.byte_slice(
+                                definition.span.start,
+                                definition.span.end,
+                            ),
+                            "Ready",
+                        ),
+                        Option::None => {
+                            testing::fail("expected contextual variant source")
+                        },
+                    }
+                },
+                Option::None => {
+                    testing::fail("expected contextual variant definition")
+                },
+            };
+            match hover(analysis, offset) {
+                Option::Some(result) => if strings::contains(
+                    result.contents,
+                    "Event",
+                ) {
+                    ()
+                } else {
+                    testing::fail(
+                        "unexpected contextual variant hover "
+                            + result.contents,
+                    )
+                },
+                Option::None => testing::fail(
+                    "expected contextual variant hover",
+                ),
+            }
+        },
+        Option::None => testing::fail("expected contextual Ready pattern"),
+    }
+}
+
+#[test]
 fn resolves_builtin_method_definitions() -> unit {
     let source = "fn main() -> string { let value = 1; value.to_string() }";
     match last_substring(source, "to_string") {

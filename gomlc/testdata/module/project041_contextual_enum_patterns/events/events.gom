@@ -1,0 +1,14 @@
+package events;
+
+pub enum Event {
+    Ready(int32),
+    Failed(string),
+}
+
+pub fn ready(value: int32) -> Event {
+    Event::Ready(value)
+}
+
+pub fn failed(message: string) -> Event {
+    Event::Failed(message)
+}
