@@ -1,0 +1,12 @@
+trait Render {
+    fn render[T: ToString](self: Self, value: T) -> string;
+}
+
+struct Prefix {}
+
+impl Render for Prefix {
+    fn render[T](self: Prefix, value: T) -> string {
+        let _ = value;
+        "prefix"
+    }
+}

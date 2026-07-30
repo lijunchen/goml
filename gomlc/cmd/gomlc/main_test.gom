@@ -1232,7 +1232,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "f9e916d4394365503a6bc6d4b7609f633ab1cf318e0dd0a6cbc8374157fffd2a",
+        "e35d9405108cc14072ed1ec5e5cb15c5230aff85d768b0504fb21b14e233c1b0",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     let binary = match encode_artifact_interface_binary(artifact_unit) {
@@ -1579,6 +1579,8 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
                 trait_ref,
                 for_ty: tast::Type::Con { name: "audit::Numbers" },
                 associated_types: Vec::new(),
+                generic_count: 0,
+                predicate_count: 0,
             }),
             params: Vec::new().pushed((
                 "self",

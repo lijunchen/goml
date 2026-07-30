@@ -1,0 +1,25 @@
+package api;
+
+pub struct Box[T] {
+    pub value: T,
+}
+
+impl[T] Box[T] {
+    pub fn map[U](self: Box[T], map_fn: (T) -> U) -> Box[U] {
+        Box { value: map_fn(self.value) }
+    }
+}
+
+pub trait Render {
+    fn render[U: ToString](self: Self, value: U) -> string;
+}
+
+pub struct Prefix {
+    pub value: string,
+}
+
+impl Render for Prefix {
+    fn render[V: ToString](self: Prefix, value: V) -> string {
+        self.value + value.to_string()
+    }
+}

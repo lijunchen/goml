@@ -1,0 +1,36 @@
+trait RenderValue {
+    fn render[U](self: Self, value: U) -> string
+    where
+        U: ToString;
+}
+
+struct Prefix {
+    value: string,
+}
+
+impl RenderValue for Prefix {
+    fn render[V](self: Prefix, value: V) -> string
+    where
+        V: ToString,
+    {
+        self.value + value.to_string()
+    }
+}
+
+fn render_generic[T: RenderValue](renderer: T) -> string {
+    renderer.render::[int](11)
+}
+
+fn main() {
+    let direct = Prefix { value: "direct:" }.render("ok");
+    println(direct);
+
+    let generic = render_generic(Prefix { value: "generic:" });
+    println(generic);
+
+    let ufcs = RenderValue::render::[int](
+        Prefix { value: "ufcs:" },
+        12,
+    );
+    println(ufcs);
+}

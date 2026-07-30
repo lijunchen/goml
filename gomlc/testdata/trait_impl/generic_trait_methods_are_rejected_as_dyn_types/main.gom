@@ -1,0 +1,15 @@
+trait Transform {
+    fn transform[T](self: Self, value: T) -> T;
+}
+
+struct Identity {}
+
+impl Transform for Identity {
+    fn transform[T](self: Identity, value: T) -> T {
+        value
+    }
+}
+
+fn erase(value: Identity) -> dyn Transform {
+    value
+}

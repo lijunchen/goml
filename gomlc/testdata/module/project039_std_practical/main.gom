@@ -104,30 +104,29 @@ fn assert_option_result() -> unit {
     testing::assert(none.is_none());
     testing::assert_eq(some.unwrap_or(0), 3);
     testing::assert_eq(none.unwrap_or_else(|| 7), 7);
-    testing::assert_eq(option_map(some, |value: int| value + 1).unwrap_or(0), 4);
+    testing::assert_eq(some.map(|value: int| value + 1).unwrap_or(0), 4);
     testing::assert_eq(
-        option_and_then(some, |value: int| Option::Some(value * 2)).unwrap_or(0),
+        some.and_then(|value: int| Option::Some(value * 2)).unwrap_or(0),
         6,
     );
-    let converted: Result[int, string] = option_ok_or(none, "missing");
+    let converted: Result[int, string] = none.ok_or("missing");
     testing::assert(converted.is_err());
     let ok: Result[int, string] = Result::Ok(5);
     testing::assert(ok.is_ok());
     testing::assert_eq(ok.unwrap_or(0), 5);
     testing::assert_eq(
-        result_map(ok, |value: int| value + 2).unwrap_or(0),
+        ok.map(|value: int| value + 2).unwrap_or(0),
         7,
     );
     let failed: Result[int, string] = Result::Err("bad");
     testing::assert_eq(
-        result_map_err(failed, |error: string| error + "!").unwrap_or_else(
+        failed.map_err(|error: string| error + "!").unwrap_or_else(
             |error: string| if error == "bad!" { 9 } else { 0 },
         ),
         9,
     );
     testing::assert_eq(
-        result_and_then(
-            ok,
+        ok.and_then(
             |value: int| Result::Ok(value * 3),
         ).unwrap_or(0),
         15,

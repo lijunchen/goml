@@ -802,6 +802,36 @@ fn returns_function_hover_on_declarations_and_calls() -> unit {
 }
 
 #[test]
+fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> unit {
+    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn map[U](self: Box[T], convert: (T) -> U) -> Box[U] { Box { value: convert(self.value) } } } struct Other {} impl Other { fn map[V](self: Other, value: V) -> V { let _ = self; value } } fn main() -> Box[string] { let value = Box { value: 1 }; value.map(|item: int| item.to_string()) }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "map[U]") {
+        Option::Some(offset) => match hover(analysis, offset) {
+            Option::Some(result) => testing::assert_eq(
+                result.contents,
+                "[U] (gomlc::Box[T], (T) -> U) -> gomlc::Box[U]",
+            ),
+            Option::None => testing::fail("expected generic method hover"),
+        },
+        Option::None => testing::fail("expected method declaration"),
+    };
+    match last_substring(source, "map(") {
+        Option::Some(offset) => match signature_help(
+            analysis,
+            offset + "map(".byte_len(),
+        ) {
+            Option::Some(signature) => testing::assert_eq(
+                signature.label,
+                "(convert: (int) -> string) -> gomlc::Box[string]",
+            ),
+            Option::None => testing::fail("expected generic method signature"),
+        },
+        Option::None => testing::fail("expected method call"),
+    }
+}
+
+#[test]
 fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
     let source = "type Count = int32; const answer: Count = 42; fn main() -> int32 { answer }";
     let analysis = analyze("main.gom", source);
