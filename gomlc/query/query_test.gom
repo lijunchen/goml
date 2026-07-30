@@ -504,6 +504,36 @@ fn resolves_qualified_standard_library_definitions() -> unit {
 }
 
 #[test]
+fn resolves_index_map_standard_library_definitions() -> unit {
+    let source = "use std::collections; fn main() -> unit { let values: collections::IndexMap[string, int] = collections::IndexMap::new(); values.insert(\"key\", 1); }";
+    match last_substring(source, "insert") {
+        Option::Some(offset) => {
+            let analysis = analyze("/tmp/index-map-std.gom", source);
+            assert_no_diagnostics(analysis);
+            let definitions = goto_definitions(analysis, offset);
+            testing::assert_eq(definitions.len(), 1);
+            match source_by_path(
+                analysis.sources,
+                definitions.get(0).source_path,
+            ) {
+                Option::Some(target) => {
+                    testing::assert_eq(target.package_name, "std::collections");
+                    testing::assert_eq(
+                        target.source.byte_slice(
+                            definitions.get(0).span.start,
+                            definitions.get(0).span.end,
+                        ),
+                        "insert",
+                    )
+                },
+                Option::None => testing::fail("expected IndexMap source"),
+            }
+        },
+        Option::None => testing::fail("expected IndexMap insert call"),
+    }
+}
+
+#[test]
 fn returns_signature_help_for_active_arguments() -> unit {
     let source = "fn combine(left: int32, right: string) -> bool { true } fn main() -> bool { combine(1, \"x\") }";
     let analysis = analyze("main.gom", source);

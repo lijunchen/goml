@@ -1,0 +1,147 @@
+package main;
+
+use std::collections;
+use std::testing;
+
+struct CollisionKey {
+    value: int,
+}
+
+impl Eq for CollisionKey {
+    fn eq(self: CollisionKey, other: CollisionKey) -> bool {
+        self.value == other.value
+    }
+}
+
+impl Hash for CollisionKey {
+    fn hash(self: CollisionKey) -> uint64 {
+        1
+    }
+}
+
+fn key(value: int) -> CollisionKey {
+    CollisionKey { value }
+}
+
+fn assert_basic_operations() -> unit {
+    let map: collections::IndexMap[string, int] =
+        collections::IndexMap::with_capacity(-1);
+    testing::assert(map.is_empty());
+    testing::assert_eq(map.len(), 0);
+    testing::assert(map.insert("first", 1).is_none());
+    testing::assert(map.insert("second", 2).is_none());
+    testing::assert(map.insert("third", 3).is_none());
+    testing::assert_eq(map.insert("second", 20).unwrap_or(-1), 2);
+    testing::assert_eq(map.len(), 3);
+    testing::assert(map.contains("second"));
+    testing::assert(!map.contains("missing"));
+    testing::assert_eq(map.get("second").unwrap_or(-1), 20);
+    testing::assert(map.get("missing").is_none());
+
+    let entries = map.entries();
+    testing::assert_eq(entries.len(), 3);
+    testing::assert_eq(entries.get(0).0, "first");
+    testing::assert_eq(entries.get(0).1, 1);
+    testing::assert_eq(entries.get(1).0, "second");
+    testing::assert_eq(entries.get(1).1, 20);
+    testing::assert_eq(entries.get(2).0, "third");
+    testing::assert_eq(entries.get(2).1, 3);
+
+    testing::assert_eq(map.remove("second").unwrap_or(-1), 20);
+    testing::assert(map.remove("second").is_none());
+    testing::assert(map.insert("second", 200).is_none());
+    let keys = map.keys();
+    let values = map.values();
+    testing::assert_eq(keys.len(), 3);
+    testing::assert_eq(keys.get(0), "first");
+    testing::assert_eq(keys.get(1), "third");
+    testing::assert_eq(keys.get(2), "second");
+    testing::assert_eq(values.get(0), 1);
+    testing::assert_eq(values.get(1), 3);
+    testing::assert_eq(values.get(2), 200);
+
+    let order = Ref::new("");
+    for (entry_key, value) in map {
+        order.set(order.get() + entry_key + ":" + value.to_string() + ";")
+    };
+    testing::assert_eq(order.get(), "first:1;third:3;second:200;");
+
+    map.reserve(128);
+    testing::assert_eq(map.entries().get(2).0, "second");
+    map.clear();
+    testing::assert(map.is_empty());
+    testing::assert(map.insert("after-clear", 9).is_none());
+    testing::assert_eq(map.get("after-clear").unwrap_or(-1), 9)
+}
+
+fn assert_collision_growth_and_compaction() -> unit {
+    let map: collections::IndexMap[CollisionKey, int] =
+        collections::IndexMap::with_capacity(1);
+    let index = Ref::new(0);
+    while index.get() < 256 {
+        testing::assert(map.insert(key(index.get()), index.get() * 10).is_none());
+        index.set(index.get() + 1)
+    };
+    testing::assert_eq(map.len(), 256);
+
+    index.set(0);
+    while index.get() < 256 {
+        testing::assert_eq(
+            map.get(key(index.get())).unwrap_or(-1),
+            index.get() * 10,
+        );
+        index.set(index.get() + 1)
+    };
+
+    index.set(0);
+    while index.get() < 200 {
+        testing::assert_eq(
+            map.remove(key(index.get())).unwrap_or(-1),
+            index.get() * 10,
+        );
+        index.set(index.get() + 1)
+    };
+    testing::assert_eq(map.len(), 56);
+
+    index.set(0);
+    while index.get() < 64 {
+        testing::assert(map.insert(key(index.get()), 0 - index.get()).is_none());
+        index.set(index.get() + 1)
+    };
+    testing::assert_eq(map.len(), 120);
+
+    let ordered = map.entries();
+    testing::assert_eq(ordered.len(), 120);
+    index.set(0);
+    while index.get() < 56 {
+        testing::assert_eq(ordered.get(index.get()).0.value, index.get() + 200);
+        testing::assert_eq(
+            ordered.get(index.get()).1,
+            (index.get() + 200) * 10,
+        );
+        index.set(index.get() + 1)
+    };
+    index.set(0);
+    while index.get() < 64 {
+        testing::assert_eq(ordered.get(index.get() + 56).0.value, index.get());
+        testing::assert_eq(ordered.get(index.get() + 56).1, 0 - index.get());
+        index.set(index.get() + 1)
+    };
+
+    map.reserve(512);
+    index.set(256);
+    while index.get() < 512 {
+        testing::assert(map.insert(key(index.get()), index.get()).is_none());
+        index.set(index.get() + 1)
+    };
+    testing::assert_eq(map.len(), 376);
+    testing::assert_eq(map.get(key(511)).unwrap_or(-1), 511);
+    testing::assert_eq(map.entries().get(119).0.value, 63);
+    testing::assert_eq(map.entries().get(120).0.value, 256)
+}
+
+fn main() -> unit {
+    assert_basic_operations();
+    assert_collision_growth_and_compaction();
+    println("index map ok")
+}
