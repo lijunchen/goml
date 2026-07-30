@@ -1,0 +1,63 @@
+fn sum_pair(value/0: (int32, int32)) -> int32 {
+  (value/0.0 + value/0.1)
+}
+
+fn classify(value/1: uint8) -> string {
+  let match68 = value/1 in
+  if (match68 == 10) {
+      "newline"
+  } else {
+      if (match68 >= 65) {
+          if (match68 <= 90) {
+              "uppercase"
+          } else {
+              "other"
+          }
+      } else {
+          "other"
+      }
+  }
+}
+
+fn main() -> unit {
+  let user/2 = 255 in
+  let pair/3 = (10, 10) in
+  let marker/4 = 65 in
+  let _wild69 = println__T_uint64(user/2) in
+  let _wild70 = println__T_int32(sum_pair(pair/3)) in
+  let _wild71 = println__T_uint8(marker/4) in
+  let _wild72 = println__T_string(classify(marker/4)) in
+  println__T_string(classify(10))
+}
+
+fn println__T_uint64(value/1: uint64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#uint64#to_string(value/1))
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn println__T_uint8(value/1: uint8) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#uint8#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/48)
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  @runtime(core.int32_to_string)(self/43)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/45)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}

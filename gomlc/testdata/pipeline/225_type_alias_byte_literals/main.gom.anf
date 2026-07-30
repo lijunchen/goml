@@ -1,0 +1,126 @@
+fn sum_pair(value/0: (int32, int32)) -> int32 {
+  join ret73(retv74: int32) -> int32 {
+    retv74
+  } in
+  let t75 = value/0.0 in
+  let t76 = value/0.1 in
+  let t77 = (t75 + t76) in
+  jump ret73(t77)
+}
+
+fn classify(value/1: uint8) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  let match68 = value/1 in
+  let t82 = (match68 == 10) in
+  join k80(jp81: string) -> string {
+    jump ret78(jp81)
+  } in
+  if t82 {
+    jump k80("newline")
+  } else {
+    let t85 = (match68 >= 65) in
+    join k83(jp84: string) -> string {
+      jump k80(jp84)
+    } in
+    if t85 {
+      let t88 = (match68 <= 90) in
+      join k86(jp87: string) -> string {
+        jump k83(jp87)
+      } in
+      if t88 {
+        jump k86("uppercase")
+      } else {
+        jump k86("other")
+      }
+    } else {
+      jump k83("other")
+    }
+  }
+}
+
+fn main() -> unit {
+  join ret89() -> unit {
+    ()
+  } in
+  let user/2 = 255 in
+  let pair/3 = (10, 10) in
+  let marker/4 = 65 in
+  let _wild69 = println__T_uint64(user/2) in
+  let t90 = sum_pair(pair/3) in
+  let _wild70 = println__T_int32(t90) in
+  let _wild71 = println__T_uint8(marker/4) in
+  let t91 = classify(marker/4) in
+  let _wild72 = println__T_string(t91) in
+  let t92 = classify(10) in
+  let t93 = println__T_string(t92) in
+  jump ret89()
+}
+
+fn println__T_uint64(value/1: uint64) -> unit {
+  join ret94() -> unit {
+    ()
+  } in
+  let t95 = trait_impl#ToString#uint64#to_string(value/1) in
+  let t96 = @runtime(core.string_println)(t95) in
+  jump ret94()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret97() -> unit {
+    ()
+  } in
+  let t98 = trait_impl#ToString#int32#to_string(value/1) in
+  let t99 = @runtime(core.string_println)(t98) in
+  jump ret97()
+}
+
+fn println__T_uint8(value/1: uint8) -> unit {
+  join ret100() -> unit {
+    ()
+  } in
+  let t101 = trait_impl#ToString#uint8#to_string(value/1) in
+  let t102 = @runtime(core.string_println)(t101) in
+  jump ret100()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret103() -> unit {
+    ()
+  } in
+  let t104 = trait_impl#ToString#string#to_string(value/1) in
+  let t105 = @runtime(core.string_println)(t104) in
+  jump ret103()
+}
+
+fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+  join ret106(retv107: string) -> string {
+    retv107
+  } in
+  let t108 = @runtime(core.uint64_to_string)(self/48) in
+  jump ret106(t108)
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  join ret109(retv110: string) -> string {
+    retv110
+  } in
+  let t111 = @runtime(core.int32_to_string)(self/43) in
+  jump ret109(t111)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  join ret112(retv113: string) -> string {
+    retv113
+  } in
+  let t114 = @runtime(core.uint8_to_string)(self/45) in
+  jump ret112(t114)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret115(retv116: string) -> string {
+    retv116
+  } in
+  jump ret115(self/38)
+}

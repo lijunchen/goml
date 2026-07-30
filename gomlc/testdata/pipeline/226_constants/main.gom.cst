@@ -1,0 +1,195 @@
+FILE@0..334
+  CONST@0..24
+    ConstKeyword@0..5 "const"
+    Whitespace@5..6 " "
+    Ident@6..10 "base"
+    Colon@10..11 ":"
+    Whitespace@11..12 " "
+    TYPE_INT@12..16
+      IntKeyword@12..15 "int"
+      Whitespace@15..16 " "
+    Eq@16..17 "="
+    Whitespace@17..18 " "
+    EXPR_INT@18..22
+      Int@18..22 "0x10"
+    Semi@22..23 ";"
+    Whitespace@23..24 "\n"
+  CONST@24..59
+    ConstKeyword@24..29 "const"
+    Whitespace@29..30 " "
+    Ident@30..36 "answer"
+    Colon@36..37 ":"
+    Whitespace@37..38 " "
+    TYPE_INT@38..42
+      IntKeyword@38..41 "int"
+      Whitespace@41..42 " "
+    Eq@42..43 "="
+    Whitespace@43..44 " "
+    EXPR_BINARY@44..57
+      EXPR_BINARY@44..53
+        EXPR_IDENT@44..49
+          PATH@44..49
+            Ident@44..48 "base"
+            Whitespace@48..49 " "
+        Star@49..50 "*"
+        Whitespace@50..51 " "
+        EXPR_INT@51..53
+          Int@51..52 "2"
+          Whitespace@52..53 " "
+      Plus@53..54 "+"
+      Whitespace@54..55 " "
+      EXPR_INT@55..57
+        Int@55..57 "10"
+    Semi@57..58 ";"
+    Whitespace@58..59 "\n"
+  CONST@59..87
+    ConstKeyword@59..64 "const"
+    Whitespace@64..65 " "
+    Ident@65..69 "mask"
+    Colon@69..70 ":"
+    Whitespace@70..71 " "
+    TYPE_TAPP@71..76
+      PATH@71..76
+        Ident@71..75 "byte"
+        Whitespace@75..76 " "
+    Eq@76..77 "="
+    Whitespace@77..78 " "
+    EXPR_BYTE@78..85
+      ByteCharLit@78..85 "b'\\xF0'"
+    Semi@85..86 ";"
+    Whitespace@86..87 "\n"
+  CONST@87..135
+    ConstKeyword@87..92 "const"
+    Whitespace@92..93 " "
+    Ident@93..101 "greeting"
+    Colon@101..102 ":"
+    Whitespace@102..103 " "
+    TYPE_STRING@103..110
+      StringKeyword@103..109 "string"
+      Whitespace@109..110 " "
+    Eq@110..111 "="
+    Whitespace@111..112 " "
+    EXPR_BINARY@112..133
+      EXPR_STR@112..123
+        Str@112..122 "\"constant\""
+        Whitespace@122..123 " "
+      Plus@123..124 "+"
+      Whitespace@124..125 " "
+      EXPR_STR@125..133
+        Str@125..133 "\" value\""
+    Semi@133..134 ";"
+    Whitespace@134..135 "\n"
+  CONST@135..164
+    ConstKeyword@135..140 "const"
+    Whitespace@140..141 " "
+    Ident@141..148 "enabled"
+    Colon@148..149 ":"
+    Whitespace@149..150 " "
+    TYPE_BOOL@150..155
+      BoolKeyword@150..154 "bool"
+      Whitespace@154..155 " "
+    Eq@155..156 "="
+    Whitespace@156..157 " "
+    EXPR_BOOL@157..161
+      TrueKeyword@157..161 "true"
+    Semi@161..162 ";"
+    Whitespace@162..164 "\n\n"
+  FN@164..334
+    FnKeyword@164..166 "fn"
+    Whitespace@166..167 " "
+    Ident@167..171 "main"
+    PARAM_LIST@171..174
+      LParen@171..172 "("
+      RParen@172..173 ")"
+      Whitespace@173..174 " "
+    Arrow@174..176 "->"
+    Whitespace@176..177 " "
+    TYPE_UNIT@177..182
+      UnitKeyword@177..181 "unit"
+      Whitespace@181..182 " "
+    BLOCK@182..334
+      LBrace@182..183 "{"
+      Whitespace@183..188 "\n    "
+      STMT_EXPR@188..228
+        EXPR_CALL@188..222
+          EXPR_IDENT@188..202
+            PATH@188..202
+              Ident@188..202 "string_println"
+          ARG_LIST@202..222
+            LParen@202..203 "("
+            ARG@203..221
+              EXPR_CALL@203..221
+                EXPR_BINARY@203..219
+                  EXPR_IDENT@203..209
+                    PATH@203..209
+                      Ident@203..209 "answer"
+                  Dot@209..210 "."
+                  EXPR_IDENT@210..219
+                    PATH@210..219
+                      Ident@210..219 "to_string"
+                ARG_LIST@219..221
+                  LParen@219..220 "("
+                  RParen@220..221 ")"
+            RParen@221..222 ")"
+        Semi@222..223 ";"
+        Whitespace@223..228 "\n    "
+      STMT_EXPR@228..266
+        EXPR_CALL@228..260
+          EXPR_IDENT@228..242
+            PATH@228..242
+              Ident@228..242 "string_println"
+          ARG_LIST@242..260
+            LParen@242..243 "("
+            ARG@243..259
+              EXPR_CALL@243..259
+                EXPR_BINARY@243..257
+                  EXPR_IDENT@243..247
+                    PATH@243..247
+                      Ident@243..247 "mask"
+                  Dot@247..248 "."
+                  EXPR_IDENT@248..257
+                    PATH@248..257
+                      Ident@248..257 "to_string"
+                ARG_LIST@257..259
+                  LParen@257..258 "("
+                  RParen@258..259 ")"
+            RParen@259..260 ")"
+        Semi@260..261 ";"
+        Whitespace@261..266 "\n    "
+      STMT_EXPR@266..296
+        EXPR_CALL@266..290
+          EXPR_IDENT@266..280
+            PATH@266..280
+              Ident@266..280 "string_println"
+          ARG_LIST@280..290
+            LParen@280..281 "("
+            ARG@281..289
+              EXPR_IDENT@281..289
+                PATH@281..289
+                  Ident@281..289 "greeting"
+            RParen@289..290 ")"
+        Semi@290..291 ";"
+        Whitespace@291..296 "\n    "
+      EXPR_CALL@296..332
+        EXPR_IDENT@296..310
+          PATH@296..310
+            Ident@296..310 "string_println"
+        ARG_LIST@310..332
+          LParen@310..311 "("
+          ARG@311..330
+            EXPR_CALL@311..330
+              EXPR_BINARY@311..328
+                EXPR_IDENT@311..318
+                  PATH@311..318
+                    Ident@311..318 "enabled"
+                Dot@318..319 "."
+                EXPR_IDENT@319..328
+                  PATH@319..328
+                    Ident@319..328 "to_string"
+              ARG_LIST@328..330
+                LParen@328..329 "("
+                RParen@329..330 ")"
+          RParen@330..331 ")"
+          Whitespace@331..332 "\n"
+      RBrace@332..333 "}"
+      Whitespace@333..334 "\n"
