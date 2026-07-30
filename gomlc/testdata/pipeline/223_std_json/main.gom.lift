@@ -92,12 +92,13 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(self/2: s
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/3: std::text::StringBuilder, value/4: string) -> unit {
-  let for_index0 = 0 in
-  let for_limit1 = inherent#string#string#byte_len(value/4) in
-  while (for_index0 < for_limit1) {
-      let for_item2 = for_index0 in
-      let _wild3 = for_index0 = (for_index0 + 1) in
-      let index/5 = for_item2 in
+  let _wild0 = inherent#Vec#Vec[T]#reserve__T_uint8(std::text::StringBuilder.values(self/3), inherent#string#string#byte_len(value/4)) in
+  let for_index1 = 0 in
+  let for_limit2 = inherent#string#string#byte_len(value/4) in
+  while (for_index1 < for_limit2) {
+      let for_item3 = for_index1 in
+      let _wild4 = for_index1 = (for_index1 + 1) in
+      let index/5 = for_item3 in
       inherent#Vec#Vec[T]#push__T_uint8(std::text::StringBuilder.values(self/3), inherent#string#string#byte_get(value/4, index/5))
   }
 }
@@ -107,24 +108,24 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/6:
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/8: std::text::StringBuilder, value/9: std::bytes::Bytes) -> Result__unit__string {
-  let mtmp4 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/9) in
-  match mtmp4 {
-    Result__string__string::Ok(x5) => {
-      let x5 = Result__string__string::Ok._0(mtmp4) in
-      let text/10 = x5 in
-      let _wild7 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/8, text/10) in
+  let mtmp5 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/9) in
+  match mtmp5 {
+    Result__string__string::Ok(x6) => {
+      let x6 = Result__string__string::Ok._0(mtmp5) in
+      let text/10 = x6 in
+      let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/8, text/10) in
       Result__unit__string::Ok(())
     },
-    Result__string__string::Err(x6) => {
-      let x6 = Result__string__string::Err._0(mtmp4) in
-      let error/11 = x6 in
+    Result__string__string::Err(x7) => {
+      let x7 = Result__string__string::Err._0(mtmp5) in
+      let error/11 = x7 in
       Result__unit__string::Err(error/11)
     },
   }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(self/12: std::text::StringBuilder, value/13: string) -> unit {
-  let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, value/13) in
+  let _wild9 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, value/13) in
   inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, "\n")
 }
 
@@ -133,10 +134,10 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/14: std
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/15: std::text::StringBuilder) -> string {
-  let mtmp9 = @runtime(core.string_from_utf8)(std::text::StringBuilder.values(self/15)) in
-  let x10 = mtmp9.0 in
-  let x11 = mtmp9.1 in
-  let value/16 = x11 in
+  let mtmp10 = @runtime(core.string_from_utf8)(std::text::StringBuilder.values(self/15)) in
+  let x11 = mtmp10.0 in
+  let x12 = mtmp10.1 in
+  let value/16 = x12 in
   value/16
 }
 

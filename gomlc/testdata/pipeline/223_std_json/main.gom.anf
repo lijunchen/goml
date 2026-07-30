@@ -203,731 +203,734 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/
   join ret164() -> unit {
     ()
   } in
-  let for_index0 = 0 in
-  let for_limit1 = inherent#string#string#byte_len(value/4) in
-  join exit165() -> unit {
+  let t165 = std::text::StringBuilder.values(self/3) in
+  let t166 = inherent#string#string#byte_len(value/4) in
+  let _wild0 = inherent#Vec#Vec[T]#reserve__T_uint8(t165, t166) in
+  let for_index1 = 0 in
+  let for_limit2 = inherent#string#string#byte_len(value/4) in
+  join exit167() -> unit {
     jump ret164()
   } in
   joinrec {
-    join loop166() -> unit {
-      let t167 = (for_index0 < for_limit1) in
-      if t167 {
-        let for_item2 = for_index0 in
-        let t168 = (for_index0 + 1) in
-        let _wild3 = for_index0 = t168 in
-        let index/5 = for_item2 in
-        let t169 = std::text::StringBuilder.values(self/3) in
-        let t170 = inherent#string#string#byte_get(value/4, index/5) in
-        let t171 = inherent#Vec#Vec[T]#push__T_uint8(t169, t170) in
-        jump loop166()
+    join loop168() -> unit {
+      let t169 = (for_index1 < for_limit2) in
+      if t169 {
+        let for_item3 = for_index1 in
+        let t170 = (for_index1 + 1) in
+        let _wild4 = for_index1 = t170 in
+        let index/5 = for_item3 in
+        let t171 = std::text::StringBuilder.values(self/3) in
+        let t172 = inherent#string#string#byte_get(value/4, index/5) in
+        let t173 = inherent#Vec#Vec[T]#push__T_uint8(t171, t172) in
+        jump loop168()
       } else {
-        jump exit165()
+        jump exit167()
       }
     } in
   } in
-  jump loop166()
+  jump loop168()
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/6: std::text::StringBuilder, value/7: char) -> unit {
-  join ret172() -> unit {
+  join ret174() -> unit {
     ()
   } in
-  let t173 = inherent#char#char#to_string(value/7) in
-  let t174 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/6, t173) in
-  jump ret172()
+  let t175 = inherent#char#char#to_string(value/7) in
+  let t176 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/6, t175) in
+  jump ret174()
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/8: std::text::StringBuilder, value/9: std::bytes::Bytes) -> Result__unit__string {
-  join ret175(retv176: Result__unit__string) -> Result__unit__string {
-    retv176
+  join ret177(retv178: Result__unit__string) -> Result__unit__string {
+    retv178
   } in
-  let mtmp4 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/9) in
-  join k177(jp178: Result__unit__string) -> Result__unit__string {
-    jump ret175(jp178)
+  let mtmp5 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/9) in
+  join k179(jp180: Result__unit__string) -> Result__unit__string {
+    jump ret177(jp180)
   } in
-  match mtmp4 {
+  match mtmp5 {
     Tag_0 => {
-      let x5 = Result__string__string::Ok._0(mtmp4) in
-      let text/10 = x5 in
-      let _wild7 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/8, text/10) in
-      let t179 = Result__unit__string::Ok(()) in
-      jump k177(t179)
+      let x6 = Result__string__string::Ok._0(mtmp5) in
+      let text/10 = x6 in
+      let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/8, text/10) in
+      let t181 = Result__unit__string::Ok(()) in
+      jump k179(t181)
     },
     Tag_1 => {
-      let x6 = Result__string__string::Err._0(mtmp4) in
-      let error/11 = x6 in
-      let t180 = Result__unit__string::Err(error/11) in
-      jump k177(t180)
+      let x7 = Result__string__string::Err._0(mtmp5) in
+      let error/11 = x7 in
+      let t182 = Result__unit__string::Err(error/11) in
+      jump k179(t182)
     },
   }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(self/12: std::text::StringBuilder, value/13: string) -> unit {
-  join ret181() -> unit {
-    ()
-  } in
-  let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, value/13) in
-  let t182 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, "\n") in
-  jump ret181()
-}
-
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/14: std::text::StringBuilder) -> unit {
   join ret183() -> unit {
     ()
   } in
-  let t184 = std::text::StringBuilder.values(self/14) in
-  let t185 = inherent#Vec#Vec[T]#clear__T_uint8(t184) in
+  let _wild9 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, value/13) in
+  let t184 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/12, "\n") in
   jump ret183()
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/15: std::text::StringBuilder) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/14: std::text::StringBuilder) -> unit {
+  join ret185() -> unit {
+    ()
   } in
-  let t188 = std::text::StringBuilder.values(self/15) in
-  let mtmp9 = @runtime(core.string_from_utf8)(t188) in
-  let x10 = mtmp9.0 in
-  let x11 = mtmp9.1 in
-  let value/16 = x11 in
-  jump ret186(value/16)
+  let t186 = std::text::StringBuilder.values(self/14) in
+  let t187 = inherent#Vec#Vec[T]#clear__T_uint8(t186) in
+  jump ret185()
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/15: std::text::StringBuilder) -> string {
+  join ret188(retv189: string) -> string {
+    retv189
+  } in
+  let t190 = std::text::StringBuilder.values(self/15) in
+  let mtmp10 = @runtime(core.string_from_utf8)(t190) in
+  let x11 = mtmp10.0 in
+  let x12 = mtmp10.1 in
+  let value/16 = x12 in
+  jump ret188(value/16)
 }
 
 fn trait_impl#ToString#std::text::StringBuilder#to_string(self/17: std::text::StringBuilder) -> string {
-  join ret189(retv190: string) -> string {
-    retv190
+  join ret191(retv192: string) -> string {
+    retv192
   } in
-  let t191 = inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/17) in
-  jump ret189(t191)
+  let t193 = inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/17) in
+  jump ret191(t193)
 }
 
 fn std::json::json_parser(input/0: string) -> std::json::JsonParser {
-  join ret192(retv193: std::json::JsonParser) -> std::json::JsonParser {
-    retv193
+  join ret194(retv195: std::json::JsonParser) -> std::json::JsonParser {
+    retv195
   } in
-  let t194 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let t195 = std::json::JsonParser { input: input/0, index: t194 } in
-  jump ret192(t195)
+  let t196 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let t197 = std::json::JsonParser { input: input/0, index: t196 } in
+  jump ret194(t197)
 }
 
 fn std::json::json_error(value/1: std::json::JsonParser, message/2: string) -> string {
-  join ret196(retv197: string) -> string {
-    retv197
+  join ret198(retv199: string) -> string {
+    retv199
   } in
-  let t198 = (message/2 + " at byte ") in
-  let t199 = std::json::JsonParser.index(value/1) in
-  let t200 = inherent#Ref#Ref[T]#get__T_int(t199) in
-  let t201 = inherent#int#int#to_string(t200) in
-  let t202 = (t198 + t201) in
-  jump ret196(t202)
+  let t200 = (message/2 + " at byte ") in
+  let t201 = std::json::JsonParser.index(value/1) in
+  let t202 = inherent#Ref#Ref[T]#get__T_int(t201) in
+  let t203 = inherent#int#int#to_string(t202) in
+  let t204 = (t200 + t203) in
+  jump ret198(t204)
 }
 
 fn std::json::json_whitespace(value/3: uint8) -> bool {
-  join ret203(retv204: bool) -> bool {
-    retv204
+  join ret205(retv206: bool) -> bool {
+    retv206
   } in
-  let t213 = trait_impl#Eq#uint8#eq(value/3, 9) in
-  join k210(jp211: bool) -> bool {
-    join k207(jp208: bool) -> bool {
-      join k205(jp206: bool) -> bool {
-        jump ret203(jp206)
+  let t215 = trait_impl#Eq#uint8#eq(value/3, 9) in
+  join k212(jp213: bool) -> bool {
+    join k209(jp210: bool) -> bool {
+      join k207(jp208: bool) -> bool {
+        jump ret205(jp208)
       } in
-      if jp208 {
-        jump k205(true)
+      if jp210 {
+        jump k207(true)
       } else {
-        let t209 = trait_impl#Eq#uint8#eq(value/3, 32) in
-        jump k205(t209)
+        let t211 = trait_impl#Eq#uint8#eq(value/3, 32) in
+        jump k207(t211)
       }
     } in
-    if jp211 {
-      jump k207(true)
+    if jp213 {
+      jump k209(true)
     } else {
-      let t212 = trait_impl#Eq#uint8#eq(value/3, 13) in
-      jump k207(t212)
+      let t214 = trait_impl#Eq#uint8#eq(value/3, 13) in
+      jump k209(t214)
     }
   } in
-  if t213 {
-    jump k210(true)
+  if t215 {
+    jump k212(true)
   } else {
-    let t214 = trait_impl#Eq#uint8#eq(value/3, 10) in
-    jump k210(t214)
+    let t216 = trait_impl#Eq#uint8#eq(value/3, 10) in
+    jump k212(t216)
   }
 }
 
 fn std::json::skip_json_whitespace(value/4: std::json::JsonParser) -> unit {
-  join ret215() -> unit {
+  join ret217() -> unit {
     ()
   } in
-  join exit216() -> unit {
-    jump ret215()
+  join exit218() -> unit {
+    jump ret217()
   } in
   joinrec {
-    join loop217() -> unit {
-      let t225 = std::json::JsonParser.index(value/4) in
-      let t226 = inherent#Ref#Ref[T]#get__T_int(t225) in
-      let t227 = std::json::JsonParser.input(value/4) in
-      let t228 = inherent#string#string#byte_len(t227) in
-      let t229 = (t226 < t228) in
-      join k218(jp219: bool) -> unit {
-        if jp219 {
-          let t220 = std::json::JsonParser.index(value/4) in
-          let t221 = std::json::JsonParser.index(value/4) in
-          let t222 = inherent#Ref#Ref[T]#get__T_int(t221) in
-          let t223 = (t222 + 1) in
-          let t224 = inherent#Ref#Ref[T]#set__T_int(t220, t223) in
-          jump loop217()
+    join loop219() -> unit {
+      let t227 = std::json::JsonParser.index(value/4) in
+      let t228 = inherent#Ref#Ref[T]#get__T_int(t227) in
+      let t229 = std::json::JsonParser.input(value/4) in
+      let t230 = inherent#string#string#byte_len(t229) in
+      let t231 = (t228 < t230) in
+      join k220(jp221: bool) -> unit {
+        if jp221 {
+          let t222 = std::json::JsonParser.index(value/4) in
+          let t223 = std::json::JsonParser.index(value/4) in
+          let t224 = inherent#Ref#Ref[T]#get__T_int(t223) in
+          let t225 = (t224 + 1) in
+          let t226 = inherent#Ref#Ref[T]#set__T_int(t222, t225) in
+          jump loop219()
         } else {
-          jump exit216()
+          jump exit218()
         }
       } in
-      if t229 {
-        let t230 = std::json::JsonParser.input(value/4) in
-        let t231 = std::json::JsonParser.index(value/4) in
-        let t232 = inherent#Ref#Ref[T]#get__T_int(t231) in
-        let t233 = inherent#string#string#byte_get(t230, t232) in
-        let t234 = std::json::json_whitespace(t233) in
-        jump k218(t234)
+      if t231 {
+        let t232 = std::json::JsonParser.input(value/4) in
+        let t233 = std::json::JsonParser.index(value/4) in
+        let t234 = inherent#Ref#Ref[T]#get__T_int(t233) in
+        let t235 = inherent#string#string#byte_get(t232, t234) in
+        let t236 = std::json::json_whitespace(t235) in
+        jump k220(t236)
       } else {
-        jump k218(false)
+        jump k220(false)
       }
     } in
   } in
-  jump loop217()
+  jump loop219()
 }
 
 fn std::json::hex_digit(value/5: uint8) -> Option__uint32 {
-  join ret235(retv236: Option__uint32) -> Option__uint32 {
-    retv236
+  join ret237(retv238: Option__uint32) -> Option__uint32 {
+    retv238
   } in
-  let t262 = (value/5 >= 48) in
-  join k239(jp240: bool) -> Option__uint32 {
-    join k237(jp238: Option__uint32) -> Option__uint32 {
-      jump ret235(jp238)
+  let t264 = (value/5 >= 48) in
+  join k241(jp242: bool) -> Option__uint32 {
+    join k239(jp240: Option__uint32) -> Option__uint32 {
+      jump ret237(jp240)
     } in
-    if jp240 {
-      let t241 = (value/5 - 48) in
-      let t242 = (t241 as uint32) in
-      let t243 = Option__uint32::Some(t242) in
-      jump k237(t243)
+    if jp242 {
+      let t243 = (value/5 - 48) in
+      let t244 = (t243 as uint32) in
+      let t245 = Option__uint32::Some(t244) in
+      jump k239(t245)
     } else {
-      let t260 = (value/5 >= 65) in
-      join k246(jp247: bool) -> Option__uint32 {
-        join k244(jp245: Option__uint32) -> Option__uint32 {
-          jump k237(jp245)
+      let t262 = (value/5 >= 65) in
+      join k248(jp249: bool) -> Option__uint32 {
+        join k246(jp247: Option__uint32) -> Option__uint32 {
+          jump k239(jp247)
         } in
-        if jp247 {
-          let t248 = (value/5 - 55) in
-          let t249 = (t248 as uint32) in
-          let t250 = Option__uint32::Some(t249) in
-          jump k244(t250)
+        if jp249 {
+          let t250 = (value/5 - 55) in
+          let t251 = (t250 as uint32) in
+          let t252 = Option__uint32::Some(t251) in
+          jump k246(t252)
         } else {
-          let t258 = (value/5 >= 97) in
-          join k253(jp254: bool) -> Option__uint32 {
-            join k251(jp252: Option__uint32) -> Option__uint32 {
-              jump k244(jp252)
+          let t260 = (value/5 >= 97) in
+          join k255(jp256: bool) -> Option__uint32 {
+            join k253(jp254: Option__uint32) -> Option__uint32 {
+              jump k246(jp254)
             } in
-            if jp254 {
-              let t255 = (value/5 - 87) in
-              let t256 = (t255 as uint32) in
-              let t257 = Option__uint32::Some(t256) in
-              jump k251(t257)
+            if jp256 {
+              let t257 = (value/5 - 87) in
+              let t258 = (t257 as uint32) in
+              let t259 = Option__uint32::Some(t258) in
+              jump k253(t259)
             } else {
-              jump k251(Tag_0)
+              jump k253(Tag_0)
             }
           } in
-          if t258 {
-            let t259 = (value/5 <= 102) in
-            jump k253(t259)
+          if t260 {
+            let t261 = (value/5 <= 102) in
+            jump k255(t261)
           } else {
-            jump k253(false)
+            jump k255(false)
           }
         }
       } in
-      if t260 {
-        let t261 = (value/5 <= 70) in
-        jump k246(t261)
+      if t262 {
+        let t263 = (value/5 <= 70) in
+        jump k248(t263)
       } else {
-        jump k246(false)
+        jump k248(false)
       }
     }
   } in
-  if t262 {
-    let t263 = (value/5 <= 57) in
-    jump k239(t263)
+  if t264 {
+    let t265 = (value/5 <= 57) in
+    jump k241(t265)
   } else {
-    jump k239(false)
+    jump k241(false)
   }
 }
 
 fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result__uint32__string {
-  join ret264(retv265: Result__uint32__string) -> Result__uint32__string {
-    retv265
+  join ret266(retv267: Result__uint32__string) -> Result__uint32__string {
+    retv267
   } in
-  let t268 = std::json::JsonParser.index(value/6) in
-  let t269 = inherent#Ref#Ref[T]#get__T_int(t268) in
-  let t270 = (t269 + 4) in
-  let t271 = std::json::JsonParser.input(value/6) in
-  let t272 = inherent#string#string#byte_len(t271) in
-  let t273 = (t270 > t272) in
-  join k266(jp267: Result__uint32__string) -> Result__uint32__string {
-    jump ret264(jp267)
+  let t270 = std::json::JsonParser.index(value/6) in
+  let t271 = inherent#Ref#Ref[T]#get__T_int(t270) in
+  let t272 = (t271 + 4) in
+  let t273 = std::json::JsonParser.input(value/6) in
+  let t274 = inherent#string#string#byte_len(t273) in
+  let t275 = (t272 > t274) in
+  join k268(jp269: Result__uint32__string) -> Result__uint32__string {
+    jump ret266(jp269)
   } in
-  if t273 {
-    let t274 = std::json::json_error(value/6, "incomplete unicode escape") in
-    let t275 = Result__uint32__string::Err(t274) in
-    jump k266(t275)
+  if t275 {
+    let t276 = std::json::json_error(value/6, "incomplete unicode escape") in
+    let t277 = Result__uint32__string::Err(t276) in
+    jump k268(t277)
   } else {
-    let t276 = (0 as uint32) in
-    let result/7 = inherent#Ref#Ref[T]#new__T_uint32(t276) in
+    let t278 = (0 as uint32) in
+    let result/7 = inherent#Ref#Ref[T]#new__T_uint32(t278) in
     let for_index0 = 0 in
     let for_limit1 = 4 in
-    join exit277() -> Result__uint32__string {
+    join exit279() -> Result__uint32__string {
       let _wild6 = () in
-      let t278 = std::json::JsonParser.index(value/6) in
-      let t279 = std::json::JsonParser.index(value/6) in
-      let t280 = inherent#Ref#Ref[T]#get__T_int(t279) in
-      let t281 = (t280 + 4) in
-      let _wild7 = inherent#Ref#Ref[T]#set__T_int(t278, t281) in
-      let t282 = inherent#Ref#Ref[T]#get__T_uint32(result/7) in
-      let t283 = Result__uint32__string::Ok(t282) in
-      jump k266(t283)
+      let t280 = std::json::JsonParser.index(value/6) in
+      let t281 = std::json::JsonParser.index(value/6) in
+      let t282 = inherent#Ref#Ref[T]#get__T_int(t281) in
+      let t283 = (t282 + 4) in
+      let _wild7 = inherent#Ref#Ref[T]#set__T_int(t280, t283) in
+      let t284 = inherent#Ref#Ref[T]#get__T_uint32(result/7) in
+      let t285 = Result__uint32__string::Ok(t284) in
+      jump k268(t285)
     } in
     joinrec {
-      join loop284() -> Result__uint32__string {
-        let t285 = (for_index0 < for_limit1) in
-        if t285 {
+      join loop286() -> Result__uint32__string {
+        let t287 = (for_index0 < for_limit1) in
+        if t287 {
           let for_item2 = for_index0 in
-          let t286 = (for_index0 + 1) in
-          let _wild3 = for_index0 = t286 in
+          let t288 = (for_index0 + 1) in
+          let _wild3 = for_index0 = t288 in
           let offset/8 = for_item2 in
-          let t287 = std::json::JsonParser.input(value/6) in
-          let t288 = std::json::JsonParser.index(value/6) in
-          let t289 = inherent#Ref#Ref[T]#get__T_int(t288) in
-          let t290 = (t289 + offset/8) in
-          let t291 = inherent#string#string#byte_get(t287, t290) in
-          let mtmp4 = std::json::hex_digit(t291) in
-          join k292() -> Result__uint32__string {
-            jump loop284()
+          let t289 = std::json::JsonParser.input(value/6) in
+          let t290 = std::json::JsonParser.index(value/6) in
+          let t291 = inherent#Ref#Ref[T]#get__T_int(t290) in
+          let t292 = (t291 + offset/8) in
+          let t293 = inherent#string#string#byte_get(t289, t292) in
+          let mtmp4 = std::json::hex_digit(t293) in
+          join k294() -> Result__uint32__string {
+            jump loop286()
           } in
           match mtmp4 {
             Tag_0 => {
-              let t293 = std::json::json_error(value/6, "invalid unicode escape") in
-              let t294 = Result__uint32__string::Err(t293) in
-              jump ret264(t294)
+              let t295 = std::json::json_error(value/6, "invalid unicode escape") in
+              let t296 = Result__uint32__string::Err(t295) in
+              jump ret266(t296)
             },
             Tag_1 => {
               let x5 = Option__uint32::Some._0(mtmp4) in
               let digit/9 = x5 in
-              let t295 = inherent#Ref#Ref[T]#get__T_uint32(result/7) in
-              let t296 = (t295 * 16) in
-              let t297 = (t296 + digit/9) in
-              let t298 = inherent#Ref#Ref[T]#set__T_uint32(result/7, t297) in
-              jump k292()
+              let t297 = inherent#Ref#Ref[T]#get__T_uint32(result/7) in
+              let t298 = (t297 * 16) in
+              let t299 = (t298 + digit/9) in
+              let t300 = inherent#Ref#Ref[T]#set__T_uint32(result/7, t299) in
+              jump k294()
             },
           }
         } else {
-          jump exit277()
+          jump exit279()
         }
       } in
     } in
-    jump loop284()
+    jump loop286()
   }
 }
 
 fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::text::StringBuilder, codepoint/12: uint32) -> Result__unit__string {
-  join ret299(retv300: Result__unit__string) -> Result__unit__string {
-    retv300
+  join ret301(retv302: Result__unit__string) -> Result__unit__string {
+    retv302
   } in
   let mtmp8 = char_from_uint32(codepoint/12) in
-  join k301(jp302: Result__unit__string) -> Result__unit__string {
-    jump ret299(jp302)
+  join k303(jp304: Result__unit__string) -> Result__unit__string {
+    jump ret301(jp304)
   } in
   match mtmp8 {
     Tag_0 => {
-      let t303 = std::json::json_error(value/10, "invalid unicode codepoint") in
-      let t304 = Result__unit__string::Err(t303) in
-      jump k301(t304)
+      let t305 = std::json::json_error(value/10, "invalid unicode codepoint") in
+      let t306 = Result__unit__string::Err(t305) in
+      jump k303(t306)
     },
     Tag_1 => {
       let x9 = Option__char::Some._0(mtmp8) in
       let character/13 = x9 in
       let _wild10 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/11, character/13) in
-      let t305 = Result__unit__string::Ok(()) in
-      jump k301(t305)
+      let t307 = Result__unit__string::Ok(()) in
+      jump k303(t307)
     },
   }
 }
 
 fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: std::text::StringBuilder) -> Result__unit__string {
-  join ret306(retv307: Result__unit__string) -> Result__unit__string {
-    retv307
+  join ret308(retv309: Result__unit__string) -> Result__unit__string {
+    retv309
   } in
   let mtmp11 = std::json::parse_hex_quad(value/14) in
-  join k308(jp309: uint32) -> Result__unit__string {
-    let first/18 = jp309 in
-    let t371 = (first/18 >= 55296) in
-    join k312(jp313: bool) -> Result__unit__string {
-      join k310(jp311: Result__unit__string) -> Result__unit__string {
-        jump ret306(jp311)
+  join k310(jp311: uint32) -> Result__unit__string {
+    let first/18 = jp311 in
+    let t373 = (first/18 >= 55296) in
+    join k314(jp315: bool) -> Result__unit__string {
+      join k312(jp313: Result__unit__string) -> Result__unit__string {
+        jump ret308(jp313)
       } in
-      if jp313 {
-        let t350 = std::json::JsonParser.index(value/14) in
-        let t351 = inherent#Ref#Ref[T]#get__T_int(t350) in
-        let t352 = (t351 + 2) in
-        let t353 = std::json::JsonParser.input(value/14) in
-        let t354 = inherent#string#string#byte_len(t353) in
-        let t355 = (t352 > t354) in
-        join k341(jp342: bool) -> Result__unit__string {
-          join k316(jp317: bool) -> Result__unit__string {
-            join k314(jp315: Result__unit__string) -> Result__unit__string {
-              jump k310(jp315)
+      if jp315 {
+        let t352 = std::json::JsonParser.index(value/14) in
+        let t353 = inherent#Ref#Ref[T]#get__T_int(t352) in
+        let t354 = (t353 + 2) in
+        let t355 = std::json::JsonParser.input(value/14) in
+        let t356 = inherent#string#string#byte_len(t355) in
+        let t357 = (t354 > t356) in
+        join k343(jp344: bool) -> Result__unit__string {
+          join k318(jp319: bool) -> Result__unit__string {
+            join k316(jp317: Result__unit__string) -> Result__unit__string {
+              jump k312(jp317)
             } in
-            if jp317 {
-              let t318 = std::json::json_error(value/14, "missing low surrogate") in
-              let t319 = Result__unit__string::Err(t318) in
-              jump k314(t319)
+            if jp319 {
+              let t320 = std::json::json_error(value/14, "missing low surrogate") in
+              let t321 = Result__unit__string::Err(t320) in
+              jump k316(t321)
             } else {
-              let t320 = std::json::JsonParser.index(value/14) in
-              let t321 = std::json::JsonParser.index(value/14) in
-              let t322 = inherent#Ref#Ref[T]#get__T_int(t321) in
-              let t323 = (t322 + 2) in
-              let _wild14 = inherent#Ref#Ref[T]#set__T_int(t320, t323) in
+              let t322 = std::json::JsonParser.index(value/14) in
+              let t323 = std::json::JsonParser.index(value/14) in
+              let t324 = inherent#Ref#Ref[T]#get__T_int(t323) in
+              let t325 = (t324 + 2) in
+              let _wild14 = inherent#Ref#Ref[T]#set__T_int(t322, t325) in
               let mtmp15 = std::json::parse_hex_quad(value/14) in
-              join k324(jp325: uint32) -> Result__unit__string {
-                let second/21 = jp325 in
-                let t338 = (second/21 < 56320) in
-                join k328(jp329: bool) -> Result__unit__string {
-                  join k326(jp327: Result__unit__string) -> Result__unit__string {
-                    jump k314(jp327)
+              join k326(jp327: uint32) -> Result__unit__string {
+                let second/21 = jp327 in
+                let t340 = (second/21 < 56320) in
+                join k330(jp331: bool) -> Result__unit__string {
+                  join k328(jp329: Result__unit__string) -> Result__unit__string {
+                    jump k316(jp329)
                   } in
-                  if jp329 {
-                    let t330 = std::json::json_error(value/14, "invalid low surrogate") in
-                    let t331 = Result__unit__string::Err(t330) in
-                    jump k326(t331)
+                  if jp331 {
+                    let t332 = std::json::json_error(value/14, "invalid low surrogate") in
+                    let t333 = Result__unit__string::Err(t332) in
+                    jump k328(t333)
                   } else {
-                    let t332 = (first/18 - 55296) in
-                    let t333 = (t332 * 1024) in
-                    let t334 = (65536 + t333) in
-                    let t335 = (t334 + second/21) in
-                    let t336 = (t335 - 56320) in
-                    let t337 = std::json::write_codepoint(value/14, builder/15, t336) in
-                    jump k326(t337)
+                    let t334 = (first/18 - 55296) in
+                    let t335 = (t334 * 1024) in
+                    let t336 = (65536 + t335) in
+                    let t337 = (t336 + second/21) in
+                    let t338 = (t337 - 56320) in
+                    let t339 = std::json::write_codepoint(value/14, builder/15, t338) in
+                    jump k328(t339)
                   }
                 } in
-                if t338 {
-                  jump k328(true)
+                if t340 {
+                  jump k330(true)
                 } else {
-                  let t339 = (second/21 > 57343) in
-                  jump k328(t339)
+                  let t341 = (second/21 > 57343) in
+                  jump k330(t341)
                 }
               } in
               match mtmp15 {
                 Tag_0 => {
                   let x16 = Result__uint32__string::Ok._0(mtmp15) in
                   let codepoint/19 = x16 in
-                  jump k324(codepoint/19)
+                  jump k326(codepoint/19)
                 },
                 Tag_1 => {
                   let x17 = Result__uint32__string::Err._0(mtmp15) in
                   let error/20 = x17 in
-                  let t340 = Result__unit__string::Err(error/20) in
-                  jump ret306(t340)
+                  let t342 = Result__unit__string::Err(error/20) in
+                  jump ret308(t342)
                 },
               }
             }
           } in
-          if jp342 {
-            jump k316(true)
+          if jp344 {
+            jump k318(true)
           } else {
-            let t343 = std::json::JsonParser.input(value/14) in
-            let t344 = std::json::JsonParser.index(value/14) in
-            let t345 = inherent#Ref#Ref[T]#get__T_int(t344) in
-            let t346 = (t345 + 1) in
-            let t347 = inherent#string#string#byte_get(t343, t346) in
-            let t348 = trait_impl#Eq#uint8#eq(t347, 117) in
-            let t349 = (!t348) in
-            jump k316(t349)
+            let t345 = std::json::JsonParser.input(value/14) in
+            let t346 = std::json::JsonParser.index(value/14) in
+            let t347 = inherent#Ref#Ref[T]#get__T_int(t346) in
+            let t348 = (t347 + 1) in
+            let t349 = inherent#string#string#byte_get(t345, t348) in
+            let t350 = trait_impl#Eq#uint8#eq(t349, 117) in
+            let t351 = (!t350) in
+            jump k318(t351)
           }
         } in
-        if t355 {
-          jump k341(true)
+        if t357 {
+          jump k343(true)
         } else {
-          let t356 = std::json::JsonParser.input(value/14) in
-          let t357 = std::json::JsonParser.index(value/14) in
-          let t358 = inherent#Ref#Ref[T]#get__T_int(t357) in
-          let t359 = inherent#string#string#byte_get(t356, t358) in
-          let t360 = trait_impl#Eq#uint8#eq(t359, 92) in
-          let t361 = (!t360) in
-          jump k341(t361)
+          let t358 = std::json::JsonParser.input(value/14) in
+          let t359 = std::json::JsonParser.index(value/14) in
+          let t360 = inherent#Ref#Ref[T]#get__T_int(t359) in
+          let t361 = inherent#string#string#byte_get(t358, t360) in
+          let t362 = trait_impl#Eq#uint8#eq(t361, 92) in
+          let t363 = (!t362) in
+          jump k343(t363)
         }
       } else {
-        let t369 = (first/18 >= 56320) in
-        join k364(jp365: bool) -> Result__unit__string {
-          join k362(jp363: Result__unit__string) -> Result__unit__string {
-            jump k310(jp363)
+        let t371 = (first/18 >= 56320) in
+        join k366(jp367: bool) -> Result__unit__string {
+          join k364(jp365: Result__unit__string) -> Result__unit__string {
+            jump k312(jp365)
           } in
-          if jp365 {
-            let t366 = std::json::json_error(value/14, "unexpected low surrogate") in
-            let t367 = Result__unit__string::Err(t366) in
-            jump k362(t367)
+          if jp367 {
+            let t368 = std::json::json_error(value/14, "unexpected low surrogate") in
+            let t369 = Result__unit__string::Err(t368) in
+            jump k364(t369)
           } else {
-            let t368 = std::json::write_codepoint(value/14, builder/15, first/18) in
-            jump k362(t368)
+            let t370 = std::json::write_codepoint(value/14, builder/15, first/18) in
+            jump k364(t370)
           }
         } in
-        if t369 {
-          let t370 = (first/18 <= 57343) in
-          jump k364(t370)
+        if t371 {
+          let t372 = (first/18 <= 57343) in
+          jump k366(t372)
         } else {
-          jump k364(false)
+          jump k366(false)
         }
       }
     } in
-    if t371 {
-      let t372 = (first/18 <= 56319) in
-      jump k312(t372)
+    if t373 {
+      let t374 = (first/18 <= 56319) in
+      jump k314(t374)
     } else {
-      jump k312(false)
+      jump k314(false)
     }
   } in
   match mtmp11 {
     Tag_0 => {
       let x12 = Result__uint32__string::Ok._0(mtmp11) in
       let codepoint/16 = x12 in
-      jump k308(codepoint/16)
+      jump k310(codepoint/16)
     },
     Tag_1 => {
       let x13 = Result__uint32__string::Err._0(mtmp11) in
       let error/17 = x13 in
-      let t373 = Result__unit__string::Err(error/17) in
-      jump ret306(t373)
+      let t375 = Result__unit__string::Err(error/17) in
+      jump ret308(t375)
     },
   }
 }
 
 fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result__string__string {
-  join ret374(retv375: Result__string__string) -> Result__string__string {
-    retv375
+  join ret376(retv377: Result__string__string) -> Result__string__string {
+    retv377
   } in
-  let t496 = std::json::JsonParser.index(value/22) in
-  let t497 = inherent#Ref#Ref[T]#get__T_int(t496) in
-  let t498 = std::json::JsonParser.input(value/22) in
-  let t499 = inherent#string#string#byte_len(t498) in
-  let t500 = (t497 >= t499) in
-  join k487(jp488: bool) -> Result__string__string {
-    join k376() -> Result__string__string {
+  let t498 = std::json::JsonParser.index(value/22) in
+  let t499 = inherent#Ref#Ref[T]#get__T_int(t498) in
+  let t500 = std::json::JsonParser.input(value/22) in
+  let t501 = inherent#string#string#byte_len(t500) in
+  let t502 = (t499 >= t501) in
+  join k489(jp490: bool) -> Result__string__string {
+    join k378() -> Result__string__string {
       let _wild18 = () in
       let builder/23 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
-      let t377 = std::json::JsonParser.index(value/22) in
-      let t378 = inherent#Ref#Ref[T]#get__T_int(t377) in
-      let segment/24 = inherent#Ref#Ref[T]#new__T_int(t378) in
-      join exit379() -> Result__string__string {
+      let t379 = std::json::JsonParser.index(value/22) in
+      let t380 = inherent#Ref#Ref[T]#get__T_int(t379) in
+      let segment/24 = inherent#Ref#Ref[T]#new__T_int(t380) in
+      join exit381() -> Result__string__string {
         let _wild33 = () in
-        let t380 = std::json::json_error(value/22, "unterminated string") in
-        let t381 = Result__string__string::Err(t380) in
-        jump ret374(t381)
+        let t382 = std::json::json_error(value/22, "unterminated string") in
+        let t383 = Result__string__string::Err(t382) in
+        jump ret376(t383)
       } in
       joinrec {
-        join loop382() -> Result__string__string {
-          let t383 = std::json::JsonParser.index(value/22) in
-          let t384 = inherent#Ref#Ref[T]#get__T_int(t383) in
-          let t385 = std::json::JsonParser.input(value/22) in
-          let t386 = inherent#string#string#byte_len(t385) in
-          let t387 = (t384 < t386) in
-          if t387 {
-            let t388 = std::json::JsonParser.input(value/22) in
-            let t389 = std::json::JsonParser.index(value/22) in
-            let t390 = inherent#Ref#Ref[T]#get__T_int(t389) in
-            let byte/25 = inherent#string#string#byte_get(t388, t390) in
-            let t392 = trait_impl#Eq#uint8#eq(byte/25, 34) in
-            join k391() -> Result__string__string {
-              jump loop382()
+        join loop384() -> Result__string__string {
+          let t385 = std::json::JsonParser.index(value/22) in
+          let t386 = inherent#Ref#Ref[T]#get__T_int(t385) in
+          let t387 = std::json::JsonParser.input(value/22) in
+          let t388 = inherent#string#string#byte_len(t387) in
+          let t389 = (t386 < t388) in
+          if t389 {
+            let t390 = std::json::JsonParser.input(value/22) in
+            let t391 = std::json::JsonParser.index(value/22) in
+            let t392 = inherent#Ref#Ref[T]#get__T_int(t391) in
+            let byte/25 = inherent#string#string#byte_get(t390, t392) in
+            let t394 = trait_impl#Eq#uint8#eq(byte/25, 34) in
+            join k393() -> Result__string__string {
+              jump loop384()
             } in
-            if t392 {
-              let t400 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
-              let t401 = std::json::JsonParser.index(value/22) in
-              let t402 = inherent#Ref#Ref[T]#get__T_int(t401) in
-              let t403 = (t400 < t402) in
-              join k393() -> Result__string__string {
+            if t394 {
+              let t402 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
+              let t403 = std::json::JsonParser.index(value/22) in
+              let t404 = inherent#Ref#Ref[T]#get__T_int(t403) in
+              let t405 = (t402 < t404) in
+              join k395() -> Result__string__string {
                 let _wild19 = () in
-                let t394 = std::json::JsonParser.index(value/22) in
-                let t395 = std::json::JsonParser.index(value/22) in
-                let t396 = inherent#Ref#Ref[T]#get__T_int(t395) in
-                let t397 = (t396 + 1) in
-                let _wild20 = inherent#Ref#Ref[T]#set__T_int(t394, t397) in
-                let t398 = inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/23) in
-                let t399 = Result__string__string::Ok(t398) in
-                jump ret374(t399)
+                let t396 = std::json::JsonParser.index(value/22) in
+                let t397 = std::json::JsonParser.index(value/22) in
+                let t398 = inherent#Ref#Ref[T]#get__T_int(t397) in
+                let t399 = (t398 + 1) in
+                let _wild20 = inherent#Ref#Ref[T]#set__T_int(t396, t399) in
+                let t400 = inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/23) in
+                let t401 = Result__string__string::Ok(t400) in
+                jump ret376(t401)
               } in
-              if t403 {
-                let t404 = std::json::JsonParser.input(value/22) in
-                let t405 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
-                let t406 = std::json::JsonParser.index(value/22) in
-                let t407 = inherent#Ref#Ref[T]#get__T_int(t406) in
-                let t408 = inherent#string#string#byte_slice(t404, t405, t407) in
-                let t409 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, t408) in
-                jump k393()
+              if t405 {
+                let t406 = std::json::JsonParser.input(value/22) in
+                let t407 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
+                let t408 = std::json::JsonParser.index(value/22) in
+                let t409 = inherent#Ref#Ref[T]#get__T_int(t408) in
+                let t410 = inherent#string#string#byte_slice(t406, t407, t409) in
+                let t411 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, t410) in
+                jump k395()
               } else {
-                jump k393()
+                jump k395()
               }
             } else {
-              let t411 = trait_impl#Eq#uint8#eq(byte/25, 92) in
-              join k410() -> Result__string__string {
-                jump k391()
+              let t413 = trait_impl#Eq#uint8#eq(byte/25, 92) in
+              join k412() -> Result__string__string {
+                jump k393()
               } in
-              if t411 {
-                let t468 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
-                let t469 = std::json::JsonParser.index(value/22) in
-                let t470 = inherent#Ref#Ref[T]#get__T_int(t469) in
-                let t471 = (t468 < t470) in
-                join k412() -> Result__string__string {
+              if t413 {
+                let t470 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
+                let t471 = std::json::JsonParser.index(value/22) in
+                let t472 = inherent#Ref#Ref[T]#get__T_int(t471) in
+                let t473 = (t470 < t472) in
+                join k414() -> Result__string__string {
                   let _wild21 = () in
-                  let t413 = std::json::JsonParser.index(value/22) in
-                  let t414 = std::json::JsonParser.index(value/22) in
-                  let t415 = inherent#Ref#Ref[T]#get__T_int(t414) in
-                  let t416 = (t415 + 1) in
-                  let _wild22 = inherent#Ref#Ref[T]#set__T_int(t413, t416) in
-                  let t461 = std::json::JsonParser.index(value/22) in
-                  let t462 = inherent#Ref#Ref[T]#get__T_int(t461) in
-                  let t463 = std::json::JsonParser.input(value/22) in
-                  let t464 = inherent#string#string#byte_len(t463) in
-                  let t465 = (t462 >= t464) in
-                  join k417() -> Result__string__string {
+                  let t415 = std::json::JsonParser.index(value/22) in
+                  let t416 = std::json::JsonParser.index(value/22) in
+                  let t417 = inherent#Ref#Ref[T]#get__T_int(t416) in
+                  let t418 = (t417 + 1) in
+                  let _wild22 = inherent#Ref#Ref[T]#set__T_int(t415, t418) in
+                  let t463 = std::json::JsonParser.index(value/22) in
+                  let t464 = inherent#Ref#Ref[T]#get__T_int(t463) in
+                  let t465 = std::json::JsonParser.input(value/22) in
+                  let t466 = inherent#string#string#byte_len(t465) in
+                  let t467 = (t464 >= t466) in
+                  join k419() -> Result__string__string {
                     let _wild23 = () in
-                    let t418 = std::json::JsonParser.input(value/22) in
-                    let t419 = std::json::JsonParser.index(value/22) in
-                    let t420 = inherent#Ref#Ref[T]#get__T_int(t419) in
-                    let escape/26 = inherent#string#string#byte_get(t418, t420) in
+                    let t420 = std::json::JsonParser.input(value/22) in
                     let t421 = std::json::JsonParser.index(value/22) in
-                    let t422 = std::json::JsonParser.index(value/22) in
-                    let t423 = inherent#Ref#Ref[T]#get__T_int(t422) in
-                    let t424 = (t423 + 1) in
-                    let _wild24 = inherent#Ref#Ref[T]#set__T_int(t421, t424) in
-                    let t429 = trait_impl#Eq#uint8#eq(escape/26, 34) in
-                    join k425() -> Result__string__string {
+                    let t422 = inherent#Ref#Ref[T]#get__T_int(t421) in
+                    let escape/26 = inherent#string#string#byte_get(t420, t422) in
+                    let t423 = std::json::JsonParser.index(value/22) in
+                    let t424 = std::json::JsonParser.index(value/22) in
+                    let t425 = inherent#Ref#Ref[T]#get__T_int(t424) in
+                    let t426 = (t425 + 1) in
+                    let _wild24 = inherent#Ref#Ref[T]#set__T_int(t423, t426) in
+                    let t431 = trait_impl#Eq#uint8#eq(escape/26, 34) in
+                    join k427() -> Result__string__string {
                       let _wild32 = () in
-                      let t426 = std::json::JsonParser.index(value/22) in
-                      let t427 = inherent#Ref#Ref[T]#get__T_int(t426) in
-                      let t428 = inherent#Ref#Ref[T]#set__T_int(segment/24, t427) in
-                      jump k410()
+                      let t428 = std::json::JsonParser.index(value/22) in
+                      let t429 = inherent#Ref#Ref[T]#get__T_int(t428) in
+                      let t430 = inherent#Ref#Ref[T]#set__T_int(segment/24, t429) in
+                      jump k412()
                     } in
-                    if t429 {
-                      let t430 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '"') in
-                      jump k425()
+                    if t431 {
+                      let t432 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '"') in
+                      jump k427()
                     } else {
-                      let t432 = trait_impl#Eq#uint8#eq(escape/26, 92) in
-                      join k431() -> Result__string__string {
-                        jump k425()
+                      let t434 = trait_impl#Eq#uint8#eq(escape/26, 92) in
+                      join k433() -> Result__string__string {
+                        jump k427()
                       } in
-                      if t432 {
-                        let t433 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\\') in
-                        jump k431()
+                      if t434 {
+                        let t435 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\\') in
+                        jump k433()
                       } else {
-                        let t435 = trait_impl#Eq#uint8#eq(escape/26, 47) in
-                        join k434() -> Result__string__string {
-                          jump k431()
+                        let t437 = trait_impl#Eq#uint8#eq(escape/26, 47) in
+                        join k436() -> Result__string__string {
+                          jump k433()
                         } in
-                        if t435 {
-                          let t436 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '/') in
-                          jump k434()
+                        if t437 {
+                          let t438 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '/') in
+                          jump k436()
                         } else {
-                          let t438 = trait_impl#Eq#uint8#eq(escape/26, 98) in
-                          join k437() -> Result__string__string {
-                            jump k434()
+                          let t440 = trait_impl#Eq#uint8#eq(escape/26, 98) in
+                          join k439() -> Result__string__string {
+                            jump k436()
                           } in
-                          if t438 {
+                          if t440 {
                             let mtmp25 = char_from_uint32(8) in
-                            join k439() -> Result__string__string {
-                              jump k437()
+                            join k441() -> Result__string__string {
+                              jump k439()
                             } in
                             match mtmp25 {
                               Tag_0 => {
-                                jump k439()
+                                jump k441()
                               },
                               Tag_1 => {
                                 let x26 = Option__char::Some._0(mtmp25) in
                                 let character/27 = x26 in
-                                let t440 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/27) in
-                                jump k439()
+                                let t442 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/27) in
+                                jump k441()
                               },
                             }
                           } else {
-                            let t442 = trait_impl#Eq#uint8#eq(escape/26, 102) in
-                            join k441() -> Result__string__string {
-                              jump k437()
+                            let t444 = trait_impl#Eq#uint8#eq(escape/26, 102) in
+                            join k443() -> Result__string__string {
+                              jump k439()
                             } in
-                            if t442 {
+                            if t444 {
                               let mtmp27 = char_from_uint32(12) in
-                              join k443() -> Result__string__string {
-                                jump k441()
+                              join k445() -> Result__string__string {
+                                jump k443()
                               } in
                               match mtmp27 {
                                 Tag_0 => {
-                                  jump k443()
+                                  jump k445()
                                 },
                                 Tag_1 => {
                                   let x28 = Option__char::Some._0(mtmp27) in
                                   let character/28 = x28 in
-                                  let t444 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/28) in
-                                  jump k443()
+                                  let t446 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/28) in
+                                  jump k445()
                                 },
                               }
                             } else {
-                              let t446 = trait_impl#Eq#uint8#eq(escape/26, 110) in
-                              join k445() -> Result__string__string {
-                                jump k441()
+                              let t448 = trait_impl#Eq#uint8#eq(escape/26, 110) in
+                              join k447() -> Result__string__string {
+                                jump k443()
                               } in
-                              if t446 {
-                                let t447 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\n') in
-                                jump k445()
+                              if t448 {
+                                let t449 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\n') in
+                                jump k447()
                               } else {
-                                let t449 = trait_impl#Eq#uint8#eq(escape/26, 114) in
-                                join k448() -> Result__string__string {
-                                  jump k445()
+                                let t451 = trait_impl#Eq#uint8#eq(escape/26, 114) in
+                                join k450() -> Result__string__string {
+                                  jump k447()
                                 } in
-                                if t449 {
-                                  let t450 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\r') in
-                                  jump k448()
+                                if t451 {
+                                  let t452 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\r') in
+                                  jump k450()
                                 } else {
-                                  let t452 = trait_impl#Eq#uint8#eq(escape/26, 116) in
-                                  join k451() -> Result__string__string {
-                                    jump k448()
+                                  let t454 = trait_impl#Eq#uint8#eq(escape/26, 116) in
+                                  join k453() -> Result__string__string {
+                                    jump k450()
                                   } in
-                                  if t452 {
-                                    let t453 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\t') in
-                                    jump k451()
+                                  if t454 {
+                                    let t455 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\t') in
+                                    jump k453()
                                   } else {
-                                    let t455 = trait_impl#Eq#uint8#eq(escape/26, 117) in
-                                    join k454() -> Result__string__string {
-                                      jump k451()
+                                    let t457 = trait_impl#Eq#uint8#eq(escape/26, 117) in
+                                    join k456() -> Result__string__string {
+                                      jump k453()
                                     } in
-                                    if t455 {
+                                    if t457 {
                                       let mtmp29 = std::json::parse_unicode_escape(value/22, builder/23) in
-                                      join k456() -> Result__string__string {
-                                        jump k454()
+                                      join k458() -> Result__string__string {
+                                        jump k456()
                                       } in
                                       match mtmp29 {
                                         Tag_0 => {
                                           let x30 = Result__unit__string::Ok._0(mtmp29) in
-                                          join k457() -> Result__string__string {
-                                            jump k456()
+                                          join k459() -> Result__string__string {
+                                            jump k458()
                                           } in
                                           match x30 {
                                             () => {
-                                              jump k457()
+                                              jump k459()
                                             },
                                           }
                                         },
                                         Tag_1 => {
                                           let x31 = Result__unit__string::Err._0(mtmp29) in
                                           let error/29 = x31 in
-                                          let t458 = Result__string__string::Err(error/29) in
-                                          jump ret374(t458)
+                                          let t460 = Result__string__string::Err(error/29) in
+                                          jump ret376(t460)
                                         },
                                       }
                                     } else {
-                                      let t459 = std::json::json_error(value/22, "invalid escape") in
-                                      let t460 = Result__string__string::Err(t459) in
-                                      jump ret374(t460)
+                                      let t461 = std::json::json_error(value/22, "invalid escape") in
+                                      let t462 = Result__string__string::Err(t461) in
+                                      jump ret376(t462)
                                     }
                                   }
                                 }
@@ -938,512 +941,512 @@ fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result__stri
                       }
                     }
                   } in
-                  if t465 {
-                    let t466 = std::json::json_error(value/22, "incomplete escape") in
-                    let t467 = Result__string__string::Err(t466) in
-                    jump ret374(t467)
+                  if t467 {
+                    let t468 = std::json::json_error(value/22, "incomplete escape") in
+                    let t469 = Result__string__string::Err(t468) in
+                    jump ret376(t469)
                   } else {
-                    jump k417()
+                    jump k419()
                   }
                 } in
-                if t471 {
-                  let t472 = std::json::JsonParser.input(value/22) in
-                  let t473 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
-                  let t474 = std::json::JsonParser.index(value/22) in
-                  let t475 = inherent#Ref#Ref[T]#get__T_int(t474) in
-                  let t476 = inherent#string#string#byte_slice(t472, t473, t475) in
-                  let t477 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, t476) in
-                  jump k412()
+                if t473 {
+                  let t474 = std::json::JsonParser.input(value/22) in
+                  let t475 = inherent#Ref#Ref[T]#get__T_int(segment/24) in
+                  let t476 = std::json::JsonParser.index(value/22) in
+                  let t477 = inherent#Ref#Ref[T]#get__T_int(t476) in
+                  let t478 = inherent#string#string#byte_slice(t474, t475, t477) in
+                  let t479 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, t478) in
+                  jump k414()
                 } else {
-                  jump k412()
+                  jump k414()
                 }
               } else {
-                let t479 = (byte/25 < 32) in
-                join k478() -> Result__string__string {
-                  jump k410()
+                let t481 = (byte/25 < 32) in
+                join k480() -> Result__string__string {
+                  jump k412()
                 } in
-                if t479 {
-                  let t480 = std::json::json_error(value/22, "unescaped control character") in
-                  let t481 = Result__string__string::Err(t480) in
-                  jump ret374(t481)
+                if t481 {
+                  let t482 = std::json::json_error(value/22, "unescaped control character") in
+                  let t483 = Result__string__string::Err(t482) in
+                  jump ret376(t483)
                 } else {
-                  let t482 = std::json::JsonParser.index(value/22) in
-                  let t483 = std::json::JsonParser.index(value/22) in
-                  let t484 = inherent#Ref#Ref[T]#get__T_int(t483) in
-                  let t485 = (t484 + 1) in
-                  let t486 = inherent#Ref#Ref[T]#set__T_int(t482, t485) in
-                  jump k478()
+                  let t484 = std::json::JsonParser.index(value/22) in
+                  let t485 = std::json::JsonParser.index(value/22) in
+                  let t486 = inherent#Ref#Ref[T]#get__T_int(t485) in
+                  let t487 = (t486 + 1) in
+                  let t488 = inherent#Ref#Ref[T]#set__T_int(t484, t487) in
+                  jump k480()
                 }
               }
             }
           } else {
-            jump exit379()
+            jump exit381()
           }
         } in
       } in
-      jump loop382()
+      jump loop384()
     } in
-    if jp488 {
-      let t489 = std::json::json_error(value/22, "expected string") in
-      let t490 = Result__string__string::Err(t489) in
-      jump ret374(t490)
+    if jp490 {
+      let t491 = std::json::json_error(value/22, "expected string") in
+      let t492 = Result__string__string::Err(t491) in
+      jump ret376(t492)
     } else {
-      let t491 = std::json::JsonParser.index(value/22) in
-      let t492 = std::json::JsonParser.index(value/22) in
-      let t493 = inherent#Ref#Ref[T]#get__T_int(t492) in
-      let t494 = (t493 + 1) in
-      let t495 = inherent#Ref#Ref[T]#set__T_int(t491, t494) in
-      jump k376()
+      let t493 = std::json::JsonParser.index(value/22) in
+      let t494 = std::json::JsonParser.index(value/22) in
+      let t495 = inherent#Ref#Ref[T]#get__T_int(t494) in
+      let t496 = (t495 + 1) in
+      let t497 = inherent#Ref#Ref[T]#set__T_int(t493, t496) in
+      jump k378()
     }
   } in
-  if t500 {
-    jump k487(true)
+  if t502 {
+    jump k489(true)
   } else {
-    let t501 = std::json::JsonParser.input(value/22) in
-    let t502 = std::json::JsonParser.index(value/22) in
-    let t503 = inherent#Ref#Ref[T]#get__T_int(t502) in
-    let t504 = inherent#string#string#byte_get(t501, t503) in
-    let t505 = trait_impl#Eq#uint8#eq(t504, 34) in
-    let t506 = (!t505) in
-    jump k487(t506)
+    let t503 = std::json::JsonParser.input(value/22) in
+    let t504 = std::json::JsonParser.index(value/22) in
+    let t505 = inherent#Ref#Ref[T]#get__T_int(t504) in
+    let t506 = inherent#string#string#byte_get(t503, t505) in
+    let t507 = trait_impl#Eq#uint8#eq(t506, 34) in
+    let t508 = (!t507) in
+    jump k489(t508)
   }
 }
 
 fn std::json::json_digit(value/30: uint8) -> bool {
-  join ret507(retv508: bool) -> bool {
-    retv508
+  join ret509(retv510: bool) -> bool {
+    retv510
   } in
-  let t511 = (value/30 >= 48) in
-  join k509(jp510: bool) -> bool {
-    jump ret507(jp510)
+  let t513 = (value/30 >= 48) in
+  join k511(jp512: bool) -> bool {
+    jump ret509(jp512)
   } in
-  if t511 {
-    let t512 = (value/30 <= 57) in
-    jump k509(t512)
+  if t513 {
+    let t514 = (value/30 <= 57) in
+    jump k511(t514)
   } else {
-    jump k509(false)
+    jump k511(false)
   }
 }
 
 fn std::json::parse_digits(value/31: std::json::JsonParser) -> bool {
-  join ret513(retv514: bool) -> bool {
-    retv514
+  join ret515(retv516: bool) -> bool {
+    retv516
   } in
-  let t515 = std::json::JsonParser.index(value/31) in
-  let start/32 = inherent#Ref#Ref[T]#get__T_int(t515) in
-  join exit516() -> bool {
+  let t517 = std::json::JsonParser.index(value/31) in
+  let start/32 = inherent#Ref#Ref[T]#get__T_int(t517) in
+  join exit518() -> bool {
     let _wild34 = () in
-    let t517 = std::json::JsonParser.index(value/31) in
-    let t518 = inherent#Ref#Ref[T]#get__T_int(t517) in
-    let t519 = (t518 > start/32) in
-    jump ret513(t519)
+    let t519 = std::json::JsonParser.index(value/31) in
+    let t520 = inherent#Ref#Ref[T]#get__T_int(t519) in
+    let t521 = (t520 > start/32) in
+    jump ret515(t521)
   } in
   joinrec {
-    join loop520() -> bool {
-      let t528 = std::json::JsonParser.index(value/31) in
-      let t529 = inherent#Ref#Ref[T]#get__T_int(t528) in
-      let t530 = std::json::JsonParser.input(value/31) in
-      let t531 = inherent#string#string#byte_len(t530) in
-      let t532 = (t529 < t531) in
-      join k521(jp522: bool) -> bool {
-        if jp522 {
-          let t523 = std::json::JsonParser.index(value/31) in
-          let t524 = std::json::JsonParser.index(value/31) in
-          let t525 = inherent#Ref#Ref[T]#get__T_int(t524) in
-          let t526 = (t525 + 1) in
-          let t527 = inherent#Ref#Ref[T]#set__T_int(t523, t526) in
-          jump loop520()
+    join loop522() -> bool {
+      let t530 = std::json::JsonParser.index(value/31) in
+      let t531 = inherent#Ref#Ref[T]#get__T_int(t530) in
+      let t532 = std::json::JsonParser.input(value/31) in
+      let t533 = inherent#string#string#byte_len(t532) in
+      let t534 = (t531 < t533) in
+      join k523(jp524: bool) -> bool {
+        if jp524 {
+          let t525 = std::json::JsonParser.index(value/31) in
+          let t526 = std::json::JsonParser.index(value/31) in
+          let t527 = inherent#Ref#Ref[T]#get__T_int(t526) in
+          let t528 = (t527 + 1) in
+          let t529 = inherent#Ref#Ref[T]#set__T_int(t525, t528) in
+          jump loop522()
         } else {
-          jump exit516()
+          jump exit518()
         }
       } in
-      if t532 {
-        let t533 = std::json::JsonParser.input(value/31) in
-        let t534 = std::json::JsonParser.index(value/31) in
-        let t535 = inherent#Ref#Ref[T]#get__T_int(t534) in
-        let t536 = inherent#string#string#byte_get(t533, t535) in
-        let t537 = std::json::json_digit(t536) in
-        jump k521(t537)
+      if t534 {
+        let t535 = std::json::JsonParser.input(value/31) in
+        let t536 = std::json::JsonParser.index(value/31) in
+        let t537 = inherent#Ref#Ref[T]#get__T_int(t536) in
+        let t538 = inherent#string#string#byte_get(t535, t537) in
+        let t539 = std::json::json_digit(t538) in
+        jump k523(t539)
       } else {
-        jump k521(false)
+        jump k523(false)
       }
     } in
   } in
-  jump loop520()
+  jump loop522()
 }
 
 fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result__std::json::Value__string {
-  join ret538(retv539: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    retv539
+  join ret540(retv541: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    retv541
   } in
-  let t540 = std::json::JsonParser.index(value/33) in
-  let start/34 = inherent#Ref#Ref[T]#get__T_int(t540) in
-  let t662 = std::json::JsonParser.input(value/33) in
-  let t663 = std::json::JsonParser.index(value/33) in
-  let t664 = inherent#Ref#Ref[T]#get__T_int(t663) in
-  let t665 = inherent#string#string#byte_get(t662, t664) in
-  let t666 = trait_impl#Eq#uint8#eq(t665, 45) in
-  join k541() -> Result__std::json::Value__string {
+  let t542 = std::json::JsonParser.index(value/33) in
+  let start/34 = inherent#Ref#Ref[T]#get__T_int(t542) in
+  let t664 = std::json::JsonParser.input(value/33) in
+  let t665 = std::json::JsonParser.index(value/33) in
+  let t666 = inherent#Ref#Ref[T]#get__T_int(t665) in
+  let t667 = inherent#string#string#byte_get(t664, t666) in
+  let t668 = trait_impl#Eq#uint8#eq(t667, 45) in
+  join k543() -> Result__std::json::Value__string {
     let _wild35 = () in
-    let t625 = std::json::JsonParser.index(value/33) in
-    let t626 = inherent#Ref#Ref[T]#get__T_int(t625) in
-    let t627 = std::json::JsonParser.input(value/33) in
-    let t628 = inherent#string#string#byte_len(t627) in
-    let t629 = (t626 >= t628) in
-    join k542() -> Result__std::json::Value__string {
+    let t627 = std::json::JsonParser.index(value/33) in
+    let t628 = inherent#Ref#Ref[T]#get__T_int(t627) in
+    let t629 = std::json::JsonParser.input(value/33) in
+    let t630 = inherent#string#string#byte_len(t629) in
+    let t631 = (t628 >= t630) in
+    join k544() -> Result__std::json::Value__string {
       let _wild37 = () in
-      let t615 = std::json::JsonParser.index(value/33) in
-      let t616 = inherent#Ref#Ref[T]#get__T_int(t615) in
-      let t617 = std::json::JsonParser.input(value/33) in
-      let t618 = inherent#string#string#byte_len(t617) in
-      let t619 = (t616 < t618) in
-      join k604(jp605: bool) -> Result__std::json::Value__string {
-        join k543() -> Result__std::json::Value__string {
+      let t617 = std::json::JsonParser.index(value/33) in
+      let t618 = inherent#Ref#Ref[T]#get__T_int(t617) in
+      let t619 = std::json::JsonParser.input(value/33) in
+      let t620 = inherent#string#string#byte_len(t619) in
+      let t621 = (t618 < t620) in
+      join k606(jp607: bool) -> Result__std::json::Value__string {
+        join k545() -> Result__std::json::Value__string {
           let _wild39 = () in
-          let t587 = std::json::JsonParser.index(value/33) in
-          let t588 = inherent#Ref#Ref[T]#get__T_int(t587) in
-          let t589 = std::json::JsonParser.input(value/33) in
-          let t590 = inherent#string#string#byte_len(t589) in
-          let t591 = (t588 < t590) in
-          join k551(jp552: bool) -> Result__std::json::Value__string {
-            join k544() -> Result__std::json::Value__string {
+          let t589 = std::json::JsonParser.index(value/33) in
+          let t590 = inherent#Ref#Ref[T]#get__T_int(t589) in
+          let t591 = std::json::JsonParser.input(value/33) in
+          let t592 = inherent#string#string#byte_len(t591) in
+          let t593 = (t590 < t592) in
+          join k553(jp554: bool) -> Result__std::json::Value__string {
+            join k546() -> Result__std::json::Value__string {
               let _wild42 = () in
-              let t545 = std::json::JsonParser.input(value/33) in
-              let t546 = std::json::JsonParser.index(value/33) in
-              let t547 = inherent#Ref#Ref[T]#get__T_int(t546) in
-              let t548 = inherent#string#string#byte_slice(t545, start/34, t547) in
-              let t549 = std::json::Value::Number(t548) in
-              let t550 = Result__std::json::Value__string::Ok(t549) in
-              jump ret538(t550)
+              let t547 = std::json::JsonParser.input(value/33) in
+              let t548 = std::json::JsonParser.index(value/33) in
+              let t549 = inherent#Ref#Ref[T]#get__T_int(t548) in
+              let t550 = inherent#string#string#byte_slice(t547, start/34, t549) in
+              let t551 = std::json::Value::Number(t550) in
+              let t552 = Result__std::json::Value__string::Ok(t551) in
+              jump ret540(t552)
             } in
-            if jp552 {
-              let t553 = std::json::JsonParser.index(value/33) in
-              let t554 = std::json::JsonParser.index(value/33) in
-              let t555 = inherent#Ref#Ref[T]#get__T_int(t554) in
-              let t556 = (t555 + 1) in
-              let _wild40 = inherent#Ref#Ref[T]#set__T_int(t553, t556) in
-              let t570 = std::json::JsonParser.index(value/33) in
-              let t571 = inherent#Ref#Ref[T]#get__T_int(t570) in
-              let t572 = std::json::JsonParser.input(value/33) in
-              let t573 = inherent#string#string#byte_len(t572) in
-              let t574 = (t571 < t573) in
-              join k563(jp564: bool) -> Result__std::json::Value__string {
-                join k557() -> Result__std::json::Value__string {
+            if jp554 {
+              let t555 = std::json::JsonParser.index(value/33) in
+              let t556 = std::json::JsonParser.index(value/33) in
+              let t557 = inherent#Ref#Ref[T]#get__T_int(t556) in
+              let t558 = (t557 + 1) in
+              let _wild40 = inherent#Ref#Ref[T]#set__T_int(t555, t558) in
+              let t572 = std::json::JsonParser.index(value/33) in
+              let t573 = inherent#Ref#Ref[T]#get__T_int(t572) in
+              let t574 = std::json::JsonParser.input(value/33) in
+              let t575 = inherent#string#string#byte_len(t574) in
+              let t576 = (t573 < t575) in
+              join k565(jp566: bool) -> Result__std::json::Value__string {
+                join k559() -> Result__std::json::Value__string {
                   let _wild41 = () in
-                  let t559 = std::json::parse_digits(value/33) in
-                  let t560 = (!t559) in
-                  join k558() -> Result__std::json::Value__string {
-                    jump k544()
+                  let t561 = std::json::parse_digits(value/33) in
+                  let t562 = (!t561) in
+                  join k560() -> Result__std::json::Value__string {
+                    jump k546()
                   } in
-                  if t560 {
-                    let t561 = std::json::json_error(value/33, "missing exponent digits") in
-                    let t562 = Result__std::json::Value__string::Err(t561) in
-                    jump ret538(t562)
+                  if t562 {
+                    let t563 = std::json::json_error(value/33, "missing exponent digits") in
+                    let t564 = Result__std::json::Value__string::Err(t563) in
+                    jump ret540(t564)
                   } else {
-                    jump k558()
+                    jump k560()
                   }
                 } in
-                if jp564 {
-                  let t565 = std::json::JsonParser.index(value/33) in
-                  let t566 = std::json::JsonParser.index(value/33) in
-                  let t567 = inherent#Ref#Ref[T]#get__T_int(t566) in
-                  let t568 = (t567 + 1) in
-                  let t569 = inherent#Ref#Ref[T]#set__T_int(t565, t568) in
-                  jump k557()
+                if jp566 {
+                  let t567 = std::json::JsonParser.index(value/33) in
+                  let t568 = std::json::JsonParser.index(value/33) in
+                  let t569 = inherent#Ref#Ref[T]#get__T_int(t568) in
+                  let t570 = (t569 + 1) in
+                  let t571 = inherent#Ref#Ref[T]#set__T_int(t567, t570) in
+                  jump k559()
                 } else {
-                  jump k557()
+                  jump k559()
                 }
               } in
-              if t574 {
-                let t577 = std::json::JsonParser.input(value/33) in
-                let t578 = std::json::JsonParser.index(value/33) in
-                let t579 = inherent#Ref#Ref[T]#get__T_int(t578) in
-                let t580 = inherent#string#string#byte_get(t577, t579) in
-                let t581 = trait_impl#Eq#uint8#eq(t580, 43) in
-                join k575(jp576: bool) -> Result__std::json::Value__string {
-                  jump k563(jp576)
+              if t576 {
+                let t579 = std::json::JsonParser.input(value/33) in
+                let t580 = std::json::JsonParser.index(value/33) in
+                let t581 = inherent#Ref#Ref[T]#get__T_int(t580) in
+                let t582 = inherent#string#string#byte_get(t579, t581) in
+                let t583 = trait_impl#Eq#uint8#eq(t582, 43) in
+                join k577(jp578: bool) -> Result__std::json::Value__string {
+                  jump k565(jp578)
                 } in
-                if t581 {
-                  jump k575(true)
+                if t583 {
+                  jump k577(true)
                 } else {
-                  let t582 = std::json::JsonParser.input(value/33) in
-                  let t583 = std::json::JsonParser.index(value/33) in
-                  let t584 = inherent#Ref#Ref[T]#get__T_int(t583) in
-                  let t585 = inherent#string#string#byte_get(t582, t584) in
-                  let t586 = trait_impl#Eq#uint8#eq(t585, 45) in
-                  jump k575(t586)
+                  let t584 = std::json::JsonParser.input(value/33) in
+                  let t585 = std::json::JsonParser.index(value/33) in
+                  let t586 = inherent#Ref#Ref[T]#get__T_int(t585) in
+                  let t587 = inherent#string#string#byte_get(t584, t586) in
+                  let t588 = trait_impl#Eq#uint8#eq(t587, 45) in
+                  jump k577(t588)
                 }
               } else {
-                jump k563(false)
+                jump k565(false)
               }
             } else {
-              jump k544()
+              jump k546()
             }
           } in
-          if t591 {
-            let t594 = std::json::JsonParser.input(value/33) in
-            let t595 = std::json::JsonParser.index(value/33) in
-            let t596 = inherent#Ref#Ref[T]#get__T_int(t595) in
-            let t597 = inherent#string#string#byte_get(t594, t596) in
-            let t598 = trait_impl#Eq#uint8#eq(t597, 101) in
-            join k592(jp593: bool) -> Result__std::json::Value__string {
-              jump k551(jp593)
+          if t593 {
+            let t596 = std::json::JsonParser.input(value/33) in
+            let t597 = std::json::JsonParser.index(value/33) in
+            let t598 = inherent#Ref#Ref[T]#get__T_int(t597) in
+            let t599 = inherent#string#string#byte_get(t596, t598) in
+            let t600 = trait_impl#Eq#uint8#eq(t599, 101) in
+            join k594(jp595: bool) -> Result__std::json::Value__string {
+              jump k553(jp595)
             } in
-            if t598 {
-              jump k592(true)
+            if t600 {
+              jump k594(true)
             } else {
-              let t599 = std::json::JsonParser.input(value/33) in
-              let t600 = std::json::JsonParser.index(value/33) in
-              let t601 = inherent#Ref#Ref[T]#get__T_int(t600) in
-              let t602 = inherent#string#string#byte_get(t599, t601) in
-              let t603 = trait_impl#Eq#uint8#eq(t602, 69) in
-              jump k592(t603)
+              let t601 = std::json::JsonParser.input(value/33) in
+              let t602 = std::json::JsonParser.index(value/33) in
+              let t603 = inherent#Ref#Ref[T]#get__T_int(t602) in
+              let t604 = inherent#string#string#byte_get(t601, t603) in
+              let t605 = trait_impl#Eq#uint8#eq(t604, 69) in
+              jump k594(t605)
             }
           } else {
-            jump k551(false)
+            jump k553(false)
           }
         } in
-        if jp605 {
-          let t606 = std::json::JsonParser.index(value/33) in
-          let t607 = std::json::JsonParser.index(value/33) in
-          let t608 = inherent#Ref#Ref[T]#get__T_int(t607) in
-          let t609 = (t608 + 1) in
-          let _wild38 = inherent#Ref#Ref[T]#set__T_int(t606, t609) in
-          let t611 = std::json::parse_digits(value/33) in
-          let t612 = (!t611) in
-          join k610() -> Result__std::json::Value__string {
-            jump k543()
+        if jp607 {
+          let t608 = std::json::JsonParser.index(value/33) in
+          let t609 = std::json::JsonParser.index(value/33) in
+          let t610 = inherent#Ref#Ref[T]#get__T_int(t609) in
+          let t611 = (t610 + 1) in
+          let _wild38 = inherent#Ref#Ref[T]#set__T_int(t608, t611) in
+          let t613 = std::json::parse_digits(value/33) in
+          let t614 = (!t613) in
+          join k612() -> Result__std::json::Value__string {
+            jump k545()
           } in
-          if t612 {
-            let t613 = std::json::json_error(value/33, "missing fraction digits") in
-            let t614 = Result__std::json::Value__string::Err(t613) in
-            jump ret538(t614)
+          if t614 {
+            let t615 = std::json::json_error(value/33, "missing fraction digits") in
+            let t616 = Result__std::json::Value__string::Err(t615) in
+            jump ret540(t616)
           } else {
-            jump k610()
+            jump k612()
           }
         } else {
-          jump k543()
+          jump k545()
         }
       } in
-      if t619 {
-        let t620 = std::json::JsonParser.input(value/33) in
-        let t621 = std::json::JsonParser.index(value/33) in
-        let t622 = inherent#Ref#Ref[T]#get__T_int(t621) in
-        let t623 = inherent#string#string#byte_get(t620, t622) in
-        let t624 = trait_impl#Eq#uint8#eq(t623, 46) in
-        jump k604(t624)
+      if t621 {
+        let t622 = std::json::JsonParser.input(value/33) in
+        let t623 = std::json::JsonParser.index(value/33) in
+        let t624 = inherent#Ref#Ref[T]#get__T_int(t623) in
+        let t625 = inherent#string#string#byte_get(t622, t624) in
+        let t626 = trait_impl#Eq#uint8#eq(t625, 46) in
+        jump k606(t626)
       } else {
-        jump k604(false)
+        jump k606(false)
       }
     } in
-    if t629 {
-      let t630 = std::json::json_error(value/33, "incomplete number") in
-      let t631 = Result__std::json::Value__string::Err(t630) in
-      jump ret538(t631)
+    if t631 {
+      let t632 = std::json::json_error(value/33, "incomplete number") in
+      let t633 = Result__std::json::Value__string::Err(t632) in
+      jump ret540(t633)
     } else {
-      let t633 = std::json::JsonParser.input(value/33) in
-      let t634 = std::json::JsonParser.index(value/33) in
-      let t635 = inherent#Ref#Ref[T]#get__T_int(t634) in
-      let t636 = inherent#string#string#byte_get(t633, t635) in
-      let t637 = trait_impl#Eq#uint8#eq(t636, 48) in
-      join k632() -> Result__std::json::Value__string {
-        jump k542()
+      let t635 = std::json::JsonParser.input(value/33) in
+      let t636 = std::json::JsonParser.index(value/33) in
+      let t637 = inherent#Ref#Ref[T]#get__T_int(t636) in
+      let t638 = inherent#string#string#byte_get(t635, t637) in
+      let t639 = trait_impl#Eq#uint8#eq(t638, 48) in
+      join k634() -> Result__std::json::Value__string {
+        jump k544()
       } in
-      if t637 {
-        let t638 = std::json::JsonParser.index(value/33) in
-        let t639 = std::json::JsonParser.index(value/33) in
-        let t640 = inherent#Ref#Ref[T]#get__T_int(t639) in
-        let t641 = (t640 + 1) in
-        let _wild36 = inherent#Ref#Ref[T]#set__T_int(t638, t641) in
-        let t647 = std::json::JsonParser.index(value/33) in
-        let t648 = inherent#Ref#Ref[T]#get__T_int(t647) in
-        let t649 = std::json::JsonParser.input(value/33) in
-        let t650 = inherent#string#string#byte_len(t649) in
-        let t651 = (t648 < t650) in
-        join k643(jp644: bool) -> Result__std::json::Value__string {
-          join k642() -> Result__std::json::Value__string {
-            jump k632()
+      if t639 {
+        let t640 = std::json::JsonParser.index(value/33) in
+        let t641 = std::json::JsonParser.index(value/33) in
+        let t642 = inherent#Ref#Ref[T]#get__T_int(t641) in
+        let t643 = (t642 + 1) in
+        let _wild36 = inherent#Ref#Ref[T]#set__T_int(t640, t643) in
+        let t649 = std::json::JsonParser.index(value/33) in
+        let t650 = inherent#Ref#Ref[T]#get__T_int(t649) in
+        let t651 = std::json::JsonParser.input(value/33) in
+        let t652 = inherent#string#string#byte_len(t651) in
+        let t653 = (t650 < t652) in
+        join k645(jp646: bool) -> Result__std::json::Value__string {
+          join k644() -> Result__std::json::Value__string {
+            jump k634()
           } in
-          if jp644 {
-            let t645 = std::json::json_error(value/33, "invalid leading zero") in
-            let t646 = Result__std::json::Value__string::Err(t645) in
-            jump ret538(t646)
+          if jp646 {
+            let t647 = std::json::json_error(value/33, "invalid leading zero") in
+            let t648 = Result__std::json::Value__string::Err(t647) in
+            jump ret540(t648)
           } else {
-            jump k642()
+            jump k644()
           }
         } in
-        if t651 {
-          let t652 = std::json::JsonParser.input(value/33) in
-          let t653 = std::json::JsonParser.index(value/33) in
-          let t654 = inherent#Ref#Ref[T]#get__T_int(t653) in
-          let t655 = inherent#string#string#byte_get(t652, t654) in
-          let t656 = std::json::json_digit(t655) in
-          jump k643(t656)
+        if t653 {
+          let t654 = std::json::JsonParser.input(value/33) in
+          let t655 = std::json::JsonParser.index(value/33) in
+          let t656 = inherent#Ref#Ref[T]#get__T_int(t655) in
+          let t657 = inherent#string#string#byte_get(t654, t656) in
+          let t658 = std::json::json_digit(t657) in
+          jump k645(t658)
         } else {
-          jump k643(false)
+          jump k645(false)
         }
       } else {
-        let t658 = std::json::parse_digits(value/33) in
-        let t659 = (!t658) in
-        join k657() -> Result__std::json::Value__string {
-          jump k632()
+        let t660 = std::json::parse_digits(value/33) in
+        let t661 = (!t660) in
+        join k659() -> Result__std::json::Value__string {
+          jump k634()
         } in
-        if t659 {
-          let t660 = std::json::json_error(value/33, "expected number") in
-          let t661 = Result__std::json::Value__string::Err(t660) in
-          jump ret538(t661)
+        if t661 {
+          let t662 = std::json::json_error(value/33, "expected number") in
+          let t663 = Result__std::json::Value__string::Err(t662) in
+          jump ret540(t663)
         } else {
-          jump k657()
+          jump k659()
         }
       }
     }
   } in
-  if t666 {
-    let t667 = std::json::JsonParser.index(value/33) in
-    let t668 = std::json::JsonParser.index(value/33) in
-    let t669 = inherent#Ref#Ref[T]#get__T_int(t668) in
-    let t670 = (t669 + 1) in
-    let t671 = inherent#Ref#Ref[T]#set__T_int(t667, t670) in
-    jump k541()
+  if t668 {
+    let t669 = std::json::JsonParser.index(value/33) in
+    let t670 = std::json::JsonParser.index(value/33) in
+    let t671 = inherent#Ref#Ref[T]#get__T_int(t670) in
+    let t672 = (t671 + 1) in
+    let t673 = inherent#Ref#Ref[T]#set__T_int(t669, t672) in
+    jump k543()
   } else {
-    jump k541()
+    jump k543()
   }
 }
 
 fn std::json::parse_json_literal(value/35: std::json::JsonParser, expected/36: string, result/37: std::json::Value) -> Result__std::json::Value__string {
-  join ret672(retv673: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    retv673
+  join ret674(retv675: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    retv675
   } in
-  let t686 = std::json::JsonParser.index(value/35) in
-  let t687 = inherent#Ref#Ref[T]#get__T_int(t686) in
-  let t688 = inherent#string#string#byte_len(expected/36) in
-  let t689 = (t687 + t688) in
-  let t690 = std::json::JsonParser.input(value/35) in
-  let t691 = inherent#string#string#byte_len(t690) in
-  let t692 = (t689 <= t691) in
-  join k676(jp677: bool) -> Result__std::json::Value__string {
-    join k674(jp675: Result__std::json::Value__string) -> Result__std::json::Value__string {
-      jump ret672(jp675)
+  let t688 = std::json::JsonParser.index(value/35) in
+  let t689 = inherent#Ref#Ref[T]#get__T_int(t688) in
+  let t690 = inherent#string#string#byte_len(expected/36) in
+  let t691 = (t689 + t690) in
+  let t692 = std::json::JsonParser.input(value/35) in
+  let t693 = inherent#string#string#byte_len(t692) in
+  let t694 = (t691 <= t693) in
+  join k678(jp679: bool) -> Result__std::json::Value__string {
+    join k676(jp677: Result__std::json::Value__string) -> Result__std::json::Value__string {
+      jump ret674(jp677)
     } in
-    if jp677 {
-      let t678 = std::json::JsonParser.index(value/35) in
-      let t679 = std::json::JsonParser.index(value/35) in
-      let t680 = inherent#Ref#Ref[T]#get__T_int(t679) in
-      let t681 = inherent#string#string#byte_len(expected/36) in
-      let t682 = (t680 + t681) in
-      let _wild43 = inherent#Ref#Ref[T]#set__T_int(t678, t682) in
-      let t683 = Result__std::json::Value__string::Ok(result/37) in
-      jump k674(t683)
+    if jp679 {
+      let t680 = std::json::JsonParser.index(value/35) in
+      let t681 = std::json::JsonParser.index(value/35) in
+      let t682 = inherent#Ref#Ref[T]#get__T_int(t681) in
+      let t683 = inherent#string#string#byte_len(expected/36) in
+      let t684 = (t682 + t683) in
+      let _wild43 = inherent#Ref#Ref[T]#set__T_int(t680, t684) in
+      let t685 = Result__std::json::Value__string::Ok(result/37) in
+      jump k676(t685)
     } else {
-      let t684 = std::json::json_error(value/35, "invalid literal") in
-      let t685 = Result__std::json::Value__string::Err(t684) in
-      jump k674(t685)
+      let t686 = std::json::json_error(value/35, "invalid literal") in
+      let t687 = Result__std::json::Value__string::Err(t686) in
+      jump k676(t687)
     }
   } in
-  if t692 {
-    let t693 = std::json::JsonParser.input(value/35) in
-    let t694 = std::json::JsonParser.index(value/35) in
-    let t695 = inherent#Ref#Ref[T]#get__T_int(t694) in
+  if t694 {
+    let t695 = std::json::JsonParser.input(value/35) in
     let t696 = std::json::JsonParser.index(value/35) in
     let t697 = inherent#Ref#Ref[T]#get__T_int(t696) in
-    let t698 = inherent#string#string#byte_len(expected/36) in
-    let t699 = (t697 + t698) in
-    let t700 = inherent#string#string#byte_slice(t693, t695, t699) in
-    let t701 = trait_impl#Eq#string#eq(t700, expected/36) in
-    jump k676(t701)
+    let t698 = std::json::JsonParser.index(value/35) in
+    let t699 = inherent#Ref#Ref[T]#get__T_int(t698) in
+    let t700 = inherent#string#string#byte_len(expected/36) in
+    let t701 = (t699 + t700) in
+    let t702 = inherent#string#string#byte_slice(t695, t697, t701) in
+    let t703 = trait_impl#Eq#string#eq(t702, expected/36) in
+    jump k678(t703)
   } else {
-    jump k676(false)
+    jump k678(false)
   }
 }
 
 fn std::json::parse_json_array(value/38: std::json::JsonParser) -> Result__std::json::Value__string {
-  join ret702(retv703: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    retv703
+  join ret704(retv705: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    retv705
   } in
-  let t704 = std::json::JsonParser.index(value/38) in
-  let t705 = std::json::JsonParser.index(value/38) in
-  let t706 = inherent#Ref#Ref[T]#get__T_int(t705) in
-  let t707 = (t706 + 1) in
-  let _wild44 = inherent#Ref#Ref[T]#set__T_int(t704, t707) in
+  let t706 = std::json::JsonParser.index(value/38) in
+  let t707 = std::json::JsonParser.index(value/38) in
+  let t708 = inherent#Ref#Ref[T]#get__T_int(t707) in
+  let t709 = (t708 + 1) in
+  let _wild44 = inherent#Ref#Ref[T]#set__T_int(t706, t709) in
   let _wild45 = std::json::skip_json_whitespace(value/38) in
   let result/39 = inherent#Vec#Vec[T]#new__T_std::json::Value() in
-  let t762 = std::json::JsonParser.index(value/38) in
-  let t763 = inherent#Ref#Ref[T]#get__T_int(t762) in
-  let t764 = std::json::JsonParser.input(value/38) in
-  let t765 = inherent#string#string#byte_len(t764) in
-  let t766 = (t763 < t765) in
-  join k754(jp755: bool) -> Result__std::json::Value__string {
-    join k708() -> Result__std::json::Value__string {
+  let t764 = std::json::JsonParser.index(value/38) in
+  let t765 = inherent#Ref#Ref[T]#get__T_int(t764) in
+  let t766 = std::json::JsonParser.input(value/38) in
+  let t767 = inherent#string#string#byte_len(t766) in
+  let t768 = (t765 < t767) in
+  join k756(jp757: bool) -> Result__std::json::Value__string {
+    join k710() -> Result__std::json::Value__string {
       let _wild47 = () in
-      join exit709() -> Result__std::json::Value__string {
+      join exit711() -> Result__std::json::Value__string {
         let _wild55 = () in
-        let t710 = std::json::json_error(value/38, "unterminated array") in
-        let t711 = Result__std::json::Value__string::Err(t710) in
-        jump ret702(t711)
+        let t712 = std::json::json_error(value/38, "unterminated array") in
+        let t713 = Result__std::json::Value__string::Err(t712) in
+        jump ret704(t713)
       } in
       joinrec {
-        join loop712() -> Result__std::json::Value__string {
-          let t713 = std::json::JsonParser.index(value/38) in
-          let t714 = inherent#Ref#Ref[T]#get__T_int(t713) in
-          let t715 = std::json::JsonParser.input(value/38) in
-          let t716 = inherent#string#string#byte_len(t715) in
-          let t717 = (t714 < t716) in
-          if t717 {
+        join loop714() -> Result__std::json::Value__string {
+          let t715 = std::json::JsonParser.index(value/38) in
+          let t716 = inherent#Ref#Ref[T]#get__T_int(t715) in
+          let t717 = std::json::JsonParser.input(value/38) in
+          let t718 = inherent#string#string#byte_len(t717) in
+          let t719 = (t716 < t718) in
+          if t719 {
             let mtmp48 = std::json::parse_json_value(value/38) in
-            join k718() -> Result__std::json::Value__string {
+            join k720() -> Result__std::json::Value__string {
               let _wild51 = () in
               let _wild52 = std::json::skip_json_whitespace(value/38) in
-              let t720 = std::json::JsonParser.index(value/38) in
-              let t721 = inherent#Ref#Ref[T]#get__T_int(t720) in
-              let t722 = std::json::JsonParser.input(value/38) in
-              let t723 = inherent#string#string#byte_len(t722) in
-              let t724 = (t721 >= t723) in
-              join k719() -> Result__std::json::Value__string {
-                jump loop712()
+              let t722 = std::json::JsonParser.index(value/38) in
+              let t723 = inherent#Ref#Ref[T]#get__T_int(t722) in
+              let t724 = std::json::JsonParser.input(value/38) in
+              let t725 = inherent#string#string#byte_len(t724) in
+              let t726 = (t723 >= t725) in
+              join k721() -> Result__std::json::Value__string {
+                jump loop714()
               } in
-              if t724 {
-                let t725 = std::json::json_error(value/38, "unterminated array") in
-                let t726 = Result__std::json::Value__string::Err(t725) in
-                jump ret702(t726)
+              if t726 {
+                let t727 = std::json::json_error(value/38, "unterminated array") in
+                let t728 = Result__std::json::Value__string::Err(t727) in
+                jump ret704(t728)
               } else {
-                let t728 = std::json::JsonParser.input(value/38) in
-                let t729 = std::json::JsonParser.index(value/38) in
-                let t730 = inherent#Ref#Ref[T]#get__T_int(t729) in
-                let t731 = inherent#string#string#byte_get(t728, t730) in
-                let t732 = trait_impl#Eq#uint8#eq(t731, 93) in
-                join k727() -> Result__std::json::Value__string {
-                  jump k719()
+                let t730 = std::json::JsonParser.input(value/38) in
+                let t731 = std::json::JsonParser.index(value/38) in
+                let t732 = inherent#Ref#Ref[T]#get__T_int(t731) in
+                let t733 = inherent#string#string#byte_get(t730, t732) in
+                let t734 = trait_impl#Eq#uint8#eq(t733, 93) in
+                join k729() -> Result__std::json::Value__string {
+                  jump k721()
                 } in
-                if t732 {
-                  let t733 = std::json::JsonParser.index(value/38) in
-                  let t734 = std::json::JsonParser.index(value/38) in
-                  let t735 = inherent#Ref#Ref[T]#get__T_int(t734) in
-                  let t736 = (t735 + 1) in
-                  let _wild53 = inherent#Ref#Ref[T]#set__T_int(t733, t736) in
-                  let t737 = std::json::Value::Array(result/39) in
-                  let t738 = Result__std::json::Value__string::Ok(t737) in
-                  jump ret702(t738)
+                if t734 {
+                  let t735 = std::json::JsonParser.index(value/38) in
+                  let t736 = std::json::JsonParser.index(value/38) in
+                  let t737 = inherent#Ref#Ref[T]#get__T_int(t736) in
+                  let t738 = (t737 + 1) in
+                  let _wild53 = inherent#Ref#Ref[T]#set__T_int(t735, t738) in
+                  let t739 = std::json::Value::Array(result/39) in
+                  let t740 = Result__std::json::Value__string::Ok(t739) in
+                  jump ret704(t740)
                 } else {
-                  let t740 = std::json::JsonParser.input(value/38) in
-                  let t741 = std::json::JsonParser.index(value/38) in
-                  let t742 = inherent#Ref#Ref[T]#get__T_int(t741) in
-                  let t743 = inherent#string#string#byte_get(t740, t742) in
-                  let t744 = trait_impl#Eq#uint8#eq(t743, 44) in
-                  join k739() -> Result__std::json::Value__string {
-                    jump k727()
+                  let t742 = std::json::JsonParser.input(value/38) in
+                  let t743 = std::json::JsonParser.index(value/38) in
+                  let t744 = inherent#Ref#Ref[T]#get__T_int(t743) in
+                  let t745 = inherent#string#string#byte_get(t742, t744) in
+                  let t746 = trait_impl#Eq#uint8#eq(t745, 44) in
+                  join k741() -> Result__std::json::Value__string {
+                    jump k729()
                   } in
-                  if t744 {
-                    let t745 = std::json::JsonParser.index(value/38) in
-                    let t746 = std::json::JsonParser.index(value/38) in
-                    let t747 = inherent#Ref#Ref[T]#get__T_int(t746) in
-                    let t748 = (t747 + 1) in
-                    let _wild54 = inherent#Ref#Ref[T]#set__T_int(t745, t748) in
-                    let t749 = std::json::skip_json_whitespace(value/38) in
-                    jump k739()
+                  if t746 {
+                    let t747 = std::json::JsonParser.index(value/38) in
+                    let t748 = std::json::JsonParser.index(value/38) in
+                    let t749 = inherent#Ref#Ref[T]#get__T_int(t748) in
+                    let t750 = (t749 + 1) in
+                    let _wild54 = inherent#Ref#Ref[T]#set__T_int(t747, t750) in
+                    let t751 = std::json::skip_json_whitespace(value/38) in
+                    jump k741()
                   } else {
-                    let t750 = std::json::json_error(value/38, "expected array separator") in
-                    let t751 = Result__std::json::Value__string::Err(t750) in
-                    jump ret702(t751)
+                    let t752 = std::json::json_error(value/38, "expected array separator") in
+                    let t753 = Result__std::json::Value__string::Err(t752) in
+                    jump ret704(t753)
                   }
                 }
               }
@@ -1452,149 +1455,149 @@ fn std::json::parse_json_array(value/38: std::json::JsonParser) -> Result__std::
               Tag_0 => {
                 let x49 = Result__std::json::Value__string::Ok._0(mtmp48) in
                 let item/40 = x49 in
-                let t752 = inherent#Vec#Vec[T]#push__T_std::json::Value(result/39, item/40) in
-                jump k718()
+                let t754 = inherent#Vec#Vec[T]#push__T_std::json::Value(result/39, item/40) in
+                jump k720()
               },
               Tag_1 => {
                 let x50 = Result__std::json::Value__string::Err._0(mtmp48) in
                 let error/41 = x50 in
-                let t753 = Result__std::json::Value__string::Err(error/41) in
-                jump ret702(t753)
+                let t755 = Result__std::json::Value__string::Err(error/41) in
+                jump ret704(t755)
               },
             }
           } else {
-            jump exit709()
+            jump exit711()
           }
         } in
       } in
-      jump loop712()
+      jump loop714()
     } in
-    if jp755 {
-      let t756 = std::json::JsonParser.index(value/38) in
-      let t757 = std::json::JsonParser.index(value/38) in
-      let t758 = inherent#Ref#Ref[T]#get__T_int(t757) in
-      let t759 = (t758 + 1) in
-      let _wild46 = inherent#Ref#Ref[T]#set__T_int(t756, t759) in
-      let t760 = std::json::Value::Array(result/39) in
-      let t761 = Result__std::json::Value__string::Ok(t760) in
-      jump ret702(t761)
+    if jp757 {
+      let t758 = std::json::JsonParser.index(value/38) in
+      let t759 = std::json::JsonParser.index(value/38) in
+      let t760 = inherent#Ref#Ref[T]#get__T_int(t759) in
+      let t761 = (t760 + 1) in
+      let _wild46 = inherent#Ref#Ref[T]#set__T_int(t758, t761) in
+      let t762 = std::json::Value::Array(result/39) in
+      let t763 = Result__std::json::Value__string::Ok(t762) in
+      jump ret704(t763)
     } else {
-      jump k708()
+      jump k710()
     }
   } in
-  if t766 {
-    let t767 = std::json::JsonParser.input(value/38) in
-    let t768 = std::json::JsonParser.index(value/38) in
-    let t769 = inherent#Ref#Ref[T]#get__T_int(t768) in
-    let t770 = inherent#string#string#byte_get(t767, t769) in
-    let t771 = trait_impl#Eq#uint8#eq(t770, 93) in
-    jump k754(t771)
+  if t768 {
+    let t769 = std::json::JsonParser.input(value/38) in
+    let t770 = std::json::JsonParser.index(value/38) in
+    let t771 = inherent#Ref#Ref[T]#get__T_int(t770) in
+    let t772 = inherent#string#string#byte_get(t769, t771) in
+    let t773 = trait_impl#Eq#uint8#eq(t772, 93) in
+    jump k756(t773)
   } else {
-    jump k754(false)
+    jump k756(false)
   }
 }
 
 fn std::json::parse_json_object(value/42: std::json::JsonParser) -> Result__std::json::Value__string {
-  join ret772(retv773: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    retv773
+  join ret774(retv775: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    retv775
   } in
-  let t774 = std::json::JsonParser.index(value/42) in
-  let t775 = std::json::JsonParser.index(value/42) in
-  let t776 = inherent#Ref#Ref[T]#get__T_int(t775) in
-  let t777 = (t776 + 1) in
-  let _wild56 = inherent#Ref#Ref[T]#set__T_int(t774, t777) in
+  let t776 = std::json::JsonParser.index(value/42) in
+  let t777 = std::json::JsonParser.index(value/42) in
+  let t778 = inherent#Ref#Ref[T]#get__T_int(t777) in
+  let t779 = (t778 + 1) in
+  let _wild56 = inherent#Ref#Ref[T]#set__T_int(t776, t779) in
   let _wild57 = std::json::skip_json_whitespace(value/42) in
   let result/43 = inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() in
-  let t857 = std::json::JsonParser.index(value/42) in
-  let t858 = inherent#Ref#Ref[T]#get__T_int(t857) in
-  let t859 = std::json::JsonParser.input(value/42) in
-  let t860 = inherent#string#string#byte_len(t859) in
-  let t861 = (t858 < t860) in
-  join k849(jp850: bool) -> Result__std::json::Value__string {
-    join k778() -> Result__std::json::Value__string {
+  let t859 = std::json::JsonParser.index(value/42) in
+  let t860 = inherent#Ref#Ref[T]#get__T_int(t859) in
+  let t861 = std::json::JsonParser.input(value/42) in
+  let t862 = inherent#string#string#byte_len(t861) in
+  let t863 = (t860 < t862) in
+  join k851(jp852: bool) -> Result__std::json::Value__string {
+    join k780() -> Result__std::json::Value__string {
       let _wild59 = () in
-      join exit779() -> Result__std::json::Value__string {
+      join exit781() -> Result__std::json::Value__string {
         let _wild73 = () in
-        let t780 = std::json::json_error(value/42, "unterminated object") in
-        let t781 = Result__std::json::Value__string::Err(t780) in
-        jump ret772(t781)
+        let t782 = std::json::json_error(value/42, "unterminated object") in
+        let t783 = Result__std::json::Value__string::Err(t782) in
+        jump ret774(t783)
       } in
       joinrec {
-        join loop782() -> Result__std::json::Value__string {
-          let t783 = std::json::JsonParser.index(value/42) in
-          let t784 = inherent#Ref#Ref[T]#get__T_int(t783) in
-          let t785 = std::json::JsonParser.input(value/42) in
-          let t786 = inherent#string#string#byte_len(t785) in
-          let t787 = (t784 < t786) in
-          if t787 {
+        join loop784() -> Result__std::json::Value__string {
+          let t785 = std::json::JsonParser.index(value/42) in
+          let t786 = inherent#Ref#Ref[T]#get__T_int(t785) in
+          let t787 = std::json::JsonParser.input(value/42) in
+          let t788 = inherent#string#string#byte_len(t787) in
+          let t789 = (t786 < t788) in
+          if t789 {
             let mtmp60 = std::json::parse_json_string(value/42) in
-            join k788(jp789: string) -> Result__std::json::Value__string {
-              let name/46 = jp789 in
+            join k790(jp791: string) -> Result__std::json::Value__string {
+              let name/46 = jp791 in
               let _wild63 = std::json::skip_json_whitespace(value/42) in
-              let t837 = std::json::JsonParser.index(value/42) in
-              let t838 = inherent#Ref#Ref[T]#get__T_int(t837) in
-              let t839 = std::json::JsonParser.input(value/42) in
-              let t840 = inherent#string#string#byte_len(t839) in
-              let t841 = (t838 >= t840) in
-              join k828(jp829: bool) -> Result__std::json::Value__string {
-                join k790() -> Result__std::json::Value__string {
+              let t839 = std::json::JsonParser.index(value/42) in
+              let t840 = inherent#Ref#Ref[T]#get__T_int(t839) in
+              let t841 = std::json::JsonParser.input(value/42) in
+              let t842 = inherent#string#string#byte_len(t841) in
+              let t843 = (t840 >= t842) in
+              join k830(jp831: bool) -> Result__std::json::Value__string {
+                join k792() -> Result__std::json::Value__string {
                   let _wild64 = () in
                   let _wild65 = std::json::skip_json_whitespace(value/42) in
                   let mtmp66 = std::json::parse_json_value(value/42) in
-                  join k791() -> Result__std::json::Value__string {
+                  join k793() -> Result__std::json::Value__string {
                     let _wild69 = () in
                     let _wild70 = std::json::skip_json_whitespace(value/42) in
-                    let t793 = std::json::JsonParser.index(value/42) in
-                    let t794 = inherent#Ref#Ref[T]#get__T_int(t793) in
-                    let t795 = std::json::JsonParser.input(value/42) in
-                    let t796 = inherent#string#string#byte_len(t795) in
-                    let t797 = (t794 >= t796) in
-                    join k792() -> Result__std::json::Value__string {
-                      jump loop782()
+                    let t795 = std::json::JsonParser.index(value/42) in
+                    let t796 = inherent#Ref#Ref[T]#get__T_int(t795) in
+                    let t797 = std::json::JsonParser.input(value/42) in
+                    let t798 = inherent#string#string#byte_len(t797) in
+                    let t799 = (t796 >= t798) in
+                    join k794() -> Result__std::json::Value__string {
+                      jump loop784()
                     } in
-                    if t797 {
-                      let t798 = std::json::json_error(value/42, "unterminated object") in
-                      let t799 = Result__std::json::Value__string::Err(t798) in
-                      jump ret772(t799)
+                    if t799 {
+                      let t800 = std::json::json_error(value/42, "unterminated object") in
+                      let t801 = Result__std::json::Value__string::Err(t800) in
+                      jump ret774(t801)
                     } else {
-                      let t801 = std::json::JsonParser.input(value/42) in
-                      let t802 = std::json::JsonParser.index(value/42) in
-                      let t803 = inherent#Ref#Ref[T]#get__T_int(t802) in
-                      let t804 = inherent#string#string#byte_get(t801, t803) in
-                      let t805 = trait_impl#Eq#uint8#eq(t804, 125) in
-                      join k800() -> Result__std::json::Value__string {
-                        jump k792()
+                      let t803 = std::json::JsonParser.input(value/42) in
+                      let t804 = std::json::JsonParser.index(value/42) in
+                      let t805 = inherent#Ref#Ref[T]#get__T_int(t804) in
+                      let t806 = inherent#string#string#byte_get(t803, t805) in
+                      let t807 = trait_impl#Eq#uint8#eq(t806, 125) in
+                      join k802() -> Result__std::json::Value__string {
+                        jump k794()
                       } in
-                      if t805 {
-                        let t806 = std::json::JsonParser.index(value/42) in
-                        let t807 = std::json::JsonParser.index(value/42) in
-                        let t808 = inherent#Ref#Ref[T]#get__T_int(t807) in
-                        let t809 = (t808 + 1) in
-                        let _wild71 = inherent#Ref#Ref[T]#set__T_int(t806, t809) in
-                        let t810 = std::json::Value::Object(result/43) in
-                        let t811 = Result__std::json::Value__string::Ok(t810) in
-                        jump ret772(t811)
+                      if t807 {
+                        let t808 = std::json::JsonParser.index(value/42) in
+                        let t809 = std::json::JsonParser.index(value/42) in
+                        let t810 = inherent#Ref#Ref[T]#get__T_int(t809) in
+                        let t811 = (t810 + 1) in
+                        let _wild71 = inherent#Ref#Ref[T]#set__T_int(t808, t811) in
+                        let t812 = std::json::Value::Object(result/43) in
+                        let t813 = Result__std::json::Value__string::Ok(t812) in
+                        jump ret774(t813)
                       } else {
-                        let t813 = std::json::JsonParser.input(value/42) in
-                        let t814 = std::json::JsonParser.index(value/42) in
-                        let t815 = inherent#Ref#Ref[T]#get__T_int(t814) in
-                        let t816 = inherent#string#string#byte_get(t813, t815) in
-                        let t817 = trait_impl#Eq#uint8#eq(t816, 44) in
-                        join k812() -> Result__std::json::Value__string {
-                          jump k800()
+                        let t815 = std::json::JsonParser.input(value/42) in
+                        let t816 = std::json::JsonParser.index(value/42) in
+                        let t817 = inherent#Ref#Ref[T]#get__T_int(t816) in
+                        let t818 = inherent#string#string#byte_get(t815, t817) in
+                        let t819 = trait_impl#Eq#uint8#eq(t818, 44) in
+                        join k814() -> Result__std::json::Value__string {
+                          jump k802()
                         } in
-                        if t817 {
-                          let t818 = std::json::JsonParser.index(value/42) in
-                          let t819 = std::json::JsonParser.index(value/42) in
-                          let t820 = inherent#Ref#Ref[T]#get__T_int(t819) in
-                          let t821 = (t820 + 1) in
-                          let _wild72 = inherent#Ref#Ref[T]#set__T_int(t818, t821) in
-                          let t822 = std::json::skip_json_whitespace(value/42) in
-                          jump k812()
+                        if t819 {
+                          let t820 = std::json::JsonParser.index(value/42) in
+                          let t821 = std::json::JsonParser.index(value/42) in
+                          let t822 = inherent#Ref#Ref[T]#get__T_int(t821) in
+                          let t823 = (t822 + 1) in
+                          let _wild72 = inherent#Ref#Ref[T]#set__T_int(t820, t823) in
+                          let t824 = std::json::skip_json_whitespace(value/42) in
+                          jump k814()
                         } else {
-                          let t823 = std::json::json_error(value/42, "expected object separator") in
-                          let t824 = Result__std::json::Value__string::Err(t823) in
-                          jump ret772(t824)
+                          let t825 = std::json::json_error(value/42, "expected object separator") in
+                          let t826 = Result__std::json::Value__string::Err(t825) in
+                          jump ret774(t826)
                         }
                       }
                     }
@@ -1603,178 +1606,178 @@ fn std::json::parse_json_object(value/42: std::json::JsonParser) -> Result__std:
                     Tag_0 => {
                       let x67 = Result__std::json::Value__string::Ok._0(mtmp66) in
                       let item/47 = x67 in
-                      let t825 = (name/46, item/47) in
-                      let t826 = inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(result/43, t825) in
-                      jump k791()
+                      let t827 = (name/46, item/47) in
+                      let t828 = inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(result/43, t827) in
+                      jump k793()
                     },
                     Tag_1 => {
                       let x68 = Result__std::json::Value__string::Err._0(mtmp66) in
                       let error/48 = x68 in
-                      let t827 = Result__std::json::Value__string::Err(error/48) in
-                      jump ret772(t827)
+                      let t829 = Result__std::json::Value__string::Err(error/48) in
+                      jump ret774(t829)
                     },
                   }
                 } in
-                if jp829 {
-                  let t830 = std::json::json_error(value/42, "expected object colon") in
-                  let t831 = Result__std::json::Value__string::Err(t830) in
-                  jump ret772(t831)
+                if jp831 {
+                  let t832 = std::json::json_error(value/42, "expected object colon") in
+                  let t833 = Result__std::json::Value__string::Err(t832) in
+                  jump ret774(t833)
                 } else {
-                  let t832 = std::json::JsonParser.index(value/42) in
-                  let t833 = std::json::JsonParser.index(value/42) in
-                  let t834 = inherent#Ref#Ref[T]#get__T_int(t833) in
-                  let t835 = (t834 + 1) in
-                  let t836 = inherent#Ref#Ref[T]#set__T_int(t832, t835) in
-                  jump k790()
+                  let t834 = std::json::JsonParser.index(value/42) in
+                  let t835 = std::json::JsonParser.index(value/42) in
+                  let t836 = inherent#Ref#Ref[T]#get__T_int(t835) in
+                  let t837 = (t836 + 1) in
+                  let t838 = inherent#Ref#Ref[T]#set__T_int(t834, t837) in
+                  jump k792()
                 }
               } in
-              if t841 {
-                jump k828(true)
+              if t843 {
+                jump k830(true)
               } else {
-                let t842 = std::json::JsonParser.input(value/42) in
-                let t843 = std::json::JsonParser.index(value/42) in
-                let t844 = inherent#Ref#Ref[T]#get__T_int(t843) in
-                let t845 = inherent#string#string#byte_get(t842, t844) in
-                let t846 = trait_impl#Eq#uint8#eq(t845, 58) in
-                let t847 = (!t846) in
-                jump k828(t847)
+                let t844 = std::json::JsonParser.input(value/42) in
+                let t845 = std::json::JsonParser.index(value/42) in
+                let t846 = inherent#Ref#Ref[T]#get__T_int(t845) in
+                let t847 = inherent#string#string#byte_get(t844, t846) in
+                let t848 = trait_impl#Eq#uint8#eq(t847, 58) in
+                let t849 = (!t848) in
+                jump k830(t849)
               }
             } in
             match mtmp60 {
               Tag_0 => {
                 let x61 = Result__string__string::Ok._0(mtmp60) in
                 let name/44 = x61 in
-                jump k788(name/44)
+                jump k790(name/44)
               },
               Tag_1 => {
                 let x62 = Result__string__string::Err._0(mtmp60) in
                 let error/45 = x62 in
-                let t848 = Result__std::json::Value__string::Err(error/45) in
-                jump ret772(t848)
+                let t850 = Result__std::json::Value__string::Err(error/45) in
+                jump ret774(t850)
               },
             }
           } else {
-            jump exit779()
+            jump exit781()
           }
         } in
       } in
-      jump loop782()
+      jump loop784()
     } in
-    if jp850 {
-      let t851 = std::json::JsonParser.index(value/42) in
-      let t852 = std::json::JsonParser.index(value/42) in
-      let t853 = inherent#Ref#Ref[T]#get__T_int(t852) in
-      let t854 = (t853 + 1) in
-      let _wild58 = inherent#Ref#Ref[T]#set__T_int(t851, t854) in
-      let t855 = std::json::Value::Object(result/43) in
-      let t856 = Result__std::json::Value__string::Ok(t855) in
-      jump ret772(t856)
+    if jp852 {
+      let t853 = std::json::JsonParser.index(value/42) in
+      let t854 = std::json::JsonParser.index(value/42) in
+      let t855 = inherent#Ref#Ref[T]#get__T_int(t854) in
+      let t856 = (t855 + 1) in
+      let _wild58 = inherent#Ref#Ref[T]#set__T_int(t853, t856) in
+      let t857 = std::json::Value::Object(result/43) in
+      let t858 = Result__std::json::Value__string::Ok(t857) in
+      jump ret774(t858)
     } else {
-      jump k778()
+      jump k780()
     }
   } in
-  if t861 {
-    let t862 = std::json::JsonParser.input(value/42) in
-    let t863 = std::json::JsonParser.index(value/42) in
-    let t864 = inherent#Ref#Ref[T]#get__T_int(t863) in
-    let t865 = inherent#string#string#byte_get(t862, t864) in
-    let t866 = trait_impl#Eq#uint8#eq(t865, 125) in
-    jump k849(t866)
+  if t863 {
+    let t864 = std::json::JsonParser.input(value/42) in
+    let t865 = std::json::JsonParser.index(value/42) in
+    let t866 = inherent#Ref#Ref[T]#get__T_int(t865) in
+    let t867 = inherent#string#string#byte_get(t864, t866) in
+    let t868 = trait_impl#Eq#uint8#eq(t867, 125) in
+    jump k851(t868)
   } else {
-    jump k849(false)
+    jump k851(false)
   }
 }
 
 fn std::json::parse_json_value(value/49: std::json::JsonParser) -> Result__std::json::Value__string {
-  join ret867(retv868: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    retv868
+  join ret869(retv870: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    retv870
   } in
   let _wild74 = std::json::skip_json_whitespace(value/49) in
-  let t871 = std::json::JsonParser.index(value/49) in
-  let t872 = inherent#Ref#Ref[T]#get__T_int(t871) in
-  let t873 = std::json::JsonParser.input(value/49) in
-  let t874 = inherent#string#string#byte_len(t873) in
-  let t875 = (t872 >= t874) in
-  join k869(jp870: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    jump ret867(jp870)
+  let t873 = std::json::JsonParser.index(value/49) in
+  let t874 = inherent#Ref#Ref[T]#get__T_int(t873) in
+  let t875 = std::json::JsonParser.input(value/49) in
+  let t876 = inherent#string#string#byte_len(t875) in
+  let t877 = (t874 >= t876) in
+  join k871(jp872: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    jump ret869(jp872)
   } in
-  if t875 {
-    let t876 = std::json::json_error(value/49, "expected JSON value") in
-    let t877 = Result__std::json::Value__string::Err(t876) in
-    jump k869(t877)
+  if t877 {
+    let t878 = std::json::json_error(value/49, "expected JSON value") in
+    let t879 = Result__std::json::Value__string::Err(t878) in
+    jump k871(t879)
   } else {
-    let t878 = std::json::JsonParser.input(value/49) in
-    let t879 = std::json::JsonParser.index(value/49) in
-    let t880 = inherent#Ref#Ref[T]#get__T_int(t879) in
-    let mtmp75 = inherent#string#string#byte_get(t878, t880) in
-    join k881(jp882: Result__std::json::Value__string) -> Result__std::json::Value__string {
-      jump k869(jp882)
+    let t880 = std::json::JsonParser.input(value/49) in
+    let t881 = std::json::JsonParser.index(value/49) in
+    let t882 = inherent#Ref#Ref[T]#get__T_int(t881) in
+    let mtmp75 = inherent#string#string#byte_get(t880, t882) in
+    join k883(jp884: Result__std::json::Value__string) -> Result__std::json::Value__string {
+      jump k871(jp884)
     } in
     match mtmp75 {
       123 => {
-        let t883 = std::json::parse_json_object(value/49) in
-        jump k881(t883)
+        let t885 = std::json::parse_json_object(value/49) in
+        jump k883(t885)
       },
       91 => {
-        let t884 = std::json::parse_json_array(value/49) in
-        jump k881(t884)
+        let t886 = std::json::parse_json_array(value/49) in
+        jump k883(t886)
       },
       34 => {
         let mtmp76 = std::json::parse_json_string(value/49) in
-        join k885(jp886: Result__std::json::Value__string) -> Result__std::json::Value__string {
-          jump k881(jp886)
+        join k887(jp888: Result__std::json::Value__string) -> Result__std::json::Value__string {
+          jump k883(jp888)
         } in
         match mtmp76 {
           Tag_0 => {
             let x77 = Result__string__string::Ok._0(mtmp76) in
             let text/50 = x77 in
-            let t887 = std::json::Value::String(text/50) in
-            let t888 = Result__std::json::Value__string::Ok(t887) in
-            jump k885(t888)
+            let t889 = std::json::Value::String(text/50) in
+            let t890 = Result__std::json::Value__string::Ok(t889) in
+            jump k887(t890)
           },
           Tag_1 => {
             let x78 = Result__string__string::Err._0(mtmp76) in
             let error/51 = x78 in
-            let t889 = Result__std::json::Value__string::Err(error/51) in
-            jump k885(t889)
+            let t891 = Result__std::json::Value__string::Err(error/51) in
+            jump k887(t891)
           },
         }
       },
       116 => {
-        let t890 = std::json::Value::Bool(true) in
-        let t891 = std::json::parse_json_literal(value/49, "true", t890) in
-        jump k881(t891)
+        let t892 = std::json::Value::Bool(true) in
+        let t893 = std::json::parse_json_literal(value/49, "true", t892) in
+        jump k883(t893)
       },
       102 => {
-        let t892 = std::json::Value::Bool(false) in
-        let t893 = std::json::parse_json_literal(value/49, "false", t892) in
-        jump k881(t893)
+        let t894 = std::json::Value::Bool(false) in
+        let t895 = std::json::parse_json_literal(value/49, "false", t894) in
+        jump k883(t895)
       },
       110 => {
-        let t894 = std::json::parse_json_literal(value/49, "null", Tag_5) in
-        jump k881(t894)
+        let t896 = std::json::parse_json_literal(value/49, "null", Tag_5) in
+        jump k883(t896)
       },
       _ => {
         let byte/52 = mtmp75 in
-        let t902 = trait_impl#Eq#uint8#eq(byte/52, 45) in
-        join k897(jp898: bool) -> Result__std::json::Value__string {
-          join k895(jp896: Result__std::json::Value__string) -> Result__std::json::Value__string {
-            jump k881(jp896)
+        let t904 = trait_impl#Eq#uint8#eq(byte/52, 45) in
+        join k899(jp900: bool) -> Result__std::json::Value__string {
+          join k897(jp898: Result__std::json::Value__string) -> Result__std::json::Value__string {
+            jump k883(jp898)
           } in
-          if jp898 {
-            let t899 = std::json::parse_json_number(value/49) in
-            jump k895(t899)
+          if jp900 {
+            let t901 = std::json::parse_json_number(value/49) in
+            jump k897(t901)
           } else {
-            let t900 = std::json::json_error(value/49, "unexpected JSON token") in
-            let t901 = Result__std::json::Value__string::Err(t900) in
-            jump k895(t901)
+            let t902 = std::json::json_error(value/49, "unexpected JSON token") in
+            let t903 = Result__std::json::Value__string::Err(t902) in
+            jump k897(t903)
           }
         } in
-        if t902 {
-          jump k897(true)
+        if t904 {
+          jump k899(true)
         } else {
-          let t903 = std::json::json_digit(byte/52) in
-          jump k897(t903)
+          let t905 = std::json::json_digit(byte/52) in
+          jump k899(t905)
         }
       },
     }
@@ -1782,174 +1785,174 @@ fn std::json::parse_json_value(value/49: std::json::JsonParser) -> Result__std::
 }
 
 fn std::json::parse(input/53: string) -> Result__std::json::Value__string {
-  join ret904(retv905: Result__std::json::Value__string) -> Result__std::json::Value__string {
-    retv905
+  join ret906(retv907: Result__std::json::Value__string) -> Result__std::json::Value__string {
+    retv907
   } in
   let parser/54 = std::json::json_parser(input/53) in
   let mtmp79 = std::json::parse_json_value(parser/54) in
-  join k906(jp907: std::json::Value) -> Result__std::json::Value__string {
-    let result/57 = jp907 in
+  join k908(jp909: std::json::Value) -> Result__std::json::Value__string {
+    let result/57 = jp909 in
     let _wild82 = std::json::skip_json_whitespace(parser/54) in
-    let t910 = std::json::JsonParser.index(parser/54) in
-    let t911 = inherent#Ref#Ref[T]#get__T_int(t910) in
-    let t912 = inherent#string#string#byte_len(input/53) in
-    let t913 = trait_impl#Eq#int#eq(t911, t912) in
-    join k908(jp909: Result__std::json::Value__string) -> Result__std::json::Value__string {
-      jump ret904(jp909)
+    let t912 = std::json::JsonParser.index(parser/54) in
+    let t913 = inherent#Ref#Ref[T]#get__T_int(t912) in
+    let t914 = inherent#string#string#byte_len(input/53) in
+    let t915 = trait_impl#Eq#int#eq(t913, t914) in
+    join k910(jp911: Result__std::json::Value__string) -> Result__std::json::Value__string {
+      jump ret906(jp911)
     } in
-    if t913 {
-      let t914 = Result__std::json::Value__string::Ok(result/57) in
-      jump k908(t914)
+    if t915 {
+      let t916 = Result__std::json::Value__string::Ok(result/57) in
+      jump k910(t916)
     } else {
-      let t915 = std::json::json_error(parser/54, "trailing JSON data") in
-      let t916 = Result__std::json::Value__string::Err(t915) in
-      jump k908(t916)
+      let t917 = std::json::json_error(parser/54, "trailing JSON data") in
+      let t918 = Result__std::json::Value__string::Err(t917) in
+      jump k910(t918)
     }
   } in
   match mtmp79 {
     Tag_0 => {
       let x80 = Result__std::json::Value__string::Ok._0(mtmp79) in
       let value/55 = x80 in
-      jump k906(value/55)
+      jump k908(value/55)
     },
     Tag_1 => {
       let x81 = Result__std::json::Value__string::Err._0(mtmp79) in
       let error/56 = x81 in
-      let t917 = Result__std::json::Value__string::Err(error/56) in
-      jump ret904(t917)
+      let t919 = Result__std::json::Value__string::Err(error/56) in
+      jump ret906(t919)
     },
   }
 }
 
 fn std::json::json_hex_digit(value/58: uint8) -> char {
-  join ret918(retv919: char) -> char {
-    retv919
+  join ret920(retv921: char) -> char {
+    retv921
   } in
-  let t920 = (value/58 as int) in
-  let t921 = inherent#string#string#get("0123456789abcdef", t920) in
-  jump ret918(t921)
+  let t922 = (value/58 as int) in
+  let t923 = inherent#string#string#get("0123456789abcdef", t922) in
+  jump ret920(t923)
 }
 
 fn std::json::write_json_string(builder/59: std::text::StringBuilder, value/60: string) -> unit {
-  join ret922() -> unit {
+  join ret924() -> unit {
     ()
   } in
   let _wild83 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"') in
   let start/61 = inherent#Ref#Ref[T]#new__T_int(0) in
   let for_index84 = 0 in
   let for_limit85 = inherent#string#string#byte_len(value/60) in
-  join exit923() -> unit {
+  join exit925() -> unit {
     let _wild92 = () in
-    let t926 = inherent#Ref#Ref[T]#get__T_int(start/61) in
-    let t927 = inherent#string#string#byte_len(value/60) in
-    let t928 = (t926 < t927) in
-    join k924() -> unit {
+    let t928 = inherent#Ref#Ref[T]#get__T_int(start/61) in
+    let t929 = inherent#string#string#byte_len(value/60) in
+    let t930 = (t928 < t929) in
+    join k926() -> unit {
       let _wild93 = () in
-      let t925 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"') in
-      jump ret922()
+      let t927 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"') in
+      jump ret924()
     } in
-    if t928 {
-      let t929 = inherent#Ref#Ref[T]#get__T_int(start/61) in
-      let t930 = inherent#string#string#byte_len(value/60) in
-      let t931 = inherent#string#string#byte_slice(value/60, t929, t930) in
-      let t932 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, t931) in
-      jump k924()
+    if t930 {
+      let t931 = inherent#Ref#Ref[T]#get__T_int(start/61) in
+      let t932 = inherent#string#string#byte_len(value/60) in
+      let t933 = inherent#string#string#byte_slice(value/60, t931, t932) in
+      let t934 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, t933) in
+      jump k926()
     } else {
-      jump k924()
+      jump k926()
     }
   } in
   joinrec {
-    join loop933() -> unit {
-      let t934 = (for_index84 < for_limit85) in
-      if t934 {
+    join loop935() -> unit {
+      let t936 = (for_index84 < for_limit85) in
+      if t936 {
         let for_item86 = for_index84 in
-        let t935 = (for_index84 + 1) in
-        let _wild87 = for_index84 = t935 in
+        let t937 = (for_index84 + 1) in
+        let _wild87 = for_index84 = t937 in
         let index/62 = for_item86 in
         let byte/63 = inherent#string#string#byte_get(value/60, index/62) in
-        let t991 = trait_impl#Eq#uint8#eq(byte/63, 34) in
-        join k988(jp989: bool) -> unit {
-          join k985(jp986: bool) -> unit {
-            join k982(jp983: bool) -> unit {
-              join k979(jp980: bool) -> unit {
-                join k976(jp977: bool) -> unit {
-                  join k973(jp974: bool) -> unit {
-                    join k937(jp938: bool) -> unit {
-                      join k936() -> unit {
-                        jump loop933()
+        let t993 = trait_impl#Eq#uint8#eq(byte/63, 34) in
+        join k990(jp991: bool) -> unit {
+          join k987(jp988: bool) -> unit {
+            join k984(jp985: bool) -> unit {
+              join k981(jp982: bool) -> unit {
+                join k978(jp979: bool) -> unit {
+                  join k975(jp976: bool) -> unit {
+                    join k939(jp940: bool) -> unit {
+                      join k938() -> unit {
+                        jump loop935()
                       } in
-                      if jp938 {
-                        let t968 = inherent#Ref#Ref[T]#get__T_int(start/61) in
-                        let t969 = (t968 < index/62) in
-                        join k939() -> unit {
+                      if jp940 {
+                        let t970 = inherent#Ref#Ref[T]#get__T_int(start/61) in
+                        let t971 = (t970 < index/62) in
+                        join k941() -> unit {
                           let _wild88 = () in
-                          let t943 = trait_impl#Eq#uint8#eq(byte/63, 34) in
-                          join k940() -> unit {
+                          let t945 = trait_impl#Eq#uint8#eq(byte/63, 34) in
+                          join k942() -> unit {
                             let _wild91 = () in
-                            let t941 = (index/62 + 1) in
-                            let t942 = inherent#Ref#Ref[T]#set__T_int(start/61, t941) in
-                            jump k936()
+                            let t943 = (index/62 + 1) in
+                            let t944 = inherent#Ref#Ref[T]#set__T_int(start/61, t943) in
+                            jump k938()
                           } in
-                          if t943 {
-                            let t944 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\"") in
-                            jump k940()
+                          if t945 {
+                            let t946 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\"") in
+                            jump k942()
                           } else {
-                            let t946 = trait_impl#Eq#uint8#eq(byte/63, 92) in
-                            join k945() -> unit {
-                              jump k940()
+                            let t948 = trait_impl#Eq#uint8#eq(byte/63, 92) in
+                            join k947() -> unit {
+                              jump k942()
                             } in
-                            if t946 {
-                              let t947 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\\") in
-                              jump k945()
+                            if t948 {
+                              let t949 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\\") in
+                              jump k947()
                             } else {
-                              let t949 = trait_impl#Eq#uint8#eq(byte/63, 8) in
-                              join k948() -> unit {
-                                jump k945()
+                              let t951 = trait_impl#Eq#uint8#eq(byte/63, 8) in
+                              join k950() -> unit {
+                                jump k947()
                               } in
-                              if t949 {
-                                let t950 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\b") in
-                                jump k948()
+                              if t951 {
+                                let t952 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\b") in
+                                jump k950()
                               } else {
-                                let t952 = trait_impl#Eq#uint8#eq(byte/63, 9) in
-                                join k951() -> unit {
-                                  jump k948()
+                                let t954 = trait_impl#Eq#uint8#eq(byte/63, 9) in
+                                join k953() -> unit {
+                                  jump k950()
                                 } in
-                                if t952 {
-                                  let t953 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\t") in
-                                  jump k951()
+                                if t954 {
+                                  let t955 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\t") in
+                                  jump k953()
                                 } else {
-                                  let t955 = trait_impl#Eq#uint8#eq(byte/63, 10) in
-                                  join k954() -> unit {
-                                    jump k951()
+                                  let t957 = trait_impl#Eq#uint8#eq(byte/63, 10) in
+                                  join k956() -> unit {
+                                    jump k953()
                                   } in
-                                  if t955 {
-                                    let t956 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\n") in
-                                    jump k954()
+                                  if t957 {
+                                    let t958 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\n") in
+                                    jump k956()
                                   } else {
-                                    let t958 = trait_impl#Eq#uint8#eq(byte/63, 12) in
-                                    join k957() -> unit {
-                                      jump k954()
+                                    let t960 = trait_impl#Eq#uint8#eq(byte/63, 12) in
+                                    join k959() -> unit {
+                                      jump k956()
                                     } in
-                                    if t958 {
-                                      let t959 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\f") in
-                                      jump k957()
+                                    if t960 {
+                                      let t961 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\f") in
+                                      jump k959()
                                     } else {
-                                      let t961 = trait_impl#Eq#uint8#eq(byte/63, 13) in
-                                      join k960() -> unit {
-                                        jump k957()
+                                      let t963 = trait_impl#Eq#uint8#eq(byte/63, 13) in
+                                      join k962() -> unit {
+                                        jump k959()
                                       } in
-                                      if t961 {
-                                        let t962 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\r") in
-                                        jump k960()
+                                      if t963 {
+                                        let t964 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\r") in
+                                        jump k962()
                                       } else {
                                         let _wild89 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\u00") in
-                                        let t963 = (byte/63 / 16) in
-                                        let t964 = std::json::json_hex_digit(t963) in
-                                        let _wild90 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, t964) in
-                                        let t965 = (byte/63 % 16) in
+                                        let t965 = (byte/63 / 16) in
                                         let t966 = std::json::json_hex_digit(t965) in
-                                        let t967 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, t966) in
-                                        jump k960()
+                                        let _wild90 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, t966) in
+                                        let t967 = (byte/63 % 16) in
+                                        let t968 = std::json::json_hex_digit(t967) in
+                                        let t969 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, t968) in
+                                        jump k962()
                                       }
                                     }
                                   }
@@ -1958,80 +1961,80 @@ fn std::json::write_json_string(builder/59: std::text::StringBuilder, value/60: 
                             }
                           }
                         } in
-                        if t969 {
-                          let t970 = inherent#Ref#Ref[T]#get__T_int(start/61) in
-                          let t971 = inherent#string#string#byte_slice(value/60, t970, index/62) in
-                          let t972 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, t971) in
-                          jump k939()
+                        if t971 {
+                          let t972 = inherent#Ref#Ref[T]#get__T_int(start/61) in
+                          let t973 = inherent#string#string#byte_slice(value/60, t972, index/62) in
+                          let t974 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, t973) in
+                          jump k941()
                         } else {
-                          jump k939()
+                          jump k941()
                         }
                       } else {
-                        jump k936()
+                        jump k938()
                       }
                     } in
-                    if jp974 {
-                      jump k937(true)
+                    if jp976 {
+                      jump k939(true)
                     } else {
-                      let t975 = (byte/63 < 32) in
-                      jump k937(t975)
+                      let t977 = (byte/63 < 32) in
+                      jump k939(t977)
                     }
                   } in
-                  if jp977 {
-                    jump k973(true)
+                  if jp979 {
+                    jump k975(true)
                   } else {
-                    let t978 = trait_impl#Eq#uint8#eq(byte/63, 13) in
-                    jump k973(t978)
+                    let t980 = trait_impl#Eq#uint8#eq(byte/63, 13) in
+                    jump k975(t980)
                   }
                 } in
-                if jp980 {
-                  jump k976(true)
+                if jp982 {
+                  jump k978(true)
                 } else {
-                  let t981 = trait_impl#Eq#uint8#eq(byte/63, 12) in
-                  jump k976(t981)
+                  let t983 = trait_impl#Eq#uint8#eq(byte/63, 12) in
+                  jump k978(t983)
                 }
               } in
-              if jp983 {
-                jump k979(true)
+              if jp985 {
+                jump k981(true)
               } else {
-                let t984 = trait_impl#Eq#uint8#eq(byte/63, 10) in
-                jump k979(t984)
+                let t986 = trait_impl#Eq#uint8#eq(byte/63, 10) in
+                jump k981(t986)
               }
             } in
-            if jp986 {
-              jump k982(true)
+            if jp988 {
+              jump k984(true)
             } else {
-              let t987 = trait_impl#Eq#uint8#eq(byte/63, 9) in
-              jump k982(t987)
+              let t989 = trait_impl#Eq#uint8#eq(byte/63, 9) in
+              jump k984(t989)
             }
           } in
-          if jp989 {
-            jump k985(true)
+          if jp991 {
+            jump k987(true)
           } else {
-            let t990 = trait_impl#Eq#uint8#eq(byte/63, 8) in
-            jump k985(t990)
+            let t992 = trait_impl#Eq#uint8#eq(byte/63, 8) in
+            jump k987(t992)
           }
         } in
-        if t991 {
-          jump k988(true)
+        if t993 {
+          jump k990(true)
         } else {
-          let t992 = trait_impl#Eq#uint8#eq(byte/63, 92) in
-          jump k988(t992)
+          let t994 = trait_impl#Eq#uint8#eq(byte/63, 92) in
+          jump k990(t994)
         }
       } else {
-        jump exit923()
+        jump exit925()
       }
     } in
   } in
-  jump loop933()
+  jump loop935()
 }
 
 fn std::json::write_json_value(builder/64: std::text::StringBuilder, value/65: std::json::Value) -> unit {
-  join ret993() -> unit {
+  join ret995() -> unit {
     ()
   } in
-  join k994() -> unit {
-    jump ret993()
+  join k996() -> unit {
+    jump ret995()
   } in
   match value/65 {
     Tag_0 => {
@@ -2042,45 +2045,45 @@ fn std::json::write_json_value(builder/64: std::text::StringBuilder, value/65: s
       let for_source100 = fields/66 in
       let for_limit101 = @intrinsic(vec.len)(for_source100) in
       let for_index102 = 0 in
-      join exit995() -> unit {
+      join exit997() -> unit {
         let _wild109 = () in
-        let t996 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '}') in
-        jump k994()
+        let t998 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '}') in
+        jump k996()
       } in
       joinrec {
-        join loop997() -> unit {
-          let t998 = (for_index102 < for_limit101) in
-          if t998 {
+        join loop999() -> unit {
+          let t1000 = (for_index102 < for_limit101) in
+          if t1000 {
             let for_item103 = @intrinsic(vec.get)(for_source100, for_index102) in
-            let t999 = (for_index102 + 1) in
-            let _wild104 = for_index102 = t999 in
+            let t1001 = (for_index102 + 1) in
+            let _wild104 = for_index102 = t1001 in
             let field/68 = for_item103 in
-            let t1006 = inherent#Ref#Ref[T]#get__T_int(index/67) in
-            let t1007 = (t1006 > 0) in
-            join k1000() -> unit {
+            let t1008 = inherent#Ref#Ref[T]#get__T_int(index/67) in
+            let t1009 = (t1008 > 0) in
+            join k1002() -> unit {
               let _wild105 = () in
-              let t1001 = field/68.0 in
-              let _wild106 = std::json::write_json_string(builder/64, t1001) in
+              let t1003 = field/68.0 in
+              let _wild106 = std::json::write_json_string(builder/64, t1003) in
               let _wild107 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ':') in
-              let t1002 = field/68.1 in
-              let _wild108 = std::json::write_json_value(builder/64, t1002) in
-              let t1003 = inherent#Ref#Ref[T]#get__T_int(index/67) in
-              let t1004 = (t1003 + 1) in
-              let t1005 = inherent#Ref#Ref[T]#set__T_int(index/67, t1004) in
-              jump loop997()
+              let t1004 = field/68.1 in
+              let _wild108 = std::json::write_json_value(builder/64, t1004) in
+              let t1005 = inherent#Ref#Ref[T]#get__T_int(index/67) in
+              let t1006 = (t1005 + 1) in
+              let t1007 = inherent#Ref#Ref[T]#set__T_int(index/67, t1006) in
+              jump loop999()
             } in
-            if t1007 {
-              let t1008 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',') in
-              jump k1000()
+            if t1009 {
+              let t1010 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',') in
+              jump k1002()
             } else {
-              jump k1000()
+              jump k1002()
             }
           } else {
-            jump exit995()
+            jump exit997()
           }
         } in
       } in
-      jump loop997()
+      jump loop999()
     },
     Tag_1 => {
       let x95 = std::json::Value::Array._0(value/65) in
@@ -2090,90 +2093,90 @@ fn std::json::write_json_value(builder/64: std::text::StringBuilder, value/65: s
       let for_source111 = items/69 in
       let for_limit112 = @intrinsic(vec.len)(for_source111) in
       let for_index113 = 0 in
-      join exit1009() -> unit {
+      join exit1011() -> unit {
         let _wild118 = () in
-        let t1010 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ']') in
-        jump k994()
+        let t1012 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ']') in
+        jump k996()
       } in
       joinrec {
-        join loop1011() -> unit {
-          let t1012 = (for_index113 < for_limit112) in
-          if t1012 {
+        join loop1013() -> unit {
+          let t1014 = (for_index113 < for_limit112) in
+          if t1014 {
             let for_item114 = @intrinsic(vec.get)(for_source111, for_index113) in
-            let t1013 = (for_index113 + 1) in
-            let _wild115 = for_index113 = t1013 in
+            let t1015 = (for_index113 + 1) in
+            let _wild115 = for_index113 = t1015 in
             let item/71 = for_item114 in
-            let t1018 = inherent#Ref#Ref[T]#get__T_int(index/70) in
-            let t1019 = (t1018 > 0) in
-            join k1014() -> unit {
+            let t1020 = inherent#Ref#Ref[T]#get__T_int(index/70) in
+            let t1021 = (t1020 > 0) in
+            join k1016() -> unit {
               let _wild116 = () in
               let _wild117 = std::json::write_json_value(builder/64, item/71) in
-              let t1015 = inherent#Ref#Ref[T]#get__T_int(index/70) in
-              let t1016 = (t1015 + 1) in
-              let t1017 = inherent#Ref#Ref[T]#set__T_int(index/70, t1016) in
-              jump loop1011()
+              let t1017 = inherent#Ref#Ref[T]#get__T_int(index/70) in
+              let t1018 = (t1017 + 1) in
+              let t1019 = inherent#Ref#Ref[T]#set__T_int(index/70, t1018) in
+              jump loop1013()
             } in
-            if t1019 {
-              let t1020 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',') in
-              jump k1014()
+            if t1021 {
+              let t1022 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',') in
+              jump k1016()
             } else {
-              jump k1014()
+              jump k1016()
             }
           } else {
-            jump exit1009()
+            jump exit1011()
           }
         } in
       } in
-      jump loop1011()
+      jump loop1013()
     },
     Tag_2 => {
       let x96 = std::json::Value::String._0(value/65) in
       let text/72 = x96 in
-      let t1021 = std::json::write_json_string(builder/64, text/72) in
-      jump k994()
+      let t1023 = std::json::write_json_string(builder/64, text/72) in
+      jump k996()
     },
     Tag_3 => {
       let x97 = std::json::Value::Number._0(value/65) in
       let number/73 = x97 in
-      let t1022 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, number/73) in
-      jump k994()
+      let t1024 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, number/73) in
+      jump k996()
     },
     Tag_4 => {
       let x98 = std::json::Value::Bool._0(value/65) in
       let value/74 = x98 in
-      join k1023(jp1024: string) -> unit {
-        let t1025 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, jp1024) in
-        jump k994()
+      join k1025(jp1026: string) -> unit {
+        let t1027 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, jp1026) in
+        jump k996()
       } in
       if value/74 {
-        jump k1023("true")
+        jump k1025("true")
       } else {
-        jump k1023("false")
+        jump k1025("false")
       }
     },
     Tag_5 => {
-      let t1026 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, "null") in
-      jump k994()
+      let t1028 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, "null") in
+      jump k996()
     },
   }
 }
 
 fn std::json::encode(value/75: std::json::Value) -> string {
-  join ret1027(retv1028: string) -> string {
-    retv1028
+  join ret1029(retv1030: string) -> string {
+    retv1030
   } in
   let builder/76 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
   let _wild119 = std::json::write_json_value(builder/76, value/75) in
-  let t1029 = inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/76) in
-  jump ret1027(t1029)
+  let t1031 = inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/76) in
+  jump ret1029(t1031)
 }
 
 fn std::json::field(value/77: std::json::Value, name/78: string) -> Option__std::json::Value {
-  join ret1030(retv1031: Option__std::json::Value) -> Option__std::json::Value {
-    retv1031
+  join ret1032(retv1033: Option__std::json::Value) -> Option__std::json::Value {
+    retv1033
   } in
-  join k1032(jp1033: Option__std::json::Value) -> Option__std::json::Value {
-    jump ret1030(jp1033)
+  join k1034(jp1035: Option__std::json::Value) -> Option__std::json::Value {
+    jump ret1032(jp1035)
   } in
   match value/77 {
     Tag_0 => {
@@ -2183,268 +2186,268 @@ fn std::json::field(value/77: std::json::Value, name/78: string) -> Option__std:
       let for_source125 = fields/79 in
       let for_limit126 = @intrinsic(vec.len)(for_source125) in
       let for_index127 = 0 in
-      join exit1034() -> Option__std::json::Value {
+      join exit1036() -> Option__std::json::Value {
         let _wild130 = () in
-        let t1035 = inherent#Ref#Ref[T]#get__T_Option[std::json::Value](result/80) in
-        jump k1032(t1035)
+        let t1037 = inherent#Ref#Ref[T]#get__T_Option[std::json::Value](result/80) in
+        jump k1034(t1037)
       } in
       joinrec {
-        join loop1036() -> Option__std::json::Value {
-          let t1037 = (for_index127 < for_limit126) in
-          if t1037 {
+        join loop1038() -> Option__std::json::Value {
+          let t1039 = (for_index127 < for_limit126) in
+          if t1039 {
             let for_item128 = @intrinsic(vec.get)(for_source125, for_index127) in
-            let t1038 = (for_index127 + 1) in
-            let _wild129 = for_index127 = t1038 in
+            let t1040 = (for_index127 + 1) in
+            let _wild129 = for_index127 = t1040 in
             let field/81 = for_item128 in
-            let t1040 = field/81.0 in
-            let t1041 = trait_impl#Eq#string#eq(t1040, name/78) in
-            join k1039() -> Option__std::json::Value {
-              jump loop1036()
+            let t1042 = field/81.0 in
+            let t1043 = trait_impl#Eq#string#eq(t1042, name/78) in
+            join k1041() -> Option__std::json::Value {
+              jump loop1038()
             } in
-            if t1041 {
-              let t1042 = field/81.1 in
-              let t1043 = Option__std::json::Value::Some(t1042) in
-              let t1044 = inherent#Ref#Ref[T]#set__T_Option[std::json::Value](result/80, t1043) in
-              jump k1039()
+            if t1043 {
+              let t1044 = field/81.1 in
+              let t1045 = Option__std::json::Value::Some(t1044) in
+              let t1046 = inherent#Ref#Ref[T]#set__T_Option[std::json::Value](result/80, t1045) in
+              jump k1041()
             } else {
-              jump k1039()
+              jump k1041()
             }
           } else {
-            jump exit1034()
+            jump exit1036()
           }
         } in
       } in
-      jump loop1036()
+      jump loop1038()
     },
     _ => {
-      jump k1032(Tag_0)
+      jump k1034(Tag_0)
     },
   }
 }
 
 fn std::json::as_string(value/82: std::json::Value) -> Option__string {
-  join ret1045(retv1046: Option__string) -> Option__string {
-    retv1046
+  join ret1047(retv1048: Option__string) -> Option__string {
+    retv1048
   } in
-  join k1047(jp1048: Option__string) -> Option__string {
-    jump ret1045(jp1048)
+  join k1049(jp1050: Option__string) -> Option__string {
+    jump ret1047(jp1050)
   } in
   match value/82 {
     Tag_2 => {
       let x133 = std::json::Value::String._0(value/82) in
       let text/83 = x133 in
-      let t1049 = Option__string::Some(text/83) in
-      jump k1047(t1049)
+      let t1051 = Option__string::Some(text/83) in
+      jump k1049(t1051)
     },
     _ => {
-      jump k1047(Tag_0)
+      jump k1049(Tag_0)
     },
   }
 }
 
 fn std::json::parse_json_int_text(value/84: string) -> Option__int {
-  join ret1050(retv1051: Option__int) -> Option__int {
-    retv1051
+  join ret1052(retv1053: Option__int) -> Option__int {
+    retv1053
   } in
-  let t1054 = inherent#string#string#byte_len(value/84) in
-  let t1055 = trait_impl#Eq#int#eq(t1054, 0) in
-  join k1052(jp1053: Option__int) -> Option__int {
-    jump ret1050(jp1053)
+  let t1056 = inherent#string#string#byte_len(value/84) in
+  let t1057 = trait_impl#Eq#int#eq(t1056, 0) in
+  join k1054(jp1055: Option__int) -> Option__int {
+    jump ret1052(jp1055)
   } in
-  if t1055 {
-    jump k1052(Tag_0)
+  if t1057 {
+    jump k1054(Tag_0)
   } else {
-    let t1056 = inherent#string#string#byte_get(value/84, 0) in
-    let negative/85 = trait_impl#Eq#uint8#eq(t1056, 45) in
-    join k1057(jp1058: int) -> Option__int {
-      let index/86 = inherent#Ref#Ref[T]#new__T_int(jp1058) in
+    let t1058 = inherent#string#string#byte_get(value/84, 0) in
+    let negative/85 = trait_impl#Eq#uint8#eq(t1058, 45) in
+    join k1059(jp1060: int) -> Option__int {
+      let index/86 = inherent#Ref#Ref[T]#new__T_int(jp1060) in
       let result/87 = inherent#Ref#Ref[T]#new__T_int(0) in
-      let t1086 = inherent#Ref#Ref[T]#get__T_int(index/86) in
-      let t1087 = inherent#string#string#byte_len(value/84) in
-      let t1088 = trait_impl#Eq#int#eq(t1086, t1087) in
-      join k1059() -> Option__int {
+      let t1088 = inherent#Ref#Ref[T]#get__T_int(index/86) in
+      let t1089 = inherent#string#string#byte_len(value/84) in
+      let t1090 = trait_impl#Eq#int#eq(t1088, t1089) in
+      join k1061() -> Option__int {
         let _wild136 = () in
-        join exit1060() -> Option__int {
+        join exit1062() -> Option__int {
           let _wild138 = () in
-          join k1061(jp1062: int) -> Option__int {
-            let t1063 = Option__int::Some(jp1062) in
-            jump k1052(t1063)
+          join k1063(jp1064: int) -> Option__int {
+            let t1065 = Option__int::Some(jp1064) in
+            jump k1054(t1065)
           } in
           if negative/85 {
-            let t1064 = inherent#Ref#Ref[T]#get__T_int(result/87) in
-            let t1065 = (0 - t1064) in
-            jump k1061(t1065)
-          } else {
             let t1066 = inherent#Ref#Ref[T]#get__T_int(result/87) in
-            jump k1061(t1066)
+            let t1067 = (0 - t1066) in
+            jump k1063(t1067)
+          } else {
+            let t1068 = inherent#Ref#Ref[T]#get__T_int(result/87) in
+            jump k1063(t1068)
           }
         } in
         joinrec {
-          join loop1067() -> Option__int {
-            let t1068 = inherent#Ref#Ref[T]#get__T_int(index/86) in
-            let t1069 = inherent#string#string#byte_len(value/84) in
-            let t1070 = (t1068 < t1069) in
-            if t1070 {
-              let t1071 = inherent#Ref#Ref[T]#get__T_int(index/86) in
-              let byte/88 = inherent#string#string#byte_get(value/84, t1071) in
-              let t1084 = (byte/88 < 48) in
-              join k1076(jp1077: bool) -> Option__int {
-                join k1072() -> Option__int {
+          join loop1069() -> Option__int {
+            let t1070 = inherent#Ref#Ref[T]#get__T_int(index/86) in
+            let t1071 = inherent#string#string#byte_len(value/84) in
+            let t1072 = (t1070 < t1071) in
+            if t1072 {
+              let t1073 = inherent#Ref#Ref[T]#get__T_int(index/86) in
+              let byte/88 = inherent#string#string#byte_get(value/84, t1073) in
+              let t1086 = (byte/88 < 48) in
+              join k1078(jp1079: bool) -> Option__int {
+                join k1074() -> Option__int {
                   let _wild137 = () in
-                  let t1073 = inherent#Ref#Ref[T]#get__T_int(index/86) in
-                  let t1074 = (t1073 + 1) in
-                  let t1075 = inherent#Ref#Ref[T]#set__T_int(index/86, t1074) in
-                  jump loop1067()
+                  let t1075 = inherent#Ref#Ref[T]#get__T_int(index/86) in
+                  let t1076 = (t1075 + 1) in
+                  let t1077 = inherent#Ref#Ref[T]#set__T_int(index/86, t1076) in
+                  jump loop1069()
                 } in
-                if jp1077 {
-                  jump ret1050(Tag_0)
+                if jp1079 {
+                  jump ret1052(Tag_0)
                 } else {
-                  let t1078 = inherent#Ref#Ref[T]#get__T_int(result/87) in
-                  let t1079 = (t1078 * 10) in
-                  let t1080 = (byte/88 - 48) in
-                  let t1081 = (t1080 as int) in
-                  let t1082 = (t1079 + t1081) in
-                  let t1083 = inherent#Ref#Ref[T]#set__T_int(result/87, t1082) in
-                  jump k1072()
+                  let t1080 = inherent#Ref#Ref[T]#get__T_int(result/87) in
+                  let t1081 = (t1080 * 10) in
+                  let t1082 = (byte/88 - 48) in
+                  let t1083 = (t1082 as int) in
+                  let t1084 = (t1081 + t1083) in
+                  let t1085 = inherent#Ref#Ref[T]#set__T_int(result/87, t1084) in
+                  jump k1074()
                 }
               } in
-              if t1084 {
-                jump k1076(true)
+              if t1086 {
+                jump k1078(true)
               } else {
-                let t1085 = (byte/88 > 57) in
-                jump k1076(t1085)
+                let t1087 = (byte/88 > 57) in
+                jump k1078(t1087)
               }
             } else {
-              jump exit1060()
+              jump exit1062()
             }
           } in
         } in
-        jump loop1067()
+        jump loop1069()
       } in
-      if t1088 {
-        jump ret1050(Tag_0)
+      if t1090 {
+        jump ret1052(Tag_0)
       } else {
-        jump k1059()
+        jump k1061()
       }
     } in
     if negative/85 {
-      jump k1057(1)
+      jump k1059(1)
     } else {
-      jump k1057(0)
+      jump k1059(0)
     }
   }
 }
 
 fn std::json::as_int(value/89: std::json::Value) -> Option__int {
-  join ret1089(retv1090: Option__int) -> Option__int {
-    retv1090
+  join ret1091(retv1092: Option__int) -> Option__int {
+    retv1092
   } in
-  join k1091(jp1092: Option__int) -> Option__int {
-    jump ret1089(jp1092)
+  join k1093(jp1094: Option__int) -> Option__int {
+    jump ret1091(jp1094)
   } in
   match value/89 {
     Tag_3 => {
       let x142 = std::json::Value::Number._0(value/89) in
       let number/90 = x142 in
-      let t1093 = std::json::parse_json_int_text(number/90) in
-      jump k1091(t1093)
+      let t1095 = std::json::parse_json_int_text(number/90) in
+      jump k1093(t1095)
     },
     _ => {
-      jump k1091(Tag_0)
+      jump k1093(Tag_0)
     },
   }
 }
 
 fn std::json::as_bool(value/91: std::json::Value) -> Option__bool {
-  join ret1094(retv1095: Option__bool) -> Option__bool {
-    retv1095
+  join ret1096(retv1097: Option__bool) -> Option__bool {
+    retv1097
   } in
-  join k1096(jp1097: Option__bool) -> Option__bool {
-    jump ret1094(jp1097)
+  join k1098(jp1099: Option__bool) -> Option__bool {
+    jump ret1096(jp1099)
   } in
   match value/91 {
     Tag_4 => {
       let x148 = std::json::Value::Bool._0(value/91) in
       let result/92 = x148 in
-      let t1098 = Option__bool::Some(result/92) in
-      jump k1096(t1098)
+      let t1100 = Option__bool::Some(result/92) in
+      jump k1098(t1100)
     },
     _ => {
-      jump k1096(Tag_0)
+      jump k1098(Tag_0)
     },
   }
 }
 
 fn std::json::as_array(value/93: std::json::Value) -> Option__Vec[std::json::Value] {
-  join ret1099(retv1100: Option__Vec[std::json::Value]) -> Option__Vec[std::json::Value] {
-    retv1100
+  join ret1101(retv1102: Option__Vec[std::json::Value]) -> Option__Vec[std::json::Value] {
+    retv1102
   } in
-  join k1101(jp1102: Option__Vec[std::json::Value]) -> Option__Vec[std::json::Value] {
-    jump ret1099(jp1102)
+  join k1103(jp1104: Option__Vec[std::json::Value]) -> Option__Vec[std::json::Value] {
+    jump ret1101(jp1104)
   } in
   match value/93 {
     Tag_1 => {
       let x150 = std::json::Value::Array._0(value/93) in
       let items/94 = x150 in
-      let t1103 = Option__Vec[std::json::Value]::Some(items/94) in
-      jump k1101(t1103)
+      let t1105 = Option__Vec[std::json::Value]::Some(items/94) in
+      jump k1103(t1105)
     },
     _ => {
-      jump k1101(Tag_0)
+      jump k1103(Tag_0)
     },
   }
 }
 
 fn std::json::object(fields/95: Vec[(string, std::json::Value)]) -> std::json::Value {
-  join ret1104(retv1105: std::json::Value) -> std::json::Value {
-    retv1105
+  join ret1106(retv1107: std::json::Value) -> std::json::Value {
+    retv1107
   } in
-  let t1106 = std::json::Value::Object(fields/95) in
-  jump ret1104(t1106)
+  let t1108 = std::json::Value::Object(fields/95) in
+  jump ret1106(t1108)
 }
 
 fn main() -> unit {
-  join ret1107() -> unit {
+  join ret1109() -> unit {
     ()
   } in
   let mtmp64 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
-  join k1108(jp1109: std::json::Value) -> unit {
-    let value/2 = jp1109 in
+  join k1110(jp1111: std::json::Value) -> unit {
+    let value/2 = jp1111 in
     let mtmp68 = std::json::field(value/2, "name") in
-    join k1110() -> unit {
+    join k1112() -> unit {
       let _wild72 = () in
       let mtmp73 = std::json::field(value/2, "version") in
-      join k1111() -> unit {
+      join k1113() -> unit {
         let _wild77 = () in
         let mtmp78 = std::json::field(value/2, "stable") in
-        join k1112() -> unit {
+        join k1114() -> unit {
           let _wild82 = () in
-          let t1113 = std::json::encode(value/2) in
-          let t1114 = println__T_string(t1113) in
-          jump ret1107()
+          let t1115 = std::json::encode(value/2) in
+          let t1116 = println__T_string(t1115) in
+          jump ret1109()
         } in
         match mtmp78 {
           Tag_0 => {
-            let t1115 = println__T_string("missing stable") in
-            jump k1112()
+            let t1117 = println__T_string("missing stable") in
+            jump k1114()
           },
           Tag_1 => {
             let x79 = Option__std::json::Value::Some._0(mtmp78) in
             let field/7 = x79 in
             let mtmp80 = std::json::as_bool(field/7) in
-            join k1116() -> unit {
-              jump k1112()
+            join k1118() -> unit {
+              jump k1114()
             } in
             match mtmp80 {
               Tag_0 => {
-                let t1117 = println__T_string("invalid stable") in
-                jump k1116()
+                let t1119 = println__T_string("invalid stable") in
+                jump k1118()
               },
               Tag_1 => {
                 let x81 = Option__bool::Some._0(mtmp80) in
                 let stable/8 = x81 in
-                let t1118 = println__T_bool(stable/8) in
-                jump k1116()
+                let t1120 = println__T_bool(stable/8) in
+                jump k1118()
               },
             }
           },
@@ -2452,26 +2455,26 @@ fn main() -> unit {
       } in
       match mtmp73 {
         Tag_0 => {
-          let t1119 = println__T_string("missing version") in
-          jump k1111()
+          let t1121 = println__T_string("missing version") in
+          jump k1113()
         },
         Tag_1 => {
           let x74 = Option__std::json::Value::Some._0(mtmp73) in
           let field/5 = x74 in
           let mtmp75 = std::json::as_int(field/5) in
-          join k1120() -> unit {
-            jump k1111()
+          join k1122() -> unit {
+            jump k1113()
           } in
           match mtmp75 {
             Tag_0 => {
-              let t1121 = println__T_string("invalid version") in
-              jump k1120()
+              let t1123 = println__T_string("invalid version") in
+              jump k1122()
             },
             Tag_1 => {
               let x76 = Option__int::Some._0(mtmp75) in
               let version/6 = x76 in
-              let t1122 = println__T_int(version/6) in
-              jump k1120()
+              let t1124 = println__T_int(version/6) in
+              jump k1122()
             },
           }
         },
@@ -2479,26 +2482,26 @@ fn main() -> unit {
     } in
     match mtmp68 {
       Tag_0 => {
-        let t1123 = println__T_string("missing name") in
-        jump k1110()
+        let t1125 = println__T_string("missing name") in
+        jump k1112()
       },
       Tag_1 => {
         let x69 = Option__std::json::Value::Some._0(mtmp68) in
         let field/3 = x69 in
         let mtmp70 = std::json::as_string(field/3) in
-        join k1124() -> unit {
-          jump k1110()
+        join k1126() -> unit {
+          jump k1112()
         } in
         match mtmp70 {
           Tag_0 => {
-            let t1125 = println__T_string("invalid name") in
-            jump k1124()
+            let t1127 = println__T_string("invalid name") in
+            jump k1126()
           },
           Tag_1 => {
             let x71 = Option__string::Some._0(mtmp70) in
             let name/4 = x71 in
-            let t1126 = println__T_string(name/4) in
-            jump k1124()
+            let t1128 = println__T_string(name/4) in
+            jump k1126()
           },
         }
       },
@@ -2508,409 +2511,409 @@ fn main() -> unit {
     Tag_0 => {
       let x65 = Result__std::json::Value__string::Ok._0(mtmp64) in
       let value/0 = x65 in
-      jump k1108(value/0)
+      jump k1110(value/0)
     },
     Tag_1 => {
       let x66 = Result__std::json::Value__string::Err._0(mtmp64) in
       let error/1 = x66 in
       let _wild67 = println__T_string(error/1) in
-      jump ret1107()
+      jump ret1109()
     },
   }
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  join ret1127(retv1128: Vec[uint8]) -> Vec[uint8] {
-    retv1128
+  join ret1129(retv1130: Vec[uint8]) -> Vec[uint8] {
+    retv1130
   } in
-  let t1129 = @intrinsic(vec.new)() in
-  jump ret1127(t1129)
+  let t1131 = @intrinsic(vec.new)() in
+  jump ret1129(t1131)
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/127: int) -> Vec[uint8] {
-  join ret1130(retv1131: Vec[uint8]) -> Vec[uint8] {
-    retv1131
+  join ret1132(retv1133: Vec[uint8]) -> Vec[uint8] {
+    retv1133
   } in
-  let t1132 = @intrinsic(vec.with_capacity)(capacity/127) in
-  jump ret1130(t1132)
+  let t1134 = @intrinsic(vec.with_capacity)(capacity/127) in
+  jump ret1132(t1134)
 }
 
 fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
-  join ret1133(retv1134: Vec[uint8]) -> Vec[uint8] {
-    retv1134
+  join ret1135(retv1136: Vec[uint8]) -> Vec[uint8] {
+    retv1136
   } in
-  let t1135 = @runtime(core.string_to_bytes)(self/24) in
-  jump ret1133(t1135)
+  let t1137 = @runtime(core.string_to_bytes)(self/24) in
+  jump ret1135(t1137)
 }
 
 fn inherent#Vec#Vec[T]#len__T_uint8(self/139: Vec[uint8]) -> int {
-  join ret1136(retv1137: int) -> int {
-    retv1137
+  join ret1138(retv1139: int) -> int {
+    retv1139
   } in
-  let t1138 = @intrinsic(vec.len)(self/139) in
-  jump ret1136(t1138)
+  let t1140 = @intrinsic(vec.len)(self/139) in
+  jump ret1138(t1140)
 }
 
 fn inherent#Vec#Vec[T]#capacity__T_uint8(self/140: Vec[uint8]) -> int {
-  join ret1139(retv1140: int) -> int {
-    retv1140
+  join ret1141(retv1142: int) -> int {
+    retv1142
   } in
-  let t1141 = @intrinsic(vec.capacity)(self/140) in
-  jump ret1139(t1141)
+  let t1143 = @intrinsic(vec.capacity)(self/140) in
+  jump ret1141(t1143)
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/141: Vec[uint8]) -> bool {
-  join ret1142(retv1143: bool) -> bool {
-    retv1143
+  join ret1144(retv1145: bool) -> bool {
+    retv1145
   } in
-  let t1144 = inherent#Vec#Vec[T]#len__T_uint8(self/141) in
-  let t1145 = trait_impl#Eq#int#eq(t1144, 0) in
-  jump ret1142(t1145)
+  let t1146 = inherent#Vec#Vec[T]#len__T_uint8(self/141) in
+  let t1147 = trait_impl#Eq#int#eq(t1146, 0) in
+  jump ret1144(t1147)
 }
 
 fn inherent#Vec#Vec[T]#get__T_uint8(self/134: Vec[uint8], index/135: int) -> uint8 {
-  join ret1146(retv1147: uint8) -> uint8 {
-    retv1147
+  join ret1148(retv1149: uint8) -> uint8 {
+    retv1149
   } in
-  let t1148 = @intrinsic(vec.get)(self/134, index/135) in
-  jump ret1146(t1148)
+  let t1150 = @intrinsic(vec.get)(self/134, index/135) in
+  jump ret1148(t1150)
 }
 
 fn inherent#Vec#Vec[T]#set__T_uint8(self/136: Vec[uint8], index/137: int, elem/138: uint8) -> unit {
-  join ret1149() -> unit {
-    ()
-  } in
-  let t1150 = @intrinsic(vec.set)(self/136, index/137, elem/138) in
-  jump ret1149()
-}
-
-fn inherent#Vec#Vec[T]#push__T_uint8(self/128: Vec[uint8], elem/129: uint8) -> unit {
   join ret1151() -> unit {
     ()
   } in
-  let t1152 = @intrinsic(vec.push)(self/128, elem/129) in
+  let t1152 = @intrinsic(vec.set)(self/136, index/137, elem/138) in
   jump ret1151()
 }
 
+fn inherent#Vec#Vec[T]#push__T_uint8(self/128: Vec[uint8], elem/129: uint8) -> unit {
+  join ret1153() -> unit {
+    ()
+  } in
+  let t1154 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret1153()
+}
+
 fn inherent#Vec#Vec[T]#pop__T_uint8(self/149: Vec[uint8]) -> Option__uint8 {
-  join ret1153(retv1154: Option__uint8) -> Option__uint8 {
-    retv1154
+  join ret1155(retv1156: Option__uint8) -> Option__uint8 {
+    retv1156
   } in
   let len/150 = inherent#Vec#Vec[T]#len__T_uint8(self/149) in
-  let t1157 = trait_impl#Eq#int#eq(len/150, 0) in
-  join k1155(jp1156: Option__uint8) -> Option__uint8 {
-    jump ret1153(jp1156)
+  let t1159 = trait_impl#Eq#int#eq(len/150, 0) in
+  join k1157(jp1158: Option__uint8) -> Option__uint8 {
+    jump ret1155(jp1158)
   } in
-  if t1157 {
-    jump k1155(Tag_0)
+  if t1159 {
+    jump k1157(Tag_0)
   } else {
-    let t1158 = (len/150 - 1) in
-    let value/151 = inherent#Vec#Vec[T]#get__T_uint8(self/149, t1158) in
-    let t1159 = (len/150 - 1) in
-    let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/149, t1159) in
-    let t1160 = Option__uint8::Some(value/151) in
-    jump k1155(t1160)
+    let t1160 = (len/150 - 1) in
+    let value/151 = inherent#Vec#Vec[T]#get__T_uint8(self/149, t1160) in
+    let t1161 = (len/150 - 1) in
+    let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/149, t1161) in
+    let t1162 = Option__uint8::Some(value/151) in
+    jump k1157(t1162)
   }
 }
 
 fn inherent#Vec#Vec[T]#reserve__T_uint8(self/142: Vec[uint8], additional/143: int) -> unit {
-  join ret1161() -> unit {
-    ()
-  } in
-  let t1162 = @intrinsic(vec.reserve)(self/142, additional/143) in
-  jump ret1161()
-}
-
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/144: Vec[uint8], len/145: int) -> unit {
   join ret1163() -> unit {
     ()
   } in
-  let t1164 = @intrinsic(vec.truncate)(self/144, len/145) in
+  let t1164 = @intrinsic(vec.reserve)(self/142, additional/143) in
   jump ret1163()
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/146: Vec[uint8]) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/144: Vec[uint8], len/145: int) -> unit {
   join ret1165() -> unit {
     ()
   } in
-  let t1166 = inherent#Vec#Vec[T]#truncate__T_uint8(self/146, 0) in
+  let t1166 = @intrinsic(vec.truncate)(self/144, len/145) in
   jump ret1165()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/177: Vec[uint8], start/178: int, end/179: int) -> Slice[uint8] {
-  join ret1167(retv1168: Slice[uint8]) -> Slice[uint8] {
-    retv1168
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/146: Vec[uint8]) -> unit {
+  join ret1167() -> unit {
+    ()
   } in
-  let t1169 = @intrinsic(slice.new)(self/177, start/178, end/179) in
-  jump ret1167(t1169)
+  let t1168 = inherent#Vec#Vec[T]#truncate__T_uint8(self/146, 0) in
+  jump ret1167()
+}
+
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/177: Vec[uint8], start/178: int, end/179: int) -> Slice[uint8] {
+  join ret1169(retv1170: Slice[uint8]) -> Slice[uint8] {
+    retv1170
+  } in
+  let t1171 = @intrinsic(slice.new)(self/177, start/178, end/179) in
+  jump ret1169(t1171)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret1170(retv1171: bool) -> bool {
-    retv1171
+  join ret1172(retv1173: bool) -> bool {
+    retv1173
   } in
-  let t1172 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret1170(t1172)
+  let t1174 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret1172(t1174)
 }
 
 fn inherent#string#string#byte_len(self/9: string) -> int {
-  join ret1173(retv1174: int) -> int {
-    retv1174
+  join ret1175(retv1176: int) -> int {
+    retv1176
   } in
-  let t1175 = @runtime(core.string_len)(self/9) in
-  jump ret1173(t1175)
+  let t1177 = @runtime(core.string_len)(self/9) in
+  jump ret1175(t1177)
 }
 
 fn inherent#string#string#byte_get(self/12: string, index/13: int) -> uint8 {
-  join ret1176(retv1177: uint8) -> uint8 {
-    retv1177
+  join ret1178(retv1179: uint8) -> uint8 {
+    retv1179
   } in
-  let t1178 = @runtime(core.string_byte_get)(self/12, index/13) in
-  jump ret1176(t1178)
+  let t1180 = @runtime(core.string_byte_get)(self/12, index/13) in
+  jump ret1178(t1180)
 }
 
 fn inherent#char#char#to_string(self/7: char) -> string {
-  join ret1179(retv1180: string) -> string {
-    retv1180
+  join ret1181(retv1182: string) -> string {
+    retv1182
   } in
-  let t1181 = @runtime(core.char_to_string)(self/7) in
-  jump ret1179(t1181)
+  let t1183 = @runtime(core.char_to_string)(self/7) in
+  jump ret1181(t1183)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/209: int) -> Ref[int] {
-  join ret1182(retv1183: Ref[int]) -> Ref[int] {
-    retv1183
+  join ret1184(retv1185: Ref[int]) -> Ref[int] {
+    retv1185
   } in
-  let t1184 = @intrinsic(ref.new)(value/209) in
-  jump ret1182(t1184)
+  let t1186 = @intrinsic(ref.new)(value/209) in
+  jump ret1184(t1186)
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/210: Ref[int]) -> int {
-  join ret1185(retv1186: int) -> int {
-    retv1186
+  join ret1187(retv1188: int) -> int {
+    retv1188
   } in
-  let t1187 = @intrinsic(ref.get)(self/210) in
-  jump ret1185(t1187)
+  let t1189 = @intrinsic(ref.get)(self/210) in
+  jump ret1187(t1189)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret1188(retv1189: string) -> string {
-    retv1189
+  join ret1190(retv1191: string) -> string {
+    retv1191
   } in
-  let t1190 = @runtime(core.int_to_string)(self/5) in
-  jump ret1188(t1190)
+  let t1192 = @runtime(core.int_to_string)(self/5) in
+  jump ret1190(t1192)
 }
 
 fn trait_impl#Eq#uint8#eq(self/69: uint8, other/70: uint8) -> bool {
-  join ret1191(retv1192: bool) -> bool {
-    retv1192
+  join ret1193(retv1194: bool) -> bool {
+    retv1194
   } in
-  let t1193 = @intrinsic(eq.primitive)(self/69, other/70) in
-  jump ret1191(t1193)
+  let t1195 = @intrinsic(eq.primitive)(self/69, other/70) in
+  jump ret1193(t1195)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/211: Ref[int], value/212: int) -> unit {
-  join ret1194() -> unit {
+  join ret1196() -> unit {
     ()
   } in
-  let t1195 = @intrinsic(ref.set)(self/211, value/212) in
-  jump ret1194()
+  let t1197 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret1196()
 }
 
 fn inherent#Ref#Ref[T]#new__T_uint32(value/209: uint32) -> Ref[uint32] {
-  join ret1196(retv1197: Ref[uint32]) -> Ref[uint32] {
-    retv1197
+  join ret1198(retv1199: Ref[uint32]) -> Ref[uint32] {
+    retv1199
   } in
-  let t1198 = @intrinsic(ref.new)(value/209) in
-  jump ret1196(t1198)
+  let t1200 = @intrinsic(ref.new)(value/209) in
+  jump ret1198(t1200)
 }
 
 fn inherent#Ref#Ref[T]#get__T_uint32(self/210: Ref[uint32]) -> uint32 {
-  join ret1199(retv1200: uint32) -> uint32 {
-    retv1200
+  join ret1201(retv1202: uint32) -> uint32 {
+    retv1202
   } in
-  let t1201 = @intrinsic(ref.get)(self/210) in
-  jump ret1199(t1201)
+  let t1203 = @intrinsic(ref.get)(self/210) in
+  jump ret1201(t1203)
 }
 
 fn inherent#Ref#Ref[T]#set__T_uint32(self/211: Ref[uint32], value/212: uint32) -> unit {
-  join ret1202() -> unit {
+  join ret1204() -> unit {
     ()
   } in
-  let t1203 = @intrinsic(ref.set)(self/211, value/212) in
-  jump ret1202()
+  let t1205 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret1204()
 }
 
 fn char_from_uint32(value/2: uint32) -> Option__char {
-  join ret1204(retv1205: Option__char) -> Option__char {
-    retv1205
+  join ret1206(retv1207: Option__char) -> Option__char {
+    retv1207
   } in
   let mtmp0 = @runtime(core.char_from_uint32)(value/2) in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
   let value/4 = x2 in
   let valid/3 = x1 in
-  join k1206(jp1207: Option__char) -> Option__char {
-    jump ret1204(jp1207)
+  join k1208(jp1209: Option__char) -> Option__char {
+    jump ret1206(jp1209)
   } in
   if valid/3 {
-    let t1208 = Option__char::Some(value/4) in
-    jump k1206(t1208)
+    let t1210 = Option__char::Some(value/4) in
+    jump k1208(t1210)
   } else {
-    jump k1206(Tag_0)
+    jump k1208(Tag_0)
   }
 }
 
 fn inherent#string#string#byte_slice(self/14: string, start/15: int, end/16: int) -> string {
-  join ret1209(retv1210: string) -> string {
-    retv1210
+  join ret1211(retv1212: string) -> string {
+    retv1212
   } in
-  let t1211 = @runtime(core.string_byte_slice)(self/14, start/15, end/16) in
-  jump ret1209(t1211)
+  let t1213 = @runtime(core.string_byte_slice)(self/14, start/15, end/16) in
+  jump ret1211(t1213)
 }
 
 fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
-  join ret1212(retv1213: bool) -> bool {
-    retv1213
+  join ret1214(retv1215: bool) -> bool {
+    retv1215
   } in
-  let t1214 = @intrinsic(eq.primitive)(self/55, other/56) in
-  jump ret1212(t1214)
+  let t1216 = @intrinsic(eq.primitive)(self/55, other/56) in
+  jump ret1214(t1216)
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
-  join ret1215(retv1216: Vec[std::json::Value]) -> Vec[std::json::Value] {
-    retv1216
+  join ret1217(retv1218: Vec[std::json::Value]) -> Vec[std::json::Value] {
+    retv1218
   } in
-  let t1217 = @intrinsic(vec.new)() in
-  jump ret1215(t1217)
+  let t1219 = @intrinsic(vec.new)() in
+  jump ret1217(t1219)
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::json::Value(self/128: Vec[std::json::Value], elem/129: std::json::Value) -> unit {
-  join ret1218() -> unit {
+  join ret1220() -> unit {
     ()
   } in
-  let t1219 = @intrinsic(vec.push)(self/128, elem/129) in
-  jump ret1218()
+  let t1221 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret1220()
 }
 
 fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::json::Value)] {
-  join ret1220(retv1221: Vec[(string, std::json::Value)]) -> Vec[(string, std::json::Value)] {
-    retv1221
+  join ret1222(retv1223: Vec[(string, std::json::Value)]) -> Vec[(string, std::json::Value)] {
+    retv1223
   } in
-  let t1222 = @intrinsic(vec.new)() in
-  jump ret1220(t1222)
+  let t1224 = @intrinsic(vec.new)() in
+  jump ret1222(t1224)
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(self/128: Vec[(string, std::json::Value)], elem/129: (string, std::json::Value)) -> unit {
-  join ret1223() -> unit {
+  join ret1225() -> unit {
     ()
   } in
-  let t1224 = @intrinsic(vec.push)(self/128, elem/129) in
-  jump ret1223()
+  let t1226 = @intrinsic(vec.push)(self/128, elem/129) in
+  jump ret1225()
 }
 
 fn inherent#string#string#get(self/10: string, index/11: int) -> char {
-  join ret1225(retv1226: char) -> char {
-    retv1226
+  join ret1227(retv1228: char) -> char {
+    retv1228
   } in
-  let t1227 = @runtime(core.string_get)(self/10, index/11) in
-  jump ret1225(t1227)
+  let t1229 = @runtime(core.string_get)(self/10, index/11) in
+  jump ret1227(t1229)
 }
 
 fn inherent#Ref#Ref[T]#new__T_Option[std::json::Value](value/209: Option__std::json::Value) -> Ref[Option__std::json::Value] {
-  join ret1228(retv1229: Ref[Option__std::json::Value]) -> Ref[Option__std::json::Value] {
-    retv1229
+  join ret1230(retv1231: Ref[Option__std::json::Value]) -> Ref[Option__std::json::Value] {
+    retv1231
   } in
-  let t1230 = @intrinsic(ref.new)(value/209) in
-  jump ret1228(t1230)
+  let t1232 = @intrinsic(ref.new)(value/209) in
+  jump ret1230(t1232)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[std::json::Value](self/211: Ref[Option__std::json::Value], value/212: Option__std::json::Value) -> unit {
-  join ret1231() -> unit {
+  join ret1233() -> unit {
     ()
   } in
-  let t1232 = @intrinsic(ref.set)(self/211, value/212) in
-  jump ret1231()
+  let t1234 = @intrinsic(ref.set)(self/211, value/212) in
+  jump ret1233()
 }
 
 fn inherent#Ref#Ref[T]#get__T_Option[std::json::Value](self/210: Ref[Option__std::json::Value]) -> Option__std::json::Value {
-  join ret1233(retv1234: Option__std::json::Value) -> Option__std::json::Value {
-    retv1234
+  join ret1235(retv1236: Option__std::json::Value) -> Option__std::json::Value {
+    retv1236
   } in
-  let t1235 = @intrinsic(ref.get)(self/210) in
-  jump ret1233(t1235)
+  let t1237 = @intrinsic(ref.get)(self/210) in
+  jump ret1235(t1237)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret1236() -> unit {
+  join ret1238() -> unit {
     ()
   } in
-  let t1237 = trait_impl#ToString#string#to_string(value/1) in
-  let t1238 = @runtime(core.string_println)(t1237) in
-  jump ret1236()
+  let t1239 = trait_impl#ToString#string#to_string(value/1) in
+  let t1240 = @runtime(core.string_println)(t1239) in
+  jump ret1238()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret1239() -> unit {
+  join ret1241() -> unit {
     ()
   } in
-  let t1240 = trait_impl#ToString#int#to_string(value/1) in
-  let t1241 = @runtime(core.string_println)(t1240) in
-  jump ret1239()
+  let t1242 = trait_impl#ToString#int#to_string(value/1) in
+  let t1243 = @runtime(core.string_println)(t1242) in
+  jump ret1241()
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret1242() -> unit {
+  join ret1244() -> unit {
     ()
   } in
-  let t1243 = trait_impl#ToString#bool#to_string(value/1) in
-  let t1244 = @runtime(core.string_println)(t1243) in
-  jump ret1242()
+  let t1245 = trait_impl#ToString#bool#to_string(value/1) in
+  let t1246 = @runtime(core.string_println)(t1245) in
+  jump ret1244()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret1245(retv1246: string) -> string {
-    retv1246
-  } in
-  jump ret1245(self/38)
-}
-
-fn trait_impl#ToString#int#to_string(self/40: int) -> string {
   join ret1247(retv1248: string) -> string {
     retv1248
   } in
-  let t1249 = @runtime(core.int_to_string)(self/40) in
-  jump ret1247(t1249)
+  jump ret1247(self/38)
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  join ret1249(retv1250: string) -> string {
+    retv1250
+  } in
+  let t1251 = @runtime(core.int_to_string)(self/40) in
+  jump ret1249(t1251)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret1250(retv1251: string) -> string {
-    retv1251
+  join ret1252(retv1253: string) -> string {
+    retv1253
   } in
-  let t1252 = @runtime(core.bool_to_string)(self/37) in
-  jump ret1250(t1252)
+  let t1254 = @runtime(core.bool_to_string)(self/37) in
+  jump ret1252(t1254)
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret1253(retv1254: uint64) -> uint64 {
-    retv1254
+  join ret1255(retv1256: uint64) -> uint64 {
+    retv1256
   } in
-  let t1255 = @runtime(core.int_hash)(self/85) in
-  jump ret1253(t1255)
+  let t1257 = @runtime(core.int_hash)(self/85) in
+  jump ret1255(t1257)
 }
 
 fn trait_impl#Eq#uint32#eq(self/73: uint32, other/74: uint32) -> bool {
-  join ret1256(retv1257: bool) -> bool {
-    retv1257
+  join ret1258(retv1259: bool) -> bool {
+    retv1259
   } in
-  let t1258 = @intrinsic(eq.primitive)(self/73, other/74) in
-  jump ret1256(t1258)
+  let t1260 = @intrinsic(eq.primitive)(self/73, other/74) in
+  jump ret1258(t1260)
 }
 
 fn trait_impl#Hash#uint32#hash(self/92: uint32) -> uint64 {
-  join ret1259(retv1260: uint64) -> uint64 {
-    retv1260
+  join ret1261(retv1262: uint64) -> uint64 {
+    retv1262
   } in
-  let t1261 = @runtime(core.uint32_hash)(self/92) in
-  jump ret1259(t1261)
+  let t1263 = @runtime(core.uint32_hash)(self/92) in
+  jump ret1261(t1263)
 }
