@@ -59,10 +59,12 @@ struct StandardLibrary {
     fs: PackageCompilation,
     io: PackageCompilation,
     json: PackageCompilation,
+    num: PackageCompilation,
     path: PackageCompilation,
     process: PackageCompilation,
     testing: PackageCompilation,
     text: PackageCompilation,
+    time: PackageCompilation,
 }
 
 struct ArtifactStandardPackage {
@@ -80,10 +82,12 @@ struct ArtifactStandardLibrary {
     fs: ArtifactStandardPackage,
     io: ArtifactStandardPackage,
     json: ArtifactStandardPackage,
+    num: ArtifactStandardPackage,
     path: ArtifactStandardPackage,
     process: ArtifactStandardPackage,
     testing: ArtifactStandardPackage,
     text: ArtifactStandardPackage,
+    time: ArtifactStandardPackage,
 }
 
 fn artifact_standard_package_from_compilation(
@@ -108,10 +112,12 @@ fn artifact_standard_library(
         fs: artifact_standard_package_from_compilation(value.fs),
         io: artifact_standard_package_from_compilation(value.io),
         json: artifact_standard_package_from_compilation(value.json),
+        num: artifact_standard_package_from_compilation(value.num),
         path: artifact_standard_package_from_compilation(value.path),
         process: artifact_standard_package_from_compilation(value.process),
         testing: artifact_standard_package_from_compilation(value.testing),
         text: artifact_standard_package_from_compilation(value.text),
+        time: artifact_standard_package_from_compilation(value.time),
     }
 }
 
@@ -260,12 +266,11 @@ fn compile_standard_package(
         hir_dependencies,
     );
     if tast_value.diagnostics.len() > 0 {
-        fail(
-            "error[compile]: failed to typecheck standard package "
-                + package_name
-                + ": "
-                + tast_value.diagnostics.get(0).message,
-        )
+        fail(render_typer_diagnostics(
+            tast_value.diagnostics,
+            source_path,
+            source,
+        ))
     } else {
         ()
     };
@@ -671,26 +676,54 @@ fn compile_standard_library(
         builtins,
         standard_artifact_deps(builtin_hash, Vec::new().pushed(text)),
     );
+    let num_hir_dependencies: Vec[hir::File] = Vec::new();
+    num_hir_dependencies.push(host.hir_file);
+    let num = compile_standard_package(
+        stdlib::num_source(),
+        "num.gom",
+        "std::num",
+        "num",
+        num_hir_dependencies,
+        Vec::new(),
+        builtins,
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+    );
+    let time_hir_dependencies: Vec[hir::File] = Vec::new();
+    time_hir_dependencies.push(host.hir_file);
+    let time = compile_standard_package(
+        stdlib::time_source(),
+        "time.gom",
+        "std::time",
+        "time",
+        time_hir_dependencies,
+        Vec::new(),
+        builtins,
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+    );
     let root_hir_dependencies = Vec::new()
         .pushed(bytes.hir_file)
         .pushed(collections.hir_file)
         .pushed(env.hir_file)
         .pushed(fs.hir_file)
         .pushed(io.hir_file)
+        .pushed(num.hir_file)
         .pushed(path.hir_file)
         .pushed(process.hir_file)
         .pushed(text.hir_file)
-        .pushed(json.hir_file);
+        .pushed(json.hir_file)
+        .pushed(time.hir_file);
     let root_core_dependencies = Vec::new()
         .pushed(bytes.core_value)
         .pushed(collections.core_value)
         .pushed(env.core_value)
         .pushed(fs.core_value)
         .pushed(io.core_value)
+        .pushed(num.core_value)
         .pushed(path.core_value)
         .pushed(process.core_value)
         .pushed(text.core_value)
-        .pushed(json.core_value);
+        .pushed(json.core_value)
+        .pushed(time.core_value);
     let root = compile_standard_package(
         stdlib::root_source(),
         "lib.gom",
@@ -707,10 +740,12 @@ fn compile_standard_library(
                 .pushed(env)
                 .pushed(fs)
                 .pushed(io)
+                .pushed(num)
                 .pushed(path)
                 .pushed(process)
                 .pushed(text)
-                .pushed(json),
+                .pushed(json)
+                .pushed(time),
         ),
     );
     StandardLibrary {
@@ -722,10 +757,12 @@ fn compile_standard_library(
         fs,
         io,
         json,
+        num,
         path,
         process,
         testing,
         text,
+        time,
     }
 }
 
@@ -795,6 +832,16 @@ fn selected_standard_hir(
     };
     if needs_json {
         result.push(standard.json.hir_file)
+    } else {
+        ()
+    };
+    if needs_root || imports_package(ast_value, "std::num") {
+        result.push(standard.num.hir_file)
+    } else {
+        ()
+    };
+    if needs_root || imports_package(ast_value, "std::time") {
+        result.push(standard.time.hir_file)
     } else {
         ()
     };
@@ -872,6 +919,16 @@ fn selected_standard_core(
     };
     if needs_json {
         result.push(standard.json.core_value)
+    } else {
+        ()
+    };
+    if needs_root || imports_package(ast_value, "std::num") {
+        result.push(standard.num.core_value)
+    } else {
+        ()
+    };
+    if needs_root || imports_package(ast_value, "std::time") {
+        result.push(standard.time.core_value)
     } else {
         ()
     };

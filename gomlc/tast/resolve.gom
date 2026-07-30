@@ -1257,6 +1257,45 @@ fn builtin_iterator_bound_satisfied(
                 iterator_trait_ref(),
                 depth + 1,
             )
+        } else if (name == "EnumerateIterator" || name == "SkipIterator")
+            && args.len() == 1
+        {
+            trait_bound_satisfied_at(
+                ctx,
+                args.get(0),
+                iterator_trait_ref(),
+                depth + 1,
+            )
+        } else if name == "ZipIterator" && args.len() == 2 {
+            trait_bound_satisfied_at(
+                ctx,
+                args.get(0),
+                iterator_trait_ref(),
+                depth + 1,
+            ) && trait_bound_satisfied_at(
+                ctx,
+                args.get(1),
+                iterator_trait_ref(),
+                depth + 1,
+            )
+        } else if name == "ChainIterator" && args.len() == 3 {
+            let first = args.get(1);
+            let second = args.get(2);
+            trait_bound_satisfied_at(ctx, first, iterator_trait_ref(), depth + 1)
+                && trait_bound_satisfied_at(
+                    ctx,
+                    second,
+                    iterator_trait_ref(),
+                    depth + 1,
+                )
+                && unify(
+                    normalize_type(ctx, iterator_item_type(first)),
+                    normalize_type(ctx, args.get(0)),
+                )
+                && unify(
+                    normalize_type(ctx, iterator_item_type(second)),
+                    normalize_type(ctx, args.get(0)),
+                )
         } else {
             false
         },
@@ -2794,11 +2833,17 @@ fn builtin_nominal_arity(name: string) -> Option[int] {
         || name == "Channel"
         || name == "FnIterator"
         || name == "TakeIterator"
+        || name == "EnumerateIterator"
+        || name == "SkipIterator"
     {
         Option::Some(1)
-    } else if name == "Result" || name == "HashMap" || name == "FilterIterator" {
+    } else if name == "Result"
+        || name == "HashMap"
+        || name == "FilterIterator"
+        || name == "ZipIterator"
+    {
         Option::Some(2)
-    } else if name == "MapIterator" {
+    } else if name == "MapIterator" || name == "ChainIterator" {
         Option::Some(3)
     } else {
         Option::None

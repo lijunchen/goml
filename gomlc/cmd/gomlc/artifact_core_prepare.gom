@@ -350,10 +350,12 @@ fn artifact_world_struct_definitions(
         .pushed(world.standard.fs)
         .pushed(world.standard.io)
         .pushed(world.standard.json)
+        .pushed(world.standard.num)
         .pushed(world.standard.path)
         .pushed(world.standard.process)
         .pushed(world.standard.testing)
-        .pushed(world.standard.text);
+        .pushed(world.standard.text)
+        .pushed(world.standard.time);
     for package_value in packages {
         for definition in package_value.environment_exports.structs {
             result.push(definition)
@@ -393,10 +395,12 @@ fn artifact_prepare_world(world: PackageWorld) -> unit {
         .pushed(world.standard.fs)
         .pushed(world.standard.io)
         .pushed(world.standard.json)
+        .pushed(world.standard.num)
         .pushed(world.standard.path)
         .pushed(world.standard.process)
         .pushed(world.standard.testing)
-        .pushed(world.standard.text);
+        .pushed(world.standard.text)
+        .pushed(world.standard.time);
     for package_value in packages {
         artifact_prepare_world_core(
             package_value.core_value,

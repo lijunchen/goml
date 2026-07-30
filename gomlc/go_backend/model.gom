@@ -157,6 +157,12 @@ pub struct ConstGroup {
     pub specs: Vec[ConstSpec],
 }
 
+pub struct Global {
+    pub name: string,
+    pub ty: Option[Type],
+    pub value: Expr,
+}
+
 pub struct Function {
     pub name: string,
     pub params: Vec[(string, Type)],
@@ -176,6 +182,7 @@ pub enum Item {
     ImportGroup(Vec[(string, string)]),
     TypeDef(TypeDef),
     ConstGroup(ConstGroup),
+    Global(Global),
     Interface(InterfaceDef),
     Struct(StructDef),
     Function(Function),

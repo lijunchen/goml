@@ -85,6 +85,9 @@ install: make
     cp -R stdlib/std/. "${GOML_HOME:-$HOME/.goml}/lib/std/"
     cp stdlib/builtin_prelude.gom "${GOML_HOME:-$HOME/.goml}/lib/builtin_prelude.gom"
 
+generate-stdlib-source:
+    bash tools/stdlib/generate_source.sh
+
 update-golden: make
     cd gomlc && UPDATE_EXPECT=1 ../bin/stage2/goml test pipeline_test --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m
     cd gomlc && UPDATE_EXPECT=1 GOML_TEST_GOML=../bin/stage2/goml GOML_TEST_GOMLC=../bin/stage2/gomlc ../bin/stage2/goml test compiler_test --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m

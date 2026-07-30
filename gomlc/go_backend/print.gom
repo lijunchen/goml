@@ -630,6 +630,20 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     write_block(builder, value.body, 0)
 }
 
+fn write_global(builder: text::StringBuilder, value: Global) -> unit {
+    builder.write_string("var ");
+    builder.write_string(value.name);
+    match value.ty {
+        Option::Some(ty) => {
+            builder.write_char(' ');
+            write_type(builder, ty)
+        },
+        Option::None => (),
+    };
+    builder.write_string(" = ");
+    write_expr(builder, value.value, 0)
+}
+
 fn write_method(builder: text::StringBuilder, value: Method) -> unit {
     builder.write_string("func (");
     builder.write_string(value.receiver.0);
@@ -666,6 +680,7 @@ fn write_item(builder: text::StringBuilder, value: Item) -> unit {
         Item::ImportGroup(value) => write_import_group(builder, value),
         Item::TypeDef(value) => write_type_def(builder, value),
         Item::ConstGroup(value) => write_const_group(builder, value),
+        Item::Global(value) => write_global(builder, value),
         Item::Interface(value) => write_interface(builder, value),
         Item::Struct(value) => write_struct(builder, value),
         Item::Function(value) => write_function(builder, value),

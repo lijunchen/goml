@@ -385,6 +385,10 @@ pub fn emit_runtime_hook_items(
                 } else if hook == "std.testing.fail" {
                     require_runtime_import(required_imports, "fmt");
                     require_runtime_import(required_imports, "os")
+                } else if strings::starts_with(hook, "std.num.") {
+                    require_runtime_import(required_imports, "strconv")
+                } else if strings::starts_with(hook, "std.time.") {
+                    require_runtime_import(required_imports, "time")
                 } else if hook == "std.process.exit" {
                     require_runtime_import(required_imports, "os")
                 } else if hook == "std.process.look_path" {
@@ -486,7 +490,9 @@ pub fn emit_runtime_hook_items(
         } else {
             ()
         };
-        if vecs::contains(required_imports, "context") {
+        if vecs::contains(required_imports, "time")
+            || vecs::contains(required_imports, "context")
+        {
             imports.push(("_goml_time", "time"))
         } else {
             ()
@@ -584,6 +590,13 @@ pub fn emit_runtime_hook_items(
     ordered.push("std.process.status");
     ordered.push("std.process.status_timeout");
     ordered.push("std.testing.fail");
+    ordered.push("std.num.parse_int");
+    ordered.push("std.num.parse_uint");
+    ordered.push("std.num.parse_float32");
+    ordered.push("std.num.parse_float64");
+    ordered.push("std.time.monotonic_nanoseconds");
+    ordered.push("std.time.unix_nanoseconds");
+    ordered.push("std.time.sleep_nanoseconds");
     for key in ordered {
         let needed = if key == "internal.string_decode_utf8_at_native" {
             vecs::contains(hooks, "core.string_get")
@@ -595,6 +608,11 @@ pub fn emit_runtime_hook_items(
             vecs::contains(hooks, key)
         };
         if needed {
+            if key == "std.time.monotonic_nanoseconds" {
+                items.push(std_time_monotonic_origin_item())
+            } else {
+                ()
+            };
             match integer_to_string_hook_type(key) {
                 Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
                 Option::None => {

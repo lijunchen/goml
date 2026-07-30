@@ -92,7 +92,9 @@ fn world_add_standard_sections(
         .pushed((26 as uint16, value.path))
         .pushed((28 as uint16, value.process))
         .pushed((30 as uint16, value.testing))
-        .pushed((32 as uint16, value.text));
+        .pushed((32 as uint16, value.text))
+        .pushed((34 as uint16, value.num))
+        .pushed((36 as uint16, value.time));
     for package_value in packages {
         match world_add_package_sections(
             sections,
@@ -292,6 +294,14 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
+    let num = match world_decode_package(container, 34, "std::num") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let time_value = match world_decode_package(container, 36, "std::time") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
@@ -305,10 +315,12 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
             fs: fs_value,
             io: io_value,
             json,
+            num,
             path: path_value,
             process,
             testing,
             text: text_value,
+            time: time_value,
         },
     };
     artifact_prepare_world(world);

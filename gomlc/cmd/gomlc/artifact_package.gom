@@ -77,10 +77,12 @@ fn artifact_standard_package(
         "std::fs" => Option::Some(standard.fs),
         "std::io" => Option::Some(standard.io),
         "std::json" => Option::Some(standard.json),
+        "std::num" => Option::Some(standard.num),
         "std::path" => Option::Some(standard.path),
         "std::process" => Option::Some(standard.process),
         "std::testing" => Option::Some(standard.testing),
         "std::text" => Option::Some(standard.text),
+        "std::time" => Option::Some(standard.time),
         _ => Option::None,
     }
 }
@@ -234,10 +236,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: true,
             io: true,
             json: true,
+            num: true,
             path: true,
             process: true,
             testing: false,
             text: true,
+            time: true,
         },
         "std::bytes" => StandardNeeds {
             root: false,
@@ -247,10 +251,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: false,
+            time: false,
         },
         "std::collections" => StandardNeeds {
             root: false,
@@ -260,10 +266,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: false,
+            time: false,
         },
         "std::env" => StandardNeeds {
             root: false,
@@ -273,10 +281,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: false,
+            time: false,
         },
         "std::fs" => StandardNeeds {
             root: false,
@@ -286,10 +296,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: true,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: false,
+            time: false,
         },
         "std::io" => StandardNeeds {
             root: false,
@@ -299,10 +311,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: true,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: false,
+            time: false,
         },
         "std::json" => StandardNeeds {
             root: false,
@@ -312,10 +326,27 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: true,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: true,
+            time: false,
+        },
+        "std::num" => StandardNeeds {
+            root: false,
+            bytes: false,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            json: false,
+            num: true,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+            time: false,
         },
         "std::path" => StandardNeeds {
             root: false,
@@ -325,10 +356,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: true,
             process: false,
             testing: false,
             text: false,
+            time: false,
         },
         "std::process" => StandardNeeds {
             root: false,
@@ -338,10 +371,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: true,
             testing: false,
             text: false,
+            time: false,
         },
         "std::testing" => StandardNeeds {
             root: false,
@@ -351,10 +386,12 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: true,
             text: false,
+            time: false,
         },
         "std::text" => StandardNeeds {
             root: false,
@@ -364,10 +401,27 @@ fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
             fs: false,
             io: false,
             json: false,
+            num: false,
             path: false,
             process: false,
             testing: false,
             text: true,
+            time: false,
+        },
+        "std::time" => StandardNeeds {
+            root: false,
+            bytes: false,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            json: false,
+            num: false,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+            time: true,
         },
         _ => no_standard_needs(),
     }
@@ -396,11 +450,48 @@ fn artifact_standard_needs_from_units(
 }
 
 fn artifact_dependency_environments(
+    builtin: ArtifactPackageExports,
     standard: ArtifactStandardLibrary,
     needs: StandardNeeds,
     units: Vec[ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
     let result: Vec[tast::DependencyEnvironment] = Vec::new();
+    match artifact_dependency_environment_from_exports(builtin) {
+        Result::Ok(value) => {
+            let methods = Vec::new();
+            for method in value.methods {
+                match method.trait_ref {
+                    Option::Some(_) => if artifact_builtin_extension_iterator(
+                        method.for_type,
+                    ) {
+                        methods.push(method)
+                    } else {
+                        ()
+                    },
+                    Option::None => methods.push(method),
+                }
+            };
+            let impls = Vec::new();
+            for implementation in value.impls {
+                if artifact_builtin_extension_iterator(implementation.for_type) {
+                    impls.push(implementation)
+                } else {
+                    ()
+                }
+            };
+            result.push(tast::dependency_environment(
+                value.enums,
+                value.structs,
+                value.type_aliases,
+                value.constants,
+                Vec::new(),
+                value.functions,
+                methods,
+                impls,
+            ))
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
     for package_value in selected_standard_packages_for_needs(standard, needs) {
         match artifact_dependency_environment_from_exports(
             package_value.environment_exports,
@@ -416,6 +507,19 @@ fn artifact_dependency_environments(
         }
     };
     Result::Ok(result)
+}
+
+fn artifact_builtin_extension_iterator(value: tast::Type) -> bool {
+    match value {
+        tast::Type::App { ty: base, args: _ } => match base {
+            tast::Type::Con { name } => name == "EnumerateIterator"
+                || name == "ZipIterator"
+                || name == "SkipIterator"
+                || name == "ChainIterator",
+            _ => false,
+        },
+        _ => false,
+    }
 }
 
 fn artifact_dependency_core_types(
@@ -848,6 +952,7 @@ fn compile_artifact_package(
         artifact_standard_needs_from_units(dependency_names, dependency_units),
     );
     let environments = match artifact_dependency_environments(
+        world.builtin_interface.exports,
         world.standard,
         needs,
         dependency_units,

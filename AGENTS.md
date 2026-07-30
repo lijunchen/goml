@@ -411,6 +411,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Single-pass iterators implement `Iterator` and bind its associated `Item` type.
   * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
   * `range(start, end)` creates a half-open `FnIterator[int]` over increasing values.
+  * Adapters include `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain`.
+  * Consumers include `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count`.
+* `Option[T]` and `Result[T, E]` provide `is_*`, `unwrap_or`, and `unwrap_or_else`; type-changing operations use the top-level `option_*` and `result_*` generic functions.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -480,10 +483,17 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * `Vec::[T]::iter() -> FnIterator[T]`
   * `Slice::[T]::iter() -> FnIterator[T]`
   * `range(start: int, end: int) -> FnIterator[int]`
-  * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
-  * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`
+  * `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain` return concrete adapter iterator types
+  * `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count` consume iterators
 * `range` is half-open and increasing; `start >= end` produces an empty iterator.
 * `Vec[T]` and `Slice[T]` implement `IntoIterator`, so `for value in values` and `for value in slice` work without an explicit `.iter()` conversion.
+
+### Practical Standard-Library APIs
+
+* `std::text` provides UTF-8 byte-indexed search, ASCII trimming and case conversion, splitting, lines, replacement, joining, and repetition.
+* `std::num` parses `int`, `uint`, `float32`, and `float64` values into `Result[_, string]`, including explicit-radix integer parsing.
+* `std::collections` provides stable in-place comparator sorting, comparator binary search, position and containment queries, min/max selection, and adjacent deduplication.
+* `std::time` provides non-negative `Duration`, monotonic `Instant`, Unix-based `SystemTime`, and blocking `sleep`.
 
 ### Builtin `Slice`
 

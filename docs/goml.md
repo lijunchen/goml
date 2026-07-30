@@ -1466,6 +1466,20 @@ enum Result[T, E] {
 
 It is recommended to always write `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err` when constructing and matching.
 
+`Option[T]` provides `is_some`, `is_none`, `unwrap_or`, and `unwrap_or_else`. Transformations whose result has another type are top-level generic functions:
+
+- `option_map(value, map_fn) -> Option[U]`
+- `option_and_then(value, next) -> Option[U]`
+- `option_ok_or(value, error) -> Result[T, E]`
+
+`Result[T, E]` provides `is_ok`, `is_err`, `unwrap_or`, and `unwrap_or_else`. Its type-changing operations are:
+
+- `result_map(value, map_fn) -> Result[U, E]`
+- `result_map_err(value, map_fn) -> Result[T, F]`
+- `result_and_then(value, next) -> Result[U, E]`
+
+These functions are top-level because GoML methods cannot declare generic parameters in addition to those of their enclosing `impl`.
+
 ### Output and string conversion
 
 - `print[T: ToString](value: T) -> unit`
@@ -1630,8 +1644,16 @@ Commonly used APIs:
 - `iterator_map(iterator, fn)`
 - `iterator_filter(iterator, predicate)`
 - `iterator_take(iterator, count)`
+- `iterator_enumerate(iterator)`, yielding `(int, Item)`
+- `iterator_zip(left, right)`, ending when either input ends
+- `iterator_skip(iterator, count)`
+- `iterator_chain(first, second)`
 - `iterator_fold(iterator, initial, combine)`
 - `iterator_collect(iterator) -> Vec[T]`
+- `iterator_find(iterator, predicate) -> Option[T]`
+- `iterator_any(iterator, predicate) -> bool`
+- `iterator_all(iterator, predicate) -> bool`
+- `iterator_count(iterator) -> int`
 
 Iterators are single pass.`Vec[T]` and `Slice[T]` can be directly used in `for`, and the value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
 
@@ -1646,26 +1668,39 @@ use std::env;
 use std::fs;
 use std::io;
 use std::json;
+use std::num;
 use std::path;
 use std::process;
 use std::testing;
 use std::text;
+use std::time;
 ```
 
 Current public entrances include:
 
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexVec`, `Interner`, and `Stack`
+- `collections::sort_by`, `stable_sort_by`, `binary_search_by`, `position_by`, `contains`, `min_by`, `max_by`, `dedup_by`, and `dedup`
 - `env::args`, `current_dir`, `current_exe`, and `var`
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `json::Value`, `parse`, `encode`, `field`, and typed `as_*` accessors
+- `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
-- `text::StringBuilder`
+- `text::StringBuilder`, `find`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `to_ascii_lowercase`, and `to_ascii_uppercase`
+- `time::Duration`, `Instant`, `SystemTime`, and `sleep`
 
 File system operations use `Result[..., string]` to report errors, and can be combined with `?`.
+
+Text search indices are UTF-8 byte offsets, matching the indices accepted by the built-in string APIs. Trimming recognizes ASCII whitespace. Splitting on an empty separator returns the original string as one item, while `split_once` with an empty separator returns `Option::None`.
+
+Numeric parsing returns `Result[_, string]`. Integer radix parsing accepts the host parser's supported radices and reports invalid radices, malformed input, and overflow as `Result::Err`.
+
+Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are stable; comparison functions return a negative value, zero, or a positive value. `binary_search_by` expects the vector to already be ordered and returns the first matching index.
+
+`Duration` stores a non-negative number of nanoseconds and offers constructors and whole-unit accessors for nanoseconds, microseconds, milliseconds, and seconds. Subtraction saturates at zero. `Instant` is monotonic and is suitable for elapsed-time measurement. `SystemTime` exposes Unix nanosecond, millisecond, and second timestamps. `time::sleep` blocks the current goroutine for a `Duration`.
 
 ## Comparison of common writing errors
 

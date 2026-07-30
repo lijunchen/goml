@@ -22,10 +22,12 @@ struct StandardNeeds {
     fs: bool,
     io: bool,
     json: bool,
+    num: bool,
     path: bool,
     process: bool,
     testing: bool,
     text: bool,
+    time: bool,
 }
 
 struct ArtifactCompilation {
@@ -55,10 +57,12 @@ fn no_standard_needs() -> StandardNeeds {
         fs: false,
         io: false,
         json: false,
+        num: false,
         path: false,
         process: false,
         testing: false,
         text: false,
+        time: false,
     }
 }
 
@@ -84,10 +88,12 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
         fs: needs_fs,
         io: needs_io,
         json: needs_json,
+        num: needs_root || imports_package(value, "std::num"),
         path: needs_root || imports_package(value, "std::path"),
         process: needs_process,
         testing: imports_package(value, "std::testing"),
         text: needs_text,
+        time: needs_root || imports_package(value, "std::time"),
     }
 }
 
@@ -100,10 +106,12 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         fs: left.fs || right.fs,
         io: left.io || right.io,
         json: left.json || right.json,
+        num: left.num || right.num,
         path: left.path || right.path,
         process: left.process || right.process,
         testing: left.testing || right.testing,
         text: left.text || right.text,
+        time: left.time || right.time,
     }
 }
 
@@ -721,6 +729,11 @@ fn selected_standard_packages_for_needs(
     } else {
         ()
     };
+    if needs.num {
+        result.push(standard.num)
+    } else {
+        ()
+    };
     if needs.path {
         result.push(standard.path)
     } else {
@@ -743,6 +756,11 @@ fn selected_standard_packages_for_needs(
     };
     if needs.json {
         result.push(standard.json)
+    } else {
+        ()
+    };
+    if needs.time {
+        result.push(standard.time)
     } else {
         ()
     };
@@ -887,6 +905,11 @@ fn selected_link_standard_core(
     } else {
         ()
     };
+    if needs.num {
+        result.push(standard.num.core_value)
+    } else {
+        ()
+    };
     if needs.path {
         result.push(standard.path.core_value)
     } else {
@@ -909,6 +932,11 @@ fn selected_link_standard_core(
     };
     if needs.json {
         result.push(standard.json.core_value)
+    } else {
+        ()
+    };
+    if needs.time {
+        result.push(standard.time.core_value)
     } else {
         ()
     };

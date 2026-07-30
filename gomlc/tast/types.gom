@@ -983,6 +983,46 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
                                     args: Vec::new(),
                                 }),
             })
+        } else if (owner == "EnumerateIterator" || owner == "SkipIterator")
+            && args.len() == 1
+        {
+            let item = Type::Projection {
+                for_ty: args.get(0),
+                name: "Item",
+                trait_ref: Option::Some(TraitRef {
+                                    name: "Iterator",
+                                    args: Vec::new(),
+                                }),
+            };
+            if owner == "EnumerateIterator" {
+                Option::Some(Type::Tuple {
+                    items: Vec::new().pushed(Type::Int).pushed(item),
+                })
+            } else {
+                Option::Some(item)
+            }
+        } else if owner == "ZipIterator" && args.len() == 2 {
+            Option::Some(Type::Tuple {
+                items: Vec::new()
+                    .pushed(Type::Projection {
+                        for_ty: args.get(0),
+                        name: "Item",
+                        trait_ref: Option::Some(TraitRef {
+                                            name: "Iterator",
+                                            args: Vec::new(),
+                                        }),
+                    })
+                    .pushed(Type::Projection {
+                        for_ty: args.get(1),
+                        name: "Item",
+                        trait_ref: Option::Some(TraitRef {
+                                            name: "Iterator",
+                                            args: Vec::new(),
+                                        }),
+                    }),
+            })
+        } else if owner == "ChainIterator" && args.len() == 3 {
+            Option::Some(args.get(0))
         } else {
             Option::None
         },

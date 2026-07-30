@@ -149,3 +149,24 @@ pub extern fn process_status_timeout(
 
 #[runtime("std.testing.fail")]
 pub extern fn test_fail(message: string) -> unit;
+
+#[runtime("std.num.parse_int")]
+pub extern fn parse_int(value: string, radix: int) -> (bool, int, string);
+
+#[runtime("std.num.parse_uint")]
+pub extern fn parse_uint(value: string, radix: int) -> (bool, uint, string);
+
+#[runtime("std.num.parse_float32")]
+pub extern fn parse_float32(value: string) -> (bool, float32, string);
+
+#[runtime("std.num.parse_float64")]
+pub extern fn parse_float64(value: string) -> (bool, float64, string);
+
+#[runtime("std.time.monotonic_nanoseconds")]
+pub extern fn monotonic_nanoseconds() -> int64;
+
+#[runtime("std.time.unix_nanoseconds")]
+pub extern fn unix_nanoseconds() -> int64;
+
+#[runtime("std.time.sleep_nanoseconds")]
+pub extern fn sleep_nanoseconds(value: int64) -> unit;

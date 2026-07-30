@@ -248,6 +248,13 @@ fn collect_item_names(result: NameSet, value: Item) -> unit {
                 collect_expr_names(result, spec.value)
             }
         },
+        Item::Global(global) => {
+            match global.ty {
+                Option::Some(ty) => collect_type_names(result, ty),
+                Option::None => (),
+            };
+            collect_expr_names(result, global.value)
+        },
         Item::Interface(definition) => {
             for method in definition.methods {
                 for param in method.params {
@@ -349,6 +356,27 @@ pub fn prune_functions(value: File) -> File {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {
+                Item::Global(global) => if name_present(reachable, global.name)
+                    && name_present(expanded, global.name) == false
+                {
+                    add_reachable(expanded, global.name);
+                    collect_expr_names(reachable, global.value)
+                } else {
+                    ()
+                },
+                _ => (),
+            }
+        };
+        if expanded.values.len() == previous_len {
+            break
+        } else {
+            ()
+        }
+    };
+    while true {
+        let previous_len = expanded.values.len();
+        for item in value.items {
+            match item {
                 Item::ConstGroup(group) => for spec in group.specs {
                     if name_present(reachable, spec.name)
                         && name_present(expanded, spec.name) == false
@@ -390,6 +418,13 @@ pub fn prune_functions(value: File) -> File {
                 };
                 if was_empty || specs.len() > 0 {
                     items.push(Item::ConstGroup(ConstGroup { specs }))
+                } else {
+                    ()
+                }
+            },
+            Item::Global(global) => {
+                if name_present(reachable, global.name) {
+                    items.push(Item::Global(global))
                 } else {
                     ()
                 }
