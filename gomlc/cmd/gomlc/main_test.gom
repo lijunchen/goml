@@ -267,6 +267,47 @@ fn parses_package_information_without_lowering_file_bodies() -> unit {
 }
 
 #[test]
+fn package_information_scanner_stops_at_the_first_body_token() -> unit {
+    let source = "// header\npackage main;\nuse alpha::beta as value;\nfn main() -> unit {}";
+    let scanner = new_package_info_scanner(source);
+    package_info_skip_trivia(scanner);
+    testing::assert(package_info_consume_keyword(scanner, "package"));
+    match package_info_read_ident(scanner) {
+        Option::Some(value) => testing::assert_eq(value, "main"),
+        Option::None => testing::fail("expected package name"),
+    };
+    testing::assert(package_info_consume_text(scanner, ";"));
+    testing::assert(package_info_consume_keyword(scanner, "use"));
+    match package_info_parse_use(scanner, "main.gom") {
+        Result::Ok(value) => {
+            testing::assert_eq(value.path, "alpha::beta");
+            match value.alias {
+                Option::Some(alias) => testing::assert_eq(alias, "value"),
+                Option::None => testing::fail("expected use alias"),
+            }
+        },
+        Result::Err(error) => testing::fail(error),
+    };
+    package_info_skip_trivia(scanner);
+    testing::assert(package_info_at_keyword(scanner, "fn"));
+    testing::assert(scanner.index.get() < source.byte_len())
+}
+
+#[test]
+fn package_information_scanner_respects_keyword_boundaries() -> unit {
+    let scanner = new_package_info_scanner("package_name");
+    testing::assert_eq(
+        package_info_consume_keyword(scanner, "package"),
+        false,
+    );
+    let use_scanner = new_package_info_scanner("useful");
+    testing::assert_eq(
+        package_info_consume_keyword(use_scanner, "use"),
+        false,
+    )
+}
+
+#[test]
 fn reports_driver_protocol_version() -> unit {
     testing::assert_eq(
         version_output_with(
