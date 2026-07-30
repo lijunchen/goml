@@ -1681,11 +1681,11 @@ File system operations use `Result[..., string]` to report errors, and can be co
 | `let Option::Some(x) = value;` | `if let Option::Some(x) = value { ... };` or `match` |
 | `let Point { x } = point;` | `let Point { x, .. } = point;` |
 | Endless `match` | Complete variant or `_` branch |
-| `x += 1`、`x++` | `x = x + 1;` |
-| `point.x = value` | Rebuild the structure or design the field as `Ref[T]` |
+| `x++`、`x--` | `x += 1;`、`x -= 1;` |
+| Assign through an immutable structure binding | Declare the binding with `let mut`, or create a new value with `Point { field: value, ..point }` |
 | `var x = 1`、`x := 1` | `let x = 1;` |
 | `loop { ... }` | `while true { ... }` |
-| `for i := 0; ...` | `while` , or `for i in range(start, end)` |
+| `for i := 0; ...` | `while`, or `for i in start..end` |
 | `switch` | `match` |
 | `null`、`nil` | `Option::None` |
 | `throw`, exception | `Result` and `?` |

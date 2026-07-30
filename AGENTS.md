@@ -287,6 +287,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 - `bootstrap/stage0.env` is the trust root for self-hosting. It pins the previous released Linux amd64 toolchain and its SHA-256 checksum.
 - The current stage0 must always be able to compile the current `gomlc/` and `goml/` sources. Every pull request must preserve this invariant and pass `just ci`.
+- `docs/goml.md` is the canonical user-facing language guide. Every change to syntax, language semantics, builtins, or public standard-library APIs must update the relevant prose, examples, limitations, comparison table, and informal grammar in that file in the same change.
 - Implement new syntax, builtins, standard-library APIs, traits, or type-system capabilities without using them in compiler or driver sources. Tests and fixtures may use the new capability immediately.
 - Release the implementation and advance stage0 to that release before using the new capability in compiler or driver sources.
 - Introduce a standard-library capability in two phases. First add its public source, embedded source, dependency selection, navigation, documentation, and external tests while retaining any compiler-owned fallback. After releasing and advancing stage0, migrate compiler and driver consumers and remove the fallback.
