@@ -237,6 +237,36 @@ fn parses_version_formats() -> unit {
 }
 
 #[test]
+fn parses_package_information_without_lowering_file_bodies() -> unit {
+    let source = "// header\npackage sample;\nuse alpha::beta;\nuse gamma::delta as other;\nfn main() -> unit { let _ = \"use hidden::path;\"; }";
+    match parse_package_info_file("main.gom", source) {
+        Result::Ok(value) => {
+            testing::assert_eq(value.package_name, "sample");
+            testing::assert(value.package_explicit);
+            testing::assert_eq(value.uses.len(), 2);
+            testing::assert_eq(value.uses.get(0).path, "alpha::beta");
+            match value.uses.get(0).alias {
+                Option::None => (),
+                Option::Some(_) => testing::fail("expected no use alias"),
+            };
+            testing::assert_eq(value.uses.get(1).path, "gamma::delta");
+            match value.uses.get(1).alias {
+                Option::Some(alias) => testing::assert_eq(alias, "other"),
+                Option::None => testing::fail("expected use alias"),
+            }
+        },
+        Result::Err(error) => testing::fail(error),
+    };
+    match parse_package_info_file("main.gom", "use alpha::;") {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "error[parser]: main.gom: expected a path segment after '::'",
+        ),
+        Result::Ok(_) => testing::fail("expected package information error"),
+    }
+}
+
+#[test]
 fn reports_driver_protocol_version() -> unit {
     testing::assert_eq(
         version_output_with(
