@@ -1500,7 +1500,7 @@ fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
         "Enum First has no variant Missing",
     ));
     let non_enum = checked_diagnostics(
-        "fn classify(value: int32) -> int32 { match value { Some(inner) => inner, _ => 0 } }",
+        "fn classify(value: int32) -> int32 { match value { Some(inner) => inner } }",
     );
     testing::assert_eq(non_enum.len(), 1);
     testing::assert_eq(

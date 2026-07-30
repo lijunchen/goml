@@ -3527,10 +3527,10 @@ fn check_match_expr(
     let useful_arms = match_useful_arms(ctx, analysis_arms);
     let invalid_coverage_seen = Ref::new(false);
     for index in range(0, useful_arms.len()) {
-        if !(invalid_pattern_arms.get(index))
-            && !(follows_invalid_coverage.get(index))
-            && !(invalid_coverage_seen.get())
-            && !(useful_arms.get(index)) {
+        if follows_invalid_coverage.get(index)
+            || invalid_coverage_seen.get()
+            || !(useful_arms.get(index))
+        {
             push_warning_at(
                 ctx,
                 "Unreachable match arm",
