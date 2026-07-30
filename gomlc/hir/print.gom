@@ -149,15 +149,16 @@ fn find_bounds(
     values: Vec[(string, Vec[TraitRef])],
     name: string,
 ) -> Option[Vec[TraitRef]] {
-    let result = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.0 == name {
-            result.set(Option::Some(value.1))
+            return Option::Some(value.1)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn write_bounded_generics(

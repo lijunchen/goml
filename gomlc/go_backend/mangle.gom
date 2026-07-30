@@ -1,16 +1,7 @@
 package go_backend;
 
+use gomlc::strings;
 use std::text;
-
-fn has_prefix(value: string, prefix: string) -> bool {
-    value.byte_len() >= prefix.byte_len()
-        && value.byte_slice(0, prefix.byte_len()) == prefix
-}
-
-fn has_suffix(value: string, suffix: string) -> bool {
-    value.byte_len() >= suffix.byte_len()
-        && value.byte_slice(value.byte_len() - suffix.byte_len(), value.byte_len()) == suffix
-}
 
 fn is_ascii_letter(value: char) -> bool {
     (value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z')
@@ -21,21 +12,27 @@ fn is_ascii_digit(value: char) -> bool {
 }
 
 fn is_valid_ident(value: string) -> bool {
-    if value.len() == 0 {
-        false
+    let characters = value.chars();
+    let first = match Iterator::next(characters) {
+        Option::Some(value) => value,
+        Option::None => return false,
+    };
+    if !(is_ascii_letter(first) || first == '_') {
+        return false
     } else {
-        let first = value.get(0);
-        let valid = Ref::new(is_ascii_letter(first) || first == '_');
-        for index in range(1, value.len()) {
-            let character = value.get(index);
-            if !(is_ascii_letter(character) || is_ascii_digit(character) || character == '_') {
-                valid.set(false)
-            } else {
-                ()
-            }
+        ()
+    };
+    for character in characters {
+        if !(is_ascii_letter(character)
+            || is_ascii_digit(character)
+            || character == '_')
+        {
+            return false
+        } else {
+            ()
         };
-        valid.get()
-    }
+    };
+    true
 }
 
 fn is_keyword(value: string) -> bool {
@@ -95,36 +92,38 @@ fn is_predeclared(value: string) -> bool {
 }
 
 fn is_generated_value(value: string) -> bool {
-    has_prefix(value, "_goml_")
-        || has_prefix(value, "dyn__")
-        || (has_prefix(value, "ref_") && has_suffix(value, "_x"))
-        || (has_prefix(value, "hashmap_")
-            && (has_suffix(value, "_x") || has_suffix(value, "_x_entry")))
-        || has_prefix(value, "array_get__")
-        || has_prefix(value, "array_set__")
-        || has_prefix(value, "vec_new__")
-        || has_prefix(value, "vec_with_capacity__")
-        || has_prefix(value, "vec_push__")
-        || has_prefix(value, "vec_get__")
-        || has_prefix(value, "vec_set__")
-        || has_prefix(value, "vec_len__")
-        || has_prefix(value, "vec_capacity__")
-        || has_prefix(value, "vec_reserve__")
-        || has_prefix(value, "vec_truncate__")
-        || has_prefix(value, "ref__")
-        || has_prefix(value, "ref_get__")
-        || has_prefix(value, "ref_set__")
-        || has_prefix(value, "ptr_eq__")
-        || has_prefix(value, "ptr_hash__")
-        || has_prefix(value, "hashmap_new__")
-        || has_prefix(value, "hashmap_len__")
-        || has_prefix(value, "hashmap_contains__")
-        || has_prefix(value, "hashmap_lookup__")
-        || has_prefix(value, "hashmap_get__")
-        || has_prefix(value, "hashmap_set__")
-        || has_prefix(value, "hashmap_remove__")
-        || has_prefix(value, "hashmap_entries__")
-        || has_prefix(value, "missing__")
+    strings::starts_with(value, "_goml_")
+        || strings::starts_with(value, "dyn__")
+        || (strings::starts_with(value, "ref_")
+            && strings::ends_with(value, "_x"))
+        || (strings::starts_with(value, "hashmap_")
+            && (strings::ends_with(value, "_x")
+                || strings::ends_with(value, "_x_entry")))
+        || strings::starts_with(value, "array_get__")
+        || strings::starts_with(value, "array_set__")
+        || strings::starts_with(value, "vec_new__")
+        || strings::starts_with(value, "vec_with_capacity__")
+        || strings::starts_with(value, "vec_push__")
+        || strings::starts_with(value, "vec_get__")
+        || strings::starts_with(value, "vec_set__")
+        || strings::starts_with(value, "vec_len__")
+        || strings::starts_with(value, "vec_capacity__")
+        || strings::starts_with(value, "vec_reserve__")
+        || strings::starts_with(value, "vec_truncate__")
+        || strings::starts_with(value, "ref__")
+        || strings::starts_with(value, "ref_get__")
+        || strings::starts_with(value, "ref_set__")
+        || strings::starts_with(value, "ptr_eq__")
+        || strings::starts_with(value, "ptr_hash__")
+        || strings::starts_with(value, "hashmap_new__")
+        || strings::starts_with(value, "hashmap_len__")
+        || strings::starts_with(value, "hashmap_contains__")
+        || strings::starts_with(value, "hashmap_lookup__")
+        || strings::starts_with(value, "hashmap_get__")
+        || strings::starts_with(value, "hashmap_set__")
+        || strings::starts_with(value, "hashmap_remove__")
+        || strings::starts_with(value, "hashmap_entries__")
+        || strings::starts_with(value, "missing__")
 }
 
 fn write_hex_byte(builder: text::StringBuilder, value: uint8) -> unit {
@@ -202,19 +201,27 @@ fn write_encoded_char(builder: text::StringBuilder, value: char) -> unit {
 
 fn encode_name(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
-    let index = Ref::new(0);
-    while index.get() < value.len() {
-        let character = value.get(index.get());
-        if character == ':'
-            && index.get() + 1 < value.len()
-            && value.get(index.get() + 1) == ':'
-        {
-            builder.write_string("_p_");
-            index.set(index.get() + 2)
+    let pending_colon = Ref::new(false);
+    for character in value.chars() {
+        if pending_colon.get() {
+            if character == ':' {
+                builder.write_string("_p_");
+                pending_colon.set(false)
+            } else {
+                write_encoded_char(builder, ':');
+                write_encoded_char(builder, character);
+                pending_colon.set(false)
+            }
+        } else if character == ':' {
+            pending_colon.set(true)
         } else {
-            write_encoded_char(builder, character);
-            index.set(index.get() + 1)
+            write_encoded_char(builder, character)
         }
+    };
+    if pending_colon.get() {
+        write_encoded_char(builder, ':')
+    } else {
+        ()
     };
     builder.finish()
 }
@@ -272,8 +279,7 @@ pub fn go_ident(value: string) -> string {
 
 pub fn go_local_ident(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
-    for index in range(0, value.len()) {
-        let character = value.get(index);
+    for character in value.chars() {
         if character == '/' {
             builder.write_string("__")
         } else {
@@ -288,7 +294,7 @@ pub fn go_generated_ident(value: string) -> string {
 }
 
 pub fn go_dyn_struct_name(trait_name: string) -> string {
-    if has_suffix(trait_name, "_vtable") {
+    if strings::ends_with(trait_name, "_vtable") {
         go_generated_ident("_goml_dyn_object_" + trait_name)
     } else {
         go_generated_ident("dyn__" + trait_name)
@@ -296,7 +302,7 @@ pub fn go_dyn_struct_name(trait_name: string) -> string {
 }
 
 pub fn is_generated_tuple_type_name(value: string) -> bool {
-    if !has_prefix(value, "Tuple") {
+    if !strings::starts_with(value, "Tuple") {
         false
     } else {
         let index = Ref::new(5);
@@ -309,13 +315,13 @@ pub fn is_generated_tuple_type_name(value: string) -> bool {
 }
 
 fn generated_type_name(value: string) -> bool {
-    has_prefix(value, "Tuple")
-        || has_prefix(value, "Array")
-        || has_prefix(value, "Slice_")
-        || has_prefix(value, "Vec_")
-        || has_prefix(value, "Ptr_")
-        || has_prefix(value, "HashMap_")
-        || has_prefix(value, "TFunc")
+    strings::starts_with(value, "Tuple")
+        || strings::starts_with(value, "Array")
+        || strings::starts_with(value, "Slice_")
+        || strings::starts_with(value, "Vec_")
+        || strings::starts_with(value, "Ptr_")
+        || strings::starts_with(value, "HashMap_")
+        || strings::starts_with(value, "TFunc")
 }
 
 pub fn go_user_type_name(value: string) -> string {

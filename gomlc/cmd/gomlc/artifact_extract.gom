@@ -1,7 +1,9 @@
 package main;
 
 use gomlc::ast;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 
 fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type) -> tast::Type {
     let types = Vec::new();
@@ -26,7 +28,7 @@ fn artifact_local_trait_name(
     name: string,
     trait_names: Vec[string],
 ) -> string {
-    if artifact_string_contains(name, "::") {
+    if strings::contains(name, "::") {
         name
     } else {
         let separator = artifact_constructor_separator(owner);
@@ -35,7 +37,7 @@ fn artifact_local_trait_name(
         } else {
             owner.byte_slice(0, separator + 2) + name
         };
-        if public_names_contain(trait_names, candidate) { candidate } else { name }
+        if vecs::contains(trait_names, candidate) { candidate } else { name }
     }
 }
 
@@ -325,7 +327,7 @@ fn artifact_struct_def(
         let fields = Vec::new();
         let public_fields = Vec::new();
         for field in value.fields {
-            if public_names_contain(value.public_fields, field.0) {
+            if vecs::contains(value.public_fields, field.0) {
                 fields.push(field);
                 public_fields.push(field.0)
             } else {
@@ -471,7 +473,7 @@ fn artifact_trait_impl_is_public(
 }
 
 fn artifact_add_type_name(values: Vec[string], name: string) -> unit {
-    if public_names_contain(values, name) {
+    if vecs::contains(values, name) {
         ()
     } else {
         values.push(name)
@@ -496,7 +498,7 @@ fn artifact_package_exports(
     };
     for definition in file.enums {
         artifact_add_type_name(result.enum_type_names, definition.name);
-        if !public_only || public_names_contain(public_names, definition.name) {
+        if !public_only || vecs::contains(public_names, definition.name) {
             result.enums.push(definition)
         } else {
             ()
@@ -504,7 +506,7 @@ fn artifact_package_exports(
     };
     for definition in file.structs {
         artifact_add_type_name(result.struct_type_names, definition.name);
-        if !public_only || public_names_contain(public_names, definition.name) {
+        if !public_only || vecs::contains(public_names, definition.name) {
             result.structs.push(artifact_struct_def(definition, public_only))
         } else {
             ()
@@ -515,14 +517,14 @@ fn artifact_package_exports(
         trait_names.push(definition.name)
     };
     for definition in signatures.traits {
-        if !public_only || public_names_contain(public_names, definition.name) {
+        if !public_only || vecs::contains(public_names, definition.name) {
             result.traits.push(artifact_trait_def(definition, trait_names))
         } else {
             ()
         }
     };
     for function in signatures.functions {
-        if !public_only || public_names_contain(public_names, function.name) {
+        if !public_only || vecs::contains(public_names, function.name) {
             result.functions.push(artifact_fn_scheme(function))
         } else {
             ()
@@ -560,7 +562,7 @@ fn artifact_relative_export_name(package_name: string, name: string) -> string {
         name
     } else {
         let prefix = package_name + "::";
-        if artifact_string_starts_with(name, prefix) {
+        if strings::starts_with(name, prefix) {
             name.byte_slice(prefix.byte_len(), name.byte_len())
         } else {
             name

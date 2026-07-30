@@ -59,39 +59,29 @@ fn trimmed_node_span(value: LocatedNode) -> Span {
 
 fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
     let cursor = Ref::new(value.start);
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for element in cst::node_children(value.node) {
-        if found.get() {
-            ()
-        } else {
-            match element {
-                cst::CstElement::Node(child) => {
-                    match first_significant_token_span(LocatedNode {
-                        node: child,
-                        start: cursor.get(),
-                    }) {
-                        Option::Some(value) => {
-                            result.set(Option::Some(value));
-                            found.set(true)
-                        },
-                        Option::None => (),
-                    }
-                },
-                cst::CstElement::Token(token) => if lexer::token_is_trivia(token.kind) {
-                    ()
-                } else {
-                    result.set(Option::Some(span(
-                        cursor.get(),
-                        cursor.get() + token.text.byte_len(),
-                    )));
-                    found.set(true)
-                },
-            }
+        match element {
+            cst::CstElement::Node(child) => {
+                match first_significant_token_span(LocatedNode {
+                    node: child,
+                    start: cursor.get(),
+                }) {
+                    Option::Some(value) => return Option::Some(value),
+                    Option::None => (),
+                }
+            },
+            cst::CstElement::Token(token) => if lexer::token_is_trivia(token.kind) {
+                ()
+            } else {
+                return Option::Some(span(
+                    cursor.get(),
+                    cursor.get() + token.text.byte_len(),
+                ))
+            },
         };
         cursor.set(cursor.get() + cst::element_byte_len(element))
     };
-    result.get()
+    Option::None
 }
 
 fn type_head_span(value: LocatedNode) -> Span {
@@ -146,17 +136,14 @@ fn children_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Vec[LocatedNode]
 }
 
 fn first_child(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for child in direct_nodes(value) {
-        if found.get() == false && cst::node_kind_equal(node_kind(child), kind) {
-            result.set(Option::Some(child));
-            found.set(true)
+        if cst::node_kind_equal(node_kind(child), kind) {
+            return Option::Some(child)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToken] {
@@ -172,17 +159,14 @@ fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToke
 }
 
 fn first_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToken] {
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for token in direct_tokens(value) {
-        if found.get() == false && lexer::token_kind_equal(token.token.kind, kind) {
-            result.set(Option::Some(token));
-            found.set(true)
+        if lexer::token_kind_equal(token.token.kind, kind) {
+            return Option::Some(token)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn has_token(value: LocatedNode, kind: lexer::TokenKind) -> bool {

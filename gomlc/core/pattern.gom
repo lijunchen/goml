@@ -39,14 +39,13 @@ struct PrimitivePatternCase {
 }
 
 fn flat_pattern_items(items: Vec[tast::Pat]) -> bool {
-    let valid = Ref::new(true);
     for item in items {
         match item {
             tast::Pat::Var { name: _, ty: _ } | tast::Pat::Wild { ty: _ } => (),
-            _ => valid.set(false),
+            _ => return false,
         }
     };
-    valid.get()
+    true
 }
 
 fn plan_flat_pattern(
@@ -196,54 +195,62 @@ fn normalize_pattern_rows(rows: Vec[PatternRow]) -> Vec[PatternRow] {
 
 fn expand_or_pattern_rows(rows: Vec[PatternRow], source: string) -> Option[Vec[PatternRow]] {
     let result: Vec[PatternRow] = Vec::new();
-    let changed = Ref::new(false);
+    let expanded_rows: Vec[unit] = Vec::new();
     for row in rows {
-        let expanded = Ref::new(false);
-        for index in range(0, row.columns.len()) {
-            let column = row.columns.get(index);
-            if !(expanded.get()) && column.source == source {
+        match or_pattern_column_index(row, source) {
+            Option::Some(index) => {
+                let column = row.columns.get(index);
                 match column.pattern {
-                    tast::Pat::Or { pats: patterns, ty: _ } => {
-                        changed.set(true);
-                        expanded.set(true);
-                        for pattern in patterns {
-                            let columns: Vec[PatternColumn] = Vec::new();
-                            for column_index in range(0, row.columns.len()) {
-                                let value = row.columns.get(column_index);
-                                if column_index == index {
-                                    columns.push(PatternColumn {
-                                        source: value.source,
-                                        source_ty: value.source_ty,
-                                        pattern,
-                                    })
-                                } else {
-                                    columns.push(value)
-                                }
-                            };
-                            result.push(PatternRow {
-                                columns,
-                                bindings: row.bindings,
-                                body: row.body,
-                            })
-                        }
+                    tast::Pat::Or { pats: patterns, ty: _ } => for pattern in patterns {
+                        let columns: Vec[PatternColumn] = Vec::new();
+                        for column_index in range(0, row.columns.len()) {
+                            let value = row.columns.get(column_index);
+                            if column_index == index {
+                                columns.push(PatternColumn {
+                                    source: value.source,
+                                    source_ty: value.source_ty,
+                                    pattern,
+                                })
+                            } else {
+                                columns.push(value)
+                            }
+                        };
+                        result.push(PatternRow {
+                            columns,
+                            bindings: row.bindings,
+                            body: row.body,
+                        })
                     },
-                    _ => (),
-                }
-            } else {
-                ()
-            }
-        };
-        if !(expanded.get()) {
-            result.push(row)
-        } else {
-            ()
+                    _ => result.push(row),
+                };
+                expanded_rows.push(())
+            },
+            Option::None => result.push(row),
         }
     };
-    if changed.get() {
+    if expanded_rows.len() > 0 {
         Option::Some(result)
     } else {
         Option::None
     }
+}
+
+fn or_pattern_column_index(
+    row: PatternRow,
+    source: string,
+) -> Option[int] {
+    for index in range(0, row.columns.len()) {
+        let column = row.columns.get(index);
+        if column.source == source {
+            match column.pattern {
+                tast::Pat::Or { pats: _, ty: _ } => return Option::Some(index),
+                _ => (),
+            }
+        } else {
+            ()
+        }
+    };
+    Option::None
 }
 
 fn pattern_source_count(rows: Vec[PatternRow], source: string) -> int {
@@ -264,18 +271,20 @@ fn branch_pattern_column(rows: Vec[PatternRow]) -> Option[PatternColumn] {
     if rows.len() == 0 || rows.get(0).columns.len() == 0 {
         Option::None
     } else {
-        let selected: Ref[Option[PatternColumn]] = Ref::new(Option::None);
+        let selected = Ref::new(0);
         let best = Ref::new(-1);
-        for column in rows.get(0).columns {
+        let columns = rows.get(0).columns;
+        for index in range(0, columns.len()) {
+            let column = columns.get(index);
             let count = pattern_source_count(rows, column.source);
             if count >= best.get() {
                 best.set(count);
-                selected.set(Option::Some(column))
+                selected.set(index)
             } else {
                 ()
             }
         };
-        selected.get()
+        Option::Some(columns.get(selected.get()))
     }
 }
 
@@ -306,30 +315,25 @@ fn bool_pattern_row(
     expected: bool,
 ) -> Option[PatternRow] {
     let columns: Vec[PatternColumn] = Vec::new();
-    let matches = Ref::new(true);
     for column in row.columns {
         if column.source == source {
             match column.pattern {
                 tast::Pat::Prim { value: tast::Primitive::Bool { value }, ty: _ } => if value == expected {
                     ()
                 } else {
-                    matches.set(false)
+                    return Option::None
                 },
-                _ => matches.set(false),
+                _ => return Option::None,
             }
         } else {
             columns.push(column)
         }
     };
-    if matches.get() {
-        Option::Some(PatternRow {
-            columns,
-            bindings: row.bindings,
-            body: row.body,
-        })
-    } else {
-        Option::None
-    }
+    Option::Some(PatternRow {
+        columns,
+        bindings: row.bindings,
+        body: row.body,
+    })
 }
 
 fn bool_pattern_rows(
@@ -354,7 +358,6 @@ fn tuple_pattern_row(
     types: Vec[tast::Type],
 ) -> Option[PatternRow] {
     let columns: Vec[PatternColumn] = Vec::new();
-    let valid = Ref::new(true);
     for column in row.columns {
         if column.source == source {
             match column.pattern {
@@ -367,23 +370,19 @@ fn tuple_pattern_row(
                         })
                     }
                 } else {
-                    valid.set(false)
+                    return Option::None
                 },
-                _ => valid.set(false),
+                _ => return Option::None,
             }
         } else {
             columns.push(column)
         }
     };
-    if valid.get() {
-        Option::Some(PatternRow {
-            columns,
-            bindings: row.bindings,
-            body: row.body,
-        })
-    } else {
-        Option::None
-    }
+    Option::Some(PatternRow {
+        columns,
+        bindings: row.bindings,
+        body: row.body,
+    })
 }
 
 fn tuple_pattern_rows(
@@ -446,7 +445,6 @@ fn struct_pattern_row(
     fields: Vec[(string, tast::Type)],
 ) -> Option[PatternRow] {
     let columns: Vec[PatternColumn] = Vec::new();
-    let valid = Ref::new(true);
     for column in row.columns {
         if column.source == source {
             match column.pattern {
@@ -460,24 +458,20 @@ fn struct_pattern_row(
                             })
                         }
                     } else {
-                        valid.set(false)
+                        return Option::None
                     }
                 },
-                _ => valid.set(false),
+                _ => return Option::None,
             }
         } else {
             columns.push(column)
         }
     };
-    if valid.get() {
-        Option::Some(PatternRow {
-            columns,
-            bindings: row.bindings,
-            body: row.body,
-        })
-    } else {
-        Option::None
-    }
+    Option::Some(PatternRow {
+        columns,
+        bindings: row.bindings,
+        body: row.body,
+    })
 }
 
 fn struct_pattern_rows(
@@ -542,7 +536,6 @@ fn enum_pattern_row(
     variables: Vec[(string, tast::Type)],
 ) -> Option[PatternRow] {
     let columns: Vec[PatternColumn] = Vec::new();
-    let valid = Ref::new(true);
     for column in row.columns {
         if column.source == source {
             match column.pattern {
@@ -557,24 +550,20 @@ fn enum_pattern_row(
                             })
                         }
                     } else {
-                        valid.set(false)
+                        return Option::None
                     }
                 },
-                _ => valid.set(false),
+                _ => return Option::None,
             }
         } else {
             columns.push(column)
         }
     };
-    if valid.get() {
-        Option::Some(PatternRow {
-            columns,
-            bindings: row.bindings,
-            body: row.body,
-        })
-    } else {
-        Option::None
-    }
+    Option::Some(PatternRow {
+        columns,
+        bindings: row.bindings,
+        body: row.body,
+    })
 }
 
 fn enum_pattern_rows(
@@ -598,14 +587,13 @@ fn enum_pattern_present(
     source: string,
     constructor_name: string,
 ) -> bool {
-    let present = Ref::new(false);
     for row in rows {
         for column in row.columns {
             if column.source == source {
                 match column.pattern {
                     tast::Pat::Constr { constructor, args: _, ty: _ } => {
                         if constructor.name == constructor_name {
-                            present.set(true)
+                            return true
                         } else {
                             ()
                         }
@@ -617,27 +605,30 @@ fn enum_pattern_present(
             }
         }
     };
-    present.get()
+    false
 }
 
 fn pattern_default_rows(rows: Vec[PatternRow], source: string) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        let contains = Ref::new(false);
-        for column in row.columns {
-            if column.source == source {
-                contains.set(true)
-            } else {
-                ()
-            }
-        };
-        if contains.get() {
+        if pattern_row_has_source(row, source) {
             ()
         } else {
             result.push(row)
         }
     };
     result
+}
+
+fn pattern_row_has_source(row: PatternRow, source: string) -> bool {
+    for column in row.columns {
+        if column.source == source {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn lower_enum_pattern_rows(
@@ -754,29 +745,31 @@ fn lower_bool_pattern_rows(
     }
 }
 
+fn unit_pattern_row(row: PatternRow, source: string) -> Option[PatternRow] {
+    let columns: Vec[PatternColumn] = Vec::new();
+    for column in row.columns {
+        if column.source == source {
+            match column.pattern {
+                tast::Pat::Prim { value: tast::Primitive::Unit, ty: _ } => (),
+                _ => return Option::None,
+            }
+        } else {
+            columns.push(column)
+        }
+    };
+    Option::Some(PatternRow {
+        columns,
+        bindings: row.bindings,
+        body: row.body,
+    })
+}
+
 fn unit_pattern_rows(rows: Vec[PatternRow], source: string) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        let columns: Vec[PatternColumn] = Vec::new();
-        let valid = Ref::new(true);
-        for column in row.columns {
-            if column.source == source {
-                match column.pattern {
-                    tast::Pat::Prim { value: tast::Primitive::Unit, ty: _ } => (),
-                    _ => valid.set(false),
-                }
-            } else {
-                columns.push(column)
-            }
-        };
-        if valid.get() {
-            result.push(PatternRow {
-                columns,
-                bindings: row.bindings,
-                body: row.body,
-            })
-        } else {
-            ()
+        match unit_pattern_row(row, source) {
+            Option::Some(value) => result.push(value),
+            Option::None => (),
         }
     };
     result
@@ -809,6 +802,20 @@ fn primitive_pattern_key(value: tast::Primitive, ty: tast::Type) -> string {
     builder.finish()
 }
 
+fn primitive_pattern_case_exists(
+    values: Vec[PrimitivePatternCase],
+    key: string,
+) -> bool {
+    for value in values {
+        if value.key == key {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
 fn primitive_pattern_cases(rows: Vec[PatternRow], source: string) -> Vec[PrimitivePatternCase] {
     let result: Vec[PrimitivePatternCase] = Vec::new();
     for row in rows {
@@ -817,15 +824,7 @@ fn primitive_pattern_cases(rows: Vec[PatternRow], source: string) -> Vec[Primiti
                 match column.pattern {
                     tast::Pat::Prim { value, ty } => {
                         let key = primitive_pattern_key(value, ty);
-                        let found = Ref::new(false);
-                        for existing in result {
-                            if existing.key == key {
-                                found.set(true)
-                            } else {
-                                ()
-                            }
-                        };
-                        if found.get() {
+                        if primitive_pattern_case_exists(result, key) {
                             ()
                         } else {
                             result.push(PrimitivePatternCase {
@@ -851,7 +850,6 @@ fn primitive_pattern_row(
     key: string,
 ) -> Option[PatternRow] {
     let columns: Vec[PatternColumn] = Vec::new();
-    let valid = Ref::new(true);
     for column in row.columns {
         if column.source == source {
             match column.pattern {
@@ -859,24 +857,20 @@ fn primitive_pattern_row(
                     if primitive_pattern_key(value, ty) == key {
                         ()
                     } else {
-                        valid.set(false)
+                        return Option::None
                     }
                 },
-                _ => valid.set(false),
+                _ => return Option::None,
             }
         } else {
             columns.push(column)
         }
     };
-    if valid.get() {
-        Option::Some(PatternRow {
-            columns,
-            bindings: row.bindings,
-            body: row.body,
-        })
-    } else {
-        Option::None
-    }
+    Option::Some(PatternRow {
+        columns,
+        bindings: row.bindings,
+        body: row.body,
+    })
 }
 
 fn primitive_pattern_rows(
@@ -1002,10 +996,9 @@ fn pattern_rows_from_arms(
     arms: Vec[tast::Arm],
 ) -> Option[Vec[PatternRow]] {
     let rows: Vec[PatternRow] = Vec::new();
-    let valid = Ref::new(true);
     for arm in arms {
         match arm.guard {
-            Option::Some(_) => valid.set(false),
+            Option::Some(_) => return Option::None,
             Option::None => {
                 let columns: Vec[PatternColumn] = Vec::new();
                 columns.push(PatternColumn {
@@ -1021,9 +1014,5 @@ fn pattern_rows_from_arms(
             },
         }
     };
-    if valid.get() {
-        Option::Some(rows)
-    } else {
-        Option::None
-    }
+    Option::Some(rows)
 }

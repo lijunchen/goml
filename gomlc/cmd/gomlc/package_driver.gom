@@ -8,8 +8,11 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 use std::fs;
+use std::text;
 
 struct StandardNeeds {
     root: bool,
@@ -127,19 +130,19 @@ fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
 }
 
 fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
-    let path = Ref::new("<unknown>");
-    let source_path = Ref::new("<unknown>");
+    let path = if values.len() > 0 {
+        values.get(0).path
+    } else {
+        "<unknown>"
+    };
+    let source_path = if values.len() > 0 {
+        values.get(0).source_path
+    } else {
+        "<unknown>"
+    };
     let items: Vec[hir::Item] = Vec::new();
     let invalid_self_type_spans: Vec[ast::Span] = Vec::new();
-    let first = Ref::new(true);
     for value in values {
-        if first.get() {
-            path.set(value.path);
-            source_path.set(value.source_path);
-            first.set(false)
-        } else {
-            ()
-        };
         for item in value.items {
             items.push(item)
         };
@@ -149,8 +152,8 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     };
     hir::File {
         package_name,
-        path: path.get(),
-        source_path: source_path.get(),
+        path,
+        source_path,
         imports: Vec::new(),
         import_aliases: Vec::new(),
         use_traits: Vec::new(),
@@ -228,53 +231,18 @@ fn public_item_names(
     result
 }
 
-fn public_names_contain(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
-fn artifact_string_starts_with(value: string, prefix: string) -> bool {
-    value.byte_len() >= prefix.byte_len()
-        && value.byte_slice(0, prefix.byte_len()) == prefix
-}
-
-fn artifact_string_contains(value: string, expected: string) -> bool {
-    if expected.byte_len() == 0 {
-        true
-    } else if value.byte_len() < expected.byte_len() {
-        false
-    } else {
-        let found = Ref::new(false);
-        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
-            if value.byte_slice(index, index + expected.byte_len()) == expected {
-                found.set(true)
-            } else {
-                ()
-            }
-        };
-        found.get()
-    }
-}
-
 fn local_item_is_public(
     package_name: string,
     public_names: Vec[string],
     name: string,
 ) -> bool {
     let prefix = package_name + "::";
-    if !artifact_string_starts_with(name, prefix) {
+    if !strings::starts_with(name, prefix) {
         true
     } else {
         let relative = name.byte_slice(prefix.byte_len(), name.byte_len());
-        artifact_string_contains(relative, "::")
-            || public_names_contain(public_names, name)
+        strings::contains(relative, "::")
+            || vecs::contains(public_names, name)
     }
 }
 
@@ -285,7 +253,7 @@ fn add_private_local_name(
     name: string,
 ) -> unit {
     if !local_item_is_public(package_name, public_names, name)
-        && !public_names_contain(result, name)
+        && !vecs::contains(result, name)
     {
         result.push(name)
     } else {
@@ -536,16 +504,16 @@ fn sort_artifact_names(values: Vec[string]) -> Vec[string] {
 }
 
 fn join_artifact_names(values: Vec[string]) -> string {
-    let result = Ref::new("");
+    let builder = text::StringBuilder::new();
     for index in range(0, values.len()) {
         if index > 0 {
-            result.set(result.get() + ", ")
+            builder.write_string(", ")
         } else {
             ()
         };
-        result.set(result.get() + values.get(index))
+        builder.write_string(values.get(index))
     };
-    result.get()
+    builder.finish()
 }
 
 fn validate_public_trait_impls(
@@ -636,12 +604,12 @@ fn validate_public_fields_and_inherent_methods(
 ) -> Result[unit, string] {
     for item in value.items {
         match item {
-            hir::Item::StructDef(value) => if public_names_contain(
+            hir::Item::StructDef(value) => if vecs::contains(
                 public_names,
                 value.name,
             ) {
                 for field in value.fields {
-                    if public_names_contain(value.public_fields, field.0) {
+                    if vecs::contains(value.public_fields, field.0) {
                         let private_names = Vec::new();
                         collect_private_type_names(
                             private_names,
@@ -806,6 +774,21 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
     }
 }
 
+fn core_function_ret_type(
+    functions: Vec[core::Function],
+    name: string,
+) -> Option[tast::Type] {
+    for offset in range(0, functions.len()) {
+        let function = functions.get(functions.len() - 1 - offset);
+        if function.name == name {
+            return Option::Some(function.ret_ty)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
 fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
     let expected = if package_name == "main" {
         "main"
@@ -813,46 +796,35 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
         package_name + "::main"
     };
     let functions = Vec::new();
-    let found = Ref::new(false);
-    let entry_ret_ty: Ref[Option[tast::Type]] = Ref::new(Option::None);
     for function in value.functions {
-        if function.name == expected {
-            found.set(true);
-            entry_ret_ty.set(Option::Some(function.ret_ty))
-        } else {
-            ()
-        };
         functions.push(function)
     };
-    if found.get() && expected != "main" {
-        let ret_ty = match entry_ret_ty.get() {
-            Option::Some(value) => value,
-            Option::None => tast::Type::Unit,
-        };
-        functions.push(core::Function {
-            name: "main",
-            root: true,
-            generics: Vec::new(),
-            predicates: Vec::new(),
-            trait_impl: Option::None,
-            params: Vec::new(),
-            ret_ty,
-            body: core::Block {
-                stmts: Vec::new(),
-                tail: Option::Some(core::Expr::Call {
-                    func: core::Expr::Var {
-                                            name: expected,
-                                            ty: tast::Type::Func { params: Vec::new(), ret_ty },
-                                        },
-                    args: Vec::new(),
-                    ty: ret_ty,
-                }),
-            },
-        })
-    } else if found.get() {
-        ()
-    } else {
-        fail("error[compile]: entry package has no main function")
+    match core_function_ret_type(functions, expected) {
+        Option::Some(ret_ty) => if expected != "main" {
+            functions.push(core::Function {
+                name: "main",
+                root: true,
+                generics: Vec::new(),
+                predicates: Vec::new(),
+                trait_impl: Option::None,
+                params: Vec::new(),
+                ret_ty,
+                body: core::Block {
+                    stmts: Vec::new(),
+                    tail: Option::Some(core::Expr::Call {
+                        func: core::Expr::Var {
+                                                name: expected,
+                                                ty: tast::Type::Func { params: Vec::new(), ret_ty },
+                                            },
+                        args: Vec::new(),
+                        ty: ret_ty,
+                    }),
+                },
+            })
+        } else {
+            ()
+        },
+        Option::None => fail("error[compile]: entry package has no main function"),
     };
     core::File {
         functions,
@@ -864,19 +836,12 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
 
 fn entry_core(value: core::File, package_name: string) -> core::File {
     if package_name == "main" {
-        let found = Ref::new(false);
-        for function in value.functions {
-            if function.name == "main" {
-                found.set(true)
-            } else {
-                ()
-            }
-        };
-        if found.get() {
-            value
-        } else {
-            fail("error[compile]: entry package has no main function");
-            value
+        match core_function_ret_type(value.functions, "main") {
+            Option::Some(_) => value,
+            Option::None => {
+                fail("error[compile]: entry package has no main function");
+                value
+            },
         }
     } else {
         add_entry_wrapper(value, package_name)
@@ -977,7 +942,7 @@ fn run_package_command(
     let artifact = match compile_artifact_package(world, command, build, emit_tests) {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            if artifact_string_starts_with(error, "error[") {
+            if strings::starts_with(error, "error[") {
                 fail(error)
             } else {
                 fail("error[compile]: " + error)
@@ -1097,7 +1062,7 @@ fn run_link_command(args: Vec[string]) -> unit {
         Option::None => fail("error[compile]: missing entry package " + command.entry),
     };
     let dependencies = Vec::new();
-    let entry: Ref[Option[ArtifactCompilation]] = Ref::new(Option::None);
+    let entries = Vec::new();
     let needs = artifact_core_standard_needs(core_units);
     let compilations = match artifact_core_compilations(core_units) {
         Result::Ok(values) => values,
@@ -1108,27 +1073,17 @@ fn run_link_command(args: Vec[string]) -> unit {
     };
     for compilation in compilations {
         if compilation.package_name == command.entry {
-            entry.set(Option::Some(compilation))
+            entries.push(compilation)
         } else {
             dependencies.push(compilation.core_value)
         }
     };
-    let entry = match entry.get() {
-        Option::Some(value) => value,
-        Option::None => {
-            fail("error[compile]: missing entry package " + command.entry);
-            ArtifactCompilation {
-                package_name: command.entry,
-                dependency_names: Vec::new(),
-                core_value: core::File {
-                    functions: Vec::new(),
-                    enums: Vec::new(),
-                    structs: Vec::new(),
-                    type_instances: Vec::new(),
-                },
-            }
-        },
+    if entries.len() == 0 {
+        fail("error[compile]: missing entry package " + command.entry)
+    } else {
+        ()
     };
+    let entry = entries.get(entries.len() - 1);
     let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, dependencies);
     let linked = core::link_with_dependencies(

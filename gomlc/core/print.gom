@@ -1,5 +1,6 @@
 package core;
 
+use gomlc::strings;
 use gomlc::tast;
 use std::text;
 
@@ -15,15 +16,10 @@ fn newline(builder: text::StringBuilder, indent: int) -> unit {
 }
 
 fn dyn_method_name(value: string) -> string {
-    let start = Ref::new(0);
-    for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 35 {
-            start.set(index + 1)
-        } else {
-            ()
-        }
-    };
-    value.byte_slice(start.get(), value.byte_len())
+    match strings::rfind(value, "#") {
+        Option::Some(index) => value.byte_slice(index + 1, value.byte_len()),
+        Option::None => value,
+    }
 }
 
 fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {

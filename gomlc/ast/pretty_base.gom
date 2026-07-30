@@ -1,5 +1,6 @@
 package ast;
 
+use gomlc::vecs;
 use std::text;
 
 fn pretty_write_spaces(builder: text::StringBuilder, count: int) -> unit {
@@ -146,15 +147,16 @@ fn pretty_find_bounds(
     values: Vec[(string, Vec[TraitRef])],
     name: string,
 ) -> Option[Vec[TraitRef]] {
-    let result = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.0 == name {
-            result.set(Option::Some(value.1))
+            return Option::Some(value.1)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn pretty_write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
@@ -377,7 +379,7 @@ fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: i
     builder.write_string(" {");
     for field in value.fields {
         pretty_newline(builder, indent + 4);
-        if contains_string(value.public_fields, field.0) {
+        if vecs::contains(value.public_fields, field.0) {
             builder.write_string("pub ")
         } else {
             ()

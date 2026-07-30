@@ -11,67 +11,67 @@ pub struct InlayHint {
     pub span: ast::Span,
 }
 
-fn containing_let(
+fn smallest_node_containing_span(
     syntax: SyntaxIndex,
     span: ast::Span,
+    kind: cst::NodeKind,
 ) -> Option[SyntaxNode] {
-    let result = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for node in syntax.nodes {
+    let best = Ref::new(-1);
+    for candidate in range(0, syntax.nodes.len()) {
+        let node = syntax.nodes.get(candidate);
         let node_width = node.end - node.start;
-        if cst::node_kind_equal(node.kind, cst::NodeKind::STMT_LET)
+        if cst::node_kind_equal(node.kind, kind)
             && node.start <= span.start
             && node.end >= span.end
-            && node_width < width.get()
+            && (best.get() < 0
+                || node_width
+                    < syntax.nodes.get(best.get()).end
+                        - syntax.nodes.get(best.get()).start)
         {
-            result.set(Option::Some(node));
-            width.set(node_width)
+            best.set(candidate)
         } else {
             ()
         }
     };
-    result.get()
+    if best.get() >= 0 {
+        Option::Some(syntax.nodes.get(best.get()))
+    } else {
+        Option::None
+    }
+}
+
+fn containing_let(
+    syntax: SyntaxIndex,
+    span: ast::Span,
+) -> Option[SyntaxNode] {
+    smallest_node_containing_span(syntax, span, cst::NodeKind::STMT_LET)
 }
 
 fn containing_closure_parameter(
     syntax: SyntaxIndex,
     span: ast::Span,
 ) -> Option[SyntaxNode] {
-    let result = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for node in syntax.nodes {
-        let node_width = node.end - node.start;
-        if cst::node_kind_equal(
-            node.kind,
-            cst::NodeKind::CLOSURE_PARAM,
-        ) && node.start <= span.start
-            && node.end >= span.end
-            && node_width < width.get()
-        {
-            result.set(Option::Some(node));
-            width.set(node_width)
-        } else {
-            ()
-        }
-    };
-    result.get()
+    smallest_node_containing_span(
+        syntax,
+        span,
+        cst::NodeKind::CLOSURE_PARAM,
+    )
 }
 
 fn let_has_annotation(
     syntax: SyntaxIndex,
     statement: SyntaxNode,
 ) -> bool {
-    let found = Ref::new(false);
     for token in syntax.tokens {
         if token.parent == statement.id
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Colon)
         {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {

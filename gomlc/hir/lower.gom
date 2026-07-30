@@ -2,6 +2,7 @@ package hir;
 
 use gomlc::ast;
 use gomlc::cst;
+use gomlc::vecs;
 use std::text;
 
 struct EnumInfo {
@@ -114,12 +115,11 @@ fn full_name(package_name: string, name: string) -> string {
 
 fn basename(path: string) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, path.len()) {
-        let ch = path.get(index);
-        if ch == '/' || ch == '\\' {
+    for character in path.chars() {
+        if character == '/' || character == '\\' {
             builder.clear()
         } else {
-            builder.write_char(ch)
+            builder.write_char(character)
         }
     };
     if builder.is_empty() { "<unknown>" } else { builder.finish() }
@@ -138,17 +138,14 @@ fn starts_with_std(values: Vec[string]) -> bool {
 }
 
 fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
-    let result: Ref[Option[Vec[string]]] = Ref::new(Option::None);
-    let found = Ref::new(false);
     if target.len() > 1 {
         for alias in aliases {
-            if found.get() == false && alias.alias == target.get(0) {
+            if alias.alias == target.get(0) {
                 let expanded = copy_strings(alias.target);
                 for index in range(1, target.len()) {
                     expanded.push(target.get(index))
                 };
-                result.set(Option::Some(expanded));
-                found.set(true)
+                return Option::Some(expanded)
             } else {
                 ()
             }
@@ -156,7 +153,7 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
     } else {
         ()
     };
-    result.get()
+    Option::None
 }
 
 fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
@@ -245,22 +242,21 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     if values.len() < 2 || !ctx.qualify_imports {
         values
     } else {
-        let result: Vec[string] = Vec::new();
-        let expanded = Ref::new(false);
         for alias in ctx.aliases {
-            if expanded.get() == false && alias.alias == values.get(0) {
+            if alias.alias == values.get(0) {
+                let result: Vec[string] = Vec::new();
                 for segment in alias.target {
                     result.push(segment)
                 };
                 for index in range(1, values.len()) {
                     result.push(values.get(index))
                 };
-                expanded.set(true)
+                return result
             } else {
                 ()
             }
         };
-        if expanded.get() { result } else { values }
+        values
     }
 }
 
@@ -268,7 +264,7 @@ fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
     if ctx.qualify_imports
         && values.len() > 0
-        && contains_string(ctx.nominal_types, values.get(0))
+        && vecs::contains(ctx.nominal_types, values.get(0))
     {
         let result: Vec[string] = Vec::new();
         result.push(full_name(ctx.package_name, values.get(0)));
@@ -326,45 +322,31 @@ fn ast_type_head_span(value: ast::TypeExpr) -> Option[ast::Span] {
     }
 }
 
-fn contains_string(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 fn find_binding(values: Vec[(string, LocalId)], name: string) -> Option[LocalId] {
     let index = Ref::new(values.len());
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     while index.get() > 0 {
         index.set(index.get() - 1);
         let entry = values.get(index.get());
-        if found.get() == false && entry.0 == name {
-            result.set(Option::Some(entry.1));
-            found.set(true)
+        if entry.0 == name {
+            return Option::Some(entry.1)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_definition(ctx: LowerCtx, name: string) -> Option[DefId] {
-    let result = Ref::new(Option::None);
-    for entry in ctx.definitions {
+    let index = Ref::new(ctx.definitions.len() - 1);
+    while index.get() >= 0 {
+        let entry = ctx.definitions.get(index.get());
         if entry.0 == name {
-            result.set(Option::Some(entry.1))
+            return Option::Some(entry.1)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn fresh_local(ctx: LowerCtx, hint: string) -> LocalId {
@@ -387,32 +369,29 @@ fn fresh_method(ctx: LowerCtx) -> DefId {
 }
 
 fn enum_variant(info: EnumInfo, name: string) -> Option[int] {
-    let result = Ref::new(Option::None);
-    let index = Ref::new(0);
-    for variant in info.variants {
-        if variant == name {
-            result.set(Option::Some(index.get()))
+    let index = Ref::new(info.variants.len() - 1);
+    while index.get() >= 0 {
+        if info.variants.get(index.get()) == name {
+            return Option::Some(index.get())
         } else {
-            ()
-        };
-        index.set(index.get() + 1)
+            index.set(index.get() - 1)
+        }
     };
-    result.get()
+    Option::None
 }
 
 fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> bool {
-    let found = Ref::new(false);
     for info in ctx.enums {
         if info.name == enum_name {
             match enum_variant(info, variant_name) {
-                Option::Some(_) => found.set(true),
+                Option::Some(_) => return true,
                 Option::None => (),
             }
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
@@ -450,24 +429,28 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
             join_segments(names)
         };
         let package_matches = parts.len() == 2 || parts.get(0) == ctx.package_name;
-        let result = Ref::new(Option::None);
         if package_matches {
-            for info in ctx.enums {
+            let index = Ref::new(ctx.enums.len() - 1);
+            while index.get() >= 0 {
+                let info = ctx.enums.get(index.get());
                 if info.name == enum_name {
                     match enum_variant(info, variant) {
-                        Option::Some(index) => result.set(Option::Some(
-                            ConstructorRef::Resolved { enum_def: info.def_id, variant_index: index },
-                        )),
-                        Option::None => (),
+                        Option::Some(variant_index) => return Option::Some(
+                            ConstructorRef::Resolved {
+                                enum_def: info.def_id,
+                                variant_index,
+                            },
+                        ),
+                        Option::None => index.set(index.get() - 1),
                     }
                 } else {
-                    ()
+                    index.set(index.get() - 1)
                 }
-            }
+            };
+            Option::None
         } else {
-            ()
-        };
-        result.get()
+            Option::None
+        }
     }
 }
 
@@ -506,7 +489,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         ast::TypeExpr::Con { path } => {
             let parts = qualified_segments(ctx, path);
             if parts.len() == 2
-                && (parts.get(0) == "Self" || contains_string(type_params, parts.get(0))) {
+                && (parts.get(0) == "Self" || vecs::contains(type_params, parts.get(0))) {
                 TypeExpr::Projection {
                     base: TypeExpr::Con { name: parts.get(0) },
                     associated: parts.get(1),
@@ -562,7 +545,7 @@ fn lower_impl_trait_ref(
     type_params: Vec[string],
 ) -> TraitRef {
     let parts = expand_segments(ctx, value.path);
-    let name = if parts.len() == 1 && contains_string(ctx.traits, parts.get(0)) {
+    let name = if parts.len() == 1 && vecs::contains(ctx.traits, parts.get(0)) {
         full_name(ctx.package_name, parts.get(0))
     } else {
         join_segments(parts)
@@ -672,31 +655,31 @@ fn pattern_binding_mismatch(
     if missing.len() == 0 && extra.len() == 0 {
         Option::None
     } else {
-        let details = Ref::new("");
+        let details = text::StringBuilder::new();
         if missing.len() > 0 {
-            details.set(
-                "missing " + join_pattern_names(sort_pattern_names(missing)),
+            details.write_string("missing ");
+            details.write_string(
+                join_pattern_names(sort_pattern_names(missing)),
             )
         } else {
             ()
         };
         if extra.len() > 0 {
-            if details.get().byte_len() > 0 {
-                details.set(details.get() + "; ")
-            } else {
+            if details.is_empty() {
                 ()
+            } else {
+                details.write_string("; ")
             };
-            details.set(
-                details.get()
-                    + "extra "
-                    + join_pattern_names(sort_pattern_names(extra)),
+            details.write_string("extra ");
+            details.write_string(
+                join_pattern_names(sort_pattern_names(extra)),
             )
         } else {
             ()
         };
         Option::Some(
             "Or-pattern alternatives must bind the same variables: "
-                + details.get(),
+                + details.finish(),
         )
     }
 }

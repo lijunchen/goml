@@ -1430,6 +1430,9 @@ It is recommended to always write `Option::Some`, `Option::None`, `Result::Ok` a
 - `string.to_bytes() -> Vec[uint8]`
 - `string.chars() -> FnIterator[char]`
 - `string.char_indices() -> FnIterator[(int, char)]`
+- `string.starts_with(prefix: string) -> bool`
+- `string.ends_with(suffix: string) -> bool`
+- `string.contains(expected: string) -> bool`
 
 The basic scalar types all implement `ToString`.String concatenation uses `+`.
 

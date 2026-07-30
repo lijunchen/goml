@@ -44,15 +44,14 @@ fn artifact_binary_bytes_equal(
     if left.len() != right.len() {
         false
     } else {
-        let equal = Ref::new(true);
         for index in range(0, left.len()) {
             if left.get(index) != right.get(index) {
-                equal.set(false)
+                return false
             } else {
                 ()
             }
         };
-        equal.get()
+        true
     }
 }
 
@@ -78,32 +77,30 @@ fn artifact_binary_sha256(value: bytes::Bytes) -> bytes::Bytes {
     result
 }
 
+fn artifact_binary_section_insert_index(
+    values: Vec[ArtifactBinarySection],
+    value: ArtifactBinarySection,
+) -> int {
+    for index in range(0, values.len()) {
+        if value.id < values.get(index).id {
+            return index
+        } else {
+            ()
+        }
+    };
+    values.len()
+}
+
 fn artifact_binary_sort_sections(
     values: Vec[ArtifactBinarySection],
 ) -> Vec[ArtifactBinarySection] {
     let result = Vec::new();
     for value in values {
-        let inserted: Ref[bool] = Ref::new(false);
-        let index = Ref::new(0);
-        while index.get() < result.len() && inserted.get() == false {
-            if value.id < result.get(index.get()).id {
-                let suffix = Vec::new();
-                while result.len() > index.get() {
-                    suffix.push(result.remove(index.get()))
-                };
-                result.push(value);
-                for item in suffix {
-                    result.push(item)
-                };
-                inserted.set(true)
-            } else {
-                index.set(index.get() + 1)
-            }
-        };
-        if inserted.get() {
-            ()
-        } else {
+        let index = artifact_binary_section_insert_index(result, value);
+        if index == result.len() {
             result.push(value)
+        } else {
+            result.insert(index, value)
         }
     };
     result
@@ -112,12 +109,11 @@ fn artifact_binary_sort_sections(
 fn artifact_binary_sections_valid(
     values: Vec[ArtifactBinarySection],
 ) -> bool {
-    let valid = Ref::new(true);
     let previous: Ref[Option[uint16]] = Ref::new(Option::None);
     for value in values {
         match previous.get() {
             Option::Some(id) => if id == value.id {
-                valid.set(false)
+                return false
             } else {
                 ()
             },
@@ -125,7 +121,7 @@ fn artifact_binary_sections_valid(
         };
         previous.set(Option::Some(value.id))
     };
-    valid.get()
+    true
 }
 
 fn encode_artifact_binary_container(
@@ -442,13 +438,13 @@ fn artifact_binary_find_section(
     value: ArtifactBinaryContainer,
     id: uint16,
 ) -> Option[ArtifactBinarySection] {
-    let result: Ref[Option[ArtifactBinarySection]] = Ref::new(Option::None);
-    for section in value.sections {
+    for offset in range(0, value.sections.len()) {
+        let section = value.sections.get(value.sections.len() - 1 - offset);
         if section.id == id {
-            result.set(Option::Some(section))
+            return Option::Some(section)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }

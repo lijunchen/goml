@@ -1,6 +1,7 @@
 package main;
 
 use gomlc::hir;
+use gomlc::vecs;
 
 struct PackageOrderNode {
     name: string,
@@ -12,7 +13,7 @@ fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
     let result = Vec::new();
     for value in values {
         for dependency in value.import_aliases {
-            if public_names_contain(result, dependency.package_name) {
+            if vecs::contains(result, dependency.package_name) {
                 ()
             } else {
                 result.push(dependency.package_name)
@@ -23,37 +24,35 @@ fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
 }
 
 fn package_node_name_present(values: Vec[PackageOrderNode], name: string) -> bool {
-    let found = Ref::new(false);
     for value in values {
         if value.name == name {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn package_node_is_ready(
     value: PackageOrderNode,
     remaining: Vec[PackageOrderNode],
 ) -> bool {
-    let ready = Ref::new(true);
     for dependency in value.dependencies {
         if package_node_name_present(remaining, dependency) {
-            ready.set(false)
+            return false
         } else {
             ()
         }
     };
-    ready.get()
+    true
 }
 
 fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string] {
     let remaining = Vec::new();
     let names = Vec::new();
     for value in values {
-        if public_names_contain(names, value.name) {
+        if vecs::contains(names, value.name) {
             return Result::Err("duplicate core provided for package " + value.name)
         } else {
             names.push(value.name);

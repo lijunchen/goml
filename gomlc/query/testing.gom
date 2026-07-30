@@ -2,6 +2,7 @@ package query;
 
 use gomlc::ast;
 use gomlc::parser;
+use gomlc::strings;
 use std::path;
 
 pub enum TestItemKind {
@@ -15,41 +16,29 @@ pub struct TestItem {
     pub kind: TestItemKind,
 }
 
-fn test_path_ends_with(value: string, suffix: string) -> bool {
-    value.byte_len() >= suffix.byte_len()
-        && value.byte_slice(
-            value.byte_len() - suffix.byte_len(),
-            value.byte_len(),
-        ) == suffix
-}
-
 fn test_path_kind(source_path: string) -> Option[TestItemKind] {
     let current = Ref::new(path::clean(source_path));
-    let external = Ref::new(false);
-    let done = Ref::new(false);
-    while !(done.get()) {
+    while true {
         match path::parent(current.get()) {
             Option::Some(parent) => {
                 match path::file_name(parent) {
                     Option::Some(name) => if name == "tests" {
-                        external.set(true)
+                        return Option::Some(TestItemKind::External)
                     } else {
                         ()
                     },
                     Option::None => (),
                 };
                 if parent == current.get() {
-                    done.set(true)
+                    break
                 } else {
                     current.set(parent)
                 }
             },
-            Option::None => done.set(true),
+            Option::None => break,
         }
     };
-    if external.get() {
-        Option::Some(TestItemKind::External)
-    } else if test_path_ends_with(source_path, "_test.gom") {
+    if strings::ends_with(source_path, "_test.gom") {
         Option::Some(TestItemKind::Internal)
     } else {
         Option::None
@@ -57,29 +46,18 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
 }
 
 fn is_test_attribute(value: ast::Attribute) -> bool {
-    let result = Ref::new(false);
-    let index = Ref::new(0);
-    while index.get() + 4 <= value.text.byte_len() {
-        if value.text.byte_slice(index.get(), index.get() + 4) == "test" {
-            result.set(true)
-        } else {
-            ()
-        };
-        index.set(index.get() + 1)
-    };
-    result.get()
+    strings::contains(value.text, "test")
 }
 
 fn has_test_attribute(values: Vec[ast::Attribute]) -> bool {
-    let result = Ref::new(false);
     for value in values {
         if is_test_attribute(value) {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
-    result.get()
+    false
 }
 
 fn function_symbol_span(
@@ -87,7 +65,6 @@ fn function_symbol_span(
     source_path: string,
     name: string,
 ) -> ast::Span {
-    let result = Ref::new(ast::span(0, 0));
     for symbol in symbols.symbols {
         if symbol.source_path == source_path
             && symbol.name == name
@@ -96,12 +73,12 @@ fn function_symbol_span(
                 _ => false,
             }
         {
-            result.set(symbol.span)
+            return symbol.span
         } else {
             ()
         }
     };
-    result.get()
+    ast::span(0, 0)
 }
 
 pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {

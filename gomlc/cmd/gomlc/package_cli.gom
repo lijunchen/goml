@@ -1,5 +1,6 @@
 package main;
 
+use gomlc::strings;
 use std::fs;
 use std::path;
 
@@ -92,14 +93,12 @@ fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
 }
 
 fn cli_option(value: string) -> bool {
-    value.byte_len() > 0 && value.byte_slice(0, 1) == "-"
+    strings::starts_with(value, "-")
 }
 
 fn inline_cli_value(argument: string, name: string) -> Option[string] {
     let prefix = name + "=";
-    if argument.byte_len() >= prefix.byte_len()
-        && argument.byte_slice(0, prefix.byte_len()) == prefix
-    {
+    if strings::starts_with(argument, prefix) {
         Option::Some(argument.byte_slice(prefix.byte_len(), argument.byte_len()))
     } else {
         Option::None
@@ -153,7 +152,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
     let interface_paths = Vec::new();
     let index = Ref::new(2);
     let positional = Ref::new(false);
-    let used_option = Ref::new(false);
     let command = args.get(1);
     while index.get() < args.len() {
         let argument = args.get(index.get());
@@ -180,7 +178,11 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
             && cli_option(args.get(index.get() + 1))
             && !known_cli_option(command, args.get(index.get() + 1))
         {
-            let usage = if used_option.get() {
+            let usage = if option_string_present(package_name.get())
+                || option_string_present(output.get())
+                || inputs.len() > 0
+                || interface_paths.len() > 0
+            {
                 selected_package_usage(command, interface_paths)
             } else {
                 command_usage(command)
@@ -207,7 +209,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 package_name.set(Option::Some(args.get(index.get() + 1)));
-                used_option.set(true);
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--package")) {
@@ -218,7 +219,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 package_name.set(inline_cli_value(argument, "--package"));
-                used_option.set(true);
                 index.set(index.get() + 1)
             }
         } else if argument == "--input" {
@@ -234,7 +234,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     Option::None,
                 ))
             } else {
-                used_option.set(true)
+                ()
             }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
@@ -248,7 +248,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 inputs.push(value);
-                used_option.set(true);
                 index.set(index.get() + 1);
                 while index.get() < args.len() && !cli_option(args.get(index.get())) {
                     inputs.push(args.get(index.get()));
@@ -265,7 +264,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 interface_paths.push(args.get(index.get() + 1));
-                used_option.set(true);
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--interface-path")) {
@@ -279,7 +277,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     Option::Some(value) => interface_paths.push(value),
                     Option::None => (),
                 };
-                used_option.set(true);
                 index.set(index.get() + 1)
             }
         } else if argument == "--output" {
@@ -297,7 +294,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 output.set(Option::Some(args.get(index.get() + 1)));
-                used_option.set(true);
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
@@ -313,7 +309,6 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 ))
             } else {
                 output.set(inline_cli_value(argument, "--output"));
-                used_option.set(true);
                 index.set(index.get() + 1)
             }
         } else {
@@ -337,7 +332,12 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 },
                 Option::None => (),
             };
-            let usage = if cli_option(argument) && used_option.get() {
+            let usage = if cli_option(argument)
+                && (option_string_present(package_name.get())
+                    || option_string_present(output.get())
+                    || inputs.len() > 0
+                    || interface_paths.len() > 0)
+            {
                 selected_package_usage(command, interface_paths)
             } else {
                 command_usage(command)

@@ -2,7 +2,9 @@ package main;
 
 use gomlc::ast;
 use gomlc::core;
+use gomlc::strings;
 use gomlc::tast;
+use std::text;
 
 fn artifact_json_string_array(
     writer: ArtifactJsonWriter,
@@ -16,9 +18,9 @@ fn artifact_json_string_array(
 }
 
 fn artifact_float_number(value: string) -> string {
-    if artifact_string_contains(value, ".")
-        || artifact_string_contains(value, "e")
-        || artifact_string_contains(value, "E")
+    if strings::contains(value, ".")
+        || strings::contains(value, "e")
+        || strings::contains(value, "E")
     {
         value
     } else {
@@ -196,7 +198,7 @@ fn artifact_constructor_separator(value: string) -> int {
     let result = Ref::new(-1);
     if value.byte_len() > 1 {
         for index in range(0, value.byte_len() - 1) {
-            if value.byte_slice(index, index + 2) == "::" {
+            if strings::starts_with_at(value, index, "::") {
                 result.set(index)
             } else {
                 ()
@@ -328,19 +330,19 @@ fn artifact_intrinsic_source_name(value: string) -> string {
 }
 
 fn artifact_replace_dots(value: string) -> string {
-    let result = Ref::new("");
-    for index in range(0, value.byte_len()) {
-        result.set(result.get() + if value.byte_get(index) == 46 {
-            "_"
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
+    for character in value.chars() {
+        if character == '.' {
+            builder.write_char('_')
         } else {
-            value.byte_slice(index, index + 1)
-        })
+            builder.write_char(character)
+        }
     };
-    result.get()
+    builder.finish()
 }
 
 fn artifact_runtime_source_name(value: string) -> string {
-    if artifact_string_starts_with(value, "core.") {
+    if strings::starts_with(value, "core.") {
         let name = value.byte_slice(5, value.byte_len());
         if name == "char_from_uint32" { name + "_raw" } else { name }
     } else {
@@ -416,7 +418,7 @@ fn artifact_callable_id(kind: string, value: string) -> string {
         } else {
             artifact_replace_dots(value)
         }
-    } else if artifact_string_starts_with(value, "core.") {
+    } else if strings::starts_with(value, "core.") {
         value.byte_slice(5, value.byte_len())
     } else {
         artifact_replace_dots(value)
@@ -424,31 +426,32 @@ fn artifact_callable_id(kind: string, value: string) -> string {
 }
 
 fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
-    let name = Ref::new("");
-    let kind = Ref::new("goml");
-    let id: Ref[Option[string]] = Ref::new(Option::None);
     match value {
-        tast::Callable::Function(value) => name.set(value),
-        tast::Callable::Runtime(value) => {
-            name.set(artifact_runtime_source_name(value));
-            kind.set("runtime");
-            id.set(Option::Some(artifact_callable_id("runtime", value)))
+        tast::Callable::Function(value) => ArtifactCallable {
+            name: value,
+            kind: "goml",
+            id: Option::None,
         },
-        tast::Callable::Intrinsic(value) => {
-            name.set(artifact_intrinsic_source_name(value));
-            kind.set("intrinsic");
-            id.set(Option::Some(artifact_callable_id("intrinsic", value)))
+        tast::Callable::Runtime(value) => ArtifactCallable {
+            name: artifact_runtime_source_name(value),
+            kind: "runtime",
+            id: Option::Some(artifact_callable_id("runtime", value)),
+        },
+        tast::Callable::Intrinsic(value) => ArtifactCallable {
+            name: artifact_intrinsic_source_name(value),
+            kind: "intrinsic",
+            id: Option::Some(artifact_callable_id("intrinsic", value)),
         },
         tast::Callable::TraitMethod { trait_ref: _, method_name: _ }
         | tast::Callable::DynTraitMethod { trait_name: _, dispatch_name: _, method_name: _ }
-        | tast::Callable::InherentMethod { receiver_ty: _, method_name: _ } => fail(
-            "error[compile]: unresolved callable in compiler artifact",
-        ),
-    };
-    ArtifactCallable {
-        name: name.get(),
-        kind: kind.get(),
-        id: id.get(),
+        | tast::Callable::InherentMethod { receiver_ty: _, method_name: _ } => {
+            fail("error[compile]: unresolved callable in compiler artifact");
+            ArtifactCallable {
+                name: "",
+                kind: "goml",
+                id: Option::None,
+            }
+        },
     }
 }
 

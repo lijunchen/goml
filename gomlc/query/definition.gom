@@ -5,6 +5,7 @@ use gomlc::cst;
 use gomlc::hir;
 use gomlc::lexer;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
 use std::text;
 
@@ -21,15 +22,16 @@ fn source_by_path(
     sources: Vec[SourceFile],
     source_path: string,
 ) -> Option[SourceFile] {
-    let result = Ref::new(Option::None);
-    for source in sources {
+    let index = Ref::new(sources.len() - 1);
+    while index.get() >= 0 {
+        let source = sources.get(index.get());
         if source.path == source_path {
-            result.set(Option::Some(source))
+            return Option::Some(source)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn same_definition(
@@ -45,56 +47,37 @@ fn push_definition(
     values: Vec[DefinitionResult],
     value: DefinitionResult,
 ) -> unit {
-    let found = Ref::new(false);
     for existing in values {
         if same_definition(existing, value) {
-            found.set(true)
+            return
         } else {
             ()
         }
     };
-    if !(found.get()) {
-        values.push(value)
-    } else {
-        ()
-    }
+    values.push(value)
 }
 
 fn package_definition(
     value: Analysis,
     package_name: string,
 ) -> Option[DefinitionResult] {
-    let result = Ref::new(Option::None);
-    for source in value.sources {
+    let index = Ref::new(value.sources.len() - 1);
+    while index.get() >= 0 {
+        let source = value.sources.get(index.get());
         if source.package_name == package_name {
-            result.set(Option::Some(DefinitionResult {
+            return Option::Some(DefinitionResult {
                 source_path: source.path,
                 span: ast::span(0, 0),
-            }))
+            })
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn path_node_at(value: Analysis, offset: int) -> Option[SyntaxNode] {
-    let result = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for node in value.syntax.nodes {
-        let node_width = node.end - node.start;
-        if cst::node_kind_equal(node.kind, cst::NodeKind::PATH)
-            && node.start <= offset
-            && offset < node.end
-            && node_width < width.get()
-        {
-            result.set(Option::Some(node));
-            width.set(node_width)
-        } else {
-            ()
-        }
-    };
-    result.get()
+    node_at_kind(value.syntax, offset, cst::NodeKind::PATH)
 }
 
 fn node_identifiers(
@@ -167,13 +150,7 @@ fn longest_package_prefix(
     for source in value.sources {
         let package_name = source.package_name;
         if (path_value == package_name
-            || (path_value.byte_len() > package_name.byte_len() + 2
-                && path_value.byte_slice(0, package_name.byte_len())
-                    == package_name
-                && path_value.byte_slice(
-                    package_name.byte_len(),
-                    package_name.byte_len() + 2,
-                ) == "::"))
+            || strings::starts_with(path_value, package_name + "::"))
             && package_name.byte_len() > length.get()
         {
             result.set(Option::Some(package_name));
@@ -235,7 +212,7 @@ fn symbol_definitions(
             } else {
                 push_definition(exact_external, definition)
             }
-        } else if visible && string_ends_with(
+        } else if visible && strings::ends_with(
             symbol.qualified_name,
             "::" + qualified_name,
         ) {
@@ -272,21 +249,28 @@ fn symbol_definitions(
     }
 }
 
+fn identifier_index_at(
+    identifiers: Vec[SyntaxToken],
+    offset: int,
+) -> Option[int] {
+    for distance in range(0, identifiers.len()) {
+        let index = identifiers.len() - 1 - distance;
+        let token = identifiers.get(index);
+        if token.start <= offset && offset < token.end {
+            return Option::Some(index)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
 fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     let result = Vec::new();
     match path_node_at(value, offset) {
         Option::Some(node) => {
             let identifiers = node_identifiers(value, node);
-            let token_index = Ref::new(Option::None);
-            for index in range(0, identifiers.len()) {
-                let token = identifiers.get(index);
-                if token.start <= offset && offset < token.end {
-                    token_index.set(Option::Some(index))
-                } else {
-                    ()
-                }
-            };
-            match token_index.get() {
+            match identifier_index_at(identifiers, offset) {
                 Option::Some(index) => {
                     let canonical = canonical_path_at(
                         value,
@@ -335,7 +319,7 @@ fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
 fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
     let symbol_owner_name = symbol_owner(symbol.qualified_name);
     symbol_owner_name == owner
-        || string_ends_with(symbol_owner_name, "::" + owner)
+        || strings::ends_with(symbol_owner_name, "::" + owner)
         || short_type_name(symbol_owner_name) == short_type_name(owner)
 }
 
@@ -366,7 +350,7 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                                 symbol.qualified_name,
                             );
                             if owner_name == owner
-                                || string_ends_with(
+                                || strings::ends_with(
                                     owner_name,
                                     "::" + owner,
                                 )
@@ -396,47 +380,29 @@ fn containing_struct_literal(
     value: Analysis,
     offset: int,
 ) -> Option[SyntaxNode] {
-    let result = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for node in value.syntax.nodes {
-        let node_width = node.end - node.start;
-        if cst::node_kind_equal(
-            node.kind,
-            cst::NodeKind::EXPR_STRUCT_LITERAL,
-        ) && node.start <= offset
-            && offset < node.end
-            && node_width < width.get()
-        {
-            result.set(Option::Some(node));
-            width.set(node_width)
-        } else {
-            ()
-        }
-    };
-    result.get()
+    node_at_kind(
+        value.syntax,
+        offset,
+        cst::NodeKind::EXPR_STRUCT_LITERAL,
+    )
 }
 
 fn struct_literal_owner(
     value: Analysis,
     literal: SyntaxNode,
 ) -> Option[string] {
-    let result = Ref::new(Option::None);
-    let start = Ref::new(2147483647);
-    for node in value.syntax.nodes {
+    let best = Ref::new(-1);
+    for candidate in range(0, value.syntax.nodes.len()) {
+        let node = value.syntax.nodes.get(candidate);
         if cst::node_kind_equal(node.kind, cst::NodeKind::PATH)
             && node.start >= literal.start
             && node.end <= literal.end
-            && node.start < start.get()
+            && (best.get() < 0
+                || node.start < value.syntax.nodes.get(best.get()).start)
         {
             let identifiers = node_identifiers(value, node);
             if identifiers.len() > 0 {
-                result.set(Option::Some(canonical_path_at(
-                    value,
-                    node,
-                    identifiers,
-                    identifiers.len() - 1,
-                )));
-                start.set(node.start)
+                best.set(candidate)
             } else {
                 ()
             }
@@ -444,7 +410,18 @@ fn struct_literal_owner(
             ()
         }
     };
-    result.get()
+    if best.get() >= 0 {
+        let node = value.syntax.nodes.get(best.get());
+        let identifiers = node_identifiers(value, node);
+        Option::Some(canonical_path_at(
+            value,
+            node,
+            identifiers,
+            identifiers.len() - 1,
+        ))
+    } else {
+        Option::None
+    }
 }
 
 fn struct_field_definitions(
@@ -478,7 +455,7 @@ fn struct_field_definitions(
                             symbol.qualified_name,
                         );
                         if owner_name == owner
-                            || string_ends_with(
+                            || strings::ends_with(
                                 owner_name,
                                 "::" + owner,
                             )
@@ -506,8 +483,9 @@ fn local_definition_span(
     value: Analysis,
     local: hir::LocalId,
 ) -> Option[DefinitionResult] {
-    let result = Ref::new(Option::None);
-    for fact in value.checked.typeck_results.locals {
+    let facts = value.checked.typeck_results.locals;
+    for distance in range(0, facts.len()) {
+        let fact = facts.get(facts.len() - 1 - distance);
         if same_local(fact.local, local) {
             match fact.span {
                 Option::Some(span) => match source_by_path(
@@ -543,12 +521,12 @@ fn local_definition_span(
                             }
                         };
                         match best.get() {
-                            Option::Some(definition_span) => {
-                                result.set(Option::Some(DefinitionResult {
+                            Option::Some(definition_span) => return Option::Some(
+                                DefinitionResult {
                                     source_path: fact.source_path,
                                     span: definition_span,
-                                }))
-                            },
+                                },
+                            ),
                             Option::None => (),
                         }
                     },
@@ -560,7 +538,7 @@ fn local_definition_span(
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn type_owner_name(value: tast::Type) -> string {

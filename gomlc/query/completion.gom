@@ -4,6 +4,7 @@ use gomlc::ast;
 use gomlc::cst;
 use gomlc::lexer;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
 use std::fs;
 use std::path;
@@ -124,24 +125,21 @@ fn use_completion_context(
 }
 
 fn label_matches(label: string, prefix: string) -> bool {
-    prefix == ""
-        || (label.byte_len() >= prefix.byte_len()
-            && label.byte_slice(0, prefix.byte_len()) == prefix)
+    strings::starts_with(label, prefix)
 }
 
 fn contains_completion(
     values: Vec[CompletionItem],
     expected: string,
 ) -> bool {
-    let found = Ref::new(false);
     for value in values {
         if value.label == expected {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn push_completion(
@@ -197,19 +195,20 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
     let lowered = ast::lower(parser::parse(value.source));
     match lowered.ast {
         Option::Some(file) => {
-            let result = Ref::new(Option::None);
-            for use_decl in file.uses {
+            let index = Ref::new(file.uses.len() - 1);
+            while index.get() >= 0 {
+                let use_decl = file.uses.get(index.get());
                 let candidate = match use_decl.alias {
                     Option::Some(name) => name,
                     Option::None => last_path_segment(use_decl.path),
                 };
                 if candidate == alias {
-                    result.set(Option::Some(path_text(use_decl.path)))
+                    return Option::Some(path_text(use_decl.path))
                 } else {
-                    ()
+                    index.set(index.get() - 1)
                 }
             };
-            result.get()
+            Option::None
         },
         Option::None => Option::None,
     }
@@ -218,7 +217,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
 fn namespace_path(source: string, offset: int) -> Option[string] {
     let start = prefix_start(source, offset);
     if start >= 2
-        && source.byte_slice(start - 2, start) == "::"
+        && strings::starts_with_at(source, start - 2, "::")
     {
         let owner_end = start - 2;
         let owner_start = Ref::new(owner_end);
@@ -266,15 +265,14 @@ fn canonical_namespace(value: Analysis, namespace: string) -> string {
 }
 
 fn namespace_is_package(value: Analysis, namespace: string) -> bool {
-    let found = Ref::new(false);
     for source in value.sources {
         if source.package_name == namespace {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn qualified_owner(value: string) -> string {
@@ -379,7 +377,7 @@ fn immediate_package_member(
 ) -> bool {
     let prefix = package_name + "::";
     if qualified_name.byte_len() <= prefix.byte_len()
-        || qualified_name.byte_slice(0, prefix.byte_len()) != prefix
+        || !strings::starts_with(qualified_name, prefix)
     {
         false
     } else {
@@ -387,20 +385,30 @@ fn immediate_package_member(
             prefix.byte_len(),
             qualified_name.byte_len(),
         );
-        let nested = Ref::new(false);
         let index = Ref::new(0);
         while index.get() + 1 < remainder.byte_len() {
             if remainder.byte_get(index.get()) == 58
                 && remainder.byte_get(index.get() + 1) == 58
             {
-                nested.set(true)
+                return false
             } else {
                 ()
             };
             index.set(index.get() + 1)
         };
-        !(nested.get())
+        true
     }
+}
+
+fn analysis_has_package(value: Analysis, package_name: string) -> bool {
+    for source in value.sources {
+        if source.package_name == package_name {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn complete_namespace(
@@ -452,7 +460,7 @@ fn namespace_next_segment(value: string, namespace: string) -> Option[string] {
     } else {
         let prefix = namespace + "::";
         if value.byte_len() <= prefix.byte_len()
-            || value.byte_slice(0, prefix.byte_len()) != prefix
+            || !strings::starts_with(value, prefix)
         {
             Option::None
         } else {
@@ -467,7 +475,6 @@ fn namespace_next_segment(value: string, namespace: string) -> Option[string] {
 fn package_directory_has_source(directory: string) -> bool {
     match fs::read_dir(directory) {
         Result::Ok(names) => {
-            let found = Ref::new(false);
             for name in names {
                 let candidate = path::join(directory, name);
                 if fs::is_file(candidate)
@@ -476,12 +483,12 @@ fn package_directory_has_source(directory: string) -> bool {
                         Option::None => false,
                     }
                 {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Result::Err(_) => false,
     }
@@ -591,7 +598,7 @@ fn complete_import_namespace(
                 Option::None => (),
             };
             if context.namespace == project.module_path
-                || string_starts_with(
+                || strings::starts_with(
                     context.namespace,
                     project.module_path + "::",
                 )
@@ -650,16 +657,69 @@ fn short_type_name(value: string) -> string {
     value.byte_slice(start.get(), value.byte_len())
 }
 
-fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
-    let previous = Ref::new(Option::None);
-    for token in value.syntax.tokens {
-        if token.end <= dot && !lexer::token_is_trivia(token.kind) {
-            previous.set(Option::Some(token))
+fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken] {
+    for distance in range(0, value.syntax.tokens.len()) {
+        let token = value.syntax.tokens.get(
+            value.syntax.tokens.len() - 1 - distance,
+        );
+        if token.end <= offset && !lexer::token_is_trivia(token.kind) {
+            return Option::Some(token)
         } else {
             ()
         }
     };
-    match previous.get() {
+    Option::None
+}
+
+fn reference_receiver_fallback(
+    value: Analysis,
+    token: SyntaxToken,
+) -> Option[tast::Type] {
+    let facts = value.checked.typeck_results.references;
+    for distance in range(0, facts.len()) {
+        let fact = facts.get(facts.len() - 1 - distance);
+        if fact.source_path == value.source_path
+            && fact.span.start <= token.start
+            && fact.span.end >= token.end
+        {
+            match tast::resolve_type(fact.ty) {
+                tast::Type::Error => (),
+                _ => return Option::Some(fact.ty),
+            }
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn local_receiver_fallback(
+    value: Analysis,
+    token: SyntaxToken,
+) -> Option[tast::Type] {
+    let facts = value.checked.typeck_results.locals;
+    for distance in range(0, facts.len()) {
+        let fact = facts.get(facts.len() - 1 - distance);
+        if fact.source_path == value.source_path
+            && fact.local.hint == token.text
+        {
+            match fact.span {
+                Option::Some(span) => if span.start < token.start {
+                    return Option::Some(fact.ty)
+                } else {
+                    ()
+                },
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
+    match significant_token_before(value, dot) {
         Option::Some(token) => {
             let result = Ref::new(Option::None);
             let width = Ref::new(2147483647);
@@ -679,62 +739,17 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
             match result.get() {
                 Option::Some(ty) => match tast::resolve_type(ty) {
                     tast::Type::Error => {
-                        let fallback = Ref::new(Option::None);
-                        for fact in value.checked.typeck_results.references {
-                            if fact.source_path == value.source_path
-                                && fact.span.start <= token.start
-                                && fact.span.end >= token.end
-                            {
-                                match tast::resolve_type(fact.ty) {
-                                    tast::Type::Error => (),
-                                    _ => fallback.set(Option::Some(fact.ty)),
-                                }
-                            } else {
-                                ()
-                            }
-                        };
-                        for fact in value.checked.typeck_results.locals {
-                            if fact.source_path == value.source_path
-                                && fact.local.hint == token.text
-                            {
-                                match fact.span {
-                                    Option::Some(span) => if span.start
-                                        < token.start
-                                    {
-                                        fallback.set(Option::Some(fact.ty))
-                                    } else {
-                                        ()
-                                    },
-                                    Option::None => (),
-                                }
-                            } else {
-                                ()
-                            }
-                        };
-                        fallback.get()
+                        match local_receiver_fallback(value, token) {
+                            Option::Some(value) => Option::Some(value),
+                            Option::None => reference_receiver_fallback(
+                                value,
+                                token,
+                            ),
+                        }
                     },
                     _ => Option::Some(ty),
                 },
-                Option::None => {
-                    let fallback = Ref::new(Option::None);
-                    for fact in value.checked.typeck_results.locals {
-                        if fact.source_path == value.source_path
-                            && fact.local.hint == token.text
-                        {
-                            match fact.span {
-                                Option::Some(span) => if span.start < token.start {
-                                    fallback.set(Option::Some(fact.ty))
-                                } else {
-                                    ()
-                                },
-                                Option::None => (),
-                            }
-                        } else {
-                            ()
-                        }
-                    };
-                    fallback.get()
-                },
+                Option::None => local_receiver_fallback(value, token),
             }
         },
         Option::None => Option::None,
@@ -780,15 +795,16 @@ fn parameter_explicit_type(
     parameters: Vec[(string, ast::TypeExpr)],
     name: string,
 ) -> Option[string] {
-    let result = Ref::new(Option::None);
-    for parameter in parameters {
+    let index = Ref::new(parameters.len() - 1);
+    while index.get() >= 0 {
+        let parameter = parameters.get(index.get());
         if parameter.0 == name {
-            result.set(explicit_type_name(parameter.1))
+            return explicit_type_name(parameter.1)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn source_explicit_receiver_type(
@@ -796,9 +812,8 @@ fn source_explicit_receiver_type(
     name: string,
     limit: int,
 ) -> Option[string] {
-    let result = Ref::new(Option::None);
-    let index = Ref::new(0);
-    while index.get() + name.byte_len() <= limit {
+    let index = Ref::new(limit - name.byte_len());
+    while index.get() >= 0 {
         if source.byte_slice(
             index.get(),
             index.get() + name.byte_len(),
@@ -845,10 +860,10 @@ fn source_explicit_receiver_type(
                     cursor.set(cursor.get() + 1)
                 };
                 if cursor.get() > type_start {
-                    result.set(Option::Some(source.byte_slice(
+                    return Option::Some(source.byte_slice(
                         type_start,
                         cursor.get(),
-                    )))
+                    ))
                 } else {
                     ()
                 }
@@ -858,56 +873,61 @@ fn source_explicit_receiver_type(
         } else {
             ()
         };
-        index.set(index.get() + 1)
+        index.set(index.get() - 1)
     };
-    result.get()
+    Option::None
+}
+
+fn file_parameter_explicit_type(
+    file: ast::File,
+    name: string,
+) -> Option[string] {
+    let item_index = Ref::new(file.items.len() - 1);
+    while item_index.get() >= 0 {
+        match file.items.get(item_index.get()) {
+            ast::Item::Function(function) => match parameter_explicit_type(
+                function.params,
+                name,
+            ) {
+                Option::Some(value) => return Option::Some(value),
+                Option::None => (),
+            },
+            ast::Item::ImplBlock(block) => {
+                let method_index = Ref::new(block.methods.len() - 1);
+                while method_index.get() >= 0 {
+                    match parameter_explicit_type(
+                        block.methods.get(method_index.get()).params,
+                        name,
+                    ) {
+                        Option::Some(value) => return Option::Some(value),
+                        Option::None => method_index.set(
+                            method_index.get() - 1,
+                        ),
+                    }
+                }
+            },
+            _ => (),
+        };
+        item_index.set(item_index.get() - 1)
+    };
+    Option::None
 }
 
 fn explicit_receiver_type(
     value: Analysis,
     dot: int,
 ) -> Option[string] {
-    let token = Ref::new(Option::None);
-    for current in value.syntax.tokens {
-        if current.end <= dot && !lexer::token_is_trivia(current.kind) {
-            token.set(Option::Some(current))
-        } else {
-            ()
-        }
-    };
-    match token.get() {
+    match significant_token_before(value, dot) {
         Option::Some(token) => {
-            let result = Ref::new(Option::None);
             let lowered = ast::lower(parser::parse(value.source));
-            match lowered.ast {
-                Option::Some(file) => for item in file.items {
-                    match item {
-                        ast::Item::Function(function) => match parameter_explicit_type(
-                            function.params,
-                            token.text,
-                        ) {
-                            Option::Some(name) => {
-                                result.set(Option::Some(name))
-                            },
-                            Option::None => (),
-                        },
-                        ast::Item::ImplBlock(block) => for method in block.methods {
-                            match parameter_explicit_type(
-                                method.params,
-                                token.text,
-                            ) {
-                                Option::Some(name) => {
-                                    result.set(Option::Some(name))
-                                },
-                                Option::None => (),
-                            }
-                        },
-                        _ => (),
-                    }
-                },
-                Option::None => (),
+            let explicit = match lowered.ast {
+                Option::Some(file) => file_parameter_explicit_type(
+                    file,
+                    token.text,
+                ),
+                Option::None => Option::None,
             };
-            match result.get() {
+            match explicit {
                 Option::Some(name) => Option::Some(name),
                 Option::None => source_explicit_receiver_type(
                     value.source,
@@ -1072,6 +1092,15 @@ fn complete_members(
                     },
                     _ => (),
                 }
+            };
+            match explicit_receiver_type(value, dot) {
+                Option::Some(receiver_name) => complete_named_methods(
+                    result,
+                    value,
+                    receiver_name,
+                    prefix,
+                ),
+                Option::None => (),
             }
         },
         Option::None => match explicit_receiver_type(value, dot) {
@@ -1098,22 +1127,28 @@ fn containing_completion_scope(
     syntax: SyntaxIndex,
     span: ast::Span,
 ) -> Option[SyntaxNode] {
-    let result = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for node in syntax.nodes {
+    let best = Ref::new(-1);
+    for candidate in range(0, syntax.nodes.len()) {
+        let node = syntax.nodes.get(candidate);
         let node_width = node.end - node.start;
         if completion_scope_kind(node.kind)
             && node.start <= span.start
             && node.end >= span.end
-            && node_width < width.get()
+            && (best.get() < 0
+                || node_width
+                    < syntax.nodes.get(best.get()).end
+                        - syntax.nodes.get(best.get()).start)
         {
-            result.set(Option::Some(node));
-            width.set(node_width)
+            best.set(candidate)
         } else {
             ()
         }
     };
-    result.get()
+    if best.get() >= 0 {
+        Option::Some(syntax.nodes.get(best.get()))
+    } else {
+        Option::None
+    }
 }
 
 fn local_visible_at(
@@ -1133,6 +1168,21 @@ fn local_visible_at(
     }
 }
 
+fn local_completion_index(
+    values: Vec[CompletionItem],
+    label: string,
+) -> Option[int] {
+    for offset in range(0, values.len()) {
+        let index = values.len() - 1 - offset;
+        if values.get(index).label == label {
+            return Option::Some(index)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
 fn push_local_completion(
     values: Vec[CompletionItem],
     value: CompletionItem,
@@ -1141,15 +1191,7 @@ fn push_local_completion(
     if !label_matches(value.label, prefix) {
         ()
     } else {
-        let existing = Ref::new(Option::None);
-        for index in range(0, values.len()) {
-            if values.get(index).label == value.label {
-                existing.set(Option::Some(index))
-            } else {
-                ()
-            }
-        };
-        match existing.get() {
+        match local_completion_index(values, value.label) {
             Option::Some(index) => values.set(index, value),
             Option::None => values.push(value),
         }
@@ -1206,15 +1248,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
     match lowered.ast {
         Option::Some(file) => for import in file.uses {
             let package_name = path_text(import.path);
-            let is_package = Ref::new(false);
-            for source in value.sources {
-                if source.package_name == package_name {
-                    is_package.set(true)
-                } else {
-                    ()
-                }
-            };
-            if is_package.get() {
+            if analysis_has_package(value, package_name) {
                 let alias = match import.alias {
                     Option::Some(name) => name,
                     Option::None => last_path_segment(import.path),

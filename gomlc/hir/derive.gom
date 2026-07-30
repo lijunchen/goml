@@ -2,6 +2,7 @@ package hir;
 
 use gomlc::ast;
 use gomlc::cst;
+use gomlc::strings;
 
 fn dummy_span() -> ast::Span {
     ast::span(0, 0)
@@ -60,36 +61,17 @@ fn type_for_name(name: string) -> ast::TypeExpr {
     ast::TypeExpr::Con { path: one_segment_path(name) }
 }
 
-fn string_contains(value: string, expected: string) -> bool {
-    if expected.byte_len() == 0 {
-        true
-    } else if value.byte_len() < expected.byte_len() {
-        false
-    } else {
-        let found = Ref::new(false);
-        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
-            if value.byte_slice(index, index + expected.byte_len()) == expected {
-                found.set(true)
-            } else {
-                ()
-            }
-        };
-        found.get()
-    }
-}
-
 fn derives(attrs: Vec[ast::Attribute], name: string) -> bool {
-    let found = Ref::new(false);
     for attr in attrs {
         for target in derive_targets(attr.text) {
             if target == name {
-                found.set(true)
+                return true
             } else {
                 ()
             }
         }
     };
-    found.get()
+    false
 }
 
 fn derive_identifier_byte(value: uint8) -> bool {
@@ -104,7 +86,7 @@ fn derive_targets(value: string) -> Vec[string] {
     let derive_start = Ref::new(-1);
     if value.byte_len() >= 6 {
         for index in range(0, value.byte_len() - 5) {
-            if value.byte_slice(index, index + 6) == "derive" {
+            if strings::starts_with_at(value, index, "derive") {
                 derive_start.set(index + 6)
             } else {
                 ()

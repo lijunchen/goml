@@ -15,6 +15,7 @@ use std::env;
 use std::fs;
 use std::io;
 use std::process;
+use std::text;
 
 struct RunArgs {
     file: string,
@@ -69,14 +70,13 @@ fn inline_dump_argument(value: string) -> Option[(string, string)] {
     names.push("--dump-lift");
     names.push("--dump-anf");
     names.push("--dump-go");
-    let result: Ref[Option[(string, string)]] = Ref::new(Option::None);
     for name in names {
         match inline_cli_value(value, name) {
-            Option::Some(argument) => result.set(Option::Some((name, argument))),
+            Option::Some(argument) => return Option::Some((name, argument)),
             Option::None => (),
         }
     };
-    result.get()
+    Option::None
 }
 
 fn inline_dump_argument_present(value: Option[(string, string)]) -> bool {
@@ -87,23 +87,18 @@ fn inline_dump_argument_present(value: Option[(string, string)]) -> bool {
 }
 
 fn selected_run_usage(used_dumps: Vec[string]) -> string {
-    let usage = Ref::new("gomlc run-single");
+    let builder = text::StringBuilder::new();
+    builder.write_string("gomlc run-single");
     for argument in used_dumps {
-        usage.set(usage.get() + " " + argument)
+        builder.write_char(' ');
+        builder.write_string(argument)
     };
-    usage.get() + " <FILE>"
+    builder.write_string(" <FILE>");
+    builder.finish()
 }
 
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let file: Ref[Option[string]] = Ref::new(Option::None);
-    let dump_ast = Ref::new(false);
-    let dump_hir = Ref::new(false);
-    let dump_tast = Ref::new(false);
-    let dump_core = Ref::new(false);
-    let dump_mono = Ref::new(false);
-    let dump_lift = Ref::new(false);
-    let dump_anf = Ref::new(false);
-    let dump_go = Ref::new(false);
     let seen: HashMap[string, unit] = HashMap::new();
     let used_dumps = Vec::new();
     let positional = Ref::new(false);
@@ -143,23 +138,6 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             } else {
                 seen.set(argument, ());
                 used_dumps.push(argument);
-                if argument == "--dump-ast" {
-                    dump_ast.set(true)
-                } else if argument == "--dump-hir" {
-                    dump_hir.set(true)
-                } else if argument == "--dump-tast" {
-                    dump_tast.set(true)
-                } else if argument == "--dump-core" {
-                    dump_core.set(true)
-                } else if argument == "--dump-mono" {
-                    dump_mono.set(true)
-                } else if argument == "--dump-lift" {
-                    dump_lift.set(true)
-                } else if argument == "--dump-anf" {
-                    dump_anf.set(true)
-                } else {
-                    dump_go.set(true)
-                };
                 index.set(index.get() + 1)
             }
         } else if positional.get() == false
@@ -224,14 +202,14 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     match file.get() {
         Option::Some(value) => Result::Ok(RunArgs {
             file: value,
-            dump_ast: dump_ast.get(),
-            dump_hir: dump_hir.get(),
-            dump_tast: dump_tast.get(),
-            dump_core: dump_core.get(),
-            dump_mono: dump_mono.get(),
-            dump_lift: dump_lift.get(),
-            dump_anf: dump_anf.get(),
-            dump_go: dump_go.get(),
+            dump_ast: seen.contains("--dump-ast"),
+            dump_hir: seen.contains("--dump-hir"),
+            dump_tast: seen.contains("--dump-tast"),
+            dump_core: seen.contains("--dump-core"),
+            dump_mono: seen.contains("--dump-mono"),
+            dump_lift: seen.contains("--dump-lift"),
+            dump_anf: seen.contains("--dump-anf"),
+            dump_go: seen.contains("--dump-go"),
         }),
         Option::None => {
             let missing = Vec::new();

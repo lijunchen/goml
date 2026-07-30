@@ -1,6 +1,8 @@
 package main;
 
+use gomlc::strings;
 use std::io;
+use std::text;
 
 struct PackageInfoArgs {
     inputs: Vec[string],
@@ -163,8 +165,7 @@ fn package_info_ident_continue(value: uint8) -> bool {
 }
 
 fn package_info_skip_trivia(scanner: PackageInfoScanner) -> unit {
-    let running = Ref::new(true);
-    while running.get() && scanner.index.get() < scanner.source.byte_len() {
+    while scanner.index.get() < scanner.source.byte_len() {
         let index = scanner.index.get();
         let value = scanner.source.byte_get(index);
         if value == 32 || value == 9 || value == 10 || value == 13 {
@@ -180,7 +181,7 @@ fn package_info_skip_trivia(scanner: PackageInfoScanner) -> unit {
                 scanner.index.set(scanner.index.get() + 1)
             }
         } else {
-            running.set(false)
+            break
         }
     }
 }
@@ -192,7 +193,7 @@ fn package_info_at_text(
     let start = scanner.index.get();
     let end = start + expected.byte_len();
     end <= scanner.source.byte_len()
-        && scanner.source.byte_slice(start, end) == expected
+        && strings::starts_with_at(scanner.source, start, expected)
 }
 
 fn package_info_at_keyword(
@@ -298,13 +299,15 @@ fn package_info_parse_use(
             ))
         },
     };
-    let path: Ref[string] = Ref::new(first);
+    let path = text::StringBuilder::new();
+    path.write_string(first);
     package_info_skip_trivia(scanner);
     while package_info_at_text(scanner, "::") {
         scanner.index.set(scanner.index.get() + 2);
         match package_info_read_ident(scanner) {
             Option::Some(value) => {
-                path.set(path.get() + "::" + value);
+                path.write_string("::");
+                path.write_string(value);
                 package_info_skip_trivia(scanner)
             },
             Option::None => {
@@ -339,7 +342,7 @@ fn package_info_parse_use(
     match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
         Result::Ok(_) => Result::Ok(PackageInfoUse {
             alias: alias.get(),
-            path: path.get(),
+            path: path.finish(),
         }),
         Result::Err(error) => Result::Err(error),
     }
@@ -351,18 +354,15 @@ fn parse_package_info_file(
 ) -> Result[PackageInfoFile, string] {
     let scanner = new_package_info_scanner(source);
     package_info_skip_trivia(scanner);
-    let package_name: Ref[string] = Ref::new("main");
-    let package_explicit: Ref[bool] = Ref::new(false);
-    if package_info_consume_keyword(scanner, "package") {
-        package_explicit.set(true);
-        match package_info_read_ident(scanner) {
+    let declared_package = if package_info_consume_keyword(scanner, "package") {
+        let package_name = match package_info_read_ident(scanner) {
             Option::Some(value) => if !package_info_lower_ident(value) {
                 return Result::Err(package_info_error(
                     source_path,
                     "package name must start with a lowercase letter or `_`",
                 ))
             } else {
-                package_name.set(value)
+                value
             },
             Option::None => {
                 return Result::Err(package_info_error(
@@ -374,9 +374,10 @@ fn parse_package_info_file(
         match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
             Result::Ok(_) => (),
             Result::Err(error) => return Result::Err(error),
-        }
+        };
+        (package_name, true)
     } else {
-        ()
+        ("main", false)
     };
     let uses = Vec::new();
     package_info_skip_trivia(scanner);
@@ -388,8 +389,8 @@ fn parse_package_info_file(
         package_info_skip_trivia(scanner)
     };
     Result::Ok(PackageInfoFile {
-        package_name: package_name.get(),
-        package_explicit: package_explicit.get(),
+        package_name: declared_package.0,
+        package_explicit: declared_package.1,
         uses,
     })
 }

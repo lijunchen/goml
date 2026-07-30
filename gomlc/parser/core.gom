@@ -84,41 +84,35 @@ fn input_peek(parser: Parser) -> lexer::TokenKind {
 fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
     let index = Ref::new(parser.cursor.get());
     let remaining = Ref::new(offset);
-    let result = Ref::new(lexer::TokenKind::Eof);
-    let found = Ref::new(false);
-    while found.get() == false && index.get() < parser.tokens.len() {
+    while index.get() < parser.tokens.len() {
         let kind = parser.tokens.get(index.get()).kind;
         if lexer::token_is_trivia(kind) {
             ()
         } else if remaining.get() == 0 {
-            result.set(kind);
-            found.set(true)
+            return kind
         } else {
             remaining.set(remaining.get() - 1)
         };
         index.set(index.get() + 1)
     };
-    result.get()
+    lexer::TokenKind::Eof
 }
 
 fn input_nth_text(parser: Parser, offset: int) -> string {
     let index = Ref::new(parser.cursor.get());
     let remaining = Ref::new(offset);
-    let result = Ref::new("");
-    let found = Ref::new(false);
-    while found.get() == false && index.get() < parser.tokens.len() {
+    while index.get() < parser.tokens.len() {
         let token = parser.tokens.get(index.get());
         if lexer::token_is_trivia(token.kind) {
             ()
         } else if remaining.get() == 0 {
-            result.set(token.text);
-            found.set(true)
+            return token.text
         } else {
             remaining.set(remaining.get() - 1)
         };
         index.set(index.get() + 1)
     };
-    result.get()
+    ""
 }
 
 fn input_current_text(parser: Parser) -> string {
@@ -473,8 +467,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 kinds.push(kind);
                 let event_index = Ref::new(index.get());
                 let parent = Ref::new(forward_parent);
-                let following = Ref::new(true);
-                while following.get() {
+                while true {
                     match parent.get() {
                         Option::Some(distance) => {
                             event_index.set(event_index.get() + distance);
@@ -485,10 +478,10 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                                     kinds.push(parent_kind);
                                     parent.set(next)
                                 },
-                                Option::None => following.set(false),
+                                Option::None => break,
                             }
                         },
-                        Option::None => following.set(false),
+                        Option::None => break,
                     }
                 };
                 let kind_index = Ref::new(kinds.len() - 1);

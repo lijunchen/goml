@@ -536,11 +536,10 @@ pub fn builtin_source() -> string {
         \\    I::Item = T,
         \\{
         \\    let accumulator = Ref::new(initial);
-        \\    let running = Ref::new(true);
-        \\    while running.get() {
+        \\    while true {
         \\        match Iterator::next(iterator) {
         \\            Option::Some(value) => accumulator.set(combine(accumulator.get(), value)),
-        \\            Option::None => running.set(false),
+        \\            Option::None => break,
         \\        };
         \\    };
         \\    accumulator.get()
@@ -551,11 +550,10 @@ pub fn builtin_source() -> string {
         \\    I::Item = T,
         \\{
         \\    let values: Vec[T] = Vec::new();
-        \\    let running = Ref::new(true);
-        \\    while running.get() {
+        \\    while true {
         \\        match Iterator::next(iterator) {
         \\            Option::Some(value) => values.push(value),
-        \\            Option::None => running.set(false),
+        \\            Option::None => break,
         \\        };
         \\    };
         \\    values
@@ -869,6 +867,48 @@ pub fn builtin_source() -> string {
         \\impl Hash for uint {
         \\    fn hash(self: uint) -> uint64 {
         \\        uint_hash(self)
+        \\    }
+        \\}
+        \\
+        \\impl string {
+        \\    fn starts_with(self: string, prefix: string) -> bool {
+        \\        prefix.byte_len() <= self.byte_len()
+        \\            && self.is_char_boundary(prefix.byte_len())
+        \\            && self.byte_slice(0, prefix.byte_len()) == prefix
+        \\    }
+        \\
+        \\    fn ends_with(self: string, suffix: string) -> bool {
+        \\        if suffix.byte_len() > self.byte_len() {
+        \\            false
+        \\        } else {
+        \\            let start = self.byte_len() - suffix.byte_len();
+        \\            self.is_char_boundary(start)
+        \\                && self.byte_slice(start, self.byte_len()) == suffix
+        \\        }
+        \\    }
+        \\
+        \\    fn contains(self: string, expected: string) -> bool {
+        \\        if expected.byte_len() == 0 {
+        \\            true
+        \\        } else if expected.byte_len() > self.byte_len() {
+        \\            false
+        \\        } else {
+        \\            for start in range(
+        \\                0,
+        \\                self.byte_len() - expected.byte_len() + 1,
+        \\            ) {
+        \\                let end = start + expected.byte_len();
+        \\                if self.is_char_boundary(start)
+        \\                    && self.is_char_boundary(end)
+        \\                    && self.byte_slice(start, end) == expected
+        \\                {
+        \\                    return true
+        \\                } else {
+        \\                    ()
+        \\                }
+        \\            };
+        \\            false
+        \\        }
         \\    }
         \\}
     ;

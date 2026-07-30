@@ -101,17 +101,16 @@ fn ascii_prefix_equal_case_insensitive(
     if value.byte_len() < expected.byte_len() {
         false
     } else {
-        let equal = Ref::new(true);
         for index in range(0, expected.byte_len()) {
             if ascii_lower(value.byte_get(index))
                 != ascii_lower(expected.byte_get(index))
             {
-                equal.set(false)
+                return false
             } else {
                 ()
             }
         };
-        equal.get()
+        true
     }
 }
 

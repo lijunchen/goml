@@ -4,7 +4,9 @@ use gomlc::ast;
 use gomlc::cst;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 
 pub struct Analysis {
     pub source_path: string,
@@ -96,27 +98,9 @@ fn lower_package(value: Project) -> LoweredPackage {
     }
 }
 
-fn contains_package(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 fn is_local_package(module_path: string, package_name: string) -> bool {
     package_name == module_path
-        || (package_name.byte_len() > module_path.byte_len() + 2
-            && package_name.byte_slice(0, module_path.byte_len())
-                == module_path
-            && package_name.byte_slice(
-                module_path.byte_len(),
-                module_path.byte_len() + 2,
-            ) == "::")
+        || strings::starts_with(package_name, module_path + "::")
 }
 
 fn dependency_sources(
@@ -162,7 +146,7 @@ fn collect_dependency(
     all_sources: Vec[SourceFile],
     source_path: string,
 ) -> unit {
-    if contains_package(visited, package_name) {
+    if vecs::contains(visited, package_name) {
         ()
     } else {
         visited.push(package_name);

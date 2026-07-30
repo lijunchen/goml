@@ -687,11 +687,13 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
 }
 
 fn display_args(program: string, args: Vec[string]) -> string {
-    let result = Ref::new(program);
+    let builder = text::StringBuilder::new();
+    builder.write_string(program);
     for argument in args {
-        result.set(result.get() + " " + util::shell_escape(argument))
+        builder.write_char(' ');
+        builder.write_string(util::shell_escape(argument))
     };
-    result.get()
+    builder.finish()
 }
 
 fn command_args(value: Command) -> (string, Vec[string]) {
@@ -1011,17 +1013,6 @@ fn discard_prepared_command(
     }
 }
 
-fn contains_index(values: Vec[int], target: int) -> bool {
-    for value in values {
-        if value == target {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
-}
-
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     let producers: HashMap[string, Vec[int]] = HashMap::new();
     for index in range(0, commands.len()) {
@@ -1064,7 +1055,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     following.get()
                 };
                 if producer >= 0
-                    && !contains_index(dependencies, producer)
+                    && !util::int_vec_contains(dependencies, producer)
                 {
                     dependencies.push(producer)
                 } else {
@@ -1087,7 +1078,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     Option::None => (),
                 };
                 if previous.get() >= 0
-                    && !contains_index(dependencies, previous.get())
+                    && !util::int_vec_contains(dependencies, previous.get())
                 {
                     dependencies.push(previous.get())
                 } else {
@@ -1118,7 +1109,7 @@ fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
 
 fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
     for dependency in node.dependencies {
-        if !contains_index(completed, dependency) {
+        if !util::int_vec_contains(completed, dependency) {
             return false
         } else {
             ()
@@ -1144,8 +1135,7 @@ fn execute_plan_worker(
     work: Channel[BuildWork],
     results: Channel[BuildWorkResult],
 ) -> unit {
-    let running = Ref::new(true);
-    while running.get() {
+    while true {
         match work.recv() {
             Option::Some(value) => results.send(BuildWorkResult {
                 index: value.index,
@@ -1156,7 +1146,7 @@ fn execute_plan_worker(
                     value.cache,
                 ),
             }),
-            Option::None => running.set(false),
+            Option::None => break,
         }
     }
 }

@@ -1,30 +1,35 @@
 package go_backend;
 
+use gomlc::strings;
+use gomlc::vecs;
+
 use gomlc::core;
 use gomlc::tast;
 
 fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] {
-    let result: Ref[Option[tast::EnumDef]] = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::StructDef] {
-    let result: Ref[Option[tast::StructDef]] = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn builtin_struct_instance(
@@ -86,15 +91,14 @@ fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        let equal = Ref::new(true);
         for index in range(0, left.len()) {
             if encode_type(left.get(index)) != encode_type(right.get(index)) {
-                equal.set(false)
+                return false
             } else {
                 ()
             }
         };
-        equal.get()
+        true
     }
 }
 
@@ -103,15 +107,16 @@ fn find_instance(
     base_name: string,
     args: Vec[tast::Type],
 ) -> Option[core::TypeInstance] {
-    let result: Ref[Option[core::TypeInstance]] = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.base_name == base_name && type_lists_match(value.args, args) {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn lookup_binding(
@@ -119,15 +124,15 @@ fn lookup_binding(
     args: Vec[tast::Type],
     name: string,
 ) -> Option[tast::Type] {
-    let result: Ref[Option[tast::Type]] = Ref::new(Option::None);
-    for index in range(0, generics.len()) {
-        if index < args.len() && generics.get(index) == name {
-            result.set(Option::Some(args.get(index)))
+    let index = Ref::new(generics.len() - 1);
+    while index.get() >= 0 {
+        if index.get() < args.len() && generics.get(index.get()) == name {
+            return Option::Some(args.get(index.get()))
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn instantiate_types(
@@ -204,7 +209,7 @@ fn instantiate_type(
 fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
     match tast::resolve_type(value) {
         tast::Type::Con { name } => {
-            if contains_text(result, name) == false {
+            if vecs::contains(result, name) == false {
                 result.push(name)
             } else {
                 ()
@@ -245,15 +250,16 @@ fn instance_by_name(
     values: Vec[core::TypeInstance],
     name: string,
 ) -> Option[core::TypeInstance] {
-    let result: Ref[Option[core::TypeInstance]] = Ref::new(Option::None);
-    for value in values {
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        let value = values.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn enum_marker_name(go_name: string) -> string {
@@ -265,15 +271,14 @@ fn qualified_variant_go_name(owner_name: string, variant_name: string) -> string
 }
 
 fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
-    let found = Ref::new(false);
     for variant in value.variants {
         if variant.name == variant_name {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn variant_instance_count(
@@ -285,7 +290,7 @@ fn variant_instance_count(
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
             if definition.generics.len() == 0 {
-                if contains_text(owners, definition.name) {
+                if vecs::contains(owners, definition.name) {
                     ()
                 } else {
                     owners.push(definition.name)
@@ -293,7 +298,7 @@ fn variant_instance_count(
             } else {
                 for instance in instances {
                     if instance.base_name == definition.name {
-                        if contains_text(owners, instance.name) {
+                        if vecs::contains(owners, instance.name) {
                             ()
                         } else {
                             owners.push(instance.name)
@@ -378,15 +383,14 @@ fn unique_variant_go_name(
 }
 
 fn tag_only_variant_fields(values: Vec[Vec[tast::Type]]) -> bool {
-    let result = Ref::new(true);
     for fields in values {
         if fields.len() > 0 {
-            result.set(false)
+            return false
         } else {
             ()
         }
     };
-    result.get()
+    true
 }
 
 fn new_variant_infos() -> VariantInfos {
@@ -454,7 +458,7 @@ fn emit_enum_instance(
     function_names: FunctionNames,
     instance: core::TypeInstance,
 ) -> unit {
-    if contains_text(emitted, instance.name) {
+    if vecs::contains(emitted, instance.name) {
         ()
     } else {
         match find_enum(enums, instance.base_name) {
@@ -574,7 +578,7 @@ pub fn emit_user_type_items(
     for definition in structs {
         if definition.generics.len() == 0
             && !is_closure_struct_name(definition.name)
-            && contains_text(emitted, definition.name) == false
+            && vecs::contains(emitted, definition.name) == false
         {
             let fields: Vec[(string, Type)] = Vec::new();
             for field in definition.fields {
@@ -600,7 +604,7 @@ pub fn emit_user_type_items(
     for instance in instances {
         match find_struct(structs, instance.base_name) {
             Option::Some(definition) => {
-                if contains_text(emitted, instance.name) == false {
+                if vecs::contains(emitted, instance.name) == false {
                     let fields: Vec[(string, Type)] = Vec::new();
                     for field in definition.fields {
                         fields.push((
@@ -624,7 +628,7 @@ pub fn emit_user_type_items(
             },
             Option::None => match builtin_struct_instance(instance, instances) {
                 Option::Some(definition) => {
-                    if contains_text(emitted, instance.name) == false {
+                    if vecs::contains(emitted, instance.name) == false {
                         items.push(Item::Struct(definition));
                         emitted.push(instance.name)
                     } else {
@@ -638,7 +642,7 @@ pub fn emit_user_type_items(
     for definition in structs {
         if definition.generics.len() == 0
             && is_closure_struct_name(definition.name)
-            && contains_text(emitted, definition.name) == false
+            && vecs::contains(emitted, definition.name) == false
         {
             let fields: Vec[(string, Type)] = Vec::new();
             for field in definition.fields {
@@ -761,7 +765,7 @@ fn last_separator(value: string) -> int {
     let result = Ref::new(-1);
     if value.byte_len() > 1 {
         for index in range(0, value.byte_len() - 1) {
-            if value.byte_slice(index, index + 2) == "::" {
+            if strings::starts_with_at(value, index, "::") {
                 result.set(index)
             } else {
                 ()

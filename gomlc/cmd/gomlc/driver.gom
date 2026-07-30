@@ -10,6 +10,7 @@ use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
 use gomlc::stdlib;
+use gomlc::strings;
 use gomlc::tast;
 use std::bytes;
 use std::env;
@@ -115,39 +116,36 @@ fn artifact_standard_library(
 }
 
 fn import_path_text(value: ast::Path) -> string {
-    let result = Ref::new("");
+    let builder = text::StringBuilder::new();
     let index = Ref::new(0);
     for segment in value.segments {
         if index.get() > 0 {
-            result.set(result.get() + "::")
+            builder.write_string("::")
         } else {
             ()
         };
-        result.set(result.get() + segment.ident);
+        builder.write_string(segment.ident);
         index.set(index.get() + 1)
     };
-    result.get()
+    builder.finish()
 }
 
 fn std_import(value: string) -> bool {
-    value == "std" || (value.byte_len() >= 5 && value.byte_slice(0, 5) == "std::")
+    value == "std" || strings::starts_with(value, "std::")
 }
 
 fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
     match value.ast {
         Option::Some(file) => {
-            let result = Ref::new(Option::None);
-            let found = Ref::new(false);
             for use_decl in file.uses {
                 let package_path = import_path_text(use_decl.path);
-                if !(found.get()) && !(std_import(package_path)) {
-                    result.set(Option::Some(package_path));
-                    found.set(true)
+                if !std_import(package_path) {
+                    return Option::Some(package_path)
                 } else {
                     ()
                 }
             };
-            result.get()
+            Option::None
         },
         Option::None => Option::None,
     }
@@ -156,15 +154,14 @@ fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
 fn imports_package(value: ast::LowerResult, expected: string) -> bool {
     match value.ast {
         Option::Some(file) => {
-            let found = Ref::new(false);
             for use_decl in file.uses {
-                if found.get() == false && import_path_text(use_decl.path) == expected {
-                    found.set(true)
+                if import_path_text(use_decl.path) == expected {
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Option::None => false,
     }
@@ -173,15 +170,14 @@ fn imports_package(value: ast::LowerResult, expected: string) -> bool {
 fn has_standard_import(value: ast::LowerResult) -> bool {
     match value.ast {
         Option::Some(file) => {
-            let found = Ref::new(false);
             for use_decl in file.uses {
-                if found.get() == false && std_import(import_path_text(use_decl.path)) {
-                    found.set(true)
+                if std_import(import_path_text(use_decl.path)) {
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Option::None => false,
     }
@@ -988,11 +984,10 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
         }
     };
     let line_end = Ref::new(line_start.get());
-    let scanning = Ref::new(true);
-    while scanning.get() && line_end.get() < source.byte_len() {
+    while line_end.get() < source.byte_len() {
         let byte = source.byte_get(line_end.get());
         if byte == 10 || byte == 13 {
-            scanning.set(false)
+            break
         } else {
             line_end.set(line_end.get() + 1)
         }
@@ -1015,8 +1010,8 @@ fn repeat_char(value: char, count: int) -> string {
 
 fn diagnostic_visual_width(value: string) -> int {
     let width = Ref::new(0);
-    for index in range(0, value.len()) {
-        if value.get(index) == '\t' {
+    for character in value.chars() {
+        if character == '\t' {
             width.set(width.get() + 4 - width.get() % 4)
         } else {
             width.set(width.get() + 1)
@@ -1028,14 +1023,13 @@ fn diagnostic_visual_width(value: string) -> int {
 fn expand_diagnostic_tabs(value: string) -> string {
     let builder = text::StringBuilder::new();
     let width = Ref::new(0);
-    for index in range(0, value.len()) {
-        let ch = value.get(index);
-        if ch == '\t' {
+    for character in value.chars() {
+        if character == '\t' {
             let spaces = 4 - width.get() % 4;
             builder.write_string(repeat_char(' ', spaces));
             width.set(width.get() + spaces)
         } else {
-            builder.write_char(ch);
+            builder.write_char(character);
             width.set(width.get() + 1)
         }
     };
@@ -1198,14 +1192,7 @@ fn fail_on_typer_diagnostics(
     fallback_path: string,
     fallback_source: string,
 ) -> unit {
-    let has_error = Ref::new(false);
-    for diagnostic in diagnostics {
-        match diagnostic.severity {
-            tast::DiagnosticSeverity::Error => has_error.set(true),
-            tast::DiagnosticSeverity::Warning => (),
-        }
-    };
-    if has_error.get() {
+    if typer_diagnostics_have_errors(diagnostics) {
         fail(render_typer_diagnostics(
             diagnostics,
             fallback_path,
@@ -1326,8 +1313,7 @@ fn compact_hir_diagnostics(
 }
 
 fn diagnostic_message_starts_with(value: string, prefix: string) -> bool {
-    value.byte_len() >= prefix.byte_len()
-        && value.byte_slice(0, prefix.byte_len()) == prefix
+    strings::starts_with(value, prefix)
 }
 
 fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
@@ -1345,7 +1331,7 @@ fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
     } else if diagnostic_message_starts_with(value.message, "No instance found for trait ") {
         2
     } else if diagnostic_message_starts_with(value.message, "Struct ")
-        && artifact_string_contains(value.message, " type arguments, but got ")
+        && strings::contains(value.message, " type arguments, but got ")
     {
         1
     } else {
@@ -1425,14 +1411,13 @@ fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagno
 }
 
 fn typer_diagnostics_have_errors(diagnostics: Vec[tast::Diagnostic]) -> bool {
-    let result = Ref::new(false);
     for diagnostic in diagnostics {
         match diagnostic.severity {
-            tast::DiagnosticSeverity::Error => result.set(true),
+            tast::DiagnosticSeverity::Error => return true,
             tast::DiagnosticSeverity::Warning => (),
         }
     };
-    result.get()
+    false
 }
 
 fn compact_typer_diagnostics(
@@ -1559,18 +1544,17 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
 fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
     match value.tast {
         Option::Some(file) => {
-            let found = Ref::new(false);
             for item in file.items {
                 match item {
                     tast::Item::Function(function) => if function.name == "main" {
-                        found.set(true)
+                        return true
                     } else {
                         ()
                     },
                     _ => (),
                 }
             };
-            found.get()
+            false
         },
         Option::None => false,
     }

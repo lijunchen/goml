@@ -1,5 +1,7 @@
 package tast;
 
+use gomlc::refs;
+
 struct TypeSubst {
     name: string,
     ty: Type,
@@ -93,42 +95,47 @@ fn prune(value: Type) -> Type {
 
 fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
     match prune(value) {
-        Type::Var(other) => ptr_eq(variable, other),
+        Type::Var(other) => refs::same(variable, other),
         Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for item in values {
                 if occurs(variable, item) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
-            let found = Ref::new(occurs(variable, base));
-            match qualifier {
+            if occurs(variable, base) {
+                true
+            } else {
+                match qualifier {
                 Option::Some(reference) => for arg in reference.args {
                     if occurs(variable, arg) {
-                        found.set(true)
+                        return true
                     } else {
                         ()
                     }
                 },
                 Option::None => (),
-            };
-            found.get()
+                };
+                false
+            }
         },
         Type::App { ty: base, args } => {
-            let found = Ref::new(occurs(variable, base));
-            for arg in args {
-                if occurs(variable, arg) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if occurs(variable, base) {
+                true
+            } else {
+                for arg in args {
+                    if occurs(variable, arg) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -137,15 +144,18 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
         | Type::Channel { elem } => occurs(variable, elem),
         Type::HashMap { key, value: item } => occurs(variable, key) || occurs(variable, item),
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(occurs(variable, ret_ty));
-            for param in params {
-                if occurs(variable, param) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if occurs(variable, ret_ty) {
+                true
+            } else {
+                for param in params {
+                    if occurs(variable, param) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         _ => false,
     }
@@ -171,15 +181,14 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        let valid = Ref::new(true);
         for index in range(0, left.len()) {
             if !unify(left.get(index), right.get(index)) {
-                valid.set(false)
+                return false
             } else {
                 ()
             }
         };
-        valid.get()
+        true
     }
 }
 
@@ -198,7 +207,7 @@ fn unify(left: Type, right: Type) -> bool {
     match (left, right) {
         (Type::Error, _) | (_, Type::Error) => true,
         (Type::Never, _) | (_, Type::Never) => true,
-        (Type::Var(first), Type::Var(second)) => if ptr_eq(first, second) {
+        (Type::Var(first), Type::Var(second)) => if refs::same(first, second) {
             true
         } else {
             match (first.get(), second.get()) {
@@ -313,7 +322,7 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
     match (left, right) {
         (Type::Error, _) | (_, Type::Error) => Option::None,
         (Type::Never, _) | (_, Type::Never) => Option::None,
-        (Type::Var(first), Type::Var(second)) => if ptr_eq(first, second) {
+        (Type::Var(first), Type::Var(second)) => if refs::same(first, second) {
             Option::None
         } else {
             match (first.get(), second.get()) {
@@ -482,15 +491,14 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        let equal = Ref::new(true);
         for index in range(0, left.len()) {
             if !types_equal(left.get(index), right.get(index)) {
-                equal.set(false)
+                return false
             } else {
                 ()
             }
         };
-        equal.get()
+        true
     }
 }
 
@@ -505,7 +513,7 @@ fn trait_refs_equal(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
 
 pub fn types_equal(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
-        (Type::Var(first), Type::Var(second)) => ptr_eq(first, second),
+        (Type::Var(first), Type::Var(second)) => refs::same(first, second),
         (Type::Unit, Type::Unit)
         | (Type::Never, Type::Never)
         | (Type::Bool, Type::Bool)
@@ -591,40 +599,45 @@ fn contains_parameter(
     match prune(resolve_parameter_alias(value, substitutions)) {
         Type::Param { name: candidate } => candidate == name,
         Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for value in values {
                 if contains_parameter(value, name, substitutions) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
-            let found = Ref::new(contains_parameter(base, name, substitutions));
-            match qualifier {
+            if contains_parameter(base, name, substitutions) {
+                true
+            } else {
+                match qualifier {
                 Option::Some(reference) => for arg in reference.args {
                     if contains_parameter(arg, name, substitutions) {
-                        found.set(true)
+                        return true
                     } else {
                         ()
                     }
                 },
                 Option::None => (),
-            };
-            found.get()
+                };
+                false
+            }
         },
         Type::App { ty: base, args } => {
-            let found = Ref::new(contains_parameter(base, name, substitutions));
-            for arg in args {
-                if contains_parameter(arg, name, substitutions) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if contains_parameter(base, name, substitutions) {
+                true
+            } else {
+                for arg in args {
+                    if contains_parameter(arg, name, substitutions) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -636,15 +649,18 @@ fn contains_parameter(
                 || contains_parameter(item, name, substitutions)
         },
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(contains_parameter(ret_ty, name, substitutions));
-            for param in params {
-                if contains_parameter(param, name, substitutions) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if contains_parameter(ret_ty, name, substitutions) {
+                true
+            } else {
+                for param in params {
+                    if contains_parameter(param, name, substitutions) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         _ => false,
     }
@@ -680,15 +696,14 @@ fn unify_parameter_alias_lists(
     if left.len() != right.len() {
         false
     } else {
-        let valid = Ref::new(true);
         for index in range(0, left.len()) {
             if !unify_parameter_aliases(left.get(index), right.get(index), substitutions) {
-                valid.set(false)
+                return false
             } else {
                 ()
             }
         };
-        valid.get()
+        true
     }
 }
 
@@ -815,26 +830,28 @@ fn set_projection_alias(
     }
 }
 
+fn type_list_contains(values: Vec[Type], expected: Type) -> bool {
+    for value in values {
+        if types_equal(value, expected) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
 fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type {
     let current = Ref::new(value);
     let seen = Vec::new();
-    let searching = Ref::new(true);
-    while searching.get() {
-        let repeated = Ref::new(false);
-        for value in seen {
-            if types_equal(value, current.get()) {
-                repeated.set(true)
-            } else {
-                ()
-            }
-        };
-        if repeated.get() {
-            searching.set(false)
+    while true {
+        if type_list_contains(seen, current.get()) {
+            break
         } else {
             seen.push(current.get());
             match projection_alias(aliases, current.get()) {
                 Option::Some(next) => current.set(next),
-                Option::None => searching.set(false),
+                Option::None => break,
             }
         }
     };
@@ -878,31 +895,7 @@ fn predicate_projection_aliases(
             TypePredicate::Trait { for_ty: _, trait_ref: _ } => (),
         }
     };
-    let changed = Ref::new(true);
-    while changed.get() {
-        changed.set(false);
-        for equality in equalities {
-            let left = equality.0;
-            let right = equality.1;
-            let left_alias = resolve_projection_alias(left, aliases);
-            let right_alias = resolve_projection_alias(right, aliases);
-            if !types_equal(left_alias, left) && types_equal(right_alias, right) {
-                if set_projection_alias(aliases, right, left_alias) {
-                    changed.set(true)
-                } else {
-                    ()
-                }
-            } else if !types_equal(right_alias, right) && types_equal(left_alias, left) {
-                if set_projection_alias(aliases, left, right_alias) {
-                    changed.set(true)
-                } else {
-                    ()
-                }
-            } else {
-                ()
-            }
-        }
-    };
+    while advance_projection_aliases(aliases, equalities) {};
     for equality in equalities {
         if projection_alias_index(aliases, equality.0) < 0
             && projection_alias_index(aliases, equality.1) < 0
@@ -916,6 +909,32 @@ fn predicate_projection_aliases(
         }
     };
     aliases
+}
+
+fn advance_projection_aliases(
+    aliases: Vec[ProjectionAlias],
+    equalities: Vec[(Type, Type)],
+) -> bool {
+    for equality in equalities {
+        let left = equality.0;
+        let right = equality.1;
+        let left_alias = resolve_projection_alias(left, aliases);
+        let right_alias = resolve_projection_alias(right, aliases);
+        if !types_equal(left_alias, left)
+            && types_equal(right_alias, right)
+            && set_projection_alias(aliases, right, left_alias)
+        {
+            return true
+        } else if !types_equal(right_alias, right)
+            && types_equal(left_alias, left)
+            && set_projection_alias(aliases, left, right_alias)
+        {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn projection_equality(
@@ -934,15 +953,17 @@ fn projection_equality(
 }
 
 fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
-    let result = Ref::new(Option::None);
-    for associated in value.associated_types {
+    for offset in range(0, value.associated_types.len()) {
+        let associated = value.associated_types.get(
+            value.associated_types.len() - 1 - offset,
+        );
         if associated.0 == name {
-            result.set(Option::Some(associated.1))
+            return Option::Some(associated.1)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn builtin_iterator_item(base: Type) -> Option[Type] {
@@ -1027,8 +1048,7 @@ fn impl_projection(
     name: string,
     qualifier: Option[TraitRef],
 ) -> Option[Type] {
-    let result = Ref::new(Option::None);
-    let matches = Ref::new(0);
+    let candidates: Vec[Type] = Vec::new();
     for impl_info in ctx.impls {
         match associated_binding(impl_info, name) {
             Option::Some(associated) => {
@@ -1049,16 +1069,10 @@ fn impl_projection(
                     };
                     if trait_matches {
                         let candidate = substitute_type(associated, substitutions);
-                        match result.get() {
-                            Option::Some(previous) => if !types_equal(previous, candidate) {
-                                matches.set(matches.get() + 1)
-                            } else {
-                                ()
-                            },
-                            Option::None => {
-                                matches.set(1);
-                                result.set(Option::Some(candidate))
-                            },
+                        if !type_list_contains(candidates, candidate) {
+                            candidates.push(candidate)
+                        } else {
+                            ()
                         }
                     } else {
                         ()
@@ -1070,8 +1084,8 @@ fn impl_projection(
             Option::None => (),
         }
     };
-    if matches.get() == 1 {
-        result.get()
+    if candidates.len() == 1 {
+        Option::Some(candidates.get(0))
     } else {
         Option::None
     }
@@ -1163,15 +1177,15 @@ fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
 }
 
 fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
-    let result = Ref::new(Option::None);
-    for value in values {
+    for offset in range(0, values.len()) {
+        let value = values.get(values.len() - 1 - offset);
         if value.name == name {
-            result.set(Option::Some(value.ty))
+            return Option::Some(value.ty)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {

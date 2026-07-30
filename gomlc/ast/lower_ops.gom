@@ -29,17 +29,14 @@ fn is_binary_operator(kind: lexer::TokenKind) -> bool {
 }
 
 fn binary_operator_token(node: LocatedNode) -> Option[LocatedToken] {
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for token in direct_tokens(node) {
-        if found.get() == false && is_binary_operator(token.token.kind) {
-            result.set(Option::Some(token));
-            found.set(true)
+        if is_binary_operator(token.token.kind) {
+            return Option::Some(token)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn binary_operator(kind: lexer::TokenKind) -> Option[BinaryOp] {

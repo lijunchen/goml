@@ -1,5 +1,7 @@
 package go_backend;
 
+use gomlc::strings;
+
 struct NameSet {
     values: Vec[string],
     present: HashMap[string, unit],
@@ -221,21 +223,20 @@ fn name_uses_import(name: string, alias: string) -> bool {
     } else if name.byte_len() <= alias.byte_len() {
         false
     } else {
-        name.byte_slice(0, alias.byte_len()) == alias
+        strings::starts_with(name, alias)
             && name.byte_get(alias.byte_len()) == 46
     }
 }
 
 fn import_is_used(names: NameSet, alias: string) -> bool {
-    let used = Ref::new(false);
     for name in names.values {
         if name_uses_import(name, alias) {
-            used.set(true)
+            return true
         } else {
             ()
         }
     };
-    used.get()
+    false
 }
 
 fn collect_item_names(result: NameSet, value: Item) -> unit {
@@ -321,9 +322,8 @@ pub fn prune_functions(value: File) -> File {
     let reachable = new_name_set();
     let expanded = new_name_set();
     add_reachable(reachable, "main");
-    let changed = Ref::new(true);
-    while changed.get() {
-        changed.set(false);
+    while true {
+        let previous_len = expanded.values.len();
         for item in value.items {
             match item {
                 Item::Function(function) => {
@@ -332,13 +332,17 @@ pub fn prune_functions(value: File) -> File {
                     {
                         add_reachable(expanded, function.name);
                         collect_block_names(reachable, function.body);
-                        changed.set(true)
                     } else {
                         ()
                     }
                 },
                 _ => (),
             }
+        };
+        if expanded.values.len() == previous_len {
+            break
+        } else {
+            ()
         }
     };
     let items: Vec[Item] = Vec::new();

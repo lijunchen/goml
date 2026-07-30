@@ -4,7 +4,9 @@ use gomlc::ast;
 use gomlc::core;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 use std::fs;
 
 struct ArtifactDependencyRequest {
@@ -21,15 +23,15 @@ fn artifact_find_interface_unit(
     values: Vec[ArtifactInterfaceUnit],
     package_name: string,
 ) -> Option[ArtifactInterfaceUnit] {
-    let result: Ref[Option[ArtifactInterfaceUnit]] = Ref::new(Option::None);
-    for value in values {
+    for offset in range(0, values.len()) {
+        let value = values.get(values.len() - 1 - offset);
         if value.package_name == package_name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn artifact_read_interface_units(
@@ -50,7 +52,7 @@ fn artifact_read_interface_units(
                 "failed to parse interface " + path_value + ": " + error,
             ),
         };
-        if public_names_contain(names, interface.package_name) {
+        if vecs::contains(names, interface.package_name) {
             return Result::Err(
                 "multiple interface files provided for package " + interface.package_name,
             )
@@ -90,17 +92,16 @@ fn artifact_interface_builtin_valid(
     if value.package_name == "builtin" {
         true
     } else {
-        let valid = Ref::new(false);
         for dependency in value.deps {
             if dependency.0 == "builtin"
                 && dependency.1 == artifact_builtin_interface_hash(world)
             {
-                valid.set(true)
+                return true
             } else {
                 ()
             }
         };
-        valid.get()
+        false
     }
 }
 
@@ -147,7 +148,7 @@ fn artifact_resolve_interface_units(
             }
         } else if request.package_name == current_package {
             return Result::Err("package " + current_package + " cannot use itself")
-        } else if public_names_contain(resolved_names, request.package_name) {
+        } else if vecs::contains(resolved_names, request.package_name) {
             let actual = match artifact_standard_package(
                 world.standard,
                 request.package_name,
@@ -465,7 +466,7 @@ fn artifact_declared_package_name(
     values: Vec[ast::LowerResult],
     paths: Vec[string],
 ) -> Result[string, string] {
-    let result: Ref[Option[string]] = Ref::new(Option::None);
+    let names = Vec::new();
     for index in range(0, values.len()) {
         let value = values.get(index);
         match value.ast {
@@ -474,8 +475,9 @@ fn artifact_declared_package_name(
                     paths.get(index) + " must declare `package <name>;`",
                 )
             } else {
-                match result.get() {
-                    Option::Some(name) => if name != file.package_name {
+                if names.len() > 0 {
+                    let name = names.get(0);
+                    if name != file.package_name {
                         return Result::Err(
                             "package mismatch in "
                                 + paths.get(index)
@@ -486,16 +488,19 @@ fn artifact_declared_package_name(
                         )
                     } else {
                         ()
-                    },
-                    Option::None => result.set(Option::Some(file.package_name)),
-                }
+                    }
+                } else {
+                    ()
+                };
+                names.push(file.package_name)
             },
             Option::None => (),
         }
     };
-    match result.get() {
-        Option::Some(value) => Result::Ok(value),
-        Option::None => Result::Err("package has no valid source files"),
+    if names.len() > 0 {
+        Result::Ok(names.get(0))
+    } else {
+        Result::Err("package has no valid source files")
     }
 }
 
@@ -516,6 +521,21 @@ fn artifact_validate_entrypoint(
     }
 }
 
+fn artifact_find_function(
+    functions: Vec[ArtifactFnScheme],
+    name: string,
+) -> Option[ArtifactFnScheme] {
+    for offset in range(0, functions.len()) {
+        let function = functions.get(functions.len() - 1 - offset);
+        if function.name == name {
+            return Option::Some(function)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
 fn artifact_entrypoint_diagnostics(
     package_name: string,
     declared_name: string,
@@ -528,15 +548,8 @@ fn artifact_entrypoint_diagnostics(
         ()
     };
     let expected = package_item_name(package_name, "main");
-    let found: Ref[Option[ArtifactFnScheme]] = Ref::new(Option::None);
-    for function in exports.functions {
-        if function.name == expected {
-            found.set(Option::Some(function))
-        } else {
-            ()
-        }
-    };
-    match found.get() {
+    let found = artifact_find_function(exports.functions, expected);
+    match found {
         Option::Some(function) => {
             if function.type_params.len() > 0 {
                 diagnostics.push("main function must not have type parameters")
@@ -581,18 +594,17 @@ fn artifact_use_has_explicit_alias(
 ) -> bool {
     match value.ast {
         Option::Some(file) => {
-            let result = Ref::new(false);
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == package_name {
                     match use_decl.alias {
-                        Option::Some(_) => result.set(true),
+                        Option::Some(_) => return true,
                         Option::None => (),
                     }
                 } else {
                     ()
                 }
             };
-            result.get()
+            false
         },
         Option::None => false,
     }
@@ -602,17 +614,17 @@ fn artifact_declared_package_alias(
     units: Vec[ArtifactInterfaceUnit],
     package_name: string,
 ) -> Option[string] {
-    let result = Ref::new(Option::None);
-    for interface_unit in units {
+    for offset in range(0, units.len()) {
+        let interface_unit = units.get(units.len() - 1 - offset);
         if interface_unit.package_name == package_name
             && interface_unit.package_interface.name != ""
         {
-            result.set(Option::Some(interface_unit.package_interface.name))
+            return Option::Some(interface_unit.package_interface.name)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn artifact_apply_declared_package_aliases(
@@ -647,14 +659,14 @@ fn artifact_apply_declared_package_aliases(
 }
 
 fn standard_internal_import_allowed(package_name: string) -> bool {
-    package_name == "std" || artifact_string_starts_with(package_name, "std::")
+    package_name == "std" || strings::starts_with(package_name, "std::")
 }
 
 fn disallowed_standard_internal_import(
     package_name: string,
     import_name: string,
 ) -> bool {
-    artifact_string_starts_with(import_name, "std::internal::")
+    strings::starts_with(import_name, "std::internal::")
         && !standard_internal_import_allowed(package_name)
 }
 
@@ -811,19 +823,10 @@ fn compile_artifact_package(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    let production_interface: Ref[Option[ArtifactInterfaceUnit]] = Ref::new(
-        Option::None,
-    );
-    if emit_tests {
-        for interface in provided {
-            if interface.package_name == command.package_name {
-                production_interface.set(Option::Some(interface))
-            } else {
-                ()
-            }
-        }
+    let production_interface = if emit_tests {
+        artifact_find_interface_unit(provided, command.package_name)
     } else {
-        ()
+        Option::None
     };
     let dependency_units = match artifact_resolve_interface_units(
         world,
@@ -960,7 +963,7 @@ fn compile_artifact_package(
         ),
         deps,
     );
-    let interface_unit = match production_interface.get() {
+    let interface_unit = match production_interface {
         Option::Some(value) => value,
         Option::None => generated_interface,
     };
@@ -1008,7 +1011,7 @@ fn artifact_read_core_units(
                 "failed to parse core " + path_value + ": " + error,
             ),
         };
-        if public_names_contain(names, core_unit.package_name) {
+        if vecs::contains(names, core_unit.package_name) {
             return Result::Err(
                 "duplicate core provided for package " + core_unit.package_name,
             )
@@ -1024,21 +1027,21 @@ fn artifact_find_core_unit(
     values: Vec[ArtifactCoreUnit],
     package_name: string,
 ) -> Option[ArtifactCoreUnit] {
-    let result: Ref[Option[ArtifactCoreUnit]] = Ref::new(Option::None);
-    for value in values {
+    for offset in range(0, values.len()) {
+        let value = values.get(values.len() - 1 - offset);
         if value.package_name == package_name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn artifact_link_dependency_name(package_name: string) -> bool {
     package_name != "builtin"
         && package_name != "std"
-        && !artifact_string_starts_with(package_name, "std::")
+        && !strings::starts_with(package_name, "std::")
 }
 
 fn artifact_reachable_core_units(
@@ -1052,7 +1055,7 @@ fn artifact_reachable_core_units(
     let names = Vec::new();
     while pending.len() > 0 {
         let package_name = pending.remove(pending.len() - 1);
-        if public_names_contain(names, package_name) {
+        if vecs::contains(names, package_name) {
             ()
         } else {
             let core_unit = match artifact_find_core_unit(values, package_name) {
@@ -1073,7 +1076,7 @@ fn artifact_reachable_core_units(
     };
     let result = Vec::new();
     for value in values {
-        if public_names_contain(names, value.package_name) {
+        if vecs::contains(names, value.package_name) {
             result.push(value)
         } else {
             ()

@@ -72,23 +72,18 @@ fn artifact_json_required_field(
     values: Vec[(string, ArtifactValue)],
     name: string,
 ) -> Result[ArtifactValue, string] {
-    let result: Ref[Option[ArtifactValue]] = Ref::new(Option::None);
-    let count = Ref::new(0);
+    let matches: Vec[ArtifactValue] = Vec::new();
     for value in values {
         if value.0 == name {
-            result.set(Option::Some(value.1));
-            count.set(count.get() + 1)
+            matches.push(value.1)
         } else {
             ()
         }
     };
-    if count.get() != 1 {
+    if matches.len() != 1 {
         Result::Err(artifact_decode_error("field " + name))
     } else {
-        match result.get() {
-            Option::Some(value) => Result::Ok(value),
-            Option::None => Result::Err(artifact_decode_error("field " + name)),
-        }
+        Result::Ok(matches.get(0))
     }
 }
 
@@ -96,20 +91,20 @@ fn artifact_json_optional_field(
     values: Vec[(string, ArtifactValue)],
     name: string,
 ) -> Result[Option[ArtifactValue], string] {
-    let result: Ref[Option[ArtifactValue]] = Ref::new(Option::None);
-    let count = Ref::new(0);
+    let matches: Vec[ArtifactValue] = Vec::new();
     for value in values {
         if value.0 == name {
-            result.set(Option::Some(value.1));
-            count.set(count.get() + 1)
+            matches.push(value.1)
         } else {
             ()
         }
     };
-    if count.get() > 1 {
+    if matches.len() > 1 {
         Result::Err(artifact_decode_error("field " + name))
+    } else if matches.len() == 1 {
+        Result::Ok(Option::Some(matches.get(0)))
     } else {
-        Result::Ok(result.get())
+        Result::Ok(Option::None)
     }
 }
 

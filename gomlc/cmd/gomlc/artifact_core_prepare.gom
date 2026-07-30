@@ -37,18 +37,17 @@ fn artifact_core_function_matches_scheme(
         {
             false
         } else {
-            let matches = Ref::new(true);
             for index in range(0, value.params.len()) {
                 if !artifact_core_types_equal(
                     value.params.get(index).1,
                     function_type.params.get(index),
                 ) {
-                    matches.set(false)
+                    return false
                 } else {
                     ()
                 }
             };
-            matches.get()
+            true
         },
         Result::Err(_) => false,
     }
@@ -57,7 +56,7 @@ fn artifact_core_function_matches_scheme(
 fn artifact_core_method_name(value: string) -> Option[string] {
     let separator = Ref::new(-1);
     for index in range(0, value.byte_len()) {
-        if value.byte_slice(index, index + 1) == "#" {
+        if value.byte_get(index) == 35 {
             separator.set(index)
         } else {
             ()

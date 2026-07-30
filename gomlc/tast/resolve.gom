@@ -2,6 +2,9 @@ package tast;
 
 use gomlc::ast;
 use gomlc::hir;
+use gomlc::strings;
+use gomlc::vecs;
+use std::text;
 
 struct ResolvedConstructor {
     constructor: Constructor,
@@ -36,17 +39,10 @@ struct MethodCandidate {
 }
 
 fn short_name(value: string) -> string {
-    let start = Ref::new(0);
-    let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58 && value.byte_get(index.get() + 1) == 58 {
-            start.set(index.get() + 2);
-            index.set(index.get() + 2)
-        } else {
-            index.set(index.get() + 1)
-        }
-    };
-    value.byte_slice(start.get(), value.byte_len())
+    match strings::rfind(value, "::") {
+        Option::Some(index) => value.byte_slice(index + 2, value.byte_len()),
+        Option::None => value,
+    }
 }
 
 fn names_match(left: string, right: string) -> bool {
@@ -126,15 +122,14 @@ fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, in
 }
 
 fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
-    let result = Ref::new(Option::None);
     for value in ctx.enums {
         if same_def(value.def_id, id) {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
@@ -233,36 +228,21 @@ fn resolve_named_constructor(
 ) -> Option[ResolvedConstructor] {
     match find_enum_by_name(ctx, enum_name) {
         Option::Some(value) => {
-            let result: Ref[Option[ResolvedConstructor]] = Ref::new(Option::None);
-            let found = Ref::new(false);
             for index in range(0, value.variants.len()) {
-                if found.get() == false && value.variants.get(index).name == variant_name {
-                    result.set(resolve_user_constructor(ctx, value, index));
-                    found.set(true)
+                if value.variants.get(index).name == variant_name {
+                    return resolve_user_constructor(ctx, value, index)
                 } else {
                     ()
                 }
             };
-            result.get()
+            Option::None
         },
         Option::None => Option::None,
     }
 }
 
 fn split_constructor_name(value: string) -> Option[(string, string)] {
-    let separator = Ref::new(Option::None);
-    let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58
-            && value.byte_get(index.get() + 1) == 58
-        {
-            separator.set(Option::Some(index.get()));
-            index.set(index.get() + 2)
-        } else {
-            index.set(index.get() + 1)
-        }
-    };
-    match separator.get() {
+    match strings::rfind(value, "::") {
         Option::Some(index) => if index > 0 && index + 2 < value.byte_len() {
             Option::Some((
                 value.byte_slice(0, index),
@@ -448,39 +428,34 @@ fn resolve_named_field_constructor(
         Option::Some(value) => return NamedFieldConstructorResolution::Found(value),
         Option::None => (),
     };
-    let found_enum: Ref[Option[EnumInfo]] = Ref::new(Option::None);
-    let found_index = Ref::new(-1);
-    let count = Ref::new(0);
+    let candidates: Vec[(EnumInfo, int)] = Vec::new();
     for value in ctx.enums {
         for index in range(0, value.variants.len()) {
             if value.variants.get(index).name == name {
-                count.set(count.get() + 1);
-                found_enum.set(Option::Some(value));
-                found_index.set(index)
+                candidates.push((value, index))
             } else {
                 ()
             }
         }
     };
-    if count.get() > 1 {
+    if candidates.len() > 1 {
         NamedFieldConstructorResolution::Ambiguous
+    } else if candidates.len() == 0 {
+        NamedFieldConstructorResolution::Missing
     } else {
-        match found_enum.get() {
-            Option::Some(value) => {
-                let variant = value.variants.get(found_index.get());
-                match enum_variant_named_fields(variant.fields) {
-                    Option::Some(fields) => NamedFieldConstructorResolution::Found(
-                        instantiate_named_variant(
-                            ctx,
-                            value,
-                            found_index.get(),
-                            fields,
-                        ),
-                    ),
-                    Option::None => NamedFieldConstructorResolution::WrongStyle,
-                }
-            },
-            Option::None => NamedFieldConstructorResolution::Missing,
+        let candidate = candidates.get(0);
+        let value = candidate.0;
+        let variant = value.variants.get(candidate.1);
+        match enum_variant_named_fields(variant.fields) {
+            Option::Some(fields) => NamedFieldConstructorResolution::Found(
+                instantiate_named_variant(
+                    ctx,
+                    value,
+                    candidate.1,
+                    fields,
+                ),
+            ),
+            Option::None => NamedFieldConstructorResolution::WrongStyle,
         }
     }
 }
@@ -522,15 +497,15 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
         Option::Some(owner) => match find_struct_by_name(ctx, owner) {
             Option::Some(info) => {
                 let substitutions = substitutions_for_nominal(info.generics, receiver);
-                let result = Ref::new(Option::None);
-                for field in info.fields {
+                for offset in range(0, info.fields.len()) {
+                    let field = info.fields.get(info.fields.len() - 1 - offset);
                     if field.0 == name {
-                        result.set(Option::Some(substitute_type(field.1, substitutions)))
+                        return Option::Some(substitute_type(field.1, substitutions))
                     } else {
                         ()
                     }
                 };
-                result.get()
+                Option::None
             },
             Option::None => Option::None,
         },
@@ -539,29 +514,26 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
 }
 
 fn find_named_field(values: Vec[(string, hir::Expr)], name: string) -> Option[hir::Expr] {
-    let result = Ref::new(Option::None);
-    for value in values {
+    for offset in range(0, values.len()) {
+        let value = values.get(values.len() - 1 - offset);
         if value.0 == name {
-            result.set(Option::Some(value.1))
+            return Option::Some(value.1)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[hir::Pat] {
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for value in values {
-        if !(found.get()) && value.0 == name {
-            result.set(Option::Some(value.1));
-            found.set(true)
+        if value.0 == name {
+            return Option::Some(value.1)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn receiver_matches(owner: Type, receiver: Type) -> bool {
@@ -578,15 +550,14 @@ fn call_type_lists_compatible(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        let compatible = Ref::new(true);
         for index in range(0, left.len()) {
             if !call_types_compatible(left.get(index), right.get(index)) {
-                compatible.set(false)
+                return false
             } else {
                 ()
             }
         };
-        compatible.get()
+        true
     }
 }
 
@@ -702,8 +673,6 @@ fn resolve_user_method(
     trait_name: Option[string],
     allow_bare_owner: bool,
 ) -> Option[ResolvedCallable] {
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for value in ctx.methods {
         let trait_matches = match (trait_name, value.trait_ref) {
             (Option::Some(expected), Option::Some(reference)) => {
@@ -712,7 +681,7 @@ fn resolve_user_method(
             (Option::None, _) => true,
             _ => false,
         };
-        if !(found.get()) && trait_matches && value.function.name == name
+        if trait_matches && value.function.name == name
             && receiver_matches(value.for_type, receiver) {
             let (owner, callable) = instantiate_method(ctx, value);
             if (allow_bare_owner
@@ -721,8 +690,7 @@ fn resolve_user_method(
                     Type::Con { name: _ } => true,
                     _ => false,
                 }) || unify(owner, receiver) {
-                result.set(Option::Some(callable));
-                found.set(true)
+                return Option::Some(callable)
             } else {
                 ()
             }
@@ -730,7 +698,7 @@ fn resolve_user_method(
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn method_matches_call(
@@ -780,7 +748,6 @@ fn context_trait_bound_satisfied(
     bound_ty: Type,
     reference: TraitRef,
 ) -> bool {
-    let found = Ref::new(false);
     let bound_ty = normalize_type(ctx, bound_ty);
     let reference = normalize_trait_ref(ctx, reference);
     for predicate in ctx.predicates {
@@ -788,7 +755,7 @@ fn context_trait_bound_satisfied(
             TypePredicate::Trait { for_ty: candidate_ty, trait_ref: candidate_ref } => {
                 if types_equal(normalize_type(ctx, candidate_ty), bound_ty)
                     && trait_ref_equal(normalize_trait_ref(ctx, candidate_ref), reference) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
@@ -796,7 +763,7 @@ fn context_trait_bound_satisfied(
             TypePredicate::Equality { lhs: _, rhs: _ } => (),
         }
     };
-    found.get()
+    false
 }
 
 fn predicates_satisfied_at(
@@ -804,30 +771,25 @@ fn predicates_satisfied_at(
     predicates: Vec[TypePredicate],
     depth: int,
 ) -> bool {
-    let satisfied = Ref::new(true);
     for predicate in predicates {
-        if satisfied.get() {
-            match predicate {
-                TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
-                    if !trait_bound_satisfied_at(ctx, bound_ty, reference, depth) {
-                        satisfied.set(false)
-                    } else {
-                        ()
-                    }
-                },
-                TypePredicate::Equality { lhs: left, rhs: right } => {
-                    if !unify(normalize_type(ctx, left), normalize_type(ctx, right)) {
-                        satisfied.set(false)
-                    } else {
-                        ()
-                    }
-                },
-            }
-        } else {
-            ()
+        match predicate {
+            TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
+                if !trait_bound_satisfied_at(ctx, bound_ty, reference, depth) {
+                    return false
+                } else {
+                    ()
+                }
+            },
+            TypePredicate::Equality { lhs: left, rhs: right } => {
+                if !unify(normalize_type(ctx, left), normalize_type(ctx, right)) {
+                    return false
+                } else {
+                    ()
+                }
+            },
         }
     };
-    satisfied.get()
+    true
 }
 
 fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> unit {
@@ -860,40 +822,45 @@ fn contains_unbound_any_variable(value: Type) -> bool {
             TypeVar::Link(inner) => contains_unbound_any_variable(inner),
         },
         Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for value in values {
                 if contains_unbound_any_variable(value) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
-            let found = Ref::new(contains_unbound_any_variable(base));
-            match reference {
+            if contains_unbound_any_variable(base) {
+                true
+            } else {
+                match reference {
                 Option::Some(reference) => for value in reference.args {
                     if contains_unbound_any_variable(value) {
-                        found.set(true)
+                        return true
                     } else {
                         ()
                     }
                 },
                 Option::None => (),
-            };
-            found.get()
+                };
+                false
+            }
         },
         Type::App { ty: base, args } => {
-            let found = Ref::new(contains_unbound_any_variable(base));
-            for value in args {
-                if contains_unbound_any_variable(value) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if contains_unbound_any_variable(base) {
+                true
+            } else {
+                for value in args {
+                    if contains_unbound_any_variable(value) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -905,15 +872,18 @@ fn contains_unbound_any_variable(value: Type) -> bool {
                 || contains_unbound_any_variable(value)
         },
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(contains_unbound_any_variable(ret_ty));
-            for value in params {
-                if contains_unbound_any_variable(value) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if contains_unbound_any_variable(ret_ty) {
+                true
+            } else {
+                for value in params {
+                    if contains_unbound_any_variable(value) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         _ => false,
     }
@@ -966,27 +936,29 @@ fn type_contains_error(value: Type) -> bool {
     match prune(value) {
         Type::Error => true,
         Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for value in values {
                 if type_contains_error(value) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Projection { for_ty: base, name: _, trait_ref: _ } => type_contains_error(base),
         Type::App { ty: base, args } => {
-            let found = Ref::new(type_contains_error(base));
-            for value in args {
-                if type_contains_error(value) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if type_contains_error(base) {
+                true
+            } else {
+                for value in args {
+                    if type_contains_error(value) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -997,15 +969,18 @@ fn type_contains_error(value: Type) -> bool {
             type_contains_error(key) || type_contains_error(value)
         },
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(type_contains_error(ret_ty));
-            for value in params {
-                if type_contains_error(value) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if type_contains_error(ret_ty) {
+                true
+            } else {
+                for value in params {
+                    if type_contains_error(value) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         _ => false,
     }
@@ -1014,15 +989,18 @@ fn type_contains_error(value: Type) -> bool {
 fn predicate_contains_error(value: TypePredicate) -> bool {
     match value {
         TypePredicate::Trait { for_ty, trait_ref: reference } => {
-            let found = Ref::new(type_contains_error(for_ty));
-            for value in reference.args {
-                if type_contains_error(value) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if type_contains_error(for_ty) {
+                true
+            } else {
+                for value in reference.args {
+                    if type_contains_error(value) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         TypePredicate::Equality { lhs: left, rhs: right } => {
             type_contains_error(left) || type_contains_error(right)
@@ -1100,8 +1078,25 @@ fn mark_unresolved_inference_predicate(
     }
 }
 
+fn predicate_message_present(
+    messages: Vec[string],
+    spans: Vec[Option[ast::Span]],
+    message: string,
+    span: Option[ast::Span],
+) -> bool {
+    for index in range(0, messages.len()) {
+        if messages.get(index) == message
+            && optional_spans_equal(spans.get(index), span)
+        {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
 fn resolve_required_predicates(ctx: Checker) -> bool {
-    let has_ambiguous_inference = Ref::new(false);
     for requirement in ctx.required_predicates {
         match requirement.predicate {
             TypePredicate::Trait { for_ty, trait_ref } => {
@@ -1153,29 +1148,17 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
                 requirement.predicate,
                 requirement.message,
             );
-            let duplicate = Ref::new(false);
-            for index in range(0, messages.len()) {
-                if messages.get(index) == message
-                    && optional_spans_equal(
-                        spans.get(index),
-                        requirement.span,
-                    )
-                {
-                    duplicate.set(true)
-                } else {
-                    ()
-                }
-            };
-            if duplicate.get() {
+            if predicate_message_present(
+                messages,
+                spans,
+                message,
+                requirement.span,
+            ) {
                 ()
             } else {
                 let inference_prefix =
                     "Could not infer the type required to prove";
-                if message.byte_len() >= inference_prefix.byte_len()
-                    && message.byte_slice(0, inference_prefix.byte_len())
-                        == inference_prefix
-                {
-                    has_ambiguous_inference.set(true);
+                if strings::starts_with(message, inference_prefix) {
                     mark_unresolved_inference_predicate(
                         ctx,
                         requirement.predicate,
@@ -1189,7 +1172,17 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
             }
         }
     };
-    has_ambiguous_inference.get()
+    for message in messages {
+        if strings::starts_with(
+            message,
+            "Could not infer the type required to prove",
+        ) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn builtin_value_trait_type(value: Type) -> bool {
@@ -1284,7 +1277,6 @@ fn builtin_trait_bound_satisfied(
         let bound_ty = prune(normalize_type(ctx, bound_ty));
         match bound_ty {
             Type::Dyn { trait_name: name } => {
-                let found = Ref::new(false);
                 for application in trait_ref_closure(
                     ctx,
                     TraitRef {
@@ -1293,12 +1285,12 @@ fn builtin_trait_bound_satisfied(
                     },
                 ) {
                     if names_match(application.name, trait_name) {
-                        found.set(true)
+                        return true
                     } else {
                         ()
                     }
                 };
-                found.get()
+                false
             },
             _ => if trait_name == "ToString" {
                 if builtin_value_trait_type(bound_ty) {
@@ -1325,7 +1317,6 @@ fn builtin_trait_bound_satisfied(
                         match bound_ty {
                             Type::RefType { elem: _ } => true,
                             Type::Tuple { items: values } => {
-                                let satisfied = Ref::new(true);
                                 for value in values {
                                     if !trait_bound_satisfied_at(
                                         ctx,
@@ -1336,12 +1327,12 @@ fn builtin_trait_bound_satisfied(
                                         },
                                         depth + 1,
                                     ) {
-                                        satisfied.set(false)
+                                        return false
                                     } else {
                                         ()
                                     }
                                 };
-                                satisfied.get()
+                                true
                             },
                             Type::Array { len: _, elem: element } => trait_bound_satisfied_at(
                                 ctx,
@@ -1407,10 +1398,8 @@ fn trait_bound_satisfied_at(
         } else {
             ()
         };
-        let found = Ref::new(false);
         for impl_info in ctx.impls {
-            if !(found.get())
-                && !contains_name(ctx.invalid_impl_origins, impl_info.origin)
+            if !vecs::contains(ctx.invalid_impl_origins, impl_info.origin)
                 && names_match(impl_info.trait_ref.name, reference.name)
             {
                 let substitutions = instantiate_substitutions(
@@ -1429,7 +1418,7 @@ fn trait_bound_satisfied_at(
                         );
                         apply_predicate_equalities(predicates);
                         if predicates_satisfied_at(ctx, predicates, depth + 1) {
-                            found.set(true)
+                            return true
                         } else {
                             ()
                         }
@@ -1443,7 +1432,7 @@ fn trait_bound_satisfied_at(
                 ()
             }
         };
-        found.get()
+        false
     }
 }
 
@@ -1454,7 +1443,7 @@ fn compatible_impl_count(
 ) -> int {
     let count = Ref::new(0);
     for impl_info in ctx.impls {
-        if !contains_name(ctx.invalid_impl_origins, impl_info.origin)
+        if !vecs::contains(ctx.invalid_impl_origins, impl_info.origin)
             && names_match(impl_info.trait_ref.name, reference.name)
         {
             let substitutions = instantiate_substitutions(
@@ -1525,7 +1514,7 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
             let left_impl = ctx.impls.get(left);
             let right_impl = ctx.impls.get(right);
             if impls_overlap(ctx, left_impl, right_impl) {
-                if !contains_name(ctx.invalid_impl_origins, right_impl.origin) {
+                if !vecs::contains(ctx.invalid_impl_origins, right_impl.origin) {
                     ctx.invalid_impl_origins.push(right_impl.origin)
                 } else {
                     ()
@@ -1621,7 +1610,7 @@ fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> 
 
 fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
     match value.trait_ref {
-        Option::Some(reference) => contains_name(ctx.in_scope_traits, reference.name),
+        Option::Some(reference) => vecs::contains(ctx.in_scope_traits, reference.name),
         Option::None => true,
     }
 }
@@ -1689,10 +1678,8 @@ fn resolve_user_method_for_call(
     args: Vec[Type],
     expected: Option[Type],
 ) -> Option[ResolvedCallable] {
-    let inherent = Ref::new(Option::None);
-    let inherent_matches = Ref::new(0);
-    let trait_method = Ref::new(Option::None);
-    let trait_matches = Ref::new(0);
+    let inherent: Vec[ResolvedCallable] = Vec::new();
+    let trait_methods: Vec[ResolvedCallable] = Vec::new();
     for value in ctx.methods {
         if value.function.name == name
             && receiver_matches(value.for_type, receiver)
@@ -1717,14 +1704,8 @@ fn resolve_user_method_for_call(
             };
             if matches {
                 match value.trait_ref {
-                    Option::Some(_) => {
-                        trait_matches.set(trait_matches.get() + 1);
-                        trait_method.set(Option::Some(candidate.callable))
-                    },
-                    Option::None => {
-                        inherent_matches.set(inherent_matches.get() + 1);
-                        inherent.set(Option::Some(candidate.callable))
-                    },
+                    Option::Some(_) => trait_methods.push(candidate.callable),
+                    Option::None => inherent.push(candidate.callable),
                 }
             } else {
                 ()
@@ -1733,19 +1714,15 @@ fn resolve_user_method_for_call(
             ()
         }
     };
-    let matches = if inherent_matches.get() > 0 {
-        inherent_matches.get()
+    let matches = if inherent.len() > 0 {
+        inherent
     } else {
-        trait_matches.get()
+        trait_methods
     };
-    if matches == 1 {
-        if inherent_matches.get() == 1 {
-            inherent.get()
-        } else {
-            trait_method.get()
-        }
+    if matches.len() == 1 {
+        Option::Some(matches.get(0))
     } else {
-        if matches > 1 {
+        if matches.len() > 1 {
             push_diagnostic(ctx, "ambiguous method: " + name)
         } else {
             ()
@@ -2120,6 +2097,16 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
                     one_type(Type::Tuple { items: two_types(Type::Int, Type::Char) }),
                 ),
             ))
+        } else if name == "starts_with"
+            || name == "ends_with"
+            || name == "contains"
+        {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::String),
+                Type::Bool,
+            ))
         } else {
             Option::None
     }
@@ -2168,8 +2155,7 @@ fn resolve_dyn_method(
         ) {
             Option::Some(value) => Option::Some(dyn_method_callable(owner, name, value)),
             Option::None => {
-                let result: Ref[Option[ResolvedCallable]] = Ref::new(Option::None);
-                let matches = Ref::new(0);
+                let resolved: Vec[ResolvedCallable] = Vec::new();
                 let candidates = Vec::new();
                 for index in range(1, applications.len()) {
                     match resolve_trait_reference_method(
@@ -2179,29 +2165,18 @@ fn resolve_dyn_method(
                         Option::Some(receiver),
                     ) {
                         Option::Some(value) => {
-                            matches.set(matches.get() + 1);
                             candidates.push(short_name(
                                 applications.get(index).name,
                             ));
-                            result.set(Option::Some(dyn_method_callable(owner, name, value)))
+                            resolved.push(dyn_method_callable(owner, name, value))
                         },
                         Option::None => (),
                     }
                 };
-                if matches.get() == 1 {
-                    result.get()
+                if resolved.len() == 1 {
+                    Option::Some(resolved.get(0))
                 } else {
-                    if matches.get() > 1 {
-                        let candidate_text = Ref::new("");
-                        for candidate in candidates {
-                            if candidate_text.get() == "" {
-                                candidate_text.set(candidate)
-                            } else {
-                                candidate_text.set(
-                                    candidate_text.get() + ", " + candidate,
-                                )
-                            }
-                        };
+                    if resolved.len() > 1 {
                         push_diagnostic(
                             ctx,
                             "Ambiguous method "
@@ -2209,7 +2184,7 @@ fn resolve_dyn_method(
                                 + " for type "
                                 + type_text(receiver)
                                 + " (candidates: "
-                                + candidate_text.get()
+                                + strings::join(candidates, ", ")
                                 + "). Use UFCS like Trait::"
                                 + name
                                 + "(...) to disambiguate",
@@ -2318,30 +2293,27 @@ fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
 }
 
 fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
-    let result = Ref::new(Option::None);
-    for value in ctx.traits {
+    for offset in range(0, ctx.traits.len()) {
+        let value = ctx.traits.get(ctx.traits.len() - 1 - offset);
         if names_match(value.name, name) {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
             ()
         }
     };
-    match result.get() {
-        Option::Some(value) => Option::Some(value),
-        Option::None => builtin_trait_info(short_name(name)),
-    }
+    builtin_trait_info(short_name(name))
 }
 
 fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] {
-    let result = Ref::new(Option::None);
-    for method in value.methods {
+    for offset in range(0, value.methods.len()) {
+        let method = value.methods.get(value.methods.len() - 1 - offset);
         if method.name == name {
-            result.set(Option::Some(method))
+            return Option::Some(method)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn builtin_associated_type(
@@ -2490,15 +2462,14 @@ fn trait_ref_equal(left: TraitRef, right: TraitRef) -> bool {
 }
 
 fn contains_trait_ref(values: Vec[TraitRef], expected: TraitRef) -> bool {
-    let found = Ref::new(false);
     for value in values {
         if trait_ref_equal(value, expected) {
-            found.set(true)
+            return true
         } else {
             ()
         }
     };
-    found.get()
+    false
 }
 
 fn predicate_equal(left: TypePredicate, right: TypePredicate) -> bool {
@@ -2516,19 +2487,14 @@ fn predicate_equal(left: TypePredicate, right: TypePredicate) -> bool {
 }
 
 fn push_predicate(values: Vec[TypePredicate], value: TypePredicate) -> unit {
-    let found = Ref::new(false);
     for existing in values {
         if predicate_equal(existing, value) {
-            found.set(true)
+            return
         } else {
             ()
         }
     };
-    if found.get() {
-        ()
-    } else {
-        values.push(value)
-    }
+    values.push(value)
 }
 
 fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
@@ -2665,7 +2631,7 @@ fn resolve_projection_type(
                     let matches = Vec::new();
                     for candidate in candidates {
                         if types_equal(candidate.for_ty, for_ty)
-                            && contains_name(candidate.associated_names, name)
+                            && vecs::contains(candidate.associated_names, name)
                         {
                             matches.push(candidate.trait_ref)
                         } else {
@@ -2689,21 +2655,14 @@ fn resolve_projection_type(
                                 push_diagnostic_at(ctx, message, Option::None);
                                 push_diagnostic(ctx, message)
                             } else {
-                                let candidates = Ref::new("");
+                                let candidates: Vec[string] = Vec::new();
                                 for candidate in matches {
-                                    let candidate = short_name(candidate.name);
-                                    if candidates.get() == "" {
-                                        candidates.set(candidate)
-                                    } else {
-                                        candidates.set(
-                                            candidates.get() + ", " + candidate,
-                                        )
-                                    }
+                                    candidates.push(short_name(candidate.name))
                                 };
                                 let message = "Associated type "
                                     + projection
                                     + " is ambiguous between "
-                                    + candidates.get();
+                                    + strings::join(candidates, ", ");
                                 push_diagnostic_at(ctx, message, Option::None);
                                 push_diagnostic(ctx, message)
                             }
@@ -2960,40 +2919,45 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
     match prune(value) {
         Type::Param { name } => name == expected,
         Type::Tuple { items: values } => {
-            let found = Ref::new(false);
             for value in values {
                 if type_contains_parameter(value, expected) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Type::Projection { for_ty: base, name: _, trait_ref: qualifier } => {
-            let found = Ref::new(type_contains_parameter(base, expected));
-            match qualifier {
+            if type_contains_parameter(base, expected) {
+                true
+            } else {
+                match qualifier {
                 Option::Some(reference) => for arg in reference.args {
                     if type_contains_parameter(arg, expected) {
-                        found.set(true)
+                        return true
                     } else {
                         ()
                     }
                 },
                 Option::None => (),
-            };
-            found.get()
+                };
+                false
+            }
         },
         Type::App { ty: base, args } => {
-            let found = Ref::new(type_contains_parameter(base, expected));
-            for arg in args {
-                if type_contains_parameter(arg, expected) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if type_contains_parameter(base, expected) {
+                true
+            } else {
+                for arg in args {
+                    if type_contains_parameter(arg, expected) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         Type::Array { len: _, elem }
         | Type::Slice { elem }
@@ -3005,18 +2969,36 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
                 || type_contains_parameter(value, expected)
         },
         Type::Func { params, ret_ty } => {
-            let found = Ref::new(type_contains_parameter(ret_ty, expected));
-            for param in params {
-                if type_contains_parameter(param, expected) {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            found.get()
+            if type_contains_parameter(ret_ty, expected) {
+                true
+            } else {
+                for param in params {
+                    if type_contains_parameter(param, expected) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
         },
         _ => false,
     }
+}
+
+fn parameter_types_contain_from(
+    values: Vec[Type],
+    start: int,
+    expected: string,
+) -> bool {
+    for index in range(start, values.len()) {
+        if type_contains_parameter(values.get(index), expected) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
@@ -3052,15 +3034,11 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
                 } else {
                     ()
                 };
-                let invalid_parameter = Ref::new(false);
-                for index in range(1, method.params.len()) {
-                    if type_contains_parameter(method.params.get(index), "Self") {
-                        invalid_parameter.set(true)
-                    } else {
-                        ()
-                    }
-                };
-                if invalid_parameter.get() {
+                if parameter_types_contain_from(
+                    method.params,
+                    1,
+                    "Self",
+                ) {
                     push_diagnostic_at(ctx,
                         "Trait "
                             + info.name
@@ -3276,9 +3254,8 @@ fn resolve_predicate_method(
     receiver: Type,
     name: string,
 ) -> Option[ResolvedCallable] {
-    let result = Ref::new(Option::None);
-    let matches = Ref::new(0);
-    let candidates = Ref::new("");
+    let resolved: Vec[ResolvedCallable] = Vec::new();
+    let candidates = text::StringBuilder::new();
     for predicate in ctx.predicates {
         match predicate {
             TypePredicate::Trait { for_ty: bound_ty, trait_ref: reference } => {
@@ -3290,16 +3267,15 @@ fn resolve_predicate_method(
                         Option::Some(receiver),
                     ) {
                         Option::Some(value) => {
-                            if candidates.get().byte_len() > 0 {
-                                candidates.set(candidates.get() + ", ")
-                            } else {
+                            if candidates.is_empty() {
                                 ()
+                            } else {
+                                candidates.write_string(", ")
                             };
-                            candidates.set(
-                                candidates.get() + short_name(reference.name),
+                            candidates.write_string(
+                                short_name(reference.name),
                             );
-                            matches.set(matches.get() + 1);
-                            result.set(Option::Some(value))
+                            resolved.push(value)
                         },
                         Option::None => (),
                     }
@@ -3310,10 +3286,10 @@ fn resolve_predicate_method(
             TypePredicate::Equality { lhs: _, rhs: _ } => (),
         }
     };
-    if matches.get() == 1 {
-        result.get()
+    if resolved.len() == 1 {
+        Option::Some(resolved.get(0))
     } else {
-        if matches.get() > 1 {
+        if resolved.len() > 1 {
             push_diagnostic(
                 ctx,
                 "Ambiguous method "
@@ -3321,7 +3297,7 @@ fn resolve_predicate_method(
                     + " for type "
                     + type_text(receiver)
                     + " (candidates: "
-                    + candidates.get()
+                    + candidates.finish()
                     + "). Use UFCS like Trait::"
                     + name
                     + "(...) to disambiguate",
@@ -3329,7 +3305,7 @@ fn resolve_predicate_method(
         } else {
             ()
         };
-        if matches.get() > 1 {
+        if resolved.len() > 1 {
             Option::Some(ResolvedCallable {
                 callable: Callable::Function("<error>"),
                 ty: Type::Error,
@@ -3425,8 +3401,7 @@ fn resolve_trait_static(
                 ) {
                     Option::Some(value) => Option::Some(value),
                     Option::None => {
-                        let result = Ref::new(Option::None);
-                        let matches = Ref::new(0);
+                        let resolved: Vec[ResolvedCallable] = Vec::new();
                         for candidate in trait_ref_closure(ctx, reference) {
                             if trait_ref_equal(candidate, reference) {
                                 ()
@@ -3437,18 +3412,15 @@ fn resolve_trait_static(
                                     name,
                                     Option::None,
                                 ) {
-                                    Option::Some(value) => {
-                                        matches.set(matches.get() + 1);
-                                        result.set(Option::Some(value))
-                                    },
+                                    Option::Some(value) => resolved.push(value),
                                     Option::None => (),
                                 }
                             }
                         };
-                        if matches.get() == 1 {
-                            result.get()
+                        if resolved.len() == 1 {
+                            Option::Some(resolved.get(0))
                         } else {
-                            if matches.get() > 1 {
+                            if resolved.len() > 1 {
                                 push_diagnostic(ctx, "ambiguous method: " + name)
                             } else {
                                 ()

@@ -2,6 +2,7 @@ package ast;
 
 use gomlc::cst;
 use gomlc::lexer;
+use gomlc::strings;
 
 struct LowerCtx {
     diagnostics: Vec[cst::Diagnostic],
@@ -13,18 +14,6 @@ struct LowerCtx {
 
 fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> unit {
     ctx.diagnostics.push(cst::diagnostic(message, value_span.start, value_span.end))
-}
-
-fn contains_string(values: Vec[string], expected: string) -> bool {
-    let result = Ref::new(false);
-    for value in values {
-        if value == expected {
-            result.set(true)
-        } else {
-            ()
-        }
-    };
-    result.get()
 }
 
 fn ident_starts_upper(value: string) -> bool {
@@ -114,32 +103,25 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
             }
         };
         let path_text = text_value.byte_slice(start, index.get());
-        let segment = Ref::new(0);
-        let scan = Ref::new(0);
-        while scan.get() + 1 < path_text.byte_len() {
-            if path_text.byte_slice(scan.get(), scan.get() + 2) == "::" {
-                segment.set(scan.get() + 2);
-                scan.set(scan.get() + 2)
-            } else {
-                scan.set(scan.get() + 1)
-            }
-        };
-        path_text.byte_slice(segment.get(), path_text.byte_len()) == expected
+        match strings::rfind(path_text, "::") {
+            Option::Some(separator) => {
+                path_text.byte_slice(separator + 2, path_text.byte_len())
+                    == expected
+            },
+            Option::None => path_text == expected,
+        }
     }
 }
 
 fn find_attribute(attrs: Vec[Attribute], expected: string) -> Option[Attribute] {
-    let result = Ref::new(Option::None);
-    let found = Ref::new(false);
     for attr in attrs {
-        if found.get() == false && attribute_matches(attr, expected) {
-            result.set(Option::Some(attr));
-            found.set(true)
+        if attribute_matches(attr, expected) {
+            return Option::Some(attr)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
@@ -165,26 +147,18 @@ fn normalized_array_length(value: string) -> Option[string] {
     } else if normalized.byte_len() > maximum.byte_len() {
         Option::None
     } else {
-        let cursor = Ref::new(0);
-        let valid = Ref::new(true);
-        let decided = Ref::new(false);
-        while cursor.get() < normalized.byte_len() && decided.get() == false {
-            let left = normalized.byte_get(cursor.get());
-            let right = maximum.byte_get(cursor.get());
+        for cursor in range(0, normalized.byte_len()) {
+            let left = normalized.byte_get(cursor);
+            let right = maximum.byte_get(cursor);
             if left < right {
-                decided.set(true)
+                return Option::Some(normalized)
             } else if left > right {
-                valid.set(false);
-                decided.set(true)
+                return Option::None
             } else {
-                cursor.set(cursor.get() + 1)
+                ()
             }
         };
-        if valid.get() {
-            Option::Some(normalized)
-        } else {
-            Option::None
-        }
+        Option::Some(normalized)
     }
 }
 

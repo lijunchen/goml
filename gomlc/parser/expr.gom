@@ -369,26 +369,26 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
         false
     } else {
         let depth = Ref::new(0);
-        let result = Ref::new(false);
-        let parsing = Ref::new(true);
-        while parsing.get() {
+        while true {
             match parser.nth(index.get()) {
                 lexer::TokenKind::LBracket => depth.set(depth.get() + 1),
                 lexer::TokenKind::RBracket => {
                     depth.set(depth.get() - 1);
                     if depth.get() == 0 {
-                        result.set(token_is(parser.nth(index.get() + 1), lexer::TokenKind::ColonColon));
-                        parsing.set(false)
+                        return token_is(
+                            parser.nth(index.get() + 1),
+                            lexer::TokenKind::ColonColon,
+                        )
                     } else {
                         ()
                     }
                 },
-                lexer::TokenKind::Eof => parsing.set(false),
+                lexer::TokenKind::Eof => return false,
                 _ => (),
             };
             index.set(index.get() + 1)
         };
-        result.get()
+        false
     }
 }
 
@@ -407,13 +407,12 @@ fn closure_param_list(parser: Parser) -> unit {
         ()
     } else {
         parser.expect(lexer::TokenKind::Pipe);
-        let parsing = Ref::new(true);
-        while parsing.get() && parser.at(lexer::TokenKind::Pipe) == false && parser.eof() == false {
+        while parser.at(lexer::TokenKind::Pipe) == false && parser.eof() == false {
             closure_param(parser);
             if parser.at(lexer::TokenKind::Comma) {
                 parser.expect(lexer::TokenKind::Comma)
             } else if parser.at(lexer::TokenKind::Pipe) {
-                parsing.set(false)
+                break
             } else {
                 parser.advance_with_error("expected `,` or `|` after closure parameter")
             }
@@ -638,12 +637,11 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                 let lhs = Ref::new(value);
                 let parsed_range = Ref::new(false);
                 let parsed_comparison = Ref::new(false);
-                let parsing = Ref::new(true);
-                while parsing.get() && parser.eof() == false {
+                while parser.eof() == false {
                     let operator = parser.peek();
                     if token_is(operator, lexer::TokenKind::DotDot) {
                         if min_bp > 0 {
-                            parsing.set(false)
+                            break
                         } else if parsed_range.get() {
                             parser.advance_with_error("range expressions cannot be chained");
                             expect_expr_bp_with_message(
@@ -665,7 +663,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                     } else if token_is(operator, lexer::TokenKind::AsKeyword) {
                         let left_bp = 17;
                         if left_bp < min_bp {
-                            parsing.set(false)
+                            break
                         } else {
                             let marker = lhs.get().precede(parser);
                             parser.advance();
@@ -676,7 +674,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                         match postfix_binding_power(operator) {
                             Option::Some(left_bp) => {
                                 if left_bp < min_bp {
-                                    parsing.set(false)
+                                    break
                                 } else if parser.at(lexer::TokenKind::LParen) {
                                     let marker = lhs.get().precede(parser);
                                     arg_list(parser);
@@ -708,7 +706,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             Option::None => match infix_binding_power(operator) {
                                 Option::Some((left_bp, right_bp)) => {
                                     if left_bp < min_bp {
-                                        parsing.set(false)
+                                        break
                                     } else if is_comparison(operator) && parsed_comparison.get() {
                                         parser.advance_with_error("comparison operators cannot be chained");
                                         expect_expr_bp_with_message(
@@ -732,7 +730,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                         }
                                     }
                                 },
-                                Option::None => parsing.set(false),
+                                Option::None => break,
                             },
                         }
                     }
@@ -749,12 +747,11 @@ fn arg_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
     let previous = parser.set_struct_literals_allowed(true);
-    let parsing = Ref::new(true);
-    while parsing.get() && parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
+    while parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
         if is_expr_first(parser.peek()) {
             arg(parser)
         } else {
-            parsing.set(false)
+            break
         }
     };
     parser.expect(lexer::TokenKind::RParen);

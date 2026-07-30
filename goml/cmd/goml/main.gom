@@ -135,26 +135,21 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
 }
 
 fn parse_duration(value: string) -> Result[int, string] {
-    let number = Ref::new("");
-    let multiplier = Ref::new(0);
-    if util::ends_with(value, "ms") {
-        number.set(value.byte_slice(0, value.byte_len() - 2));
-        multiplier.set(1)
+    let parts = if util::ends_with(value, "ms") {
+        (value.byte_slice(0, value.byte_len() - 2), 1)
     } else if util::ends_with(value, "s") {
-        number.set(value.byte_slice(0, value.byte_len() - 1));
-        multiplier.set(1000)
+        (value.byte_slice(0, value.byte_len() - 1), 1000)
     } else if util::ends_with(value, "m") {
-        number.set(value.byte_slice(0, value.byte_len() - 1));
-        multiplier.set(60000)
+        (value.byte_slice(0, value.byte_len() - 1), 60000)
     } else {
         return Result::Err("duration must end in ms, s, or m")
     };
-    let parsed = match util::parse_positive_int(number.get()) {
+    let parsed = match util::parse_positive_int(parts.0) {
         Result::Ok(value) => value,
         Result::Err(_) => return Result::Err("invalid duration `" + value + "`"),
     };
-    let duration = parsed * multiplier.get();
-    if duration / multiplier.get() != parsed {
+    let duration = parsed * parts.1;
+    if duration / parts.1 != parsed {
         Result::Err("duration is too large")
     } else {
         Result::Ok(duration)
@@ -177,21 +172,15 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     } else {
         ()
     };
-    let target = Ref::new(".");
-    let target_set = Ref::new(false);
+    let targets: Vec[string] = Vec::new();
     let target_dir: Ref[Option[string]] = Ref::new(Option::None);
     let compiler: Ref[Option[string]] = Ref::new(Option::None);
-    let dry_run = Ref::new(false);
-    let include_tests = Ref::new(false);
+    let flags: HashMap[string, unit] = HashMap::new();
     let program_args = Vec::new();
     let test_filter: Ref[Option[string]] = Ref::new(Option::None);
     let build_jobs = Ref::new(16);
     let test_jobs = Ref::new(1);
-    let test_list = Ref::new(false);
-    let test_ignored = Ref::new(false);
-    let test_include_ignored = Ref::new(false);
-    let test_json = Ref::new(false);
-    let test_nocapture = Ref::new(false);
+    let test_formats: Vec[string] = Vec::new();
     let test_timeout_ms = Ref::new(30000);
     let test_kind = Ref::new("all");
     let trailing = Ref::new(false);
@@ -212,22 +201,22 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             io::println(command_help(command));
             process::exit(0)
         } else if argument == "--dry-run" {
-            dry_run.set(true);
+            flags.set(argument, ());
             index.set(index.get() + 1)
         } else if command == "check" && argument == "--tests" {
-            include_tests.set(true);
+            flags.set(argument, ());
             index.set(index.get() + 1)
         } else if command == "test" && argument == "--list" {
-            test_list.set(true);
+            flags.set(argument, ());
             index.set(index.get() + 1)
         } else if command == "test" && argument == "--ignored" {
-            test_ignored.set(true);
+            flags.set(argument, ());
             index.set(index.get() + 1)
         } else if command == "test" && argument == "--include-ignored" {
-            test_include_ignored.set(true);
+            flags.set(argument, ());
             index.set(index.get() + 1)
         } else if command == "test" && argument == "--nocapture" {
-            test_nocapture.set(true);
+            flags.set(argument, ());
             index.set(index.get() + 1)
         } else {
             let parsed_target_dir = match option_value(
@@ -360,9 +349,9 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         };
                             match parsed_format {
                             Option::Some(value) => if value == "json" {
-                                test_json.set(true)
+                                test_formats.push(value)
                             } else if value == "text" {
-                                test_json.set(false)
+                                test_formats.push(value)
                             } else {
                                 return Result::Err(
                                     "--format must be text or json",
@@ -400,9 +389,8 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         },
                         Option::None => if util::starts_with(argument, "-") {
                             return Result::Err("unknown option " + argument)
-                        } else if command == "run" && !(target_set.get()) {
-                            target.set(argument);
-                            target_set.set(true);
+                        } else if command == "run" && targets.len() == 0 {
+                            targets.push(argument);
                             index.set(index.get() + 1)
                         } else {
                             return Result::Err("unexpected argument " + argument)
@@ -412,27 +400,29 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             }
         }
     };
-    if test_ignored.get() && test_include_ignored.get() {
+    let test_json = test_formats.len() > 0
+        && test_formats.get(test_formats.len() - 1) == "json";
+    if flags.contains("--ignored") && flags.contains("--include-ignored") {
         Result::Err("--ignored cannot be combined with --include-ignored")
-    } else if test_json.get() && test_nocapture.get() {
+    } else if test_json && flags.contains("--nocapture") {
         Result::Err("--nocapture cannot be combined with --format json")
     } else {
         Result::Ok(CliArgs {
             command,
-            target: target.get(),
+            target: if targets.len() > 0 { targets.get(0) } else { "." },
             target_dir: target_dir.get(),
             compiler: compiler.get(),
-            dry_run: dry_run.get(),
-            include_tests: include_tests.get(),
+            dry_run: flags.contains("--dry-run"),
+            include_tests: flags.contains("--tests"),
             program_args,
             test_filter: test_filter.get(),
             build_jobs: build_jobs.get(),
             test_jobs: test_jobs.get(),
-            test_list: test_list.get(),
-            test_ignored: test_ignored.get(),
-            test_include_ignored: test_include_ignored.get(),
-            test_json: test_json.get(),
-            test_nocapture: test_nocapture.get(),
+            test_list: flags.contains("--list"),
+            test_ignored: flags.contains("--ignored"),
+            test_include_ignored: flags.contains("--include-ignored"),
+            test_json,
+            test_nocapture: flags.contains("--nocapture"),
             test_timeout_ms: test_timeout_ms.get(),
             test_kind: test_kind.get(),
         })

@@ -2,6 +2,7 @@ package ast;
 
 use gomlc::cst;
 use gomlc::lexer;
+use gomlc::numeric;
 use std::text;
 
 fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
@@ -132,6 +133,22 @@ fn decimal_hex_value(value: uint8) -> uint32 {
     }
 }
 
+fn unicode_escape_character(value: string, start: int) -> Option[char] {
+    if start + 4 > value.byte_len() {
+        return Option::None
+    } else {
+        ()
+    };
+    let code = Ref::new(0);
+    for cursor in range(start, start + 4) {
+        match hex_value(value.byte_get(cursor)) {
+            Option::Some(part) => code.set(code.get() * 16 + part),
+            Option::None => return Option::None,
+        }
+    };
+    char_from_uint32(code.get())
+}
+
 fn unescape_string(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
     let index = Ref::new(0);
@@ -164,29 +181,11 @@ fn unescape_string(value: string) -> string {
                 102 => builder.write_string("\f"),
                 47 => builder.write_string("/"),
                 117 => {
-                    let code = Ref::new(0);
-                    let cursor = Ref::new(index.get() + 2);
-                    let valid = Ref::new(true);
-                    while cursor.get() < index.get() + 6 && cursor.get() < value.byte_len() {
-                        let digit_byte = value.byte_get(cursor.get());
-                        let digit = if digit_byte >= 48 && digit_byte <= 57 {
-                            Option::Some(decimal_hex_value(digit_byte))
-                        } else {
-                            hex_value(digit_byte)
-                        };
-                        match digit {
-                            Option::Some(part) => code.set(code.get() * 16 + part),
-                            Option::None => valid.set(false),
-                        };
-                        cursor.set(cursor.get() + 1)
-                    };
-                    if valid.get() && cursor.get() == index.get() + 6 {
-                        match char_from_uint32(code.get()) {
-                            Option::Some(character) => builder.write_string(character.to_string()),
-                            Option::None => (),
-                        }
-                    } else {
-                        ()
+                    match unicode_escape_character(value, index.get() + 2) {
+                        Option::Some(character) => {
+                            builder.write_string(character.to_string())
+                        },
+                        Option::None => (),
                     };
                     index.set(index.get() + 4)
                 },
@@ -207,9 +206,7 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
             let value = token.token.text;
             let builder = text::StringBuilder::with_capacity(value.byte_len());
             let line_start = Ref::new(0);
-            let first = Ref::new(true);
-            let valid = Ref::new(true);
-            while line_start.get() <= value.byte_len() && valid.get() {
+            while line_start.get() <= value.byte_len() {
                 let line_end = Ref::new(line_start.get());
                 while line_end.get() < value.byte_len() && value.byte_get(line_end.get()) != 10 {
                     line_end.set(line_end.get() + 1)
@@ -223,12 +220,17 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
                 if marker.get() + 2 > line_end.get()
                     || value.byte_slice(marker.get(), marker.get() + 2) != "\\\\"
                 {
-                    valid.set(false)
+                    push_error(
+                        ctx,
+                        token_span(token),
+                        "Invalid multiline string content",
+                    );
+                    return Option::None
                 } else {
-                    if first.get() {
-                        first.set(false)
-                    } else {
+                    if line_start.get() > 0 {
                         builder.write_string("\n")
+                    } else {
+                        ()
                     };
                     builder.write_string(value.byte_slice(marker.get() + 2, line_end.get()));
                     if line_end.get() >= value.byte_len() {
@@ -238,12 +240,7 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
                     }
                 }
             };
-            if valid.get() {
-                Option::Some(builder.finish())
-            } else {
-                push_error(ctx, token_span(token), "Invalid multiline string content");
-                Option::None
-            }
+            Option::Some(builder.finish())
         },
         Option::None => {
             push_error(ctx, node_span(node), "MultilineStrExpr has no value");
@@ -522,7 +519,10 @@ fn lower_number_expr(
                 let value_span = node_span(node);
                 let text = normalized_number_text(token.token.text);
                 if is_float {
-                    let (_, parsed) = string_parse_float64(text);
+                    let parsed = match numeric::parse_float64(text) {
+                        Option::Some(value) => value,
+                        Option::None => 0.0,
+                    };
                     Option::Some(Expr::Float { value: parsed, span: value_span })
                 } else {
                     Option::Some(Expr::Int { value: text, span: value_span })
@@ -534,15 +534,15 @@ fn lower_number_expr(
 }
 
 fn normalized_number_text(value: string) -> string {
-    let result = Ref::new("");
-    for index in range(0, value.byte_len()) {
-        if value.byte_get(index) == 95 {
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
+    for character in value.chars() {
+        if character == '_' {
             ()
         } else {
-            result.set(result.get() + value.byte_slice(index, index + 1))
+            builder.write_char(character)
         }
     };
-    result.get()
+    builder.finish()
 }
 
 fn lower_char_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {

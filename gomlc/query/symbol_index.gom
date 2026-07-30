@@ -4,6 +4,7 @@ use gomlc::ast;
 use gomlc::cst;
 use gomlc::lexer;
 use gomlc::parser;
+use gomlc::strings;
 
 pub enum SymbolKind {
     Function,
@@ -37,23 +38,19 @@ fn first_identifier(
     syntax: SyntaxIndex,
     node: SyntaxNode,
 ) -> Option[SyntaxToken] {
-    let result = Ref::new(Option::None);
     for token in syntax.tokens {
-        if match result.get() {
-            Option::Some(_) => false,
-            Option::None => true,
-        } && token_is_inside_node(token, node)
+        if token_is_inside_node(token, node)
             && lexer::token_kind_equal(
                 token.kind,
                 lexer::TokenKind::Ident,
             )
         {
-            result.set(Option::Some(token))
+            return Option::Some(token)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn type_node_kind(value: cst::NodeKind) -> bool {
@@ -84,12 +81,8 @@ fn first_type_name_token(
     syntax: SyntaxIndex,
     node: SyntaxNode,
 ) -> Option[SyntaxToken] {
-    let result = Ref::new(Option::None);
     for token in syntax.tokens {
-        if match result.get() {
-            Option::Some(_) => false,
-            Option::None => true,
-        } && token_is_inside_node(token, node)
+        if token_is_inside_node(token, node)
             && !lexer::token_is_trivia(token.kind)
             && token.text.byte_len() > 0
             && ((token.text.byte_get(0) >= 65
@@ -99,12 +92,12 @@ fn first_type_name_token(
                 || token.text.byte_get(0) == 95)
             && token.text != "dyn"
         {
-            result.set(Option::Some(token))
+            return Option::Some(token)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn owner_name_token(
@@ -112,23 +105,21 @@ fn owner_name_token(
     node: SyntaxNode,
 ) -> Option[SyntaxToken] {
     if cst::node_kind_equal(node.kind, cst::NodeKind::IMPL) {
-        let selected = Ref::new(Option::None);
-        for candidate in syntax.nodes {
+        let index = Ref::new(syntax.nodes.len() - 1);
+        while index.get() >= 0 {
+            let candidate = syntax.nodes.get(index.get());
             if match candidate.parent {
                 Option::Some(parent) => parent == node.id,
                 Option::None => false,
             }
                 && type_node_kind(candidate.kind)
             {
-                selected.set(Option::Some(candidate))
+                return first_type_name_token(syntax, candidate)
             } else {
-                ()
+                index.set(index.get() - 1)
             }
         };
-        match selected.get() {
-            Option::Some(owner) => first_type_name_token(syntax, owner),
-            Option::None => first_identifier(syntax, node),
-        }
+        first_identifier(syntax, node)
     } else {
         first_identifier(syntax, node)
     }
@@ -250,17 +241,16 @@ fn node_has_token(
     node: SyntaxNode,
     kind: lexer::TokenKind,
 ) -> bool {
-    let result = Ref::new(false);
     for token in syntax.tokens {
         if token_is_inside_node(token, node)
             && lexer::token_kind_equal(token.kind, kind)
         {
-            result.set(true)
+            return true
         } else {
             ()
         }
     };
-    result.get()
+    false
 }
 
 fn owner_public(
@@ -360,43 +350,38 @@ pub fn build_symbol_index_from_sources(
 }
 
 fn symbol_name_ends_with(value: string, expected: string) -> bool {
-    let suffix = "::" + expected;
-    value.byte_len() >= suffix.byte_len()
-        && value.byte_slice(
-            value.byte_len() - suffix.byte_len(),
-            value.byte_len(),
-        ) == suffix
+    strings::ends_with(value, "::" + expected)
 }
 
 pub fn find_symbol(
     index: SymbolIndex,
     qualified_name: string,
 ) -> Option[Symbol] {
-    let exact = Ref::new(Option::None);
-    let suffix = Ref::new(Option::None);
-    let suffix_count = Ref::new(0);
-    for symbol in index.symbols {
+    for offset in range(0, index.symbols.len()) {
+        let symbol = index.symbols.get(index.symbols.len() - 1 - offset);
         if symbol.qualified_name == qualified_name {
-            exact.set(Option::Some(symbol))
-        } else if symbol_name_ends_with(
+            return Option::Some(symbol)
+        } else {
+            ()
+        }
+    };
+    let suffixes = Vec::new();
+    for symbol in index.symbols {
+        if symbol_name_ends_with(
             qualified_name,
             symbol.qualified_name,
         ) || symbol_name_ends_with(
             symbol.qualified_name,
             qualified_name,
         ) {
-            suffix.set(Option::Some(symbol));
-            suffix_count.set(suffix_count.get() + 1)
+            suffixes.push(symbol)
         } else {
             ()
         }
     };
-    match exact.get() {
-        Option::Some(symbol) => Option::Some(symbol),
-        Option::None => if suffix_count.get() == 1 {
-            suffix.get()
-        } else {
-            Option::None
-        },
+    if suffixes.len() == 1 {
+        Option::Some(suffixes.get(0))
+    } else {
+        Option::None
     }
 }

@@ -6,6 +6,7 @@ use std::fs;
 use std::io;
 use std::json;
 use std::process;
+use std::text;
 
 pub struct Options {
     pub filter: Option[string],
@@ -126,48 +127,48 @@ fn selected(test: Test, options: Options) -> bool {
     filter_matches && (!options.ignored || test.ignored)
 }
 
+fn test_insert_index(values: Vec[Test], value: Test) -> int {
+    for index in range(0, values.len()) {
+        if value.display_name < values.get(index).display_name {
+            return index
+        } else {
+            ()
+        }
+    };
+    values.len()
+}
+
 fn sorted_tests(values: Vec[Test]) -> Vec[Test] {
     let result = Vec::new();
     for value in values {
-        let inserted = Ref::new(false);
-        for index in range(0, result.len()) {
-            if !(inserted.get())
-                && value.display_name < result.get(index).display_name
-            {
-                result.insert(index, value);
-                inserted.set(true)
-            } else {
-                ()
-            }
-        };
-        if !(inserted.get()) {
+        let index = test_insert_index(result, value);
+        if index == result.len() {
             result.push(value)
         } else {
-            ()
+            result.insert(index, value)
         }
     };
     result
 }
 
 fn escape_json(value: string) -> string {
-    let result = Ref::new("");
-    for index in range(0, value.byte_len()) {
-        let byte = value.byte_get(index);
-        if byte == 34 {
-            result.set(result.get() + "\\\"")
-        } else if byte == 92 {
-            result.set(result.get() + "\\\\")
-        } else if byte == 10 {
-            result.set(result.get() + "\\n")
-        } else if byte == 13 {
-            result.set(result.get() + "\\r")
-        } else if byte == 9 {
-            result.set(result.get() + "\\t")
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
+    for character in value.chars() {
+        if character == '"' {
+            builder.write_string("\\\"")
+        } else if character == '\\' {
+            builder.write_string("\\\\")
+        } else if character == '\n' {
+            builder.write_string("\\n")
+        } else if character == '\r' {
+            builder.write_string("\\r")
+        } else if character == '\t' {
+            builder.write_string("\\t")
         } else {
-            result.set(result.get() + value.byte_slice(index, index + 1))
+            builder.write_char(character)
         }
     };
-    result.get()
+    builder.finish()
 }
 
 fn print_list(tests: Vec[Test], options: Options) -> unit {
@@ -284,8 +285,7 @@ fn worker(
     work: Channel[(int, Test)],
     results: Channel[Execution],
 ) -> unit {
-    let running = Ref::new(true);
-    while running.get() {
+    while true {
         match work.recv() {
             Option::Some(item) => results.send(run_one(
                 module_dir,
@@ -293,27 +293,33 @@ fn worker(
                 item.1,
                 options,
             )),
-            Option::None => running.set(false),
+            Option::None => break,
         }
     }
+}
+
+fn execution_insert_index(
+    values: Vec[Execution],
+    value: Execution,
+) -> int {
+    for index in range(0, values.len()) {
+        if value.index < values.get(index).index {
+            return index
+        } else {
+            ()
+        }
+    };
+    values.len()
 }
 
 fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
     let result = Vec::new();
     for value in values {
-        let inserted = Ref::new(false);
-        for index in range(0, result.len()) {
-            if !(inserted.get()) && value.index < result.get(index).index {
-                result.insert(index, value);
-                inserted.set(true)
-            } else {
-                ()
-            }
-        };
-        if !(inserted.get()) {
+        let index = execution_insert_index(result, value);
+        if index == result.len() {
             result.push(value)
         } else {
-            ()
+            result.insert(index, value)
         }
     };
     result

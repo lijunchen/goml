@@ -1,7 +1,9 @@
 package mono;
 
 use gomlc::core;
+use gomlc::strings;
 use gomlc::tast;
+use gomlc::vecs;
 use std::text;
 
 struct TypeInstance {
@@ -26,15 +28,14 @@ pub struct LowerResult {
 }
 
 fn types_are_concrete(values: Vec[tast::Type]) -> bool {
-    let concrete = Ref::new(true);
     for value in values {
         if type_is_concrete(value) {
             ()
         } else {
-            concrete.set(false)
+            return false
         }
     };
-    concrete.get()
+    true
 }
 
 fn optional_trait_ref_is_concrete(value: Option[tast::TraitRef]) -> bool {
@@ -126,15 +127,16 @@ fn find_type_instance(
 }
 
 fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[TypeInstance] {
-    let result = Ref::new(Option::None);
-    for instance in ctx.instances {
+    let index = Ref::new(ctx.instances.len() - 1);
+    while index.get() >= 0 {
+        let instance = ctx.instances.get(index.get());
         if instance.name == name {
-            result.set(Option::Some(instance))
+            return Option::Some(instance)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn type_name_is_used(ctx: TypeCtx, name: string) -> bool {
@@ -213,18 +215,6 @@ fn ensure_type_instance(
     }
 }
 
-fn type_name_in_path(values: Vec[string], name: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == name {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
-}
-
 fn expand_specialized_type_aliases_list(
     ctx: TypeCtx,
     values: Vec[tast::Type],
@@ -269,7 +259,7 @@ fn expand_specialized_type_aliases_from(
     path: Vec[string],
 ) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Con { name } => if type_name_in_path(path, name) {
+        tast::Type::Con { name } => if vecs::contains(path, name) {
             tast::Type::Con { name }
         } else {
             match find_type_instance_by_name(ctx, name) {
@@ -331,27 +321,29 @@ fn expand_specialized_type_aliases(ctx: TypeCtx, value: tast::Type) -> tast::Typ
 }
 
 fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
-    let result = Ref::new(Option::None);
-    for value in ctx.enums {
+    let index = Ref::new(ctx.enums.len() - 1);
+    while index.get() >= 0 {
+        let value = ctx.enums.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[tast::StructDef] {
-    let result = Ref::new(Option::None);
-    for value in ctx.structs {
+    let index = Ref::new(ctx.structs.len() - 1);
+    while index.get() >= 0 {
+        let value = ctx.structs.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn type_instance_parameters(ctx: TypeCtx, name: string) -> Vec[string] {
@@ -560,7 +552,7 @@ fn constructor_variant(name: string) -> string {
     let separator = Ref::new(-1);
     if name.byte_len() > 1 {
         for index in range(0, name.byte_len() - 1) {
-            if name.byte_slice(index, index + 2) == "::" {
+            if strings::starts_with_at(name, index, "::") {
                 separator.set(index)
             } else {
                 ()
@@ -926,7 +918,7 @@ fn constructor_owner(name: string) -> string {
     let separator = Ref::new(-1);
     if name.byte_len() > 1 {
         for index in range(0, name.byte_len() - 1) {
-            if name.byte_slice(index, index + 2) == "::" {
+            if strings::starts_with_at(name, index, "::") {
                 separator.set(index)
             } else {
                 ()

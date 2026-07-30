@@ -80,34 +80,70 @@ fn contains_offset(start: int, end: int, offset: int) -> bool {
 }
 
 pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
-    let result = Ref::new(Option::None);
-    for token in index.tokens {
+    let cursor = Ref::new(index.tokens.len() - 1);
+    while cursor.get() >= 0 {
+        let token = index.tokens.get(cursor.get());
         if contains_offset(token.start, token.end, offset)
             && !lexer::token_is_trivia(token.kind)
         {
-            result.set(Option::Some(token))
+            return Option::Some(token)
         } else {
-            ()
+            cursor.set(cursor.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
-    let result = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
-    for node in index.nodes {
+    let best = Ref::new(-1);
+    for candidate in range(0, index.nodes.len()) {
+        let node = index.nodes.get(candidate);
         let node_width = node.end - node.start;
         if contains_offset(node.start, node.end, offset)
-            && node_width <= width.get()
+            && (best.get() < 0
+                || node_width
+                    <= index.nodes.get(best.get()).end
+                        - index.nodes.get(best.get()).start)
         {
-            result.set(Option::Some(node));
-            width.set(node_width)
+            best.set(candidate)
         } else {
             ()
         }
     };
-    result.get()
+    if best.get() >= 0 {
+        Option::Some(index.nodes.get(best.get()))
+    } else {
+        Option::None
+    }
+}
+
+pub fn node_at_kind(
+    index: SyntaxIndex,
+    offset: int,
+    kind: cst::NodeKind,
+) -> Option[SyntaxNode] {
+    let best = Ref::new(-1);
+    for candidate in range(0, index.nodes.len()) {
+        let node = index.nodes.get(candidate);
+        let node_width = node.end - node.start;
+        if cst::node_kind_equal(node.kind, kind)
+            && node.start <= offset
+            && offset < node.end
+            && (best.get() < 0
+                || node_width
+                    < index.nodes.get(best.get()).end
+                        - index.nodes.get(best.get()).start)
+        {
+            best.set(candidate)
+        } else {
+            ()
+        }
+    };
+    if best.get() >= 0 {
+        Option::Some(index.nodes.get(best.get()))
+    } else {
+        Option::None
+    }
 }
 
 pub fn parent_node(

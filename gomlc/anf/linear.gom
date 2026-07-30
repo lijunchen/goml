@@ -4,32 +4,24 @@ use gomlc::ast;
 use gomlc::core;
 
 fn all_immediate(values: Vec[core::Expr]) -> bool {
-    let result = Ref::new(true);
     for value in values {
         match try_imm(value) {
             Option::Some(_) => (),
-            Option::None => result.set(false),
+            Option::None => return false,
         }
     };
-    result.get()
+    true
 }
 
 fn probe_linear_list(state: State, values: Vec[core::Expr]) -> bool {
-    let result = Ref::new(true);
-    let active = Ref::new(true);
     for value in values {
-        if active.get() {
-            if probe_linear_expr(state, value) {
-                ()
-            } else {
-                result.set(false);
-                active.set(false)
-            }
-        } else {
+        if probe_linear_expr(state, value) {
             ()
+        } else {
+            return false
         }
     };
-    result.get()
+    true
 }
 
 fn probe_bound_value(state: State) -> bool {

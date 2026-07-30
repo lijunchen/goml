@@ -660,13 +660,12 @@ fn trait_set(parser: Parser) -> unit {
         let _ = parser.close(marker, cst::NodeKind::TRAIT_SET);
         return
     };
-    let parsing = Ref::new(true);
-    while parsing.get() && parser.eat(lexer::TokenKind::Plus) {
+    while parser.eat(lexer::TokenKind::Plus) {
         if parser.at(lexer::TokenKind::Ident) {
             trait_ref(parser)
         } else {
             parser.advance_with_error("expected a trait name after '+'");
-            parsing.set(false)
+            break
         }
     };
     let _ = parser.close(marker, cst::NodeKind::TRAIT_SET);
@@ -813,13 +812,12 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
             },
             Option::Some(initial) => {
                 let lhs = Ref::new(initial);
-                let parsing = Ref::new(true);
-                while parsing.get() && parser.eof() == false {
+                while parser.eof() == false {
                     if parser.at(lexer::TokenKind::Arrow) {
                         let left_bp = 5;
                         let right_bp = 4;
                         if left_bp < min_bp {
-                            parsing.set(false)
+                            break
                         } else {
                             let marker = lhs.get().precede(parser);
                             parser.expect(lexer::TokenKind::Arrow);
@@ -831,7 +829,7 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             lhs.set(marker.completed(parser, cst::NodeKind::TYPE_FUNC))
                         }
                     } else {
-                        parsing.set(false)
+                        break
                     }
                 };
                 let result = lhs.get();

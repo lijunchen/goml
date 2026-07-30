@@ -2,6 +2,7 @@ package main;
 
 use gomlc::ast;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
 use std::text;
 
@@ -76,8 +77,8 @@ fn find_test_byte(value: string, expected: uint8) -> Option[int] {
 fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
     let normalized = trim_test_text(value.text);
     if normalized.byte_len() < 3
-        || normalized.byte_slice(0, 2) != "#["
-        || normalized.byte_slice(normalized.byte_len() - 1, normalized.byte_len()) != "]"
+        || !strings::starts_with(normalized, "#[")
+        || !strings::ends_with(normalized, "]")
     {
         Option::None
     } else {
@@ -88,7 +89,7 @@ fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
                 let tail = trim_test_text(inner.byte_slice(open + 1, inner.byte_len()));
                 if name.byte_len() == 0
                     || tail.byte_len() == 0
-                    || tail.byte_slice(tail.byte_len() - 1, tail.byte_len()) != ")"
+                    || !strings::ends_with(tail, ")")
                 {
                     Option::None
                 } else {
@@ -279,8 +280,7 @@ fn collect_function_test(
         },
         Option::None => (),
     };
-    let ignore_reason: Ref[Option[string]] = Ref::new(Option::None);
-    if ignore_attrs.len() > 0 {
+    let ignore_reason = if ignore_attrs.len() > 0 {
         let ignore_attr = ignore_attrs.get(0);
         let parsed_ignore = match parse_test_attribute(ignore_attr) {
             Option::Some(value) => value,
@@ -288,18 +288,21 @@ fn collect_function_test(
         };
         match parsed_ignore.args {
             Option::Some(args) => match parse_ignore_reason(args) {
-                Option::Some(reason) => ignore_reason.set(Option::Some(reason)),
-                Option::None => diagnostics.push(package_test_diagnostic(
-                    "attribute",
-                    "`#[ignore]` accepts either no arguments or one string reason",
-                    source_path,
-                    ignore_attr.span,
-                )),
+                Option::Some(reason) => Option::Some(reason),
+                Option::None => {
+                    diagnostics.push(package_test_diagnostic(
+                        "attribute",
+                        "`#[ignore]` accepts either no arguments or one string reason",
+                        source_path,
+                        ignore_attr.span,
+                    ));
+                    Option::None
+                },
             },
-            Option::None => (),
+            Option::None => Option::None,
         }
     } else {
-        ()
+        Option::None
     };
     candidates.push(TestCandidate {
         name: function.name,
@@ -308,7 +311,7 @@ fn collect_function_test(
         end: test_attr.span.end,
         label_end: test_attr.span.start + trim_test_text(test_attr.text).byte_len(),
         ignored: ignore_attrs.len() > 0,
-        ignore_reason: ignore_reason.get(),
+        ignore_reason,
     })
 }
 
@@ -501,15 +504,14 @@ fn validate_package_tests(
                 continue
             },
         };
-        let valid = Ref::new(true);
+        let diagnostic_count = diagnostics.len();
         if candidate.name == "main" {
             diagnostics.push(package_test_diagnostic(
                 "typer",
                 "the main function cannot be a test",
                 candidate.source_path,
                 span,
-            ));
-            valid.set(false)
+            ))
         } else {
             ()
         };
@@ -519,8 +521,7 @@ fn validate_package_tests(
                 "test function `" + candidate.name + "` must not have type parameters",
                 candidate.source_path,
                 span,
-            ));
-            valid.set(false)
+            ))
         } else {
             ()
         };
@@ -532,8 +533,7 @@ fn validate_package_tests(
                         "test function `" + candidate.name + "` must not have parameters",
                         candidate.source_path,
                         span,
-                    ));
-                    valid.set(false)
+                    ))
                 } else {
                     ()
                 };
@@ -546,8 +546,7 @@ fn validate_package_tests(
                                 + tast::diagnostic_type_text(actual),
                             candidate.source_path,
                             span,
-                        ));
-                        valid.set(false)
+                        ))
                     },
                 }
             },
@@ -558,11 +557,10 @@ fn validate_package_tests(
                         + tast::diagnostic_type_text(other),
                     candidate.source_path,
                     span,
-                ));
-                valid.set(false)
+                ))
             },
         };
-        if valid.get() {
+        if diagnostics.len() == diagnostic_count {
             match find_valid_test_candidate(valid_candidates, candidate.name) {
                 Option::Some(first) => diagnostics.push(duplicate_test_id_diagnostic(
                     symbol,

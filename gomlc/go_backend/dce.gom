@@ -373,15 +373,14 @@ fn emit_side_effect(value: Expr) -> Stmt {
 fn expr_has_side_effects(value: Expr) -> bool {
     match value {
         Expr::Call { func, args } => {
-            let nested = Ref::new(false);
             for arg in args {
                 if expr_has_side_effects(arg) {
-                    nested.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            append_call(func) || !call_result_must_be_used(func) || nested.get()
+            append_call(func) || !call_result_must_be_used(func)
         },
         Expr::Unary { op: _, expr } => expr_has_side_effects(expr),
         Expr::Binary { op: _, lhs, rhs } => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
@@ -394,38 +393,35 @@ fn expr_has_side_effects(value: Expr) -> bool {
         },
         Expr::Cast { expr, ty: _ } | Expr::Convert { ty: _, expr } => expr_has_side_effects(expr),
         Expr::Make { ty: _, args } => {
-            let found = Ref::new(false);
             for arg in args {
                 if expr_has_side_effects(arg) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Expr::Send { channel: _, value: _ } | Expr::Receive { channel: _ } => true,
         Expr::StructLiteral { ty: _, fields } => {
-            let found = Ref::new(false);
             for field in fields {
                 if expr_has_side_effects(field.1) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Expr::ArrayLiteral { ty: _, items } => {
-            let found = Ref::new(false);
             for item in items {
                 if expr_has_side_effects(item) {
-                    found.set(true)
+                    return true
                 } else {
                     ()
                 }
             };
-            found.get()
+            false
         },
         Expr::FuncLit { params: _, ret_ty: _, body: _ } => false,
         Expr::Nil

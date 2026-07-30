@@ -1,5 +1,6 @@
 package query;
 
+use gomlc::strings;
 use std::env;
 use std::fs;
 use std::path;
@@ -52,7 +53,7 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
             end.set(end.get() + 1)
         };
         let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
-        if string_starts_with(line, "[") {
+        if strings::starts_with(line, "[") {
             in_dependencies.set(line == "[dependencies]")
         } else if in_dependencies.get() {
             let values = quoted_values(line);
@@ -193,15 +194,15 @@ fn registry_versions(
             end.set(end.get() + 1)
         };
         let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
-        if string_starts_with(line, "[") {
+        if strings::starts_with(line, "[") {
             let names = quoted_values(line);
             selected.set(
-                string_starts_with(line, "[modules.")
+                strings::starts_with(line, "[modules.")
                     && names.len() > 0
                     && names.get(0) == module_name,
             )
         } else if selected.get()
-            && string_starts_with(line, "versions")
+            && strings::starts_with(line, "versions")
         {
             for version in quoted_values(line) {
                 result.push(version)
@@ -271,23 +272,7 @@ fn select_registry_version(
 }
 
 fn module_segments(value: string) -> Option[(string, string)] {
-    let first = Ref::new(Option::None);
-    let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58
-            && value.byte_get(index.get() + 1) == 58
-        {
-            match first.get() {
-                Option::Some(_) => (),
-                Option::None => first.set(Option::Some(index.get())),
-            };
-            index.set(index.get() + 1)
-        } else {
-            ()
-        };
-        index.set(index.get() + 1)
-    };
-    match first.get() {
+    match strings::find(value, "::") {
         Option::Some(separator) => Option::Some((
             value.byte_slice(0, separator),
             value.byte_slice(separator + 2, value.byte_len()),
@@ -319,15 +304,15 @@ fn selected_module_index(
     values: Vec[ResolvedModule],
     name: string,
 ) -> Option[int] {
-    let result = Ref::new(Option::None);
-    for index in range(0, values.len()) {
-        if values.get(index).name == name {
-            result.set(Option::Some(index))
+    let index = Ref::new(values.len() - 1);
+    while index.get() >= 0 {
+        if values.get(index.get()).name == name {
+            return Option::Some(index.get())
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn resolve_external_modules_at(
@@ -441,13 +426,7 @@ fn resolve_external_modules(
 
 fn module_matches_package(module_name: string, package_name: string) -> bool {
     package_name == module_name
-        || (package_name.byte_len() > module_name.byte_len() + 2
-            && package_name.byte_slice(0, module_name.byte_len())
-                == module_name
-            && package_name.byte_slice(
-                module_name.byte_len(),
-                module_name.byte_len() + 2,
-            ) == "::")
+        || strings::starts_with(package_name, module_name + "::")
 }
 
 fn external_package_directory(

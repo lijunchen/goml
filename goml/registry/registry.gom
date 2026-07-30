@@ -251,14 +251,14 @@ pub fn validate(root: string) -> Result[unit, string] {
             Result::Ok(value) => value,
             Result::Err(message) => return Result::Err(message),
         };
-        let found_latest = Ref::new(false);
+        let latest_matches: Vec[string] = Vec::new();
         for version in entry.versions {
             let parsed = match parse_sem_version(version) {
                 Result::Ok(value) => value,
                 Result::Err(message) => return Result::Err(message),
             };
             if version_equal(parsed, latest) {
-                found_latest.set(true)
+                latest_matches.push(version)
             } else {
                 ()
             };
@@ -278,7 +278,7 @@ pub fn validate(root: string) -> Result[unit, string] {
                 ()
             }
         };
-        if !(found_latest.get()) {
+        if latest_matches.len() == 0 {
             return Result::Err(
                 "registry index latest version "
                     + entry.latest

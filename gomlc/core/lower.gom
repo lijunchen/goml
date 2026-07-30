@@ -88,27 +88,29 @@ fn nominal_parts(value: tast::Type) -> Option[(string, Vec[tast::Type])] {
 }
 
 fn find_enum(ctx: Lowerer, name: string) -> Option[tast::EnumDef] {
-    let result: Ref[Option[tast::EnumDef]] = Ref::new(Option::None);
-    for value in ctx.enums {
+    let index = Ref::new(ctx.enums.len() - 1);
+    while index.get() >= 0 {
+        let value = ctx.enums.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn find_struct(ctx: Lowerer, name: string) -> Option[tast::StructDef] {
-    let result: Ref[Option[tast::StructDef]] = Ref::new(Option::None);
-    for value in ctx.structs {
+    let index = Ref::new(ctx.structs.len() - 1);
+    while index.get() >= 0 {
+        let value = ctx.structs.get(index.get());
         if value.name == name {
-            result.set(Option::Some(value))
+            return Option::Some(value)
         } else {
-            ()
+            index.set(index.get() - 1)
         }
     };
-    result.get()
+    Option::None
 }
 
 fn trait_impl_method_name(
@@ -404,33 +406,23 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
         tast::Pat::Prim { value: primitive, ty } => Option::Some(Expr::Prim { value: primitive, ty }),
         tast::Pat::Constr { constructor, args, ty } => {
             let result: Vec[Expr] = Vec::new();
-            let valid = Ref::new(true);
             for arg in args {
                 match lower_pattern_expr(arg) {
                     Option::Some(expr) => result.push(expr),
-                    Option::None => valid.set(false),
+                    Option::None => return Option::None,
                 }
             };
-            if valid.get() {
-                Option::Some(Expr::Constr { constructor, args: result, ty })
-            } else {
-                Option::None
-            }
+            Option::Some(Expr::Constr { constructor, args: result, ty })
         },
         tast::Pat::Tuple { items, ty } => {
             let result: Vec[Expr] = Vec::new();
-            let valid = Ref::new(true);
             for item in items {
                 match lower_pattern_expr(item) {
                     Option::Some(expr) => result.push(expr),
-                    Option::None => valid.set(false),
+                    Option::None => return Option::None,
                 }
             };
-            if valid.get() {
-                Option::Some(Expr::Tuple { items: result, ty })
-            } else {
-                Option::None
-            }
+            Option::Some(Expr::Tuple { items: result, ty })
         },
         _ => Option::None,
     }
@@ -534,18 +526,14 @@ fn pattern_matches_bool(value: tast::Pat, expected: bool) -> bool {
 }
 
 fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
-    let result: Ref[Option[tast::Arm]] = Ref::new(Option::None);
     for arm in arms {
-        if pattern_matches_bool(arm.pat, expected) && match result.get() {
-            Option::Some(_) => false,
-            Option::None => true,
-        } {
-            result.set(Option::Some(arm))
+        if pattern_matches_bool(arm.pat, expected) {
+            return Option::Some(arm)
         } else {
             ()
         }
     };
-    result.get()
+    Option::None
 }
 
 fn lower_bool_match(
@@ -585,26 +573,17 @@ fn lower_unit_match(
     arms: Vec[tast::Arm],
     ty: tast::Type,
 ) -> Expr {
-    let selected: Ref[Option[tast::Arm]] = Ref::new(Option::None);
-    for arm in arms {
-        if match selected.get() {
-            Option::Some(_) => false,
-            Option::None => true,
-        } {
-            selected.set(Option::Some(arm))
-        } else {
-            ()
-        }
-    };
-    let body = match selected.get() {
-        Option::Some(arm) => bind_match_pattern(
+    let body = if arms.len() > 0 {
+        let arm = arms.get(0);
+        bind_match_pattern(
             source_name,
             tast::Type::Unit,
             arm.pat,
             ty,
             lower_expr(ctx, arm.body),
-        ),
-        Option::None => missing_expr(ty),
+        )
+    } else {
+        missing_expr(ty)
     };
     let result: Vec[Arm] = Vec::new();
     result.push(Arm {
@@ -627,10 +606,9 @@ fn enum_rows_for_variant(
     source_ty: tast::Type,
 ) -> Option[Vec[PatternRow]] {
     let rows: Vec[PatternRow] = Vec::new();
-    let valid = Ref::new(true);
     for arm in arms {
         match arm.guard {
-            Option::Some(_) => valid.set(false),
+            Option::Some(_) => return Option::None,
             Option::None => match arm.pat {
                 tast::Pat::Constr { constructor, args: patterns, ty: _ } => if constructor.name == constructor_name {
                     if patterns.len() == variables.len() {
@@ -649,7 +627,7 @@ fn enum_rows_for_variant(
                             body: arm.body,
                         })
                     } else {
-                        valid.set(false)
+                        return Option::None
                     }
                 } else {
                     ()
@@ -672,11 +650,11 @@ fn enum_rows_for_variant(
                         body: arm.body,
                     })
                 },
-                _ => valid.set(false),
+                _ => return Option::None,
             },
         }
     };
-    if valid.get() && rows.len() > 0 {
+    if rows.len() > 0 {
         Option::Some(rows)
     } else {
         Option::None
@@ -692,7 +670,6 @@ fn enum_match_cases(
     source_ty: tast::Type,
 ) -> Option[Vec[EnumCase]] {
     let cases: Vec[EnumCase] = Vec::new();
-    let valid = Ref::new(true);
     for variant_index in range(0, definition.variants.len()) {
         let variant = definition.variants.get(variant_index);
         let constructor_name = definition.name + "::" + variant.name;
@@ -724,14 +701,24 @@ fn enum_match_cases(
                 variables,
                 rows,
             }),
-            Option::None => valid.set(false),
+            Option::None => return Option::None,
         }
     };
-    if valid.get() {
-        Option::Some(cases)
-    } else {
-        Option::None
-    }
+    Option::Some(cases)
+}
+
+fn items_shadow_range(values: Vec[tast::Item]) -> bool {
+    for item in values {
+        match item {
+            tast::Item::Function(function) => if function.name == "range" {
+                return true
+            } else {
+                ()
+            },
+            tast::Item::ImplBlock(_) => (),
+        }
+    };
+    false
 }
 
 fn lower_enum_cases(
@@ -1636,17 +1623,7 @@ fn lower_file_with_types(
 ) -> File {
     let enums = value.enums;
     let structs = value.structs;
-    let shadowed_range = Ref::new(false);
-    for item in value.items {
-        match item {
-            tast::Item::Function(function) => if function.name == "range" {
-                shadowed_range.set(true)
-            } else {
-                ()
-            },
-            tast::Item::ImplBlock(_) => (),
-        }
-    };
+    let shadowed_range = items_shadow_range(value.items);
     let all_enums: Vec[tast::EnumDef] = Vec::new();
     for definition in dependency_enums {
         all_enums.push(definition)
@@ -1666,7 +1643,7 @@ fn lower_file_with_types(
         enums: all_enums,
         structs: all_structs,
         optimize_builtin_iterators,
-        shadowed_range: shadowed_range.get(),
+        shadowed_range,
     };
     let functions: Vec[Function] = Vec::new();
     for item in value.items {
