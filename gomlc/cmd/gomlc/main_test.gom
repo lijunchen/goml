@@ -252,7 +252,7 @@ fn reports_driver_protocol_version() -> unit {
             Option::None,
             Option::None,
         ),
-        "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
+        "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
     );
@@ -294,6 +294,8 @@ fn parses_package_command_arguments() -> unit {
     values.push("lib.interface");
     values.push("--output");
     values.push("artifact/package");
+    values.push("--world");
+    values.push("artifact/world.gaf");
     match parse_package_command_args(command_args_with("build", values)) {
         Result::Ok(args) => {
             testing::assert_eq(args.package_name, "alice::app");
@@ -302,7 +304,14 @@ fn parses_package_command_arguments() -> unit {
             testing::assert_eq(args.inputs.get(1), "main.gom");
             testing::assert_eq(args.interface_paths.len(), 1);
             testing::assert_eq(args.interface_paths.get(0), "lib.interface");
-            testing::assert_eq(args.output, "artifact/package")
+            testing::assert_eq(args.output, "artifact/package");
+            match args.world {
+                Option::Some(value) => testing::assert_eq(
+                    value,
+                    "artifact/world.gaf",
+                ),
+                Option::None => testing::fail("expected compiler world"),
+            }
         },
         Result::Err(error) => testing::fail(error),
     }
@@ -1709,6 +1718,50 @@ fn standard_interface_hashes_are_stable() -> unit {
         second.text.interface_unit.interface_hash,
     )
 }
+
+#[test]
+fn compiler_world_artifact_round_trips() -> unit {
+    let world = package_world();
+    let first = match encode_package_world(world) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    let second = match encode_package_world(world) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
+    match decode_package_world(first) {
+        Result::Ok(decoded) => {
+            testing::assert_eq(
+                decoded.builtin_interface.interface_hash,
+                world.builtin_interface.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.collections.interface_unit.interface_hash,
+                world.standard.collections.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.collections.core_value.functions.len(),
+                world.standard.collections.core_value.functions.len(),
+            );
+            testing::assert_eq(decoded.counter.get(), world.counter.get())
+        },
+        Result::Err(error) => testing::fail(error),
+    };
+    first.truncate(first.len() - 1);
+    match decode_package_world(first) {
+        Result::Ok(_) => testing::fail("expected truncated compiler world to fail"),
+        Result::Err(_) => (),
+    }
+}
+
 #[test]
 fn renders_all_parser_diagnostics_with_spans() -> unit {
     let source = "fn main() {\n    let x 42;\n}\n";

@@ -810,27 +810,27 @@ fn project_commands_report_build_progress_on_stderr() -> unit {
     test_support::assert_success(checked);
     test_support::assert_contains(
         test_support::stderr(checked),
-        "[--------------------] 0/1 checking demo",
+        "[--------------------] 0/2 preparing compiler world",
     );
     test_support::assert_contains(
         test_support::stderr(checked),
-        "[####################] 1/1 finished",
+        "[####################] 2/2 finished",
     );
     let built = migration_build(root);
     test_support::assert_success(built);
     test_support::assert_contains(
         test_support::stderr(built),
-        "[--------------------] 0/3 compiling demo",
+        "[--------------------] 0/4 preparing compiler world",
     );
     test_support::assert_contains(
         test_support::stderr(built),
-        "[####################] 3/3 finished",
+        "[####################] 4/4 finished",
     );
     let cached = migration_build(root);
     test_support::assert_success(cached);
     test_support::assert_contains(
         test_support::stderr(cached),
-        "[####################] 3/3 finished",
+        "[####################] 4/4 finished",
     );
     let dry_run = test_support::project_command(
         "build",
