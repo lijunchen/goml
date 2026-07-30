@@ -1042,7 +1042,12 @@ fn discover_graph(
     })
 }
 
-fn resolve_compiler(explicit: Option[string]) -> Result[string, string] {
+struct ResolvedCompiler {
+    path: string,
+    world_artifact: bool,
+}
+
+fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string] {
     let candidate = match explicit {
         Option::Some(value) => Option::Some(value),
         Option::None => match env::var("GOMLC") {
@@ -1131,7 +1136,14 @@ fn resolve_compiler(explicit: Option[string]) -> Result[string, string] {
     };
     match json::field(version, "driver_protocol") {
         Option::Some(json::Value::Number(value)) => if value == "1" {
-            Result::Ok(compiler)
+            let world_artifact = match json::field(version, "world_artifact") {
+                Option::Some(json::Value::Number(value)) => value == "1",
+                _ => false,
+            };
+            Result::Ok(ResolvedCompiler {
+                path: compiler,
+                world_artifact,
+            })
         } else {
             Result::Err("incompatible gomlc driver protocol " + value)
         },
@@ -1155,10 +1167,11 @@ pub fn load_context(
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
-    let compiler = match resolve_compiler(compiler_override) {
+    let resolved_compiler = match resolve_compiler(compiler_override) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
+    let compiler = resolved_compiler.path;
     let sources = match module_sources(module_dir, module_manifest) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
@@ -1184,6 +1197,7 @@ pub fn load_context(
     Result::Ok(Context {
         graph,
         compiler,
+        compiler_world_artifact: resolved_compiler.world_artifact,
         artifact_root,
     })
 }
@@ -1205,10 +1219,11 @@ pub fn load_target_context(
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
-    let compiler = match resolve_compiler(compiler_override) {
+    let resolved_compiler = match resolve_compiler(compiler_override) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
     };
+    let compiler = resolved_compiler.path;
     let sources = match module_sources(module_dir, module_manifest) {
         Result::Ok(value) => value,
         Result::Err(message) => return Result::Err(message),
@@ -1235,6 +1250,7 @@ pub fn load_target_context(
     Result::Ok(Context {
         graph,
         compiler,
+        compiler_world_artifact: resolved_compiler.world_artifact,
         artifact_root,
     })
 }

@@ -266,11 +266,19 @@ fn compiler_digest(context: Context) -> Result[string, string] {
 
 fn cache_spec(value: Command) -> Option[CacheSpec] {
     match value {
+        Command::PrepareWorld { output } => Option::Some(CacheSpec {
+            kind: "prepare-world",
+            args: command_args(value).1,
+            inputs: Vec::new(),
+            outputs: Vec::new().pushed(output),
+            anchor: output,
+        }),
         Command::Compile {
             subcommand,
             input_files,
             interface_files,
             output,
+            world,
             ..
         } => {
             let inputs = Vec::new();
@@ -279,6 +287,10 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             };
             for input in interface_files {
                 inputs.push(input)
+            };
+            match world {
+                Option::Some(value) => inputs.push(value),
+                Option::None => (),
             };
             let outputs = Vec::new().pushed(path::with_extension(
                 output,
@@ -300,26 +312,48 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
         Command::Link {
             input_cores,
             output,
+            world,
             ..
-        } => Option::Some(CacheSpec {
-            kind: "link",
-            args: command_args(value).1,
-            inputs: input_cores,
-            outputs: Vec::new().pushed(output),
-            anchor: output,
-        }),
+        } => {
+            let inputs = Vec::new();
+            for input in input_cores {
+                inputs.push(input)
+            };
+            match world {
+                Option::Some(value) => inputs.push(value),
+                Option::None => (),
+            };
+            Option::Some(CacheSpec {
+                kind: "link",
+                args: command_args(value).1,
+                inputs,
+                outputs: Vec::new().pushed(output),
+                anchor: output,
+            })
+        },
         Command::TestLink {
             input_cores,
             output,
             manifest,
+            world,
             ..
-        } => Option::Some(CacheSpec {
-            kind: "test-link",
-            args: command_args(value).1,
-            inputs: input_cores,
-            outputs: Vec::new().pushed(output).pushed(manifest),
-            anchor: output,
-        }),
+        } => {
+            let inputs = Vec::new();
+            for input in input_cores {
+                inputs.push(input)
+            };
+            match world {
+                Option::Some(value) => inputs.push(value),
+                Option::None => (),
+            };
+            Option::Some(CacheSpec {
+                kind: "test-link",
+                args: command_args(value).1,
+                inputs,
+                outputs: Vec::new().pushed(output).pushed(manifest),
+                anchor: output,
+            })
+        },
         Command::GoBuild { input, output } => Option::Some(CacheSpec {
             kind: "go-build",
             args: command_args(value).1,
