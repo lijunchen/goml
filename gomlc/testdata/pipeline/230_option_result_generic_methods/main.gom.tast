@@ -1,0 +1,19 @@
+fn main() -> unit {
+    let some/0: Option[int] = Option::Some(3);
+    let mapped/2: Option[string] = (Option[int]::map : (Option[int], (int) -> string) -> Option[string])((some/0 : Option[int]), |value/1: int| => (int::to_string : (int) -> string)((value/1 : int)));
+    (println : (string) -> unit)((Option[string]::unwrap_or : (Option[string], string) -> string)((mapped/2 : Option[string]), "missing"));
+    let static_mapped/4: Option[string] = (Option[int]::map : (Option[int], (int) -> string) -> Option[string])((some/0 : Option[int]), |value/3: int| => "static:" + (int::to_string : (int) -> string)((value/3 : int)));
+    (println : (string) -> unit)((Option[string]::unwrap_or : (Option[string], string) -> string)((static_mapped/4 : Option[string]), "missing"));
+    let chained/6: Option[string] = (Option[int]::and_then : (Option[int], (int) -> Option[string]) -> Option[string])((some/0 : Option[int]), |value/5: int| => Option::Some("value:" + (int::to_string : (int) -> string)((value/5 : int))));
+    (println : (string) -> unit)((Option[string]::unwrap_or : (Option[string], string) -> string)((chained/6 : Option[string]), "missing"));
+    let none/7: Option[int] = Option::None;
+    let converted/8: Result[int, string] = (Option[int]::ok_or : (Option[int], string) -> Result[int, string])((none/7 : Option[int]), "none");
+    (println : (int) -> unit)((Result[int, string]::unwrap_or_else : (Result[int, string], (string) -> int) -> int)((converted/8 : Result[int, string]), |error/9: string| => (string::len : (string) -> int)((error/9 : string))));
+    let ok/10: Result[int, string] = Result::Ok(5);
+    (println : (int) -> unit)((Result[int, string]::unwrap_or : (Result[int, string], int) -> int)((Result[int, string]::map : (Result[int, string], (int) -> int) -> Result[int, string])((ok/10 : Result[int, string]), |value/11: int| => (value/11 : int) + 2), 0));
+    let error/12: Result[int, string] = Result::Err("bad");
+    let mapped_error/14: Result[int, int] = (Result[int, string]::map_err : (Result[int, string], (string) -> int) -> Result[int, int])((error/12 : Result[int, string]), |value/13: string| => (string::len : (string) -> int)((value/13 : string)));
+    (println : (int) -> unit)((Result[int, int]::unwrap_or_else : (Result[int, int], (int) -> int) -> int)((mapped_error/14 : Result[int, int]), |value/15: int| => (value/15 : int)));
+    let next/17: Result[string, string] = (Result[int, string]::and_then : (Result[int, string], (int) -> Result[string, string]) -> Result[string, string])((ok/10 : Result[int, string]), |value/16: int| => Result::Ok("next:" + (int::to_string : (int) -> string)((value/16 : int))));
+    (println : (string) -> unit)((Result[string, string]::unwrap_or : (Result[string, string], string) -> string)((next/17 : Result[string, string]), "missing"));
+}

@@ -17,7 +17,7 @@ fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper[int32]) -> Shape[int32]
     }
 }
 
-fn describe(shape/7: Shape[T]) -> int32 {
+fn describe[T](shape/7: Shape[T]) -> int32 {
     match (shape/7 : Shape[T]) {
         Shape::Dot(_ : Point) => 1,
         Shape::Wrapped(_ : Wrapper[T]) => 2,

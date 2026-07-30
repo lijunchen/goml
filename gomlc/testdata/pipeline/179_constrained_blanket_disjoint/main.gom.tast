@@ -4,7 +4,7 @@ impl Mark for int32{
   }
 }
 
-impl Label for Box[T]{
+impl[T] Label for Box[T] where T: Mark{
   fn label(self/1: Box[T]) -> string {
       "blanket:" + (Mark::mark : (T) -> string)((self/1 : Box[T]).value)
   }

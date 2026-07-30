@@ -1,4 +1,4 @@
-impl Pick[S::Item] for S{
+impl[S] Pick[S::Item] for S where S: Source{
   fn pick(self/0: S) -> S::Item {
       (Source::get : (S) -> S::Item)((self/0 : S))
   }
@@ -10,7 +10,7 @@ impl Source for Value{
   }
 }
 
-fn copy(source/2: S) -> S::Item {
+fn copy[S](source/2: S) -> S::Item where S: Source, S: Pick[S::Item] {
     let value/3: S::Item = (Pick[S::Item]::pick : (S) -> S::Item)((source/2 : S));
     let identity/5: (S::Item) -> S::Item = |item/4: S::Item| => (item/4 : S::Item);
     (identity/5 : (S::Item) -> S::Item)((value/3 : S::Item))

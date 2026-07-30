@@ -10,11 +10,11 @@ impl Convert[string] for Token{
   }
 }
 
-fn convert_to(value/2: V) -> T {
+fn convert_to[T, V](value/2: V) -> T where V: Convert[T] {
     (Convert[T]::convert : (V) -> T)((value/2 : V))
 }
 
-impl Marker[T] for Any{
+impl[T] Marker[T] for Any{
   fn marker(self/3: Any) -> string {
       "marked"
   }

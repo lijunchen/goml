@@ -4,13 +4,13 @@ impl Mark for int32{
   }
 }
 
-impl Extra for T{
+impl[T] Extra for T where T: Mark{
   fn extra(self/1: T) -> int32 {
       42
   }
 }
 
-fn apply(value/2: T) -> int32 {
+fn apply[T](value/2: T) -> int32 where T: Extra {
     (Extra::extra : (T) -> int32)((value/2 : T))
 }
 

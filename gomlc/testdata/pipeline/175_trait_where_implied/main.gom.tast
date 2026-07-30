@@ -10,7 +10,7 @@ impl Service[Worker] for Station{
   }
 }
 
-fn describe(service/2: S) -> string {
+fn describe[T, S](service/2: S) -> string where S: Service[T], T: Ready {
     (Ready::state : (T) -> string)((Service[T]::get : (S) -> T)((service/2 : S)))
 }
 

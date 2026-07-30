@@ -4,7 +4,7 @@ file main.gom
       fn state(Self) -> string;
     }
     
-    trait Service[T] {
+    trait Service[T] where T: Ready {
       fn get(Self) -> T;
     }
     
@@ -28,7 +28,7 @@ file main.gom
       }
     }
     
-    fn describe(local/1/2: S) -> string {
+    fn describe[T, S: Service[T]](local/1/2: S) -> string {
         Service[T]::get(service/2).state()
     }
     

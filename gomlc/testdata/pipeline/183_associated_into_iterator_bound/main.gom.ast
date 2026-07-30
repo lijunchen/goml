@@ -15,7 +15,7 @@ impl Batch for Numbers {
   }
 }
 
-fn count(batch: B) -> int32 {
+fn count[B: Batch](batch: B) -> int32 {
     let total = Ref::new(0);
     for _ in Batch::items(batch) {
         total.set(total.get() + 1);

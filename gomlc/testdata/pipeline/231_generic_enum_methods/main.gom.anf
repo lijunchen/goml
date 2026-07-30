@@ -1,0 +1,76 @@
+fn main() -> unit {
+  join ret112() -> unit {
+    ()
+  } in
+  let value/3 = Maybe__int::Some(3) in
+  let t113 = closure_env_main_0 {} in
+  let mtmp109 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, t113) in
+  join k114() -> unit {
+    jump ret112()
+  } in
+  match mtmp109 {
+    Tag_0 => {
+      let t115 = println__T_string("none") in
+      jump k114()
+    },
+    Tag_1 => {
+      let x110 = Maybe__string::Some._0(mtmp109) in
+      let text/5 = x110 in
+      let t116 = println__T_string(text/5) in
+      jump k114()
+    },
+  }
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  join ret117(retv118: string) -> string {
+    retv118
+  } in
+  let t119 = @runtime(core.int_to_string)(self/5) in
+  jump ret117(t119)
+}
+
+fn inherent#Maybe#Maybe[T]#map__T_int__U_string(self/0: Maybe__int, map_fn/1: (int) -> string) -> Maybe__string {
+  join ret120(retv121: Maybe__string) -> Maybe__string {
+    retv121
+  } in
+  join k122(jp123: Maybe__string) -> Maybe__string {
+    jump ret120(jp123)
+  } in
+  match self/0 {
+    Tag_0 => {
+      jump k122(Tag_0)
+    },
+    Tag_1 => {
+      let x108 = Maybe__int::Some._0(self/0) in
+      let value/2 = x108 in
+      let t124 = map_fn/1(value/2) in
+      let t125 = Maybe__string::Some(t124) in
+      jump k122(t125)
+    },
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret126() -> unit {
+    ()
+  } in
+  let t127 = trait_impl#ToString#string#to_string(value/1) in
+  let t128 = @runtime(core.string_println)(t127) in
+  jump ret126()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret129(retv130: string) -> string {
+    retv130
+  } in
+  jump ret129(self/38)
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env111: closure_env_main_0, item/4: int) -> string {
+  join ret131(retv132: string) -> string {
+    retv132
+  } in
+  let t133 = inherent#int#int#to_string(item/4) in
+  jump ret131(t133)
+}

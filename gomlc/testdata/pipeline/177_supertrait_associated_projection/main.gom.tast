@@ -10,7 +10,7 @@ impl Child for Count{
   }
 }
 
-fn get_from_child(value/2: C) -> C::Item {
+fn get_from_child[C](value/2: C) -> C::Item where C: Child, C: Parent {
     (Parent::get : (C) -> C::Item)((value/2 : C))
 }
 

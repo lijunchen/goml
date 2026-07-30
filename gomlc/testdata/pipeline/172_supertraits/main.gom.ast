@@ -7,7 +7,7 @@ trait Parent[T] {
   fn parent(self: Self) -> T;
 }
 
-trait Child[T: ToString]: Parent[T] + Render {
+trait Child[T: ToString]: Parent[T] + Render where T: Eq {
   fn child(self: Self) -> string;
 }
 
@@ -33,7 +33,7 @@ impl[T: ToString + Eq] Child[T] for Box[T] {
   }
 }
 
-fn describe(value: B) -> string {
+fn describe[T, B: Child[T]](value: B) -> string {
     value.parent().to_string() + value.render() + value.child()
 }
 

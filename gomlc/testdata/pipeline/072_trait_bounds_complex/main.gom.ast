@@ -131,19 +131,19 @@ fn bool_text(x: bool) -> string {
     }
 }
 
-fn show_both(x: T) -> string {
+fn show_both[T: Debug + Display](x: T) -> string {
     Debug::show(x) + " / " + Display::show(x)
 }
 
-fn tag_text(tag: Q) -> string {
+fn tag_text[Q: Debug + MyHash](tag: Q) -> string {
     Debug::show(tag) + "#" + tag.hash().to_string()
 }
 
-fn combine_scaled(a: T, b: T, factor: int32) -> T {
+fn combine_scaled[T: Add + Scale](a: T, b: T, factor: int32) -> T {
     a.add(b).scale(factor)
 }
 
-fn report_pair(tag: Q, a: T, b: T, combined: T) -> string {
+fn report_pair[T: Debug + Display + MyEq + MyHash, Q: Debug + MyHash](tag: Q, a: T, b: T, combined: T) -> string {
     let same = MyEq::eq(a, b);
     let header = tag_text(tag);
     let repr = show_both(combined);
@@ -151,12 +151,12 @@ fn report_pair(tag: Q, a: T, b: T, combined: T) -> string {
     header + " " + repr + " | eq=" + bool_text(same) + " | hash=" + h.to_string()
 }
 
-fn full_report(tag: Q, a: T, b: T) -> string {
+fn full_report[T: Debug + MyHash + Display + MyEq + Add + Scale + Debug, Q: Debug + MyHash](tag: Q, a: T, b: T) -> string {
     let combined = combine_scaled(a, b, 2);
     report_pair(tag, a, b, combined)
 }
 
-fn sum_and_tag(tag: Q, x: T, y: T, z: T) -> string {
+fn sum_and_tag[T: Add + MyHash + Inspect, Q: Debug + MyHash](tag: Q, x: T, y: T, z: T) -> string {
     let total = x.add(y).add(z);
     let header = tag_text(tag);
     let h = total.hash();

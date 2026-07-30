@@ -60,7 +60,7 @@ file main.gom
       }
     }
     
-    fn choose(local/1/20: bool, local/1/21: T, local/1/22: T) -> T {
+    fn choose[T](local/1/20: bool, local/1/21: T, local/1/22: T) -> T {
         if flag/20 {
             when_true/21
         } else {
@@ -68,7 +68,7 @@ file main.gom
         }
     }
     
-    fn map_maybe(local/1/23: Maybe[T], local/1/24: (T) -> U) -> Maybe[U] {
+    fn map_maybe[T, U](local/1/23: Maybe[T], local/1/24: (T) -> U) -> Maybe[U] {
         match value/23 {
             ctor(def/1/2::v0)(local/1/25) => ctor(def/1/2::v0)(f/24(inner/25)),
             ctor(def/1/2::v1) => ctor(def/1/2::v1),

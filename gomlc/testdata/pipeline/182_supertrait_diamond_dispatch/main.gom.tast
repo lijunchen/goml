@@ -22,7 +22,7 @@ impl Diamond for Value{
   }
 }
 
-fn describe(value/4: T) -> string {
+fn describe[T](value/4: T) -> string where T: Diamond, T: Left, T: Right, T: Base {
     (Base::base : (T) -> string)((value/4 : T)) + (Left::left : (T) -> string)((value/4 : T)) + (Right::right : (T) -> string)((value/4 : T)) + (Diamond::diamond : (T) -> string)((value/4 : T))
 }
 

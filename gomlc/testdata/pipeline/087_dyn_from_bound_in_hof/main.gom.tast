@@ -4,7 +4,7 @@ impl Display for int32{
   }
 }
 
-fn mk_renderer(x/1: T) -> () -> string {
+fn mk_renderer[T](x/1: T) -> () -> string where T: Display {
     let d/2: dyn Display = to_dyn[Display]{T}((x/1 : T));
     || => (dyn Display::show : (dyn Display) -> string)((d/2 : dyn Display))
 }

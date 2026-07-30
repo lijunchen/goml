@@ -18,7 +18,7 @@ impl Convert[string] for Token {
   }
 }
 
-fn convert_to(value: V) -> T {
+fn convert_to[T, V: Convert[T]](value: V) -> T {
     value.convert()
 }
 

@@ -37,7 +37,7 @@ file main.gom
       }
     }
     
-    fn combine(local/1/3: A, local/1/4: B) -> string {
+    fn combine[A: Source, B: Source](local/1/3: A, local/1/4: B) -> string where A::Item = B::Item, B::Item: Mark {
         Source::get(left/3).marked() + ":" + Source::get(right/4).marked()
     }
     

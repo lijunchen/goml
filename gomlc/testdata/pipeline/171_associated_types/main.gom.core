@@ -367,28 +367,28 @@ fn trait_impl#Hash#float64#hash(self/95: float64) -> uint64 {
   @runtime(core.float64_hash)(self/95)
 }
 
-fn trait_impl#Eq#Ref[T]#eq(self/96: Ref[T], other/97: Ref[T]) -> bool {
+fn trait_impl#Eq#Ref[T]#eq[T](self/96: Ref[T], other/97: Ref[T]) -> bool {
   @intrinsic(ref.ptr_eq)(self/96, other/97)
 }
 
-fn trait_impl#Hash#Ref[T]#hash(self/98: Ref[T]) -> uint64 {
+fn trait_impl#Hash#Ref[T]#hash[T](self/98: Ref[T]) -> uint64 {
   @intrinsic(ref.ptr_hash)(self/98)
 }
 
-fn trait_impl#ToString#Ref[T]#to_string(self/99: Ref[T]) -> string {
+fn trait_impl#ToString#Ref[T]#to_string[T](self/99: Ref[T]) -> string {
   let v/100 = inherent#Ref#Ref[T]#get(self/99) in
   (("ref(" + trait_call[ToString::to_string](v/100)) + ")")
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn(next_fn/101: () -> Option[T]) -> FnIterator[T] {
+fn inherent#FnIterator#FnIterator[T]#from_fn[T](next_fn/101: () -> Option[T]) -> FnIterator[T] {
   FnIterator { next_fn: next_fn/101 }
 }
 
-fn trait_impl#Iterator#FnIterator[T]#next(self/102: FnIterator[T]) -> Option[T] {
+fn trait_impl#Iterator#FnIterator[T]#next[T](self/102: FnIterator[T]) -> Option[T] {
   FnIterator.next_fn(self/102)()
 }
 
-fn trait_impl#Iterator#MapIterator[A,B,I]#next(self/103: MapIterator[A, B, I]) -> Option[B] {
+fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A, B, I]) -> Option[B] {
   {
     let mtmp19 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
     match mtmp19 {
@@ -408,7 +408,7 @@ fn trait_impl#Iterator#MapIterator[A,B,I]#next(self/103: MapIterator[A, B, I]) -
   }
 }
 
-fn trait_impl#Iterator#FilterIterator[T,I]#next(self/105: FilterIterator[T, I]) -> Option[T] {
+fn trait_impl#Iterator#FilterIterator[T,I]#next[T, I](self/105: FilterIterator[T, I]) -> Option[T] {
   let _wild24 = while true {
       {
         let _wild23 = {
@@ -441,7 +441,7 @@ fn trait_impl#Iterator#FilterIterator[T,I]#next(self/105: FilterIterator[T, I]) 
   Option::None
 }
 
-fn trait_impl#Iterator#TakeIterator[I]#next(self/107: TakeIterator[I]) -> Option[I::Item] {
+fn trait_impl#Iterator#TakeIterator[I]#next[I](self/107: TakeIterator[I]) -> Option[I::Item] {
   let remaining/108 = inherent#Ref#Ref[int]#get(TakeIterator.remaining(self/107)) in
   if (remaining/108 > 0) {
       {
@@ -455,7 +455,7 @@ fn trait_impl#Iterator#TakeIterator[I]#next(self/107: TakeIterator[I]) -> Option
   }
 }
 
-fn trait_impl#IntoIterator#I#into_iter(self/109: I) -> I {
+fn trait_impl#IntoIterator#I#into_iter[I](self/109: I) -> I {
   self/109
 }
 
@@ -532,19 +532,19 @@ fn iterator_collect(iterator/122: I) -> Vec[T] {
   values/123
 }
 
-fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+fn inherent#Vec#Vec[T]#new[T]() -> Vec[T] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity(capacity/125: int) -> Vec[T] {
+fn inherent#Vec#Vec[T]#with_capacity[T](capacity/125: int) -> Vec[T] {
   @intrinsic(vec.with_capacity)(capacity/125)
 }
 
-fn inherent#Vec#Vec[T]#push(self/126: Vec[T], elem/127: T) -> unit {
+fn inherent#Vec#Vec[T]#push[T](self/126: Vec[T], elem/127: T) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
 }
 
-fn inherent#Vec#Vec[T]#pushed(self/128: Vec[T], elem/129: T) -> Vec[T] {
+fn inherent#Vec#Vec[T]#pushed[T](self/128: Vec[T], elem/129: T) -> Vec[T] {
   let result/130 = inherent#Vec#Vec[T]#new() in
   let index/131 = inherent#Ref#Ref[int]#new(0) in
   let _wild36 = while (inherent#Ref#Ref[int]#get(index/131) < inherent#Vec#Vec[T]#len(self/128)) {
@@ -557,39 +557,39 @@ fn inherent#Vec#Vec[T]#pushed(self/128: Vec[T], elem/129: T) -> Vec[T] {
   result/130
 }
 
-fn inherent#Vec#Vec[T]#get(self/132: Vec[T], index/133: int) -> T {
+fn inherent#Vec#Vec[T]#get[T](self/132: Vec[T], index/133: int) -> T {
   @intrinsic(vec.get)(self/132, index/133)
 }
 
-fn inherent#Vec#Vec[T]#set(self/134: Vec[T], index/135: int, elem/136: T) -> unit {
+fn inherent#Vec#Vec[T]#set[T](self/134: Vec[T], index/135: int, elem/136: T) -> unit {
   @intrinsic(vec.set)(self/134, index/135, elem/136)
 }
 
-fn inherent#Vec#Vec[T]#len(self/137: Vec[T]) -> int {
+fn inherent#Vec#Vec[T]#len[T](self/137: Vec[T]) -> int {
   @intrinsic(vec.len)(self/137)
 }
 
-fn inherent#Vec#Vec[T]#capacity(self/138: Vec[T]) -> int {
+fn inherent#Vec#Vec[T]#capacity[T](self/138: Vec[T]) -> int {
   @intrinsic(vec.capacity)(self/138)
 }
 
-fn inherent#Vec#Vec[T]#is_empty(self/139: Vec[T]) -> bool {
+fn inherent#Vec#Vec[T]#is_empty[T](self/139: Vec[T]) -> bool {
   trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len(self/139), 0)
 }
 
-fn inherent#Vec#Vec[T]#reserve(self/140: Vec[T], additional/141: int) -> unit {
+fn inherent#Vec#Vec[T]#reserve[T](self/140: Vec[T], additional/141: int) -> unit {
   @intrinsic(vec.reserve)(self/140, additional/141)
 }
 
-fn inherent#Vec#Vec[T]#truncate(self/142: Vec[T], len/143: int) -> unit {
+fn inherent#Vec#Vec[T]#truncate[T](self/142: Vec[T], len/143: int) -> unit {
   @intrinsic(vec.truncate)(self/142, len/143)
 }
 
-fn inherent#Vec#Vec[T]#clear(self/144: Vec[T]) -> unit {
+fn inherent#Vec#Vec[T]#clear[T](self/144: Vec[T]) -> unit {
   inherent#Vec#Vec[T]#truncate(self/144, 0)
 }
 
-fn inherent#Vec#Vec[T]#last(self/145: Vec[T]) -> Option[T] {
+fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
   let len/146 = inherent#Vec#Vec[T]#len(self/145) in
   if trait_impl#Eq#int#eq(len/146, 0) {
       {
@@ -602,7 +602,7 @@ fn inherent#Vec#Vec[T]#last(self/145: Vec[T]) -> Option[T] {
   }
 }
 
-fn inherent#Vec#Vec[T]#pop(self/147: Vec[T]) -> Option[T] {
+fn inherent#Vec#Vec[T]#pop[T](self/147: Vec[T]) -> Option[T] {
   let len/148 = inherent#Vec#Vec[T]#len(self/147) in
   if trait_impl#Eq#int#eq(len/148, 0) {
       {
@@ -617,13 +617,13 @@ fn inherent#Vec#Vec[T]#pop(self/147: Vec[T]) -> Option[T] {
   }
 }
 
-fn inherent#Vec#Vec[T]#swap(self/150: Vec[T], left/151: int, right/152: int) -> unit {
+fn inherent#Vec#Vec[T]#swap[T](self/150: Vec[T], left/151: int, right/152: int) -> unit {
   let value/153 = inherent#Vec#Vec[T]#get(self/150, left/151) in
   let _wild39 = inherent#Vec#Vec[T]#set(self/150, left/151, inherent#Vec#Vec[T]#get(self/150, right/152)) in
   inherent#Vec#Vec[T]#set(self/150, right/152, value/153)
 }
 
-fn inherent#Vec#Vec[T]#swap_remove(self/154: Vec[T], index/155: int) -> T {
+fn inherent#Vec#Vec[T]#swap_remove[T](self/154: Vec[T], index/155: int) -> T {
   let len/156 = inherent#Vec#Vec[T]#len(self/154) in
   let value/157 = inherent#Vec#Vec[T]#get(self/154, index/155) in
   let _wild41 = if ((index/155 + 1) < len/156) {
@@ -639,7 +639,7 @@ fn inherent#Vec#Vec[T]#swap_remove(self/154: Vec[T], index/155: int) -> T {
   value/157
 }
 
-fn inherent#Vec#Vec[T]#insert(self/158: Vec[T], index/159: int, value/160: T) -> unit {
+fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T) -> unit {
   let len/161 = inherent#Vec#Vec[T]#len(self/158) in
   if trait_impl#Eq#int#eq(index/159, len/161) {
       {
@@ -663,7 +663,7 @@ fn inherent#Vec#Vec[T]#insert(self/158: Vec[T], index/159: int, value/160: T) ->
   }
 }
 
-fn inherent#Vec#Vec[T]#remove(self/163: Vec[T], index/164: int) -> T {
+fn inherent#Vec#Vec[T]#remove[T](self/163: Vec[T], index/164: int) -> T {
   let len/165 = inherent#Vec#Vec[T]#len(self/163) in
   let value/166 = inherent#Vec#Vec[T]#get(self/163, index/164) in
   let current/167 = inherent#Ref#Ref[int]#new(index/164) in
@@ -677,7 +677,7 @@ fn inherent#Vec#Vec[T]#remove(self/163: Vec[T], index/164: int) -> T {
   value/166
 }
 
-fn inherent#Vec#Vec[T]#reverse(self/168: Vec[T]) -> unit {
+fn inherent#Vec#Vec[T]#reverse[T](self/168: Vec[T]) -> unit {
   let left/169 = inherent#Ref#Ref[int]#new(0) in
   let right/170 = inherent#Ref#Ref[int]#new((inherent#Vec#Vec[T]#len(self/168) - 1)) in
   while (inherent#Ref#Ref[int]#get(left/169) < inherent#Ref#Ref[int]#get(right/170)) {
@@ -689,7 +689,7 @@ fn inherent#Vec#Vec[T]#reverse(self/168: Vec[T]) -> unit {
   }
 }
 
-fn inherent#Vec#Vec[T]#extend(self/171: Vec[T], other/172: Vec[T]) -> unit {
+fn inherent#Vec#Vec[T]#extend[T](self/171: Vec[T], other/172: Vec[T]) -> unit {
   let len/173 = inherent#Vec#Vec[T]#len(other/172) in
   let _wild55 = inherent#Vec#Vec[T]#reserve(self/171, len/173) in
   let index/174 = inherent#Ref#Ref[int]#new(0) in
@@ -701,11 +701,11 @@ fn inherent#Vec#Vec[T]#extend(self/171: Vec[T], other/172: Vec[T]) -> unit {
   }
 }
 
-fn inherent#Vec#Vec[T]#slice(self/175: Vec[T], start/176: int, end/177: int) -> Slice[T] {
+fn inherent#Vec#Vec[T]#slice[T](self/175: Vec[T], start/176: int, end/177: int) -> Slice[T] {
   @intrinsic(slice.new)(self/175, start/176, end/177)
 }
 
-fn inherent#Vec#Vec[T]#iter(self/178: Vec[T]) -> FnIterator[T] {
+fn inherent#Vec#Vec[T]#iter[T](self/178: Vec[T]) -> FnIterator[T] {
   let index/179 = inherent#Ref#Ref[int]#new(0) in
   let len/180 = inherent#Vec#Vec[T]#len(self/178) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
@@ -724,23 +724,23 @@ fn inherent#Vec#Vec[T]#iter(self/178: Vec[T]) -> FnIterator[T] {
   })
 }
 
-fn trait_impl#IntoIterator#Vec[T]#into_iter(self/183: Vec[T]) -> FnIterator[T] {
+fn trait_impl#IntoIterator#Vec[T]#into_iter[T](self/183: Vec[T]) -> FnIterator[T] {
   inherent#Vec#Vec[T]#iter(self/183)
 }
 
-fn inherent#Slice#Slice[T]#get(self/184: Slice[T], index/185: int) -> T {
+fn inherent#Slice#Slice[T]#get[T](self/184: Slice[T], index/185: int) -> T {
   @intrinsic(slice.get)(self/184, index/185)
 }
 
-fn inherent#Slice#Slice[T]#len(self/186: Slice[T]) -> int {
+fn inherent#Slice#Slice[T]#len[T](self/186: Slice[T]) -> int {
   @intrinsic(slice.len)(self/186)
 }
 
-fn inherent#Slice#Slice[T]#sub(self/187: Slice[T], start/188: int, end/189: int) -> Slice[T] {
+fn inherent#Slice#Slice[T]#sub[T](self/187: Slice[T], start/188: int, end/189: int) -> Slice[T] {
   @intrinsic(slice.sub)(self/187, start/188, end/189)
 }
 
-fn inherent#Slice#Slice[T]#iter(self/190: Slice[T]) -> FnIterator[T] {
+fn inherent#Slice#Slice[T]#iter[T](self/190: Slice[T]) -> FnIterator[T] {
   let index/191 = inherent#Ref#Ref[int]#new(0) in
   let len/192 = inherent#Slice#Slice[T]#len(self/190) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
@@ -759,59 +759,59 @@ fn inherent#Slice#Slice[T]#iter(self/190: Slice[T]) -> FnIterator[T] {
   })
 }
 
-fn trait_impl#IntoIterator#Slice[T]#into_iter(self/195: Slice[T]) -> FnIterator[T] {
+fn trait_impl#IntoIterator#Slice[T]#into_iter[T](self/195: Slice[T]) -> FnIterator[T] {
   inherent#Slice#Slice[T]#iter(self/195)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
+fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get(self/196: HashMap[K, V], key/197: K) -> Option[V] {
+fn inherent#HashMap#HashMap[K,V]#get[K, V](self/196: HashMap[K, V], key/197: K) -> Option[V] {
   @intrinsic(hashmap.get)(self/196, key/197)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set(self/198: HashMap[K, V], key/199: K, value/200: V) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set[K, V](self/198: HashMap[K, V], key/199: K, value/200: V) -> unit {
   @intrinsic(hashmap.set)(self/198, key/199, value/200)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove(self/201: HashMap[K, V], key/202: K) -> unit {
+fn inherent#HashMap#HashMap[K,V]#remove[K, V](self/201: HashMap[K, V], key/202: K) -> unit {
   @intrinsic(hashmap.remove)(self/201, key/202)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len(self/203: HashMap[K, V]) -> int {
+fn inherent#HashMap#HashMap[K,V]#len[K, V](self/203: HashMap[K, V]) -> int {
   @intrinsic(hashmap.len)(self/203)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains(self/204: HashMap[K, V], key/205: K) -> bool {
+fn inherent#HashMap#HashMap[K,V]#contains[K, V](self/204: HashMap[K, V], key/205: K) -> bool {
   @intrinsic(hashmap.contains)(self/204, key/205)
 }
 
-fn inherent#HashMap#HashMap[K,V]#entries(self/206: HashMap[K, V]) -> Vec[(K, V)] {
+fn inherent#HashMap#HashMap[K,V]#entries[K, V](self/206: HashMap[K, V]) -> Vec[(K, V)] {
   @intrinsic(hashmap.entries)(self/206)
 }
 
-fn inherent#Ref#Ref[T]#new(value/207: T) -> Ref[T] {
+fn inherent#Ref#Ref[T]#new[T](value/207: T) -> Ref[T] {
   @intrinsic(ref.new)(value/207)
 }
 
-fn inherent#Ref#Ref[T]#get(self/208: Ref[T]) -> T {
+fn inherent#Ref#Ref[T]#get[T](self/208: Ref[T]) -> T {
   @intrinsic(ref.get)(self/208)
 }
 
-fn inherent#Ref#Ref[T]#set(self/209: Ref[T], value/210: T) -> unit {
+fn inherent#Ref#Ref[T]#set[T](self/209: Ref[T], value/210: T) -> unit {
   @intrinsic(ref.set)(self/209, value/210)
 }
 
-fn inherent#Channel#Channel[T]#new(capacity/211: int) -> Channel[T] {
+fn inherent#Channel#Channel[T]#new[T](capacity/211: int) -> Channel[T] {
   @intrinsic(channel.new)(capacity/211)
 }
 
-fn inherent#Channel#Channel[T]#send(self/212: Channel[T], value/213: T) -> unit {
+fn inherent#Channel#Channel[T]#send[T](self/212: Channel[T], value/213: T) -> unit {
   @intrinsic(channel.send)(self/212, value/213)
 }
 
-fn inherent#Channel#Channel[T]#recv(self/214: Channel[T]) -> Option[T] {
+fn inherent#Channel#Channel[T]#recv[T](self/214: Channel[T]) -> Option[T] {
   let mtmp60 = @intrinsic(channel.recv)(self/214) in
   {
     let x61 = mtmp60.0 in
@@ -836,7 +836,7 @@ fn inherent#Channel#Channel[T]#recv(self/214: Channel[T]) -> Option[T] {
   }
 }
 
-fn inherent#Channel#Channel[T]#close(self/217: Channel[T]) -> unit {
+fn inherent#Channel#Channel[T]#close[T](self/217: Channel[T]) -> unit {
   @intrinsic(channel.close)(self/217)
 }
 
@@ -961,7 +961,7 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
   }
 }
 
-fn trait_impl#Iterator#EnumerateIterator[I]#next(self/237: EnumerateIterator[I]) -> Option[(int, I::Item)] {
+fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[I]) -> Option[(int, I::Item)] {
   {
     let mtmp68 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
     match mtmp68 {
@@ -985,7 +985,7 @@ fn trait_impl#Iterator#EnumerateIterator[I]#next(self/237: EnumerateIterator[I])
   }
 }
 
-fn trait_impl#Iterator#ZipIterator[A,B]#next(self/240: ZipIterator[A, B]) -> Option[(A::Item, B::Item)] {
+fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) -> Option[(A::Item, B::Item)] {
   {
     let mtmp71 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
     match mtmp71 {
@@ -1021,7 +1021,7 @@ fn trait_impl#Iterator#ZipIterator[A,B]#next(self/240: ZipIterator[A, B]) -> Opt
   }
 }
 
-fn trait_impl#Iterator#SkipIterator[I]#next(self/243: SkipIterator[I]) -> Option[I::Item] {
+fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Option[I::Item] {
   let _wild78 = while (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) > 0) {
       {
         {
@@ -1046,7 +1046,7 @@ fn trait_impl#Iterator#SkipIterator[I]#next(self/243: SkipIterator[I]) -> Option
   trait_call[Iterator::next](SkipIterator.iterator(self/243))
 }
 
-fn trait_impl#Iterator#ChainIterator[T,A,B]#next(self/244: ChainIterator[T, A, B]) -> Option[T] {
+fn trait_impl#Iterator#ChainIterator[T,A,B]#next[T, A, B](self/244: ChainIterator[T, A, B]) -> Option[T] {
   let _wild81 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
       {
         {
@@ -1176,7 +1176,7 @@ fn iterator_count(iterator/261: I) -> int {
   inherent#Ref#Ref[int]#get(count/262)
 }
 
-fn inherent#Option#Option[T]#is_some(self/263: Option[T]) -> bool {
+fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
   match self/263 {
     Option::None => {
       false
@@ -1190,11 +1190,11 @@ fn inherent#Option#Option[T]#is_some(self/263: Option[T]) -> bool {
   }
 }
 
-fn inherent#Option#Option[T]#is_none(self/264: Option[T]) -> bool {
+fn inherent#Option#Option[T]#is_none[T](self/264: Option[T]) -> bool {
   trait_impl#Eq#bool#eq(inherent#Option#Option[T]#is_some(self/264), false)
 }
 
-fn inherent#Option#Option[T]#unwrap_or(self/265: Option[T], fallback/266: T) -> T {
+fn inherent#Option#Option[T]#unwrap_or[T](self/265: Option[T], fallback/266: T) -> T {
   match self/265 {
     Option::None => {
       fallback/266
@@ -1211,7 +1211,7 @@ fn inherent#Option#Option[T]#unwrap_or(self/265: Option[T], fallback/266: T) -> 
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or_else(self/268: Option[T], fallback/269: () -> T) -> T {
+fn inherent#Option#Option[T]#unwrap_or_else[T](self/268: Option[T], fallback/269: () -> T) -> T {
   match self/268 {
     Option::None => {
       fallback/269()
@@ -1228,135 +1228,135 @@ fn inherent#Option#Option[T]#unwrap_or_else(self/268: Option[T], fallback/269: (
   }
 }
 
-fn option_map(value/271: Option[T], map_fn/272: (T) -> U) -> Option[U] {
-  match value/271 {
-    Option::None => {
-      Option::None
-    },
-    Option::Some(x93) => {
+fn inherent#Result#Result[T,E]#is_ok[T, E](self/271: Result[T, E]) -> bool {
+  match self/271 {
+    Result::Ok(x93) => {
       {
-        let x93 = Option::Some._0(value/271) in
-        {
-          let inner/273 = x93 in
-          Option::Some(map_fn/272(inner/273))
-        }
-      }
-    },
-  }
-}
-
-fn option_and_then(value/274: Option[T], next/275: (T) -> Option[U]) -> Option[U] {
-  match value/274 {
-    Option::None => {
-      Option::None
-    },
-    Option::Some(x94) => {
-      {
-        let x94 = Option::Some._0(value/274) in
-        {
-          let inner/276 = x94 in
-          next/275(inner/276)
-        }
-      }
-    },
-  }
-}
-
-fn option_ok_or(value/277: Option[T], error/278: E) -> Result[T, E] {
-  match value/277 {
-    Option::None => {
-      Result::Err(error/278)
-    },
-    Option::Some(x95) => {
-      {
-        let x95 = Option::Some._0(value/277) in
-        {
-          let inner/279 = x95 in
-          Result::Ok(inner/279)
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Result#Result[T,E]#is_ok(self/280: Result[T, E]) -> bool {
-  match self/280 {
-    Result::Ok(x96) => {
-      {
-        let x96 = Result::Ok._0(self/280) in
+        let x93 = Result::Ok._0(self/271) in
         true
       }
     },
-    Result::Err(x97) => {
+    Result::Err(x94) => {
       {
-        let x97 = Result::Err._0(self/280) in
+        let x94 = Result::Err._0(self/271) in
         false
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#is_err(self/281: Result[T, E]) -> bool {
-  trait_impl#Eq#bool#eq(inherent#Result#Result[T,E]#is_ok(self/281), false)
+fn inherent#Result#Result[T,E]#is_err[T, E](self/272: Result[T, E]) -> bool {
+  trait_impl#Eq#bool#eq(inherent#Result#Result[T,E]#is_ok(self/272), false)
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or(self/282: Result[T, E], fallback/283: T) -> T {
-  match self/282 {
-    Result::Ok(x98) => {
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/274: T) -> T {
+  match self/273 {
+    Result::Ok(x95) => {
       {
-        let x98 = Result::Ok._0(self/282) in
+        let x95 = Result::Ok._0(self/273) in
         {
-          let value/284 = x98 in
-          value/284
+          let value/275 = x95 in
+          value/275
         }
       }
     },
-    Result::Err(x99) => {
+    Result::Err(x96) => {
       {
-        let x99 = Result::Err._0(self/282) in
-        fallback/283
+        let x96 = Result::Err._0(self/273) in
+        fallback/274
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or_else(self/285: Result[T, E], fallback/286: (E) -> T) -> T {
-  match self/285 {
-    Result::Ok(x100) => {
+fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fallback/277: (E) -> T) -> T {
+  match self/276 {
+    Result::Ok(x97) => {
       {
-        let x100 = Result::Ok._0(self/285) in
+        let x97 = Result::Ok._0(self/276) in
         {
-          let value/287 = x100 in
-          value/287
+          let value/278 = x97 in
+          value/278
         }
       }
     },
-    Result::Err(x101) => {
+    Result::Err(x98) => {
       {
-        let x101 = Result::Err._0(self/285) in
+        let x98 = Result::Err._0(self/276) in
         {
-          let error/288 = x101 in
-          fallback/286(error/288)
+          let error/279 = x98 in
+          fallback/277(error/279)
         }
       }
     },
   }
 }
 
-fn result_map(value/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
-  match value/289 {
+fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U) -> Option[U] {
+  match self/280 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x99) => {
+      {
+        let x99 = Option::Some._0(self/280) in
+        {
+          let value/282 = x99 in
+          Option::Some(map_fn/281(value/282))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -> Option[U]) -> Option[U] {
+  match self/283 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x100) => {
+      {
+        let x100 = Option::Some._0(self/283) in
+        {
+          let value/285 = x100 in
+          next/284(value/285)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> Result[T, E] {
+  match self/286 {
+    Option::None => {
+      Result::Err(error/287)
+    },
+    Option::Some(x101) => {
+      {
+        let x101 = Option::Some._0(self/286) in
+        {
+          let value/288 = x101 in
+          Result::Ok(value/288)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
+  match self/289 {
     Result::Ok(x102) => {
       {
-        let x102 = Result::Ok._0(value/289) in
+        let x102 = Result::Ok._0(self/289) in
         {
-          let inner/291 = x102 in
-          Result::Ok(map_fn/290(inner/291))
+          let value/291 = x102 in
+          Result::Ok(map_fn/290(value/291))
         }
       }
     },
     Result::Err(x103) => {
       {
-        let x103 = Result::Err._0(value/289) in
+        let x103 = Result::Err._0(self/289) in
         {
           let error/292 = x103 in
           Result::Err(error/292)
@@ -1366,20 +1366,20 @@ fn result_map(value/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
   }
 }
 
-fn result_map_err(value/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
-  match value/293 {
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
+  match self/293 {
     Result::Ok(x104) => {
       {
-        let x104 = Result::Ok._0(value/293) in
+        let x104 = Result::Ok._0(self/293) in
         {
-          let inner/295 = x104 in
-          Result::Ok(inner/295)
+          let value/295 = x104 in
+          Result::Ok(value/295)
         }
       }
     },
     Result::Err(x105) => {
       {
-        let x105 = Result::Err._0(value/293) in
+        let x105 = Result::Err._0(self/293) in
         {
           let error/296 = x105 in
           Result::Err(map_fn/294(error/296))
@@ -1389,20 +1389,20 @@ fn result_map_err(value/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F]
   }
 }
 
-fn result_and_then(value/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
-  match value/297 {
+fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
+  match self/297 {
     Result::Ok(x106) => {
       {
-        let x106 = Result::Ok._0(value/297) in
+        let x106 = Result::Ok._0(self/297) in
         {
-          let inner/299 = x106 in
-          next/298(inner/299)
+          let value/299 = x106 in
+          next/298(value/299)
         }
       }
     },
     Result::Err(x107) => {
       {
-        let x107 = Result::Err._0(value/297) in
+        let x107 = Result::Err._0(self/297) in
         {
           let error/300 = x107 in
           Result::Err(error/300)
@@ -1416,7 +1416,7 @@ fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {
   Number.value(self/0)
 }
 
-fn trait_impl#Provider#Box[T]#get(self/1: Box[T]) -> T {
+fn trait_impl#Provider#Box[T]#get[T](self/1: Box[T]) -> T {
   Box.value(self/1)
 }
 

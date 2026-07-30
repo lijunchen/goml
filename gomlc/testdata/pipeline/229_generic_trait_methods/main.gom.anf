@@ -1,0 +1,67 @@
+fn main() -> unit {
+  join ret111() -> unit {
+    ()
+  } in
+  let t112 = Prefix { value: "direct:" } in
+  let direct/3 = trait_impl#RenderValue#Prefix#render__mono1(t112, "ok") in
+  let _wild108 = println__T_string(direct/3) in
+  let t113 = Prefix { value: "generic:" } in
+  let generic/4 = render_generic__T_Prefix(t113) in
+  let _wild109 = println__T_string(generic/4) in
+  let t114 = Prefix { value: "ufcs:" } in
+  let ufcs/5 = trait_impl#RenderValue#Prefix#render__mono2(t114, 12) in
+  let _wild110 = println__T_string(ufcs/5) in
+  jump ret111()
+}
+
+fn trait_impl#RenderValue#Prefix#render__mono1(self/0: Prefix, value/1: string) -> string {
+  join ret115(retv116: string) -> string {
+    retv116
+  } in
+  let t117 = Prefix.value(self/0) in
+  let t118 = trait_impl#ToString#string#to_string(value/1) in
+  let t119 = (t117 + t118) in
+  jump ret115(t119)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret120() -> unit {
+    ()
+  } in
+  let t121 = trait_impl#ToString#string#to_string(value/1) in
+  let t122 = @runtime(core.string_println)(t121) in
+  jump ret120()
+}
+
+fn render_generic__T_Prefix(renderer/2: Prefix) -> string {
+  join ret123(retv124: string) -> string {
+    retv124
+  } in
+  let t125 = trait_impl#RenderValue#Prefix#render__mono2(renderer/2, 11) in
+  jump ret123(t125)
+}
+
+fn trait_impl#RenderValue#Prefix#render__mono2(self/0: Prefix, value/1: int) -> string {
+  join ret126(retv127: string) -> string {
+    retv127
+  } in
+  let t128 = Prefix.value(self/0) in
+  let t129 = trait_impl#ToString#int#to_string(value/1) in
+  let t130 = (t128 + t129) in
+  jump ret126(t130)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret131(retv132: string) -> string {
+    retv132
+  } in
+  jump ret131(self/38)
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  join ret133(retv134: string) -> string {
+    retv134
+  } in
+  let t135 = @runtime(core.int_to_string)(self/40) in
+  jump ret133(t135)
+}

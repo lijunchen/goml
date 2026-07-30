@@ -1,22 +1,22 @@
-impl Parent[T] for Box[T]{
+impl[T] Parent[T] for Box[T]{
   fn parent(self/0: Box[T]) -> T {
       (self/0 : Box[T]).value
   }
 }
 
-impl Render for Box[T]{
+impl[T] Render for Box[T]{
   fn render(self/1: Box[T]) -> string {
       ":render"
   }
 }
 
-impl Child[T] for Box[T]{
+impl[T] Child[T] for Box[T] where T: ToString, T: Eq{
   fn child(self/2: Box[T]) -> string {
       ":child"
   }
 }
 
-fn describe(value/3: B) -> string {
+fn describe[T, B](value/3: B) -> string where B: Child[T], T: ToString, T: Eq, B: Parent[T], B: Render {
     (ToString::to_string : (T) -> string)((Parent[T]::parent : (B) -> T)((value/3 : B))) + (Render::render : (B) -> string)((value/3 : B)) + (Child[T]::child : (B) -> string)((value/3 : B))
 }
 

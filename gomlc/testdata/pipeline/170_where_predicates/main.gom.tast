@@ -4,21 +4,21 @@ impl Render for Vec[int32]{
   }
 }
 
-impl Selected for Wrap[T]{
+impl[T] Selected for Wrap[T] where Vec[T]: Render{
   fn selected(self/1: Wrap[T]) -> string {
       "selected"
   }
 }
 
-fn render_all(values/2: Vec[T]) -> string {
+fn render_all[T](values/2: Vec[T]) -> string where Vec[T]: Render {
     (Render::render : (Vec[T]) -> string)((values/2 : Vec[T]))
 }
 
-fn same(value/3: T) -> U {
+fn same[T, U](value/3: T) -> U where T = U {
     (value/3 : T)
 }
 
-fn require(value/4: T) -> string {
+fn require[T](value/4: T) -> string where T: Selected {
     (Selected::selected : (T) -> string)((value/4 : T))
 }
 

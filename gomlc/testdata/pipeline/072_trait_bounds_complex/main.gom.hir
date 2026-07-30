@@ -128,19 +128,19 @@ file main.gom
         }
     }
     
-    fn show_both(local/1/21: T) -> string {
+    fn show_both[T: Debug + Display](local/1/21: T) -> string {
         Debug::show(x/21) + " / " + Display::show(x/21)
     }
     
-    fn tag_text(local/1/22: Q) -> string {
+    fn tag_text[Q: Debug + MyHash](local/1/22: Q) -> string {
         Debug::show(tag/22) + "#" + tag/22.hash().to_string()
     }
     
-    fn combine_scaled(local/1/23: T, local/1/24: T, local/1/25: int32) -> T {
+    fn combine_scaled[T: Add + Scale](local/1/23: T, local/1/24: T, local/1/25: int32) -> T {
         a/23.add(b/24).scale(factor/25)
     }
     
-    fn report_pair(local/1/26: Q, local/1/27: T, local/1/28: T, local/1/29: T) -> string {
+    fn report_pair[T: Debug + Display + MyEq + MyHash, Q: Debug + MyHash](local/1/26: Q, local/1/27: T, local/1/28: T, local/1/29: T) -> string {
         let local/1/30 = MyEq::eq(a/27, b/28);
         let local/1/31 = def/1/24(tag/26);
         let local/1/32 = def/1/23(combined/29);
@@ -148,12 +148,12 @@ file main.gom
         header/31 + " " + repr/32 + " | eq=" + def/1/22(same/30) + " | hash=" + h/33.to_string()
     }
     
-    fn full_report(local/1/34: Q, local/1/35: T, local/1/36: T) -> string {
+    fn full_report[T: Debug + MyHash + Display + MyEq + Add + Scale + Debug, Q: Debug + MyHash](local/1/34: Q, local/1/35: T, local/1/36: T) -> string {
         let local/1/37 = def/1/25(a/35, b/36, 2);
         def/1/26(tag/34, a/35, b/36, combined/37)
     }
     
-    fn sum_and_tag(local/1/38: Q, local/1/39: T, local/1/40: T, local/1/41: T) -> string {
+    fn sum_and_tag[T: Add + MyHash + Inspect, Q: Debug + MyHash](local/1/38: Q, local/1/39: T, local/1/40: T, local/1/41: T) -> string {
         let local/1/42 = x/39.add(y/40).add(z/41);
         let local/1/43 = def/1/24(tag/38);
         let local/1/44 = total/42.hash();

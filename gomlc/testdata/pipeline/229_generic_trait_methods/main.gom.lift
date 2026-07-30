@@ -1,0 +1,33 @@
+fn main() -> unit {
+  let direct/3 = trait_impl#RenderValue#Prefix#render__mono1(Prefix { value: "direct:" }, "ok") in
+  let _wild108 = println__T_string(direct/3) in
+  let generic/4 = render_generic__T_Prefix(Prefix { value: "generic:" }) in
+  let _wild109 = println__T_string(generic/4) in
+  let ufcs/5 = trait_impl#RenderValue#Prefix#render__mono2(Prefix { value: "ufcs:" }, 12) in
+  let _wild110 = println__T_string(ufcs/5) in
+  ()
+}
+
+fn trait_impl#RenderValue#Prefix#render__mono1(self/0: Prefix, value/1: string) -> string {
+  (Prefix.value(self/0) + trait_impl#ToString#string#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn render_generic__T_Prefix(renderer/2: Prefix) -> string {
+  trait_impl#RenderValue#Prefix#render__mono2(renderer/2, 11)
+}
+
+fn trait_impl#RenderValue#Prefix#render__mono2(self/0: Prefix, value/1: int) -> string {
+  (Prefix.value(self/0) + trait_impl#ToString#int#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
+  @runtime(core.int_to_string)(self/40)
+}
