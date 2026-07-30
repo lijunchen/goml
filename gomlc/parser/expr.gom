@@ -10,6 +10,8 @@ fn is_expr_first(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::Str
         | lexer::TokenKind::MultilineStr
         | lexer::TokenKind::CharLit
+        | lexer::TokenKind::ByteCharLit
+        | lexer::TokenKind::UnsupportedByteStr
         | lexer::TokenKind::Ident
         | lexer::TokenKind::TrueKeyword
         | lexer::TokenKind::FalseKeyword
@@ -329,6 +331,13 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         lexer::TokenKind::Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
         lexer::TokenKind::MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
         lexer::TokenKind::CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
+        lexer::TokenKind::ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
+        lexer::TokenKind::UnsupportedByteStr => {
+            let marker = parser.open();
+            parser.error("byte string literals are not supported");
+            parser.advance();
+            parser.close(marker, cst::NodeKind::ErrorTree)
+        },
         lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
             simple_expression(parser, cst::NodeKind::EXPR_BOOL),
         lexer::TokenKind::Ident => ident_expression(parser),

@@ -77,6 +77,26 @@ pub enum Item {
     ImplBlock(ImplBlock),
     Function(Function),
     ExternFunction(ExternFunction),
+    TypeAlias(TypeAlias),
+    Constant(Constant),
+}
+
+pub struct TypeAlias {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub generics: Vec[string],
+    pub ty: TypeExpr,
+    pub ty_span: Span,
+}
+
+pub struct Constant {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub ty: TypeExpr,
+    pub ty_span: Span,
+    pub value: Expr,
 }
 
 pub struct Function {
@@ -232,6 +252,7 @@ pub enum Expr {
     Float { value: float64, span: Span },
     String { value: string, span: Span },
     Char { value: string, span: Span },
+    Byte { value: string, span: Span },
     ConstructorValue { constructor: Path, span: Span },
     Constr { constructor: Path, args: Vec[Expr], span: Span },
     StructLiteral { name: Path, fields: Vec[(string, Expr)], span: Span },
@@ -277,6 +298,7 @@ pub enum Pat {
     Float { value: string, span: Span },
     String { value: string, span: Span },
     Char { value: string, span: Span },
+    Byte { value: string, span: Span },
     Constr { constructor: Path, args: Vec[Pat], span: Span },
     Struct { name: Path, fields: Vec[(string, Pat)], has_rest: bool, span: Span },
     Tuple { items: Vec[Pat], span: Span },
@@ -310,6 +332,7 @@ pub fn expr_span(value: Expr) -> Span {
         | Expr::Float { span, .. }
         | Expr::String { span, .. }
         | Expr::Char { span, .. }
+        | Expr::Byte { span, .. }
         | Expr::ConstructorValue { span, .. }
         | Expr::Constr { span, .. }
         | Expr::StructLiteral { span, .. }
@@ -346,6 +369,7 @@ pub fn pat_span(value: Pat) -> Span {
         | Pat::Float { span, .. }
         | Pat::String { span, .. }
         | Pat::Char { span, .. }
+        | Pat::Byte { span, .. }
         | Pat::Constr { span, .. }
         | Pat::Struct { span, .. }
         | Pat::Tuple { span, .. }

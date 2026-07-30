@@ -140,6 +140,25 @@ pub struct StructDef {
     pub public_fields: Vec[string],
 }
 
+pub struct TypeAlias {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub name: string,
+    pub generics: Vec[string],
+    pub ty: TypeExpr,
+    pub ty_span: ast::Span,
+}
+
+pub struct Constant {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub visibility: ast::Visibility,
+    pub name: string,
+    pub ty: TypeExpr,
+    pub ty_span: ast::Span,
+    pub value: Expr,
+}
+
 pub struct TraitDef {
     pub def_id: DefId,
     pub attrs: Vec[ast::Attribute],
@@ -172,6 +191,8 @@ pub enum Item {
     ImplBlock(ImplBlock),
     Function(Function),
     ExternFunction(ExternFunction),
+    TypeAlias(TypeAlias),
+    Constant(Constant),
 }
 
 pub struct File {
@@ -220,6 +241,7 @@ pub enum ExprKind {
     Float { value: float64 },
     String { value: string },
     Char { value: string },
+    Byte { value: string },
     ConstructorValue { constructor: ConstructorRef },
     Constr { constructor: ConstructorRef, args: Vec[Expr] },
     StructLiteral { name: string, fields: Vec[(string, Expr)] },
@@ -269,6 +291,7 @@ pub enum PatKind {
     Float { value: string },
     String { value: string },
     Char { value: string },
+    Byte { value: string },
     Constr { constructor: ConstructorRef, args: Vec[Pat] },
     Struct { name: string, fields: Vec[(string, Pat)], has_rest: bool },
     Tuple { items: Vec[Pat] },

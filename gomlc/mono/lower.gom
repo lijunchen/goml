@@ -1106,6 +1106,7 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
 pub fn lower_checked(value: core::File) -> LowerResult {
     let enums = value.enums;
     let structs = value.structs;
+    let constants = value.constants;
     let error = Ref::new(Option::None);
     let value = specialize(value, error);
     let ctx = type_ctx(value, error);
@@ -1122,7 +1123,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
         })
     };
     LowerResult {
-        file: core::File { functions, enums, structs, type_instances },
+        file: core::File { functions, enums, structs, type_instances, constants },
         error: error.get(),
     }
 }

@@ -452,6 +452,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             cst::NodeKind::EXPR_INT => lower_number_expr(ctx, node, trailing_args, lexer::TokenKind::IntLit, false),
             cst::NodeKind::EXPR_FLOAT => lower_number_expr(ctx, node, trailing_args, lexer::TokenKind::Float, true),
             cst::NodeKind::EXPR_CHAR => lower_char_expr(ctx, node, trailing_args),
+            cst::NodeKind::EXPR_BYTE => lower_byte_expr(ctx, node, trailing_args),
             cst::NodeKind::EXPR_STR => lower_string_expr(ctx, node, trailing_args),
             cst::NodeKind::EXPR_MULTILINE_STR => if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
                 Option::None
@@ -517,15 +518,23 @@ fn lower_number_expr(
         match first_token(node, token_kind) {
             Option::Some(token) => {
                 let value_span = node_span(node);
-                let text = normalized_number_text(token.token.text);
                 if is_float {
+                    let text = normalized_number_text(token.token.text);
                     let parsed = match numeric::parse_float64(text) {
                         Option::Some(value) => value,
                         Option::None => 0.0,
                     };
                     Option::Some(Expr::Float { value: parsed, span: value_span })
                 } else {
-                    Option::Some(Expr::Int { value: text, span: value_span })
+                    match numeric::normalize_integer(token.token.text) {
+                        Option::Some(text) => {
+                            Option::Some(Expr::Int { value: text, span: value_span })
+                        },
+                        Option::None => {
+                            push_error(ctx, token_span(token), "Invalid integer literal");
+                            Option::None
+                        },
+                    }
                 }
             },
             Option::None => Option::None,
@@ -559,6 +568,78 @@ fn lower_char_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
             },
             Option::None => {
                 push_error(ctx, node_span(node), "CharExpr has no value");
+                Option::None
+            },
+        }
+    }
+}
+
+fn byte_escape_value(value: uint8) -> Option[int] {
+    match value {
+        39 => Option::Some(39),
+        48 => Option::Some(0),
+        92 => Option::Some(92),
+        98 => Option::Some(8),
+        102 => Option::Some(12),
+        110 => Option::Some(10),
+        114 => Option::Some(13),
+        116 => Option::Some(9),
+        _ => Option::None,
+    }
+}
+
+fn byte_literal_value(value: string) -> Option[string] {
+    if value.byte_len() == 4
+        && value.byte_get(0) == 98
+        && value.byte_get(1) == 39
+        && value.byte_get(3) == 39
+    {
+        Option::Some((value.byte_get(2) as int).to_string())
+    } else if value.byte_len() == 5
+        && value.byte_get(0) == 98
+        && value.byte_get(1) == 39
+        && value.byte_get(2) == 92
+        && value.byte_get(4) == 39
+    {
+        match byte_escape_value(value.byte_get(3)) {
+            Option::Some(byte) => Option::Some(byte.to_string()),
+            Option::None => Option::None,
+        }
+    } else if value.byte_len() == 7
+        && value.byte_get(0) == 98
+        && value.byte_get(1) == 39
+        && value.byte_get(2) == 92
+        && value.byte_get(3) == 120
+        && value.byte_get(6) == 39
+    {
+        match (hex_value(value.byte_get(4)), hex_value(value.byte_get(5))) {
+            (Option::Some(high), Option::Some(low)) => {
+                Option::Some((high * 16 + low).to_string())
+            },
+            _ => Option::None,
+        }
+    } else {
+        Option::None
+    }
+}
+
+fn lower_byte_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to byte literal") {
+        Option::None
+    } else {
+        match first_token(node, lexer::TokenKind::ByteCharLit) {
+            Option::Some(token) => match byte_literal_value(token.token.text) {
+                Option::Some(value) => Option::Some(Expr::Byte {
+                    value,
+                    span: node_span(node),
+                }),
+                Option::None => {
+                    push_error(ctx, token_span(token), "Invalid byte literal");
+                    Option::None
+                },
+            },
+            Option::None => {
+                push_error(ctx, node_span(node), "ByteExpr has no value");
                 Option::None
             },
         }

@@ -732,6 +732,7 @@ fn lower_pattern_inner(
         ast::Pat::Float { value, span: _ } => PatKind::Float { value },
         ast::Pat::String { value, span: _ } => PatKind::String { value },
         ast::Pat::Char { value, span: _ } => PatKind::Char { value },
+        ast::Pat::Byte { value, span: _ } => PatKind::Byte { value },
         ast::Pat::Constr { constructor: path, args, span: _ } => {
             let result: Vec[Pat] = Vec::new();
             for arg in args {
@@ -940,6 +941,7 @@ fn lower_expr_value(
         ast::Expr::Float { value, span: _ } => ExprKind::Float { value },
         ast::Expr::String { value, span: _ } => ExprKind::String { value },
         ast::Expr::Char { value, span: _ } => ExprKind::Char { value },
+        ast::Expr::Byte { value, span: _ } => ExprKind::Byte { value },
         ast::Expr::ConstructorValue { constructor: path, span: _ } => {
             ExprKind::ConstructorValue {
                 constructor: unresolved_constructor(ctx, path),
@@ -1258,6 +1260,29 @@ fn lower_struct(ctx: LowerCtx, value: ast::StructDef, def_id: DefId) -> StructDe
     }
 }
 
+fn lower_type_alias(ctx: LowerCtx, value: ast::TypeAlias, def_id: DefId) -> TypeAlias {
+    TypeAlias {
+        def_id,
+        attrs: value.attrs,
+        name: full_name(ctx.package_name, value.name),
+        generics: value.generics,
+        ty: lower_type(ctx, value.ty, value.generics),
+        ty_span: value.ty_span,
+    }
+}
+
+fn lower_constant(ctx: LowerCtx, value: ast::Constant, def_id: DefId) -> Constant {
+    Constant {
+        def_id,
+        attrs: value.attrs,
+        visibility: value.visibility,
+        name: full_name(ctx.package_name, value.name),
+        ty: lower_type(ctx, value.ty, Vec::new()),
+        ty_span: value.ty_span,
+        value: lower_expr(ctx, value.value, Vec::new(), Vec::new()),
+    }
+}
+
 fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
     let type_params = copy_strings(value.generics);
     let predicates: Vec[Predicate] = Vec::new();
@@ -1354,6 +1379,8 @@ fn item_name(package_name: string, value: ast::Item) -> Option[string] {
         ast::Item::TraitDef(value) => Option::Some(full_name(package_name, value.name)),
         ast::Item::Function(value) => Option::Some(full_name(package_name, value.name)),
         ast::Item::ExternFunction(value) => Option::Some(full_name(package_name, value.name)),
+        ast::Item::TypeAlias(value) => Option::Some(full_name(package_name, value.name)),
+        ast::Item::Constant(value) => Option::Some(full_name(package_name, value.name)),
         ast::Item::ImplBlock(_) => Option::None,
     }
 }
@@ -1393,6 +1420,7 @@ fn make_context(
                     })
                 },
                 ast::Item::StructDef(value) => nominal_types.push(value.name),
+                ast::Item::TypeAlias(value) => nominal_types.push(value.name),
                 ast::Item::TraitDef(value) => traits.push(value.name),
                 _ => (),
             };
@@ -1481,6 +1509,12 @@ fn lower_file_with_context(
             ))),
             ast::Item::ExternFunction(value) => {
                 items.push(Item::ExternFunction(lower_extern(ctx, value, def_id)))
+            },
+            ast::Item::TypeAlias(value) => {
+                items.push(Item::TypeAlias(lower_type_alias(ctx, value, def_id)))
+            },
+            ast::Item::Constant(value) => {
+                items.push(Item::Constant(lower_constant(ctx, value, def_id)))
             },
         };
         index.set(index.get() + 1)

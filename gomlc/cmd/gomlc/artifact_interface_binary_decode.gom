@@ -892,6 +892,40 @@ fn artifact_interface_binary_struct_def(
     })
 }
 
+fn artifact_interface_binary_type_alias(
+    reader: ArtifactInterfaceBinaryReader,
+    context: ArtifactDecodeContext,
+    name: string,
+) -> Result[tast::TypeAliasInfo, string] {
+    match artifact_interface_binary_object(reader, 2, "type alias") {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err(error),
+    };
+    match artifact_interface_binary_field(reader, "generics") {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err(error),
+    };
+    let generics = match artifact_interface_binary_string_array(
+        reader,
+        "type alias generics",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    match artifact_interface_binary_field(reader, "ty") {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err(error),
+    };
+    match artifact_interface_binary_type(reader, context) {
+        Result::Ok(ty) => Result::Ok(tast::TypeAliasInfo {
+            name,
+            generics,
+            ty,
+        }),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
 fn artifact_interface_binary_callable(
     reader: ArtifactInterfaceBinaryReader,
     name: string,
@@ -1420,7 +1454,7 @@ fn artifact_interface_binary_package_exports(
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_interface_binary_object(reader, 2, "type environment") {
+    match artifact_interface_binary_object(reader, 3, "type environment") {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
@@ -1473,6 +1507,32 @@ fn artifact_interface_binary_package_exports(
         };
         match artifact_interface_binary_struct_def(reader, context, name) {
             Result::Ok(value) => structs.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    match artifact_interface_binary_field(reader, "aliases") {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err(error),
+    };
+    let alias_count = match artifact_interface_binary_read_count(
+        reader,
+        6,
+        "type alias map",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let type_aliases = Vec::with_capacity(alias_count);
+    for _ in range(0, alias_count) {
+        let name = match artifact_binary_decode_string_id(
+            reader.reader,
+            reader.table,
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_interface_binary_type_alias(reader, context, name) {
+            Result::Ok(value) => type_aliases.push(value),
             Result::Err(error) => return Result::Err(error),
         }
     };
@@ -1536,7 +1596,7 @@ fn artifact_interface_binary_package_exports(
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
-    match artifact_interface_binary_object(reader, 1, "value environment") {
+    match artifact_interface_binary_object(reader, 2, "value environment") {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),
     };
@@ -1548,15 +1608,56 @@ fn artifact_interface_binary_package_exports(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
+    match artifact_interface_binary_field(reader, "consts") {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err(error),
+    };
+    let constant_count = match artifact_interface_binary_read_count(
+        reader,
+        6,
+        "constant map",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let constants = Vec::with_capacity(constant_count);
+    for _ in range(0, constant_count) {
+        let name = match artifact_binary_decode_string_id(
+            reader.reader,
+            reader.table,
+        ) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_interface_binary_object(reader, 1, "constant scheme") {
+            Result::Ok(()) => (),
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_interface_binary_field(reader, "ty") {
+            Result::Ok(()) => (),
+            Result::Err(error) => return Result::Err(error),
+        };
+        let ty = match artifact_interface_binary_type(reader, context) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        constants.push(tast::ConstantScheme {
+            def_id: Option::None,
+            name,
+            ty,
+        })
+    };
     Result::Ok(ArtifactPackageExports {
         enum_type_names: context.enum_names,
         struct_type_names: context.struct_names,
+        type_aliases,
         enums,
         structs,
         traits,
         trait_impls,
         inherent_impls,
         functions,
+        constants,
     })
 }
 
@@ -1716,7 +1817,7 @@ fn decode_artifact_interface_binary_value(
     match artifact_interface_binary_version_field(
         reader,
         "format_version",
-        "16",
+        "17",
     ) {
         Result::Ok(()) => (),
         Result::Err(error) => return Result::Err(error),

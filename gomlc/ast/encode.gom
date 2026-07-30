@@ -368,6 +368,26 @@ fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
     encode_close(builder)
 }
 
+fn encode_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
+    encode_open(builder, "TypeAlias");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_type(builder, value.ty);
+    encode_close(builder)
+}
+
+fn encode_constant(builder: text::StringBuilder, value: Constant) -> unit {
+    encode_open(builder, "Constant");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_type(builder, value.ty);
+    encode_expr(builder, value.value);
+    encode_close(builder)
+}
+
 fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
         Item::EnumDef(item) => encode_enum(builder, item),
@@ -376,6 +396,8 @@ fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
         Item::ImplBlock(item) => encode_impl(builder, item),
         Item::Function(item) => encode_function(builder, item),
         Item::ExternFunction(item) => encode_extern_function(builder, item),
+        Item::TypeAlias(item) => encode_type_alias(builder, item),
+        Item::Constant(item) => encode_constant(builder, item),
     }
 }
 

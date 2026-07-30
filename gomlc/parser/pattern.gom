@@ -15,7 +15,8 @@ fn is_pattern_first(kind: lexer::TokenKind) -> bool {
         | lexer::TokenKind::IntLit
         | lexer::TokenKind::Float
         | lexer::TokenKind::Str
-        | lexer::TokenKind::CharLit => true,
+        | lexer::TokenKind::CharLit
+        | lexer::TokenKind::ByteCharLit => true,
         _ => false,
     }
 }
@@ -164,6 +165,7 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
             lexer::TokenKind::Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
             lexer::TokenKind::Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
             lexer::TokenKind::CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
+            lexer::TokenKind::ByteCharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_BYTE),
             lexer::TokenKind::WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),
             lexer::TokenKind::LParen => tuple_pattern(parser),
             lexer::TokenKind::LBracket => array_pattern(parser),

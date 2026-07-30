@@ -439,6 +439,18 @@ fn collect_package_test_candidates(
                         source_path,
                         diagnostics,
                     ),
+                    ast::Item::TypeAlias(definition) => reject_item_test_attributes(
+                        definition.attrs,
+                        "type alias",
+                        source_path,
+                        diagnostics,
+                    ),
+                    ast::Item::Constant(definition) => reject_item_test_attributes(
+                        definition.attrs,
+                        "constant",
+                        source_path,
+                        diagnostics,
+                    ),
                 }
             },
             Option::None => (),

@@ -2,6 +2,22 @@ package ast;
 
 use std::text;
 
+fn pretty_decimal_byte(value: string) -> uint8 {
+    let result = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
+    };
+    result.get() as uint8
+}
+
+fn pretty_write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
+    let byte = pretty_decimal_byte(value);
+    builder.write_string("b'\\x");
+    builder.write_char(pretty_hex_digit(byte / 16));
+    builder.write_char(pretty_hex_digit(byte % 16));
+    builder.write_char('\'')
+}
+
 fn pretty_write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
@@ -128,6 +144,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_string(value);
             builder.write_char('\'')
         },
+        Expr::Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
         Expr::ConstructorValue { constructor: path, span: _ } => {
             pretty_write_path(builder, path)
         },
@@ -356,6 +373,7 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
             builder.write_string(value);
             builder.write_char('\'')
         },
+        Pat::Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
         Pat::Constr { constructor: path, args, span: _ } => {
             pretty_write_path(builder, path);
             if args.len() > 0 {

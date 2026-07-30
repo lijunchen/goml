@@ -60,6 +60,7 @@ pub enum TokenKind {
     EnumKeyword,
     StructKeyword,
     TypeKeyword,
+    ConstKeyword,
     WhereKeyword,
     MatchKeyword,
     IfKeyword,
@@ -99,6 +100,8 @@ pub enum TokenKind {
     Str,
     MultilineStr,
     CharLit,
+    ByteCharLit,
+    UnsupportedByteStr,
     Whitespace,
     Comment,
     Error,
@@ -176,6 +179,7 @@ fn keyword_kind(text_value: string) -> TokenKind {
         "enum" => TokenKind::EnumKeyword,
         "struct" => TokenKind::StructKeyword,
         "type" => TokenKind::TypeKeyword,
+        "const" => TokenKind::ConstKeyword,
         "where" => TokenKind::WhereKeyword,
         "match" => TokenKind::MatchKeyword,
         "if" => TokenKind::IfKeyword,
@@ -253,7 +257,65 @@ fn valid_digits(source: string, start: int, end: int) -> bool {
     true
 }
 
+fn radix_digit(value: uint8, base: int) -> bool {
+    if base == 2 {
+        value == 48 || value == 49
+    } else if base == 8 {
+        value >= 48 && value <= 55
+    } else {
+        is_hex_digit(value)
+    }
+}
+
+fn scan_prefixed_integer(source: string, start: int, base: int) -> (TokenKind, int) {
+    let index = Ref::new(start + 2);
+    while index.get() < source.byte_len()
+        && (is_ident_continue(byte_at(source, index.get())))
+    {
+        index.set(index.get() + 1)
+    };
+    let end = index.get();
+    let valid = Ref::new(end > start + 2);
+    for position in range(start + 2, end) {
+        let value = byte_at(source, position);
+        if value == 95 {
+            if position == start + 2
+                || position + 1 >= end
+                || !radix_digit(byte_at(source, position - 1), base)
+                || !radix_digit(byte_at(source, position + 1), base)
+            {
+                valid.set(false)
+            } else {
+                ()
+            }
+        } else if !radix_digit(value, base) {
+            valid.set(false)
+        } else {
+            ()
+        }
+    };
+    if valid.get() {
+        (TokenKind::IntLit, end)
+    } else {
+        (TokenKind::Error, end)
+    }
+}
+
 fn scan_number(source: string, start: int) -> (TokenKind, int) {
+    if start + 1 < source.byte_len() && byte_at(source, start) == 48 {
+        let prefix = byte_at(source, start + 1);
+        if prefix == 66 || prefix == 98 {
+            return scan_prefixed_integer(source, start, 2)
+        } else if prefix == 79 || prefix == 111 {
+            return scan_prefixed_integer(source, start, 8)
+        } else if prefix == 88 || prefix == 120 {
+            return scan_prefixed_integer(source, start, 16)
+        } else {
+            ()
+        }
+    } else {
+        ()
+    };
     let integer_end = scan_digits_end(source, start);
     let number_end = Ref::new(integer_end);
     let valid = Ref::new(valid_digits(source, start, integer_end));
@@ -398,6 +460,75 @@ fn scan_char_end(source: string, start: int) -> Option[int] {
             Option::None => Option::None,
         }
     }
+}
+
+fn scan_byte_escape_end(source: string, slash: int) -> Option[int] {
+    if slash + 1 >= source.byte_len() {
+        Option::None
+    } else {
+        let escaped = byte_at(source, slash + 1);
+        if escaped == 39
+            || escaped == 92
+            || escaped == 48
+            || escaped == 98
+            || escaped == 110
+            || escaped == 102
+            || escaped == 114
+            || escaped == 116
+        {
+            Option::Some(slash + 2)
+        } else if escaped == 120 && slash + 3 < source.byte_len() {
+            if is_hex_digit(byte_at(source, slash + 2))
+                && is_hex_digit(byte_at(source, slash + 3))
+            {
+                Option::Some(slash + 4)
+            } else {
+                Option::None
+            }
+        } else {
+            Option::None
+        }
+    }
+}
+
+fn scan_byte_char_end(source: string, start: int) -> Option[int] {
+    let content = start + 2;
+    if content >= source.byte_len() {
+        Option::None
+    } else {
+        let value = byte_at(source, content);
+        let content_end = if value < 32 || value > 126 || value == 39 {
+            Option::None
+        } else if value == 92 {
+            scan_byte_escape_end(source, content)
+        } else {
+            Option::Some(content + 1)
+        };
+        match content_end {
+            Option::Some(end) => {
+                if end < source.byte_len() && byte_at(source, end) == 39 {
+                    Option::Some(end + 1)
+                } else {
+                    Option::None
+                }
+            },
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn scan_invalid_prefixed_literal_end(source: string, start: int, quote: uint8) -> int {
+    let index = Ref::new(start + 2);
+    while index.get() < source.byte_len()
+        && !is_whitespace(byte_at(source, index.get()))
+    {
+        if byte_at(source, index.get()) == quote {
+            return index.get() + 1
+        } else {
+            index.set(index.get() + 1)
+        }
+    };
+    index.get()
 }
 
 fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
@@ -550,6 +681,38 @@ pub fn lex(source: string) -> Vec[Token] {
                     push_token(tokens, source, TokenKind::Error, start, start + 2)
                 },
             }
+        } else if value == 98
+            && start + 1 < source.byte_len()
+            && byte_at(source, start + 1) == 39
+        {
+            match scan_byte_char_end(source, start) {
+                Option::Some(end) => {
+                    index.set(end);
+                    push_token(tokens, source, TokenKind::ByteCharLit, start, end)
+                },
+                Option::None => {
+                    let end = scan_invalid_prefixed_literal_end(source, start, 39);
+                    index.set(end);
+                    push_token(tokens, source, TokenKind::Error, start, end)
+                },
+            }
+        } else if value == 98
+            && start + 1 < source.byte_len()
+            && byte_at(source, start + 1) == 34
+        {
+            let (valid, end) = scan_string(source, start + 1);
+            index.set(end);
+            push_token(
+                tokens,
+                source,
+                if valid {
+                    TokenKind::UnsupportedByteStr
+                } else {
+                    TokenKind::Error
+                },
+                start,
+                end,
+            )
         } else if value == 34 {
             let (valid, end) = scan_string(source, start);
             index.set(end);
@@ -663,6 +826,7 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         TokenKind::EnumKeyword => "enum",
         TokenKind::StructKeyword => "struct",
         TokenKind::TypeKeyword => "type",
+        TokenKind::ConstKeyword => "const",
         TokenKind::WhereKeyword => "where",
         TokenKind::MatchKeyword => "match",
         TokenKind::IfKeyword => "if",
@@ -702,6 +866,8 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         TokenKind::Str => "str",
         TokenKind::MultilineStr => "multiline_str",
         TokenKind::CharLit => "char_lit",
+        TokenKind::ByteCharLit => "byte_char_lit",
+        TokenKind::UnsupportedByteStr => "unsupported_byte_str",
         TokenKind::Whitespace => "whitespace",
         TokenKind::Comment => "comment",
         TokenKind::Error => "unknown token",

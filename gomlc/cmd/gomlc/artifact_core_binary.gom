@@ -24,7 +24,7 @@ fn artifact_binary_core_sections(
             })
             .pushed(ArtifactBinarySection {
                 id: artifact_binary_value_section_id(),
-                version: 2,
+                version: 3,
                 flags: artifact_binary_required_section_flag(),
                 data: payload,
             }),
@@ -60,7 +60,7 @@ fn artifact_binary_validate_core_sections(
                 ()
             }
         } else if section.id == artifact_binary_value_section_id() {
-            if section.version != 2 {
+            if section.version != 3 {
                 return Result::Err(
                     "unsupported binary Core artifact section version",
                 )

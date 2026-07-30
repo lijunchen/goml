@@ -63,7 +63,7 @@ Enumeration variants should be used via `Enum::Variant` to avoid name conflicts.
 Common keywords include:
 
 ```text
-package use as pub fn struct enum trait impl for type where
+package use as pub fn struct enum trait impl for type const where
 let mut if else match while for in break continue return go dyn
 true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 float32 float64 string char extern
@@ -79,12 +79,13 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 | --- | --- | --- |
 | unit | `()` | Type is `unit` |
 | bool | `true`、`false` | Type is `bool` |
-| integer | `0`、`42`、`1_000` | Determined by context; defaults to `int` when unconstrained |
+| integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `int` when unconstrained |
 | floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `float64` when unconstrained |
 | string | `"text"` | Type is `string` |
 | character | `'a'`、`'\n'`、`'\u0041'` | Type is `char`, representing a Unicode scalar value |
+| byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `uint8` |
 
-Numbers only support decimal form, no type suffix.The `_` delimiter can be used between two numbers; floating point numbers support `e`/`E` exponent and optional exponent sign.When using a decimal point, there must be digits on both sides of the decimal point.There are currently no hexadecimal or binary literals.Negative numbers are composed of unary `-` and positive numeric literals.
+Numbers have no type suffix.Integer literals support binary `0b`/`0B`, octal `0o`/`0O`, decimal, and hexadecimal `0x`/`0X` forms.The `_` delimiter can be used between two digits; floating point numbers support `e`/`E` exponent and optional exponent sign.When using a decimal point, there must be digits on both sides of the decimal point.Negative numbers are composed of unary `-` and positive numeric literals.
 
 Unsuffixed numbers can get the width from the context:
 
@@ -95,6 +96,8 @@ let values: [int16; 3] = [1, 2, 3];
 ```
 
 Strings support `\"`, `\\`, `\n`, `\r`, `\t`, `\b`, `\f`, `\/` and four-digit `\uXXXX` escaping; characters are escaped using the same set of control characters, and `\'` is used to represent single quotes. Ordinary strings cannot span lines.
+
+Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes.Non-ASCII contents are rejected.There is no builtin `bytes` type or byte-string literal; `b"..."` is deliberately rejected pending a separate design.
 
 Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
 
@@ -288,6 +291,7 @@ All files in the same package can use private top-level items.The trait impl met
 | raw integer | `int` | Corresponds to the `int` of the target Go platform and is also the default type of integers. |
 | signed integer | `int8`、`int16`、`int32`、`int64` | fixed width |
 | unsigned integer | `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `uint` has the target Go platform width; the others have fixed widths |
+| byte | `byte` | Transparent builtin alias of `uint8` |
 | floating point | `float32`、`float64` | IEEE floating point |
 | string | `string` | Go string backend |
 | character | `char` | Compile to Go `rune` |
@@ -319,9 +323,21 @@ let pair: [string; 2] = ["left", "right"];
 
 The number of array literal elements must match the array type.Empty arrays and empty generic containers usually require type annotations.
 
+### Type aliases
+
+Top-level aliases are transparent and may have type parameters:
+
+```goml
+type UserId = uint64;
+type Pair[T] = (T, T);
+pub type Names = Vec[string];
+```
+
+Aliases do not create nominally distinct types and recursive alias cycles are rejected.Public aliases can be referenced across packages.
+
 ### Type syntax not currently available
 
-GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, type aliases, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
+GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
 
 `A + B` is only allowed to appear in trait bound or supertrait lists, and cannot be written as ordinary parameters/return types, nor can it be written as `dyn A + B`.
 
@@ -336,8 +352,22 @@ The top level of an ordinary source code file should only contain:
 - `enum`
 - `trait`
 - `impl`
+- `type`
+- `const`
 
 `package` and `use` can only appear at the beginning of a file.The top level cannot write local variables or arbitrary execution statements.
+
+### Constants
+
+Top-level constants require an explicit type and a compile-time expression:
+
+```goml
+const base: int32 = 0x20;
+pub const answer: int32 = base + 10;
+const newline: byte = b'\n';
+```
+
+Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts.They may use forward references, but cycles are rejected.The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`.Public constants are available through package-qualified paths.
 
 ### Structure
 

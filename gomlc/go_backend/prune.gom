@@ -345,12 +345,51 @@ pub fn prune_functions(value: File) -> File {
             ()
         }
     };
+    while true {
+        let previous_len = expanded.values.len();
+        for item in value.items {
+            match item {
+                Item::ConstGroup(group) => for spec in group.specs {
+                    if name_present(reachable, spec.name)
+                        && name_present(expanded, spec.name) == false
+                    {
+                        add_reachable(expanded, spec.name);
+                        collect_expr_names(reachable, spec.value)
+                    } else {
+                        ()
+                    }
+                },
+                _ => (),
+            }
+        };
+        if expanded.values.len() == previous_len {
+            break
+        } else {
+            ()
+        }
+    };
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
             Item::Function(function) => {
                 if name_present(reachable, function.name) {
                     items.push(Item::Function(function))
+                } else {
+                    ()
+                }
+            },
+            Item::ConstGroup(group) => {
+                let was_empty = group.specs.len() == 0;
+                let specs: Vec[ConstSpec] = Vec::new();
+                for spec in group.specs {
+                    if name_present(reachable, spec.name) {
+                        specs.push(spec)
+                    } else {
+                        ()
+                    }
+                };
+                if was_empty || specs.len() > 0 {
+                    items.push(Item::ConstGroup(ConstGroup { specs }))
                 } else {
                     ()
                 }

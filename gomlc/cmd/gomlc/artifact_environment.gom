@@ -266,6 +266,14 @@ fn artifact_dependency_environment_from_exports(
             Result::Err(error) => return Result::Err(error),
         }
     };
+    let constants = Vec::new();
+    for value in value.constants {
+        constants.push(tast::ConstantScheme {
+            def_id: Option::None,
+            name: value.name,
+            ty: value.ty,
+        })
+    };
     let methods = Vec::new();
     let impls = Vec::new();
     for implementation in value.trait_impls {
@@ -331,6 +339,8 @@ fn artifact_dependency_environment_from_exports(
     Result::Ok(tast::dependency_environment(
         enums,
         structs,
+        value.type_aliases,
+        constants,
         traits,
         functions,
         methods,

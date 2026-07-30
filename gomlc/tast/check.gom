@@ -926,6 +926,10 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
             value: Primitive::Char { value: checked_char_literal(ctx, value) },
             ty: Type::Char,
         }),
+        hir::ExprKind::Byte { value } => Option::Some(Expr::Prim {
+            value: Primitive::Uint8 { value },
+            ty: Type::Uint8,
+        }),
         _ => Option::None,
     }
 }
@@ -960,12 +964,14 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                 }
             },
         },
-        hir::NameRef::Def(definition) => match find_function_by_def(ctx, definition) {
-            Option::Some(scheme) => {
-                let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
-                Expr::Callable { callable, ty }
-            },
-            Option::None => match find_rejected_extern(ctx, definition) {
+        hir::NameRef::Def(definition) => match find_constant_by_def(ctx, definition) {
+            Option::Some(value) => Expr::Var { name: value.name, ty: value.ty },
+            Option::None => match find_function_by_def(ctx, definition) {
+                Option::Some(scheme) => {
+                    let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
+                    Expr::Callable { callable, ty }
+                },
+                Option::None => match find_rejected_extern(ctx, definition) {
                 Option::Some(value) => match builtin_function_scheme(short_name(value.name)) {
                     Option::Some(scheme) => {
                         let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
@@ -997,20 +1003,26 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                     Expr::Callable { callable: Callable::Function("<error>"), ty: Type::Error }
                 },
             },
+            },
         },
         hir::NameRef::Other(name) => {
-            let scheme = match find_function_by_name(ctx, name) {
-                Option::Some(value) => Option::Some(value),
-                Option::None => builtin_function_scheme(name),
-            };
-            match scheme {
-                Option::Some(value) => {
-                    let (callable, ty) = instantiate_scheme(ctx, value, Vec::new());
-                    Expr::Callable { callable, ty }
-                },
+            match find_constant_by_name(ctx, name) {
+                Option::Some(value) => Expr::Var { name: value.name, ty: value.ty },
                 Option::None => {
-                    push_diagnostic(ctx, "Unresolved name " + name);
-                    Expr::Var { name, ty: fresh_unresolved_inference(ctx) }
+                    let scheme = match find_function_by_name(ctx, name) {
+                        Option::Some(value) => Option::Some(value),
+                        Option::None => builtin_function_scheme(name),
+                    };
+                    match scheme {
+                        Option::Some(value) => {
+                            let (callable, ty) = instantiate_scheme(ctx, value, Vec::new());
+                            Expr::Callable { callable, ty }
+                        },
+                        Option::None => {
+                            push_diagnostic(ctx, "Unresolved name " + name);
+                            Expr::Var { name, ty: fresh_unresolved_inference(ctx) }
+                        },
+                    }
                 },
             }
         },
@@ -1102,7 +1114,17 @@ fn check_static_member(
     type_args: Vec[hir::TypeExpr],
     report_inference: bool,
 ) -> Expr {
-    match resolve_named_constructor(ctx, owner, member) {
+    let constant_name = owner + "::" + member;
+    match find_constant_by_name(ctx, constant_name) {
+        Option::Some(value) => {
+            if type_args.len() > 0 {
+                push_diagnostic(ctx, "constants do not accept type arguments")
+            } else {
+                ()
+            };
+            Expr::Var { name: value.name, ty: value.ty }
+        },
+        Option::None => match resolve_named_constructor(ctx, owner, member) {
         Option::Some(info) => resolved_constructor_value_expr(ctx, info),
         Option::None => match resolve_static_member(ctx, owner, member, type_args) {
             Option::Some(value) => match value.callable {
@@ -1166,6 +1188,7 @@ fn check_static_member(
                     },
                 }
             },
+        },
         },
     }
 }
@@ -4527,6 +4550,10 @@ fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)]
         hir::PatKind::Char { value } => Option::Some((
             Primitive::Char { value: checked_char_literal(ctx, value) },
             Type::Char,
+        )),
+        hir::PatKind::Byte { value } => Option::Some((
+            Primitive::Uint8 { value },
+            Type::Uint8,
         )),
         _ => Option::None,
     }

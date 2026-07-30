@@ -870,8 +870,67 @@ fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     }
 }
 
+pub fn write_const_expr(
+    builder: text::StringBuilder,
+    value: ConstExpr,
+) -> unit {
+    match value {
+        ConstExpr::Prim { value, ty: _ } => write_primitive(builder, value),
+        ConstExpr::Ref { name, ty: _ } => builder.write_string(name),
+        ConstExpr::Unary { op, expr, ty: _ } => {
+            builder.write_string(unary_symbol(op));
+            builder.write_char('(');
+            write_const_expr(builder, expr);
+            builder.write_char(')')
+        },
+        ConstExpr::Cast { expr, ty } => {
+            builder.write_char('(');
+            write_const_expr(builder, expr);
+            builder.write_string(" as ");
+            write_type(builder, ty);
+            builder.write_char(')')
+        },
+        ConstExpr::Binary { op, lhs, rhs, ty: _ } => {
+            builder.write_char('(');
+            write_const_expr(builder, lhs);
+            builder.write_char(' ');
+            builder.write_string(binary_symbol(op));
+            builder.write_char(' ');
+            write_const_expr(builder, rhs);
+            builder.write_char(')')
+        },
+        ConstExpr::Error { ty: _ } => builder.write_string("<error>"),
+    }
+}
+
+pub fn write_constant(
+    builder: text::StringBuilder,
+    value: Constant,
+) -> unit {
+    builder.write_string("const ");
+    builder.write_string(value.name);
+    builder.write_string(": ");
+    write_type(builder, value.ty);
+    builder.write_string(" = ");
+    write_const_expr(builder, value.value);
+    builder.write_char(';')
+}
+
 fn encode_file(value: File) -> string {
     let builder = text::StringBuilder::new();
+    for index in range(0, value.constants.len()) {
+        if index > 0 {
+            builder.write_char('\n')
+        } else {
+            ()
+        };
+        write_constant(builder, value.constants.get(index))
+    };
+    if value.constants.len() > 0 && value.items.len() > 0 {
+        builder.write_string("\n\n")
+    } else {
+        ()
+    };
     for index in range(0, value.items.len()) {
         if index > 0 {
             builder.write_string("\n\n")

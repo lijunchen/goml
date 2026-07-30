@@ -468,6 +468,19 @@ fn write_function(
 
 fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> string {
     let builder = text::StringBuilder::new();
+    for index in range(0, value.constants.len()) {
+        if index > 0 {
+            builder.write_char('\n')
+        } else {
+            ()
+        };
+        tast::write_constant(builder, value.constants.get(index))
+    };
+    if value.constants.len() > 0 && value.functions.len() > 0 {
+        builder.write_string("\n\n")
+    } else {
+        ()
+    };
     for index in range(0, value.functions.len()) {
         if index > 0 {
             builder.write_string("\n\n")

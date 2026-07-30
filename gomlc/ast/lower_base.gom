@@ -202,7 +202,9 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                 Option::Some(path_node) => match lower_path(ctx, path_node) {
                     Option::Some(path) => {
                         match path_last(path) {
-                            Option::Some(name) => if ident_starts_upper(name) == false {
+                            Option::Some(name) => if ident_starts_upper(name) == false
+                                && name != "byte"
+                            {
                                 push_error(
                                     ctx,
                                     node_span(node),

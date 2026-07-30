@@ -89,6 +89,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
         },
         Expr::String { value, span: value_span } => encode_literal_expr(builder, "String", value, value_span),
         Expr::Char { value, span: value_span } => encode_literal_expr(builder, "Char", value, value_span),
+        Expr::Byte { value, span: value_span } => encode_literal_expr(builder, "Byte", value, value_span),
         Expr::ConstructorValue { constructor: path, span: value_span } => {
             encode_open(builder, "Expr.Constr");
             encode_span(builder, value_span);
@@ -280,6 +281,7 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
         Pat::Float { value, span: value_span } => encode_literal_pat(builder, "Float", value, value_span),
         Pat::String { value, span: value_span } => encode_literal_pat(builder, "String", value, value_span),
         Pat::Char { value, span: value_span } => encode_literal_pat(builder, "Char", value, value_span),
+        Pat::Byte { value, span: value_span } => encode_literal_pat(builder, "Byte", value, value_span),
         Pat::Constr { constructor: path, args, span: value_span } => {
             encode_open(builder, "Pat.Constr");
             encode_span(builder, value_span);

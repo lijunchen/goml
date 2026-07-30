@@ -4,7 +4,7 @@ The project you are currently working on is called goml.
 
 goml is a statically typed language with syntax similar to Rust, but it includes garbage collection (GC) and compiles to Go, so it does not require lifetime annotations and has no ownership system. In essence, it is closer in nature to OCaml or ML (Meta Language).
 
-In goml, top-level functions must have fully explicit type signatures, and only top-level functions support generic type parameters. Generics are denoted using square brackets. Closures can be defined within functions, but they must have a single concrete type — goml does not include let-polymorphism (a.k.a. let-generalization). goml also supports defining traits, as well as enums and structs similar to Rust, and allows user-defined traits.
+In goml, top-level functions must have fully explicit type signatures, and generic functions may only be declared at the top level. Structs, enums, traits, impls, and top-level type aliases may also declare generic type parameters. Generics are denoted using square brackets. Closures can be defined within functions, but they must have a single concrete type — goml does not include let-polymorphism (a.k.a. let-generalization). goml also supports defining traits, as well as enums and structs similar to Rust, and allows user-defined traits.
 
 The generated Go code does not include generics — goml performs monomorphization by instantiating its own generic function calls. The generated code also does not contain Go closures — goml applies lambda lifting by performing lambda lifting (via lambda lifting) on its local functions.
 
@@ -362,12 +362,14 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
-* Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint`, `uint8/16/32/64`, `float32/float64`, `string`, `char`. `byte` is a transparent builtin alias of `uint8`.
+* Literals: boolean, integer/unsigned/floating-point, string, char, and byte literals.
   * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `int` and unconstrained floating-point literals default to `float64`.
-  * Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
+  * Integer literals support binary `0b`, octal `0o`, decimal, and hexadecimal `0x` forms, including uppercase prefixes. Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
   * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
   * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
+  * Byte literals use `b'...'`, contain one ASCII byte, and support escapes such as `b'\n'` and `b'\xFF'`.
+  * There is no builtin `bytes` type or byte-string literal. `b"..."` is unsupported pending a separate design.
 * String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
 * Tuples `(a, b, c)` and the wildcard `_` are commonly used in bindings and pattern matching.
 
@@ -376,10 +378,16 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * `let name = expr;` allows shadowing of the same name. Type annotations are supported, e.g. `let x: int32 = 1;`. `let _ = expr;` discards the result.
 * `let` supports pattern destructuring: tuples, struct fields, enum constructors, and wildcards can be mixed.
 
+### Type Aliases and Constants
+
+* Transparent top-level aliases use `type Name = Type;` or `type Name[T] = Type;`. They do not introduce nominally distinct types, may be `pub`, and recursive alias cycles are rejected.
+* Top-level constants use `const name: Type = expr;` and may be `pub`. Their types must be explicit scalar types: `bool`, numeric types, `string`, `char`, or `byte`.
+* Constant expressions support scalar literals, references to constants, unary and binary operators, and casts. Forward references are allowed; cycles are rejected.
+
 ### Functions and Closures
 
 * Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
-* Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
+* Generic functions may only be declared at the top level, using square brackets, e.g. `fn id[T](x: T) -> T`.
 * Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
@@ -450,7 +458,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Additional Conventions and Constraints
 
-* Top-level functions must have explicit type signatures; generics are limited to top-level functions.
+* Top-level functions must have explicit type signatures; generic functions are limited to the top level.
 * Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
 * The runtime uses garbage collection; manual ownership or lifetimes are not required.
 

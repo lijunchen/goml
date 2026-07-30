@@ -210,7 +210,9 @@ fn is_item_kind(kind: cst::NodeKind) -> bool {
         | cst::NodeKind::TRAIT
         | cst::NodeKind::IMPL
         | cst::NodeKind::FN
-        | cst::NodeKind::EXTERN => true,
+        | cst::NodeKind::EXTERN
+        | cst::NodeKind::TYPE_ALIAS
+        | cst::NodeKind::CONST => true,
         _ => false,
     }
 }
@@ -245,6 +247,7 @@ fn is_expr_kind(kind: cst::NodeKind) -> bool {
         | cst::NodeKind::EXPR_INT
         | cst::NodeKind::EXPR_FLOAT
         | cst::NodeKind::EXPR_CHAR
+        | cst::NodeKind::EXPR_BYTE
         | cst::NodeKind::EXPR_STR
         | cst::NodeKind::EXPR_MULTILINE_STR
         | cst::NodeKind::EXPR_ARRAY_LITERAL
@@ -266,6 +269,7 @@ fn is_pattern_kind(kind: cst::NodeKind) -> bool {
         | cst::NodeKind::PATTERN_INT
         | cst::NodeKind::PATTERN_FLOAT
         | cst::NodeKind::PATTERN_CHAR
+        | cst::NodeKind::PATTERN_BYTE
         | cst::NodeKind::PATTERN_TUPLE
         | cst::NodeKind::PATTERN_ARRAY
         | cst::NodeKind::PATTERN_CONSTR

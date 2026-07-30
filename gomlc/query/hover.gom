@@ -122,6 +122,44 @@ fn symbol_hover_type(
         SymbolKind::Variant => Option::Some(short_type_name(
             symbol_owner(symbol.qualified_name),
         )),
+        SymbolKind::Constant => {
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let constant_index = Ref::new(environment.constants.len() - 1);
+                while constant_index.get() >= 0 {
+                    let constant = environment.constants.get(constant_index.get());
+                    if constant.name == symbol.qualified_name
+                        || short_type_name(constant.name) == symbol.name
+                    {
+                        return hover_text(constant.ty)
+                    } else {
+                        constant_index.set(constant_index.get() - 1)
+                    }
+                };
+                environment_index.set(environment_index.get() - 1)
+            };
+            Option::None
+        },
+        SymbolKind::TypeAlias => {
+            let environment_index = Ref::new(value.environments.len() - 1);
+            while environment_index.get() >= 0 {
+                let environment = value.environments.get(environment_index.get());
+                let alias_index = Ref::new(environment.type_aliases.len() - 1);
+                while alias_index.get() >= 0 {
+                    let alias = environment.type_aliases.get(alias_index.get());
+                    if alias.name == symbol.qualified_name
+                        || short_type_name(alias.name) == symbol.name
+                    {
+                        return hover_text(alias.ty)
+                    } else {
+                        alias_index.set(alias_index.get() - 1)
+                    }
+                };
+                environment_index.set(environment_index.get() - 1)
+            };
+            Option::None
+        },
         SymbolKind::Struct | SymbolKind::Enum | SymbolKind::Trait => {
             Option::Some(short_type_name(symbol.qualified_name))
         },

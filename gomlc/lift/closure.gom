@@ -1038,6 +1038,7 @@ fn lambda_lift_with_counter(
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
+    let constants = value.constants;
     let state = State {
         next_env: Ref::new(0),
         next_name: counter,
@@ -1056,7 +1057,7 @@ fn lambda_lift_with_counter(
     for generated_struct in state.generated_structs {
         structs.push(generated_struct)
     };
-    core::File { functions, enums, structs, type_instances }
+    core::File { functions, enums, structs, type_instances, constants }
 }
 
 fn lambda_lift(value: core::File) -> core::File {

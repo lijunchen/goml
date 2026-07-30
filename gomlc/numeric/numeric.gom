@@ -1,5 +1,105 @@
 package numeric;
 
+use std::text;
+
+fn integer_digit(value: uint8) -> Option[int] {
+    if value >= 48 && value <= 57 {
+        Option::Some((value - 48) as int)
+    } else if value >= 65 && value <= 70 {
+        Option::Some((value - 65 + 10) as int)
+    } else if value >= 97 && value <= 102 {
+        Option::Some((value - 97 + 10) as int)
+    } else {
+        Option::None
+    }
+}
+
+fn integer_parts(value: string) -> (int, int) {
+    if value.byte_len() >= 2 && value.byte_get(0) == 48 {
+        match value.byte_get(1) {
+            66 | 98 => (2, 2),
+            79 | 111 => (8, 2),
+            88 | 120 => (16, 2),
+            _ => (10, 0),
+        }
+    } else {
+        (10, 0)
+    }
+}
+
+fn decimal_digit(value: int) -> string {
+    match value {
+        0 => "0",
+        1 => "1",
+        2 => "2",
+        3 => "3",
+        4 => "4",
+        5 => "5",
+        6 => "6",
+        7 => "7",
+        8 => "8",
+        _ => "9",
+    }
+}
+
+fn integer_digit_in_base(value: uint8, base: int) -> bool {
+    match integer_digit(value) {
+        Option::Some(value) => value < base,
+        Option::None => false,
+    }
+}
+
+pub fn normalize_integer(value: string) -> Option[string] {
+    let (base, start) = integer_parts(value);
+    let digits: Vec[int] = Vec::new();
+    digits.push(0);
+    let found = Ref::new(false);
+    for index in range(start, value.byte_len()) {
+        let source = value.byte_get(index);
+        if source == 95 {
+            if index == start
+                || index + 1 >= value.byte_len()
+                || !integer_digit_in_base(value.byte_get(index - 1), base)
+                || !integer_digit_in_base(value.byte_get(index + 1), base)
+            {
+                return Option::None
+            } else {
+                ()
+            }
+        } else {
+            match integer_digit(source) {
+                Option::Some(part) => if part < base {
+                    found.set(true);
+                    let carry = Ref::new(part);
+                    for position in range(0, digits.len()) {
+                        let current = digits.get(position) * base + carry.get();
+                        digits.set(position, current % 10);
+                        carry.set(current / 10)
+                    };
+                    while carry.get() > 0 {
+                        digits.push(carry.get() % 10);
+                        carry.set(carry.get() / 10)
+                    }
+                } else {
+                    return Option::None
+                },
+                Option::None => return Option::None,
+            }
+        }
+    };
+    if found.get() == false {
+        Option::None
+    } else {
+        let builder = text::StringBuilder::with_capacity(digits.len());
+        for offset in range(0, digits.len()) {
+            builder.write_string(decimal_digit(
+                digits.get(digits.len() - offset - 1),
+            ))
+        };
+        Option::Some(builder.finish())
+    }
+}
+
 pub fn parse_float32(value: string) -> Option[float64] {
     let (valid, parsed) = string_parse_float32(value);
     if valid {

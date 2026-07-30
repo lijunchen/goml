@@ -73,6 +73,21 @@ pub enum Primitive {
     Char { value: char },
 }
 
+pub enum ConstExpr {
+    Prim { value: Primitive, ty: Type },
+    Ref { name: string, ty: Type },
+    Unary { op: ast::UnaryOp, expr: ConstExpr, ty: Type },
+    Cast { expr: ConstExpr, ty: Type },
+    Binary { op: ast::BinaryOp, lhs: ConstExpr, rhs: ConstExpr, ty: Type },
+    Error { ty: Type },
+}
+
+pub struct Constant {
+    pub name: string,
+    pub ty: Type,
+    pub value: ConstExpr,
+}
+
 pub struct Constructor {
     pub name: string,
     pub fields: Vec[string],
@@ -232,6 +247,7 @@ pub struct File {
     pub items: Vec[Item],
     pub enums: Vec[EnumDef],
     pub structs: Vec[StructDef],
+    pub constants: Vec[Constant],
 }
 
 pub struct DiagnosticLabel {

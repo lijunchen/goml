@@ -512,6 +512,13 @@ fn artifact_package_exports(
             ()
         }
     };
+    for alias in signatures.type_aliases {
+        if !public_only || vecs::contains(public_names, alias.name) {
+            result.type_aliases.push(alias)
+        } else {
+            ()
+        }
+    };
     let trait_names = Vec::new();
     for definition in signatures.traits {
         trait_names.push(definition.name)
@@ -526,6 +533,17 @@ fn artifact_package_exports(
     for function in signatures.functions {
         if !public_only || vecs::contains(public_names, function.name) {
             result.functions.push(artifact_fn_scheme(function))
+        } else {
+            ()
+        }
+    };
+    for value in signatures.constants {
+        if !public_only || vecs::contains(public_names, value.name) {
+            result.constants.push(tast::ConstantScheme {
+                def_id: Option::None,
+                name: value.name,
+                ty: value.ty,
+            })
         } else {
             ()
         }

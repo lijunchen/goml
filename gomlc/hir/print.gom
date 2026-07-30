@@ -275,6 +275,22 @@ fn hex_digit(value: uint8) -> char {
     }
 }
 
+fn decimal_byte(value: string) -> uint8 {
+    let result = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
+    };
+    result.get() as uint8
+}
+
+fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
+    let byte = decimal_byte(value);
+    builder.write_string("b'\\x");
+    builder.write_char(hex_digit(byte / 16));
+    builder.write_char(hex_digit(byte % 16));
+    builder.write_char('\'')
+}
+
 fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
     builder.write_string("\\u{");
     if value >= 16 {
@@ -462,6 +478,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             builder.write_string(value);
             builder.write_char('\'')
         },
+        ExprKind::Byte { value } => write_byte_literal(builder, value),
         ExprKind::ConstructorValue { constructor } => {
             write_constructor(builder, constructor)
         },
@@ -689,6 +706,7 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
             builder.write_string(value);
             builder.write_char('\'')
         },
+        PatKind::Byte { value } => write_byte_literal(builder, value),
         PatKind::Constr { constructor, args } => {
             write_constructor(builder, constructor);
             if args.len() > 0 {
@@ -995,6 +1013,27 @@ fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> un
     builder.write_char('}')
 }
 
+fn write_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("type ");
+    builder.write_string(value.name);
+    write_generics(builder, value.generics);
+    builder.write_string(" = ");
+    write_type(builder, value.ty);
+    builder.write_char(';')
+}
+
+fn write_constant(builder: text::StringBuilder, value: Constant) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("const ");
+    builder.write_string(value.name);
+    builder.write_string(": ");
+    write_type(builder, value.ty);
+    builder.write_string(" = ");
+    write_expr(builder, value.value, 0);
+    builder.write_char(';')
+}
+
 fn write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
     match value {
         Item::EnumDef(value) => write_enum(builder, value, indent),
@@ -1003,6 +1042,8 @@ fn write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
         Item::ImplBlock(value) => write_impl(builder, value, indent),
         Item::Function(value) => write_function(builder, value, indent),
         Item::ExternFunction(value) => write_extern(builder, value),
+        Item::TypeAlias(value) => write_type_alias(builder, value),
+        Item::Constant(value) => write_constant(builder, value),
     }
 }
 

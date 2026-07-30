@@ -11,6 +11,8 @@ pub enum SymbolKind {
     Struct,
     Enum,
     Trait,
+    TypeAlias,
+    Constant,
     Variant,
     Method,
     Field,
@@ -145,6 +147,10 @@ fn symbol_kind(
         Option::Some(SymbolKind::Enum)
     } else if cst::node_kind_equal(node.kind, cst::NodeKind::TRAIT) {
         Option::Some(SymbolKind::Trait)
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::TYPE_ALIAS) {
+        Option::Some(SymbolKind::TypeAlias)
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::CONST) {
+        Option::Some(SymbolKind::Constant)
     } else if cst::node_kind_equal(node.kind, cst::NodeKind::VARIANT) {
         Option::Some(SymbolKind::Variant)
     } else if cst::node_kind_equal(
@@ -216,6 +222,7 @@ fn qualified_symbol_name(
             cst::NodeKind::STRUCT,
             cst::NodeKind::VARIANT,
         ),
+        SymbolKind::TypeAlias | SymbolKind::Constant => Option::None,
         _ => Option::None,
     };
     match owner {

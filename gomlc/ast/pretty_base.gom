@@ -547,6 +547,29 @@ fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int
     builder.write_char('}')
 }
 
+fn pretty_write_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
+    pretty_write_attributes(builder, value.attrs);
+    pretty_write_visibility(builder, value.visibility);
+    builder.write_string("type ");
+    builder.write_string(value.name);
+    pretty_write_generics(builder, value.generics);
+    builder.write_string(" = ");
+    pretty_write_type(builder, value.ty);
+    builder.write_char(';')
+}
+
+fn pretty_write_constant(builder: text::StringBuilder, value: Constant) -> unit {
+    pretty_write_attributes(builder, value.attrs);
+    pretty_write_visibility(builder, value.visibility);
+    builder.write_string("const ");
+    builder.write_string(value.name);
+    builder.write_string(": ");
+    pretty_write_type(builder, value.ty);
+    builder.write_string(" = ");
+    pretty_write_expr(builder, value.value, 0);
+    builder.write_char(';')
+}
+
 fn pretty_write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
     match value {
         Item::EnumDef(value) => pretty_write_enum(builder, value, indent),
@@ -555,6 +578,8 @@ fn pretty_write_item(builder: text::StringBuilder, value: Item, indent: int) -> 
         Item::ImplBlock(value) => pretty_write_impl(builder, value, indent),
         Item::Function(value) => pretty_write_function(builder, value, indent),
         Item::ExternFunction(value) => pretty_write_extern(builder, value),
+        Item::TypeAlias(value) => pretty_write_type_alias(builder, value),
+        Item::Constant(value) => pretty_write_constant(builder, value),
     }
 }
 

@@ -30,6 +30,8 @@ fn function_context(
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
         structs: base.structs,
+        type_aliases: base.type_aliases,
+        constants: base.constants,
         enum_names: base.enum_names,
         enum_short_names: base.enum_short_names,
         struct_names: base.struct_names,
@@ -79,6 +81,8 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
         structs: base.structs,
+        type_aliases: base.type_aliases,
+        constants: base.constants,
         enum_names: base.enum_names,
         enum_short_names: base.enum_short_names,
         struct_names: base.struct_names,
@@ -493,6 +497,181 @@ fn check_function(
         params,
         ret_ty,
         body,
+    }
+}
+
+fn lower_constant_expr(ctx: Checker, value: Expr) -> ConstExpr {
+    match value {
+        Expr::Prim { value, ty } => ConstExpr::Prim { value, ty },
+        Expr::Var { name, ty } => match find_constant_by_name(ctx, name) {
+            Option::Some(_) => ConstExpr::Ref { name, ty },
+            Option::None => {
+                push_diagnostic(ctx, "constant expression cannot reference " + name);
+                ConstExpr::Error { ty }
+            },
+        },
+        Expr::Unary { op, expr, ty } => ConstExpr::Unary {
+            op,
+            expr: lower_constant_expr(ctx, expr),
+            ty,
+        },
+        Expr::Cast { expr, ty } => ConstExpr::Cast {
+            expr: lower_constant_expr(ctx, expr),
+            ty,
+        },
+        Expr::Binary {
+            op,
+            lhs,
+            rhs,
+            ty,
+            resolution,
+        } => match resolution {
+            BinaryResolution::Builtin
+            | BinaryResolution::Overloaded { trait_name: _ } => ConstExpr::Binary {
+                op,
+                lhs: lower_constant_expr(ctx, lhs),
+                rhs: lower_constant_expr(ctx, rhs),
+                ty,
+            },
+        },
+        other => {
+            let ty = expr_type(other);
+            push_diagnostic(
+                ctx,
+                "constant values support only literals, constant references, unary operators, binary operators, and casts",
+            );
+            ConstExpr::Error { ty }
+        },
+    }
+}
+
+fn constant_type_supported(value: Type) -> bool {
+    match prune(value) {
+        Type::Bool
+        | Type::Int
+        | Type::Int8
+        | Type::Int16
+        | Type::Int32
+        | Type::Int64
+        | Type::Uint
+        | Type::Uint8
+        | Type::Uint16
+        | Type::Uint32
+        | Type::Uint64
+        | Type::Float32
+        | Type::Float64
+        | Type::String
+        | Type::Char => true,
+        _ => false,
+    }
+}
+
+fn check_constant(base: Checker, value: hir::Constant) -> Constant {
+    let previous_span = base.current_span.get();
+    base.current_span.set(Option::Some(value.ty_span));
+    let ty = resolve_signature_type(
+        base,
+        type_from_hir(value.ty, Vec::new(), Option::None),
+        Vec::new(),
+        true,
+    );
+    if !constant_type_supported(ty) {
+        push_diagnostic(
+            base,
+            "constant type must be bool, numeric, string, char, or byte",
+        )
+    } else {
+        ()
+    };
+    base.current_span.set(Option::Some(value.value.span));
+    let ctx = function_context(base, ty, Option::None, Vec::new(), Vec::new());
+    let checked = check_expr(ctx, value.value, Option::Some(ty));
+    resolve_field_constraints(ctx);
+    resolve_coercion_constraints(ctx);
+    resolve_numeric_literal_constraints(ctx);
+    let checked = resolve_deferred_expr(ctx, checked);
+    let result = Constant {
+        name: value.name,
+        ty: resolve_type(ty),
+        value: lower_constant_expr(ctx, checked),
+    };
+    base.current_span.set(previous_span);
+    result
+}
+
+fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
+    match value {
+        ConstExpr::Ref { name, ty: _ } => {
+            if !vecs::contains(result, name) {
+                result.push(name)
+            } else {
+                ()
+            }
+        },
+        ConstExpr::Unary { op: _, expr, ty: _ }
+        | ConstExpr::Cast { expr, ty: _ } => constant_expr_references(expr, result),
+        ConstExpr::Binary { op: _, lhs, rhs, ty: _ } => {
+            constant_expr_references(lhs, result);
+            constant_expr_references(rhs, result)
+        },
+        _ => (),
+    }
+}
+
+fn checked_constant_by_name(
+    values: Vec[Constant],
+    name: string,
+) -> Option[Constant] {
+    for value in values {
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn constant_reaches(
+    values: Vec[Constant],
+    current: string,
+    target: string,
+    visited: Vec[string],
+) -> bool {
+    if vecs::contains(visited, current) {
+        false
+    } else {
+        visited.push(current);
+        match checked_constant_by_name(values, current) {
+            Option::Some(value) => {
+                let references: Vec[string] = Vec::new();
+                constant_expr_references(value.value, references);
+                for reference in references {
+                    if reference == target
+                        || constant_reaches(values, reference, target, visited)
+                    {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            },
+            Option::None => false,
+        }
+    }
+}
+
+fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> unit {
+    for value in values {
+        if constant_reaches(values, value.name, value.name, Vec::new()) {
+            push_global_diagnostic(
+                ctx,
+                "Cyclic constant " + short_name(value.name),
+            )
+        } else {
+            ()
+        }
     }
 }
 
@@ -1890,14 +2069,51 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     }
 }
 
+fn nominal_kind_name(kind: int) -> string {
+    if kind == 1 {
+        "enum"
+    } else if kind == 2 {
+        "struct"
+    } else {
+        "type alias"
+    }
+}
+
+fn mixed_nominal_declaration_message(
+    name: string,
+    first: int,
+    second: int,
+) -> string {
+    if (first == 1 && second == 2) || (first == 2 && second == 1) {
+        "type " + name + " is defined as both a struct and an enum"
+    } else {
+        "type "
+            + name
+            + " is defined as both a "
+            + nominal_kind_name(first)
+            + " and a "
+            + nominal_kind_name(second)
+    }
+}
+
+fn value_kind_name(kind: int) -> string {
+    if kind == 1 { "function" } else { "constant" }
+}
+
+fn mixed_value_declaration_message(name: string) -> string {
+    "value " + name + " is defined as both a function and a constant"
+}
+
 fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
     let nominal_names: Vec[string] = Vec::new();
     let nominal_kinds: Vec[int] = Vec::new();
     let function_names: Vec[string] = Vec::new();
+    let function_kinds: Vec[int] = Vec::new();
     for item in value.items {
         let nominal = match item {
             hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
             hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+            hir::Item::TypeAlias(definition) => Option::Some((definition.name, 3)),
             _ => Option::None,
         };
         match nominal {
@@ -1909,32 +2125,55 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 } else if nominal_kinds.get(index) == value.1 {
                     push_declaration_diagnostic(
                         ctx,
-                        (if value.1 == 1 { "enum " } else { "struct " })
+                        (if value.1 == 1 {
+                            "enum "
+                        } else if value.1 == 2 {
+                            "struct "
+                        } else {
+                            "type alias "
+                        })
                             + value.0
                             + " is defined multiple times",
                     )
                 } else {
                     push_declaration_diagnostic(
                         ctx,
-                        "type " + value.0 + " is defined as both a struct and an enum",
+                        mixed_nominal_declaration_message(
+                            value.0,
+                            nominal_kinds.get(index),
+                            value.1,
+                        ),
                     )
                 }
             },
             Option::None => (),
         };
         let function_name = match item {
-            hir::Item::Function(function) => Option::Some(function.name),
-            hir::Item::ExternFunction(function) => Option::Some(function.name),
+            hir::Item::Function(function) => Option::Some((function.name, 1)),
+            hir::Item::ExternFunction(function) => Option::Some((function.name, 1)),
+            hir::Item::Constant(value) => Option::Some((value.name, 2)),
             _ => Option::None,
         };
         match function_name {
-            Option::Some(name) => if vecs::contains(function_names, name) {
-                push_declaration_diagnostic(
-                    ctx,
-                    "function " + name + " is defined multiple times",
-                )
-            } else {
-                function_names.push(name)
+            Option::Some(value) => {
+                let index = declaration_name_index(function_names, value.0);
+                if index < 0 {
+                    function_names.push(value.0);
+                    function_kinds.push(value.1)
+                } else if function_kinds.get(index) == value.1 {
+                    push_declaration_diagnostic(
+                        ctx,
+                        value_kind_name(value.1)
+                            + " "
+                            + value.0
+                            + " is defined multiple times",
+                    )
+                } else {
+                    push_declaration_diagnostic(
+                        ctx,
+                        mixed_value_declaration_message(value.0),
+                    )
+                }
             },
             Option::None => (),
         }
@@ -1970,6 +2209,10 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
             hir::Item::ExternFunction(function) => {
                 validate_type_parameter_names(ctx, function.generics)
             },
+            hir::Item::TypeAlias(alias) => {
+                validate_type_parameter_names(ctx, alias.generics)
+            },
+            hir::Item::Constant(_) => (),
         }
     }
 }
@@ -1987,14 +2230,17 @@ fn validate_cross_file_declaration_names(
     let nominal_names: Vec[string] = Vec::new();
     let nominal_kinds: Vec[int] = Vec::new();
     let function_names: Vec[string] = Vec::new();
+    let function_kinds: Vec[int] = Vec::new();
     for file in files {
         let local_nominal_names: Vec[string] = Vec::new();
         let local_nominal_kinds: Vec[int] = Vec::new();
         let local_function_names: Vec[string] = Vec::new();
+        let local_function_kinds: Vec[int] = Vec::new();
         for item in file.items {
             let nominal = match item {
                 hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
                 hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+                hir::Item::TypeAlias(definition) => Option::Some((definition.name, 3)),
                 _ => Option::None,
             };
             match nominal {
@@ -2007,13 +2253,18 @@ fn validate_cross_file_declaration_names(
                 Option::None => (),
             };
             let function_name = match item {
-                hir::Item::Function(function) => Option::Some(function.name),
-                hir::Item::ExternFunction(function) => Option::Some(function.name),
+                hir::Item::Function(function) => Option::Some((function.name, 1)),
+                hir::Item::ExternFunction(function) => Option::Some((function.name, 1)),
+                hir::Item::Constant(value) => Option::Some((value.name, 2)),
                 _ => Option::None,
             };
             match function_name {
-                Option::Some(name) => if !vecs::contains(local_function_names, name) {
-                    local_function_names.push(name)
+                Option::Some(value) => if !vecs::contains(
+                    local_function_names,
+                    value.0,
+                ) {
+                    local_function_names.push(value.0);
+                    local_function_kinds.push(value.1)
                 } else {
                     ()
                 },
@@ -2030,25 +2281,47 @@ fn validate_cross_file_declaration_names(
             } else if nominal_kinds.get(previous) == kind {
                 push_global_diagnostic(
                     ctx,
-                    (if kind == 1 { "enum " } else { "struct " })
+                    (if kind == 1 {
+                        "enum "
+                    } else if kind == 2 {
+                        "struct "
+                    } else {
+                        "type alias "
+                    })
                         + name
                         + " is defined multiple times",
                 )
             } else {
                 push_global_diagnostic(
                     ctx,
-                    "type " + name + " is defined as both a struct and an enum",
+                    mixed_nominal_declaration_message(
+                        name,
+                        nominal_kinds.get(previous),
+                        kind,
+                    ),
                 )
             }
         };
-        for name in local_function_names {
-            if vecs::contains(function_names, name) {
+        for index in range(0, local_function_names.len()) {
+            let name = local_function_names.get(index);
+            let kind = local_function_kinds.get(index);
+            let previous = declaration_name_index(function_names, name);
+            if previous < 0 {
+                function_names.push(name);
+                function_kinds.push(kind)
+            } else if function_kinds.get(previous) == kind {
                 push_global_diagnostic(
                     ctx,
-                    "function " + name + " is defined multiple times",
+                    value_kind_name(kind)
+                        + " "
+                        + name
+                        + " is defined multiple times",
                 )
             } else {
-                function_names.push(name)
+                push_global_diagnostic(
+                    ctx,
+                    mixed_value_declaration_message(name),
+                )
             }
         }
     }
@@ -2111,6 +2384,12 @@ fn validate_lang_item_declarations(
                 validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
             },
             hir::Item::ExternFunction(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::TypeAlias(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
+            hir::Item::Constant(value) => {
                 validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
             },
             hir::Item::ImplBlock(_) => (),
@@ -2535,6 +2814,35 @@ fn check_file_with_package(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
+    for index in range(0, ctx.constants.len()) {
+        let constant = ctx.constants.get(index);
+        ctx.constants.set(index, ConstantScheme {
+            def_id: constant.def_id,
+            name: constant.name,
+            ty: resolve_signature_type(
+                ctx,
+                constant.ty,
+                Vec::new(),
+                false,
+            ),
+        })
+    };
+    for item in value.items {
+        match item {
+            hir::Item::TypeAlias(alias) => {
+                let previous = ctx.current_span.get();
+                ctx.current_span.set(Option::Some(alias.ty_span));
+                let _ = resolve_signature_type(
+                    ctx,
+                    type_from_hir(alias.ty, alias.generics, Option::None),
+                    Vec::new(),
+                    true,
+                );
+                ctx.current_span.set(previous)
+            },
+            _ => (),
+        }
+    };
     for trait_name in value.use_traits {
         match find_trait(ctx, trait_name) {
             Option::Some(_) => (),
@@ -2557,6 +2865,14 @@ fn check_file_with_package(
     expand_in_scope_supertraits(ctx);
     validate_impl_overlaps(ctx);
     validate_builtin_impl_overlaps(ctx, value);
+    let constants: Vec[Constant] = Vec::new();
+    for item in value.items {
+        match item {
+            hir::Item::Constant(value) => constants.push(check_constant(ctx, value)),
+            _ => (),
+        }
+    };
+    validate_constant_cycles(ctx, constants);
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
@@ -2609,6 +2925,7 @@ fn check_file_with_package(
             items,
             enums,
             structs,
+            constants,
         }),
         diagnostics: order_extern_diagnostics(ctx),
         typeck_results: ctx.typeck_results,
@@ -2724,6 +3041,7 @@ pub fn check_package_files_for_link_with_environments(
     let items: Vec[Item] = Vec::new();
     let enums: Vec[EnumDef] = Vec::new();
     let structs: Vec[StructDef] = Vec::new();
+    let constants: Vec[Constant] = Vec::new();
     let diagnostics: Vec[Diagnostic] = Vec::new();
     let typeck_results = empty_typeck_results();
     let valid = Ref::new(true);
@@ -2759,9 +3077,32 @@ pub fn check_package_files_for_link_with_environments(
                 };
                 for definition in file.structs {
                     structs.push(definition)
+                };
+                for value in file.constants {
+                    constants.push(value)
                 }
             },
             Option::None => valid.set(false),
+        }
+    };
+    let diagnostic_source = if values.len() > 0 {
+        values.get(0).source_path
+    } else {
+        "<unknown>"
+    };
+    for value in constants {
+        let message = "Cyclic constant " + short_name(value.name);
+        if constant_reaches(constants, value.name, value.name, Vec::new())
+            && !diagnostics_have_message(diagnostics, message)
+        {
+            diagnostics.push(new_diagnostic(
+                "typer",
+                message,
+                diagnostic_source,
+                Option::None,
+            ))
+        } else {
+            ()
         }
     };
     CheckResult {
@@ -2770,6 +3111,7 @@ pub fn check_package_files_for_link_with_environments(
                 items,
                 enums,
                 structs,
+                constants,
             })
         } else {
             Option::None

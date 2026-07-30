@@ -359,6 +359,19 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
 
 pub fn encode(value: File) -> string {
     let builder = text::StringBuilder::new();
+    for index in range(0, value.constants.len()) {
+        if index > 0 {
+            builder.write_char('\n')
+        } else {
+            ()
+        };
+        tast::write_constant(builder, value.constants.get(index))
+    };
+    if value.constants.len() > 0 && value.functions.len() > 0 {
+        builder.write_string("\n\n")
+    } else {
+        ()
+    };
     for index in range(0, value.functions.len()) {
         if index > 0 {
             builder.write_string("\n\n")

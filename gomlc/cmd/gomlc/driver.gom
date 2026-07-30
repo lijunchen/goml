@@ -278,6 +278,7 @@ fn compile_standard_package(
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
@@ -341,6 +342,8 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
             tast::PackageSignatures {
                 traits: Vec::new(),
                 functions: Vec::new(),
+                type_aliases: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
@@ -367,6 +370,8 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
     let signatures = tast::PackageSignatures {
         traits,
         functions: signatures.functions,
+        type_aliases: signatures.type_aliases,
+        constants: signatures.constants,
     };
     let contract_functions = Vec::new()
         .pushed("array_get")
@@ -453,7 +458,12 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
     for value in signatures.functions {
         functions.push(value)
     };
-    let signatures = tast::PackageSignatures { traits: signatures.traits, functions };
+    let signatures = tast::PackageSignatures {
+        traits: signatures.traits,
+        functions,
+        type_aliases: signatures.type_aliases,
+        constants: signatures.constants,
+    };
     let checked = tast::check(lowered);
     let file = match checked.tast {
         Option::Some(file) => file,
@@ -463,6 +473,7 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };

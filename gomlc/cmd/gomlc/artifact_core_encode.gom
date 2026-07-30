@@ -923,6 +923,90 @@ fn artifact_json_core_function(
     artifact_json_end_object(writer)
 }
 
+fn artifact_json_const_expr(
+    writer: ArtifactJsonWriter,
+    context: ArtifactTypeContext,
+    value: tast::ConstExpr,
+) -> unit {
+    artifact_json_begin_object(writer);
+    match value {
+        tast::ConstExpr::Prim { value, ty } => {
+            artifact_json_name(writer, "CPrim");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "value");
+            artifact_json_primitive(writer, value, ty);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+        tast::ConstExpr::Ref { name, ty } => {
+            artifact_json_name(writer, "CRef");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "name");
+            artifact_json_string(writer, name);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+        tast::ConstExpr::Unary { op, expr, ty } => {
+            artifact_json_name(writer, "CUnary");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "op");
+            artifact_json_string(writer, artifact_unary_name(op));
+            artifact_json_name(writer, "expr");
+            artifact_json_const_expr(writer, context, expr);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+        tast::ConstExpr::Cast { expr, ty } => {
+            artifact_json_name(writer, "CCast");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "expr");
+            artifact_json_const_expr(writer, context, expr);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+        tast::ConstExpr::Binary { op, lhs, rhs, ty } => {
+            artifact_json_name(writer, "CBinary");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "op");
+            artifact_json_string(writer, artifact_binary_name(op));
+            artifact_json_name(writer, "lhs");
+            artifact_json_const_expr(writer, context, lhs);
+            artifact_json_name(writer, "rhs");
+            artifact_json_const_expr(writer, context, rhs);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+        tast::ConstExpr::Error { ty } => {
+            artifact_json_name(writer, "CError");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+    };
+    artifact_json_end_object(writer)
+}
+
+fn artifact_json_constant(
+    writer: ArtifactJsonWriter,
+    context: ArtifactTypeContext,
+    value: tast::Constant,
+) -> unit {
+    artifact_json_begin_object(writer);
+    artifact_json_name(writer, "name");
+    artifact_json_string(writer, value.name);
+    artifact_json_name(writer, "ty");
+    artifact_json_type(writer, context, value.ty);
+    artifact_json_name(writer, "value");
+    artifact_json_const_expr(writer, context, value.value);
+    artifact_json_end_object(writer)
+}
+
 fn artifact_json_core_file(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
@@ -933,6 +1017,12 @@ fn artifact_json_core_file(
     artifact_json_begin_array(writer);
     for function in value.functions {
         artifact_json_core_function(writer, context, function)
+    };
+    artifact_json_end_array(writer);
+    artifact_json_name(writer, "constants");
+    artifact_json_begin_array(writer);
+    for value in value.constants {
+        artifact_json_constant(writer, context, value)
     };
     artifact_json_end_array(writer);
     artifact_json_end_object(writer)

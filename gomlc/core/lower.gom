@@ -1682,7 +1682,13 @@ fn lower_file_with_types(
             },
         }
     };
-    File { functions, enums, structs, type_instances: Vec::new() }
+    File {
+        functions,
+        enums,
+        structs,
+        type_instances: Vec::new(),
+        constants: value.constants,
+    }
 }
 
 fn lower_file(value: tast::File, counter: Ref[int]) -> File {
@@ -1709,6 +1715,7 @@ pub fn lower_with_counter_types_and_options(
             enums: Vec::new(),
             structs: Vec::new(),
             type_instances: Vec::new(),
+            constants: Vec::new(),
         },
     }
 }
@@ -1736,6 +1743,7 @@ pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int]) -> File {
             enums: Vec::new(),
             structs: Vec::new(),
             type_instances: Vec::new(),
+            constants: Vec::new(),
         },
     }
 }

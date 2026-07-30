@@ -2152,6 +2152,7 @@ fn specialize(
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
+    let constants = value.constants;
     let function_index: HashMap[string, core::Function] = HashMap::new();
     let generic_inherent_index: HashMap[string, core::Function] = HashMap::new();
     let trait_function_index: HashMap[string, Vec[core::Function]] = HashMap::new();
@@ -2239,5 +2240,5 @@ fn specialize(
             ()
         }
     };
-    core::File { functions: output, enums, structs, type_instances }
+    core::File { functions: output, enums, structs, type_instances, constants }
 }

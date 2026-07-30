@@ -310,6 +310,41 @@ fn compile_primitive(value: tast::Primitive, ty: tast::Type) -> Expr {
     }
 }
 
+fn compile_constant_expr(value: tast::ConstExpr) -> Expr {
+    match value {
+        tast::ConstExpr::Prim { value, ty } => compile_primitive(value, ty),
+        tast::ConstExpr::Ref { name, ty: _ } => Expr::Var {
+            name: go_local_ident(name),
+        },
+        tast::ConstExpr::Unary { op, expr, ty: _ } => Expr::Unary {
+            op: compile_unary(op),
+            expr: compile_constant_expr(expr),
+        },
+        tast::ConstExpr::Cast { expr, ty } => Expr::Convert {
+            ty: lower_type(ty),
+            expr: compile_constant_expr(expr),
+        },
+        tast::ConstExpr::Binary { op, lhs, rhs, ty: _ } => Expr::Binary {
+            op: compile_binary(op),
+            lhs: compile_constant_expr(lhs),
+            rhs: compile_constant_expr(rhs),
+        },
+        tast::ConstExpr::Error { ty: _ } => Expr::Int { value: "0" },
+    }
+}
+
+fn compile_constants(values: Vec[tast::Constant]) -> ConstGroup {
+    let specs: Vec[ConstSpec] = Vec::new();
+    for value in values {
+        specs.push(ConstSpec {
+            name: go_local_ident(value.name),
+            ty: lower_type(value.ty),
+            value: compile_constant_expr(value.value),
+        })
+    };
+    ConstGroup { specs }
+}
+
 fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
     match value {
         anf::Imm::Var { name, ty: _ } => {
@@ -3241,6 +3276,7 @@ fn lower_with_test_cases(
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
+    let constants = value.constants;
     let closures = collect_closure_infos(value.functions);
     let function_names = build_function_names(
         value.functions,
@@ -3295,6 +3331,11 @@ fn lower_with_test_cases(
         type_instances,
         function_names,
     );
+    if constants.len() > 0 {
+        items.push(Item::ConstGroup(compile_constants(constants)))
+    } else {
+        ()
+    };
     emit_dyn_runtime_items(
         items,
         types.values,

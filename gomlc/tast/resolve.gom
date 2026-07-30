@@ -2762,6 +2762,7 @@ fn resolve_signature_predicates(
     predicates: Vec[TypePredicate],
     report: bool,
 ) -> Vec[TypePredicate] {
+    let predicates = expand_type_alias_predicates(ctx, predicates, report);
     if report {
         for predicate in predicates {
             match predicate {
@@ -3126,12 +3127,258 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
     }
 }
 
+fn find_type_alias(ctx: Checker, name: string) -> Option[TypeAliasInfo] {
+    let canonical = canonical_imported_name(ctx, name);
+    for value in ctx.type_aliases {
+        if value.name == canonical {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    let found = Ref::new(Option::None);
+    for value in ctx.type_aliases {
+        if short_name(value.name) == short_name(canonical) {
+            match found.get() {
+                Option::Some(_) => return Option::None,
+                Option::None => found.set(Option::Some(value)),
+            }
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn expand_type_alias_inner(
+    ctx: Checker,
+    value: Type,
+    stack: Vec[string],
+    report: bool,
+) -> Type {
+    match prune(value) {
+        Type::Con { name } => match find_type_alias(ctx, name) {
+            Option::Some(alias) => if vecs::contains(stack, alias.name) {
+                if report {
+                    push_diagnostic(ctx, "Cyclic type alias " + short_name(alias.name))
+                } else {
+                    ()
+                };
+                Type::Error
+            } else if alias.generics.len() != 0 {
+                if report {
+                    push_diagnostic(
+                        ctx,
+                        "Type alias "
+                            + short_name(alias.name)
+                            + " expects "
+                            + alias.generics.len().to_string()
+                            + " type arguments, got 0",
+                    )
+                } else {
+                    ()
+                };
+                Type::Error
+            } else {
+                let next = Vec::new();
+                for item in stack {
+                    next.push(item)
+                };
+                next.push(alias.name);
+                expand_type_alias_inner(ctx, alias.ty, next, report)
+            },
+            Option::None => Type::Con { name: canonical_imported_name(ctx, name) },
+        },
+        Type::App { ty: base, args } => {
+            let expanded_args = Vec::new();
+            for arg in args {
+                expanded_args.push(expand_type_alias_inner(ctx, arg, stack, report))
+            };
+            match prune(base) {
+                Type::Con { name } => match find_type_alias(ctx, name) {
+                    Option::Some(alias) => if vecs::contains(stack, alias.name) {
+                        if report {
+                            push_diagnostic(ctx, "Cyclic type alias " + short_name(alias.name))
+                        } else {
+                            ()
+                        };
+                        Type::Error
+                    } else if alias.generics.len() != expanded_args.len() {
+                        if report {
+                            push_diagnostic(
+                                ctx,
+                                "Type alias "
+                                    + short_name(alias.name)
+                                    + " expects "
+                                    + alias.generics.len().to_string()
+                                    + " type arguments, got "
+                                    + expanded_args.len().to_string(),
+                            )
+                        } else {
+                            ()
+                        };
+                        Type::Error
+                    } else {
+                        let substitutions = Vec::new();
+                        for index in range(0, alias.generics.len()) {
+                            substitutions.push(TypeSubst {
+                                name: alias.generics.get(index),
+                                ty: expanded_args.get(index),
+                            })
+                        };
+                        let next = Vec::new();
+                        for item in stack {
+                            next.push(item)
+                        };
+                        next.push(alias.name);
+                        expand_type_alias_inner(
+                            ctx,
+                            substitute_type(alias.ty, substitutions),
+                            next,
+                            report,
+                        )
+                    },
+                    Option::None => Type::App {
+                        ty: expand_type_alias_inner(ctx, base, stack, report),
+                        args: expanded_args,
+                    },
+                },
+                _ => Type::App {
+                    ty: expand_type_alias_inner(ctx, base, stack, report),
+                    args: expanded_args,
+                },
+            }
+        },
+        Type::Tuple { items: values } => {
+            let result = Vec::new();
+            for item in values {
+                result.push(expand_type_alias_inner(ctx, item, stack, report))
+            };
+            Type::Tuple { items: result }
+        },
+        Type::Projection { for_ty, name, trait_ref } => Type::Projection {
+            for_ty: expand_type_alias_inner(ctx, for_ty, stack, report),
+            name,
+            trait_ref: match trait_ref {
+                Option::Some(reference) => Option::Some(TraitRef {
+                    name: reference.name,
+                    args: expand_type_alias_types(
+                        ctx,
+                        reference.args,
+                        stack,
+                        report,
+                    ),
+                }),
+                Option::None => Option::None,
+            },
+        },
+        Type::Array { len, elem } => Type::Array {
+            len,
+            elem: expand_type_alias_inner(ctx, elem, stack, report),
+        },
+        Type::Slice { elem } => Type::Slice {
+            elem: expand_type_alias_inner(ctx, elem, stack, report),
+        },
+        Type::VecType { elem } => Type::VecType {
+            elem: expand_type_alias_inner(ctx, elem, stack, report),
+        },
+        Type::RefType { elem } => Type::RefType {
+            elem: expand_type_alias_inner(ctx, elem, stack, report),
+        },
+        Type::Channel { elem } => Type::Channel {
+            elem: expand_type_alias_inner(ctx, elem, stack, report),
+        },
+        Type::HashMap { key, value } => Type::HashMap {
+            key: expand_type_alias_inner(ctx, key, stack, report),
+            value: expand_type_alias_inner(ctx, value, stack, report),
+        },
+        Type::Func { params, ret_ty } => {
+            let result = Vec::new();
+            for param in params {
+                result.push(expand_type_alias_inner(ctx, param, stack, report))
+            };
+            Type::Func {
+                params: result,
+                ret_ty: expand_type_alias_inner(ctx, ret_ty, stack, report),
+            }
+        },
+        other => other,
+    }
+}
+
+fn expand_type_alias_types(
+    ctx: Checker,
+    values: Vec[Type],
+    stack: Vec[string],
+    report: bool,
+) -> Vec[Type] {
+    let result = Vec::new();
+    for value in values {
+        result.push(expand_type_alias_inner(ctx, value, stack, report))
+    };
+    result
+}
+
+fn expand_type_aliases(ctx: Checker, value: Type, report: bool) -> Type {
+    expand_type_alias_inner(ctx, value, Vec::new(), report)
+}
+
+fn expand_type_alias_trait_ref(
+    ctx: Checker,
+    value: TraitRef,
+    report: bool,
+) -> TraitRef {
+    TraitRef {
+        name: value.name,
+        args: expand_type_alias_types(
+            ctx,
+            value.args,
+            Vec::new(),
+            report,
+        ),
+    }
+}
+
+fn expand_type_alias_predicates(
+    ctx: Checker,
+    values: Vec[TypePredicate],
+    report: bool,
+) -> Vec[TypePredicate] {
+    let result = Vec::new();
+    for value in values {
+        result.push(match value {
+            TypePredicate::Trait { for_ty, trait_ref } => TypePredicate::Trait {
+                for_ty: expand_type_aliases(ctx, for_ty, report),
+                trait_ref: expand_type_alias_trait_ref(ctx, trait_ref, report),
+            },
+            TypePredicate::Equality { lhs, rhs } => TypePredicate::Equality {
+                lhs: expand_type_aliases(ctx, lhs, report),
+                rhs: expand_type_aliases(ctx, rhs, report),
+            },
+        })
+    };
+    result
+}
+
+fn normalized_type_alias_target(
+    ctx: Checker,
+    value: TypeAliasInfo,
+) -> Type {
+    expand_type_alias_inner(
+        ctx,
+        value.ty,
+        Vec::new().pushed(value.name),
+        false,
+    )
+}
+
 fn resolve_signature_type(
     ctx: Checker,
     value: Type,
     predicates: Vec[TypePredicate],
     report: bool,
 ) -> Type {
+    let value = expand_type_aliases(ctx, value, report);
     if report {
         validate_signature_type(ctx, value)
     } else {
