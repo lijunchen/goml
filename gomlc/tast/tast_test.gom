@@ -17,6 +17,7 @@ fn checked_file(source: string) -> File {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     }
@@ -80,6 +81,7 @@ fn checked_file_with_dependencies(source: string, dependencies: Vec[hir::File]) 
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     }
@@ -106,6 +108,7 @@ fn checked_package_file_with_dependencies(
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     }
@@ -268,17 +271,21 @@ fn diagnoses_duplicate_functions_across_package_files() -> unit {
 #[test]
 fn diagnoses_duplicate_declaration_names() -> unit {
     let diagnostics = checked_diagnostics(
-        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {}",
+        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } type Alias = int32; type Alias = string; struct Mixed {} type Mixed = int32; trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {} const repeated: int = 1; const repeated: int = 2; fn conflict() -> int { 1 } const conflict: int = 1;",
     );
     let expected = Vec::new();
     expected.push("variant A is defined multiple times in enum E");
     expected.push("field x is defined multiple times in struct S");
     expected.push("type Both is defined as both a struct and an enum");
+    expected.push("type alias Alias is defined multiple times");
+    expected.push("type Mixed is defined as both a struct and a type alias");
     expected.push("type parameter T is defined multiple times");
     expected.push("associated type Item is defined multiple times in trait T");
     expected.push("method f is defined multiple times in trait T");
     expected.push("parameter x is defined multiple times");
     expected.push("function duplicate is defined multiple times");
+    expected.push("constant repeated is defined multiple times");
+    expected.push("value conflict is defined as both a function and a constant");
     for message in expected {
         testing::assert(has_diagnostic(diagnostics, message))
     }
@@ -2499,4 +2506,43 @@ fn qualified_struct_variants_win_over_same_named_structs() -> unit {
     let _ = checked_file(
         "struct Path { segment: string } struct Block { value: int } enum Expr { Path { path: Path, span: int }, Block { block: Block, span: int } } fn span(value: Expr) -> int { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> unit { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
     );
+}
+
+#[test]
+fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
+    let file = checked_file(
+        "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw as int32; }",
+    );
+    testing::assert_eq(file.constants.len(), 3)
+}
+
+#[test]
+fn diagnoses_type_alias_cycles_and_wrong_arity() -> unit {
+    let cycle = checked_diagnostics(
+        "type First = Second; type Second = First; fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(cycle, "Cyclic type alias First"));
+    let arity = checked_diagnostics(
+        "type Pair[T] = (T, T); fn identity(value: Pair) -> Pair { value }",
+    );
+    testing::assert(has_diagnostic(
+        arity,
+        "Type alias Pair expects 1 type arguments, got 0",
+    ))
+}
+
+#[test]
+fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
+    let cycle = checked_diagnostics(
+        "const first: int = second; const second: int = first; fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(cycle, "Cyclic constant first"));
+    testing::assert(has_diagnostic(cycle, "Cyclic constant second"));
+    let call = checked_diagnostics(
+        "fn value() -> int { 1 } const answer: int = value(); fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(
+        call,
+        "constant values support only literals, constant references, unary operators, binary operators, and casts",
+    ))
 }

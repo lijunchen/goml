@@ -1,0 +1,19 @@
+package ids;
+
+type RawId = uint64;
+type PairStorage[T] = (T, T);
+
+pub type Id = RawId;
+pub type Pair[T] = PairStorage[T];
+
+const offset: int32 = 2;
+pub const answer: int32 = 40 + offset;
+pub const newline: byte = b'\n';
+
+pub fn make_id(value: Id) -> Id {
+    value
+}
+
+pub fn add_pair(value: Pair[int32]) -> int32 {
+    value.0 + value.1
+}

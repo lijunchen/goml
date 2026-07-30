@@ -802,6 +802,50 @@ fn returns_function_hover_on_declarations_and_calls() -> unit {
 }
 
 #[test]
+fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
+    let source = "type Count = int32; const answer: Count = 42; fn main() -> int32 { answer }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    let alias_found = Ref::new(false);
+    let constant_found = Ref::new(false);
+    for symbol in build_symbol_index(analysis).symbols {
+        match symbol.kind {
+            SymbolKind::TypeAlias => if symbol.name == "Count" {
+                alias_found.set(true)
+            } else {
+                ()
+            },
+            SymbolKind::Constant => if symbol.name == "answer" {
+                constant_found.set(true)
+            } else {
+                ()
+            },
+            _ => (),
+        }
+    };
+    testing::assert(alias_found.get());
+    testing::assert(constant_found.get());
+    match last_substring(source, "ans") {
+        Option::Some(offset) => testing::assert(has_completion(
+            completions(analysis, offset + 3),
+            "answer",
+        )),
+        Option::None => testing::fail("expected constant prefix"),
+    };
+    match last_substring(source, "answer") {
+        Option::Some(offset) => match hover(analysis, offset) {
+            Option::Some(value) => testing::assert_eq(value.contents, "int32"),
+            Option::None => testing::fail("expected constant hover"),
+        },
+        Option::None => testing::fail("expected constant declaration"),
+    };
+    match hover(analysis, "type ".byte_len()) {
+        Option::Some(value) => testing::assert_eq(value.contents, "int32"),
+        Option::None => testing::fail("expected type alias hover"),
+    }
+}
+
+#[test]
 fn discovers_internal_and_external_test_items() -> unit {
     let source = "package value;\n#[test]\nfn works() -> unit { () }\n";
     let internal = test_items("/tmp/value_test.gom", source);

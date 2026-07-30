@@ -3,6 +3,53 @@ package numeric;
 use std::testing;
 
 #[test]
+fn normalizes_integer_bases_without_machine_width_limits() -> unit {
+    match normalize_integer("0b1111_0000") {
+        Option::Some(value) => testing::assert_eq(value, "240"),
+        Option::None => testing::fail("expected binary integer"),
+    };
+    match normalize_integer("0o17_777") {
+        Option::Some(value) => testing::assert_eq(value, "8191"),
+        Option::None => testing::fail("expected octal integer"),
+    };
+    match normalize_integer("0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF") {
+        Option::Some(value) => testing::assert_eq(
+            value,
+            "340282366920938463463374607431768211455",
+        ),
+        Option::None => testing::fail("expected hexadecimal integer"),
+    };
+    match normalize_integer("1_000_000") {
+        Option::Some(value) => testing::assert_eq(value, "1000000"),
+        Option::None => testing::fail("expected decimal integer"),
+    }
+}
+
+#[test]
+fn rejects_invalid_normalized_integers() -> unit {
+    match normalize_integer("0x") {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected missing hexadecimal digits"),
+    };
+    match normalize_integer("0b102") {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected invalid binary digit"),
+    };
+    match normalize_integer("0o8") {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected invalid octal digit"),
+    };
+    match normalize_integer("0x_1") {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected invalid leading separator"),
+    };
+    match normalize_integer("10_") {
+        Option::None => (),
+        Option::Some(_) => testing::fail("expected invalid trailing separator"),
+    }
+}
+
+#[test]
 fn parses_valid_and_invalid_floats() -> unit {
     match parse_float32("3.5") {
         Option::Some(value) => testing::assert(value == 3.5),

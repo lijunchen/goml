@@ -57,3 +57,26 @@ fn parses_control_flow_patterns_and_types() -> unit {
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::MATCH_ARM), 2);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::MATCH_ARM_GUARD), 1)
 }
+
+#[test]
+fn parses_type_aliases_constants_and_byte_patterns() -> unit {
+    let source = "pub type Pair[T] = (T, T); pub const marker: byte = b'\\x41'; fn classify(value: byte) -> bool { match value { b'A' => true, _ => false } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::TYPE_ALIAS), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::CONST), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BYTE), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::PATTERN_BYTE), 1)
+}
+
+#[test]
+fn recovers_legacy_extern_type_declarations() -> unit {
+    let source = "extern \"go\" \"time\" \"Duration\" type Duration\nfn main() -> unit { () }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "only `extern fn` declarations are supported",
+    );
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::FN), 1)
+}

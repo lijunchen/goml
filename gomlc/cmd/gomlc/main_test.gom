@@ -645,6 +645,7 @@ fn adds_canonical_entry_wrapper() -> unit {
         enums: Vec::new(),
         structs: Vec::new(),
         type_instances: Vec::new(),
+        constants: Vec::new(),
     }, "alice::app");
     testing::assert_eq(wrapped.functions.len(), 2);
     testing::assert_eq(wrapped.functions.get(0).name, "alice::app::main");
@@ -850,6 +851,7 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
@@ -1002,6 +1004,7 @@ fn writes_core_file_shape() -> unit {
         enums: Vec::new(),
         structs: Vec::new(),
         type_instances: Vec::new(),
+        constants: Vec::new(),
     };
     let writer = new_artifact_json_writer(false);
     artifact_json_core_file(
@@ -1011,7 +1014,7 @@ fn writes_core_file_shape() -> unit {
     );
     testing::assert_eq(
         artifact_json_finish(writer),
-        "{\"toplevels\":[{\"name\":\"audit::answer\",\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}]}",
+        "{\"toplevels\":[{\"name\":\"audit::answer\",\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}],\"constants\":[]}",
     )
 }
 
@@ -1072,13 +1075,13 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29",
+        "41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":16,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}}"
-        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29\"}",
+        "{\"format_version\":17,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
+        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867\"}",
     );
     let binary = match encode_artifact_interface_binary(artifact_unit) {
         Result::Ok(value) => value,
@@ -1133,6 +1136,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
@@ -1162,7 +1166,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "ac602c94ecff68d5c708c573ee8dd6952da63f69d862ff64f0640f9d59b49f29",
+        "41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867",
     )
 }
 
@@ -1203,6 +1207,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
@@ -1227,7 +1232,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "b025f9d7e2d310d37bfc70e59f4ae22ada0a8f98ee74d757503f9e610344a9f4",
+        "f9e916d4394365503a6bc6d4b7609f633ab1cf318e0dd0a6cbc8374157fffd2a",
     );
     let encoded = encode_artifact_interface_unit(artifact_unit, false);
     let binary = match encode_artifact_interface_binary(artifact_unit) {
@@ -1250,6 +1255,8 @@ fn extracts_trait_interface_from_checked_package() -> unit {
                 Result::Err(error) => {
                     testing::fail(error);
                     tast::dependency_environment(
+                        Vec::new(),
+                        Vec::new(),
                         Vec::new(),
                         Vec::new(),
                         Vec::new(),
@@ -1329,6 +1336,7 @@ fn writes_core_unit_from_checked_package() -> unit {
                 items: Vec::new(),
                 enums: Vec::new(),
                 structs: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
@@ -1379,7 +1387,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         go_backend::sha256_hex(encoded),
-        "16208de1247f98da2c695273163d90911f384fd873dd280be5a6c2b37783db24",
+        "5f48bf2c917ccb45e2320bf003439eca838d7bb4cf9f565ad22203dd70c8d65d",
     );
     let binary = match encode_artifact_core_binary(core_unit) {
         Result::Ok(value) => value,
