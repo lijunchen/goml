@@ -205,7 +205,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
         h6.set(h6.get() + g.get());
         h7.set(h7.get() + h.get())
     };
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(64);
     write_hex_word(builder, h0.get());
     write_hex_word(builder, h1.get());
     write_hex_word(builder, h2.get());

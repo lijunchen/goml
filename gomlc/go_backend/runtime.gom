@@ -27,7 +27,9 @@ pub fn runtime_helper_name(prefix: string, ty: tast::Type) -> string {
 }
 
 pub fn runtime_hook_name(key: string) -> string {
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(
+        "_goml_runtime_".byte_len() + key.byte_len(),
+    );
     builder.write_string("_goml_runtime_");
     for character in key.chars() {
         if character == '.' {

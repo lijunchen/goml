@@ -1,6 +1,5 @@
 package main;
 
-use gomlc::lexer;
 use std::io;
 
 struct PackageInfoArgs {
@@ -144,25 +143,120 @@ struct PackageInfoFile {
     uses: Vec[PackageInfoUse],
 }
 
-fn package_info_trivia(kind: lexer::TokenKind) -> bool {
-    lexer::token_kind_equal(kind, lexer::TokenKind::Whitespace)
-        || lexer::token_kind_equal(kind, lexer::TokenKind::Comment)
+struct PackageInfoScanner {
+    source: string,
+    index: Ref[int],
 }
 
-fn package_info_skip_trivia(tokens: Vec[lexer::Token], index: Ref[int]) -> unit {
-    while index.get() < tokens.len()
-        && package_info_trivia(tokens.get(index.get()).kind)
-    {
-        index.set(index.get() + 1)
+fn new_package_info_scanner(source: string) -> PackageInfoScanner {
+    PackageInfoScanner {
+        source,
+        index: Ref::new(0),
     }
 }
 
-fn package_info_at(
-    tokens: Vec[lexer::Token],
-    index: int,
-    kind: lexer::TokenKind,
+fn package_info_ident_continue(value: uint8) -> bool {
+    (value >= 65 && value <= 90)
+        || (value >= 97 && value <= 122)
+        || (value >= 48 && value <= 57)
+        || value == 95
+}
+
+fn package_info_skip_trivia(scanner: PackageInfoScanner) -> unit {
+    let running = Ref::new(true);
+    while running.get() && scanner.index.get() < scanner.source.byte_len() {
+        let index = scanner.index.get();
+        let value = scanner.source.byte_get(index);
+        if value == 32 || value == 9 || value == 10 || value == 13 {
+            scanner.index.set(index + 1)
+        } else if index + 1 < scanner.source.byte_len()
+            && value == 47
+            && scanner.source.byte_get(index + 1) == 47
+        {
+            scanner.index.set(index + 2);
+            while scanner.index.get() < scanner.source.byte_len()
+                && scanner.source.byte_get(scanner.index.get()) != 10
+            {
+                scanner.index.set(scanner.index.get() + 1)
+            }
+        } else {
+            running.set(false)
+        }
+    }
+}
+
+fn package_info_at_text(
+    scanner: PackageInfoScanner,
+    expected: string,
 ) -> bool {
-    index < tokens.len() && lexer::token_kind_equal(tokens.get(index).kind, kind)
+    let start = scanner.index.get();
+    let end = start + expected.byte_len();
+    end <= scanner.source.byte_len()
+        && scanner.source.byte_slice(start, end) == expected
+}
+
+fn package_info_at_keyword(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    let end = scanner.index.get() + expected.byte_len();
+    package_info_at_text(scanner, expected)
+        && (end >= scanner.source.byte_len()
+            || !package_info_ident_continue(scanner.source.byte_get(end)))
+}
+
+fn package_info_consume_text(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    package_info_skip_trivia(scanner);
+    if package_info_at_text(scanner, expected) {
+        scanner.index.set(scanner.index.get() + expected.byte_len());
+        true
+    } else {
+        false
+    }
+}
+
+fn package_info_consume_keyword(
+    scanner: PackageInfoScanner,
+    expected: string,
+) -> bool {
+    package_info_skip_trivia(scanner);
+    if package_info_at_keyword(scanner, expected) {
+        scanner.index.set(scanner.index.get() + expected.byte_len());
+        true
+    } else {
+        false
+    }
+}
+
+fn package_info_read_ident(scanner: PackageInfoScanner) -> Option[string] {
+    package_info_skip_trivia(scanner);
+    if scanner.index.get() >= scanner.source.byte_len() {
+        Option::None
+    } else {
+        let start = scanner.index.get();
+        let first = scanner.source.byte_get(start);
+        if !((first >= 65 && first <= 90)
+            || (first >= 97 && first <= 122)
+            || first == 95)
+        {
+            Option::None
+        } else {
+            scanner.index.set(start + 1);
+            while scanner.index.get() < scanner.source.byte_len()
+                && package_info_ident_continue(
+                    scanner.source.byte_get(scanner.index.get()),
+                )
+            {
+                scanner.index.set(scanner.index.get() + 1)
+            };
+            Option::Some(
+                scanner.source.byte_slice(start, scanner.index.get()),
+            )
+        }
+    }
 }
 
 fn package_info_lower_ident(value: string) -> bool {
@@ -178,16 +272,13 @@ fn package_info_error(source_path: string, message: string) -> string {
     "error[parser]: " + source_path + ": " + message
 }
 
-fn package_info_expect(
-    tokens: Vec[lexer::Token],
-    index: Ref[int],
-    kind: lexer::TokenKind,
+fn package_info_expect_text(
+    scanner: PackageInfoScanner,
+    expected: string,
     source_path: string,
     message: string,
 ) -> Result[unit, string] {
-    package_info_skip_trivia(tokens, index);
-    if package_info_at(tokens, index.get(), kind) {
-        index.set(index.get() + 1);
+    if package_info_consume_text(scanner, expected) {
         Result::Ok(())
     } else {
         Result::Err(package_info_error(source_path, message))
@@ -195,72 +286,62 @@ fn package_info_expect(
 }
 
 fn package_info_parse_use(
-    tokens: Vec[lexer::Token],
-    index: Ref[int],
+    scanner: PackageInfoScanner,
     source_path: string,
 ) -> Result[PackageInfoUse, string] {
-    index.set(index.get() + 1);
-    package_info_skip_trivia(tokens, index);
-    if !package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
-        Result::Err(package_info_error(
-            source_path,
-            "expected a path after `use`",
-        ))
-    } else {
-        let path: Ref[string] = Ref::new(tokens.get(index.get()).text);
-        index.set(index.get() + 1);
-        package_info_skip_trivia(tokens, index);
-        while package_info_at(tokens, index.get(), lexer::TokenKind::ColonColon) {
-            index.set(index.get() + 1);
-            package_info_skip_trivia(tokens, index);
-            if package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
-                path.set(path.get() + "::" + tokens.get(index.get()).text);
-                index.set(index.get() + 1);
-                package_info_skip_trivia(tokens, index)
-            } else {
+    let first = match package_info_read_ident(scanner) {
+        Option::Some(value) => value,
+        Option::None => {
+            return Result::Err(package_info_error(
+                source_path,
+                "expected a path after `use`",
+            ))
+        },
+    };
+    let path: Ref[string] = Ref::new(first);
+    package_info_skip_trivia(scanner);
+    while package_info_at_text(scanner, "::") {
+        scanner.index.set(scanner.index.get() + 2);
+        match package_info_read_ident(scanner) {
+            Option::Some(value) => {
+                path.set(path.get() + "::" + value);
+                package_info_skip_trivia(scanner)
+            },
+            Option::None => {
                 return Result::Err(package_info_error(
                     source_path,
                     "expected a path segment after '::'",
                 ))
-            }
-        };
-        let alias: Ref[Option[string]] = Ref::new(Option::None);
-        if package_info_at(tokens, index.get(), lexer::TokenKind::AsKeyword) {
-            index.set(index.get() + 1);
-            package_info_skip_trivia(tokens, index);
-            if package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
-                let value = tokens.get(index.get()).text;
-                if package_info_lower_ident(value) {
-                    alias.set(Option::Some(value));
-                    index.set(index.get() + 1)
-                } else {
-                    return Result::Err(package_info_error(
-                        source_path,
-                        "use alias must start with a lowercase letter or `_`",
-                    ))
-                }
+            },
+        }
+    };
+    let alias: Ref[Option[string]] = Ref::new(Option::None);
+    if package_info_consume_keyword(scanner, "as") {
+        match package_info_read_ident(scanner) {
+            Option::Some(value) => if package_info_lower_ident(value) {
+                alias.set(Option::Some(value))
             } else {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "use alias must start with a lowercase letter or `_`",
+                ))
+            },
+            Option::None => {
                 return Result::Err(package_info_error(
                     source_path,
                     "expected use alias",
                 ))
-            }
-        } else {
-            ()
-        };
-        match package_info_expect(
-            tokens,
-            index,
-            lexer::TokenKind::Semi,
-            source_path,
-            "expected ';'",
-        ) {
-            Result::Ok(_) => Result::Ok(PackageInfoUse {
-                alias: alias.get(),
-                path: path.get(),
-            }),
-            Result::Err(error) => Result::Err(error),
+            },
         }
+    } else {
+        ()
+    };
+    match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
+        Result::Ok(_) => Result::Ok(PackageInfoUse {
+            alias: alias.get(),
+            path: path.get(),
+        }),
+        Result::Err(error) => Result::Err(error),
     }
 }
 
@@ -268,39 +349,29 @@ fn parse_package_info_file(
     source_path: string,
     source: string,
 ) -> Result[PackageInfoFile, string] {
-    let tokens = lexer::lex(source);
-    let index = Ref::new(0);
-    package_info_skip_trivia(tokens, index);
+    let scanner = new_package_info_scanner(source);
+    package_info_skip_trivia(scanner);
     let package_name: Ref[string] = Ref::new("main");
     let package_explicit: Ref[bool] = Ref::new(false);
-    if package_info_at(tokens, index.get(), lexer::TokenKind::PackageKeyword) {
+    if package_info_consume_keyword(scanner, "package") {
         package_explicit.set(true);
-        index.set(index.get() + 1);
-        package_info_skip_trivia(tokens, index);
-        if !package_info_at(tokens, index.get(), lexer::TokenKind::Ident) {
-            return Result::Err(package_info_error(
-                source_path,
-                "expected package name",
-            ))
-        } else {
-            let value = tokens.get(index.get()).text;
-            if !package_info_lower_ident(value) {
+        match package_info_read_ident(scanner) {
+            Option::Some(value) => if !package_info_lower_ident(value) {
                 return Result::Err(package_info_error(
                     source_path,
                     "package name must start with a lowercase letter or `_`",
                 ))
             } else {
-                package_name.set(value);
-                index.set(index.get() + 1)
-            }
+                package_name.set(value)
+            },
+            Option::None => {
+                return Result::Err(package_info_error(
+                    source_path,
+                    "expected package name",
+                ))
+            },
         };
-        match package_info_expect(
-            tokens,
-            index,
-            lexer::TokenKind::Semi,
-            source_path,
-            "expected ';'",
-        ) {
+        match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
             Result::Ok(_) => (),
             Result::Err(error) => return Result::Err(error),
         }
@@ -308,13 +379,13 @@ fn parse_package_info_file(
         ()
     };
     let uses = Vec::new();
-    package_info_skip_trivia(tokens, index);
-    while package_info_at(tokens, index.get(), lexer::TokenKind::UseKeyword) {
-        match package_info_parse_use(tokens, index, source_path) {
+    package_info_skip_trivia(scanner);
+    while package_info_consume_keyword(scanner, "use") {
+        match package_info_parse_use(scanner, source_path) {
             Result::Ok(value) => uses.push(value),
             Result::Err(error) => return Result::Err(error),
         };
-        package_info_skip_trivia(tokens, index)
+        package_info_skip_trivia(scanner)
     };
     Result::Ok(PackageInfoFile {
         package_name: package_name.get(),

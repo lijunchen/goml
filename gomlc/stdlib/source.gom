@@ -1963,6 +1963,7 @@ pub fn text_source() -> string {
         \\    }
         \\
         \\    pub fn write_string(self: StringBuilder, value: string) -> unit {
+        \\        self.values.reserve(value.byte_len());
         \\        for index in range(0, value.byte_len()) {
         \\            self.values.push(value.byte_get(index))
         \\        }

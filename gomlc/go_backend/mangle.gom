@@ -201,7 +201,7 @@ fn write_encoded_char(builder: text::StringBuilder, value: char) -> unit {
 }
 
 fn encode_name(value: string) -> string {
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
     let index = Ref::new(0);
     while index.get() < value.len() {
         let character = value.get(index.get());
@@ -271,7 +271,7 @@ pub fn go_ident(value: string) -> string {
 }
 
 pub fn go_local_ident(value: string) -> string {
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
     for index in range(0, value.len()) {
         let character = value.get(index);
         if character == '/' {

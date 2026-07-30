@@ -138,9 +138,5 @@ fn decode_artifact_interface_binary(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    let value = match decode_artifact_binary_value(table, value_section.data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
-    };
-    artifact_decode_interface_value(value)
+    decode_artifact_interface_binary_value(table, value_section.data)
 }
