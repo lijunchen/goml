@@ -31,7 +31,7 @@ fn trimmed_node_end(value: LocatedNode) -> int {
     let end = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         match element {
-            cst::CstElement::Node(child) => {
+            Node(child) => {
                 let child_end = trimmed_node_end(LocatedNode {
                     node: child,
                     start: cursor.get(),
@@ -42,7 +42,7 @@ fn trimmed_node_end(value: LocatedNode) -> int {
                     ()
                 }
             },
-            cst::CstElement::Token(token) => if lexer::token_is_trivia(token.kind) {
+            Token(token) => if lexer::token_is_trivia(token.kind) {
                 ()
             } else {
                 end.set(cursor.get() + token.text.byte_len())
@@ -61,16 +61,16 @@ fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
     let cursor = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         match element {
-            cst::CstElement::Node(child) => {
+            Node(child) => {
                 match first_significant_token_span(LocatedNode {
                     node: child,
                     start: cursor.get(),
                 }) {
-                    Option::Some(value) => return Option::Some(value),
-                    Option::None => (),
+                    Some(value) => return Option::Some(value),
+                    None => (),
                 }
             },
-            cst::CstElement::Token(token) => if lexer::token_is_trivia(token.kind) {
+            Token(token) => if lexer::token_is_trivia(token.kind) {
                 ()
             } else {
                 return Option::Some(span(
@@ -86,8 +86,8 @@ fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
 
 fn type_head_span(value: LocatedNode) -> Span {
     match first_significant_token_span(value) {
-        Option::Some(value) => value,
-        Option::None => trimmed_node_span(value),
+        Some(value) => value,
+        None => trimmed_node_span(value),
     }
 }
 
@@ -96,11 +96,11 @@ fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
     let cursor = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         match element {
-            cst::CstElement::Node(child) => result.push(LocatedNode {
+            Node(child) => result.push(LocatedNode {
                 node: child,
                 start: cursor.get(),
             }),
-            cst::CstElement::Token(_) => (),
+            Token(_) => (),
         };
         cursor.set(cursor.get() + cst::element_byte_len(element))
     };
@@ -112,8 +112,8 @@ fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
     let cursor = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         match element {
-            cst::CstElement::Node(_) => (),
-            cst::CstElement::Token(token) => result.push(LocatedToken {
+            Node(_) => (),
+            Token(token) => result.push(LocatedToken {
                 token,
                 start: cursor.get(),
             }),
@@ -171,8 +171,8 @@ fn first_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToke
 
 fn has_token(value: LocatedNode, kind: lexer::TokenKind) -> bool {
     match first_token(value, kind) {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     }
 }
 
@@ -184,14 +184,14 @@ fn write_node_text(value: LocatedNode, builder: text::StringBuilder) -> unit {
     let cursor = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         match element {
-            cst::CstElement::Node(child) => write_node_text(
+            Node(child) => write_node_text(
                 LocatedNode {
                     node: child,
                     start: cursor.get(),
                 },
                 builder,
             ),
-            cst::CstElement::Token(token) => builder.write_string(token.text),
+            Token(token) => builder.write_string(token.text),
         };
         cursor.set(cursor.get() + cst::element_byte_len(element))
     }
@@ -205,110 +205,110 @@ fn node_text(value: LocatedNode) -> string {
 
 fn is_item_kind(kind: cst::NodeKind) -> bool {
     match kind {
-        cst::NodeKind::ENUM
-        | cst::NodeKind::STRUCT
-        | cst::NodeKind::TRAIT
-        | cst::NodeKind::IMPL
-        | cst::NodeKind::FN
-        | cst::NodeKind::EXTERN
-        | cst::NodeKind::TYPE_ALIAS
-        | cst::NodeKind::CONST => true,
+        ENUM
+        | STRUCT
+        | TRAIT
+        | IMPL
+        | FN
+        | EXTERN
+        | TYPE_ALIAS
+        | CONST => true,
         _ => false,
     }
 }
 
 fn is_stmt_kind(kind: cst::NodeKind) -> bool {
     match kind {
-        cst::NodeKind::STMT_LET
-        | cst::NodeKind::STMT_ASSIGN
-        | cst::NodeKind::STMT_EXPR => true,
+        STMT_LET
+        | STMT_ASSIGN
+        | STMT_EXPR => true,
         _ => false,
     }
 }
 
 fn is_expr_kind(kind: cst::NodeKind) -> bool {
     match kind {
-        cst::NodeKind::EXPR_IDENT
-        | cst::NodeKind::EXPR_PAREN
-        | cst::NodeKind::EXPR_BINARY
-        | cst::NodeKind::EXPR_RANGE
-        | cst::NodeKind::EXPR_PREFIX
-        | cst::NodeKind::EXPR_CAST
-        | cst::NodeKind::EXPR_IF
-        | cst::NodeKind::EXPR_WHILE
-        | cst::NodeKind::EXPR_FOR
-        | cst::NodeKind::EXPR_BREAK
-        | cst::NodeKind::EXPR_CONTINUE
-        | cst::NodeKind::EXPR_MATCH
-        | cst::NodeKind::EXPR_GO
-        | cst::NodeKind::EXPR_RETURN
-        | cst::NodeKind::EXPR_UNIT
-        | cst::NodeKind::EXPR_BOOL
-        | cst::NodeKind::EXPR_INT
-        | cst::NodeKind::EXPR_FLOAT
-        | cst::NodeKind::EXPR_CHAR
-        | cst::NodeKind::EXPR_BYTE
-        | cst::NodeKind::EXPR_STR
-        | cst::NodeKind::EXPR_MULTILINE_STR
-        | cst::NodeKind::EXPR_INTERPOLATED_STRING
-        | cst::NodeKind::EXPR_ARRAY_LITERAL
-        | cst::NodeKind::EXPR_VEC_LITERAL
-        | cst::NodeKind::EXPR_HASHMAP_LITERAL
-        | cst::NodeKind::EXPR_TUPLE
-        | cst::NodeKind::EXPR_CALL
-        | cst::NodeKind::EXPR_INDEX
-        | cst::NodeKind::EXPR_TRY
-        | cst::NodeKind::EXPR_STRUCT_LITERAL
-        | cst::NodeKind::EXPR_CLOSURE => true,
+        EXPR_IDENT
+        | EXPR_PAREN
+        | EXPR_BINARY
+        | EXPR_RANGE
+        | EXPR_PREFIX
+        | EXPR_CAST
+        | EXPR_IF
+        | EXPR_WHILE
+        | EXPR_FOR
+        | EXPR_BREAK
+        | EXPR_CONTINUE
+        | EXPR_MATCH
+        | EXPR_GO
+        | EXPR_RETURN
+        | EXPR_UNIT
+        | EXPR_BOOL
+        | EXPR_INT
+        | EXPR_FLOAT
+        | EXPR_CHAR
+        | EXPR_BYTE
+        | EXPR_STR
+        | EXPR_MULTILINE_STR
+        | EXPR_INTERPOLATED_STRING
+        | EXPR_ARRAY_LITERAL
+        | EXPR_VEC_LITERAL
+        | EXPR_HASHMAP_LITERAL
+        | EXPR_TUPLE
+        | EXPR_CALL
+        | EXPR_INDEX
+        | EXPR_TRY
+        | EXPR_STRUCT_LITERAL
+        | EXPR_CLOSURE => true,
         _ => false,
     }
 }
 
 fn is_pattern_kind(kind: cst::NodeKind) -> bool {
     match kind {
-        cst::NodeKind::PATTERN_UNIT
-        | cst::NodeKind::PATTERN_BOOL
-        | cst::NodeKind::PATTERN_STRING
-        | cst::NodeKind::PATTERN_INT
-        | cst::NodeKind::PATTERN_FLOAT
-        | cst::NodeKind::PATTERN_CHAR
-        | cst::NodeKind::PATTERN_BYTE
-        | cst::NodeKind::PATTERN_TUPLE
-        | cst::NodeKind::PATTERN_ARRAY
-        | cst::NodeKind::PATTERN_CONSTR
-        | cst::NodeKind::PATTERN_VARIABLE
-        | cst::NodeKind::PATTERN_WILDCARD
-        | cst::NodeKind::PATTERN_ALIAS
-        | cst::NodeKind::PATTERN_OR
-        | cst::NodeKind::PATTERN_RANGE
-        | cst::NodeKind::PATTERN_REST => true,
+        PATTERN_UNIT
+        | PATTERN_BOOL
+        | PATTERN_STRING
+        | PATTERN_INT
+        | PATTERN_FLOAT
+        | PATTERN_CHAR
+        | PATTERN_BYTE
+        | PATTERN_TUPLE
+        | PATTERN_ARRAY
+        | PATTERN_CONSTR
+        | PATTERN_VARIABLE
+        | PATTERN_WILDCARD
+        | PATTERN_ALIAS
+        | PATTERN_OR
+        | PATTERN_RANGE
+        | PATTERN_REST => true,
         _ => false,
     }
 }
 
 fn is_type_kind(kind: cst::NodeKind) -> bool {
     match kind {
-        cst::NodeKind::TYPE_UNIT
-        | cst::NodeKind::TYPE_BOOL
-        | cst::NodeKind::TYPE_INT
-        | cst::NodeKind::TYPE_INT8
-        | cst::NodeKind::TYPE_INT16
-        | cst::NodeKind::TYPE_INT32
-        | cst::NodeKind::TYPE_INT64
-        | cst::NodeKind::TYPE_UINT
-        | cst::NodeKind::TYPE_UINT8
-        | cst::NodeKind::TYPE_UINT16
-        | cst::NodeKind::TYPE_UINT32
-        | cst::NodeKind::TYPE_UINT64
-        | cst::NodeKind::TYPE_FLOAT32
-        | cst::NodeKind::TYPE_FLOAT64
-        | cst::NodeKind::TYPE_STRING
-        | cst::NodeKind::TYPE_CHAR
-        | cst::NodeKind::TYPE_TUPLE
-        | cst::NodeKind::TYPE_TAPP
-        | cst::NodeKind::TYPE_DYN
-        | cst::NodeKind::TYPE_ARRAY
-        | cst::NodeKind::TYPE_FUNC => true,
+        TYPE_UNIT
+        | TYPE_BOOL
+        | TYPE_INT
+        | TYPE_INT8
+        | TYPE_INT16
+        | TYPE_INT32
+        | TYPE_INT64
+        | TYPE_UINT
+        | TYPE_UINT8
+        | TYPE_UINT16
+        | TYPE_UINT32
+        | TYPE_UINT64
+        | TYPE_FLOAT32
+        | TYPE_FLOAT64
+        | TYPE_STRING
+        | TYPE_CHAR
+        | TYPE_TUPLE
+        | TYPE_TAPP
+        | TYPE_DYN
+        | TYPE_ARRAY
+        | TYPE_FUNC => true,
         _ => false,
     }
 }
@@ -347,7 +347,7 @@ fn stmt_children(value: LocatedNode) -> Vec[LocatedNode] {
 
 fn option_node_is_none(value: Option[LocatedNode]) -> bool {
     match value {
-        Option::Some(_) => false,
-        Option::None => true,
+        Some(_) => false,
+        None => true,
     }
 }

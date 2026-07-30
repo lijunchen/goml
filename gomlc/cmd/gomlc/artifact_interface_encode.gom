@@ -137,14 +137,14 @@ fn artifact_json_enum_def(
         artifact_json_string(writer, variant.name);
         artifact_json_name(writer, "fields");
         match variant.fields {
-            tast::EnumVariantFields::Unit => artifact_json_string(writer, "Unit"),
-            tast::EnumVariantFields::Tuple(fields) => {
+            Unit => artifact_json_string(writer, "Unit"),
+            Tuple(fields) => {
                 artifact_json_begin_object(writer);
                 artifact_json_name(writer, "Tuple");
                 artifact_json_type_array(writer, context, fields);
                 artifact_json_end_object(writer)
             },
-            tast::EnumVariantFields::Struct(fields) => {
+            Struct(fields) => {
                 artifact_json_begin_object(writer);
                 artifact_json_name(writer, "Struct");
                 artifact_json_type_pairs(writer, context, fields);
@@ -299,11 +299,11 @@ fn artifact_json_inherent_impl_key(
 ) -> unit {
     artifact_json_begin_object(writer);
     match value {
-        ArtifactInherentImplKey::Exact(value) => {
+        Exact(value) => {
             artifact_json_name(writer, "Exact");
             artifact_json_type(writer, context, value)
         },
-        ArtifactInherentImplKey::Constr(value) => {
+        Constr(value) => {
             artifact_json_name(writer, "Constr");
             artifact_json_string(writer, value)
         },

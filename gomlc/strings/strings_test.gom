@@ -22,32 +22,32 @@ fn searches_ascii_and_unicode_strings_without_boundary_panics() -> unit {
 #[test]
 fn finds_byte_offsets_without_crossing_utf8_boundaries() -> unit {
     match find("a语言z", "语言") {
-        Option::Some(index) => testing::assert_eq(index, 1),
-        Option::None => testing::fail("expected unicode match"),
+        Some(index) => testing::assert_eq(index, 1),
+        None => testing::fail("expected unicode match"),
     };
     match find("a语言z", "z") {
-        Option::Some(index) => testing::assert_eq(index, 7),
-        Option::None => testing::fail("expected suffix match"),
+        Some(index) => testing::assert_eq(index, 7),
+        None => testing::fail("expected suffix match"),
     };
     match find("a语言z", "") {
-        Option::Some(index) => testing::assert_eq(index, 0),
-        Option::None => testing::fail("expected empty match"),
+        Some(index) => testing::assert_eq(index, 0),
+        None => testing::fail("expected empty match"),
     };
     match find("a语言z", "rust") {
-        Option::Some(_) => testing::fail("expected no match"),
-        Option::None => (),
+        Some(_) => testing::fail("expected no match"),
+        None => (),
     };
     match rfind("a::语言::z", "::") {
-        Option::Some(index) => testing::assert_eq(index, 9),
-        Option::None => testing::fail("expected last separator"),
+        Some(index) => testing::assert_eq(index, 9),
+        None => testing::fail("expected last separator"),
     };
     match rfind("语言", "") {
-        Option::Some(index) => testing::assert_eq(index, 6),
-        Option::None => testing::fail("expected trailing empty match"),
+        Some(index) => testing::assert_eq(index, 6),
+        None => testing::fail("expected trailing empty match"),
     };
     match rfind("语言", "rust") {
-        Option::Some(_) => testing::fail("expected no reverse match"),
-        Option::None => (),
+        Some(_) => testing::fail("expected no reverse match"),
+        None => (),
     };
     let parts = split("trait_impl#语言#T#show", "#");
     testing::assert_eq(parts.len(), 4);

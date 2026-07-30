@@ -98,13 +98,13 @@ fn order_artifact_compilations(
         })
     };
     match order_package_nodes(nodes) {
-        Result::Ok(order) => {
+        Ok(order) => {
             let result = Vec::new();
             for index in order {
                 result.push(values.get(index))
             };
             Result::Ok(result)
         },
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }

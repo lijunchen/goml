@@ -13,8 +13,8 @@ use std::text;
 
 fn result_string(value: Result[string, string], context: string) -> Result[string, string] {
     match value {
-        Result::Ok(value) => Result::Ok(value),
-        Result::Err(message) => Result::Err(context + ": " + message),
+        Ok(value) => Result::Ok(value),
+        Err(message) => Result::Err(context + ": " + message),
     }
 }
 
@@ -29,12 +29,12 @@ fn manifest_root(start: string) -> Result[string, string] {
             return Result::Ok(current.get())
         } else {
             match path::parent(current.get()) {
-                Option::Some(parent) => if parent == current.get() {
+                Some(parent) => if parent == current.get() {
                     return Result::Err("could not find goml.toml")
                 } else {
                     current.set(parent)
                 },
-                Option::None => return Result::Err("could not find goml.toml"),
+                None => return Result::Err("could not find goml.toml"),
             }
         }
     };
@@ -43,24 +43,24 @@ fn manifest_root(start: string) -> Result[string, string] {
 
 pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
     let current = match env::current_dir() {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let module_dir = match manifest_root(current) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let module_manifest = match manifest::load(path::join(module_dir, "goml.toml")) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let artifact_root = match target_dir_override {
-        Option::Some(value) => if path::is_absolute(value) {
+        Some(value) => if path::is_absolute(value) {
             path::clean(value)
         } else {
             path::join(module_dir, value)
         },
-        Option::None => path::join(module_dir, module_manifest.target_dir),
+        None => path::join(module_dir, module_manifest.target_dir),
     };
     if artifact_root == module_dir || !path_inside(module_dir, artifact_root) {
         return Result::Err("clean target must stay inside the module")
@@ -75,17 +75,17 @@ pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
 
 fn target_directory(target: string) -> Result[string, string] {
     let resolved = match path::absolute(target) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let resolved = match canonical(resolved) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if fs::is_file(resolved) {
         match path::parent(resolved) {
-            Option::Some(value) => Result::Ok(value),
-            Option::None => Result::Err("target file has no parent directory"),
+            Some(value) => Result::Ok(value),
+            None => Result::Err("target file has no parent directory"),
         }
     } else if fs::is_dir(resolved) {
         Result::Ok(resolved)
@@ -183,21 +183,21 @@ fn directory_for_package(
 
 fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], string] {
     let names = match fs::read_dir(directory) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let result = Vec::new();
     for name in names {
         let source_path = path::join(directory, name);
         if fs::is_file(source_path)
             && match path::extension(source_path) {
-                Option::Some(value) => value == "gom",
-                Option::None => false,
+                Some(value) => value == "gom",
+                None => false,
             }
             && (include_tests
                 || match path::file_name(source_path) {
-                    Option::Some(value) => !util::ends_with(value, "_test.gom"),
-                    Option::None => false,
+                    Some(value) => !util::ends_with(value, "_test.gom"),
+                    None => false,
                 })
         {
             result.push(source_path)
@@ -210,23 +210,23 @@ fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], s
 
 fn directory_contains_gom(directory: string) -> Result[bool, string] {
     let names = match fs::read_dir(directory) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     for name in names {
         let value = path::join(directory, name);
         if fs::is_file(value)
             && match path::extension(value) {
-                Option::Some(extension) => extension == "gom",
-                Option::None => false,
+                Some(extension) => extension == "gom",
+                None => false,
             }
         {
             return Result::Ok(true)
         } else if fs::is_dir(value) {
             match directory_contains_gom(value) {
-                Result::Ok(true) => return Result::Ok(true),
-                Result::Ok(false) => (),
-                Result::Err(message) => return Result::Err(message),
+                Ok(true) => return Result::Ok(true),
+                Ok(false) => (),
+                Err(message) => return Result::Err(message),
             }
         } else {
             ()
@@ -237,23 +237,23 @@ fn directory_contains_gom(directory: string) -> Result[bool, string] {
 
 fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
     let files = match source_files(tests_dir, true) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let names = match fs::read_dir(tests_dir) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     for name in names {
         let child = path::join(tests_dir, name);
         if fs::is_dir(child) {
             match directory_contains_gom(child) {
-                Result::Ok(true) => return Result::Err(
+                Ok(true) => return Result::Err(
                     "black-box test sources must be placed directly in "
                         + tests_dir,
                 ),
-                Result::Ok(false) => (),
-                Result::Err(message) => return Result::Err(message),
+                Ok(false) => (),
+                Err(message) => return Result::Err(message),
             }
         } else {
             ()
@@ -264,8 +264,8 @@ fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
 
 fn output_text(value: bytes::Bytes) -> string {
     match value.to_string() {
-        Result::Ok(value) => value,
-        Result::Err(_) => "<non-UTF-8 output>",
+        Ok(value) => value,
+        Err(_) => "<non-UTF-8 output>",
     }
 }
 
@@ -283,8 +283,8 @@ fn compiler_package_info(
         let _ = command.arg(relative_path(module_dir, file));
     };
     let output = match command.current_dir(module_dir).output() {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if !(process::ExitStatus::success(process::Output::status(output))) {
         return Result::Err(output_text(process::Output::stderr(output)))
@@ -292,11 +292,11 @@ fn compiler_package_info(
         ()
     };
     let root = match json::parse(output_text(process::Output::stdout(output))) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     match json::field(root, "protocol_version") {
-        Option::Some(json::Value::Number(value)) => if value != "1" {
+        Some(Number(value)) => if value != "1" {
             return Result::Err("unsupported package-info protocol " + value)
         } else {
             ()
@@ -304,54 +304,54 @@ fn compiler_package_info(
         _ => return Result::Err("package-info omitted protocol_version"),
     };
     let values = match json::field(root, "files") {
-        Option::Some(value) => match json::as_array(value) {
-            Option::Some(values) => values,
-            Option::None => return Result::Err("package-info files must be an array"),
+        Some(value) => match json::as_array(value) {
+            Some(values) => values,
+            None => return Result::Err("package-info files must be an array"),
         },
-        Option::None => return Result::Err("package-info omitted files"),
+        None => return Result::Err("package-info omitted files"),
     };
     let result = Vec::new();
     for value in values {
         let source_path = match json::field(value, "path") {
-            Option::Some(value) => match json::as_string(value) {
-                Option::Some(value) => value,
-                Option::None => return Result::Err("package-info path must be a string"),
+            Some(value) => match json::as_string(value) {
+                Some(value) => value,
+                None => return Result::Err("package-info path must be a string"),
             },
-            Option::None => return Result::Err("package-info file omitted path"),
+            None => return Result::Err("package-info file omitted path"),
         };
         let package_name = match json::field(value, "package") {
-            Option::Some(value) => match json::as_string(value) {
-                Option::Some(value) => value,
-                Option::None => return Result::Err("package-info package must be a string"),
+            Some(value) => match json::as_string(value) {
+                Some(value) => value,
+                None => return Result::Err("package-info package must be a string"),
             },
-            Option::None => return Result::Err("package-info file omitted package"),
+            None => return Result::Err("package-info file omitted package"),
         };
         let package_explicit = match json::field(value, "package_explicit") {
-            Option::Some(value) => match json::as_bool(value) {
-                Option::Some(value) => value,
-                Option::None => return Result::Err("package_explicit must be boolean"),
+            Some(value) => match json::as_bool(value) {
+                Some(value) => value,
+                None => return Result::Err("package_explicit must be boolean"),
             },
-            Option::None => return Result::Err("package-info omitted package_explicit"),
+            None => return Result::Err("package-info omitted package_explicit"),
         };
         let uses = match json::field(value, "uses") {
-            Option::Some(value) => match json::as_array(value) {
-                Option::Some(value) => value,
-                Option::None => return Result::Err("package-info uses must be an array"),
+            Some(value) => match json::as_array(value) {
+                Some(value) => value,
+                None => return Result::Err("package-info uses must be an array"),
             },
-            Option::None => return Result::Err("package-info omitted uses"),
+            None => return Result::Err("package-info omitted uses"),
         };
         let parsed_uses = Vec::new();
         for use_value in uses {
             let use_path = match json::field(use_value, "path") {
-                Option::Some(value) => match json::as_string(value) {
-                    Option::Some(value) => value,
-                    Option::None => return Result::Err("use path must be a string"),
+                Some(value) => match json::as_string(value) {
+                    Some(value) => value,
+                    None => return Result::Err("use path must be a string"),
                 },
-                Option::None => return Result::Err("use omitted path"),
+                None => return Result::Err("use omitted path"),
             };
             let alias = match json::field(use_value, "alias") {
-                Option::Some(value) => json::as_string(value),
-                Option::None => Option::None,
+                Some(value) => json::as_string(value),
+                None => Option::None,
             };
             parsed_uses.push(PackageInfoUse {
                 path: use_path,
@@ -417,14 +417,14 @@ fn source_for_package(
             || util::starts_with(package_name, source.name + "::")
         {
             match selected.get() {
-                Option::Some(current) => if source.name.byte_len()
+                Some(current) => if source.name.byte_len()
                     > current.name.byte_len()
                 {
                     selected.set(Option::Some(source))
                 } else {
                     ()
                 },
-                Option::None => selected.set(Option::Some(source)),
+                None => selected.set(Option::Some(source)),
             }
         } else {
             ()
@@ -441,14 +441,14 @@ fn source_for_package_directory(
     for source in sources {
         if path_inside(source.directory, directory) {
             match selected.get() {
-                Option::Some(current) => if source.directory.byte_len()
+                Some(current) => if source.directory.byte_len()
                     > current.directory.byte_len()
                 {
                     selected.set(Option::Some(source))
                 } else {
                     ()
                 },
-                Option::None => selected.set(Option::Some(source)),
+                None => selected.set(Option::Some(source)),
             }
         } else {
             ()
@@ -484,15 +484,15 @@ fn module_sources(
         ()
     };
     let resolved = match registry::resolve(module_dir) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     for module in resolved {
         match source_by_name(result, module.name) {
-            Option::Some(_) => return Result::Err(
+            Some(_) => return Result::Err(
                 "external module conflicts with module " + module.name,
             ),
-            Option::None => result.push(ModuleSource {
+            None => result.push(ModuleSource {
                 name: module.name,
                 directory: module.root,
                 artifact_prefix: registry::artifact_prefix(module),
@@ -523,8 +523,8 @@ fn local_import(
         Result::Ok(Option::None)
     } else {
         let current = match source_by_name(sources, current_module) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err(
+            Some(value) => value,
+            None => return Result::Err(
                 "missing module source " + current_module,
             ),
         };
@@ -549,28 +549,28 @@ fn local_import(
             ()
         };
         match package_directory_in_source(current, import_path) {
-            Option::Some(directory) => if fs::is_dir(directory) {
+            Some(directory) => if fs::is_dir(directory) {
                 return Result::Ok(Option::Some(import_path))
             } else {
                 return Result::Err(
                     "local package does not exist: " + import_path,
                 )
             },
-            Option::None => (),
+            None => (),
         };
         for source in sources {
             if source.name == current_module {
                 ()
             } else {
                 match package_directory_in_source(source, import_path) {
-                    Option::Some(directory) => if fs::is_dir(directory) {
+                    Some(directory) => if fs::is_dir(directory) {
                         return Result::Ok(Option::Some(import_path))
                     } else {
                         return Result::Err(
                             "external package does not exist: " + import_path,
                         )
                     },
-                    Option::None => (),
+                    None => (),
                 }
             }
         }
@@ -602,9 +602,9 @@ fn package_from_info(
         };
         for use_decl in file.uses {
             match local_import(sources, source.name, use_decl.path) {
-                Result::Ok(Option::Some(value)) => imports.push(value),
-                Result::Ok(Option::None) => (),
-                Result::Err(message) => return Result::Err(message),
+                Ok(Some(value)) => imports.push(value),
+                Ok(None) => (),
+                Err(message) => return Result::Err(message),
             }
         }
     };
@@ -627,8 +627,8 @@ fn extend_package_with_info(
     info: Vec[PackageInfoFile],
 ) -> Result[Package, string] {
     let source = match source_for_package(sources, package_value.name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err(
+        Some(value) => value,
+        None => return Result::Err(
             "invalid package " + package_value.name,
         ),
     };
@@ -640,8 +640,8 @@ fn extend_package_with_info(
         test_files,
         info,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if test_package.declared_name != package_value.declared_name {
         return Result::Err(
@@ -677,19 +677,19 @@ fn load_package(
     entry_package: string,
 ) -> Result[Package, string] {
     let source = match source_for_package(sources, package_name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("invalid package " + package_name),
+        Some(value) => value,
+        None => return Result::Err("invalid package " + package_name),
     };
     let directory = match package_directory_in_source(source, package_name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("invalid package " + package_name),
+        Some(value) => value,
+        None => return Result::Err("invalid package " + package_name),
     };
     let files = match source_files(
         directory,
         include_entry_tests && package_name == entry_package,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if files.len() == 0 {
         return Result::Err("package has no .gom files: " + package_name)
@@ -697,8 +697,8 @@ fn load_package(
         ()
     };
     let info = match compiler_package_info(compiler, module_dir, files) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     package_from_info(
         sources,
@@ -728,19 +728,19 @@ fn visit_package(
     name: string,
 ) -> Result[unit, string] {
     match states.get(name) {
-        Option::Some(1) => return Result::Err("package dependency cycle at " + name),
-        Option::Some(2) => return Result::Ok(()),
+        Some(1) => return Result::Err("package dependency cycle at " + name),
+        Some(2) => return Result::Ok(()),
         _ => (),
     };
     states.set(name, 1);
     let package_value = match find_package(packages, name) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("missing package " + name),
+        Some(value) => value,
+        None => return Result::Err("missing package " + name),
     };
     for dependency in package_value.imports {
         match visit_package(packages, states, output, dependency) {
-            Result::Ok(()) => (),
-            Result::Err(message) => return Result::Err(message),
+            Ok(()) => (),
+            Err(message) => return Result::Err(message),
         }
     };
     states.set(name, 2);
@@ -751,8 +751,8 @@ fn visit_package(
 fn topological_order(packages: Vec[Package], entry: string) -> Result[Vec[string], string] {
     let output = Vec::new();
     match visit_package(packages, HashMap::new(), output, entry) {
-        Result::Ok(()) => Result::Ok(output),
-        Result::Err(message) => Result::Err(message),
+        Ok(()) => Result::Ok(output),
+        Err(message) => Result::Err(message),
     }
 }
 
@@ -765,8 +765,8 @@ fn topological_order_all(packages: Vec[Package]) -> Result[Vec[string], string] 
     };
     for name in util::sorted_unique(names) {
         match visit_package(packages, states, output, name) {
-            Result::Ok(()) => (),
-            Result::Err(message) => return Result::Err(message),
+            Ok(()) => (),
+            Err(message) => return Result::Err(message),
         }
     };
     Result::Ok(output)
@@ -786,8 +786,8 @@ fn collect_package_directories(
         ()
     };
     let names = match fs::read_dir(directory) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let source_files: Vec[string] = Vec::new();
     let test_directories: Vec[string] = Vec::new();
@@ -796,15 +796,15 @@ fn collect_package_directories(
         let value = path::join(directory, name);
         if fs::is_file(value)
             && match path::extension(value) {
-                Option::Some(extension) => extension == "gom",
-                Option::None => false,
+                Some(extension) => extension == "gom",
+                None => false,
             }
             && match path::file_name(value) {
-                Option::Some(file_name) => !util::ends_with(
+                Some(file_name) => !util::ends_with(
                     file_name,
                     "_test.gom",
                 ),
-                Option::None => false,
+                None => false,
             }
         {
             source_files.push(value)
@@ -823,8 +823,8 @@ fn collect_package_directories(
     if test_directories.len() > 0 {
         let value = test_directories.get(test_directories.len() - 1);
         let files = match black_box_test_files(value) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         if files.len() > 0 && source_files.len() == 0 {
             return Result::Err(
@@ -850,8 +850,8 @@ fn collect_package_directories(
             artifact_root,
             result,
         ) {
-            Result::Ok(()) => (),
-            Result::Err(message) => return Result::Err(message),
+            Ok(()) => (),
+            Err(message) => return Result::Err(message),
         }
     };
     Result::Ok(())
@@ -872,8 +872,8 @@ fn discover_module_graph(
             artifact_root,
             directories,
         ) {
-            Result::Ok(()) => (),
-            Result::Err(message) => return Result::Err(message),
+            Ok(()) => (),
+            Err(message) => return Result::Err(message),
         }
     };
     if directories.len() == 0 {
@@ -885,8 +885,8 @@ fn discover_module_graph(
     let all_files = Vec::new();
     for directory in directories {
         let files = match source_files(directory, false) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         if files.len() == 0 {
             return Result::Err("package has no .gom files: " + directory)
@@ -903,16 +903,16 @@ fn discover_module_graph(
         module_dir,
         all_files,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let packages = Vec::new();
     for item in package_files {
         let directory = item.0;
         let files = item.1;
         let source = match source_for_package_directory(sources, directory) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err(
+            Some(value) => value,
+            None => return Result::Err(
                 "package directory has no module source " + directory,
             ),
         };
@@ -921,16 +921,16 @@ fn discover_module_graph(
             source.name,
             directory,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let info = match select_package_info(
             module_dir,
             all_info,
             files,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let package_value = match package_from_info(
             sources,
@@ -940,25 +940,25 @@ fn discover_module_graph(
             files,
             info,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         match find_package(packages, package_value.name) {
-            Option::Some(_) => return Result::Err(
+            Some(_) => return Result::Err(
                 "package "
                     + package_value.name
                     + " is provided by more than one module",
             ),
-            Option::None => packages.push(package_value),
+            None => packages.push(package_value),
         }
     };
     let order = match topological_order_all(packages) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let entry_package = match find_package(packages, module_path) {
-        Option::Some(_) => module_path,
-        Option::None => order.get(0),
+        Some(_) => module_path,
+        None => order.get(0),
     };
     Result::Ok(Graph {
         module_dir,
@@ -983,8 +983,8 @@ fn discover_graph(
         module_path,
         entry_dir,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let packages = Vec::new();
     let pending = Vec::new();
@@ -1003,8 +1003,8 @@ fn discover_graph(
                 include_tests,
                 entry_package,
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             seen.set(package_name, true);
             for dependency in package_value.imports {
@@ -1018,8 +1018,8 @@ fn discover_graph(
         }
     };
     let order = match topological_order(packages, entry_package) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     Result::Ok(Graph {
         module_dir,
@@ -1038,27 +1038,27 @@ struct ResolvedCompiler {
 
 fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string] {
     let candidate = match explicit {
-        Option::Some(value) => Option::Some(value),
-        Option::None => match env::var("GOMLC") {
-            Option::Some(value) => if value == "" {
+        Some(value) => Option::Some(value),
+        None => match env::var("GOMLC") {
+            Some(value) => if value == "" {
                 Option::None
             } else {
                 Option::Some(value)
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
     };
     let compiler = match candidate {
-        Option::Some(value) => value,
-        Option::None => match env::current_exe() {
-            Result::Ok(value) => match path::parent(value) {
-                Option::Some(parent) => {
+        Some(value) => value,
+        None => match env::current_exe() {
+            Ok(value) => match path::parent(value) {
+                Some(parent) => {
                     let sibling = path::join(parent, "gomlc");
                     if fs::is_file(sibling) {
                         sibling
                     } else {
                         match env::var("GOML_HOME") {
-                            Option::Some(home) => {
+                            Some(home) => {
                                 let installed = path::join(
                                     path::join(home, "bin"),
                                     "gomlc",
@@ -1069,12 +1069,12 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
                                     "gomlc"
                                 }
                             },
-                            Option::None => "gomlc",
+                            None => "gomlc",
                         }
                     }
                 },
-                Option::None => match env::var("GOML_HOME") {
-                    Option::Some(home) => {
+                None => match env::var("GOML_HOME") {
+                    Some(home) => {
                         let installed = path::join(
                             path::join(home, "bin"),
                             "gomlc",
@@ -1085,24 +1085,24 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
                             "gomlc"
                         }
                     },
-                    Option::None => "gomlc",
+                    None => "gomlc",
                 },
             },
-            Result::Err(_) => "gomlc",
+            Err(_) => "gomlc",
         },
     };
     let compiler = if fs::is_file(compiler) {
         match canonical(compiler) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         }
     } else {
         match process::look_path(compiler) {
-            Result::Ok(value) => match canonical(value) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+            Ok(value) => match canonical(value) {
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             },
-            Result::Err(message) => return Result::Err(message),
+            Err(message) => return Result::Err(message),
         }
     };
     let output = match process::Command::new(compiler)
@@ -1111,8 +1111,8 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
         .arg("json")
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     if !(process::ExitStatus::success(process::Output::status(output))) {
         return Result::Err("gomlc does not support the driver protocol")
@@ -1120,13 +1120,13 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
         ()
     };
     let version = match json::parse(output_text(process::Output::stdout(output))) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     match json::field(version, "driver_protocol") {
-        Option::Some(json::Value::Number(value)) => if value == "1" {
+        Some(Number(value)) => if value == "1" {
             let world_artifact = match json::field(version, "world_artifact") {
-                Option::Some(json::Value::Number(value)) => value == "1",
+                Some(Number(value)) => value == "1",
                 _ => false,
             };
             Result::Ok(ResolvedCompiler {
@@ -1145,33 +1145,33 @@ pub fn load_context(
     compiler_override: Option[string],
 ) -> Result[Context, string] {
     let current = match env::current_dir() {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let module_dir = match manifest_root(current) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let module_manifest = match manifest::load(path::join(module_dir, "goml.toml")) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let resolved_compiler = match resolve_compiler(compiler_override) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let compiler = resolved_compiler.path;
     let sources = match module_sources(module_dir, module_manifest) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let artifact_root = match target_dir_override {
-        Option::Some(value) => if path::is_absolute(value) {
+        Some(value) => if path::is_absolute(value) {
             path::clean(value)
         } else {
             path::join(module_dir, value)
         },
-        Option::None => path::join(module_dir, module_manifest.target_dir),
+        None => path::join(module_dir, module_manifest.target_dir),
     };
     let graph = match discover_module_graph(
         compiler,
@@ -1180,8 +1180,8 @@ pub fn load_context(
         artifact_root,
         sources,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     Result::Ok(Context {
         graph,
@@ -1197,33 +1197,33 @@ pub fn load_target_context(
     compiler_override: Option[string],
 ) -> Result[Context, string] {
     let entry_dir = match target_directory(target) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let module_dir = match manifest_root(entry_dir) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let module_manifest = match manifest::load(path::join(module_dir, "goml.toml")) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let resolved_compiler = match resolve_compiler(compiler_override) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let compiler = resolved_compiler.path;
     let sources = match module_sources(module_dir, module_manifest) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let artifact_root = match target_dir_override {
-        Option::Some(value) => if path::is_absolute(value) {
+        Some(value) => if path::is_absolute(value) {
             path::clean(value)
         } else {
             path::join(module_dir, value)
         },
-        Option::None => path::join(module_dir, module_manifest.target_dir),
+        None => path::join(module_dir, module_manifest.target_dir),
     };
     let graph = match discover_graph(
         compiler,
@@ -1233,8 +1233,8 @@ pub fn load_target_context(
         false,
         sources,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     Result::Ok(Context {
         graph,
@@ -1251,7 +1251,7 @@ fn graph_with_entry(base: Graph, extra: Graph, entry: string) -> Result[Graph, s
     };
     for package_value in extra.packages {
         match find_package(packages, package_value.name) {
-            Option::Some(existing) => if existing.declared_name
+            Some(existing) => if existing.declared_name
                 != package_value.declared_name
             {
                 return Result::Err(
@@ -1260,12 +1260,12 @@ fn graph_with_entry(base: Graph, extra: Graph, entry: string) -> Result[Graph, s
             } else {
                 ()
             },
-            Option::None => packages.push(package_value),
+            None => packages.push(package_value),
         }
     };
     let order = match topological_order_all(packages) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     Result::Ok(Graph {
         module_dir: base.module_dir,
@@ -1313,8 +1313,8 @@ fn internal_test_graph(
                 false,
                 package_value.name,
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             seen.set(package_name, true);
             for dependency in current.imports {
@@ -1328,8 +1328,8 @@ fn internal_test_graph(
         }
     };
     let order = match topological_order(packages, package_value.name) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     Result::Ok(Graph {
         module_dir: context.graph.module_dir,
@@ -1347,8 +1347,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
     for package_value in context.graph.packages {
         if package_value.module_name == context.graph.module_path {
             let files = match source_files(package_value.directory, true) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if files.len() > package_value.files.len() {
                 names.push(package_value.name)
@@ -1366,12 +1366,12 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             context.graph.packages,
             package_name,
         ) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err("missing package " + package_name),
+            Some(value) => value,
+            None => return Result::Err("missing package " + package_name),
         };
         let files = match source_files(package_value.directory, true) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let test_files = Vec::new();
         for file in files {
@@ -1394,8 +1394,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
         context.graph.module_dir,
         all_files,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     for item in package_files {
         let package_value = item.0;
@@ -1406,8 +1406,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             all_info,
             test_files,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let test_package = match extend_package_with_info(
             context.graph.sources,
@@ -1416,16 +1416,16 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             test_files,
             info,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let graph = match internal_test_graph(
             context,
             package_value,
             test_package,
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         result.push(graph)
     };
@@ -1447,8 +1447,8 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
             context.graph.packages,
             target_package,
         ) {
-            Option::Some(value) => value,
-            Option::None => return Result::Err(
+            Some(value) => value,
+            None => return Result::Err(
                 "missing package " + target_package,
             ),
         };
@@ -1459,8 +1459,8 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
             return Result::Err(tests_dir + " must be a directory")
         } else {
             let files = match black_box_test_files(tests_dir) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if files.len() == 0 {
                 ()
@@ -1473,15 +1473,15 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
                     true,
                     context.graph.sources,
                 ) {
-                    Result::Ok(value) => value,
-                    Result::Err(message) => return Result::Err(message),
+                    Ok(value) => value,
+                    Err(message) => return Result::Err(message),
                 };
                 let test_package = match find_package(
                     graph.packages,
                     graph.entry_package,
                 ) {
-                    Option::Some(value) => value,
-                    Option::None => return Result::Err(
+                    Some(value) => value,
+                    None => return Result::Err(
                         "missing black-box test package",
                     ),
                 };
@@ -1497,8 +1497,8 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
                     graph,
                     test_package.name,
                 ) {
-                    Result::Ok(value) => value,
-                    Result::Err(message) => return Result::Err(message),
+                    Ok(value) => value,
+                    Err(message) => return Result::Err(message),
                 };
                 result.push(ExternalTest {
                     graph: combined,

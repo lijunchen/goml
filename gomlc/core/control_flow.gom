@@ -16,9 +16,9 @@ fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
 
 fn tast_stmt_exits(value: tast::Stmt) -> bool {
     match value {
-        tast::Stmt::Expr { expr } => tast_expr_exits(expr),
-        tast::Stmt::Let { is_mut: _, pat: _, value: _ }
-        | tast::Stmt::Assign { target: _, op: _, value: _ } => false,
+        Expr { expr } => tast_expr_exits(expr),
+        Let { is_mut: _, pat: _, value: _ }
+        | Assign { target: _, op: _, value: _ } => false,
     }
 }
 
@@ -31,8 +31,8 @@ fn tast_block_exits(value: tast::Block) -> bool {
         }
     };
     match value.tail {
-        Option::Some(tail) => tast_expr_exits(tail),
-        Option::None => false,
+        Some(tail) => tast_expr_exits(tail),
+        None => false,
     }
 }
 
@@ -49,33 +49,33 @@ fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
 
 fn tast_expr_exits(value: tast::Expr) -> bool {
     match value {
-        tast::Expr::Break { ty: _ } | tast::Expr::Continue { ty: _ } | tast::Expr::Return { expr: _, ty: _ } => true,
-        tast::Expr::Constr { constructor: _, args, ty: _ }
-        | tast::Expr::Tuple { items: args, ty: _ }
-        | tast::Expr::Array { items: args, ty: _ } => tast_exprs_exit(args),
-        tast::Expr::Unary { op: _, expr, ty: _ }
-        | tast::Expr::Cast { expr, ty: _ }
-        | tast::Expr::Go { expr, ty: _ }
-        | tast::Expr::Field { expr, field_name: _, ty: _ } => tast_expr_exits(expr),
-        tast::Expr::Call { func: function, args, ty: _ } => {
+        Break { ty: _ } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Constr { constructor: _, args, ty: _ }
+        | Tuple { items: args, ty: _ }
+        | Array { items: args, ty: _ } => tast_exprs_exit(args),
+        Unary { op: _, expr, ty: _ }
+        | Cast { expr, ty: _ }
+        | Go { expr, ty: _ }
+        | Field { expr, field_name: _, ty: _ } => tast_expr_exits(expr),
+        Call { func: function, args, ty: _ } => {
             tast_expr_exits(function) || tast_exprs_exit(args)
         },
-        tast::Expr::Proj { tuple, index: _, ty: _ } => tast_expr_exits(tuple),
-        tast::Expr::Index { base, index, ty: _ } => {
+        Proj { tuple, index: _, ty: _ } => tast_expr_exits(tuple),
+        Index { base, index, ty: _ } => {
             tast_expr_exits(base) || tast_expr_exits(index)
         },
-        tast::Expr::Binary { op, lhs: left, rhs: right, ty: _, resolution: _ } => {
+        Binary { op, lhs: left, rhs: right, ty: _, resolution: _ } => {
             tast_expr_exits(left) || match op {
-                ast::BinaryOp::And | ast::BinaryOp::Or => false,
+                And | Or => false,
                 _ => tast_expr_exits(right),
             }
         },
-        tast::Expr::Block { block, ty: _ } => tast_block_exits(block),
-        tast::Expr::If { cond: _, then_branch, else_branch, ty: _ } => {
+        Block { block, ty: _ } => tast_block_exits(block),
+        If { cond: _, then_branch, else_branch, ty: _ } => {
             tast_expr_exits(then_branch) && tast_expr_exits(else_branch)
         },
-        tast::Expr::While { cond, body: _, ty: _ } => tast_expr_exits(cond),
-        tast::Expr::For {
+        While { cond, body: _, ty: _ } => tast_expr_exits(cond),
+        For {
             pat: _,
             iterator,
             into_iter_trait_ref: _,
@@ -84,7 +84,7 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
             body: _,
             ty: _,
         } => tast_expr_exits(iterator),
-        tast::Expr::Match { expr: _, arms, ty: _ } => tast_match_arms_exit(arms),
+        Match { expr: _, arms, ty: _ } => tast_match_arms_exit(arms),
         _ => false,
     }
 }

@@ -112,12 +112,12 @@ fn artifact_binary_sections_valid(
     let previous: Ref[Option[uint16]] = Ref::new(Option::None);
     for value in values {
         match previous.get() {
-            Option::Some(id) => if id == value.id {
+            Some(id) => if id == value.id {
                 return false
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         };
         previous.set(Option::Some(value.id))
     };
@@ -203,8 +203,8 @@ fn decode_artifact_binary_container(
 ) -> Result[ArtifactBinaryContainer, string] {
     let reader = new_artifact_binary_reader(data);
     let magic = match artifact_binary_read_raw_bytes(reader, 8) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if !artifact_binary_bytes_equal(magic, artifact_binary_magic()) {
         return Result::Err("invalid binary artifact magic")
@@ -212,12 +212,12 @@ fn decode_artifact_binary_container(
         ()
     };
     let major = match artifact_binary_read_u16(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     let minor = match artifact_binary_read_u16(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if major != 1 {
         return Result::Err("unsupported binary artifact major version")
@@ -227,8 +227,8 @@ fn decode_artifact_binary_container(
         ()
     };
     let kind = match artifact_binary_read_u8(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if kind != 1 && kind != 2 && kind != 3 {
         return Result::Err("invalid binary artifact kind")
@@ -236,8 +236,8 @@ fn decode_artifact_binary_container(
         ()
     };
     let flags = match artifact_binary_read_u8(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if flags != 0 {
         return Result::Err("unsupported binary artifact flags")
@@ -245,8 +245,8 @@ fn decode_artifact_binary_container(
         ()
     };
     let compiler_abi = match artifact_binary_read_u32(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if compiler_abi != 3 {
         return Result::Err("unsupported binary artifact compiler ABI")
@@ -254,12 +254,12 @@ fn decode_artifact_binary_container(
         ()
     };
     let section_count = match artifact_binary_read_u16(reader) {
-        Result::Ok(value) => value as int,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value as int,
+        Err(error) => return Result::Err(error),
     };
     let reserved = match artifact_binary_read_u16(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if section_count > 1024 {
         return Result::Err("too many binary artifact sections")
@@ -269,30 +269,30 @@ fn decode_artifact_binary_container(
         ()
     };
     let directory_offset = match artifact_binary_read_u64(reader) {
-        Result::Ok(value) => match artifact_binary_checked_int(
+        Ok(value) => match artifact_binary_checked_int(
             reader,
             value,
             "directory offset",
         ) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     let payload_length = match artifact_binary_read_u64(reader) {
-        Result::Ok(value) => match artifact_binary_checked_int(
+        Ok(value) => match artifact_binary_checked_int(
             reader,
             value,
             "payload length",
         ) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     let payload_hash = match artifact_binary_read_raw_bytes(reader, 32) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if directory_offset != artifact_binary_header_size() {
         return Result::Err("invalid binary artifact directory offset")
@@ -316,8 +316,8 @@ fn decode_artifact_binary_container(
     let section_hashes = Vec::with_capacity(section_count);
     for _ in range(0, section_count) {
         let id = match artifact_binary_read_u16(reader) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         if section_ids.len() > 0
             && id <= section_ids.get(section_ids.len() - 1)
@@ -329,16 +329,16 @@ fn decode_artifact_binary_container(
             ()
         };
         let version = match artifact_binary_read_u16(reader) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         let flags = match artifact_binary_read_u16(reader) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         let reserved = match artifact_binary_read_u16(reader) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         if reserved != 0 {
             return Result::Err("invalid binary artifact section reserved field")
@@ -346,30 +346,30 @@ fn decode_artifact_binary_container(
             ()
         };
         let offset = match artifact_binary_read_u64(reader) {
-            Result::Ok(value) => match artifact_binary_checked_int(
+            Ok(value) => match artifact_binary_checked_int(
                 reader,
                 value,
                 "section offset",
             ) {
-                Result::Ok(value) => value,
-                Result::Err(error) => return Result::Err(error),
+                Ok(value) => value,
+                Err(error) => return Result::Err(error),
             },
-            Result::Err(error) => return Result::Err(error),
+            Err(error) => return Result::Err(error),
         };
         let length = match artifact_binary_read_u64(reader) {
-            Result::Ok(value) => match artifact_binary_checked_int(
+            Ok(value) => match artifact_binary_checked_int(
                 reader,
                 value,
                 "section length",
             ) {
-                Result::Ok(value) => value,
-                Result::Err(error) => return Result::Err(error),
+                Ok(value) => value,
+                Err(error) => return Result::Err(error),
             },
-            Result::Err(error) => return Result::Err(error),
+            Err(error) => return Result::Err(error),
         };
         let hash = match artifact_binary_read_raw_bytes(reader, 32) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         section_ids.push(id);
         section_versions.push(version);

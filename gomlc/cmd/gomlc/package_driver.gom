@@ -196,35 +196,35 @@ fn artifact_short_name(value: string) -> string {
 
 fn public_ast_item_name(package_name: string, value: ast::Item) -> Option[string] {
     match value {
-        ast::Item::EnumDef(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        EnumDef(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::StructDef(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        StructDef(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::TraitDef(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        TraitDef(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::Function(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        Function(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::ExternFunction(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        ExternFunction(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::TypeAlias(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        TypeAlias(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::Constant(value) => match value.visibility {
-            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
-            ast::Visibility::Private => Option::None,
+        Constant(value) => match value.visibility {
+            Public => Option::Some(package_item_name(package_name, value.name)),
+            Private => Option::None,
         },
-        ast::Item::ImplBlock(_) => Option::None,
+        ImplBlock(_) => Option::None,
     }
 }
 
@@ -235,13 +235,13 @@ fn public_item_names(
     let result = Vec::new();
     for value in values {
         match value.ast {
-            Option::Some(file) => for item in file.items {
+            Some(file) => for item in file.items {
                 match public_ast_item_name(package_name, item) {
-                    Option::Some(name) => result.push(name),
-                    Option::None => (),
+                    Some(name) => result.push(name),
+                    None => (),
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     result
@@ -284,61 +284,61 @@ fn collect_private_type_names(
     value: hir::TypeExpr,
 ) -> unit {
     match value {
-        hir::TypeExpr::Con { name } => add_private_local_name(
+        Con { name } => add_private_local_name(
             result,
             package_name,
             public_names,
             name,
         ),
-        hir::TypeExpr::Dyn { trait_name: name } => add_private_local_name(
+        Dyn { trait_name: name } => add_private_local_name(
             result,
             package_name,
             public_names,
             name,
         ),
-        hir::TypeExpr::Tuple { items: values } => for value in values {
+        Tuple { items: values } => for value in values {
             collect_private_type_names(result, package_name, public_names, value)
         },
-        hir::TypeExpr::Projection { base, associated: _ } => collect_private_type_names(
+        Projection { base, associated: _ } => collect_private_type_names(
             result,
             package_name,
             public_names,
             base,
         ),
-        hir::TypeExpr::App { ty: base, args } => {
+        App { ty: base, args } => {
             collect_private_type_names(result, package_name, public_names, base);
             for arg in args {
                 collect_private_type_names(result, package_name, public_names, arg)
             }
         },
-        hir::TypeExpr::Array { len: _, elem: element } => collect_private_type_names(
+        Array { len: _, elem: element } => collect_private_type_names(
             result,
             package_name,
             public_names,
             element,
         ),
-        hir::TypeExpr::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             for param in params {
                 collect_private_type_names(result, package_name, public_names, param)
             };
             collect_private_type_names(result, package_name, public_names, ret_ty)
         },
-        hir::TypeExpr::Unit
-        | hir::TypeExpr::Bool
-        | hir::TypeExpr::Int
-        | hir::TypeExpr::Int8
-        | hir::TypeExpr::Int16
-        | hir::TypeExpr::Int32
-        | hir::TypeExpr::Int64
-        | hir::TypeExpr::Uint
-        | hir::TypeExpr::Uint8
-        | hir::TypeExpr::Uint16
-        | hir::TypeExpr::Uint32
-        | hir::TypeExpr::Uint64
-        | hir::TypeExpr::Float32
-        | hir::TypeExpr::Float64
-        | hir::TypeExpr::String
-        | hir::TypeExpr::Char => (),
+        Unit
+        | Bool
+        | Int
+        | Int8
+        | Int16
+        | Int32
+        | Int64
+        | Uint
+        | Uint8
+        | Uint16
+        | Uint32
+        | Uint64
+        | Float32
+        | Float64
+        | String
+        | Char => (),
     }
 }
 
@@ -361,7 +361,7 @@ fn collect_private_predicate_names(
     value: hir::Predicate,
 ) -> unit {
     match value {
-        hir::Predicate::Trait { ty: for_ty, trait_ref } => {
+        Trait { ty: for_ty, trait_ref } => {
             collect_private_type_names(result, package_name, public_names, for_ty);
             collect_private_trait_ref_names(
                 result,
@@ -370,7 +370,7 @@ fn collect_private_predicate_names(
                 trait_ref,
             )
         },
-        hir::Predicate::Equality { lhs: left, rhs: right } => {
+        Equality { lhs: left, rhs: right } => {
             collect_private_type_names(result, package_name, public_names, left);
             collect_private_type_names(result, package_name, public_names, right)
         },
@@ -401,7 +401,7 @@ fn trait_impl_header_is_public(
     public_names: Vec[string],
 ) -> bool {
     match value.trait_ref {
-        Option::Some(trait_ref) => {
+        Some(trait_ref) => {
             let private_names = Vec::new();
             collect_private_type_names(
                 private_names,
@@ -412,7 +412,7 @@ fn trait_impl_header_is_public(
             local_item_is_public(package_name, public_names, trait_ref.name)
                 && private_names.len() == 0
         },
-        Option::None => true,
+        None => true,
     }
 }
 
@@ -423,10 +423,10 @@ fn trait_impl_exposed_private_names(
 ) -> Vec[string] {
     let result = Vec::new();
     match value.trait_ref {
-        Option::Some(trait_ref) => for arg in trait_ref.args {
+        Some(trait_ref) => for arg in trait_ref.args {
             collect_private_type_names(result, package_name, public_names, arg)
         },
-        Option::None => (),
+        None => (),
     };
     collect_private_bounds_names(
         result,
@@ -474,13 +474,13 @@ fn trait_impl_exposed_private_names(
             )
         };
         match method.ret_ty {
-            Option::Some(ret_ty) => collect_private_type_names(
+            Some(ret_ty) => collect_private_type_names(
                 result,
                 package_name,
                 public_names,
                 ret_ty,
             ),
-            Option::None => (),
+            None => (),
         }
     };
     result
@@ -539,8 +539,8 @@ fn validate_public_trait_impls(
 ) -> Result[unit, string] {
     for item in value.items {
         match item {
-            hir::Item::ImplBlock(value) => match value.trait_ref {
-                Option::Some(trait_ref) => if trait_impl_header_is_public(
+            ImplBlock(value) => match value.trait_ref {
+                Some(trait_ref) => if trait_impl_header_is_public(
                     value,
                     package_name,
                     public_names,
@@ -565,7 +565,7 @@ fn validate_public_trait_impls(
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             },
             _ => (),
         }
@@ -602,13 +602,13 @@ fn function_exposed_private_names(
         )
     };
     match value.ret_ty {
-        Option::Some(ret_ty) => collect_private_type_names(
+        Some(ret_ty) => collect_private_type_names(
             result,
             package_name,
             public_names,
             ret_ty,
         ),
-        Option::None => (),
+        None => (),
     };
     sort_artifact_names(result)
 }
@@ -620,7 +620,7 @@ fn validate_public_fields_and_inherent_methods(
 ) -> Result[unit, string] {
     for item in value.items {
         match item {
-            hir::Item::StructDef(value) => if vecs::contains(
+            StructDef(value) => if vecs::contains(
                 public_names,
                 value.name,
             ) {
@@ -654,9 +654,9 @@ fn validate_public_fields_and_inherent_methods(
             } else {
                 ()
             },
-            hir::Item::ImplBlock(value) => match value.trait_ref {
-                Option::Some(_) => (),
-                Option::None => {
+            ImplBlock(value) => match value.trait_ref {
+                Some(_) => (),
+                None => {
                     let target_private_names = Vec::new();
                     collect_private_type_names(
                         target_private_names,
@@ -667,7 +667,7 @@ fn validate_public_fields_and_inherent_methods(
                     if target_private_names.len() == 0 {
                         for method in value.methods {
                             match method.visibility {
-                                ast::Visibility::Public => {
+                                Public => {
                                     let private_names =
                                         function_exposed_private_names(
                                             method,
@@ -685,7 +685,7 @@ fn validate_public_fields_and_inherent_methods(
                                         ()
                                     }
                                 },
-                                ast::Visibility::Private => (),
+                                Private => (),
                             }
                         }
                     } else {
@@ -783,8 +783,8 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
         ()
     };
     match value.hir {
-        Option::Some(file) => file,
-        Option::None => {
+        Some(file) => file,
+        None => {
             fail("error[typer]: failed to lower package " + package_name);
             hir::File {
                 package_name,
@@ -826,7 +826,7 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
         functions.push(function)
     };
     match core_function_ret_type(functions, expected) {
-        Option::Some(ret_ty) => if expected != "main" {
+        Some(ret_ty) => if expected != "main" {
             functions.push(core::Function {
                 name: "main",
                 root: true,
@@ -850,7 +850,7 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
         } else {
             ()
         },
-        Option::None => fail("error[compile]: entry package has no main function"),
+        None => fail("error[compile]: entry package has no main function"),
     };
     core::File {
         functions,
@@ -864,8 +864,8 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
 fn entry_core(value: core::File, package_name: string) -> core::File {
     if package_name == "main" {
         match core_function_ret_type(value.functions, "main") {
-            Option::Some(_) => value,
-            Option::None => {
+            Some(_) => value,
+            None => {
                 fail("error[compile]: entry package has no main function");
                 value
             },
@@ -954,8 +954,8 @@ fn run_package_command(
     emit_tests: bool,
 ) -> unit {
     let command = match parse_package_command_args(args) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             handle_cli_parse_error(args.get(1), error);
             PackageCommandArgs {
                 package_name: "main",
@@ -967,18 +967,18 @@ fn run_package_command(
         },
     };
     let world = match command.world {
-        Option::Some(path) => match read_package_world(path) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
+        Some(path) => match read_package_world(path) {
+            Ok(value) => value,
+            Err(error) => {
                 fail("error[compile]: " + error);
                 package_world()
             },
         },
-        Option::None => package_world(),
+        None => package_world(),
     };
     let artifact = match compile_artifact_package(world, command, build, emit_tests) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             if strings::starts_with(error, "error[") {
                 fail(error)
             } else {
@@ -1014,25 +1014,25 @@ fn run_package_command(
         },
     };
     match ensure_parent(interface_output_path(command.output)) {
-        Result::Ok(()) => match write_artifact_interface(
+        Ok(()) => match write_artifact_interface(
             interface_output_path(command.output),
             artifact.interface_unit,
         ) {
-            Result::Ok(()) => (),
-            Result::Err(error) => fail(error),
+            Ok(()) => (),
+            Err(error) => fail(error),
         },
-        Result::Err(error) => fail(error),
+        Err(error) => fail(error),
     };
     if build {
         match ensure_parent(core_output_path(command.output)) {
-            Result::Ok(()) => match write_artifact_core(
+            Ok(()) => match write_artifact_core(
                 core_output_path(command.output),
                 artifact.core_unit,
             ) {
-                Result::Ok(()) => (),
-                Result::Err(error) => fail(error),
+                Ok(()) => (),
+                Err(error) => fail(error),
             },
-            Result::Err(error) => fail(error),
+            Err(error) => fail(error),
         }
     } else {
         ()
@@ -1041,8 +1041,8 @@ fn run_package_command(
 
 fn run_link_command(args: Vec[string]) -> unit {
     let command = match parse_link_command_args(args) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             handle_cli_parse_error("link", error);
             LinkCommandArgs {
                 inputs: Vec::new(),
@@ -1053,37 +1053,37 @@ fn run_link_command(args: Vec[string]) -> unit {
         },
     };
     let world = match command.world {
-        Option::Some(path) => match read_package_world(path) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
+        Some(path) => match read_package_world(path) {
+            Ok(value) => value,
+            Err(error) => {
                 fail("error[compile]: " + error);
                 package_world()
             },
         },
-        Option::None => package_world(),
+        None => package_world(),
     };
     let core_units = match artifact_read_core_units(command.inputs) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             fail("error[compile]: " + error);
             Vec::new()
         },
     };
     let roots = Vec::new().pushed(command.entry);
     let core_units = match artifact_reachable_core_units(roots, core_units) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             fail("error[compile]: " + error);
             Vec::new()
         },
     };
     match artifact_validate_link_core_units(world, core_units) {
-        Result::Ok(()) => (),
-        Result::Err(error) => fail("error[compile]: " + error),
+        Ok(()) => (),
+        Err(error) => fail("error[compile]: " + error),
     };
     artifact_prepare_core_units(world, core_units);
     match artifact_find_core_unit(core_units, command.entry) {
-        Option::Some(value) => if value.declared_name == ""
+        Some(value) => if value.declared_name == ""
             || value.declared_name == "main"
         {
             ()
@@ -1096,14 +1096,14 @@ fn run_link_command(args: Vec[string]) -> unit {
                     + ", expected main",
             )
         },
-        Option::None => fail("error[compile]: missing entry package " + command.entry),
+        None => fail("error[compile]: missing entry package " + command.entry),
     };
     let dependencies = Vec::new();
     let entries = Vec::new();
     let needs = artifact_core_standard_needs(core_units);
     let compilations = match artifact_core_compilations(core_units) {
-        Result::Ok(values) => values,
-        Result::Err(error) => {
+        Ok(values) => values,
+        Err(error) => {
             fail("error[compile]: " + error);
             Vec::new()
         },
@@ -1133,11 +1133,11 @@ fn run_link_command(args: Vec[string]) -> unit {
     let anf_value = anf::lower_with_counter(lift_value, world.counter);
     let go_source = go_backend::encode(go_backend::lower(anf_value));
     match ensure_parent(command.output) {
-        Result::Ok(()) => match fs::write_file(command.output, go_source) {
-            Result::Ok(()) => (),
-            Result::Err(error) => fail(error),
+        Ok(()) => match fs::write_file(command.output, go_source) {
+            Ok(()) => (),
+            Err(error) => fail(error),
         },
-        Result::Err(error) => fail(error),
+        Err(error) => fail(error),
     }
 }
 
@@ -1153,8 +1153,8 @@ fn empty_core_file() -> core::File {
 
 fn run_test_link_command(args: Vec[string]) -> unit {
     let command = match parse_test_link_command_args(args) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             handle_cli_parse_error("test-link", error);
             TestLinkCommandArgs {
                 inputs: Vec::new(),
@@ -1166,18 +1166,18 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         },
     };
     let world = match command.world {
-        Option::Some(path) => match read_package_world(path) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
+        Some(path) => match read_package_world(path) {
+            Ok(value) => value,
+            Err(error) => {
                 fail("error[compile]: " + error);
                 package_world()
             },
         },
-        Option::None => package_world(),
+        None => package_world(),
     };
     let core_units = match artifact_read_core_units(command.inputs) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             fail("error[compile]: " + error);
             Vec::new()
         },
@@ -1186,22 +1186,22 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         command.packages,
         core_units,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             fail("error[compile]: " + error);
             Vec::new()
         },
     };
     match artifact_validate_link_core_units(world, core_units) {
-        Result::Ok(()) => (),
-        Result::Err(error) => fail("error[compile]: " + error),
+        Ok(()) => (),
+        Err(error) => fail("error[compile]: " + error),
     };
     artifact_prepare_core_units(world, core_units);
     let package_cores = Vec::new();
     let needs = artifact_core_standard_needs(core_units);
     let compilations = match artifact_core_compilations(core_units) {
-        Result::Ok(values) => values,
-        Result::Err(error) => {
+        Ok(values) => values,
+        Err(error) => {
             fail("error[compile]: " + error);
             Vec::new()
         },
@@ -1212,10 +1212,10 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let tests = Vec::new();
     for package_name in command.packages {
         match artifact_find_core_unit(core_units, package_name) {
-            Option::Some(core_unit) => for test in core_unit.tests {
+            Some(core_unit) => for test in core_unit.tests {
                 tests.push(test)
             },
-            Option::None => fail(
+            None => fail(
                 "error[compile]: missing test package " + package_name,
             ),
         }
@@ -1235,20 +1235,20 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         test_link_cases(tests),
     ));
     match ensure_parent(command.output) {
-        Result::Ok(()) => match fs::write_file(command.output, go_source) {
-            Result::Ok(()) => (),
-            Result::Err(error) => fail(error),
+        Ok(()) => match fs::write_file(command.output, go_source) {
+            Ok(()) => (),
+            Err(error) => fail(error),
         },
-        Result::Err(error) => fail(error),
+        Err(error) => fail(error),
     };
     match ensure_parent(command.manifest) {
-        Result::Ok(()) => match fs::write_file(
+        Ok(()) => match fs::write_file(
             command.manifest,
             encode_test_manifest(tests),
         ) {
-            Result::Ok(()) => (),
-            Result::Err(error) => fail(error),
+            Ok(()) => (),
+            Err(error) => fail(error),
         },
-        Result::Err(error) => fail(error),
+        Err(error) => fail(error),
     }
 }

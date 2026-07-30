@@ -8,7 +8,7 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
     let data = bytes::Bytes::new();
     while true {
         match io::read_stdin_exact(1) {
-            Result::Ok(chunk) => {
+            Ok(chunk) => {
                 let value = chunk.get(0);
                 data.push(value);
                 if value == 10 {
@@ -17,7 +17,7 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
                     ()
                 }
             },
-            Result::Err(error) => if data.len() > 0 {
+            Err(error) => if data.len() > 0 {
                 return Result::Ok(data)
             } else {
                 return Result::Err(error)
@@ -31,22 +31,22 @@ pub fn read_rpc_payload() -> Result[string, string] {
     let length = Ref::new(Option::None);
     while true {
         let line = match read_stdin_line() {
-            Result::Ok(line) => match line.to_string() {
-                Result::Ok(line) => line,
-                Result::Err(error) => return Result::Err(error),
+            Ok(line) => match line.to_string() {
+                Ok(line) => line,
+                Err(error) => return Result::Err(error),
             },
-            Result::Err(error) => return Result::Err(error),
+            Err(error) => return Result::Err(error),
         };
         if header_line_content(line) == "" {
             break
         } else if is_content_length_header(line) {
             match length.get() {
-                Option::Some(_) => {
+                Some(_) => {
                     return Result::Err("duplicate Content-Length header")
                 },
-                Option::None => match content_length(line) {
-                    Result::Ok(value) => length.set(Option::Some(value)),
-                    Result::Err(error) => return Result::Err(error),
+                None => match content_length(line) {
+                    Ok(value) => length.set(Option::Some(value)),
+                    Err(error) => return Result::Err(error),
                 },
             }
         } else {
@@ -54,11 +54,11 @@ pub fn read_rpc_payload() -> Result[string, string] {
         }
     };
     match length.get() {
-        Option::Some(length) => match io::read_stdin_exact(length) {
-            Result::Ok(data) => data.to_string(),
-            Result::Err(error) => Result::Err(error),
+        Some(length) => match io::read_stdin_exact(length) {
+            Ok(data) => data.to_string(),
+            Err(error) => Result::Err(error),
         },
-        Option::None => Result::Err("missing Content-Length header"),
+        None => Result::Err("missing Content-Length header"),
     }
 }
 

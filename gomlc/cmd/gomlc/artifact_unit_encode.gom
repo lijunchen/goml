@@ -36,8 +36,8 @@ fn artifact_json_test_descriptor(
     artifact_json_bool(writer, value.ignored);
     artifact_json_name(writer, "ignore_reason");
     match value.ignore_reason {
-        Option::Some(value) => artifact_json_string(writer, value),
-        Option::None => artifact_json_null(writer),
+        Some(value) => artifact_json_string(writer, value),
+        None => artifact_json_null(writer),
     };
     artifact_json_end_object(writer)
 }

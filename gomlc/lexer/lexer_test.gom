@@ -176,8 +176,8 @@ fn lexes_strings_chars_comments_and_multiline_strings() -> unit {
 #[test]
 fn preserves_utf8_byte_ranges_and_error_partition() -> unit {
     let nul = match char_from_uint32(0) {
-        Option::Some(value) => value.to_string(),
-        Option::None => "",
+        Some(value) => value.to_string(),
+        None => "",
     };
     let tokens = lex("é中🦀 $ " + nul + " _é");
     testing::assert_eq(tokens.len(), 10);

@@ -16,7 +16,7 @@ fn fact_contains(span: ast::Span, offset: int) -> bool {
 
 fn hover_text(value: tast::Type) -> Option[string] {
     match tast::resolve_type(value) {
-        tast::Type::Error => Option::None,
+        Error => Option::None,
         ty => Option::Some(tast::diagnostic_type_text(ty)),
     }
 }
@@ -27,7 +27,7 @@ fn hover_function_text(
     ret_ty: tast::Type,
 ) -> Option[string] {
     match hover_text(tast::Type::Func { params, ret_ty }) {
-        Option::Some(signature) => if generics.len() == 0 {
+        Some(signature) => if generics.len() == 0 {
             Option::Some(signature)
         } else {
             let builder = text::StringBuilder::new();
@@ -46,34 +46,34 @@ fn hover_function_text(
             builder.write_string(signature);
             Option::Some(builder.finish())
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
 fn hover_span(value: Analysis, span: ast::Span, offset: int) -> ast::Span {
     match token_at(value.syntax, offset) {
-        Option::Some(token) => if token.start >= span.start
+        Some(token) => if token.start >= span.start
             && token.end <= span.end
         {
             ast::span(token.start, token.end)
         } else {
             span
         },
-        Option::None => span,
+        None => span,
     }
 }
 
 fn symbol_owner(value: string) -> string {
     match strings::rfind(value, "::") {
-        Option::Some(end) => value.byte_slice(0, end),
-        Option::None => "",
+        Some(end) => value.byte_slice(0, end),
+        None => "",
     }
 }
 
 fn method_owner(value: tast::MethodInfo) -> string {
     match value.trait_ref {
-        Option::Some(reference) => reference.name,
-        Option::None => type_owner_name(value.for_type),
+        Some(reference) => reference.name,
+        None => type_owner_name(value.for_type),
     }
 }
 
@@ -95,7 +95,7 @@ fn symbol_hover_type(
     symbol: Symbol,
 ) -> Option[string] {
     match symbol.kind {
-        SymbolKind::Function => {
+        Function => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
                 let environment = value.environments.get(environment_index.get());
@@ -118,7 +118,7 @@ fn symbol_hover_type(
             };
             Option::None
         },
-        SymbolKind::Method => {
+        Method => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
                 let environment = value.environments.get(environment_index.get());
@@ -139,7 +139,7 @@ fn symbol_hover_type(
             };
             Option::None
         },
-        SymbolKind::Field => {
+        Field => {
             let owner = symbol_owner(symbol.qualified_name);
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
@@ -169,10 +169,10 @@ fn symbol_hover_type(
             };
             Option::None
         },
-        SymbolKind::Variant => Option::Some(short_type_name(
+        Variant => Option::Some(short_type_name(
             symbol_owner(symbol.qualified_name),
         )),
-        SymbolKind::Constant => {
+        Constant => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
                 let environment = value.environments.get(environment_index.get());
@@ -191,7 +191,7 @@ fn symbol_hover_type(
             };
             Option::None
         },
-        SymbolKind::TypeAlias => {
+        TypeAlias => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
                 let environment = value.environments.get(environment_index.get());
@@ -210,7 +210,7 @@ fn symbol_hover_type(
             };
             Option::None
         },
-        SymbolKind::Struct | SymbolKind::Enum | SymbolKind::Trait => {
+        Struct | Enum | Trait => {
             Option::Some(short_type_name(symbol.qualified_name))
         },
     }
@@ -243,14 +243,14 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
             && fact_width <= width.get()
         {
             match hover_text(fact.ty) {
-                Option::Some(contents) => {
+                Some(contents) => {
                     result.set(Option::Some(HoverResult {
                         contents,
                         span: hover_span(value, fact.span, offset),
                     }));
                     width.set(fact_width)
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
@@ -263,14 +263,14 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
             && fact_width <= width.get()
         {
             match hover_text(fact.ty) {
-                Option::Some(contents) => {
+                Some(contents) => {
                     result.set(Option::Some(HoverResult {
                         contents,
                         span: hover_span(value, fact.span, offset),
                     }));
                     width.set(fact_width)
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
@@ -283,30 +283,30 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
             && fact_width < width.get()
         {
             match hover_text(fact.ty) {
-                Option::Some(contents) => {
+                Some(contents) => {
                     result.set(Option::Some(HoverResult {
                         contents,
                         span: hover_span(value, fact.span, offset),
                     }));
                     width.set(fact_width)
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
         }
     };
     match result.get() {
-        Option::Some(result) => Option::Some(result),
-        Option::None => match symbol_at_offset(value, offset) {
-            Option::Some(symbol) => match symbol_hover_type(value, symbol) {
-                Option::Some(contents) => Option::Some(HoverResult {
+        Some(result) => Option::Some(result),
+        None => match symbol_at_offset(value, offset) {
+            Some(symbol) => match symbol_hover_type(value, symbol) {
+                Some(contents) => Option::Some(HoverResult {
                     contents,
                     span: symbol.span,
                 }),
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
     }
 }

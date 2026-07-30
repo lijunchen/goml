@@ -43,7 +43,7 @@ fn index_node(
     let cursor = Ref::new(start);
     for child in value.children {
         match child {
-            cst::CstElement::Node(node) => {
+            Node(node) => {
                 cursor.set(index_node(
                     node,
                     Option::Some(id),
@@ -52,7 +52,7 @@ fn index_node(
                     tokens,
                 ))
             },
-            cst::CstElement::Token(token) => {
+            Token(token) => {
                 let token_end = cursor.get() + token.text.byte_len();
                 tokens.push(SyntaxToken {
                     parent: id,
@@ -151,11 +151,11 @@ pub fn parent_node(
     node: SyntaxNode,
 ) -> Option[SyntaxNode] {
     match node.parent {
-        Option::Some(parent) => if parent >= 0 && parent < index.nodes.len() {
+        Some(parent) => if parent >= 0 && parent < index.nodes.len() {
             Option::Some(index.nodes.get(parent))
         } else {
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }

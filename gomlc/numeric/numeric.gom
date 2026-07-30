@@ -44,8 +44,8 @@ fn decimal_digit(value: int) -> string {
 
 fn integer_digit_in_base(value: uint8, base: int) -> bool {
     match integer_digit(value) {
-        Option::Some(value) => value < base,
-        Option::None => false,
+        Some(value) => value < base,
+        None => false,
     }
 }
 
@@ -68,7 +68,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
             }
         } else {
             match integer_digit(source) {
-                Option::Some(part) => if part < base {
+                Some(part) => if part < base {
                     found.set(true);
                     let carry = Ref::new(part);
                     for position in range(0, digits.len()) {
@@ -83,7 +83,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
                 } else {
                     return Option::None
                 },
-                Option::None => return Option::None,
+                None => return Option::None,
             }
         }
     };

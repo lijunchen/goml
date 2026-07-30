@@ -17,17 +17,17 @@ fn call_target_name(
     fact: tast::CallFact,
 ) -> string {
     match fact.target {
-        tast::ReferenceTarget::Local(local) => local.hint,
-        tast::ReferenceTarget::Definition(_) => match token_text(
+        Local(local) => local.hint,
+        Definition(_) => match token_text(
             value,
             fact.callee_span.start,
         ) {
-            Option::Some(name) => name,
-            Option::None => "<function>",
+            Some(name) => name,
+            None => "<function>",
         },
-        tast::ReferenceTarget::Callable(callable) => callable_name(callable),
-        tast::ReferenceTarget::Constructor(constructor) => constructor.name,
-        tast::ReferenceTarget::Unresolved(name) => name,
+        Callable(callable) => callable_name(callable),
+        Constructor(constructor) => constructor.name,
+        Unresolved(name) => name,
     }
 }
 
@@ -54,14 +54,14 @@ fn signature_label(
 
 fn method_call_target(value: tast::ReferenceTarget) -> bool {
     match value {
-        tast::ReferenceTarget::Callable(
-            tast::Callable::TraitMethod { .. },
+        Callable(
+            TraitMethod { .. },
         )
-        | tast::ReferenceTarget::Callable(
-            tast::Callable::DynTraitMethod { .. },
+        | Callable(
+            DynTraitMethod { .. },
         )
-        | tast::ReferenceTarget::Callable(
-            tast::Callable::InherentMethod { .. },
+        | Callable(
+            InherentMethod { .. },
         ) => true,
         _ => false,
     }
@@ -89,29 +89,29 @@ fn item_parameter_names(
     expected_owner: Option[string],
 ) -> Option[Vec[string]] {
     match value {
-        ast::Item::Function(function) => if function.name == expected {
+        Function(function) => if function.name == expected {
             Option::Some(function_parameter_names(function))
         } else {
             Option::None
         },
-        ast::Item::ExternFunction(function) => if function.name == expected {
+        ExternFunction(function) => if function.name == expected {
             Option::Some(extern_parameter_names(function))
         } else {
             Option::None
         },
-        ast::Item::ImplBlock(block) => {
+        ImplBlock(block) => {
             match expected_owner {
-                Option::Some(owner) => match explicit_type_name(block.for_type) {
-                    Option::Some(actual) => if short_type_name(actual)
+                Some(owner) => match explicit_type_name(block.for_type) {
+                    Some(actual) => if short_type_name(actual)
                         != short_type_name(owner)
                     {
                         return Option::None
                     } else {
                         ()
                     },
-                    Option::None => return Option::None,
+                    None => return Option::None,
                 },
-                Option::None => (),
+                None => (),
             };
             let index = Ref::new(block.methods.len() - 1);
             while index.get() >= 0 {
@@ -124,16 +124,16 @@ fn item_parameter_names(
             };
             Option::None
         },
-        ast::Item::TraitDef(definition) => {
+        TraitDef(definition) => {
             match expected_owner {
-                Option::Some(owner) => if short_type_name(definition.name)
+                Some(owner) => if short_type_name(definition.name)
                     != short_type_name(owner)
                 {
                     return Option::None
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             };
             let index = Ref::new(definition.method_sigs.len() - 1);
             while index.get() >= 0 {
@@ -156,18 +156,18 @@ fn item_parameter_names(
 
 fn signature_target_owner(value: tast::ReferenceTarget) -> Option[string] {
     match value {
-        tast::ReferenceTarget::Callable(
-            tast::Callable::TraitMethod { trait_ref, method_name: _ },
+        Callable(
+            TraitMethod { trait_ref, method_name: _ },
         ) => Option::Some(trait_ref.name),
-        tast::ReferenceTarget::Callable(
-            tast::Callable::DynTraitMethod {
+        Callable(
+            DynTraitMethod {
                 trait_name,
                 dispatch_name: _,
                 method_name: _,
             },
         ) => Option::Some(trait_name),
-        tast::ReferenceTarget::Callable(
-            tast::Callable::InherentMethod {
+        Callable(
+            InherentMethod {
                 receiver_ty,
                 method_name: _,
             },
@@ -187,7 +187,7 @@ fn signature_parameter_names(
         let source = value.sources.get(source_index.get());
         let lowered = ast::lower(parser::parse(source.source));
         match lowered.ast {
-            Option::Some(file) => {
+            Some(file) => {
                 let item_index = Ref::new(file.items.len() - 1);
                 while item_index.get() >= 0 {
                     match item_parameter_names(
@@ -195,12 +195,12 @@ fn signature_parameter_names(
                         expected,
                         expected_owner,
                     ) {
-                        Option::Some(names) => return Option::Some(names),
-                        Option::None => item_index.set(item_index.get() - 1),
+                        Some(names) => return Option::Some(names),
+                        None => item_index.set(item_index.get() - 1),
                     }
                 }
             },
-            Option::None => (),
+            None => (),
         };
         source_index.set(source_index.get() - 1)
     };
@@ -222,20 +222,20 @@ fn signature_parameters(
     };
     let names = signature_parameter_names(value, fact);
     let name_start = match names {
-        Option::Some(values) => if is_method
+        Some(values) => if is_method
             && values.len() > fact.argument_spans.len()
         {
             1
         } else {
             0
         },
-        Option::None => 0,
+        None => 0,
     };
     let result = Vec::new();
     for index in range(type_start, types.len()) {
         let type_text = tast::diagnostic_type_text(types.get(index));
         let name = match names {
-            Option::Some(values) => {
+            Some(values) => {
                 let name_index = index - type_start + name_start;
                 if name_index < values.len() {
                     values.get(name_index)
@@ -243,7 +243,7 @@ fn signature_parameters(
                     ""
                 }
             },
-            Option::None => "",
+            None => "",
         };
         result.push(if name == "" {
             type_text
@@ -297,8 +297,8 @@ pub fn signature_help(
     } else {
         Option::None
     } {
-        Option::Some(fact) => match tast::resolve_type(fact.callee_ty) {
-            tast::Type::Func { params, ret_ty } => {
+        Some(fact) => match tast::resolve_type(fact.callee_ty) {
+            Func { params, ret_ty } => {
                 let parameters = signature_parameters(value, fact, params);
                 let return_type = tast::diagnostic_type_text(ret_ty);
                 Option::Some(SignatureResult {
@@ -313,6 +313,6 @@ pub fn signature_help(
             },
             _ => Option::None,
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }

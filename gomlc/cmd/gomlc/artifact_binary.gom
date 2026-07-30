@@ -240,8 +240,8 @@ fn artifact_binary_read_uleb128(
     let index = Ref::new(0);
     while index.get() < 10 {
         let byte = match artifact_binary_read_u8(reader) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         if index.get() == 9 && byte > 1 {
             return Result::Err(artifact_binary_reader_error(
@@ -270,10 +270,10 @@ fn artifact_binary_read_zigzag(
     reader: ArtifactBinaryReader,
 ) -> Result[int64, string] {
     match artifact_binary_read_uleb128(reader) {
-        Result::Ok(value) => Result::Ok(
+        Ok(value) => Result::Ok(
             ((value >> 1) as int64) ^ -((value & 1) as int64),
         ),
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -281,13 +281,13 @@ fn artifact_binary_read_bool(
     reader: ArtifactBinaryReader,
 ) -> Result[bool, string] {
     match artifact_binary_read_u8(reader) {
-        Result::Ok(0) => Result::Ok(false),
-        Result::Ok(1) => Result::Ok(true),
-        Result::Ok(_) => Result::Err(artifact_binary_reader_error(
+        Ok(0) => Result::Ok(false),
+        Ok(1) => Result::Ok(true),
+        Ok(_) => Result::Err(artifact_binary_reader_error(
             reader,
             "invalid boolean tag",
         )),
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -295,7 +295,7 @@ fn artifact_binary_read_length(
     reader: ArtifactBinaryReader,
 ) -> Result[int, string] {
     match artifact_binary_read_uleb128(reader) {
-        Result::Ok(value) => if value > 2147483647 {
+        Ok(value) => if value > 2147483647 {
             Result::Err(artifact_binary_reader_error(
                 reader,
                 "collection length exceeds limit",
@@ -303,7 +303,7 @@ fn artifact_binary_read_length(
         } else {
             Result::Ok(value as int)
         },
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -311,8 +311,8 @@ fn artifact_binary_read_bytes(
     reader: ArtifactBinaryReader,
 ) -> Result[bytes::Bytes, string] {
     let length = match artifact_binary_read_length(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if length > artifact_binary_reader_remaining(reader) {
         Result::Err(artifact_binary_reader_error(
@@ -354,14 +354,14 @@ fn artifact_binary_read_string(
     reader: ArtifactBinaryReader,
 ) -> Result[string, string] {
     match artifact_binary_read_bytes(reader) {
-        Result::Ok(value) => match value.to_string() {
-            Result::Ok(value) => Result::Ok(value),
-            Result::Err(_) => Result::Err(artifact_binary_reader_error(
+        Ok(value) => match value.to_string() {
+            Ok(value) => Result::Ok(value),
+            Err(_) => Result::Err(artifact_binary_reader_error(
                 reader,
                 "invalid UTF-8 string",
             )),
         },
-        Result::Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error),
     }
 }
 

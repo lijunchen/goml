@@ -90,7 +90,7 @@ fn option_value(
         }
     } else {
         match inline_value(argument, name) {
-            Option::Some(value) => {
+            Some(value) => {
                 index.set(index.get() + 1);
                 if value == "" {
                     Result::Err(name + " requires a value")
@@ -98,7 +98,7 @@ fn option_value(
                     Result::Ok(Option::Some(value))
                 }
             },
-            Option::None => Result::Ok(Option::None),
+            None => Result::Ok(Option::None),
         }
     }
 }
@@ -114,17 +114,17 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
             argument,
             "--target-dir",
         ) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         match parsed {
-            Option::Some(value) => match target_dir.get() {
-                Option::Some(_) => {
+            Some(value) => match target_dir.get() {
+                Some(_) => {
                     return Result::Err("--target-dir cannot be repeated")
                 },
-                Option::None => target_dir.set(Option::Some(value)),
+                None => target_dir.set(Option::Some(value)),
             },
-            Option::None => if util::starts_with(argument, "-") {
+            None => if util::starts_with(argument, "-") {
                 return Result::Err("unknown option " + argument)
             } else {
                 return Result::Err("unexpected argument " + argument)
@@ -145,8 +145,8 @@ fn parse_duration(value: string) -> Result[int, string] {
         return Result::Err("duration must end in ms, s, or m")
     };
     let parsed = match util::parse_positive_int(parts.0) {
-        Result::Ok(value) => value,
-        Result::Err(_) => return Result::Err("invalid duration `" + value + "`"),
+        Ok(value) => value,
+        Err(_) => return Result::Err("invalid duration `" + value + "`"),
     };
     let duration = parsed * parts.1;
     if duration / parts.1 != parsed {
@@ -225,16 +225,16 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                 argument,
                 "--target-dir",
             ) {
-                Result::Ok(value) => value,
-                Result::Err(message) => return Result::Err(message),
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
             };
             if match parsed_target_dir {
-                Option::Some(_) => true,
-                Option::None => false,
+                Some(_) => true,
+                None => false,
             } {
                 if match target_dir.get() {
-                    Option::Some(_) => true,
-                    Option::None => false,
+                    Some(_) => true,
+                    None => false,
                 } {
                     return Result::Err("--target-dir cannot be repeated")
                 } else {
@@ -247,16 +247,16 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                     argument,
                     "--compiler",
                 ) {
-                    Result::Ok(value) => value,
-                    Result::Err(message) => return Result::Err(message),
+                    Ok(value) => value,
+                    Err(message) => return Result::Err(message),
                 };
                 if match parsed_compiler {
-                    Option::Some(_) => true,
-                    Option::None => false,
+                    Some(_) => true,
+                    None => false,
                 } {
                     if match compiler.get() {
-                        Option::Some(_) => true,
-                        Option::None => false,
+                        Some(_) => true,
+                        None => false,
                     } {
                         return Result::Err("--compiler cannot be repeated")
                     } else {
@@ -269,20 +269,20 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         argument,
                         "--timeout",
                     ) {
-                        Result::Ok(value) => value,
-                        Result::Err(message) => return Result::Err(message),
+                        Ok(value) => value,
+                        Err(message) => return Result::Err(message),
                     };
                     if match parsed_timeout {
-                        Option::Some(_) => true,
-                        Option::None => false,
+                        Some(_) => true,
+                        None => false,
                     } {
                         let value = match parsed_timeout {
-                            Option::Some(value) => value,
-                            Option::None => "30s",
+                            Some(value) => value,
+                            None => "30s",
                         };
                         match parse_duration(value) {
-                            Result::Ok(value) => test_timeout_ms.set(value),
-                            Result::Err(message) => return Result::Err(message),
+                            Ok(value) => test_timeout_ms.set(value),
+                            Err(message) => return Result::Err(message),
                         }
                     } else {
                     let parsed_jobs = match option_value(
@@ -291,23 +291,23 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         argument,
                         "--jobs",
                     ) {
-                        Result::Ok(value) => value,
-                        Result::Err(message) => return Result::Err(message),
+                        Ok(value) => value,
+                        Err(message) => return Result::Err(message),
                     };
                     if match parsed_jobs {
-                        Option::Some(_) => true,
-                        Option::None => false,
+                        Some(_) => true,
+                        None => false,
                     } {
                         let value = match parsed_jobs {
-                            Option::Some(value) => value,
-                            Option::None => "1",
+                            Some(value) => value,
+                            None => "1",
                         };
                         match util::parse_positive_int(value) {
-                            Result::Ok(value) => {
+                            Ok(value) => {
                                 test_jobs.set(value);
                                 build_jobs.set(value)
                             },
-                            Result::Err(message) => return Result::Err(message),
+                            Err(message) => return Result::Err(message),
                         }
                     } else {
                         let parsed_kind = match option_value(
@@ -316,16 +316,16 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             argument,
                             "--kind",
                         ) {
-                            Result::Ok(value) => value,
-                            Result::Err(message) => return Result::Err(message),
+                            Ok(value) => value,
+                            Err(message) => return Result::Err(message),
                         };
                         if match parsed_kind {
-                            Option::Some(_) => true,
-                            Option::None => false,
+                            Some(_) => true,
+                            None => false,
                         } {
                             let value = match parsed_kind {
-                                Option::Some(value) => value,
-                                Option::None => "all",
+                                Some(value) => value,
+                                None => "all",
                             };
                             if value == "internal"
                                 || value == "external"
@@ -344,11 +344,11 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             argument,
                             "--format",
                         ) {
-                            Result::Ok(value) => value,
-                            Result::Err(message) => return Result::Err(message),
+                            Ok(value) => value,
+                            Err(message) => return Result::Err(message),
                         };
                             match parsed_format {
-                            Option::Some(value) => if value == "json" {
+                            Some(value) => if value == "json" {
                                 test_formats.push(value)
                             } else if value == "text" {
                                 test_formats.push(value)
@@ -357,11 +357,11 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                     "--format must be text or json",
                                 )
                             },
-                            Option::None => if util::starts_with(argument, "-") {
+                            None => if util::starts_with(argument, "-") {
                                 return Result::Err("unknown option " + argument)
                             } else if match test_filter.get() {
-                                Option::Some(_) => true,
-                                Option::None => false,
+                                Some(_) => true,
+                                None => false,
                             } {
                                 return Result::Err("unexpected argument " + argument)
                             } else {
@@ -379,15 +379,15 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         argument,
                         "--jobs",
                     ) {
-                        Result::Ok(value) => value,
-                        Result::Err(message) => return Result::Err(message),
+                        Ok(value) => value,
+                        Err(message) => return Result::Err(message),
                     };
                     match parsed_jobs {
-                        Option::Some(value) => match util::parse_positive_int(value) {
-                            Result::Ok(value) => build_jobs.set(value),
-                            Result::Err(message) => return Result::Err(message),
+                        Some(value) => match util::parse_positive_int(value) {
+                            Ok(value) => build_jobs.set(value),
+                            Err(message) => return Result::Err(message),
                         },
-                        Option::None => if util::starts_with(argument, "-") {
+                        None => if util::starts_with(argument, "-") {
                             return Result::Err("unknown option " + argument)
                         } else if command == "run" && targets.len() == 0 {
                             targets.push(argument);
@@ -440,8 +440,8 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
         project::load_context(args.target_dir, args.compiler)
     };
     let context = match context_result {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let plan = if args.command == "check" {
         project::check_plan(context, args.include_tests)
@@ -453,8 +453,8 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
         project::test_plan(context, args.test_kind)
     };
     let plan = match plan {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     match project::execute_plan(
         context,
@@ -462,18 +462,18 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
         args.dry_run,
         args.build_jobs,
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => return Result::Err(message),
+        Ok(()) => (),
+        Err(message) => return Result::Err(message),
     };
     if args.command == "run" {
         match plan.executable {
-            Option::Some(executable) => project::run_executable(
+            Some(executable) => project::run_executable(
                 context,
                 executable,
                 args.program_args,
                 args.dry_run,
             ),
-            Option::None => Result::Err("build plan omitted executable"),
+            None => Result::Err("build plan omitted executable"),
         }
     } else if args.command == "test" && !args.dry_run {
         let groups = Vec::new();
@@ -527,8 +527,8 @@ fn main() -> unit {
             fail("unexpected argument " + args.get(2))
         } else {
             match commands::print_home() {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
+                Ok(()) => (),
+                Err(message) => fail(message),
             }
         }
     } else if args.get(1) == "new" {
@@ -538,8 +538,8 @@ fn main() -> unit {
             io::println(command_help("new"))
         } else {
             match commands::parse_new(args) {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
+                Ok(()) => (),
+                Err(message) => fail(message),
             }
         }
     } else if args.get(1) == "clean" {
@@ -549,11 +549,11 @@ fn main() -> unit {
             io::println(command_help("clean"))
         } else {
             match parse_clean(args) {
-                Result::Ok(target_dir) => match project::clean(target_dir) {
-                    Result::Ok(()) => (),
-                    Result::Err(message) => fail(message),
+                Ok(target_dir) => match project::clean(target_dir) {
+                    Ok(()) => (),
+                    Err(message) => fail(message),
                 },
-                Result::Err(message) => fail(message),
+                Err(message) => fail(message),
             }
         }
     } else if args.get(1) == "update"
@@ -573,17 +573,17 @@ fn main() -> unit {
                 commands::remove_dependency(args)
             };
             match result {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
+                Ok(()) => (),
+                Err(message) => fail(message),
             }
         }
     } else {
         match parse_cli(args) {
-            Result::Ok(value) => match run_command(value) {
-                Result::Ok(()) => (),
-                Result::Err(message) => fail(message),
+            Ok(value) => match run_command(value) {
+                Ok(()) => (),
+                Err(message) => fail(message),
             },
-            Result::Err(message) => fail(message),
+            Err(message) => fail(message),
         }
     }
 }

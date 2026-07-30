@@ -23,8 +23,8 @@ fn artifact_binary_interface_sections(
     let writer = new_artifact_binary_value_stream(table);
     artifact_json_interface_unit(writer, value);
     let payload = match artifact_binary_stream_finish(writer) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     Result::Ok(
         Vec::new()
@@ -47,8 +47,8 @@ fn encode_artifact_interface_binary(
     value: ArtifactInterfaceUnit,
 ) -> Result[bytes::Bytes, string] {
     let sections = match artifact_binary_interface_sections(value) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     encode_artifact_binary_container(1, sections)
 }
@@ -100,8 +100,8 @@ fn decode_artifact_interface_binary(
     data: bytes::Bytes,
 ) -> Result[ArtifactInterfaceUnit, string] {
     let container = match decode_artifact_binary_container(data) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if container.kind != 1 {
         return Result::Err("binary artifact is not an interface")
@@ -109,15 +109,15 @@ fn decode_artifact_interface_binary(
         ()
     };
     match artifact_binary_validate_interface_sections(container) {
-        Result::Ok(()) => (),
-        Result::Err(error) => return Result::Err(error),
+        Ok(()) => (),
+        Err(error) => return Result::Err(error),
     };
     let string_section = match artifact_binary_find_section(
         container,
         artifact_binary_string_table_section_id(),
     ) {
-        Option::Some(value) => value,
-        Option::None => {
+        Some(value) => value,
+        None => {
             return Result::Err(
                 "binary interface artifact is missing string table",
             )
@@ -127,16 +127,16 @@ fn decode_artifact_interface_binary(
         container,
         artifact_binary_value_section_id(),
     ) {
-        Option::Some(value) => value,
-        Option::None => {
+        Some(value) => value,
+        None => {
             return Result::Err("binary interface artifact is missing value")
         },
     };
     let table = match decode_artifact_binary_string_table(
         string_section.data,
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     decode_artifact_interface_binary_value(table, value_section.data)
 }

@@ -7,47 +7,47 @@ use std::testing;
 fn parses_and_encodes_json_values() -> unit {
     let input = "{\"name\":\"GoML\\n语言\",\"id\":42,\"ok\":true,\"items\":[null,\"x\"]}";
     match json::parse(input) {
-        Result::Ok(value) => {
+        Ok(value) => {
             match json::field(value, "name") {
-                Option::Some(name) => match json::as_string(name) {
-                    Option::Some(text) => {
+                Some(name) => match json::as_string(name) {
+                    Some(text) => {
                         testing::assert_eq(text, "GoML\n语言")
                     },
-                    Option::None => testing::fail("expected string name"),
+                    None => testing::fail("expected string name"),
                 },
-                Option::None => testing::fail("expected name"),
+                None => testing::fail("expected name"),
             };
             match json::parse(json::encode(value)) {
-                Result::Ok(roundtrip) => match json::field(roundtrip, "id") {
-                    Option::Some(id) => match json::as_int(id) {
-                        Option::Some(number) => testing::assert_eq(number, 42),
-                        Option::None => testing::fail("expected integer id"),
+                Ok(roundtrip) => match json::field(roundtrip, "id") {
+                    Some(id) => match json::as_int(id) {
+                        Some(number) => testing::assert_eq(number, 42),
+                        None => testing::fail("expected integer id"),
                     },
-                    Option::None => testing::fail("expected id"),
+                    None => testing::fail("expected id"),
                 },
-                Result::Err(error) => testing::fail(error),
+                Err(error) => testing::fail(error),
             }
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
 #[test]
 fn rejects_invalid_json() -> unit {
     match json::parse("{\"bad\": [1,]}") {
-        Result::Ok(_) => testing::fail("expected invalid JSON"),
-        Result::Err(_) => (),
+        Ok(_) => testing::fail("expected invalid JSON"),
+        Err(_) => (),
     };
     match json::parse("01") {
-        Result::Ok(_) => testing::fail("expected invalid number"),
-        Result::Err(_) => (),
+        Ok(_) => testing::fail("expected invalid number"),
+        Err(_) => (),
     };
     match json::parse("\"\\ud83d\\ude00\"") {
-        Result::Ok(json::Value::String(value)) => {
+        Ok(String(value)) => {
             testing::assert_eq(value, "😀")
         },
-        Result::Ok(_) => testing::fail("expected string"),
-        Result::Err(error) => testing::fail(error),
+        Ok(_) => testing::fail("expected string"),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -71,22 +71,22 @@ fn converts_utf16_positions_and_file_uris() -> unit {
             character: 2,
         },
     ) {
-        Option::Some(_) => testing::fail("expected invalid surrogate position"),
-        Option::None => (),
+        Some(_) => testing::fail("expected invalid surrogate position"),
+        None => (),
     };
     let uri = path_to_uri("/tmp/GoML 语言/main.gom");
     match uri_to_path(uri) {
-        Result::Ok(value) => {
+        Ok(value) => {
             testing::assert_eq(value, "/tmp/GoML 语言/main.gom")
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     };
     match uri_to_path("file:///tmp/%FF.gom") {
-        Result::Err(error) => testing::assert_eq(
+        Err(error) => testing::assert_eq(
             error,
             "URI path is not valid UTF-8",
         ),
-        Result::Ok(_) => testing::fail("expected invalid UTF-8 URI"),
+        Ok(_) => testing::fail("expected invalid UTF-8 URI"),
     }
 }
 
@@ -106,12 +106,12 @@ fn frames_and_parses_json_rpc_metadata() -> unit {
             + body,
     );
     match content_length("Content-Length: 123\r\n") {
-        Result::Ok(value) => testing::assert_eq(value, 123),
-        Result::Err(error) => testing::fail(error),
+        Ok(value) => testing::assert_eq(value, 123),
+        Err(error) => testing::fail(error),
     };
     match content_length("content-length:\t42\n") {
-        Result::Ok(value) => testing::assert_eq(value, 42),
-        Result::Err(error) => testing::fail(error),
+        Ok(value) => testing::assert_eq(value, 42),
+        Err(error) => testing::fail(error),
     };
     testing::assert(is_content_length_header("Content-Length: 123\r\n"));
     testing::assert(is_content_length_header("CONTENT-LENGTH: 123\r\n"));

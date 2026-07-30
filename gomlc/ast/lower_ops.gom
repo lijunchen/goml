@@ -5,25 +5,25 @@ use gomlc::lexer;
 
 fn is_binary_operator(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::Plus
-        | lexer::TokenKind::Minus
-        | lexer::TokenKind::Star
-        | lexer::TokenKind::Slash
-        | lexer::TokenKind::Percent
-        | lexer::TokenKind::AndAnd
-        | lexer::TokenKind::Amp
-        | lexer::TokenKind::OrOr
-        | lexer::TokenKind::Pipe
-        | lexer::TokenKind::Caret
-        | lexer::TokenKind::Less
-        | lexer::TokenKind::LessLess
-        | lexer::TokenKind::Greater
-        | lexer::TokenKind::GreaterGreater
-        | lexer::TokenKind::LessEq
-        | lexer::TokenKind::GreaterEq
-        | lexer::TokenKind::EqEq
-        | lexer::TokenKind::NotEq
-        | lexer::TokenKind::Dot => true,
+        Plus
+        | Minus
+        | Star
+        | Slash
+        | Percent
+        | AndAnd
+        | Amp
+        | OrOr
+        | Pipe
+        | Caret
+        | Less
+        | LessLess
+        | Greater
+        | GreaterGreater
+        | LessEq
+        | GreaterEq
+        | EqEq
+        | NotEq
+        | Dot => true,
         _ => false,
     }
 }
@@ -41,40 +41,40 @@ fn binary_operator_token(node: LocatedNode) -> Option[LocatedToken] {
 
 fn binary_operator(kind: lexer::TokenKind) -> Option[BinaryOp] {
     match kind {
-        lexer::TokenKind::Plus => Option::Some(BinaryOp::Add),
-        lexer::TokenKind::Minus => Option::Some(BinaryOp::Sub),
-        lexer::TokenKind::Star => Option::Some(BinaryOp::Mul),
-        lexer::TokenKind::Slash => Option::Some(BinaryOp::Div),
-        lexer::TokenKind::Percent => Option::Some(BinaryOp::Rem),
-        lexer::TokenKind::Amp => Option::Some(BinaryOp::BitAnd),
-        lexer::TokenKind::Pipe => Option::Some(BinaryOp::BitOr),
-        lexer::TokenKind::Caret => Option::Some(BinaryOp::BitXor),
-        lexer::TokenKind::LessLess => Option::Some(BinaryOp::Shl),
-        lexer::TokenKind::GreaterGreater => Option::Some(BinaryOp::Shr),
-        lexer::TokenKind::AndAnd => Option::Some(BinaryOp::And),
-        lexer::TokenKind::OrOr => Option::Some(BinaryOp::Or),
-        lexer::TokenKind::Less => Option::Some(BinaryOp::Less),
-        lexer::TokenKind::Greater => Option::Some(BinaryOp::Greater),
-        lexer::TokenKind::LessEq => Option::Some(BinaryOp::LessEq),
-        lexer::TokenKind::GreaterEq => Option::Some(BinaryOp::GreaterEq),
-        lexer::TokenKind::EqEq => Option::Some(BinaryOp::Eq),
-        lexer::TokenKind::NotEq => Option::Some(BinaryOp::NotEq),
+        Plus => Option::Some(BinaryOp::Add),
+        Minus => Option::Some(BinaryOp::Sub),
+        Star => Option::Some(BinaryOp::Mul),
+        Slash => Option::Some(BinaryOp::Div),
+        Percent => Option::Some(BinaryOp::Rem),
+        Amp => Option::Some(BinaryOp::BitAnd),
+        Pipe => Option::Some(BinaryOp::BitOr),
+        Caret => Option::Some(BinaryOp::BitXor),
+        LessLess => Option::Some(BinaryOp::Shl),
+        GreaterGreater => Option::Some(BinaryOp::Shr),
+        AndAnd => Option::Some(BinaryOp::And),
+        OrOr => Option::Some(BinaryOp::Or),
+        Less => Option::Some(BinaryOp::Less),
+        Greater => Option::Some(BinaryOp::Greater),
+        LessEq => Option::Some(BinaryOp::LessEq),
+        GreaterEq => Option::Some(BinaryOp::GreaterEq),
+        EqEq => Option::Some(BinaryOp::Eq),
+        NotEq => Option::Some(BinaryOp::NotEq),
         _ => Option::None,
     }
 }
 
 fn compound_assignment_operator(kind: lexer::TokenKind) -> Option[BinaryOp] {
     match kind {
-        lexer::TokenKind::PlusEq => Option::Some(BinaryOp::Add),
-        lexer::TokenKind::MinusEq => Option::Some(BinaryOp::Sub),
-        lexer::TokenKind::StarEq => Option::Some(BinaryOp::Mul),
-        lexer::TokenKind::SlashEq => Option::Some(BinaryOp::Div),
-        lexer::TokenKind::PercentEq => Option::Some(BinaryOp::Rem),
-        lexer::TokenKind::AmpEq => Option::Some(BinaryOp::BitAnd),
-        lexer::TokenKind::PipeEq => Option::Some(BinaryOp::BitOr),
-        lexer::TokenKind::CaretEq => Option::Some(BinaryOp::BitXor),
-        lexer::TokenKind::LessLessEq => Option::Some(BinaryOp::Shl),
-        lexer::TokenKind::GreaterGreaterEq => Option::Some(BinaryOp::Shr),
+        PlusEq => Option::Some(BinaryOp::Add),
+        MinusEq => Option::Some(BinaryOp::Sub),
+        StarEq => Option::Some(BinaryOp::Mul),
+        SlashEq => Option::Some(BinaryOp::Div),
+        PercentEq => Option::Some(BinaryOp::Rem),
+        AmpEq => Option::Some(BinaryOp::BitAnd),
+        PipeEq => Option::Some(BinaryOp::BitOr),
+        CaretEq => Option::Some(BinaryOp::BitXor),
+        LessLessEq => Option::Some(BinaryOp::Shl),
+        GreaterGreaterEq => Option::Some(BinaryOp::Shr),
         _ => Option::None,
     }
 }
@@ -125,7 +125,7 @@ fn apply_trailing_args(
         Option::Some(expression)
     } else {
         match expression {
-            Expr::Path {
+            Path {
                 path,
                 owner_type_args,
                 member_type_args,
@@ -140,12 +140,12 @@ fn apply_trailing_args(
                 args: trailing_args,
                 span: expr_span,
             }),
-            Expr::Call { func, args, span: expr_span } => {
+            Call { func, args, span: expr_span } => {
                 let result = Ref::new(Expr::Call { func, args, span: expr_span });
                 for arg in trailing_args {
                     result.set(Expr::Call { func: result.get(), args: Vec::new(), span: expr_span });
                     match result.get() {
-                        Expr::Call { func: next_func, args: next_args, span: next_span } => {
+                        Call { func: next_func, args: next_args, span: next_span } => {
                             next_args.push(arg);
                             result.set(Expr::Call {
                                 func: next_func,
@@ -158,20 +158,20 @@ fn apply_trailing_args(
                 };
                 Option::Some(result.get())
             },
-            Expr::ConstructorValue { constructor: path, span: expr_span } => {
+            ConstructorValue { constructor: path, span: expr_span } => {
                 Option::Some(Expr::Constr {
                     constructor: path,
                     args: trailing_args,
                     span: expr_span,
                 })
             },
-            Expr::Constr { constructor: path, args, span: expr_span } => {
+            Constr { constructor: path, args, span: expr_span } => {
                 for arg in trailing_args {
                     args.push(arg)
                 };
                 Option::Some(Expr::Constr { constructor: path, args, span: expr_span })
             },
-            Expr::Field {
+            Field {
                 expr: base,
                 field_name: field,
                 method_type_args,
@@ -186,45 +186,45 @@ fn apply_trailing_args(
                 args: trailing_args,
                 span: expr_span,
             }),
-            Expr::Index { base, index, span: expr_span } => match apply_trailing_args(
+            Index { base, index, span: expr_span } => match apply_trailing_args(
                 ctx,
                 index,
                 trailing_args,
                 value_span,
             ) {
-                Option::Some(next_index) => Option::Some(Expr::Index {
+                Some(next_index) => Option::Some(Expr::Index {
                     base,
                     index: next_index,
                     span: expr_span,
                 }),
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Expr::Binary { op, lhs, rhs, span: expr_span } => match apply_trailing_args(
+            Binary { op, lhs, rhs, span: expr_span } => match apply_trailing_args(
                 ctx,
                 rhs,
                 trailing_args,
                 value_span,
             ) {
-                Option::Some(next_rhs) => Option::Some(Expr::Binary {
+                Some(next_rhs) => Option::Some(Expr::Binary {
                     op,
                     lhs,
                     rhs: next_rhs,
                     span: expr_span,
                 }),
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Expr::Unary { op, expr: inner, span: expr_span } => match apply_trailing_args(
+            Unary { op, expr: inner, span: expr_span } => match apply_trailing_args(
                 ctx,
                 inner,
                 trailing_args,
                 value_span,
             ) {
-                Option::Some(next_inner) => Option::Some(Expr::Unary {
+                Some(next_inner) => Option::Some(Expr::Unary {
                     op,
                     expr: next_inner,
                     span: expr_span,
                 }),
-                Option::None => Option::None,
+                None => Option::None,
             },
             _ => {
                 push_error(ctx, value_span, "Cannot apply arguments to expression");
@@ -237,35 +237,35 @@ fn apply_trailing_args(
 fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
     let args: Vec[Expr] = Vec::new();
     match first_child(node, cst::NodeKind::ARG_LIST) {
-        Option::Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
+        Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
             let values = expr_children(arg);
             if values.len() > 0 {
                 match lower_expr(ctx, values.get(0)) {
-                    Option::Some(value) => args.push(value),
-                    Option::None => (),
+                    Some(value) => args.push(value),
+                    None => (),
                 }
             } else {
                 push_error(ctx, node_span(arg), "Arg has no expr")
             }
         },
-        Option::None => (),
+        None => (),
     };
     args
 }
 
 fn is_direct_call_callee(kind: cst::NodeKind) -> bool {
     match kind {
-        cst::NodeKind::EXPR_CALL
-        | cst::NodeKind::EXPR_CLOSURE
-        | cst::NodeKind::EXPR_PAREN => true,
+        EXPR_CALL
+        | EXPR_CLOSURE
+        | EXPR_PAREN => true,
         _ => false,
     }
 }
 
 fn is_dot_binary(node: LocatedNode) -> bool {
     match binary_operator_token(node) {
-        Option::Some(token) => lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Dot),
-        Option::None => false,
+        Some(token) => lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Dot),
+        None => false,
     }
 }
 
@@ -279,8 +279,8 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         let callee = callees.get(0);
         if cst::node_kind_equal(node_kind(callee), cst::NodeKind::EXPR_IDENT) {
             match lower_ident_parts(ctx, callee) {
-                Option::Some(parts) => match path_last(parts.path) {
-                    Option::Some(last) => {
+                Some(parts) => match path_last(parts.path) {
+                    Some(last) => {
                         let call = if parts.owner_type_args.len() == 0
                             && parts.member_type_args.len() == 0
                             && ident_starts_upper(last)
@@ -304,22 +304,22 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
                         };
                         apply_trailing_args(ctx, call, trailing_args, node_span(node))
                     },
-                    Option::None => {
+                    None => {
                         push_error(ctx, node_span(node), "Path expression is missing a name");
                         Option::None
                     },
                 },
-                Option::None => Option::None,
+                None => Option::None,
             }
         } else if is_direct_call_callee(node_kind(callee)) || is_dot_binary(callee) {
             match lower_expr(ctx, callee) {
-                Option::Some(func) => apply_trailing_args(
+                Some(func) => apply_trailing_args(
                     ctx,
                     Expr::Call { func, args, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
-                Option::None => Option::None,
+                None => Option::None,
             }
         } else {
             for arg in trailing_args {
@@ -337,7 +337,7 @@ fn lower_prefix_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         Option::None
     } else {
         match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Option::Some(inner) => {
+            Some(inner) => {
                 let op = if has_token(node, lexer::TokenKind::Minus) {
                     Option::Some(UnaryOp::Neg)
                 } else if has_token(node, lexer::TokenKind::Bang) {
@@ -348,19 +348,19 @@ fn lower_prefix_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
                     Option::None
                 };
                 match op {
-                    Option::Some(value) => apply_trailing_args(
+                    Some(value) => apply_trailing_args(
                         ctx,
                         Expr::Unary { op: value, expr: inner, span: node_span(node) },
                         trailing_args,
                         node_span(node),
                     ),
-                    Option::None => {
+                    None => {
                         push_error(ctx, node_span(node), "Prefix expression missing operator");
                         Option::None
                     },
                 }
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -372,16 +372,16 @@ fn lower_cast_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         Option::None
     } else {
         match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Option::Some(value) => match lower_ty(ctx, types.get(0)) {
-                Option::Some(ty) => apply_trailing_args(
+            Some(value) => match lower_ty(ctx, types.get(0)) {
+                Some(ty) => apply_trailing_args(
                     ctx,
                     Expr::Cast { expr: value, ty, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -396,16 +396,16 @@ fn lower_index_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         Option::None
     } else {
         match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Option::Some(base) => match lower_expr(ctx, values.get(1)) {
-                Option::Some(index) => apply_trailing_args(
+            Some(base) => match lower_expr(ctx, values.get(1)) {
+                Some(index) => apply_trailing_args(
                     ctx,
                     Expr::Index { base, index, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -417,13 +417,13 @@ fn lower_try_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
         Option::None
     } else {
         match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Option::Some(value) => apply_trailing_args(
+            Some(value) => apply_trailing_args(
                 ctx,
                 Expr::Try { expr: value, span: node_span(node) },
                 trailing_args,
                 node_span(node),
             ),
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -438,16 +438,16 @@ fn lower_range_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         Option::None
     } else {
         match lower_expr(ctx, values.get(0)) {
-            Option::Some(start) => match lower_expr(ctx, values.get(1)) {
-                Option::Some(end) => apply_trailing_args(
+            Some(start) => match lower_expr(ctx, values.get(1)) {
+                Some(end) => apply_trailing_args(
                     ctx,
                     Expr::Range { start, end, span: node_span(node) },
                     trailing_args,
                     node_span(node),
                 ),
-                Option::None => Option::None,
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -462,32 +462,32 @@ fn lower_binary_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         Option::None
     } else {
         match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Option::Some(lhs) => match binary_operator_token(node) {
-                Option::Some(operator) => if lexer::token_kind_equal(operator.token.kind, lexer::TokenKind::Dot) {
+            Some(lhs) => match binary_operator_token(node) {
+                Some(operator) => if lexer::token_kind_equal(operator.token.kind, lexer::TokenKind::Dot) {
                     lower_dot_expr(ctx, node, lhs, values.get(1), trailing_args)
                 } else {
                     match binary_operator(operator.token.kind) {
-                        Option::Some(op) => match lower_expr_with_args(ctx, values.get(1), trailing_args) {
-                            Option::Some(rhs) => Option::Some(Expr::Binary {
+                        Some(op) => match lower_expr_with_args(ctx, values.get(1), trailing_args) {
+                            Some(rhs) => Option::Some(Expr::Binary {
                                 op,
                                 lhs,
                                 rhs,
                                 span: node_span(node),
                             }),
-                            Option::None => Option::None,
+                            None => Option::None,
                         },
-                        Option::None => {
+                        None => {
                             push_error(ctx, token_span(operator), "Unsupported binary operator");
                             Option::None
                         },
                     }
                 },
-                Option::None => {
+                None => {
                     push_error(ctx, node_span(node), "Binary expression missing operator");
                     Option::None
                 },
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -501,27 +501,27 @@ fn lower_dot_expr(
 ) -> Option[Expr] {
     if cst::node_kind_equal(node_kind(rhs), cst::NodeKind::EXPR_INT) {
         match first_token(rhs, lexer::TokenKind::IntLit) {
-            Option::Some(token) => match parse_decimal_int32(
+            Some(token) => match parse_decimal_int32(
                 strip_suffix(token.token.text, ""),
             ) {
-                Option::Some(index) => Option::Some(Expr::Proj {
+                Some(index) => Option::Some(Expr::Proj {
                     tuple: lhs,
                     index,
                     span: node_span(node),
                 }),
-                Option::None => {
+                None => {
                     push_error(ctx, token_span(token), "Invalid tuple index: " + token.token.text);
                     Option::None
                 },
             },
-            Option::None => {
+            None => {
                 push_error(ctx, node_span(rhs), "Tuple projection missing index");
                 Option::None
             },
         }
     } else if cst::node_kind_equal(node_kind(rhs), cst::NodeKind::EXPR_IDENT) {
         match lower_ident_parts(ctx, rhs) {
-            Option::Some(parts) => {
+            Some(parts) => {
                 if parts.path.segments.len() == 0 {
                     push_error(ctx, node_span(rhs), "Field access missing name");
                     Option::None
@@ -545,7 +545,7 @@ fn lower_dot_expr(
                     }
                 }
             },
-            Option::None => {
+            None => {
                 push_error(ctx, node_span(rhs), "Field access missing name");
                 Option::None
             },

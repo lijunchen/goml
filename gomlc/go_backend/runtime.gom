@@ -325,8 +325,8 @@ pub fn emit_runtime_hook_items(
     let required_imports: Vec[string] = Vec::new();
     for hook in hooks {
         match integer_to_string_hook_type(hook) {
-            Option::Some(_) => require_runtime_import(required_imports, "fmt"),
-            Option::None => {
+            Some(_) => require_runtime_import(required_imports, "fmt"),
+            None => {
                 if hook == "core.string_print" || hook == "core.string_println" {
                     require_runtime_import(required_imports, "fmt")
                 } else if hook == "core.string_parse_float32"
@@ -614,8 +614,8 @@ pub fn emit_runtime_hook_items(
                 ()
             };
             match integer_to_string_hook_type(key) {
-                Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
-                Option::None => {
+                Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
+                None => {
                     if key == "internal.string_decode_utf8_at_native" {
                         items.push(string_decode_utf8_at_native_item())
                     } else if key == "core.unit_to_string" {
@@ -636,10 +636,10 @@ pub fn emit_runtime_hook_items(
                         items.push(string_output_hook_item(key, "_goml_fmt.Println"))
                     } else {
                         match extra_core_runtime_hook_item(key) {
-                            Option::Some(item) => items.push(item),
-                            Option::None => match standard_runtime_hook_item(key) {
-                                Option::Some(item) => items.push(item),
-                                Option::None => (),
+                            Some(item) => items.push(item),
+                            None => match standard_runtime_hook_item(key) {
+                                Some(item) => items.push(item),
+                                None => (),
                             },
                         }
                     }
@@ -658,7 +658,7 @@ pub fn ref_helper_name(prefix: string, ref_ty: tast::Type) -> string {
 fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     match tast::resolve_type(array_ty) {
-        tast::Type::Array { len: _, elem } => {
+        Array { len: _, elem } => {
             let lowered_array = lower_type(array_ty);
             let lowered_elem = lower_type(elem);
             let get_params: Vec[(string, Type)] = Vec::new();
@@ -703,7 +703,7 @@ fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
 fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     match tast::resolve_type(vec_ty) {
-        tast::Type::VecType { elem } => {
+        VecType { elem } => {
             let lowered_vec = lower_type(vec_ty);
             let lowered_elem = lower_type(elem);
             let new_fields: Vec[(string, Expr)] = Vec::new();
@@ -949,7 +949,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
 fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     match tast::resolve_type(ref_ty) {
-        tast::Type::RefType { elem } => {
+        RefType { elem } => {
             let elem_ty = lower_type(elem);
             let lowered_ref_ty = lower_type(ref_ty);
             let struct_ty = Type::Named { name: ref_struct_name(elem) };
@@ -1133,14 +1133,14 @@ fn hashmap_option_info(
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
     match find_instance(instances, "Option", args) {
-        Option::Some(instance) => {
+        Some(instance) => {
             let variants = match find_enum(enums, instance.base_name) {
-                Option::Some(definition) => option_variant_names(definition),
-                Option::None => Option::None,
+                Some(definition) => option_variant_names(definition),
+                None => Option::None,
             };
             let variants = match variants {
-                Option::Some(value) => value,
-                Option::None => ("Some", "None"),
+                Some(value) => value,
+                None => ("Some", "None"),
             };
             (
                 Type::Named { name: go_user_type_name(instance.name) },
@@ -1167,7 +1167,7 @@ fn hashmap_option_info(
                 false,
             )
         },
-        Option::None => {
+        None => {
             let option_name = go_generated_ident(
                 "_goml_synthetic_" + synthetic_option_base(value),
             );
@@ -1187,7 +1187,7 @@ fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) 
 
 fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
     match tast::resolve_type(key) {
-        tast::Type::Dyn { trait_name: name } => if name == "Hash"
+        Dyn { trait_name: name } => if name == "Hash"
             || strings::ends_with(name, "::Hash")
         {
             Expr::Call {
@@ -1996,8 +1996,8 @@ fn option_available(instances: Vec[core::TypeInstance], value: tast::Type) -> bo
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
     match find_instance(instances, "Option", args) {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     }
 }
 
@@ -2103,7 +2103,7 @@ fn collect_dyn_call_method(
     value: anf::Value,
 ) -> unit {
     match value {
-        anf::Value::DynCall {
+        DynCall {
             trait_name: owner,
             method_name: encoded,
             receiver: _,
@@ -2139,29 +2139,29 @@ fn collect_dyn_call_methods(
 ) -> unit {
     for bind in block.binds {
         match bind {
-            anf::Bind::Let(value) => {
+            Let(value) => {
                 collect_dyn_call_method(result, trait_name, value.value)
             },
-            anf::Bind::Join(value) => {
+            Join(value) => {
                 collect_dyn_call_methods(result, trait_name, value.body)
             },
-            anf::Bind::JoinRec(values) => for value in values {
+            JoinRec(values) => for value in values {
                 collect_dyn_call_methods(result, trait_name, value.body)
             },
         }
     };
     match block.term {
-        anf::Term::If { cond: _, then_, else_, ret_ty: _ } => {
+        If { cond: _, then_, else_, ret_ty: _ } => {
             collect_dyn_call_methods(result, trait_name, then_);
             collect_dyn_call_methods(result, trait_name, else_)
         },
-        anf::Term::Match { scrutinee: _, arms, default, ret_ty: _ } => {
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
             for arm in arms {
                 collect_dyn_call_methods(result, trait_name, arm.body)
             };
             match default {
-                Option::Some(body) => collect_dyn_call_methods(result, trait_name, body),
-                Option::None => (),
+                Some(body) => collect_dyn_call_methods(result, trait_name, body),
+                None => (),
             }
         },
         _ => (),
@@ -2172,7 +2172,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
     let result: Vec[DynMethod] = Vec::new();
     for function in functions {
         match (function.trait_impl, trait_impl_method_name(function.name)) {
-            (Option::Some(metadata), Option::Some(method_name)) => {
+            (Some(metadata), Some(method_name)) => {
                 if metadata.trait_ref.name == trait_name
                     && contains_method(result, method_name) == false
                 {
@@ -2335,7 +2335,7 @@ fn find_dyn_impl_name(
     while index.get() >= 0 {
         let function = functions.get(index.get());
         match (function.trait_impl, trait_impl_method_name(function.name)) {
-            (Option::Some(metadata), Option::Some(candidate_method)) => {
+            (Some(metadata), Some(candidate_method)) => {
                 if metadata.trait_ref.name == trait_name
                     && encode_type(metadata.for_ty) == encode_type(for_ty)
                     && candidate_method == method_name
@@ -2400,14 +2400,14 @@ fn is_enum_dyn_receiver(
     value: tast::Type,
 ) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Con { name } => match find_enum(enums, name) {
-            Option::Some(_) => true,
-            Option::None => match instance_by_name(instances, name) {
-                Option::Some(instance) => match find_enum(enums, instance.base_name) {
-                    Option::Some(_) => true,
-                    Option::None => false,
+        Con { name } => match find_enum(enums, name) {
+            Some(_) => true,
+            None => match instance_by_name(instances, name) {
+                Some(instance) => match find_enum(enums, instance.base_name) {
+                    Some(_) => true,
+                    None => false,
                 },
-                Option::None => false,
+                None => false,
             },
         },
         _ => false,
@@ -2530,7 +2530,7 @@ pub fn emit_builtin_runtime_items(
 ) -> unit {
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::Array { len: _, elem: _ } => {
+            Array { len: _, elem: _ } => {
                 for item in array_runtime_items(ty) {
                     items.push(item)
                 }
@@ -2540,7 +2540,7 @@ pub fn emit_builtin_runtime_items(
     };
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::VecType { elem: _ } => {
+            VecType { elem: _ } => {
                 items.push(Item::Struct(runtime_struct(ty)));
                 for item in vec_runtime_items(ty) {
                     items.push(item)
@@ -2551,7 +2551,7 @@ pub fn emit_builtin_runtime_items(
     };
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::RefType { elem: _ } => {
+            RefType { elem: _ } => {
                 items.push(Item::Struct(runtime_struct(ty)));
                 for item in ref_runtime_items(ty) {
                     items.push(item)
@@ -2563,7 +2563,7 @@ pub fn emit_builtin_runtime_items(
     let options: Vec[string] = Vec::new();
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::HashMap { key, value } => {
+            HashMap { key, value } => {
                 let option = synthetic_option_base(value);
                 let include_option = vecs::contains(options, option) == false
                     && option_available(instances, value) == false;
@@ -2592,7 +2592,7 @@ pub fn emit_builtin_runtime_items(
     };
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::Tuple { items: _ } => items.push(Item::Struct(runtime_struct(ty))),
+            Tuple { items: _ } => items.push(Item::Struct(runtime_struct(ty))),
             _ => (),
         }
     };
@@ -2610,7 +2610,7 @@ pub fn emit_dyn_runtime_items(
     let dyn_traits: Vec[string] = Vec::new();
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::Dyn { trait_name: name } => {
+            Dyn { trait_name: name } => {
                 if vecs::contains(dyn_traits, name) == false {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)

@@ -39,8 +39,8 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             && option_string_present(inline_cli_value(argument, "--help"))
         {
             let value = match inline_cli_value(argument, "--help") {
-                Option::Some(value) => value,
-                Option::None => "",
+                Some(value) => value,
+                None => "",
             };
             return Result::Err(unexpected_value_error_with_usage(
                 value,
@@ -74,11 +74,11 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             } else {
                 let value = args.get(index.get() + 1);
                 match parse_version_format(value) {
-                    Result::Ok(_) => {
+                    Ok(_) => {
                         format.set(Option::Some(value));
                         index.set(index.get() + 2)
                     },
-                    Result::Err(error) => return Result::Err(error),
+                    Err(error) => return Result::Err(error),
                 }
             }
         } else if positional.get() == false
@@ -91,18 +91,18 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                 ))
             } else {
                 match inline_cli_value(argument, "--format") {
-                    Option::Some(value) => if value == "" {
+                    Some(value) => if value == "" {
                         return Result::Err(value_required_error(
                             "--format <FORMAT>",
                             Option::Some("text, json"),
                         ))
                     } else {
                         match parse_version_format(value) {
-                            Result::Ok(_) => format.set(Option::Some(value)),
-                            Result::Err(error) => return Result::Err(error),
+                            Ok(_) => format.set(Option::Some(value)),
+                            Err(error) => return Result::Err(error),
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 };
                 index.set(index.get() + 1)
             }
@@ -117,14 +117,14 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                 ()
             };
             match similar_cli_argument("version", argument) {
-                Option::Some(similar) => return Result::Err(
+                Some(similar) => return Result::Err(
                     unexpected_similar_argument_error(
                         argument,
                         similar,
                         similar_cli_argument_usage("version", similar),
                     ),
                 ),
-                Option::None => return Result::Err(unexpected_argument_error(
+                None => return Result::Err(unexpected_argument_error(
                     "version",
                     argument,
                     false,
@@ -133,8 +133,8 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
         }
     };
     match format.get() {
-        Option::Some(value) => parse_version_format(value),
-        Option::None => Result::Ok(VersionFormat::Text),
+        Some(value) => parse_version_format(value),
+        None => Result::Ok(VersionFormat::Text),
     }
 }
 
@@ -151,9 +151,9 @@ fn trim_version_value(value: string) -> string {
 
 fn git_version_value(args: Vec[string]) -> Option[string] {
     match process::Command::new("git").args(args).output() {
-        Result::Ok(output) => if output.status().success() {
+        Ok(output) => if output.status().success() {
             match output.stdout().to_string() {
-                Result::Ok(value) => {
+                Ok(value) => {
                     let value = trim_version_value(value);
                     if value == "" {
                         Option::None
@@ -161,19 +161,19 @@ fn git_version_value(args: Vec[string]) -> Option[string] {
                         Option::Some(value)
                     }
                 },
-                Result::Err(_) => Option::None,
+                Err(_) => Option::None,
             }
         } else {
             Option::None
         },
-        Result::Err(_) => Option::None,
+        Err(_) => Option::None,
     }
 }
 
 fn version_git_hash() -> Option[string] {
     match env::var("GOML_GIT_HASH") {
-        Option::Some(value) => Option::Some(value),
-        Option::None => git_version_value(
+        Some(value) => Option::Some(value),
+        None => git_version_value(
             Vec::new()
                 .pushed("rev-parse")
                 .pushed("--short=9")
@@ -184,8 +184,8 @@ fn version_git_hash() -> Option[string] {
 
 fn version_git_date() -> Option[string] {
     match env::var("GOML_GIT_DATE") {
-        Option::Some(value) => Option::Some(value),
-        Option::None => git_version_value(
+        Some(value) => Option::Some(value),
+        None => git_version_value(
             Vec::new()
                 .pushed("show")
                 .pushed("-s")
@@ -198,8 +198,8 @@ fn version_git_date() -> Option[string] {
 
 fn version_json_option(value: Option[string]) -> string {
     match value {
-        Option::Some(value) => "\"" + value + "\"",
-        Option::None => "null",
+        Some(value) => "\"" + value + "\"",
+        None => "null",
     }
 }
 
@@ -209,8 +209,8 @@ fn version_output_with(
     date: Option[string],
 ) -> string {
     match format {
-        VersionFormat::Text => match (hash, date) {
-            (Option::Some(hash), Option::Some(date)) => {
+        Text => match (hash, date) {
+            (Some(hash), Some(date)) => {
                 "gomlc "
                     + version::current()
                     + " ("
@@ -221,7 +221,7 @@ fn version_output_with(
             },
             _ => "gomlc " + version::current(),
         },
-        VersionFormat::Json => {
+        Json => {
             "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":"
                 + version_json_option(date)
                 + ",\"git_hash\":"
@@ -239,7 +239,7 @@ fn version_output(format: VersionFormat) -> string {
 
 fn run_version(args: Vec[string]) -> unit {
     match parse_version_args(args) {
-        Result::Ok(format) => io::println(version_output(format)),
-        Result::Err(error) => handle_cli_parse_error("version", error),
+        Ok(format) => io::println(version_output(format)),
+        Err(error) => handle_cli_parse_error("version", error),
     }
 }

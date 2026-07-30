@@ -111,8 +111,8 @@ fn owner_name_token(
         while index.get() >= 0 {
             let candidate = syntax.nodes.get(index.get());
             if match candidate.parent {
-                Option::Some(parent) => parent == node.id,
-                Option::None => false,
+                Some(parent) => parent == node.id,
+                None => false,
             }
                 && type_node_kind(candidate.kind)
             {
@@ -138,8 +138,8 @@ fn symbol_kind(
             cst::NodeKind::IMPL,
             cst::NodeKind::TRAIT,
         ) {
-            Option::Some(_) => Option::Some(SymbolKind::Method),
-            Option::None => Option::Some(SymbolKind::Function),
+            Some(_) => Option::Some(SymbolKind::Method),
+            None => Option::Some(SymbolKind::Function),
         }
     } else if cst::node_kind_equal(node.kind, cst::NodeKind::STRUCT) {
         Option::Some(SymbolKind::Struct)
@@ -176,11 +176,11 @@ fn parent_with_kind(
 ) -> Option[SyntaxNode] {
     let current = Ref::new(node.parent);
     while match current.get() {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     } {
         match current.get() {
-            Option::Some(id) => {
+            Some(id) => {
                 let parent = syntax.nodes.get(id);
                 if cst::node_kind_equal(parent.kind, first)
                     || cst::node_kind_equal(parent.kind, second)
@@ -190,7 +190,7 @@ fn parent_with_kind(
                     current.set(parent.parent)
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     Option::None
@@ -204,42 +204,42 @@ fn qualified_symbol_name(
     kind: SymbolKind,
 ) -> string {
     let owner = match kind {
-        SymbolKind::Variant => parent_with_kind(
+        Variant => parent_with_kind(
             syntax,
             node,
             cst::NodeKind::ENUM,
             cst::NodeKind::ENUM,
         ),
-        SymbolKind::Method => parent_with_kind(
+        Method => parent_with_kind(
             syntax,
             node,
             cst::NodeKind::TRAIT,
             cst::NodeKind::IMPL,
         ),
-        SymbolKind::Field => parent_with_kind(
+        Field => parent_with_kind(
             syntax,
             node,
             cst::NodeKind::STRUCT,
             cst::NodeKind::VARIANT,
         ),
-        SymbolKind::TypeAlias | SymbolKind::Constant => Option::None,
+        TypeAlias | Constant => Option::None,
         _ => Option::None,
     };
     match owner {
-        Option::Some(owner_node) => match owner_name_token(
+        Some(owner_node) => match owner_name_token(
             syntax,
             owner_node,
         ) {
-            Option::Some(owner_token) => {
+            Some(owner_token) => {
                 source.package_name
                     + "::"
                     + owner_token.text
                     + "::"
                     + name
             },
-            Option::None => source.package_name + "::" + name,
+            None => source.package_name + "::" + name,
         },
-        Option::None => source.package_name + "::" + name,
+        None => source.package_name + "::" + name,
     }
 }
 
@@ -267,12 +267,12 @@ fn owner_public(
     second: cst::NodeKind,
 ) -> bool {
     match parent_with_kind(syntax, node, first, second) {
-        Option::Some(owner) => node_has_token(
+        Some(owner) => node_has_token(
             syntax,
             owner,
             lexer::TokenKind::PubKeyword,
         ),
-        Option::None => false,
+        None => false,
     }
 }
 
@@ -282,18 +282,18 @@ fn symbol_public(
     kind: SymbolKind,
 ) -> bool {
     match kind {
-        SymbolKind::Variant => owner_public(
+        Variant => owner_public(
             syntax,
             node,
             cst::NodeKind::ENUM,
             cst::NodeKind::ENUM,
         ),
-        SymbolKind::Field => node_has_token(
+        Field => node_has_token(
             syntax,
             node,
             lexer::TokenKind::PubKeyword,
         ),
-        SymbolKind::Method => {
+        Method => {
             node_has_token(
                 syntax,
                 node,
@@ -318,8 +318,8 @@ fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
     let syntax = syntax_index(parsed.root);
     for node in syntax.nodes {
         match symbol_kind(syntax, node) {
-            Option::Some(kind) => match first_identifier(syntax, node) {
-                Option::Some(token) => symbols.push(Symbol {
+            Some(kind) => match first_identifier(syntax, node) {
+                Some(token) => symbols.push(Symbol {
                     name: token.text,
                     qualified_name: qualified_symbol_name(
                         source,
@@ -335,9 +335,9 @@ fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
                     public: source.package_name == "builtin"
                         || symbol_public(syntax, node, kind),
                 }),
-                Option::None => (),
+                None => (),
             },
-            Option::None => (),
+            None => (),
         }
     }
 }

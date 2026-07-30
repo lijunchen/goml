@@ -21,8 +21,8 @@ fn uri_hex(value: uint8) -> char {
 
 pub fn path_to_uri(value: string) -> string {
     let absolute = match path::absolute(value) {
-        Result::Ok(result) => result,
-        Result::Err(_) => path::clean(value),
+        Ok(result) => result,
+        Err(_) => path::clean(value),
     };
     let builder = text::StringBuilder::new();
     builder.write_string("file://");
@@ -68,7 +68,7 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
                         uri_hex_value(value.byte_get(index.get() + 1)),
                         uri_hex_value(value.byte_get(index.get() + 2)),
                     ) {
-                        (Option::Some(high), Option::Some(low)) => {
+                        (Some(high), Some(low)) => {
                             decoded_bytes.push(high * 16 + low);
                             index.set(index.get() + 3)
                         },
@@ -81,8 +81,8 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
             }
         };
         match bytes::Bytes::from_vec(decoded_bytes).to_string() {
-            Result::Ok(decoded) => Result::Ok(path::clean(decoded)),
-            Result::Err(_) => Result::Err("URI path is not valid UTF-8"),
+            Ok(decoded) => Result::Ok(path::clean(decoded)),
+            Err(_) => Result::Err("URI path is not valid UTF-8"),
         }
     }
 }

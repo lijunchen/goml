@@ -51,61 +51,61 @@ struct Execution {
 
 fn bytes_text(value: bytes::Bytes) -> string {
     match value.to_string() {
-        Result::Ok(value) => value,
-        Result::Err(_) => "<non-UTF-8 output>",
+        Ok(value) => value,
+        Err(_) => "<non-UTF-8 output>",
     }
 }
 
 fn required_string(value: json::Value, name: string) -> Result[string, string] {
     match json::field(value, name) {
-        Option::Some(value) => match json::as_string(value) {
-            Option::Some(value) => Result::Ok(value),
-            Option::None => Result::Err(name + " must be a string"),
+        Some(value) => match json::as_string(value) {
+            Some(value) => Result::Ok(value),
+            None => Result::Err(name + " must be a string"),
         },
-        Option::None => Result::Err("test manifest omitted " + name),
+        None => Result::Err("test manifest omitted " + name),
     }
 }
 
 fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
     match json::field(value, name) {
-        Option::Some(value) => match json::as_bool(value) {
-            Option::Some(value) => Result::Ok(value),
-            Option::None => Result::Err(name + " must be boolean"),
+        Some(value) => match json::as_bool(value) {
+            Some(value) => Result::Ok(value),
+            None => Result::Err(name + " must be boolean"),
         },
-        Option::None => Result::Err("test manifest omitted " + name),
+        None => Result::Err("test manifest omitted " + name),
     }
 }
 
 fn load_tests(group: Group) -> Result[Vec[Test], string] {
     let source = match fs::read_file(group.manifest_path) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let root = match json::parse(source) {
-        Result::Ok(value) => value,
-        Result::Err(message) => return Result::Err(message),
+        Ok(value) => value,
+        Err(message) => return Result::Err(message),
     };
     let values = match json::as_array(root) {
-        Option::Some(value) => value,
-        Option::None => return Result::Err("test manifest must be an array"),
+        Some(value) => value,
+        None => return Result::Err("test manifest must be an array"),
     };
     let result = Vec::new();
     for value in values {
         let id = match required_string(value, "id") {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let display_name = match required_string(value, "display_name") {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let ignored = match required_bool(value, "ignored") {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         let ignore_reason = match json::field(value, "ignore_reason") {
-            Option::Some(value) => json::as_string(value),
-            Option::None => Option::None,
+            Some(value) => json::as_string(value),
+            None => Option::None,
         };
         result.push(Test {
             id,
@@ -121,8 +121,8 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
 
 fn selected(test: Test, options: Options) -> bool {
     let filter_matches = match options.filter {
-        Option::Some(value) => util::contains(test.display_name, value),
-        Option::None => true,
+        Some(value) => util::contains(test.display_name, value),
+        None => true,
     };
     filter_matches && (!options.ignored || test.ignored)
 }
@@ -175,8 +175,8 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
     for test in tests {
         if options.json {
             let reason = match test.ignore_reason {
-                Option::Some(value) => "\"" + escape_json(value) + "\"",
-                Option::None => "null",
+                Some(value) => "\"" + escape_json(value) + "\"",
+                None => "null",
             };
             io::println(
                 "{\"event\":\"test\",\"ignored\":"
@@ -218,7 +218,7 @@ fn run_one(
             .env("TZ", "UTC");
         if options.nocapture {
             match command.status_timeout(options.timeout_ms) {
-                Result::Ok(result) => Execution {
+                Ok(result) => Execution {
                     index,
                     test,
                     status: if result.1 {
@@ -227,14 +227,14 @@ fn run_one(
                         Status::Passed
                     } else {
                         Status::Failed(match process::ExitStatus::code(result.0) {
-                            Option::Some(value) => value,
-                            Option::None => -1,
+                            Some(value) => value,
+                            None => -1,
                         })
                     },
                     stdout: "",
                     stderr: "",
                 },
-                Result::Err(message) => Execution {
+                Err(message) => Execution {
                     index,
                     test,
                     status: Status::Failed(-1),
@@ -244,7 +244,7 @@ fn run_one(
             }
         } else {
             match command.output_timeout(options.timeout_ms) {
-                Result::Ok(result) => {
+                Ok(result) => {
                     let output = result.0;
                     Execution {
                         index,
@@ -259,15 +259,15 @@ fn run_one(
                             Status::Failed(match process::ExitStatus::code(
                                 process::Output::status(output),
                             ) {
-                                Option::Some(value) => value,
-                                Option::None => -1,
+                                Some(value) => value,
+                                None => -1,
                             })
                         },
                         stdout: bytes_text(process::Output::stdout(output)),
                         stderr: bytes_text(process::Output::stderr(output)),
                     }
                 },
-                Result::Err(message) => Execution {
+                Err(message) => Execution {
                     index,
                     test,
                     status: Status::Failed(-1),
@@ -287,13 +287,13 @@ fn worker(
 ) -> unit {
     while true {
         match work.recv() {
-            Option::Some(item) => results.send(run_one(
+            Some(item) => results.send(run_one(
                 module_dir,
                 item.0,
                 item.1,
                 options,
             )),
-            Option::None => break,
+            None => break,
         }
     }
 }
@@ -331,27 +331,27 @@ fn report_text(values: Vec[Execution]) -> int {
     let ignored = Ref::new(0);
     for value in values {
         match value.status {
-            Status::Passed => {
+            Passed => {
                 passed.set(passed.get() + 1);
                 io::println("test " + value.test.display_name + " ... ok")
             },
-            Status::Ignored => {
+            Ignored => {
                 ignored.set(ignored.get() + 1);
                 io::println(
                     "test "
                         + value.test.display_name
                         + " ... "
                         + match value.test.ignore_reason {
-                            Option::Some(reason) => "ignored: " + reason,
-                            Option::None => "ignored",
+                            Some(reason) => "ignored: " + reason,
+                            None => "ignored",
                         },
                 )
             },
-            Status::TimedOut | Status::Failed(_) => {
+            TimedOut | Failed(_) => {
                 failed.set(failed.get() + 1);
                 let status = match value.status {
-                    Status::TimedOut => "FAILED (timed out)",
-                    Status::Failed(code) => if code < 0 {
+                    TimedOut => "FAILED (timed out)",
+                    Failed(code) => if code < 0 {
                         "FAILED (terminated by signal)"
                     } else {
                         "FAILED (exit code " + code.to_string() + ")"
@@ -394,13 +394,13 @@ fn report_json(values: Vec[Execution]) -> int {
     let failed = Ref::new(0);
     for value in values {
         let event = match value.status {
-            Status::Passed => "ok",
-            Status::Ignored => "ignored",
-            Status::Failed(_) => {
+            Passed => "ok",
+            Ignored => "ignored",
+            Failed(_) => {
                 failed.set(failed.get() + 1);
                 "failed"
             },
-            Status::TimedOut => {
+            TimedOut => {
                 failed.set(failed.get() + 1);
                 "timed_out"
             },
@@ -424,8 +424,8 @@ pub fn run(
     let loaded = Vec::new();
     for group in groups {
         let values = match load_tests(group) {
-            Result::Ok(value) => value,
-            Result::Err(message) => return Result::Err(message),
+            Ok(value) => value,
+            Err(message) => return Result::Err(message),
         };
         for value in values {
             loaded.push(value)
@@ -476,8 +476,8 @@ pub fn run(
     let executions = Vec::new();
     for _ in range(0, selected_tests.len()) {
         match results.recv() {
-            Option::Some(value) => executions.push(value),
-            Option::None => return Result::Err("test result channel closed early"),
+            Some(value) => executions.push(value),
+            None => return Result::Err("test result channel closed early"),
         }
     };
     results.close();

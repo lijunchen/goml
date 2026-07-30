@@ -84,7 +84,7 @@ fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
     } else {
         let inner = trim_test_text(normalized.byte_slice(2, normalized.byte_len() - 1));
         match find_test_byte(inner, 40) {
-            Option::Some(open) => {
+            Some(open) => {
                 let name = trim_test_text(inner.byte_slice(0, open));
                 let tail = trim_test_text(inner.byte_slice(open + 1, inner.byte_len()));
                 if name.byte_len() == 0
@@ -101,7 +101,7 @@ fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
                     })
                 }
             },
-            Option::None => if inner.byte_len() == 0 {
+            None => if inner.byte_len() == 0 {
                 Option::None
             } else {
                 Option::Some(ParsedTestAttribute {
@@ -115,8 +115,8 @@ fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
 
 fn test_attribute_name(value: ast::Attribute) -> Option[string] {
     match parse_test_attribute(value) {
-        Option::Some(parsed) => Option::Some(parsed.name),
-        Option::None => Option::None,
+        Some(parsed) => Option::Some(parsed.name),
+        None => Option::None,
     }
 }
 
@@ -127,12 +127,12 @@ fn named_test_attributes(
     let result = Vec::new();
     for value in values {
         match test_attribute_name(value) {
-            Option::Some(name) => if name == expected {
+            Some(name) => if name == expected {
                 result.push(value)
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         }
     };
     result
@@ -145,10 +145,10 @@ fn parse_ignore_reason(value: string) -> Option[string] {
         Option::None
     } else {
         match lowered.ast {
-            Option::Some(file) => if file.items.len() == 1 {
+            Some(file) => if file.items.len() == 1 {
                 match file.items.get(0) {
-                    ast::Item::Function(function) => match function.body.tail {
-                        Option::Some(ast::Expr::String { value: reason, span: _ }) => Option::Some(reason),
+                    Function(function) => match function.body.tail {
+                        Some(String { value: reason, span: _ }) => Option::Some(reason),
                         _ => Option::None,
                     },
                     _ => Option::None,
@@ -156,7 +156,7 @@ fn parse_ignore_reason(value: string) -> Option[string] {
             } else {
                 Option::None
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -265,11 +265,11 @@ fn collect_function_test(
     };
     let test_attr = test_attrs.get(0);
     let parsed_test = match parse_test_attribute(test_attr) {
-        Option::Some(value) => value,
-        Option::None => return,
+        Some(value) => value,
+        None => return,
     };
     match parsed_test.args {
-        Option::Some(_) => {
+        Some(_) => {
             diagnostics.push(package_test_diagnostic(
                 "attribute",
                 "`#[test]` does not accept arguments",
@@ -278,18 +278,18 @@ fn collect_function_test(
             ));
             return
         },
-        Option::None => (),
+        None => (),
     };
     let ignore_reason = if ignore_attrs.len() > 0 {
         let ignore_attr = ignore_attrs.get(0);
         let parsed_ignore = match parse_test_attribute(ignore_attr) {
-            Option::Some(value) => value,
-            Option::None => return,
+            Some(value) => value,
+            None => return,
         };
         match parsed_ignore.args {
-            Option::Some(args) => match parse_ignore_reason(args) {
-                Option::Some(reason) => Option::Some(reason),
-                Option::None => {
+            Some(args) => match parse_ignore_reason(args) {
+                Some(reason) => Option::Some(reason),
+                None => {
                     diagnostics.push(package_test_diagnostic(
                         "attribute",
                         "`#[ignore]` accepts either no arguments or one string reason",
@@ -299,7 +299,7 @@ fn collect_function_test(
                     Option::None
                 },
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     } else {
         Option::None
@@ -323,7 +323,7 @@ fn reject_item_test_attributes(
 ) -> unit {
     for value in values {
         match test_attribute_name(value) {
-            Option::Some(name) => if name == "test" {
+            Some(name) => if name == "test" {
                 diagnostics.push(package_test_diagnostic(
                     "attribute",
                     "`#[test]` can only be applied to top-level functions, not " + target,
@@ -340,7 +340,7 @@ fn reject_item_test_attributes(
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         }
     }
 }
@@ -391,15 +391,15 @@ fn collect_package_test_candidates(
             "<unknown>"
         };
         match files.get(file_index).ast {
-            Option::Some(file) => for item in file.items {
+            Some(file) => for item in file.items {
                 match item {
-                    ast::Item::Function(function) => collect_function_test(
+                    Function(function) => collect_function_test(
                         source_path,
                         function,
                         candidates,
                         diagnostics,
                     ),
-                    ast::Item::ImplBlock(block) => {
+                    ImplBlock(block) => {
                         reject_item_test_attributes(
                             block.attrs,
                             "impl block",
@@ -415,37 +415,37 @@ fn collect_package_test_candidates(
                             )
                         }
                     },
-                    ast::Item::ExternFunction(function) => reject_item_test_attributes(
+                    ExternFunction(function) => reject_item_test_attributes(
                         function.attrs,
                         "extern function",
                         source_path,
                         diagnostics,
                     ),
-                    ast::Item::EnumDef(definition) => reject_item_test_attributes(
+                    EnumDef(definition) => reject_item_test_attributes(
                         definition.attrs,
                         "enum",
                         source_path,
                         diagnostics,
                     ),
-                    ast::Item::StructDef(definition) => reject_item_test_attributes(
+                    StructDef(definition) => reject_item_test_attributes(
                         definition.attrs,
                         "struct",
                         source_path,
                         diagnostics,
                     ),
-                    ast::Item::TraitDef(definition) => reject_item_test_attributes(
+                    TraitDef(definition) => reject_item_test_attributes(
                         definition.attrs,
                         "trait",
                         source_path,
                         diagnostics,
                     ),
-                    ast::Item::TypeAlias(definition) => reject_item_test_attributes(
+                    TypeAlias(definition) => reject_item_test_attributes(
                         definition.attrs,
                         "type alias",
                         source_path,
                         diagnostics,
                     ),
-                    ast::Item::Constant(definition) => reject_item_test_attributes(
+                    Constant(definition) => reject_item_test_attributes(
                         definition.attrs,
                         "constant",
                         source_path,
@@ -453,7 +453,7 @@ fn collect_package_test_candidates(
                     ),
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     TestCandidateCollection {
@@ -505,8 +505,8 @@ fn validate_package_tests(
         };
         let symbol = test_symbol(package_name, candidate.name);
         let scheme = match find_test_scheme(exports, symbol) {
-            Option::Some(value) => value,
-            Option::None => {
+            Some(value) => value,
+            None => {
                 diagnostics.push(package_test_diagnostic(
                     "typer",
                     "test function `" + candidate.name + "` was not resolved",
@@ -538,7 +538,7 @@ fn validate_package_tests(
             ()
         };
         match tast::resolve_type(scheme.ty) {
-            tast::Type::Func { params, ret_ty } => {
+            Func { params, ret_ty } => {
                 if params.len() > 0 {
                     diagnostics.push(package_test_diagnostic(
                         "typer",
@@ -550,7 +550,7 @@ fn validate_package_tests(
                     ()
                 };
                 match tast::resolve_type(ret_ty) {
-                    tast::Type::Unit => (),
+                    Unit => (),
                     actual => {
                         diagnostics.push(package_test_diagnostic(
                             "typer",
@@ -574,12 +574,12 @@ fn validate_package_tests(
         };
         if diagnostics.len() == diagnostic_count {
             match find_valid_test_candidate(valid_candidates, candidate.name) {
-                Option::Some(first) => diagnostics.push(duplicate_test_id_diagnostic(
+                Some(first) => diagnostics.push(duplicate_test_id_diagnostic(
                     symbol,
                     candidate,
                     first,
                 )),
-                Option::None => {
+                None => {
                     tests.push(TestDescriptor {
                         id: symbol,
                         package_name,
@@ -685,8 +685,8 @@ fn encode_test_manifest(values: Vec[TestDescriptor]) -> string {
         builder.write_string(if value.ignored { "true" } else { "false" });
         builder.write_string(",\n    \"ignore_reason\": ");
         match value.ignore_reason {
-            Option::Some(reason) => write_test_json_string(builder, reason),
-            Option::None => builder.write_string("null"),
+            Some(reason) => write_test_json_string(builder, reason),
+            None => builder.write_string("null"),
         };
         builder.write_string("\n  }")
     };

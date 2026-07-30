@@ -20,8 +20,8 @@ fn artifact_container_expect_ok(
     value: Result[bytes::Bytes, string],
 ) -> bytes::Bytes {
     match value {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
@@ -32,8 +32,8 @@ fn artifact_container_expect_decode_ok(
     value: Result[ArtifactBinaryContainer, string],
 ) -> ArtifactBinaryContainer {
     match value {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             ArtifactBinaryContainer {
                 kind: 1,
@@ -64,8 +64,8 @@ fn binary_artifact_container_is_deterministic() -> unit {
     testing::assert_eq(decoded.kind, 1);
     testing::assert_eq(decoded.sections.len(), 2);
     let section = match artifact_binary_find_section(decoded, 3) {
-        Option::Some(value) => value,
-        Option::None => {
+        Some(value) => value,
+        None => {
             testing::fail("missing section 3");
             artifact_container_test_section(3, "")
         },

@@ -43,8 +43,8 @@ fn string_contains(value: string, expected: string) -> bool {
 
 fn string_index(value: string, expected: string) -> int {
     match strings::find(value, expected) {
-        Option::Some(index) => index,
-        Option::None => -1,
+        Some(index) => index,
+        None => -1,
     }
 }
 
@@ -181,11 +181,11 @@ fn normalizes_supertrait_associated_projections() -> unit {
         if function.name == "get_from_child__C_Count" {
             found.set(true);
             match function.body.tail {
-                Option::Some(expr) => match tast::resolve_type(core::expr_type(expr)) {
-                    tast::Type::Int32 => (),
+                Some(expr) => match tast::resolve_type(core::expr_type(expr)) {
+                    Int32 => (),
                     _ => testing::fail("expected normalized associated type"),
                 },
-                Option::None => testing::fail("expected function tail"),
+                None => testing::fail("expected function tail"),
             }
         } else {
             ()
@@ -352,11 +352,11 @@ fn rejects_recursive_generic_function_specialization() -> unit {
         "fn blow[T](value: T) -> unit { blow((value, value)) } fn main() -> unit { blow(0) }",
     );
     match result.error {
-        Option::Some(error) => testing::assert_eq(
+        Some(error) => testing::assert_eq(
             error,
             "Infinite monomorphization detected for generic function blow: recursive specialization grows type parameter T from (int, int) to ((int, int), (int, int))",
         ),
-        Option::None => testing::fail("expected recursive function specialization error"),
+        None => testing::fail("expected recursive function specialization error"),
     }
 }
 
@@ -366,20 +366,20 @@ fn rejects_recursive_generic_type_specialization() -> unit {
         "enum Bad[T] { End(T), More(Bad[Option[T]]) } fn use_bad(value: Bad[int32]) -> unit {} fn main() -> unit {}",
     );
     match enum_result.error {
-        Option::Some(error) => testing::assert_eq(
+        Some(error) => testing::assert_eq(
             error,
             "Infinite monomorphization detected for generic type Bad: recursive specialization grows type parameter T from Option[int32] to Option[Option[int32]]",
         ),
-        Option::None => testing::fail("expected recursive enum specialization error"),
+        None => testing::fail("expected recursive enum specialization error"),
     };
     let struct_result = lower_checked_source(
         "struct Bad[T] { value: T, next: Ref[Option[Bad[Option[T]]]] } fn use_bad(value: Bad[int32]) -> unit {} fn main() -> unit {}",
     );
     match struct_result.error {
-        Option::Some(error) => testing::assert_eq(
+        Some(error) => testing::assert_eq(
             error,
             "Infinite monomorphization detected for generic type Bad: recursive specialization grows type parameter T from Option[int32] to Option[Option[int32]]",
         ),
-        Option::None => testing::fail("expected recursive struct specialization error"),
+        None => testing::fail("expected recursive struct specialization error"),
     }
 }

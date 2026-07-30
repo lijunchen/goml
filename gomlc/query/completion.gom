@@ -158,15 +158,15 @@ fn push_completion(
 
 fn symbol_completion_kind(value: SymbolKind) -> CompletionKind {
     match value {
-        SymbolKind::Function => CompletionKind::Function,
-        SymbolKind::Struct => CompletionKind::Struct,
-        SymbolKind::Enum => CompletionKind::Enum,
-        SymbolKind::Trait => CompletionKind::Trait,
-        SymbolKind::TypeAlias => CompletionKind::Struct,
-        SymbolKind::Constant => CompletionKind::Variable,
-        SymbolKind::Variant => CompletionKind::Variant,
-        SymbolKind::Method => CompletionKind::Method,
-        SymbolKind::Field => CompletionKind::Field,
+        Function => CompletionKind::Function,
+        Struct => CompletionKind::Struct,
+        Enum => CompletionKind::Enum,
+        Trait => CompletionKind::Trait,
+        TypeAlias => CompletionKind::Struct,
+        Constant => CompletionKind::Variable,
+        Variant => CompletionKind::Variant,
+        Method => CompletionKind::Method,
+        Field => CompletionKind::Field,
     }
 }
 
@@ -196,13 +196,13 @@ fn last_path_segment(value: ast::Path) -> string {
 fn namespace_target(value: Analysis, alias: string) -> Option[string] {
     let lowered = ast::lower(parser::parse(value.source));
     match lowered.ast {
-        Option::Some(file) => {
+        Some(file) => {
             let index = Ref::new(file.uses.len() - 1);
             while index.get() >= 0 {
                 let use_decl = file.uses.get(index.get());
                 let candidate = match use_decl.alias {
-                    Option::Some(name) => name,
-                    Option::None => last_path_segment(use_decl.path),
+                    Some(name) => name,
+                    None => last_path_segment(use_decl.path),
                 };
                 if candidate == alias {
                     return Option::Some(path_text(use_decl.path))
@@ -212,7 +212,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
             };
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -258,11 +258,11 @@ fn first_namespace_segment(value: string) -> string {
 fn canonical_namespace(value: Analysis, namespace: string) -> string {
     let first = first_namespace_segment(namespace);
     match namespace_target(value, first) {
-        Option::Some(package_name) => {
+        Some(package_name) => {
             package_name
                 + namespace.byte_slice(first.byte_len(), namespace.byte_len())
         },
-        Option::None => namespace,
+        None => namespace,
     }
 }
 
@@ -298,7 +298,7 @@ fn complete_static_namespace(
                 || owner == current_name
                 || short_type_name(owner) == short_type_name(canonical))
                 && match symbol.kind {
-                    SymbolKind::Variant | SymbolKind::Method => true,
+                    Variant | Method => true,
                     _ => false,
                 }
                 && (symbol.package_name == value.package_name
@@ -476,13 +476,13 @@ fn namespace_next_segment(value: string, namespace: string) -> Option[string] {
 
 fn package_directory_has_source(directory: string) -> bool {
     match fs::read_dir(directory) {
-        Result::Ok(names) => {
+        Ok(names) => {
             for name in names {
                 let candidate = path::join(directory, name);
                 if fs::is_file(candidate)
                     && match path::extension(candidate) {
-                        Option::Some(extension) => extension == "gom",
-                        Option::None => false,
+                        Some(extension) => extension == "gom",
+                        None => false,
                     }
                 {
                     return true
@@ -492,7 +492,7 @@ fn package_directory_has_source(directory: string) -> bool {
             };
             false
         },
-        Result::Err(_) => false,
+        Err(_) => false,
     }
 }
 
@@ -507,8 +507,8 @@ fn complete_local_package_children(
         project.module_path,
         namespace,
     ) {
-        Option::Some(directory) => match fs::read_dir(directory) {
-            Result::Ok(names) => for name in names {
+        Some(directory) => match fs::read_dir(directory) {
+            Ok(names) => for name in names {
                 let candidate = path::join(directory, name);
                 if fs::is_dir(candidate)
                     && package_directory_has_source(candidate)
@@ -523,9 +523,9 @@ fn complete_local_package_children(
                     ()
                 }
             },
-            Result::Err(_) => (),
+            Err(_) => (),
         },
-        Option::None => (),
+        None => (),
     }
 }
 
@@ -577,27 +577,27 @@ fn complete_import_namespace(
         }
     };
     match standard_library_source(context.namespace) {
-        Option::Some(source) => for item in complete_source_package(
+        Some(source) => for item in complete_source_package(
             source,
             context.prefix,
         ) {
             push_completion(result, item, context.prefix)
         },
-        Option::None => (),
+        None => (),
     };
     match discover_project(value.source_path, value.source, value.overrides) {
-        Result::Ok(Option::Some(project)) => {
+        Ok(Some(project)) => {
             match namespace_next_segment(
                 project.module_path,
                 context.namespace,
             ) {
-                Option::Some(segment) => push_package_completion(
+                Some(segment) => push_package_completion(
                     result,
                     segment,
                     project.module_path,
                     context.prefix,
                 ),
-                Option::None => (),
+                None => (),
             };
             if context.namespace == project.module_path
                 || strings::starts_with(
@@ -618,23 +618,23 @@ fn complete_import_namespace(
                 project.module_root,
                 "goml.toml",
             )) {
-                Result::Ok(manifest) => for dependency in manifest_dependencies(
+                Ok(manifest) => for dependency in manifest_dependencies(
                     manifest,
                 ) {
                     match namespace_next_segment(
                         dependency.name,
                         context.namespace,
                     ) {
-                        Option::Some(segment) => push_package_completion(
+                        Some(segment) => push_package_completion(
                             result,
                             segment,
                             dependency.name,
                             context.prefix,
                         ),
-                        Option::None => (),
+                        None => (),
                     }
                 },
-                Result::Err(_) => (),
+                Err(_) => (),
             }
         },
         _ => (),
@@ -685,7 +685,7 @@ fn reference_receiver_fallback(
             && fact.span.end >= token.end
         {
             match tast::resolve_type(fact.ty) {
-                tast::Type::Error => (),
+                Error => (),
                 _ => return Option::Some(fact.ty),
             }
         } else {
@@ -706,12 +706,12 @@ fn local_receiver_fallback(
             && fact.local.hint == token.text
         {
             match fact.span {
-                Option::Some(span) => if span.start < token.start {
+                Some(span) => if span.start < token.start {
                     return Option::Some(fact.ty)
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
@@ -722,7 +722,7 @@ fn local_receiver_fallback(
 
 fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
     match significant_token_before(value, dot) {
-        Option::Some(token) => {
+        Some(token) => {
             let result = Ref::new(Option::None);
             let width = Ref::new(2147483647);
             for fact in value.checked.typeck_results.exprs {
@@ -739,11 +739,11 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
                 }
             };
             match result.get() {
-                Option::Some(ty) => match tast::resolve_type(ty) {
-                    tast::Type::Error => {
+                Some(ty) => match tast::resolve_type(ty) {
+                    Error => {
                         match local_receiver_fallback(value, token) {
-                            Option::Some(value) => Option::Some(value),
-                            Option::None => reference_receiver_fallback(
+                            Some(value) => Option::Some(value),
+                            None => reference_receiver_fallback(
                                 value,
                                 token,
                             ),
@@ -751,10 +751,10 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
                     },
                     _ => Option::Some(ty),
                 },
-                Option::None => local_receiver_fallback(value, token),
+                None => local_receiver_fallback(value, token),
             }
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -769,26 +769,26 @@ fn member_dot(source: string, offset: int) -> Option[int] {
 
 fn explicit_type_name(value: ast::TypeExpr) -> Option[string] {
     match value {
-        ast::TypeExpr::Con { path } => Option::Some(path_text(path)),
-        ast::TypeExpr::Dyn { trait_path } => {
+        Con { path } => Option::Some(path_text(path)),
+        Dyn { trait_path } => {
             Option::Some(path_text(trait_path))
         },
-        ast::TypeExpr::App { ty, args: _ } => explicit_type_name(ty),
-        ast::TypeExpr::Bool => Option::Some("bool"),
-        ast::TypeExpr::Int => Option::Some("int"),
-        ast::TypeExpr::Int8 => Option::Some("int8"),
-        ast::TypeExpr::Int16 => Option::Some("int16"),
-        ast::TypeExpr::Int32 => Option::Some("int32"),
-        ast::TypeExpr::Int64 => Option::Some("int64"),
-        ast::TypeExpr::Uint => Option::Some("uint"),
-        ast::TypeExpr::Uint8 => Option::Some("uint8"),
-        ast::TypeExpr::Uint16 => Option::Some("uint16"),
-        ast::TypeExpr::Uint32 => Option::Some("uint32"),
-        ast::TypeExpr::Uint64 => Option::Some("uint64"),
-        ast::TypeExpr::Float32 => Option::Some("float32"),
-        ast::TypeExpr::Float64 => Option::Some("float64"),
-        ast::TypeExpr::String => Option::Some("string"),
-        ast::TypeExpr::Char => Option::Some("char"),
+        App { ty, args: _ } => explicit_type_name(ty),
+        Bool => Option::Some("bool"),
+        Int => Option::Some("int"),
+        Int8 => Option::Some("int8"),
+        Int16 => Option::Some("int16"),
+        Int32 => Option::Some("int32"),
+        Int64 => Option::Some("int64"),
+        Uint => Option::Some("uint"),
+        Uint8 => Option::Some("uint8"),
+        Uint16 => Option::Some("uint16"),
+        Uint32 => Option::Some("uint32"),
+        Uint64 => Option::Some("uint64"),
+        Float32 => Option::Some("float32"),
+        Float64 => Option::Some("float64"),
+        String => Option::Some("string"),
+        Char => Option::Some("char"),
         _ => Option::None,
     }
 }
@@ -887,22 +887,22 @@ fn file_parameter_explicit_type(
     let item_index = Ref::new(file.items.len() - 1);
     while item_index.get() >= 0 {
         match file.items.get(item_index.get()) {
-            ast::Item::Function(function) => match parameter_explicit_type(
+            Function(function) => match parameter_explicit_type(
                 function.params,
                 name,
             ) {
-                Option::Some(value) => return Option::Some(value),
-                Option::None => (),
+                Some(value) => return Option::Some(value),
+                None => (),
             },
-            ast::Item::ImplBlock(block) => {
+            ImplBlock(block) => {
                 let method_index = Ref::new(block.methods.len() - 1);
                 while method_index.get() >= 0 {
                     match parameter_explicit_type(
                         block.methods.get(method_index.get()).params,
                         name,
                     ) {
-                        Option::Some(value) => return Option::Some(value),
-                        Option::None => method_index.set(
+                        Some(value) => return Option::Some(value),
+                        None => method_index.set(
                             method_index.get() - 1,
                         ),
                     }
@@ -920,25 +920,25 @@ fn explicit_receiver_type(
     dot: int,
 ) -> Option[string] {
     match significant_token_before(value, dot) {
-        Option::Some(token) => {
+        Some(token) => {
             let lowered = ast::lower(parser::parse(value.source));
             let explicit = match lowered.ast {
-                Option::Some(file) => file_parameter_explicit_type(
+                Some(file) => file_parameter_explicit_type(
                     file,
                     token.text,
                 ),
-                Option::None => Option::None,
+                None => Option::None,
             };
             match explicit {
-                Option::Some(name) => Option::Some(name),
-                Option::None => source_explicit_receiver_type(
+                Some(name) => Option::Some(name),
+                None => source_explicit_receiver_type(
                     value.source,
                     token.text,
                     dot,
                 ),
             }
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -950,7 +950,7 @@ fn complete_named_methods(
 ) -> unit {
     for symbol in build_symbol_index(value).symbols {
         if match symbol.kind {
-            SymbolKind::Method => true,
+            Method => true,
             _ => false,
         } && short_type_name(qualified_owner(
             symbol.qualified_name,
@@ -1006,11 +1006,11 @@ fn complete_members(
 ) -> Vec[CompletionItem] {
     let result = Vec::new();
     match receiver_type(value, dot) {
-        Option::Some(receiver) => {
+        Some(receiver) => {
             let receiver_name = type_owner_name(receiver);
             let receiver_short = short_type_name(receiver_name);
             let receiver_symbol_name = match tast::resolve_type(receiver) {
-                tast::Type::Dyn { trait_name } => trait_name,
+                Dyn { trait_name } => trait_name,
                 _ => receiver_name,
             };
             complete_named_methods(
@@ -1065,7 +1065,7 @@ fn complete_members(
                     }
                 };
                 match tast::resolve_type(receiver) {
-                    tast::Type::Dyn { trait_name } => for definition in environment
+                    Dyn { trait_name } => for definition in environment
                         .traits
                     {
                         if definition.name == trait_name
@@ -1096,23 +1096,23 @@ fn complete_members(
                 }
             };
             match explicit_receiver_type(value, dot) {
-                Option::Some(receiver_name) => complete_named_methods(
+                Some(receiver_name) => complete_named_methods(
                     result,
                     value,
                     receiver_name,
                     prefix,
                 ),
-                Option::None => (),
+                None => (),
             }
         },
-        Option::None => match explicit_receiver_type(value, dot) {
-            Option::Some(receiver_name) => complete_named_methods(
+        None => match explicit_receiver_type(value, dot) {
+            Some(receiver_name) => complete_named_methods(
                 result,
                 value,
                 receiver_name,
                 prefix,
             ),
-            Option::None => (),
+            None => (),
         },
     };
     result
@@ -1162,10 +1162,10 @@ fn local_visible_at(
         false
     } else {
         match containing_completion_scope(syntax, span) {
-            Option::Some(scope) => {
+            Some(scope) => {
                 scope.start <= offset && offset <= scope.end
             },
-            Option::None => true,
+            None => true,
         }
     }
 }
@@ -1194,8 +1194,8 @@ fn push_local_completion(
         ()
     } else {
         match local_completion_index(values, value.label) {
-            Option::Some(index) => values.set(index, value),
-            Option::None => values.push(value),
+            Some(index) => values.set(index, value),
+            None => values.push(value),
         }
     }
 }
@@ -1205,7 +1205,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match fact.span {
-                Option::Some(span) => if local_visible_at(
+                Some(span) => if local_visible_at(
                     value.syntax,
                     span,
                     offset,
@@ -1222,7 +1222,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
@@ -1248,12 +1248,12 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
     };
     let lowered = ast::lower(parser::parse(value.source));
     match lowered.ast {
-        Option::Some(file) => for import in file.uses {
+        Some(file) => for import in file.uses {
             let package_name = path_text(import.path);
             if analysis_has_package(value, package_name) {
                 let alias = match import.alias {
-                    Option::Some(name) => name,
-                    Option::None => last_path_segment(import.path),
+                    Some(name) => name,
+                    None => last_path_segment(import.path),
                 };
                 push_completion(
                     result,
@@ -1268,7 +1268,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
                 ()
             }
         },
-        Option::None => (),
+        None => (),
     };
     let keywords = Vec::new()
         .pushed("array")
@@ -1344,7 +1344,7 @@ fn previous_completion_byte(source: string, end: int) -> Option[int] {
 
 fn completion_word_before(source: string, end: int) -> string {
     match previous_completion_byte(source, end) {
-        Option::Some(last) => {
+        Some(last) => {
             let start = Ref::new(last);
             while start.get() > 0
                 && identifier_byte(source.byte_get(start.get() - 1))
@@ -1353,7 +1353,7 @@ fn completion_word_before(source: string, end: int) -> string {
             };
             source.byte_slice(start.get(), last + 1)
         },
-        Option::None => "",
+        None => "",
     }
 }
 
@@ -1381,7 +1381,7 @@ fn call_open_before(source: string, offset: int) -> Option[int] {
 fn call_argument_context(source: string, offset: int) -> bool {
     let start = prefix_start(source, offset);
     match call_open_before(source, start) {
-        Option::Some(open) => {
+        Some(open) => {
             let previous = completion_word_before(source, open);
             previous != ""
                 && previous != "if"
@@ -1390,7 +1390,7 @@ fn call_argument_context(source: string, offset: int) -> bool {
                 && previous != "match"
                 && previous != "fn"
         },
-        Option::None => false,
+        None => false,
     }
 }
 
@@ -1407,12 +1407,12 @@ fn completion_query(
     prefix: string,
 ) -> Vec[CompletionItem] {
     match member_dot(source, offset) {
-        Option::Some(dot) => complete_members(value, dot, prefix),
-        Option::None => match namespace_path(source, offset) {
-            Option::Some(namespace) => {
+        Some(dot) => complete_members(value, dot, prefix),
+        None => match namespace_path(source, offset) {
+            Some(namespace) => {
                 complete_static_namespace(value, namespace, prefix)
             },
-            Option::None => complete_scope(value, offset, prefix),
+            None => complete_scope(value, offset, prefix),
         },
     }
 }
@@ -1420,8 +1420,8 @@ fn completion_query(
 pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
     let prefix = completion_prefix(value.source, offset);
     match use_completion_context(value.source, offset) {
-        Option::Some(context) => complete_import_namespace(value, context),
-        Option::None => if prefix == ""
+        Some(context) => complete_import_namespace(value, context),
+        None => if prefix == ""
             && call_argument_context(value.source, offset)
         {
             Vec::new()
@@ -1434,10 +1434,10 @@ pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
         );
         if result.len() > 0
             || (match member_dot(value.source, offset) {
-                Option::Some(_) => false,
-                Option::None => match namespace_path(value.source, offset) {
-                    Option::Some(_) => false,
-                    Option::None => true,
+                Some(_) => false,
+                None => match namespace_path(value.source, offset) {
+                    Some(_) => false,
+                    None => true,
                 },
             })
         {

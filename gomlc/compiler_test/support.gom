@@ -12,10 +12,10 @@ use std::testing;
 
 pub fn repository_root() -> string {
     match env::var("GOML_REPO") {
-        Option::Some(value) => value,
-        Option::None => match path::absolute("..") {
-            Result::Ok(value) => value,
-            Result::Err(message) => {
+        Some(value) => value,
+        None => match path::absolute("..") {
+            Ok(value) => value,
+            Err(message) => {
                 testing::fail(message);
                 ".."
             },
@@ -29,8 +29,8 @@ pub fn compiler_tests_root() -> string {
 
 pub fn read_file(file: string) -> string {
     match fs::read_file(file) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail("failed to read " + file + ": " + message);
             ""
         },
@@ -39,8 +39,8 @@ pub fn read_file(file: string) -> string {
 
 fn read_directory(directory: string) -> Vec[string] {
     match fs::read_dir(directory) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail("failed to read directory " + directory + ": " + message);
             Vec::new()
         },
@@ -70,7 +70,7 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
             }
         } else if fs::is_file(entry) {
             match path::extension(entry) {
-                Option::Some(extension) => if extension == "gom" {
+                Some(extension) => if extension == "gom" {
                     if fs::is_file(entry + ".diag") {
                         result.push(entry)
                     } else {
@@ -79,7 +79,7 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
                 } else {
                     ()
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
@@ -90,8 +90,8 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
 
 fn bytes_text(value: bytes::Bytes) -> string {
     match value.to_string() {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             ""
         },
@@ -108,8 +108,8 @@ fn assert_bytes(actual: bytes::Bytes, expected: Vec[uint8]) -> unit {
 
 fn create_directory(directory: string) -> unit {
     match fs::create_dir_all(directory) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(
+        Ok(()) => (),
+        Err(message) => testing::fail(
             "failed to create directory " + directory + ": " + message,
         ),
     }
@@ -124,11 +124,11 @@ fn copy_directory(source: string, target: string) -> unit {
             copy_directory(source_entry, target_entry)
         } else {
             match fs::read_bytes(source_entry) {
-                Result::Ok(value) => match fs::write_bytes(target_entry, value) {
-                    Result::Ok(()) => (),
-                    Result::Err(message) => testing::fail(message),
+                Ok(value) => match fs::write_bytes(target_entry, value) {
+                    Ok(()) => (),
+                    Err(message) => testing::fail(message),
                 },
-                Result::Err(message) => testing::fail(message),
+                Err(message) => testing::fail(message),
             }
         }
     }
@@ -153,8 +153,8 @@ fn execute_go(
     let executable = path::join(directory, "main");
     let source_current = if fs::is_file(main_file) {
         match fs::read_file(main_file) {
-            Result::Ok(value) => value == source,
-            Result::Err(_) => false,
+            Ok(value) => value == source,
+            Err(_) => false,
         }
     } else {
         false
@@ -163,8 +163,8 @@ fn execute_go(
         ()
     } else {
         match fs::write_file(main_file, source) {
-            Result::Ok(()) => (),
-            Result::Err(message) => {
+            Ok(()) => (),
+            Err(message) => {
                 testing::fail("failed to write " + main_file + ": " + message);
                 return ""
             },
@@ -179,26 +179,26 @@ fn execute_go(
             .env("TZ", "UTC")
             .output()
         {
-            Result::Ok(output) => if process::ExitStatus::success(
+            Ok(output) => if process::ExitStatus::success(
                 process::Output::status(output),
             ) {
                 match process::Output::stdout(output).to_string() {
-                    Result::Ok(value) => if value == expected {
+                    Ok(value) => if value == expected {
                         Option::Some(value)
                     } else {
                         Option::None
                     },
-                    Result::Err(_) => Option::None,
+                    Err(_) => Option::None,
                 }
             } else {
                 Option::None
             },
-            Result::Err(_) => Option::None,
+            Err(_) => Option::None,
         }
     };
     match interpreted {
-        Option::Some(value) => return value,
-        Option::None => (),
+        Some(value) => return value,
+        None => (),
     };
     if source_current && fs::is_file(executable) {
         ()
@@ -213,7 +213,7 @@ fn execute_go(
             .env("GO111MODULE", "off")
             .output()
         {
-            Result::Ok(output) => if process::ExitStatus::success(
+            Ok(output) => if process::ExitStatus::success(
                 process::Output::status(output),
             ) {
                 ()
@@ -226,7 +226,7 @@ fn execute_go(
                 );
                 return ""
             },
-            Result::Err(message) => {
+            Err(message) => {
                 testing::fail("failed to build Go source: " + message);
                 return ""
             },
@@ -237,7 +237,7 @@ fn execute_go(
         .env("TZ", "UTC")
         .output()
     {
-        Result::Ok(output) => if process::ExitStatus::success(
+        Ok(output) => if process::ExitStatus::success(
             process::Output::status(output),
         ) {
             bytes_text(process::Output::stdout(output))
@@ -250,7 +250,7 @@ fn execute_go(
             );
             ""
         },
-        Result::Err(message) => {
+        Err(message) => {
             testing::fail("failed to execute generated program: " + message);
             ""
         },
@@ -259,16 +259,16 @@ fn execute_go(
 
 fn update_expected() -> bool {
     match env::var("UPDATE_EXPECT") {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     }
 }
 
 fn assert_text(actual: string, expected_path: string, source: string) -> unit {
     if update_expected() {
         match fs::write_file(expected_path, actual) {
-            Result::Ok(()) => (),
-            Result::Err(message) => testing::fail(
+            Ok(()) => (),
+            Err(message) => testing::fail(
                 "failed to write " + expected_path + ": " + message,
             ),
         };
@@ -313,14 +313,14 @@ pub fn assert_e2e_suite(
                 source_path,
                 source,
             ) {
-                compiler_driver::SourceCompilation::Compiled(compilation) => execute_go(
+                Compiled(compilation) => execute_go(
                     go_backend::encode(compilation.go_value),
                     expected,
                     "e2e-" + kind,
                     shard,
                     current,
                 ),
-                compiler_driver::SourceCompilation::Diagnostics(value) => value,
+                Diagnostics(value) => value,
             };
             assert_text(actual, source_path + ".out", source_path)
         } else {
@@ -355,14 +355,14 @@ pub fn assert_diagnostic_suite(name: string, expected_count: int) -> unit {
 
 fn bootstrap_goml_binary() -> string {
     match env::var("GOML_TEST_GOML") {
-        Option::Some(value) => match path::absolute(value) {
-            Result::Ok(value) => value,
-            Result::Err(message) => {
+        Some(value) => match path::absolute(value) {
+            Ok(value) => value,
+            Err(message) => {
                 testing::fail(message);
                 value
             },
         },
-        Option::None => path::join(
+        None => path::join(
             repository_root(),
             "bin/stage1/goml",
         ),
@@ -371,14 +371,14 @@ fn bootstrap_goml_binary() -> string {
 
 fn bootstrap_gomlc_binary() -> string {
     match env::var("GOML_TEST_GOMLC") {
-        Option::Some(value) => match path::absolute(value) {
-            Result::Ok(value) => value,
-            Result::Err(message) => {
+        Some(value) => match path::absolute(value) {
+            Ok(value) => value,
+            Err(message) => {
                 testing::fail(message);
                 value
             },
         },
-        Option::None => path::join(
+        None => path::join(
             repository_root(),
             "bin/stage1/gomlc",
         ),
@@ -413,8 +413,8 @@ fn project_command(
         .current_dir(project)
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
@@ -453,8 +453,8 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
         index.set(current + 1);
         if current % shard_count == shard {
             let name = match path::file_name(source_project) {
-                Option::Some(value) => value,
-                Option::None => "project-" + current.to_string(),
+                Some(value) => value,
+                None => "project-" + current.to_string(),
             };
             let project = path::join(
                 path::join(
@@ -509,8 +509,8 @@ pub fn assert_module_diagnostics() -> unit {
     testing::assert_eq(projects.len(), 36);
     for source_project in projects {
         let name = match path::file_name(source_project) {
-            Option::Some(value) => value,
-            Option::None => "module-diagnostic",
+            Some(value) => value,
+            None => "module-diagnostic",
         };
         let project = path::join(
             path::join(
@@ -565,15 +565,15 @@ pub fn assert_standard_binary_stdio() -> unit {
         path::join(project, "goml.toml"),
         "[module]\npath = \"stdio_test\"\n",
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(message),
+        Ok(()) => (),
+        Err(message) => testing::fail(message),
     };
     match fs::write_file(
         path::join(project, "main.gom"),
         "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> unit {\n    match env::var(\"GOML_EMPTY\") {\n        Option::Some(value) => if value != \"\" { process::exit(1) } else { () },\n        Option::None => process::exit(1),\n    };\n    match env::var(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Option::Some(_) => process::exit(1),\n        Option::None => (),\n    };\n    match io::read_stdin() {\n        Result::Ok(data) => {\n            match io::write_stdout(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
     ) {
-        Result::Ok(()) => (),
-        Result::Err(message) => testing::fail(message),
+        Ok(()) => (),
+        Err(message) => testing::fail(message),
     };
     let target = path::join(project, "_artifact");
     let built = project_command("build", project, target);
@@ -590,8 +590,8 @@ pub fn assert_standard_binary_stdio() -> unit {
         .input(bytes::Bytes::from_vec(input))
         .output()
     {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
@@ -678,8 +678,8 @@ pub fn assert_crasher_runtime_shard(
                 source_path,
                 source,
             ) {
-                compiler_driver::SourceCompilation::Compiled(value) => value,
-                compiler_driver::SourceCompilation::Diagnostics(value) => {
+                Compiled(value) => value,
+                Diagnostics(value) => {
                     testing::fail(
                         "unexpected diagnostics for "
                             + source_path

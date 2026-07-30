@@ -41,20 +41,20 @@ fn binary_artifact_value_round_trips_value_shapes() -> unit {
         -1,
     );
     let encoded = match encode_artifact_binary_value(table, value) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
     match decode_artifact_binary_value(table, encoded) {
-        Result::Ok(decoded) => match encode_artifact_binary_value(table, decoded) {
-            Result::Ok(reencoded) => testing::assert(
+        Ok(decoded) => match encode_artifact_binary_value(table, decoded) {
+            Ok(reencoded) => testing::assert(
                 artifact_binary_bytes_equal(encoded, reencoded),
             ),
-            Result::Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error),
         },
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -63,8 +63,8 @@ fn binary_interface_artifact_is_deterministic() -> unit {
     let first = match encode_artifact_interface_binary(
         binary_interface_fixture(),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
@@ -72,22 +72,22 @@ fn binary_interface_artifact_is_deterministic() -> unit {
     let second = match encode_artifact_interface_binary(
         binary_interface_fixture(),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
     testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
     match decode_artifact_interface_binary(first) {
-        Result::Ok(value) => testing::assert_eq(
+        Ok(value) => testing::assert_eq(
             encode_artifact_interface_unit(value, false),
             encode_artifact_interface_unit(
                 binary_interface_fixture(),
                 false,
             ),
         ),
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -95,18 +95,18 @@ fn binary_interface_artifact_is_deterministic() -> unit {
 fn binary_interface_artifact_streams_standard_type_data() -> unit {
     let value = package_world().standard.collections.interface_unit;
     let encoded = match encode_artifact_interface_binary(value) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
     match decode_artifact_interface_binary(encoded) {
-        Result::Ok(decoded) => testing::assert_eq(
+        Ok(decoded) => testing::assert_eq(
             encode_artifact_interface_unit(decoded, false),
             encode_artifact_interface_unit(value, false),
         ),
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -115,8 +115,8 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
     let sections = match artifact_binary_interface_sections(
         binary_interface_fixture(),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             Vec::new()
         },
@@ -128,16 +128,16 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
         data: bytes::Bytes::new(),
     });
     let encoded = match encode_artifact_binary_container(1, sections) {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
+        Ok(value) => value,
+        Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
     match decode_artifact_interface_binary(encoded) {
-        Result::Ok(_) => testing::fail(
+        Ok(_) => testing::fail(
             "expected unknown required section rejection",
         ),
-        Result::Err(_) => (),
+        Err(_) => (),
     }
 }

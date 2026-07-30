@@ -9,11 +9,11 @@ fn derives_unicode_package_names_from_directories() -> unit {
         "alice::app",
         "/tmp/项目/工具/解析",
     ) {
-        Result::Ok(value) => testing::assert_eq(
+        Ok(value) => testing::assert_eq(
             value,
             "alice::app::工具::解析",
         ),
-        Result::Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -65,8 +65,8 @@ fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
             output: "out/main",
         });
     let graph = match build_graph(commands) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             BuildGraph { nodes: Vec::new() }
         },
@@ -98,8 +98,8 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
             .pushed(Command::PrepareWorld { output: world })
             .pushed(command),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             BuildGraph { nodes: Vec::new() }
         },
@@ -116,8 +116,8 @@ fn build_graph_serializes_duplicate_outputs() -> unit {
             .pushed(compile_command("a", Vec::new(), "out/shared"))
             .pushed(compile_command("b", Vec::new(), "out/shared")),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             BuildGraph { nodes: Vec::new() }
         },
@@ -142,8 +142,8 @@ fn build_graph_exposes_dependency_cycles() -> unit {
                 "out/b",
             )),
     ) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail(message);
             BuildGraph { nodes: Vec::new() }
         },

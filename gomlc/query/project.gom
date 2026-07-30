@@ -102,8 +102,8 @@ fn manifest_module_path(source: string) -> Option[string] {
 
 fn source_directory(source_path: string) -> string {
     match path::parent(source_path) {
-        Option::Some(value) => path::clean(value),
-        Option::None => ".",
+        Some(value) => path::clean(value),
+        None => ".",
     }
 }
 
@@ -113,22 +113,22 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
         let manifest = path::join(current.get(), "goml.toml");
         if fs::is_file(manifest) {
             match fs::read_file(manifest) {
-                Result::Ok(source) => match manifest_module_path(source) {
-                    Option::Some(module_path) => return Result::Ok(Option::Some(
+                Ok(source) => match manifest_module_path(source) {
+                    Some(module_path) => return Result::Ok(Option::Some(
                         ModuleInfo {
                             root: current.get(),
                             path: module_path,
                         },
                     )),
-                    Option::None => (),
+                    None => (),
                 },
-                Result::Err(error) => return Result::Err(error),
+                Err(error) => return Result::Err(error),
             }
         } else {
             ()
         };
         match path::parent(current.get()) {
-            Option::Some(parent) => {
+            Some(parent) => {
                 let parent = path::clean(parent);
                 if parent == current.get() {
                     break
@@ -136,7 +136,7 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
                     current.set(parent)
                 }
             },
-            Option::None => break,
+            None => break,
         }
     };
     Result::Ok(Option::None)
@@ -227,9 +227,9 @@ fn contains_source_file(values: Vec[SourceFile], expected: string) -> bool {
 
 fn include_source_file(value: string, include_tests: bool) -> bool {
     match path::extension(value) {
-        Option::Some(extension) => extension == "gom"
+        Some(extension) => extension == "gom"
             && (include_tests || !strings::ends_with(value, "_test.gom")),
-        Option::None => false,
+        None => false,
     }
 }
 
@@ -243,8 +243,8 @@ fn read_project_source(
         Result::Ok(active_source)
     } else {
         match override_source(overrides, source_path) {
-            Option::Some(source) => Result::Ok(source),
-            Option::None => fs::read_file(source_path),
+            Some(source) => Result::Ok(source),
+            None => fs::read_file(source_path),
         }
     }
 }
@@ -258,7 +258,7 @@ fn collect_package_files(
     let files = Vec::new();
     let include_tests = strings::ends_with(source_path, "_test.gom");
     match fs::read_dir(package_dir) {
-        Result::Ok(names) => for name in names {
+        Ok(names) => for name in names {
             let file_path = path::join(package_dir, name);
             if fs::is_file(file_path)
                 && include_source_file(file_path, include_tests)
@@ -269,18 +269,18 @@ fn collect_package_files(
                     source,
                     overrides,
                 ) {
-                    Result::Ok(file_source) => files.push(SourceFile {
+                    Ok(file_source) => files.push(SourceFile {
                         path: file_path,
                         source: file_source,
                         package_name: "",
                     }),
-                    Result::Err(error) => return Result::Err(error),
+                    Err(error) => return Result::Err(error),
                 }
             } else {
                 ()
             }
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     for value in overrides {
         let value_parent = source_directory(value.path);
@@ -366,7 +366,7 @@ fn collect_dependency_files(
 ) -> Result[Vec[SourceFile], string] {
     let files = Vec::new();
     match fs::read_dir(package_dir) {
-        Result::Ok(names) => for name in names {
+        Ok(names) => for name in names {
             let file_path = path::join(package_dir, name);
             if fs::is_file(file_path) && include_source_file(file_path, false) {
                 match read_project_source(
@@ -375,18 +375,18 @@ fn collect_dependency_files(
                     "",
                     overrides,
                 ) {
-                    Result::Ok(file_source) => files.push(SourceFile {
+                    Ok(file_source) => files.push(SourceFile {
                         path: file_path,
                         source: file_source,
                         package_name: "",
                     }),
-                    Result::Err(error) => return Result::Err(error),
+                    Err(error) => return Result::Err(error),
                 }
             } else {
                 ()
             }
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     for value in overrides {
         let value_parent = source_directory(value.path);
@@ -436,11 +436,11 @@ fn dependency_project(
         module_path,
         package_name,
     ) {
-        Option::Some(package_dir) => match collect_dependency_files(
+        Some(package_dir) => match collect_dependency_files(
             package_dir,
             overrides,
         ) {
-            Result::Ok(files) => {
+            Ok(files) => {
                 let files = source_files_with_package(files, package_name);
                 Result::Ok(Project {
                     module_root,
@@ -450,9 +450,9 @@ fn dependency_project(
                     files,
                 })
             },
-            Result::Err(error) => Result::Err(error),
+            Err(error) => Result::Err(error),
         },
-        Option::None => Result::Err(
+        None => Result::Err(
             "package " + package_name + " is outside the current module",
         ),
     }
@@ -464,16 +464,16 @@ pub fn discover_project(
     overrides: Vec[SourceOverride],
 ) -> Result[Option[Project], string] {
     match find_module(source_path) {
-        Result::Ok(Option::Some(module)) => {
+        Ok(Some(module)) => {
             let package_dir = source_directory(source_path);
             match package_name(module.root, module.path, package_dir) {
-                Result::Ok(name) => match collect_package_files(
+                Ok(name) => match collect_package_files(
                     package_dir,
                     source_path,
                     source,
                     overrides,
                 ) {
-                    Result::Ok(files) => {
+                    Ok(files) => {
                         let files = source_files_with_package(files, name);
                         Result::Ok(Option::Some(Project {
                             module_root: module.root,
@@ -483,12 +483,12 @@ pub fn discover_project(
                             files,
                         }))
                     },
-                    Result::Err(error) => Result::Err(error),
+                    Err(error) => Result::Err(error),
                 },
-                Result::Err(error) => Result::Err(error),
+                Err(error) => Result::Err(error),
             }
         },
-        Result::Ok(Option::None) => Result::Ok(Option::None),
-        Result::Err(error) => Result::Err(error),
+        Ok(None) => Result::Ok(Option::None),
+        Err(error) => Result::Err(error),
     }
 }

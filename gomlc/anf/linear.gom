@@ -6,8 +6,8 @@ use gomlc::core;
 fn all_immediate(values: Vec[core::Expr]) -> bool {
     for value in values {
         match try_imm(value) {
-            Option::Some(_) => (),
-            Option::None => return false,
+            Some(_) => (),
+            None => return false,
         }
     };
     true
@@ -31,35 +31,35 @@ fn probe_bound_value(state: State) -> bool {
 
 fn probe_linear_expr(state: State, value: core::Expr) -> bool {
     match try_imm(value) {
-        Option::Some(_) => true,
-        Option::None => match value {
-            core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-            | core::Expr::Unary { op: _, expr, ty: _ }
-            | core::Expr::Cast { expr, ty: _ }
-            | core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-            | core::Expr::Go { expr, ty: _ }
-            | core::Expr::Proj { tuple: expr, index: _, ty: _ } => {
+        Some(_) => true,
+        None => match value {
+            ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+            | Unary { op: _, expr, ty: _ }
+            | Cast { expr, ty: _ }
+            | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
+            | Go { expr, ty: _ }
+            | Proj { tuple: expr, index: _, ty: _ } => {
                 probe_linear_expr(state, expr) && probe_bound_value(state)
             },
-            core::Expr::Binary { op, lhs, rhs, ty: _ } => match op {
-                ast::BinaryOp::And | ast::BinaryOp::Or => false,
+            Binary { op, lhs, rhs, ty: _ } => match op {
+                And | Or => false,
                 _ => probe_linear_expr(state, lhs)
                     && probe_linear_expr(state, rhs)
                     && probe_bound_value(state),
             },
-            core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => {
+            Assign { name: _, value: expr, target_ty: _, ty: _ } => {
                 probe_linear_expr(state, expr) && probe_bound_value(state)
             },
-            core::Expr::Constr { constructor: _, args, ty: _ }
-            | core::Expr::Tuple { items: args, ty: _ }
-            | core::Expr::Array { items: args, ty: _ } => {
+            Constr { constructor: _, args, ty: _ }
+            | Tuple { items: args, ty: _ }
+            | Array { items: args, ty: _ } => {
                 probe_linear_list(state, args) && probe_bound_value(state)
             },
-            core::Expr::Call { func, args, ty: _ } => probe_linear_expr(state, func)
+            Call { func, args, ty: _ } => probe_linear_expr(state, func)
                 && probe_linear_list(state, args)
                 && probe_bound_value(state),
-            core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-            | core::Expr::TraitCall { receiver, args, .. } => {
+            DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+            | TraitCall { receiver, args, .. } => {
                 probe_linear_expr(state, receiver)
                     && probe_linear_list(state, args)
                     && probe_bound_value(state)

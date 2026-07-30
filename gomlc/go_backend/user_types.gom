@@ -38,8 +38,8 @@ fn builtin_struct_instance(
 ) -> Option[StructDef] {
     if value.base_name == "FnIterator" && value.args.len() == 1 {
         let result_ty = match find_instance(instances, "Option", value.args) {
-            Option::Some(instance) => Type::Named { name: go_user_type_name(instance.name) },
-            Option::None => {
+            Some(instance) => Type::Named { name: go_user_type_name(instance.name) },
+            None => {
                 Type::Named {
                     name: go_user_type_name(
                                         "Option__" + compact_type(value.args.get(0)),
@@ -155,50 +155,50 @@ fn instantiate_type(
     instances: Vec[core::TypeInstance],
 ) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Param { name } => match lookup_binding(generics, args, name) {
-            Option::Some(value) => value,
-            Option::None => tast::Type::Param { name },
+        Param { name } => match lookup_binding(generics, args, name) {
+            Some(value) => value,
+            None => tast::Type::Param { name },
         },
-        tast::Type::Tuple { items: values } => {
+        Tuple { items: values } => {
             tast::Type::Tuple { items: instantiate_types(values, generics, args, instances) }
         },
-        tast::Type::Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
+        Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
             for_ty: instantiate_type(base, generics, args, instances),
             name,
             trait_ref: reference,
         },
-        tast::Type::App { ty: base, args: values } => {
+        App { ty: base, args: values } => {
             let base = instantiate_type(base, generics, args, instances);
             let values = instantiate_types(values, generics, args, instances);
             match base {
-                tast::Type::Con { name } => match find_instance(instances, name, values) {
-                    Option::Some(instance) => tast::Type::Con { name: instance.name },
-                    Option::None => tast::Type::App { ty: tast::Type::Con { name }, args: values },
+                Con { name } => match find_instance(instances, name, values) {
+                    Some(instance) => tast::Type::Con { name: instance.name },
+                    None => tast::Type::App { ty: tast::Type::Con { name }, args: values },
                 },
                 _ => tast::Type::App { ty: base, args: values },
             }
         },
-        tast::Type::Array { len: length, elem } => tast::Type::Array {
+        Array { len: length, elem } => tast::Type::Array {
             len: length,
             elem: instantiate_type(elem, generics, args, instances),
         },
-        tast::Type::Slice { elem } => {
+        Slice { elem } => {
             tast::Type::Slice { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::VecType { elem } => {
+        VecType { elem } => {
             tast::Type::VecType { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::RefType { elem } => {
+        RefType { elem } => {
             tast::Type::RefType { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::Channel { elem } => {
+        Channel { elem } => {
             tast::Type::Channel { elem: instantiate_type(elem, generics, args, instances) }
         },
-        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+        HashMap { key, value } => tast::Type::HashMap {
             key: instantiate_type(key, generics, args, instances),
             value: instantiate_type(value, generics, args, instances),
         },
-        tast::Type::Func { params, ret_ty } => tast::Type::Func {
+        Func { params, ret_ty } => tast::Type::Func {
             params: instantiate_types(params, generics, args, instances),
             ret_ty: instantiate_type(ret_ty, generics, args, instances),
         },
@@ -208,35 +208,35 @@ fn instantiate_type(
 
 fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
     match tast::resolve_type(value) {
-        tast::Type::Con { name } => {
+        Con { name } => {
             if vecs::contains(result, name) == false {
                 result.push(name)
             } else {
                 ()
             }
         },
-        tast::Type::Tuple { items: values } => {
+        Tuple { items: values } => {
             for value in values {
                 collect_con_names(result, value)
             }
         },
-        tast::Type::Projection { for_ty: base, name: _, trait_ref: _ } => collect_con_names(result, base),
-        tast::Type::App { ty: base, args } => {
+        Projection { for_ty: base, name: _, trait_ref: _ } => collect_con_names(result, base),
+        App { ty: base, args } => {
             collect_con_names(result, base);
             for value in args {
                 collect_con_names(result, value)
             }
         },
-        tast::Type::Array { len: _, elem }
-        | tast::Type::Slice { elem }
-        | tast::Type::VecType { elem }
-        | tast::Type::RefType { elem }
-        | tast::Type::Channel { elem } => collect_con_names(result, elem),
-        tast::Type::HashMap { key, value } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => collect_con_names(result, elem),
+        HashMap { key, value } => {
             collect_con_names(result, key);
             collect_con_names(result, value)
         },
-        tast::Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             for value in params {
                 collect_con_names(result, value)
             };
@@ -325,8 +325,8 @@ fn variant_go_name(
 ) -> string {
     let key = owner_name.byte_len().to_string() + ":" + owner_name + variant_name;
     match function_names.variant_names.get(key) {
-        Option::Some(name) => name,
-        Option::None => {
+        Some(name) => name,
+        None => {
             let candidate = if variant_instance_count(enums, instances, variant_name) > 1 {
                 qualified_variant_go_name(owner_name, variant_name)
             } else {
@@ -401,8 +401,8 @@ fn new_variant_infos() -> VariantInfos {
 
 fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
     match variants.by_owner.get(value.owner_name) {
-        Option::Some(owner_variants) => owner_variants.push(value),
-        Option::None => {
+        Some(owner_variants) => owner_variants.push(value),
+        None => {
             let owner_variants: Vec[VariantInfo] = Vec::new();
             owner_variants.push(value);
             variants.by_owner.set(value.owner_name, owner_variants)
@@ -462,7 +462,7 @@ fn emit_enum_instance(
         ()
     } else {
         match find_enum(enums, instance.base_name) {
-            Option::Some(definition) => {
+            Some(definition) => {
                 emitted.push(instance.name);
                 let fields_by_variant: Vec[Vec[tast::Type]] = Vec::new();
                 for variant in definition.variants {
@@ -480,7 +480,7 @@ fn emit_enum_instance(
                             collect_con_names(dependencies, field);
                             for dependency in dependencies {
                                 match instance_by_name(instances, dependency) {
-                                    Option::Some(value) => emit_enum_instance(
+                                    Some(value) => emit_enum_instance(
                                         items,
                                         emitted,
                                         variants,
@@ -490,7 +490,7 @@ fn emit_enum_instance(
                                         function_names,
                                         value,
                                     ),
-                                    Option::None => (),
+                                    None => (),
                                 }
                             }
                         }
@@ -561,7 +561,7 @@ fn emit_enum_instance(
                     }
                 }
             },
-            Option::None => (),
+            None => (),
         }
     }
 }
@@ -603,7 +603,7 @@ pub fn emit_user_type_items(
     };
     for instance in instances {
         match find_struct(structs, instance.base_name) {
-            Option::Some(definition) => {
+            Some(definition) => {
                 if vecs::contains(emitted, instance.name) == false {
                     let fields: Vec[(string, Type)] = Vec::new();
                     for field in definition.fields {
@@ -626,8 +626,8 @@ pub fn emit_user_type_items(
                     ()
                 }
             },
-            Option::None => match builtin_struct_instance(instance, instances) {
-                Option::Some(definition) => {
+            None => match builtin_struct_instance(instance, instances) {
+                Some(definition) => {
                     if vecs::contains(emitted, instance.name) == false {
                         items.push(Item::Struct(definition));
                         emitted.push(instance.name)
@@ -635,7 +635,7 @@ pub fn emit_user_type_items(
                         ()
                     }
                 },
-                Option::None => (),
+                None => (),
             },
         }
     };
@@ -690,8 +690,8 @@ pub fn emit_user_type_items(
             let option_args: Vec[tast::Type] = Vec::new();
             option_args.push(instance.args.get(0));
             match find_instance(instances, "Option", option_args) {
-                Option::Some(_) => (),
-                Option::None => emit_enum_instance(
+                Some(_) => (),
+                None => emit_enum_instance(
                     items,
                     emitted,
                     variants,
@@ -728,14 +728,14 @@ pub fn variant_type(
     tag: int,
 ) -> Option[Type] {
     match find_variant_info(variants, owner_ty, tag) {
-        Option::Some(value) => {
+        Some(value) => {
             if value.tag_only {
                 Option::None
             } else {
                 Option::Some(Type::Named { name: value.variant_name })
             }
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -745,16 +745,16 @@ pub fn find_variant_info(
     tag: int,
 ) -> Option[VariantInfo] {
     match tast::resolve_type(owner_ty) {
-        tast::Type::Con { name: owner_name } => {
+        Con { name: owner_name } => {
             match variants.by_owner.get(owner_name) {
-                Option::Some(owner_variants) => {
+                Some(owner_variants) => {
                     if tag >= 0 && tag < owner_variants.len() {
                         Option::Some(owner_variants.get(tag))
                     } else {
                         Option::None
                     }
                 },
-                Option::None => Option::None,
+                None => Option::None,
             }
         },
         _ => Option::None,

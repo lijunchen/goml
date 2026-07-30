@@ -100,39 +100,39 @@ pub enum Term {
 
 pub fn imm_type(value: Imm) -> tast::Type {
     match value {
-        Imm::Var { ty, .. }
-        | Imm::Callable { ty, .. }
-        | Imm::Prim { ty, .. }
-        | Imm::Tag { ty, .. } => ty,
+        Var { ty, .. }
+        | Callable { ty, .. }
+        | Prim { ty, .. }
+        | Tag { ty, .. } => ty,
     }
 }
 
 pub fn value_type(value: Value) -> tast::Type {
     match value {
-        Value::Imm(value) => imm_type(value),
-        Value::Constr { ty, .. }
-        | Value::Tuple { ty, .. }
-        | Value::Array { ty, .. }
-        | Value::ConstrGet { ty, .. }
-        | Value::Unary { ty, .. }
-        | Value::Cast { ty, .. }
-        | Value::Binary { ty, .. }
-        | Value::Assign { ty, .. }
-        | Value::Call { ty, .. }
-        | Value::ToDyn { ty, .. }
-        | Value::DynCall { ty, .. }
-        | Value::Go { ty, .. }
-        | Value::Proj { ty, .. } => ty,
+        Imm(value) => imm_type(value),
+        Constr { ty, .. }
+        | Tuple { ty, .. }
+        | Array { ty, .. }
+        | ConstrGet { ty, .. }
+        | Unary { ty, .. }
+        | Cast { ty, .. }
+        | Binary { ty, .. }
+        | Assign { ty, .. }
+        | Call { ty, .. }
+        | ToDyn { ty, .. }
+        | DynCall { ty, .. }
+        | Go { ty, .. }
+        | Proj { ty, .. } => ty,
     }
 }
 
 pub fn term_type(value: Term) -> tast::Type {
     match value {
-        Term::Return(value) => imm_type(value),
-        Term::Jump { ret_ty, .. }
-        | Term::If { ret_ty, .. }
-        | Term::Match { ret_ty, .. } => ret_ty,
-        Term::Unreachable { ty } => ty,
+        Return(value) => imm_type(value),
+        Jump { ret_ty, .. }
+        | If { ret_ty, .. }
+        | Match { ret_ty, .. } => ret_ty,
+        Unreachable { ty } => ty,
     }
 }
 

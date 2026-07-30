@@ -574,8 +574,8 @@ fn string_hash_hook_item() -> Item {
 
 fn extra_core_runtime_hook_item(key: string) -> Option[Item] {
     match integer_hash_hook_type(key) {
-        Option::Some(ty) => Option::Some(integer_hash_hook_item(key, ty)),
-        Option::None => if key == "core.string_len" {
+        Some(ty) => Option::Some(integer_hash_hook_item(key, ty)),
+        None => if key == "core.string_len" {
             Option::Some(string_len_hook_item())
         } else if key == "core.string_get" {
             Option::Some(string_get_hook_item())

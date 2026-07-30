@@ -79,18 +79,18 @@ pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match local_definition_span(value, fact.local) {
-                Option::Some(definition) => match containing_let(
+                Some(definition) => match containing_let(
                     value.syntax,
                     definition.span,
                 ) {
-                    Option::Some(statement) => if let_has_annotation(
+                    Some(statement) => if let_has_annotation(
                         value.syntax,
                         statement,
                     ) {
                         ()
                     } else {
                         match tast::resolve_type(fact.ty) {
-                            tast::Type::Error => (),
+                            Error => (),
                             ty => hints.push(InlayHint {
                                 position: definition.span.end,
                                 label: ": " + tast::diagnostic_type_text(ty),
@@ -98,18 +98,18 @@ pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
                             }),
                         }
                     },
-                    Option::None => match containing_closure_parameter(
+                    None => match containing_closure_parameter(
                         value.syntax,
                         definition.span,
                     ) {
-                        Option::Some(parameter) => if let_has_annotation(
+                        Some(parameter) => if let_has_annotation(
                             value.syntax,
                             parameter,
                         ) {
                             ()
                         } else {
                             match tast::resolve_type(fact.ty) {
-                                tast::Type::Error => (),
+                                Error => (),
                                 ty => hints.push(InlayHint {
                                     position: definition.span.end,
                                     label: ": "
@@ -118,10 +118,10 @@ pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
                                 }),
                             }
                         },
-                        Option::None => (),
+                        None => (),
                     },
                 },
-                Option::None => (),
+                None => (),
             }
         } else {
             ()

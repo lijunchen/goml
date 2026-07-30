@@ -161,12 +161,12 @@ fn validate_derive_attributes(
                 Option::None
             };
             match message {
-                Option::Some(value) => diagnostics.push(cst::diagnostic(
+                Some(value) => diagnostics.push(cst::diagnostic(
                     value,
                     attr.span.start,
                     attr.span.end,
                 )),
-                Option::None => (),
+                None => (),
             }
         }
     }
@@ -178,14 +178,14 @@ fn validate_file_derives(
 ) -> unit {
     for item in value.items {
         match item {
-            ast::Item::StructDef(definition) => validate_derive_attributes(
+            StructDef(definition) => validate_derive_attributes(
                 definition.attrs,
                 definition.generics,
                 "struct",
                 definition.name,
                 diagnostics,
             ),
-            ast::Item::EnumDef(definition) => validate_derive_attributes(
+            EnumDef(definition) => validate_derive_attributes(
                 definition.attrs,
                 definition.generics,
                 "enum",
@@ -245,7 +245,7 @@ fn trait_call(trait_name: string, method_name: string, args: Vec[ast::Expr]) -> 
 
 fn call_to_string(value: ast::Expr, ty: ast::TypeExpr) -> ast::Expr {
     match ty {
-        ast::TypeExpr::String => value,
+        String => value,
         _ => call_expr(field_expr(value, "to_string"), Vec::new()),
     }
 }
@@ -288,7 +288,7 @@ fn block_expr(stmts: Vec[ast::Stmt], tail: ast::Expr) -> ast::Expr {
 
 fn expr_body(value: ast::Expr) -> ast::Block {
     match value {
-        ast::Expr::Block { block, span: _ } => block,
+        Block { block, span: _ } => block,
         _ => ast::Block {
             stmts: Vec::new(),
             tail: Option::Some(value),
@@ -387,10 +387,10 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
         };
         let parts: Vec[ast::Expr] = Vec::new();
         match variant.fields {
-            ast::EnumVariantFields::Unit => {
+            Unit => {
                 parts.push(string_expr(value.name + "::" + variant.name))
             },
-            ast::EnumVariantFields::Tuple(_) => {
+            Tuple(_) => {
                 parts.push(string_expr(value.name + "::" + variant.name + "("));
                 for index in range(0, fields.len()) {
                     if index > 0 {
@@ -405,7 +405,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
                 };
                 parts.push(string_expr(")"))
             },
-            ast::EnumVariantFields::Struct(named) => {
+            Struct(named) => {
                 parts.push(string_expr(value.name + "::" + variant.name + " { "));
                 for index in range(0, named.len()) {
                     if index > 0 {
@@ -469,9 +469,9 @@ fn constr_pat(path: ast::Path, bindings: Vec[string]) -> ast::Pat {
 
 fn enum_field_types(fields: ast::EnumVariantFields) -> Vec[ast::TypeExpr] {
     match fields {
-        ast::EnumVariantFields::Unit => Vec::new(),
-        ast::EnumVariantFields::Tuple(types) => types,
-        ast::EnumVariantFields::Struct(fields) => {
+        Unit => Vec::new(),
+        Tuple(types) => types,
+        Struct(fields) => {
             let types: Vec[ast::TypeExpr] = Vec::new();
             for field in fields {
                 types.push(field.1)
@@ -487,7 +487,7 @@ fn enum_variant_pat(
     bindings: Vec[string],
 ) -> ast::Pat {
     match fields {
-        ast::EnumVariantFields::Struct(fields) => {
+        Struct(fields) => {
             let patterns: Vec[(string, ast::Pat)] = Vec::new();
             for index in range(0, fields.len()) {
                 patterns.push((
@@ -779,12 +779,12 @@ fn expand_file_derives(value: ast::File) -> ast::File {
     for item in value.items {
         items.push(item);
         match item {
-            ast::Item::StructDef(definition) => {
+            StructDef(definition) => {
                 for impl_block in derived_struct_impls(definition) {
                     items.push(ast::Item::ImplBlock(impl_block))
                 }
             },
-            ast::Item::EnumDef(definition) => {
+            EnumDef(definition) => {
                 for impl_block in derived_enum_impls(definition) {
                     items.push(ast::Item::ImplBlock(impl_block))
                 }
@@ -804,11 +804,11 @@ fn expand_file_derives(value: ast::File) -> ast::File {
 pub fn expand_derives(value: ast::LowerResult) -> ast::LowerResult {
     let diagnostics = value.diagnostics;
     let expanded = match value.ast {
-        Option::Some(file) => {
+        Some(file) => {
             validate_file_derives(file, diagnostics);
             Option::Some(expand_file_derives(file))
         },
-        Option::None => Option::None,
+        None => Option::None,
     };
     ast::LowerResult {
         ast: expanded,

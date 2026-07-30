@@ -19,8 +19,8 @@ use std::testing;
 
 pub fn repo_root() -> string {
     match env::var("GOML_REPO") {
-        Option::Some(value) => value,
-        Option::None => "..",
+        Some(value) => value,
+        None => "..",
     }
 }
 
@@ -34,8 +34,8 @@ pub fn fixture_dir(name: string) -> string {
 pub fn read_snapshot(base: string, extension: string) -> string {
     let file = path::join(base, "main.gom." + extension);
     match fs::read_file(file) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail("failed to read " + file + ": " + message);
             ""
         },
@@ -44,8 +44,8 @@ pub fn read_snapshot(base: string, extension: string) -> string {
 
 fn update_expected() -> bool {
     match env::var("UPDATE_EXPECT") {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     }
 }
 
@@ -53,8 +53,8 @@ fn assert_snapshot(base: string, extension: string, actual: string) -> unit {
     let file = path::join(base, "main.gom." + extension);
     if update_expected() {
         match fs::write_file(file, actual) {
-            Result::Ok(()) => (),
-            Result::Err(message) => testing::fail(
+            Ok(()) => (),
+            Err(message) => testing::fail(
                 "failed to write " + file + ": " + message,
             ),
         }
@@ -80,8 +80,8 @@ fn pipeline_case_insert_index(values: Vec[string], name: string) -> int {
 
 fn tmp_dir() -> string {
     match env::var("TMPDIR") {
-        Option::Some(value) => if value == "" { "/tmp" } else { value },
-        Option::None => "/tmp",
+        Some(value) => if value == "" { "/tmp" } else { value },
+        None => "/tmp",
     }
 }
 
@@ -95,8 +95,8 @@ fn execute_go_and_read_stdout(
         name,
     );
     match fs::create_dir_all(work_dir) {
-        Result::Ok(()) => (),
-        Result::Err(message) => {
+        Ok(()) => (),
+        Err(message) => {
             testing::fail("failed to create Go work dir: " + message);
             return ""
         },
@@ -105,8 +105,8 @@ fn execute_go_and_read_stdout(
     let executable = path::join(work_dir, "main");
     let source_current = if fs::is_file(main_file) {
         match fs::read_file(main_file) {
-            Result::Ok(value) => value == go_source,
-            Result::Err(_) => false,
+            Ok(value) => value == go_source,
+            Err(_) => false,
         }
     } else {
         false
@@ -115,8 +115,8 @@ fn execute_go_and_read_stdout(
         ()
     } else {
         match fs::write_file(main_file, go_source) {
-            Result::Ok(()) => (),
-            Result::Err(message) => {
+            Ok(()) => (),
+            Err(message) => {
                 testing::fail("failed to write Go source: " + message);
                 return ""
             },
@@ -130,26 +130,26 @@ fn execute_go_and_read_stdout(
             .current_dir(work_dir)
             .output()
         {
-            Result::Ok(output) => {
+            Ok(output) => {
                 if process::ExitStatus::success(process::Output::status(output)) {
                     match process::Output::stdout(output).to_string() {
-                        Result::Ok(value) => if value == expected {
+                        Ok(value) => if value == expected {
                             Option::Some(value)
                         } else {
                             Option::None
                         },
-                        Result::Err(_) => Option::None,
+                        Err(_) => Option::None,
                     }
                 } else {
                     Option::None
                 }
             },
-            Result::Err(_) => Option::None,
+            Err(_) => Option::None,
         }
     };
     match interpreted {
-        Option::Some(value) => return value,
-        Option::None => (),
+        Some(value) => return value,
+        None => (),
     };
     if source_current && fs::is_file(executable) {
         ()
@@ -164,23 +164,23 @@ fn execute_go_and_read_stdout(
             .env("GO111MODULE", "off")
             .output()
         {
-            Result::Ok(output) => {
+            Ok(output) => {
                 if process::ExitStatus::success(process::Output::status(output)) {
                     ()
                 } else {
                     match process::Output::stderr(output).to_string() {
-                        Result::Ok(value) => {
+                        Ok(value) => {
                             testing::fail("go build failed: " + value);
                             return ""
                         },
-                        Result::Err(_) => {
+                        Err(_) => {
                             testing::fail("go build failed (non-UTF-8 stderr)");
                             return ""
                         },
                     }
                 }
             },
-            Result::Err(message) => {
+            Err(message) => {
                 testing::fail("failed to build Go source: " + message);
                 return ""
             },
@@ -190,22 +190,22 @@ fn execute_go_and_read_stdout(
         .current_dir(work_dir)
         .output()
     {
-        Result::Ok(output) => {
+        Ok(output) => {
             if process::ExitStatus::success(process::Output::status(output)) {
                 match process::Output::stdout(output).to_string() {
-                    Result::Ok(value) => value,
-                    Result::Err(message) => {
+                    Ok(value) => value,
+                    Err(message) => {
                         testing::fail("failed to decode Go stdout: " + message);
                         ""
                     },
                 }
             } else {
                 match process::Output::stderr(output).to_string() {
-                    Result::Ok(value) => {
+                    Ok(value) => {
                         testing::fail("generated program failed: " + value);
                         ""
                     },
-                    Result::Err(_) => {
+                    Err(_) => {
                         testing::fail(
                             "generated program failed (non-UTF-8 stderr)",
                         );
@@ -214,7 +214,7 @@ fn execute_go_and_read_stdout(
                 }
             }
         },
-        Result::Err(message) => {
+        Err(message) => {
             testing::fail("failed to execute generated program: " + message);
             ""
         },
@@ -228,7 +228,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
         "gomlc/testdata/pipeline",
     );
     match fs::read_dir(root) {
-        Result::Ok(names) => for name in names {
+        Ok(names) => for name in names {
             let directory = path::join(root, name);
             if fs::is_dir(directory)
                 && fs::is_file(path::join(directory, "main.gom"))
@@ -243,7 +243,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
                 ()
             }
         },
-        Result::Err(message) => {
+        Err(message) => {
             testing::fail("failed to read pipeline fixtures: " + message)
         },
     };
@@ -255,8 +255,8 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     let source_path = path::join(base, "main.gom");
     let new_fixture = !fs::is_file(path::join(base, "main.gom.cst"));
     let source = match fs::read_file(source_path) {
-        Result::Ok(value) => value,
-        Result::Err(message) => {
+        Ok(value) => value,
+        Err(message) => {
             testing::fail("failed to read " + source_path + ": " + message);
             ""
         },

@@ -8,8 +8,8 @@ use std::text;
 
 fn literal_value(node: LocatedNode, kind: lexer::TokenKind) -> Option[string] {
     match first_token(node, kind) {
-        Option::Some(token) => Option::Some(token.token.text),
-        Option::None => Option::None,
+        Some(token) => Option::Some(token.token.text),
+        None => Option::None,
     }
 }
 
@@ -49,7 +49,7 @@ fn path_from_single_ident(value: string) -> Path {
 
 fn signed_pattern_value(node: LocatedNode, kind: lexer::TokenKind, suffix: string) -> Option[string] {
     match literal_value(node, kind) {
-        Option::Some(value) => {
+        Some(value) => {
             let base = strip_suffix(value, suffix);
             if has_token(node, lexer::TokenKind::Minus) {
                 Option::Some("-" + base)
@@ -57,21 +57,21 @@ fn signed_pattern_value(node: LocatedNode, kind: lexer::TokenKind, suffix: strin
                 Option::Some(base)
             }
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
 fn integer_pattern_value(node: LocatedNode) -> Option[string] {
     match literal_value(node, lexer::TokenKind::IntLit) {
-        Option::Some(value) => match numeric::normalize_integer(value) {
-            Option::Some(base) => if has_token(node, lexer::TokenKind::Minus) {
+        Some(value) => match numeric::normalize_integer(value) {
+            Some(base) => if has_token(node, lexer::TokenKind::Minus) {
                 Option::Some("-" + base)
             } else {
                 Option::Some(base)
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -83,77 +83,77 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
         ctx.pattern_depth.set(ctx.pattern_depth.get() + 1);
         let value_span = node_span(node);
         let result = match node_kind(node) {
-            cst::NodeKind::PATTERN_VARIABLE => match first_token(node, lexer::TokenKind::Ident) {
-                Option::Some(token) => Option::Some(Pat::Var {
+            PATTERN_VARIABLE => match first_token(node, lexer::TokenKind::Ident) {
+                Some(token) => Option::Some(Pat::Var {
                     name: token.token.text,
                     span: value_span,
                 }),
-                Option::None => {
+                None => {
                     push_error(ctx, value_span, "Variable pattern is missing a name");
                     Option::None
                 },
             },
-            cst::NodeKind::PATTERN_UNIT => Option::Some(Pat::Unit { span: value_span }),
-            cst::NodeKind::PATTERN_BOOL => match first_token(node, lexer::TokenKind::TrueKeyword) {
-                Option::Some(_) => Option::Some(Pat::Bool { value: true, span: value_span }),
-                Option::None => match first_token(node, lexer::TokenKind::FalseKeyword) {
-                    Option::Some(_) => Option::Some(Pat::Bool { value: false, span: value_span }),
-                    Option::None => {
+            PATTERN_UNIT => Option::Some(Pat::Unit { span: value_span }),
+            PATTERN_BOOL => match first_token(node, lexer::TokenKind::TrueKeyword) {
+                Some(_) => Option::Some(Pat::Bool { value: true, span: value_span }),
+                None => match first_token(node, lexer::TokenKind::FalseKeyword) {
+                    Some(_) => Option::Some(Pat::Bool { value: false, span: value_span }),
+                    None => {
                         push_error(ctx, value_span, "Invalid boolean pattern");
                         Option::None
                     },
                 },
             },
-            cst::NodeKind::PATTERN_INT => match integer_pattern_value(node) {
-                Option::Some(value) => Option::Some(Pat::Int { value, span: value_span }),
-                Option::None => Option::None,
+            PATTERN_INT => match integer_pattern_value(node) {
+                Some(value) => Option::Some(Pat::Int { value, span: value_span }),
+                None => Option::None,
             },
-            cst::NodeKind::PATTERN_FLOAT => match signed_pattern_value(node, lexer::TokenKind::Float, "") {
-                Option::Some(value) => Option::Some(Pat::Float { value, span: value_span }),
-                Option::None => Option::None,
+            PATTERN_FLOAT => match signed_pattern_value(node, lexer::TokenKind::Float, "") {
+                Some(value) => Option::Some(Pat::Float { value, span: value_span }),
+                None => Option::None,
             },
-            cst::NodeKind::PATTERN_STRING => match literal_value(node, lexer::TokenKind::Str) {
-                Option::Some(raw) => match strip_delimiters(raw) {
-                    Option::Some(value) => Option::Some(Pat::String { value, span: value_span }),
-                    Option::None => Option::None,
+            PATTERN_STRING => match literal_value(node, lexer::TokenKind::Str) {
+                Some(raw) => match strip_delimiters(raw) {
+                    Some(value) => Option::Some(Pat::String { value, span: value_span }),
+                    None => Option::None,
                 },
-                Option::None => {
+                None => {
                     push_error(ctx, value_span, "StringPat has no value");
                     Option::None
                 },
             },
-            cst::NodeKind::PATTERN_CHAR => match literal_value(node, lexer::TokenKind::CharLit) {
-                Option::Some(raw) => match strip_delimiters(raw) {
-                    Option::Some(value) => Option::Some(Pat::Char { value, span: value_span }),
-                    Option::None => Option::None,
+            PATTERN_CHAR => match literal_value(node, lexer::TokenKind::CharLit) {
+                Some(raw) => match strip_delimiters(raw) {
+                    Some(value) => Option::Some(Pat::Char { value, span: value_span }),
+                    None => Option::None,
                 },
-                Option::None => {
+                None => {
                     push_error(ctx, value_span, "CharPat has no value");
                     Option::None
                 },
             },
-            cst::NodeKind::PATTERN_BYTE => match literal_value(
+            PATTERN_BYTE => match literal_value(
                 node,
                 lexer::TokenKind::ByteCharLit,
             ) {
-                Option::Some(raw) => match byte_literal_value(raw) {
-                    Option::Some(value) => {
+                Some(raw) => match byte_literal_value(raw) {
+                    Some(value) => {
                         Option::Some(Pat::Byte { value, span: value_span })
                     },
-                    Option::None => Option::None,
+                    None => Option::None,
                 },
-                Option::None => {
+                None => {
                     push_error(ctx, value_span, "BytePat has no value");
                     Option::None
                 },
             },
-            cst::NodeKind::PATTERN_CONSTR => lower_constr_pat(ctx, node),
-            cst::NodeKind::PATTERN_TUPLE => {
+            PATTERN_CONSTR => lower_constr_pat(ctx, node),
+            PATTERN_TUPLE => {
                 let pats: Vec[Pat] = Vec::new();
                 for child in pattern_children(node) {
                     match lower_pat_inner(ctx, child) {
-                        Option::Some(value) => pats.push(value),
-                        Option::None => (),
+                        Some(value) => pats.push(value),
+                        None => (),
                     }
                 };
                 if has_token(node, lexer::TokenKind::Comma) == false && pats.len() == 1 {
@@ -162,30 +162,30 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     Option::Some(Pat::Tuple { items: pats, span: value_span })
                 }
             },
-            cst::NodeKind::PATTERN_ARRAY => lower_array_pat(ctx, node),
-            cst::NodeKind::PATTERN_ALIAS => {
+            PATTERN_ARRAY => lower_array_pat(ctx, node),
+            PATTERN_ALIAS => {
                 let names = tokens_of_kind(node, lexer::TokenKind::Ident);
                 let pats = pattern_children(node);
                 if names.len() > 0 && pats.len() > 0 {
                     match lower_pat_inner(ctx, pats.get(0)) {
-                        Option::Some(pat) => Option::Some(Pat::Alias {
+                        Some(pat) => Option::Some(Pat::Alias {
                             name: names.get(0).token.text,
                             pat,
                             span: value_span,
                         }),
-                        Option::None => Option::None,
+                        None => Option::None,
                     }
                 } else {
                     Option::None
                 }
             },
-            cst::NodeKind::PATTERN_OR => {
+            PATTERN_OR => {
                 let pats: Vec[Pat] = Vec::new();
                 let valid = Ref::new(true);
                 for child in pattern_children(node) {
                     match lower_pat_inner(ctx, child) {
-                        Option::Some(value) => pats.push(value),
-                        Option::None => valid.set(false),
+                        Some(value) => pats.push(value),
+                        None => valid.set(false),
                     }
                 };
                 if valid.get() {
@@ -194,30 +194,30 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     Option::None
                 }
             },
-            cst::NodeKind::PATTERN_RANGE => {
+            PATTERN_RANGE => {
                 let children = pattern_children(node);
                 if children.len() >= 2 {
                     match lower_pat_inner(ctx, children.get(0)) {
-                        Option::Some(start) => match lower_pat_inner(ctx, children.get(1)) {
-                            Option::Some(end) => Option::Some(Pat::Range {
+                        Some(start) => match lower_pat_inner(ctx, children.get(1)) {
+                            Some(end) => Option::Some(Pat::Range {
                                 start,
                                 end,
                                 inclusive: has_token(node, lexer::TokenKind::DotDotEq),
                                 span: value_span,
                             }),
-                            Option::None => Option::None,
+                            None => Option::None,
                         },
-                        Option::None => Option::None,
+                        None => Option::None,
                     }
                 } else {
                     Option::None
                 }
             },
-            cst::NodeKind::PATTERN_REST => {
+            PATTERN_REST => {
                 push_error(ctx, value_span, "`..` is only allowed inside an array pattern");
                 Option::None
             },
-            cst::NodeKind::PATTERN_WILDCARD => Option::Some(Pat::Wild { span: value_span }),
+            PATTERN_WILDCARD => Option::Some(Pat::Wild { span: value_span }),
             _ => Option::None,
         };
         ctx.pattern_depth.set(ctx.pattern_depth.get() - 1);
@@ -227,19 +227,19 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
 
 fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
     match first_child(node, cst::NodeKind::PATH) {
-        Option::Some(path_node) => match lower_path(ctx, path_node) {
-            Option::Some(path) => match first_child(node, cst::NodeKind::STRUCT_PATTERN_FIELD_LIST) {
-                Option::Some(list) => {
+        Some(path_node) => match lower_path(ctx, path_node) {
+            Some(path) => match first_child(node, cst::NodeKind::STRUCT_PATTERN_FIELD_LIST) {
+                Some(list) => {
                     let fields: Vec[(string, Pat)] = Vec::new();
                     let valid = Ref::new(true);
                     for field in children_of_kind(list, cst::NodeKind::STRUCT_PATTERN_FIELD) {
                         match first_token(field, lexer::TokenKind::Ident) {
-                            Option::Some(name_token) => {
+                            Some(name_token) => {
                                 let patterns = pattern_children(field);
                                 if patterns.len() > 0 {
                                     match lower_pat_inner(ctx, patterns.get(0)) {
-                                        Option::Some(pat) => fields.push((name_token.token.text, pat)),
-                                        Option::None => valid.set(false),
+                                        Some(pat) => fields.push((name_token.token.text, pat)),
+                                        None => valid.set(false),
                                     }
                                 } else if has_token(field, lexer::TokenKind::Colon) {
                                     push_error(ctx, node_span(field), "Struct pattern field missing pattern");
@@ -254,7 +254,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                                     ))
                                 }
                             },
-                            Option::None => {
+                            None => {
                                 push_error(ctx, node_span(field), "Struct pattern field missing name");
                                 valid.set(false)
                             },
@@ -265,8 +265,8 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             name: path,
                             fields,
                             has_rest: match first_child(list, cst::NodeKind::PATTERN_REST) {
-                                                            Option::Some(_) => true,
-                                                            Option::None => false,
+                                                            Some(_) => true,
+                                                            None => false,
                                                         },
                             span: node_span(node),
                         })
@@ -274,12 +274,12 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                         Option::None
                     }
                 },
-                Option::None => {
+                None => {
                     let pats: Vec[Pat] = Vec::new();
                     for child in pattern_children(node) {
                         match lower_pat_inner(ctx, child) {
-                            Option::Some(value) => pats.push(value),
-                            Option::None => (),
+                            Some(value) => pats.push(value),
+                            None => (),
                         }
                     };
                     Option::Some(Pat::Constr {
@@ -289,9 +289,9 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     })
                 },
             },
-            Option::None => Option::None,
+            None => Option::None,
         },
-        Option::None => {
+        None => {
             push_error(ctx, node_span(node), "Missing constructor name in pattern");
             Option::None
         },
@@ -306,8 +306,8 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
     for child in pattern_children(node) {
         if cst::node_kind_equal(node_kind(child), cst::NodeKind::PATTERN_REST) {
             let binding = match first_token(child, lexer::TokenKind::Ident) {
-                Option::Some(token) => Option::Some(token.token.text),
-                Option::None => Option::None,
+                Some(token) => Option::Some(token.token.text),
+                None => Option::None,
             };
             rest.set(Option::Some(ArrayPatRest {
                 binding,
@@ -315,11 +315,11 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             }))
         } else {
             match lower_pat_inner(ctx, child) {
-                Option::Some(value) => match rest.get() {
-                    Option::Some(_) => suffix.push(value),
-                    Option::None => prefix.push(value),
+                Some(value) => match rest.get() {
+                    Some(_) => suffix.push(value),
+                    None => prefix.push(value),
                 },
-                Option::None => valid.set(false),
+                None => valid.set(false),
             }
         }
     };

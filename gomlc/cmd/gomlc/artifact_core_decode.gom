@@ -53,8 +53,8 @@ fn artifact_decode_primitive_payload(
     value: ArtifactValue,
 ) -> Result[ArtifactValue, string] {
     let object = match artifact_json_object(value, "primitive payload") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     artifact_json_required_field(object, "value")
 }
@@ -64,11 +64,11 @@ fn artifact_decode_numeric_primitive(
     value: ArtifactValue,
 ) -> Result[tast::Primitive, string] {
     let value = match artifact_decode_primitive_payload(value) {
-        Result::Ok(value) => match artifact_json_number_value(value, "numeric primitive") {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+        Ok(value) => match artifact_json_number_value(value, "numeric primitive") {
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         },
-        Result::Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error),
     };
     match kind {
         "Int" => Result::Ok(tast::Primitive::Int { value }),
@@ -89,8 +89,8 @@ fn artifact_decode_numeric_primitive(
 
 fn artifact_decode_primitive(value: ArtifactValue) -> Result[tast::Primitive, string] {
     let object = match artifact_json_object(value, "primitive") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if object.len() != 1 {
         return Result::Err(artifact_decode_error("primitive variant"))
@@ -101,33 +101,33 @@ fn artifact_decode_primitive(value: ArtifactValue) -> Result[tast::Primitive, st
     let payload = object.get(0).1;
     if kind == "Unit" {
         match artifact_decode_primitive_payload(payload) {
-            Result::Ok(ArtifactValue::Null) => Result::Ok(tast::Primitive::Unit),
-            Result::Ok(_) => Result::Err(artifact_decode_error("unit primitive")),
-            Result::Err(error) => Result::Err(error),
+            Ok(Null) => Result::Ok(tast::Primitive::Unit),
+            Ok(_) => Result::Err(artifact_decode_error("unit primitive")),
+            Err(error) => Result::Err(error),
         }
     } else if kind == "Bool" {
         match artifact_decode_primitive_payload(payload) {
-            Result::Ok(value) => match artifact_json_bool_value(value, "boolean primitive") {
-                Result::Ok(value) => Result::Ok(tast::Primitive::Bool { value }),
-                Result::Err(error) => Result::Err(error),
+            Ok(value) => match artifact_json_bool_value(value, "boolean primitive") {
+                Ok(value) => Result::Ok(tast::Primitive::Bool { value }),
+                Err(error) => Result::Err(error),
             },
-            Result::Err(error) => Result::Err(error),
+            Err(error) => Result::Err(error),
         }
     } else if kind == "String" {
         match artifact_decode_primitive_payload(payload) {
-            Result::Ok(value) => match artifact_json_string_value(value, "string primitive") {
-                Result::Ok(value) => Result::Ok(tast::Primitive::String { value }),
-                Result::Err(error) => Result::Err(error),
+            Ok(value) => match artifact_json_string_value(value, "string primitive") {
+                Ok(value) => Result::Ok(tast::Primitive::String { value }),
+                Err(error) => Result::Err(error),
             },
-            Result::Err(error) => Result::Err(error),
+            Err(error) => Result::Err(error),
         }
     } else if kind == "Char" {
         let value = match artifact_decode_primitive_payload(payload) {
-            Result::Ok(value) => match artifact_json_string_value(value, "character primitive") {
-                Result::Ok(value) => value,
-                Result::Err(error) => return Result::Err(error),
+            Ok(value) => match artifact_json_string_value(value, "character primitive") {
+                Ok(value) => value,
+                Err(error) => return Result::Err(error),
             },
-            Result::Err(error) => return Result::Err(error),
+            Err(error) => return Result::Err(error),
         };
         if value.len() != 1 {
             Result::Err(artifact_decode_error("single character primitive"))
@@ -144,47 +144,47 @@ fn artifact_decode_constructor(
     value: ArtifactValue,
 ) -> Result[tast::Constructor, string] {
     let object = match artifact_json_object(value, "constructor") {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if object.len() != 1 {
         Result::Err(artifact_decode_error("constructor variant"))
     } else if object.get(0).0 == "Struct" {
         let payload = match artifact_json_object(object.get(0).1, "struct constructor") {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         match artifact_json_field_string(payload, "type_name") {
-            Result::Ok(name) => Result::Ok(tast::Constructor {
+            Ok(name) => Result::Ok(tast::Constructor {
                 name,
                 fields: artifact_decode_struct_fields(context, name),
                 is_struct: true,
                 tag: Option::None,
             }),
-            Result::Err(error) => Result::Err(error),
+            Err(error) => Result::Err(error),
         }
     } else if object.get(0).0 == "Enum" {
         let payload = match artifact_json_object(object.get(0).1, "enum constructor") {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         let type_name = match artifact_json_field_string(payload, "type_name") {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         let variant = match artifact_json_field_string(payload, "variant") {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         let index = match artifact_json_required_field(payload, "index") {
-            Result::Ok(value) => match artifact_json_number_value(value, "enum constructor index") {
-                Result::Ok(value) => match artifact_parse_nonnegative_int(value) {
-                    Result::Ok(value) => value,
-                    Result::Err(error) => return Result::Err(error),
+            Ok(value) => match artifact_json_number_value(value, "enum constructor index") {
+                Ok(value) => match artifact_parse_nonnegative_int(value) {
+                    Ok(value) => value,
+                    Err(error) => return Result::Err(error),
                 },
-                Result::Err(error) => return Result::Err(error),
+                Err(error) => return Result::Err(error),
             },
-            Result::Err(error) => return Result::Err(error),
+            Err(error) => return Result::Err(error),
         };
         Result::Ok(tast::Constructor {
             name: type_name + "::" + variant,

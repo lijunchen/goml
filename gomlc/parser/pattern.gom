@@ -5,18 +5,18 @@ use gomlc::lexer;
 
 fn is_pattern_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        lexer::TokenKind::TrueKeyword
-        | lexer::TokenKind::FalseKeyword
-        | lexer::TokenKind::Ident
-        | lexer::TokenKind::LParen
-        | lexer::TokenKind::LBracket
-        | lexer::TokenKind::WildcardKeyword
-        | lexer::TokenKind::Minus
-        | lexer::TokenKind::IntLit
-        | lexer::TokenKind::Float
-        | lexer::TokenKind::Str
-        | lexer::TokenKind::CharLit
-        | lexer::TokenKind::ByteCharLit => true,
+        TrueKeyword
+        | FalseKeyword
+        | Ident
+        | LParen
+        | LBracket
+        | WildcardKeyword
+        | Minus
+        | IntLit
+        | Float
+        | Str
+        | CharLit
+        | ByteCharLit => true,
         _ => false,
     }
 }
@@ -33,8 +33,8 @@ fn pattern(parser: Parser) -> Option[MarkerClosed] {
 
 fn or_pattern(parser: Parser) -> Option[MarkerClosed] {
     match alias_pattern(parser) {
-        Option::None => Option::None,
-        Option::Some(initial) => {
+        None => Option::None,
+        Some(initial) => {
             if parser.at(lexer::TokenKind::Pipe) == false {
                 Option::Some(initial)
             } else {
@@ -76,8 +76,8 @@ fn alias_pattern(parser: Parser) -> Option[MarkerClosed] {
 
 fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
     match simple_pattern(parser) {
-        Option::None => Option::None,
-        Option::Some(value) => {
+        None => Option::None,
+        Some(value) => {
             let kind = parser.peek();
             if token_is(kind, lexer::TokenKind::DotDot) == false
                 && token_is(kind, lexer::TokenKind::DotDotEq) == false
@@ -134,16 +134,16 @@ fn negative_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.advance();
     let kind = match parser.peek() {
-        lexer::TokenKind::IntLit => Option::Some(cst::NodeKind::PATTERN_INT),
-        lexer::TokenKind::Float => Option::Some(cst::NodeKind::PATTERN_FLOAT),
+        IntLit => Option::Some(cst::NodeKind::PATTERN_INT),
+        Float => Option::Some(cst::NodeKind::PATTERN_FLOAT),
         _ => Option::None,
     };
     match kind {
-        Option::Some(value) => {
+        Some(value) => {
             parser.advance();
             parser.close(marker, value)
         },
-        Option::None => {
+        None => {
             parser.error("expected a numeric literal after '-' in pattern");
             parser.close(marker, cst::NodeKind::ErrorTree)
         },
@@ -158,18 +158,18 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
         Option::None
     } else {
         let result = match parser.peek() {
-            lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword =>
+            TrueKeyword | FalseKeyword =>
                 numeric_pattern(parser, cst::NodeKind::PATTERN_BOOL),
-            lexer::TokenKind::Minus => negative_pattern(parser),
-            lexer::TokenKind::IntLit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT),
-            lexer::TokenKind::Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
-            lexer::TokenKind::Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
-            lexer::TokenKind::CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
-            lexer::TokenKind::ByteCharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_BYTE),
-            lexer::TokenKind::WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),
-            lexer::TokenKind::LParen => tuple_pattern(parser),
-            lexer::TokenKind::LBracket => array_pattern(parser),
-            lexer::TokenKind::Ident => ident_pattern(parser),
+            Minus => negative_pattern(parser),
+            IntLit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT),
+            Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
+            Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
+            CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
+            ByteCharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_BYTE),
+            WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),
+            LParen => tuple_pattern(parser),
+            LBracket => array_pattern(parser),
+            Ident => ident_pattern(parser),
             _ => {
                 let marker = parser.open();
                 parser.close(marker, cst::NodeKind::ErrorTree)

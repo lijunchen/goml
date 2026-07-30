@@ -288,43 +288,43 @@ pub fn diagnostic_message(value: Diagnostic) -> string {
 
 pub fn expr_type(value: Expr) -> Type {
     match value {
-        Expr::Var { ty, .. }
-        | Expr::Callable { ty, .. }
-        | Expr::Prim { ty, .. }
-        | Expr::Constr { ty, .. }
-        | Expr::Tuple { ty, .. }
-        | Expr::Array { ty, .. }
-        | Expr::Closure { ty, .. }
-        | Expr::Block { ty, .. }
-        | Expr::Match { ty, .. }
-        | Expr::If { ty, .. }
-        | Expr::While { ty, .. }
-        | Expr::For { ty, .. }
-        | Expr::Break { ty }
-        | Expr::Continue { ty }
-        | Expr::Return { ty, .. }
-        | Expr::Go { ty, .. }
-        | Expr::Call { ty, .. }
-        | Expr::Unary { ty, .. }
-        | Expr::Cast { ty, .. }
-        | Expr::Proj { ty, .. }
-        | Expr::Field { ty, .. }
-        | Expr::Index { ty, .. }
-        | Expr::Binary { ty, .. }
-        | Expr::ToDyn { ty, .. } => ty,
+        Var { ty, .. }
+        | Callable { ty, .. }
+        | Prim { ty, .. }
+        | Constr { ty, .. }
+        | Tuple { ty, .. }
+        | Array { ty, .. }
+        | Closure { ty, .. }
+        | Block { ty, .. }
+        | Match { ty, .. }
+        | If { ty, .. }
+        | While { ty, .. }
+        | For { ty, .. }
+        | Break { ty }
+        | Continue { ty }
+        | Return { ty, .. }
+        | Go { ty, .. }
+        | Call { ty, .. }
+        | Unary { ty, .. }
+        | Cast { ty, .. }
+        | Proj { ty, .. }
+        | Field { ty, .. }
+        | Index { ty, .. }
+        | Binary { ty, .. }
+        | ToDyn { ty, .. } => ty,
     }
 }
 
 pub fn pat_type(value: Pat) -> Type {
     match value {
-        Pat::Var { ty, .. }
-        | Pat::Prim { ty, .. }
-        | Pat::Constr { ty, .. }
-        | Pat::Tuple { ty, .. }
-        | Pat::Array { ty, .. }
-        | Pat::Alias { ty, .. }
-        | Pat::Or { ty, .. }
-        | Pat::Range { ty, .. }
-        | Pat::Wild { ty } => ty,
+        Var { ty, .. }
+        | Prim { ty, .. }
+        | Constr { ty, .. }
+        | Tuple { ty, .. }
+        | Array { ty, .. }
+        | Alias { ty, .. }
+        | Or { ty, .. }
+        | Range { ty, .. }
+        | Wild { ty } => ty,
     }
 }

@@ -9,31 +9,31 @@ fn standard_source_path(relative: string) -> string {
     let candidates = Vec::new();
     candidates.push(path::join("stdlib/std", relative));
     match env::current_exe() {
-        Result::Ok(executable) => match path::parent(executable) {
-            Option::Some(directory) => candidates.push(path::join(
+        Ok(executable) => match path::parent(executable) {
+            Some(directory) => candidates.push(path::join(
                 path::join(path::join(directory, "lib"), "std"),
                 relative,
             )),
-            Option::None => (),
+            None => (),
         },
-        Result::Err(_) => (),
+        Err(_) => (),
     };
     match env::var("GOML_HOME") {
-        Option::Some(home) => candidates.push(path::join(
+        Some(home) => candidates.push(path::join(
             path::join(path::join(home, "lib"), "std"),
             relative,
         )),
-        Option::None => (),
+        None => (),
     };
     match env::var("HOME") {
-        Option::Some(home) => candidates.push(path::join(
+        Some(home) => candidates.push(path::join(
             path::join(
                 path::join(path::join(home, ".goml"), "lib"),
                 "std",
             ),
             relative,
         )),
-        Option::None => (),
+        None => (),
     };
     for candidate in candidates {
         if fs::is_file(candidate) {

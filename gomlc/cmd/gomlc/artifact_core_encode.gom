@@ -49,16 +49,16 @@ fn artifact_json_primitive_value(
 
 fn artifact_integer_kind(value: tast::Type) -> string {
     match tast::resolve_type(value) {
-        tast::Type::Int => "Int",
-        tast::Type::Int8 => "Int8",
-        tast::Type::Int16 => "Int16",
-        tast::Type::Int32 => "Int32",
-        tast::Type::Int64 => "Int64",
-        tast::Type::Uint => "UInt",
-        tast::Type::Uint8 => "UInt8",
-        tast::Type::Uint16 => "UInt16",
-        tast::Type::Uint32 => "UInt32",
-        tast::Type::Uint64 => "UInt64",
+        Int => "Int",
+        Int8 => "Int8",
+        Int16 => "Int16",
+        Int32 => "Int32",
+        Int64 => "Int64",
+        Uint => "UInt",
+        Uint8 => "UInt8",
+        Uint16 => "UInt16",
+        Uint32 => "UInt32",
+        Uint64 => "UInt64",
         _ => {
             fail("error[compile]: invalid integer type in compiler artifact");
             "Int32"
@@ -68,8 +68,8 @@ fn artifact_integer_kind(value: tast::Type) -> string {
 
 fn artifact_float_kind(value: tast::Type) -> string {
     match tast::resolve_type(value) {
-        tast::Type::Float32 => "Float32",
-        tast::Type::Float64 => "Float64",
+        Float32 => "Float32",
+        Float64 => "Float64",
         _ => {
             fail("error[compile]: invalid float type in compiler artifact");
             "Float64"
@@ -83,7 +83,7 @@ fn artifact_json_primitive(
     ty: tast::Type,
 ) -> unit {
     match value {
-        tast::Primitive::Unit => {
+        Unit => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "Unit");
             artifact_json_begin_object(writer);
@@ -92,7 +92,7 @@ fn artifact_json_primitive(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Primitive::Bool { value } => {
+        Bool { value } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "Bool");
             artifact_json_begin_object(writer);
@@ -101,91 +101,91 @@ fn artifact_json_primitive(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        tast::Primitive::Int { value } => artifact_json_primitive_value(
+        Int { value } => artifact_json_primitive_value(
             writer,
             artifact_integer_kind(ty),
             value,
             false,
         ),
-        tast::Primitive::Int8 { value } => artifact_json_primitive_value(
+        Int8 { value } => artifact_json_primitive_value(
             writer,
             "Int8",
             value,
             false,
         ),
-        tast::Primitive::Int16 { value } => artifact_json_primitive_value(
+        Int16 { value } => artifact_json_primitive_value(
             writer,
             "Int16",
             value,
             false,
         ),
-        tast::Primitive::Int32 { value } => artifact_json_primitive_value(
+        Int32 { value } => artifact_json_primitive_value(
             writer,
             "Int32",
             value,
             false,
         ),
-        tast::Primitive::Int64 { value } => artifact_json_primitive_value(
+        Int64 { value } => artifact_json_primitive_value(
             writer,
             "Int64",
             value,
             false,
         ),
-        tast::Primitive::Uint { value } => artifact_json_primitive_value(
+        Uint { value } => artifact_json_primitive_value(
             writer,
             "UInt",
             value,
             false,
         ),
-        tast::Primitive::Uint8 { value } => artifact_json_primitive_value(
+        Uint8 { value } => artifact_json_primitive_value(
             writer,
             "UInt8",
             value,
             false,
         ),
-        tast::Primitive::Uint16 { value } => artifact_json_primitive_value(
+        Uint16 { value } => artifact_json_primitive_value(
             writer,
             "UInt16",
             value,
             false,
         ),
-        tast::Primitive::Uint32 { value } => artifact_json_primitive_value(
+        Uint32 { value } => artifact_json_primitive_value(
             writer,
             "UInt32",
             value,
             false,
         ),
-        tast::Primitive::Uint64 { value } => artifact_json_primitive_value(
+        Uint64 { value } => artifact_json_primitive_value(
             writer,
             "UInt64",
             value,
             false,
         ),
-        tast::Primitive::Float { value } => artifact_json_primitive_value(
+        Float { value } => artifact_json_primitive_value(
             writer,
             artifact_float_kind(ty),
             artifact_float_number(value),
             false,
         ),
-        tast::Primitive::Float32 { value } => artifact_json_primitive_value(
+        Float32 { value } => artifact_json_primitive_value(
             writer,
             "Float32",
             artifact_float_number(value),
             false,
         ),
-        tast::Primitive::Float64 { value } => artifact_json_primitive_value(
+        Float64 { value } => artifact_json_primitive_value(
             writer,
             "Float64",
             artifact_float_number(value),
             false,
         ),
-        tast::Primitive::String { value } => artifact_json_primitive_value(
+        String { value } => artifact_json_primitive_value(
             writer,
             "String",
             value,
             true,
         ),
-        tast::Primitive::Char { value } => artifact_json_primitive_value(
+        Char { value } => artifact_json_primitive_value(
             writer,
             "Char",
             value.to_string(),
@@ -239,8 +239,8 @@ fn artifact_json_constructor(
         ));
         artifact_json_name(writer, "index");
         artifact_json_number(writer, match value.tag {
-            Option::Some(value) => value.to_string(),
-            Option::None => {
+            Some(value) => value.to_string(),
+            None => {
                 fail("error[compile]: missing enum tag in compiler artifact");
                 "0"
             },
@@ -434,24 +434,24 @@ fn artifact_callable_id(kind: string, value: string) -> string {
 
 fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
     match value {
-        tast::Callable::Function(value) => ArtifactCallable {
+        Function(value) => ArtifactCallable {
             name: value,
             kind: "goml",
             id: Option::None,
         },
-        tast::Callable::Runtime(value) => ArtifactCallable {
+        Runtime(value) => ArtifactCallable {
             name: artifact_runtime_source_name(value),
             kind: "runtime",
             id: Option::Some(artifact_callable_id("runtime", value)),
         },
-        tast::Callable::Intrinsic(value) => ArtifactCallable {
+        Intrinsic(value) => ArtifactCallable {
             name: artifact_intrinsic_source_name(value),
             kind: "intrinsic",
             id: Option::Some(artifact_callable_id("intrinsic", value)),
         },
-        tast::Callable::TraitMethod { trait_ref: _, method_name: _ }
-        | tast::Callable::DynTraitMethod { trait_name: _, dispatch_name: _, method_name: _ }
-        | tast::Callable::InherentMethod { receiver_ty: _, method_name: _ } => {
+        TraitMethod { trait_ref: _, method_name: _ }
+        | DynTraitMethod { trait_name: _, dispatch_name: _, method_name: _ }
+        | InherentMethod { receiver_ty: _, method_name: _ } => {
             fail("error[compile]: unresolved callable in compiler artifact");
             ArtifactCallable {
                 name: "",
@@ -470,43 +470,43 @@ fn artifact_json_callable_body(
     artifact_json_name(writer, "kind");
     artifact_json_string(writer, value.kind);
     match value.id {
-        Option::Some(value) => {
+        Some(value) => {
             artifact_json_name(writer, "id");
             artifact_json_string(writer, value)
         },
-        Option::None => (),
+        None => (),
     };
     artifact_json_end_object(writer)
 }
 
 fn artifact_unary_name(value: ast::UnaryOp) -> string {
     match value {
-        ast::UnaryOp::Neg => "Neg",
-        ast::UnaryOp::Not => "Not",
-        ast::UnaryOp::BitNot => "BitNot",
+        Neg => "Neg",
+        Not => "Not",
+        BitNot => "BitNot",
     }
 }
 
 fn artifact_binary_name(value: ast::BinaryOp) -> string {
     match value {
-        ast::BinaryOp::Add => "Add",
-        ast::BinaryOp::Sub => "Sub",
-        ast::BinaryOp::Mul => "Mul",
-        ast::BinaryOp::Div => "Div",
-        ast::BinaryOp::Rem => "Rem",
-        ast::BinaryOp::BitAnd => "BitAnd",
-        ast::BinaryOp::BitOr => "BitOr",
-        ast::BinaryOp::BitXor => "BitXor",
-        ast::BinaryOp::Shl => "Shl",
-        ast::BinaryOp::Shr => "Shr",
-        ast::BinaryOp::And => "And",
-        ast::BinaryOp::Or => "Or",
-        ast::BinaryOp::Less => "Less",
-        ast::BinaryOp::Greater => "Greater",
-        ast::BinaryOp::LessEq => "LessEq",
-        ast::BinaryOp::GreaterEq => "GreaterEq",
-        ast::BinaryOp::Eq => "Eq",
-        ast::BinaryOp::NotEq => "NotEq",
+        Add => "Add",
+        Sub => "Sub",
+        Mul => "Mul",
+        Div => "Div",
+        Rem => "Rem",
+        BitAnd => "BitAnd",
+        BitOr => "BitOr",
+        BitXor => "BitXor",
+        Shl => "Shl",
+        Shr => "Shr",
+        And => "And",
+        Or => "Or",
+        Less => "Less",
+        Greater => "Greater",
+        LessEq => "LessEq",
+        GreaterEq => "GreaterEq",
+        Eq => "Eq",
+        NotEq => "NotEq",
     }
 }
 
@@ -528,8 +528,8 @@ fn artifact_json_optional_core_expr(
     value: Option[core::Expr],
 ) -> unit {
     match value {
-        Option::Some(value) => artifact_json_core_expr(writer, context, value),
-        Option::None => artifact_json_null(writer),
+        Some(value) => artifact_json_core_expr(writer, context, value),
+        None => artifact_json_null(writer),
     }
 }
 
@@ -574,7 +574,7 @@ fn artifact_json_core_expr(
 ) -> unit {
     artifact_json_begin_object(writer);
     match value {
-        core::Expr::Var { name, ty } => {
+        Var { name, ty } => {
             artifact_json_name(writer, "EVar");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "name");
@@ -583,7 +583,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Callable { callable, ty } => {
+        Callable { callable, ty } => {
             artifact_json_name(writer, "ECallable");
             artifact_json_begin_object(writer);
             let callable = artifact_callable(callable);
@@ -595,7 +595,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Prim { value, ty } => {
+        Prim { value, ty } => {
             artifact_json_name(writer, "EPrim");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "value");
@@ -604,7 +604,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Constr { constructor, args, ty } => {
+        Constr { constructor, args, ty } => {
             artifact_json_name(writer, "EConstr");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "constructor");
@@ -615,7 +615,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Tuple { items, ty } => {
+        Tuple { items, ty } => {
             artifact_json_name(writer, "ETuple");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "items");
@@ -624,7 +624,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Array { items, ty } => {
+        Array { items, ty } => {
             artifact_json_name(writer, "EArray");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "items");
@@ -633,7 +633,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Closure { params, body, ty } => {
+        Closure { params, body, ty } => {
             artifact_json_name(writer, "EClosure");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "params");
@@ -644,7 +644,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Block { block, ty } => {
+        Block { block, ty } => {
             artifact_json_name(writer, "EBlock");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "block");
@@ -653,7 +653,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Match { expr, arms, default, ty } => {
+        Match { expr, arms, default, ty } => {
             artifact_json_name(writer, "EMatch");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "expr");
@@ -666,7 +666,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::If { cond, then_branch, else_branch, ty } => {
+        If { cond, then_branch, else_branch, ty } => {
             artifact_json_name(writer, "EIf");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "cond");
@@ -679,7 +679,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::While { cond, body, ty } => {
+        While { cond, body, ty } => {
             artifact_json_name(writer, "EWhile");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "cond");
@@ -690,21 +690,21 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Break { ty } => {
+        Break { ty } => {
             artifact_json_name(writer, "EBreak");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "ty");
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Continue { ty } => {
+        Continue { ty } => {
             artifact_json_name(writer, "EContinue");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "ty");
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Return { expr, ty } => {
+        Return { expr, ty } => {
             artifact_json_name(writer, "EReturn");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "expr");
@@ -713,7 +713,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Go { expr, ty } => {
+        Go { expr, ty } => {
             artifact_json_name(writer, "EGo");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "expr");
@@ -722,7 +722,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::ConstrGet { expr, constructor, field_index, ty } => {
+        ConstrGet { expr, constructor, field_index, ty } => {
             artifact_json_name(writer, "EConstrGet");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "expr");
@@ -735,7 +735,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Unary { op, expr, ty } => {
+        Unary { op, expr, ty } => {
             artifact_json_name(writer, "EUnary");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "op");
@@ -746,7 +746,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Cast { expr, ty } => {
+        Cast { expr, ty } => {
             artifact_json_name(writer, "ECast");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "expr");
@@ -755,7 +755,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Binary { op, lhs, rhs, ty } => {
+        Binary { op, lhs, rhs, ty } => {
             artifact_json_name(writer, "EBinary");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "op");
@@ -768,7 +768,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Assign { name, value, target_ty, ty } => {
+        Assign { name, value, target_ty, ty } => {
             artifact_json_name(writer, "EAssign");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "name");
@@ -781,7 +781,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Call { func, args, ty } => {
+        Call { func, args, ty } => {
             artifact_json_name(writer, "ECall");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "func");
@@ -792,7 +792,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::ToDyn { trait_name, for_ty, expr, ty } => {
+        ToDyn { trait_name, for_ty, expr, ty } => {
             artifact_json_name(writer, "EToDyn");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "trait_name");
@@ -805,7 +805,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::DynCall { trait_name, method_name, receiver, args, ty } => {
+        DynCall { trait_name, method_name, receiver, args, ty } => {
             artifact_json_name(writer, "EDynCall");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "trait_name");
@@ -820,7 +820,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::TraitCall {
+        TraitCall {
             trait_ref,
             method_name,
             receiver,
@@ -842,7 +842,7 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        core::Expr::Proj { tuple, index, ty } => {
+        Proj { tuple, index, ty } => {
             artifact_json_name(writer, "EProj");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "tuple");
@@ -887,7 +887,7 @@ fn artifact_json_core_trait_impl(
     value: Option[core::TraitImpl],
 ) -> unit {
     match value {
-        Option::Some(value) => {
+        Some(value) => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "trait_ref");
             artifact_json_trait_ref(writer, context, value.trait_ref);
@@ -899,7 +899,7 @@ fn artifact_json_core_trait_impl(
             artifact_json_number(writer, value.predicate_count.to_string());
             artifact_json_end_object(writer)
         },
-        Option::None => artifact_json_null(writer),
+        None => artifact_json_null(writer),
     }
 }
 
@@ -948,7 +948,7 @@ fn artifact_json_const_expr(
 ) -> unit {
     artifact_json_begin_object(writer);
     match value {
-        tast::ConstExpr::Prim { value, ty } => {
+        Prim { value, ty } => {
             artifact_json_name(writer, "CPrim");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "value");
@@ -957,7 +957,7 @@ fn artifact_json_const_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        tast::ConstExpr::Ref { name, ty } => {
+        Ref { name, ty } => {
             artifact_json_name(writer, "CRef");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "name");
@@ -966,7 +966,7 @@ fn artifact_json_const_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        tast::ConstExpr::Unary { op, expr, ty } => {
+        Unary { op, expr, ty } => {
             artifact_json_name(writer, "CUnary");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "op");
@@ -977,7 +977,7 @@ fn artifact_json_const_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        tast::ConstExpr::Cast { expr, ty } => {
+        Cast { expr, ty } => {
             artifact_json_name(writer, "CCast");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "expr");
@@ -986,7 +986,7 @@ fn artifact_json_const_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        tast::ConstExpr::Binary { op, lhs, rhs, ty } => {
+        Binary { op, lhs, rhs, ty } => {
             artifact_json_name(writer, "CBinary");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "op");
@@ -999,7 +999,7 @@ fn artifact_json_const_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        tast::ConstExpr::Error { ty } => {
+        Error { ty } => {
             artifact_json_name(writer, "CError");
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "ty");

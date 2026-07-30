@@ -34,21 +34,21 @@ fn unit_imm() -> Imm {
 
 fn type_is_unit(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Unit => true,
+        Unit => true,
         _ => false,
     }
 }
 
 fn type_is_unit_or_never(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Unit | tast::Type::Never => true,
+        Unit | Never => true,
         _ => false,
     }
 }
 
 fn type_is_error(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Error => true,
+        Error => true,
         _ => false,
     }
 }
@@ -103,13 +103,13 @@ fn jump_block(
 
 fn expr_is_control(value: core::Expr) -> bool {
     match value {
-        core::Expr::Block { block: _, ty: _ }
-        | core::Expr::If { cond: _, then_branch: _, else_branch: _, ty: _ }
-        | core::Expr::Match { expr: _, arms: _, default: _, ty: _ }
-        | core::Expr::While { cond: _, body: _, ty: _ }
-        | core::Expr::Break { ty: _ }
-        | core::Expr::Continue { ty: _ }
-        | core::Expr::Return { expr: _, ty: _ } => true,
+        Block { block: _, ty: _ }
+        | If { cond: _, then_branch: _, else_branch: _, ty: _ }
+        | Match { expr: _, arms: _, default: _, ty: _ }
+        | While { cond: _, body: _, ty: _ }
+        | Break { ty: _ }
+        | Continue { ty: _ }
+        | Return { expr: _, ty: _ } => true,
         _ => false,
     }
 }
@@ -119,12 +119,12 @@ fn match_has_catch_all(
     default: Option[core::Expr],
 ) -> bool {
     match default {
-        Option::Some(_) => return true,
-        Option::None => (),
+        Some(_) => return true,
+        None => (),
     };
     for arm in arms {
         match arm.lhs {
-            core::Expr::Var { name: _, ty: _ } => return true,
+            Var { name: _, ty: _ } => return true,
             _ => (),
         }
     };
@@ -133,17 +133,17 @@ fn match_has_catch_all(
 
 fn expr_always_exits(value: core::Expr) -> bool {
     match value {
-        core::Expr::Break { ty: _ } | core::Expr::Continue { ty: _ } | core::Expr::Return { expr: _, ty: _ } => true,
-        core::Expr::Constr { constructor: _, args, ty: _ } => exprs_always_exit(args),
-        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
+        Break { ty: _ } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Constr { constructor: _, args, ty: _ } => exprs_always_exit(args),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => {
             exprs_always_exit(items)
         },
-        core::Expr::Closure { params: _, body, ty: _ } => expr_always_exits(body),
-        core::Expr::Block { block, ty: _ } => block_always_exits(block),
-        core::Expr::If { cond: _, then_branch: then_, else_branch: else_, ty: _ } => {
+        Closure { params: _, body, ty: _ } => expr_always_exits(body),
+        Block { block, ty: _ } => block_always_exits(block),
+        If { cond: _, then_branch: then_, else_branch: else_, ty: _ } => {
             expr_always_exits(then_) && expr_always_exits(else_)
         },
-        core::Expr::Match { expr: _, arms, default, ty: _ } => {
+        Match { expr: _, arms, default, ty: _ } => {
             if !match_has_catch_all(arms, default) {
                 return false
             } else {
@@ -157,39 +157,39 @@ fn expr_always_exits(value: core::Expr) -> bool {
                 }
             };
             match default {
-                Option::Some(value) => if expr_always_exits(value) {
+                Some(value) => if expr_always_exits(value) {
                     ()
                 } else {
                     return false
                 },
-                Option::None => (),
+                None => (),
             };
             true
         },
-        core::Expr::While { cond, body: _, ty: _ } => expr_always_exits(cond),
-        core::Expr::Go { expr, ty: _ }
-        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | core::Expr::Unary { op: _, expr, ty: _ }
-        | core::Expr::Cast { expr, ty: _ }
-        | core::Expr::ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => expr_always_exits(expr),
-        core::Expr::Binary { op, lhs, rhs, ty: _ } => {
+        While { cond, body: _, ty: _ } => expr_always_exits(cond),
+        Go { expr, ty: _ }
+        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | Unary { op: _, expr, ty: _ }
+        | Cast { expr, ty: _ }
+        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
+        | Proj { tuple: expr, index: _, ty: _ } => expr_always_exits(expr),
+        Binary { op, lhs, rhs, ty: _ } => {
             expr_always_exits(lhs) || match op {
-                ast::BinaryOp::And | ast::BinaryOp::Or => false,
+                And | Or => false,
                 _ => expr_always_exits(rhs),
             }
         },
-        core::Expr::Assign { name: _, value: expr, target_ty: _, ty: _ } => expr_always_exits(expr),
-        core::Expr::Call { func, args, ty: _ } => {
+        Assign { name: _, value: expr, target_ty: _, ty: _ } => expr_always_exits(expr),
+        Call { func, args, ty: _ } => {
             expr_always_exits(func) || exprs_always_exit(args)
         },
-        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | TraitCall { receiver, args, .. } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
-        core::Expr::Var { name: _, ty: _ }
-        | core::Expr::Callable { callable: _, ty: _ }
-        | core::Expr::Prim { value: _, ty: _ } => false,
+        Var { name: _, ty: _ }
+        | Callable { callable: _, ty: _ }
+        | Prim { value: _, ty: _ } => false,
     }
 }
 
@@ -213,7 +213,7 @@ fn block_always_exits(value: core::Block) -> bool {
         }
     };
     match value.tail {
-        Option::Some(value) => expr_always_exits(value),
-        Option::None => false,
+        Some(value) => expr_always_exits(value),
+        None => false,
     }
 }

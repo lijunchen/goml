@@ -29,185 +29,185 @@ fn add_reachable(values: NameSet, value: string) -> unit {
 
 fn collect_type_names(result: NameSet, value: Type) -> unit {
     match value {
-        Type::Named { name } => add_reachable(result, name),
-        Type::Pointer { elem: inner } | Type::Array { len: _, elem: inner } | Type::Slice { elem: inner } | Type::Chan {
+        Named { name } => add_reachable(result, name),
+        Pointer { elem: inner } | Array { len: _, elem: inner } | Slice { elem: inner } | Chan {
             elem: inner,
         } => {
             collect_type_names(result, inner)
         },
-        Type::Map { key, value } => {
+        Map { key, value } => {
             collect_type_names(result, key);
             collect_type_names(result, value)
         },
-        Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             for param in params {
                 collect_type_names(result, param)
             };
             collect_type_names(result, ret_ty)
         },
-        Type::Multi { items: values } => {
+        Multi { items: values } => {
             for value in values {
                 collect_type_names(result, value)
             }
         },
-        Type::Void
-        | Type::Any
-        | Type::Unit
-        | Type::Bool
-        | Type::Int
-        | Type::Int8
-        | Type::Int16
-        | Type::Int32
-        | Type::Int64
-        | Type::Uint
-        | Type::Uint8
-        | Type::Uint16
-        | Type::Uint32
-        | Type::Uint64
-        | Type::Float32
-        | Type::Float64
-        | Type::String
-        | Type::Char => (),
+        Void
+        | Any
+        | Unit
+        | Bool
+        | Int
+        | Int8
+        | Int16
+        | Int32
+        | Int64
+        | Uint
+        | Uint8
+        | Uint16
+        | Uint32
+        | Uint64
+        | Float32
+        | Float64
+        | String
+        | Char => (),
     }
 }
 
 fn collect_expr_names(result: NameSet, value: Expr) -> unit {
     match value {
-        Expr::Var { name } => add_reachable(result, name),
-        Expr::Call { func, args } => {
+        Var { name } => add_reachable(result, name),
+        Call { func, args } => {
             collect_expr_names(result, func);
             for arg in args {
                 collect_expr_names(result, arg)
             }
         },
-        Expr::Unary { op: _, expr } => collect_expr_names(result, expr),
-        Expr::Binary { op: _, lhs, rhs } => {
+        Unary { op: _, expr } => collect_expr_names(result, expr),
+        Binary { op: _, lhs, rhs } => {
             collect_expr_names(result, lhs);
             collect_expr_names(result, rhs)
         },
-        Expr::Field { expr, field_name: _ } => collect_expr_names(result, expr),
-        Expr::Index { base: expr, index } => {
+        Field { expr, field_name: _ } => collect_expr_names(result, expr),
+        Index { base: expr, index } => {
             collect_expr_names(result, expr);
             collect_expr_names(result, index)
         },
-        Expr::Slice { base: expr, start, end } => {
+        Slice { base: expr, start, end } => {
             collect_expr_names(result, expr);
             collect_expr_names(result, start);
             collect_expr_names(result, end)
         },
-        Expr::Cast { expr, ty } | Expr::Convert { ty, expr } => {
+        Cast { expr, ty } | Convert { ty, expr } => {
             collect_expr_names(result, expr);
             collect_type_names(result, ty)
         },
-        Expr::Make { ty, args } => {
+        Make { ty, args } => {
             collect_type_names(result, ty);
             for arg in args {
                 collect_expr_names(result, arg)
             }
         },
-        Expr::Send { channel, value } => {
+        Send { channel, value } => {
             collect_expr_names(result, channel);
             collect_expr_names(result, value)
         },
-        Expr::Receive { channel } => collect_expr_names(result, channel),
-        Expr::StructLiteral { ty, fields } => {
+        Receive { channel } => collect_expr_names(result, channel),
+        StructLiteral { ty, fields } => {
             collect_type_names(result, ty);
             for field in fields {
                 collect_expr_names(result, field.1)
             }
         },
-        Expr::ArrayLiteral { ty, items: values } => {
+        ArrayLiteral { ty, items: values } => {
             collect_type_names(result, ty);
             for value in values {
                 collect_expr_names(result, value)
             }
         },
-        Expr::FuncLit { params, ret_ty, body } => {
+        FuncLit { params, ret_ty, body } => {
             for param in params {
                 collect_type_names(result, param.1)
             };
             collect_type_names(result, ret_ty);
             collect_block_names(result, body)
         },
-        Expr::Nil
-        | Expr::Unit
-        | Expr::Bool { value: _ }
-        | Expr::Int { value: _ }
-        | Expr::Float { value: _ }
-        | Expr::String { value: _ } => (),
+        Nil
+        | Unit
+        | Bool { value: _ }
+        | Int { value: _ }
+        | Float { value: _ }
+        | String { value: _ } => (),
     }
 }
 
 fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
     match value {
-        Stmt::Expr { expr } | Stmt::Go { call: expr } => collect_expr_names(result, expr),
-        Stmt::Var { name: _, ty, value: initial } => {
+        Expr { expr } | Go { call: expr } => collect_expr_names(result, expr),
+        Var { name: _, ty, value: initial } => {
             collect_type_names(result, ty);
             match initial {
-                Option::Some(expr) => collect_expr_names(result, expr),
-                Option::None => (),
+                Some(expr) => collect_expr_names(result, expr),
+                None => (),
             }
         },
-        Stmt::Assign { name: _, value: expr } => collect_expr_names(result, expr),
-        Stmt::FieldAssign { target, field_name: _, value: expr } => {
+        Assign { name: _, value: expr } => collect_expr_names(result, expr),
+        FieldAssign { target, field_name: _, value: expr } => {
             collect_expr_names(result, target);
             collect_expr_names(result, expr)
         },
-        Stmt::IndexAssign { base: target, index, value: expr } => {
+        IndexAssign { base: target, index, value: expr } => {
             collect_expr_names(result, target);
             collect_expr_names(result, index);
             collect_expr_names(result, expr)
         },
-        Stmt::MultiAssign { names: _, value: expr } => collect_expr_names(result, expr),
-        Stmt::Return { expr } => match expr {
-            Option::Some(expr) => collect_expr_names(result, expr),
-            Option::None => (),
+        MultiAssign { names: _, value: expr } => collect_expr_names(result, expr),
+        Return { expr } => match expr {
+            Some(expr) => collect_expr_names(result, expr),
+            None => (),
         },
-        Stmt::ReturnMulti { exprs: values } => {
+        ReturnMulti { exprs: values } => {
             for value in values {
                 collect_expr_names(result, value)
             }
         },
-        Stmt::If { cond, then_, else_ } => {
+        If { cond, then_, else_ } => {
             collect_expr_names(result, cond);
             collect_block_names(result, then_);
             match else_ {
-                Option::Some(body) => collect_block_names(result, body),
-                Option::None => (),
+                Some(body) => collect_block_names(result, body),
+                None => (),
             }
         },
-        Stmt::Loop { body } | Stmt::LabeledLoop { label: _, body } => collect_block_names(result, body),
-        Stmt::Range { names: _, expr, body } => {
+        Loop { body } | LabeledLoop { label: _, body } => collect_block_names(result, body),
+        Range { names: _, expr, body } => {
             collect_expr_names(result, expr);
             collect_block_names(result, body)
         },
-        Stmt::Switch { expr, cases, default } => {
+        Switch { expr, cases, default } => {
             collect_expr_names(result, expr);
             for case in cases {
                 collect_expr_names(result, case.value);
                 collect_block_names(result, case.body)
             };
             match default {
-                Option::Some(body) => collect_block_names(result, body),
-                Option::None => (),
+                Some(body) => collect_block_names(result, body),
+                None => (),
             }
         },
-        Stmt::TypeSwitch { binding: _, expr, cases, default } => {
+        TypeSwitch { binding: _, expr, cases, default } => {
             collect_expr_names(result, expr);
             for case in cases {
                 collect_type_names(result, case.ty);
                 collect_block_names(result, case.body)
             };
             match default {
-                Option::Some(body) => collect_block_names(result, body),
-                Option::None => (),
+                Some(body) => collect_block_names(result, body),
+                None => (),
             }
         },
-        Stmt::Break
-        | Stmt::BreakLabel { label: _ }
-        | Stmt::Continue
-        | Stmt::Panic { message: _ }
-        | Stmt::Unreachable => (),
+        Break
+        | BreakLabel { label: _ }
+        | Continue
+        | Panic { message: _ }
+        | Unreachable => (),
     }
 }
 
@@ -241,58 +241,58 @@ fn import_is_used(names: NameSet, alias: string) -> bool {
 
 fn collect_item_names(result: NameSet, value: Item) -> unit {
     match value {
-        Item::TypeDef(definition) => collect_type_names(result, definition.ty),
-        Item::ConstGroup(group) => {
+        TypeDef(definition) => collect_type_names(result, definition.ty),
+        ConstGroup(group) => {
             for spec in group.specs {
                 collect_type_names(result, spec.ty);
                 collect_expr_names(result, spec.value)
             }
         },
-        Item::Global(global) => {
+        Global(global) => {
             match global.ty {
-                Option::Some(ty) => collect_type_names(result, ty),
-                Option::None => (),
+                Some(ty) => collect_type_names(result, ty),
+                None => (),
             };
             collect_expr_names(result, global.value)
         },
-        Item::Interface(definition) => {
+        Interface(definition) => {
             for method in definition.methods {
                 for param in method.params {
                     collect_type_names(result, param)
                 };
                 match method.ret_ty {
-                    Option::Some(ty) => collect_type_names(result, ty),
-                    Option::None => (),
+                    Some(ty) => collect_type_names(result, ty),
+                    None => (),
                 }
             }
         },
-        Item::Struct(definition) => {
+        Struct(definition) => {
             for field in definition.fields {
                 collect_type_names(result, field.1)
             }
         },
-        Item::Function(function) => {
+        Function(function) => {
             for param in function.params {
                 collect_type_names(result, param.1)
             };
             match function.ret_ty {
-                Option::Some(ty) => collect_type_names(result, ty),
-                Option::None => (),
+                Some(ty) => collect_type_names(result, ty),
+                None => (),
             };
             collect_block_names(result, function.body)
         },
-        Item::Method(method) => {
+        Method(method) => {
             collect_type_names(result, method.receiver.1);
             for param in method.params {
                 collect_type_names(result, param.1)
             };
             match method.ret_ty {
-                Option::Some(ty) => collect_type_names(result, ty),
-                Option::None => (),
+                Some(ty) => collect_type_names(result, ty),
+                None => (),
             };
             collect_block_names(result, method.body)
         },
-        Item::ImportGroup(_) => (),
+        ImportGroup(_) => (),
     }
 }
 
@@ -304,7 +304,7 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     for value in values {
         match value {
-            Item::ImportGroup(imports) => {
+            ImportGroup(imports) => {
                 let retained: Vec[(string, string)] = Vec::new();
                 for entry in imports {
                     if import_is_used(names, entry.0) {
@@ -333,7 +333,7 @@ pub fn prune_functions(value: File) -> File {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {
-                Item::Function(function) => {
+                Function(function) => {
                     if name_present(reachable, function.name)
                         && name_present(expanded, function.name) == false
                     {
@@ -356,7 +356,7 @@ pub fn prune_functions(value: File) -> File {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {
-                Item::Global(global) => if name_present(reachable, global.name)
+                Global(global) => if name_present(reachable, global.name)
                     && name_present(expanded, global.name) == false
                 {
                     add_reachable(expanded, global.name);
@@ -377,7 +377,7 @@ pub fn prune_functions(value: File) -> File {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {
-                Item::ConstGroup(group) => for spec in group.specs {
+                ConstGroup(group) => for spec in group.specs {
                     if name_present(reachable, spec.name)
                         && name_present(expanded, spec.name) == false
                     {
@@ -399,14 +399,14 @@ pub fn prune_functions(value: File) -> File {
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
-            Item::Function(function) => {
+            Function(function) => {
                 if name_present(reachable, function.name) {
                     items.push(Item::Function(function))
                 } else {
                     ()
                 }
             },
-            Item::ConstGroup(group) => {
+            ConstGroup(group) => {
                 let was_empty = group.specs.len() == 0;
                 let specs: Vec[ConstSpec] = Vec::new();
                 for spec in group.specs {
@@ -422,7 +422,7 @@ pub fn prune_functions(value: File) -> File {
                     ()
                 }
             },
-            Item::Global(global) => {
+            Global(global) => {
                 if name_present(reachable, global.name) {
                     items.push(Item::Global(global))
                 } else {

@@ -33,17 +33,17 @@ fn artifact_binary_collect_value_strings(
     value: ArtifactValue,
 ) -> unit {
     match value {
-        ArtifactValue::Object(fields) => for field in fields {
+        Object(fields) => for field in fields {
             artifact_binary_collect_string(seen, values, field.0);
             artifact_binary_collect_value_strings(seen, values, field.1)
         },
-        ArtifactValue::Array(items) => for item in items {
+        Array(items) => for item in items {
             artifact_binary_collect_value_strings(seen, values, item)
         },
-        ArtifactValue::String(value) => {
+        String(value) => {
             artifact_binary_collect_string(seen, values, value)
         },
-        ArtifactValue::Number(_) | ArtifactValue::Bool(_) | ArtifactValue::Null => (),
+        Number(_) | Bool(_) | Null => (),
     }
 }
 
@@ -72,8 +72,8 @@ fn artifact_binary_string_id(
     value: string,
 ) -> int {
     match table.indexes.get(value) {
-        Option::Some(value) => value,
-        Option::None => -1,
+        Some(value) => value,
+        None => -1,
     }
 }
 
@@ -93,8 +93,8 @@ fn decode_artifact_binary_string_table(
 ) -> Result[ArtifactBinaryStringTable, string] {
     let reader = new_artifact_binary_reader(data);
     let count = match artifact_binary_read_length(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if count > 10000000 {
         return Result::Err("binary artifact string table exceeds limit")
@@ -105,8 +105,8 @@ fn decode_artifact_binary_string_table(
     let indexes: HashMap[string, int] = HashMap::new();
     for index in range(0, count) {
         let value = match artifact_binary_read_string(reader) {
-            Result::Ok(value) => value,
-            Result::Err(error) => return Result::Err(error),
+            Ok(value) => value,
+            Err(error) => return Result::Err(error),
         };
         if indexes.contains(value) {
             return Result::Err("duplicate binary artifact string")
@@ -145,8 +145,8 @@ fn artifact_binary_decode_string_id(
     table: ArtifactBinaryStringTable,
 ) -> Result[string, string] {
     let id = match artifact_binary_read_length(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if id >= table.values.len() {
         Result::Err(artifact_binary_reader_error(
@@ -184,28 +184,28 @@ fn artifact_binary_encode_value_at(
         ()
     };
     match value {
-        ArtifactValue::Null => {
+        Null => {
             artifact_binary_write_u8(writer, 0);
             Result::Ok(())
         },
-        ArtifactValue::Bool(false) => {
+        Bool(false) => {
             artifact_binary_write_u8(writer, 1);
             Result::Ok(())
         },
-        ArtifactValue::Bool(true) => {
+        Bool(true) => {
             artifact_binary_write_u8(writer, 2);
             Result::Ok(())
         },
-        ArtifactValue::Number(value) => {
+        Number(value) => {
             artifact_binary_write_u8(writer, 3);
             artifact_binary_write_string(writer, value);
             Result::Ok(())
         },
-        ArtifactValue::String(value) => {
+        String(value) => {
             artifact_binary_write_u8(writer, 4);
             artifact_binary_encode_string_id(writer, table, value)
         },
-        ArtifactValue::Array(items) => {
+        Array(items) => {
             artifact_binary_write_u8(writer, 5);
             artifact_binary_write_u32(writer, items.len() as uint32);
             for item in items {
@@ -215,13 +215,13 @@ fn artifact_binary_encode_value_at(
                     item,
                     depth + 1,
                 ) {
-                    Result::Ok(()) => (),
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(()) => (),
+                    Err(error) => return Result::Err(error),
                 }
             };
             Result::Ok(())
         },
-        ArtifactValue::Object(fields) => {
+        Object(fields) => {
             artifact_binary_write_u8(writer, 6);
             artifact_binary_write_u32(writer, fields.len() as uint32);
             for field in fields {
@@ -230,8 +230,8 @@ fn artifact_binary_encode_value_at(
                     table,
                     field.0,
                 ) {
-                    Result::Ok(()) => (),
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(()) => (),
+                    Err(error) => return Result::Err(error),
                 };
                 match artifact_binary_encode_value_at(
                     writer,
@@ -239,8 +239,8 @@ fn artifact_binary_encode_value_at(
                     field.1,
                     depth + 1,
                 ) {
-                    Result::Ok(()) => (),
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(()) => (),
+                    Err(error) => return Result::Err(error),
                 }
             };
             Result::Ok(())
@@ -254,8 +254,8 @@ fn encode_artifact_binary_value(
 ) -> Result[bytes::Bytes, string] {
     let writer = new_artifact_binary_writer();
     match artifact_binary_encode_value_at(writer, table, value, 0) {
-        Result::Ok(()) => Result::Ok(artifact_binary_writer_finish(writer)),
-        Result::Err(error) => Result::Err(error),
+        Ok(()) => Result::Ok(artifact_binary_writer_finish(writer)),
+        Err(error) => Result::Err(error),
     }
 }
 
@@ -270,25 +270,25 @@ fn artifact_binary_decode_value_at(
         ()
     };
     let tag = match artifact_binary_read_u8(reader) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     match tag {
         0 => Result::Ok(ArtifactValue::Null),
         1 => Result::Ok(ArtifactValue::Bool(false)),
         2 => Result::Ok(ArtifactValue::Bool(true)),
         3 => match artifact_binary_read_string(reader) {
-            Result::Ok(value) => Result::Ok(ArtifactValue::Number(value)),
-            Result::Err(error) => Result::Err(error),
+            Ok(value) => Result::Ok(ArtifactValue::Number(value)),
+            Err(error) => Result::Err(error),
         },
         4 => match artifact_binary_decode_string_id(reader, table) {
-            Result::Ok(value) => Result::Ok(ArtifactValue::String(value)),
-            Result::Err(error) => Result::Err(error),
+            Ok(value) => Result::Ok(ArtifactValue::String(value)),
+            Err(error) => Result::Err(error),
         },
         5 => {
             let count = match artifact_binary_read_u32(reader) {
-                Result::Ok(value) => value as int,
-                Result::Err(error) => return Result::Err(error),
+                Ok(value) => value as int,
+                Err(error) => return Result::Err(error),
             };
             if count > 10000000 {
                 return Result::Err("binary artifact array exceeds limit")
@@ -302,16 +302,16 @@ fn artifact_binary_decode_value_at(
                     table,
                     depth + 1,
                 ) {
-                    Result::Ok(value) => values.push(value),
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(value) => values.push(value),
+                    Err(error) => return Result::Err(error),
                 }
             };
             Result::Ok(ArtifactValue::Array(values))
         },
         6 => {
             let count = match artifact_binary_read_u32(reader) {
-                Result::Ok(value) => value as int,
-                Result::Err(error) => return Result::Err(error),
+                Ok(value) => value as int,
+                Err(error) => return Result::Err(error),
             };
             if count > 10000000 {
                 return Result::Err("binary artifact object exceeds limit")
@@ -326,12 +326,12 @@ fn artifact_binary_decode_value_at(
             };
             for _ in range(0, count) {
                 let name = match artifact_binary_decode_string_id(reader, table) {
-                    Result::Ok(value) => value,
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(value) => value,
+                    Err(error) => return Result::Err(error),
                 };
                 let duplicate = match names {
-                    Option::Some(value) => value.contains(name),
-                    Option::None => artifact_binary_object_has_field(
+                    Some(value) => value.contains(name),
+                    None => artifact_binary_object_has_field(
                         fields,
                         name,
                     ),
@@ -340,8 +340,8 @@ fn artifact_binary_decode_value_at(
                     return Result::Err("duplicate binary artifact object field")
                 } else {
                     match names {
-                        Option::Some(value) => value.set(name, ()),
-                        Option::None => (),
+                        Some(value) => value.set(name, ()),
+                        None => (),
                     }
                 };
                 let value = match artifact_binary_decode_value_at(
@@ -349,8 +349,8 @@ fn artifact_binary_decode_value_at(
                     table,
                     depth + 1,
                 ) {
-                    Result::Ok(value) => value,
-                    Result::Err(error) => return Result::Err(error),
+                    Ok(value) => value,
+                    Err(error) => return Result::Err(error),
                 };
                 fields.push((name, value))
             };
@@ -369,8 +369,8 @@ fn decode_artifact_binary_value(
 ) -> Result[ArtifactValue, string] {
     let reader = new_artifact_binary_reader(data);
     let value = match artifact_binary_decode_value_at(reader, table, 0) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
+        Ok(value) => value,
+        Err(error) => return Result::Err(error),
     };
     if artifact_binary_reader_remaining(reader) != 0 {
         Result::Err("trailing bytes in binary artifact value")

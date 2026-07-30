@@ -52,8 +52,8 @@ fn find_binding(values: Vec[TypeBinding], name: string) -> Option[tast::Type] {
 
 fn bind_type(values: Vec[TypeBinding], name: string, ty: tast::Type) -> bool {
     match find_binding(values, name) {
-        Option::Some(previous) => compact_type(previous) == compact_type(ty),
-        Option::None => {
+        Some(previous) => compact_type(previous) == compact_type(ty),
+        None => {
             values.push(TypeBinding { name, ty });
             true
         },
@@ -85,10 +85,10 @@ fn unify_optional_trait_refs(
     bindings: Vec[TypeBinding],
 ) -> bool {
     match (templates, actuals) {
-        (Option::Some(template), Option::Some(actual)) => {
+        (Some(template), Some(actual)) => {
             template.name == actual.name && unify_types(template.args, actual.args, bindings)
         },
-        (Option::None, Option::None) => true,
+        (None, None) => true,
         _ => false,
     }
 }
@@ -103,14 +103,14 @@ fn projection_binding_name(
     builder.write_string(compact_type(base));
     builder.write_char('#');
     match reference {
-        Option::Some(reference) => {
+        Some(reference) => {
             builder.write_string(reference.name);
             for arg in reference.args {
                 builder.write_char('#');
                 builder.write_string(compact_type(arg))
             }
         },
-        Option::None => (),
+        None => (),
     };
     builder.write_char('#');
     builder.write_string(name);
@@ -134,43 +134,43 @@ fn unify_type(
     bindings: Vec[TypeBinding],
 ) -> bool {
     match (tast::resolve_type(template), tast::resolve_type(actual)) {
-        (tast::Type::Param { name }, value) => bind_type(bindings, name, value),
-        (tast::Type::Unit, tast::Type::Unit)
-        | (tast::Type::Never, tast::Type::Never)
-        | (tast::Type::Bool, tast::Type::Bool)
-        | (tast::Type::Int, tast::Type::Int)
-        | (tast::Type::Int8, tast::Type::Int8)
-        | (tast::Type::Int16, tast::Type::Int16)
-        | (tast::Type::Int32, tast::Type::Int32)
-        | (tast::Type::Int64, tast::Type::Int64)
-        | (tast::Type::Uint, tast::Type::Uint)
-        | (tast::Type::Uint8, tast::Type::Uint8)
-        | (tast::Type::Uint16, tast::Type::Uint16)
-        | (tast::Type::Uint32, tast::Type::Uint32)
-        | (tast::Type::Uint64, tast::Type::Uint64)
-        | (tast::Type::Float32, tast::Type::Float32)
-        | (tast::Type::Float64, tast::Type::Float64)
-        | (tast::Type::String, tast::Type::String)
-        | (tast::Type::Char, tast::Type::Char)
-        | (tast::Type::Error, tast::Type::Error) => true,
-        (tast::Type::Tuple { items: templates }, tast::Type::Tuple { items: actuals }) => {
+        (Param { name }, value) => bind_type(bindings, name, value),
+        (Unit, Unit)
+        | (Never, Never)
+        | (Bool, Bool)
+        | (Int, Int)
+        | (Int8, Int8)
+        | (Int16, Int16)
+        | (Int32, Int32)
+        | (Int64, Int64)
+        | (Uint, Uint)
+        | (Uint8, Uint8)
+        | (Uint16, Uint16)
+        | (Uint32, Uint32)
+        | (Uint64, Uint64)
+        | (Float32, Float32)
+        | (Float64, Float64)
+        | (String, String)
+        | (Char, Char)
+        | (Error, Error) => true,
+        (Tuple { items: templates }, Tuple { items: actuals }) => {
             unify_types(templates, actuals, bindings)
         },
-        (tast::Type::Con { name: template }, tast::Type::Con { name: actual }) => template == actual,
-        (tast::Type::Dyn { trait_name: template }, tast::Type::Dyn { trait_name: actual }) => template == actual,
+        (Con { name: template }, Con { name: actual }) => template == actual,
+        (Dyn { trait_name: template }, Dyn { trait_name: actual }) => template == actual,
         (
-            tast::Type::Projection {
+            Projection {
                 for_ty: template_base,
                 name: template_name,
                 trait_ref: template_ref,
             },
-            tast::Type::Projection { for_ty: actual_base, name: actual_name, trait_ref: actual_ref },
+            Projection { for_ty: actual_base, name: actual_name, trait_ref: actual_ref },
         ) => {
             template_name == actual_name
                 && unify_type(template_base, actual_base, bindings)
                 && unify_optional_trait_refs(template_ref, actual_ref, bindings)
         },
-        (tast::Type::Projection { for_ty: base, name, trait_ref: reference }, actual) => {
+        (Projection { for_ty: base, name, trait_ref: reference }, actual) => {
             let base = substitute_type(base, bindings);
             let reference = substitute_optional_trait_ref(reference, bindings);
             if type_is_concrete(base) && type_is_concrete(actual) {
@@ -184,35 +184,35 @@ fn unify_type(
             }
         },
         (
-            tast::Type::App { ty: template_base, args: template_args },
-            tast::Type::App { ty: actual_base, args: actual_args },
+            App { ty: template_base, args: template_args },
+            App { ty: actual_base, args: actual_args },
         ) => {
             unify_type(template_base, actual_base, bindings)
                 && unify_types(template_args, actual_args, bindings)
         },
         (
-            tast::Type::Array { len: template_length, elem: template_elem },
-            tast::Type::Array { len: actual_length, elem: actual_elem },
+            Array { len: template_length, elem: template_elem },
+            Array { len: actual_length, elem: actual_elem },
         ) => {
             template_length == actual_length
                 && unify_type(template_elem, actual_elem, bindings)
         },
-        (tast::Type::Slice { elem: template }, tast::Type::Slice { elem: actual })
-        | (tast::Type::VecType { elem: template }, tast::Type::VecType { elem: actual })
-        | (tast::Type::RefType { elem: template }, tast::Type::RefType { elem: actual })
-        | (tast::Type::Channel { elem: template }, tast::Type::Channel { elem: actual }) => {
+        (Slice { elem: template }, Slice { elem: actual })
+        | (VecType { elem: template }, VecType { elem: actual })
+        | (RefType { elem: template }, RefType { elem: actual })
+        | (Channel { elem: template }, Channel { elem: actual }) => {
             unify_type(template, actual, bindings)
         },
         (
-            tast::Type::HashMap { key: template_key, value: template_value },
-            tast::Type::HashMap { key: actual_key, value: actual_value },
+            HashMap { key: template_key, value: template_value },
+            HashMap { key: actual_key, value: actual_value },
         ) => {
             unify_type(template_key, actual_key, bindings)
                 && unify_type(template_value, actual_value, bindings)
         },
         (
-            tast::Type::Func { params: template_params, ret_ty: template_ret },
-            tast::Type::Func { params: actual_params, ret_ty: actual_ret },
+            Func { params: template_params, ret_ty: template_ret },
+            Func { params: actual_params, ret_ty: actual_ret },
         ) => {
             unify_types(template_params, actual_params, bindings)
                 && unify_type(template_ret, actual_ret, bindings)
@@ -248,8 +248,8 @@ fn substitute_optional_trait_ref(
     bindings: Vec[TypeBinding],
 ) -> Option[tast::TraitRef] {
     match value {
-        Option::Some(reference) => Option::Some(substitute_trait_ref(reference, bindings)),
-        Option::None => Option::None,
+        Some(reference) => Option::Some(substitute_trait_ref(reference, bindings)),
+        None => Option::None,
     }
 }
 
@@ -265,40 +265,40 @@ fn substitute_trait_ref(
 
 fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Var(variable) => tast::Type::Var(variable),
-        tast::Type::Unit => tast::Type::Unit,
-        tast::Type::Never => tast::Type::Never,
-        tast::Type::Bool => tast::Type::Bool,
-        tast::Type::Int => tast::Type::Int,
-        tast::Type::Int8 => tast::Type::Int8,
-        tast::Type::Int16 => tast::Type::Int16,
-        tast::Type::Int32 => tast::Type::Int32,
-        tast::Type::Int64 => tast::Type::Int64,
-        tast::Type::Uint => tast::Type::Uint,
-        tast::Type::Uint8 => tast::Type::Uint8,
-        tast::Type::Uint16 => tast::Type::Uint16,
-        tast::Type::Uint32 => tast::Type::Uint32,
-        tast::Type::Uint64 => tast::Type::Uint64,
-        tast::Type::Float32 => tast::Type::Float32,
-        tast::Type::Float64 => tast::Type::Float64,
-        tast::Type::String => tast::Type::String,
-        tast::Type::Char => tast::Type::Char,
-        tast::Type::Tuple { items } => {
+        Var(variable) => tast::Type::Var(variable),
+        Unit => tast::Type::Unit,
+        Never => tast::Type::Never,
+        Bool => tast::Type::Bool,
+        Int => tast::Type::Int,
+        Int8 => tast::Type::Int8,
+        Int16 => tast::Type::Int16,
+        Int32 => tast::Type::Int32,
+        Int64 => tast::Type::Int64,
+        Uint => tast::Type::Uint,
+        Uint8 => tast::Type::Uint8,
+        Uint16 => tast::Type::Uint16,
+        Uint32 => tast::Type::Uint32,
+        Uint64 => tast::Type::Uint64,
+        Float32 => tast::Type::Float32,
+        Float64 => tast::Type::Float64,
+        String => tast::Type::String,
+        Char => tast::Type::Char,
+        Tuple { items } => {
             tast::Type::Tuple { items: substitute_types(items, bindings) }
         },
-        tast::Type::Con { name } => tast::Type::Con { name },
-        tast::Type::Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
-        tast::Type::Projection { for_ty: base, name, trait_ref: reference } => {
+        Con { name } => tast::Type::Con { name },
+        Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        Projection { for_ty: base, name, trait_ref: reference } => {
             let base = substitute_type(base, bindings);
             let reference = substitute_optional_trait_ref(reference, bindings);
             match find_binding(
                 bindings,
                 projection_binding_name(base, name, reference),
             ) {
-                Option::Some(ty) => ty,
-                Option::None => match tast::builtin_projection(base, name, reference) {
-                    Option::Some(ty) => substitute_type(ty, bindings),
-                    Option::None => tast::Type::Projection {
+                Some(ty) => ty,
+                None => match tast::builtin_projection(base, name, reference) {
+                    Some(ty) => substitute_type(ty, bindings),
+                    None => tast::Type::Projection {
                         for_ty: base,
                         name,
                         trait_ref: reference,
@@ -306,38 +306,38 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
                 },
             }
         },
-        tast::Type::App { ty: base, args } => tast::Type::App {
+        App { ty: base, args } => tast::Type::App {
             ty: substitute_type(base, bindings),
             args: substitute_types(args, bindings),
         },
-        tast::Type::Array { len: length, elem } => {
+        Array { len: length, elem } => {
             tast::Type::Array { len: length, elem: substitute_type(elem, bindings) }
         },
-        tast::Type::Slice { elem } => {
+        Slice { elem } => {
             tast::Type::Slice { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::VecType { elem } => {
+        VecType { elem } => {
             tast::Type::VecType { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::RefType { elem } => {
+        RefType { elem } => {
             tast::Type::RefType { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::Channel { elem } => {
+        Channel { elem } => {
             tast::Type::Channel { elem: substitute_type(elem, bindings) }
         },
-        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+        HashMap { key, value } => tast::Type::HashMap {
             key: substitute_type(key, bindings),
             value: substitute_type(value, bindings),
         },
-        tast::Type::Param { name } => match find_binding(bindings, name) {
-            Option::Some(ty) => ty,
-            Option::None => tast::Type::Param { name },
+        Param { name } => match find_binding(bindings, name) {
+            Some(ty) => ty,
+            None => tast::Type::Param { name },
         },
-        tast::Type::Func { params, ret_ty } => tast::Type::Func {
+        Func { params, ret_ty } => tast::Type::Func {
             params: substitute_types(params, bindings),
             ret_ty: substitute_type(ret_ty, bindings),
         },
-        tast::Type::Error => tast::Type::Error,
+        Error => tast::Type::Error,
     }
 }
 
@@ -392,8 +392,8 @@ fn add_indexed_function(
     function: core::Function,
 ) -> unit {
     match index.get(key) {
-        Option::Some(functions) => functions.push(function),
-        Option::None => {
+        Some(functions) => functions.push(function),
+        None => {
             let functions = Vec::new();
             functions.push(function);
             index.set(key, functions)
@@ -406,8 +406,8 @@ fn indexed_functions(
     key: string,
 ) -> Vec[core::Function] {
     match index.get(key) {
-        Option::Some(functions) => functions,
-        Option::None => Vec::new(),
+        Some(functions) => functions,
+        None => Vec::new(),
     }
 }
 
@@ -416,17 +416,17 @@ fn find_generic_inherent_function(
     name: string,
 ) -> Option[core::Function] {
     match inherent_method_key(name) {
-        Option::Some(key) => ctx.generic_inherent_index.get(
+        Some(key) => ctx.generic_inherent_index.get(
             lookup_pair_key(key.0, key.1),
         ),
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
 fn find_callee_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
     match find_function(ctx, name) {
-        Option::Some(function) => Option::Some(function),
-        Option::None => find_generic_inherent_function(ctx, name),
+        Some(function) => Option::Some(function),
+        None => find_generic_inherent_function(ctx, name),
     }
 }
 
@@ -445,7 +445,7 @@ fn trait_instance_name(
     bindings: Vec[TypeBinding],
 ) -> Option[string] {
     match (function.trait_impl, ctx.trait_method_names.get(function.name)) {
-        (Option::Some(metadata), Option::Some(method_name)) => Option::Some(
+        (Some(metadata), Some(method_name)) => Option::Some(
             trait_impl_name(
                 substitute_trait_ref(metadata.trait_ref, bindings),
                 substitute_type(metadata.for_ty, bindings),
@@ -462,12 +462,12 @@ fn same_bindings(left: Vec[TypeBinding], right: Vec[TypeBinding]) -> bool {
     } else {
         for value in left {
             match find_binding(right, value.name) {
-                Option::Some(ty) => if compact_type(value.ty) == compact_type(ty) {
+                Some(ty) => if compact_type(value.ty) == compact_type(ty) {
                     ()
                 } else {
                     return false
                 },
-                Option::None => return false,
+                None => return false,
             }
         };
         true
@@ -548,9 +548,9 @@ fn instance_base_name(
         original_name
     } else {
         match find_function(ctx, original_name) {
-            Option::Some(function) => match trait_instance_name(ctx, function, bindings) {
-                Option::Some(name) => name,
-                Option::None => {
+            Some(function) => match trait_instance_name(ctx, function, bindings) {
+                Some(name) => name,
+                None => {
                     let builder = std::text::StringBuilder::new();
                     builder.write_string(original_name);
                     for binding in sorted_bindings(bindings) {
@@ -566,7 +566,7 @@ fn instance_base_name(
                     builder.finish()
                 },
             },
-            Option::None => original_name,
+            None => original_name,
         }
     }
 }
@@ -593,14 +593,14 @@ fn ensure_instance(
     bindings: Vec[TypeBinding],
 ) -> string {
     match find_instance(ctx, original_name, bindings) {
-        Option::Some(instance) => instance.name,
-        Option::None => {
+        Some(instance) => instance.name,
+        None => {
             match recursive_specialization_message(ctx, original_name, bindings) {
-                Option::Some(message) => {
+                Some(message) => {
                     ctx.error.set(Option::Some(message));
                     return original_name
                 },
-                Option::None => (),
+                None => (),
             };
             let base = instance_base_name(ctx, original_name, bindings);
             let name = if bindings.len() == 0 {
@@ -613,11 +613,11 @@ fn ensure_instance(
                 name,
                 bindings,
                 parent: match ctx.active.get() {
-                    Option::Some(active) => Option::Some(instance_lookup_key(
+                    Some(active) => Option::Some(instance_lookup_key(
                         active.original_name,
                         active.bindings,
                     )),
-                    Option::None => Option::None,
+                    None => Option::None,
                 },
             };
             ctx.instances.push(instance);
@@ -646,7 +646,7 @@ fn mono_type_contains_proper_subterm(
     expected: tast::Type,
 ) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Tuple { items: values } => {
+        Tuple { items: values } => {
             for value in values {
                 if mono_types_equal(value, expected)
                     || mono_type_contains_proper_subterm(value, expected)
@@ -658,7 +658,7 @@ fn mono_type_contains_proper_subterm(
             };
             false
         },
-        tast::Type::App { ty: base, args } => {
+        App { ty: base, args } => {
             if mono_types_equal(base, expected)
                 || mono_type_contains_proper_subterm(base, expected)
             {
@@ -677,21 +677,21 @@ fn mono_type_contains_proper_subterm(
             };
             false
         },
-        tast::Type::Array { len: _, elem }
-        | tast::Type::Slice { elem }
-        | tast::Type::VecType { elem }
-        | tast::Type::RefType { elem }
-        | tast::Type::Channel { elem } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => {
             mono_types_equal(elem, expected)
                 || mono_type_contains_proper_subterm(elem, expected)
         },
-        tast::Type::HashMap { key, value } => {
+        HashMap { key, value } => {
             mono_types_equal(key, expected)
                 || mono_type_contains_proper_subterm(key, expected)
                 || mono_types_equal(value, expected)
                 || mono_type_contains_proper_subterm(value, expected)
         },
-        tast::Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             if mono_types_equal(ret_ty, expected)
                 || mono_type_contains_proper_subterm(ret_ty, expected)
             {
@@ -719,15 +719,15 @@ fn mono_type_outer_constructor_matches(
     right: tast::Type,
 ) -> bool {
     match (tast::resolve_type(left), tast::resolve_type(right)) {
-        (tast::Type::Tuple { items: _ }, tast::Type::Tuple { items: _ })
-        | (tast::Type::Array { len: _, elem: _ }, tast::Type::Array { len: _, elem: _ })
-        | (tast::Type::Slice { elem: _ }, tast::Type::Slice { elem: _ })
-        | (tast::Type::VecType { elem: _ }, tast::Type::VecType { elem: _ })
-        | (tast::Type::RefType { elem: _ }, tast::Type::RefType { elem: _ })
-        | (tast::Type::Channel { elem: _ }, tast::Type::Channel { elem: _ })
-        | (tast::Type::HashMap { key: _, value: _ }, tast::Type::HashMap { key: _, value: _ })
-        | (tast::Type::Func { params: _, ret_ty: _ }, tast::Type::Func { params: _, ret_ty: _ }) => true,
-        (tast::Type::App { ty: left, args: _ }, tast::Type::App { ty: right, args: _ }) => {
+        (Tuple { items: _ }, Tuple { items: _ })
+        | (Array { len: _, elem: _ }, Array { len: _, elem: _ })
+        | (Slice { elem: _ }, Slice { elem: _ })
+        | (VecType { elem: _ }, VecType { elem: _ })
+        | (RefType { elem: _ }, RefType { elem: _ })
+        | (Channel { elem: _ }, Channel { elem: _ })
+        | (HashMap { key: _, value: _ }, HashMap { key: _, value: _ })
+        | (Func { params: _, ret_ty: _ }, Func { params: _, ret_ty: _ }) => true,
+        (App { ty: left, args: _ }, App { ty: right, args: _ }) => {
             mono_types_equal(left, right)
         },
         _ => false,
@@ -753,10 +753,10 @@ fn specialization_growth_message(
     next: Vec[TypeBinding],
 ) -> Option[string] {
     match find_function(ctx, name) {
-        Option::Some(function) => {
+        Some(function) => {
             for generic in function.generics {
                 match (find_binding(previous, generic), find_binding(next, generic)) {
-                    (Option::Some(old_ty), Option::Some(new_ty)) => {
+                    (Some(old_ty), Some(new_ty)) => {
                         if mono_type_contains_recursive_growth(new_ty, old_ty) {
                             return Option::Some(
                                 "Infinite monomorphization detected for generic function "
@@ -804,7 +804,7 @@ fn specialization_growth_message(
             };
             Option::None
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -828,7 +828,7 @@ fn recursive_specialization_from(
     cursor: Option[Instance],
 ) -> Option[string] {
     match cursor {
-        Option::Some(instance) => {
+        Some(instance) => {
             let current = if instance.original_name == name {
                 specialization_growth_message(
                     ctx,
@@ -840,19 +840,19 @@ fn recursive_specialization_from(
                 Option::None
             };
             match current {
-                Option::Some(message) => Option::Some(message),
-                Option::None => match instance.parent {
-                    Option::Some(parent) => recursive_specialization_from(
+                Some(message) => Option::Some(message),
+                None => match instance.parent {
+                    Some(parent) => recursive_specialization_from(
                         ctx,
                         name,
                         bindings,
                         ctx.instance_index.get(parent),
                     ),
-                    Option::None => Option::None,
+                    None => Option::None,
                 },
             }
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -896,7 +896,7 @@ fn matching_trait_selections(
     let keys = Vec::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
-            Option::Some(metadata) => if metadata.trait_ref.name == reference.name
+            Some(metadata) => if metadata.trait_ref.name == reference.name
                 && metadata.trait_ref.args.len() == reference.args.len()
             {
                 let impl_bindings = Vec::new();
@@ -951,7 +951,7 @@ fn matching_trait_selections(
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         }
     };
     selections
@@ -995,10 +995,10 @@ fn normalize_optional_trait_ref(
     active: Vec[string],
 ) -> Option[tast::TraitRef] {
     match value {
-        Option::Some(reference) => {
+        Some(reference) => {
             Option::Some(normalize_trait_ref(ctx, reference, active))
         },
-        Option::None => Option::None,
+        None => Option::None,
     }
 }
 
@@ -1012,7 +1012,7 @@ fn matching_projection_types(
     let keys = Vec::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
-            Option::Some(metadata) => {
+            Some(metadata) => {
                 if metadata.trait_ref.name == reference.name
                     && metadata.trait_ref.args.len() == reference.args.len()
                 {
@@ -1052,7 +1052,7 @@ fn matching_projection_types(
                     ()
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     result
@@ -1071,9 +1071,9 @@ fn normalize_projection(
         projection
     } else {
         let normalized = match tast::builtin_projection(base, name, reference) {
-            Option::Some(value) => Option::Some(value),
-            Option::None => match reference {
-                Option::Some(reference) => {
+            Some(value) => Option::Some(value),
+            None => match reference {
+                Some(reference) => {
                     if type_is_concrete(base) && types_are_concrete(reference.args) {
                         let values = matching_projection_types(
                             ctx,
@@ -1090,14 +1090,14 @@ fn normalize_projection(
                         Option::None
                     }
                 },
-                Option::None => Option::None,
+                None => Option::None,
             },
         };
         match normalized {
-            Option::Some(value) => {
+            Some(value) => {
                 normalize_type(ctx, value, active_types_with(active, key))
             },
-            Option::None => projection,
+            None => projection,
         }
     }
 }
@@ -1108,63 +1108,63 @@ fn normalize_type(
     active: Vec[string],
 ) -> tast::Type {
     match tast::resolve_type(value) {
-        tast::Type::Var(variable) => tast::Type::Var(variable),
-        tast::Type::Unit => tast::Type::Unit,
-        tast::Type::Never => tast::Type::Never,
-        tast::Type::Bool => tast::Type::Bool,
-        tast::Type::Int => tast::Type::Int,
-        tast::Type::Int8 => tast::Type::Int8,
-        tast::Type::Int16 => tast::Type::Int16,
-        tast::Type::Int32 => tast::Type::Int32,
-        tast::Type::Int64 => tast::Type::Int64,
-        tast::Type::Uint => tast::Type::Uint,
-        tast::Type::Uint8 => tast::Type::Uint8,
-        tast::Type::Uint16 => tast::Type::Uint16,
-        tast::Type::Uint32 => tast::Type::Uint32,
-        tast::Type::Uint64 => tast::Type::Uint64,
-        tast::Type::Float32 => tast::Type::Float32,
-        tast::Type::Float64 => tast::Type::Float64,
-        tast::Type::String => tast::Type::String,
-        tast::Type::Char => tast::Type::Char,
-        tast::Type::Tuple { items } => {
+        Var(variable) => tast::Type::Var(variable),
+        Unit => tast::Type::Unit,
+        Never => tast::Type::Never,
+        Bool => tast::Type::Bool,
+        Int => tast::Type::Int,
+        Int8 => tast::Type::Int8,
+        Int16 => tast::Type::Int16,
+        Int32 => tast::Type::Int32,
+        Int64 => tast::Type::Int64,
+        Uint => tast::Type::Uint,
+        Uint8 => tast::Type::Uint8,
+        Uint16 => tast::Type::Uint16,
+        Uint32 => tast::Type::Uint32,
+        Uint64 => tast::Type::Uint64,
+        Float32 => tast::Type::Float32,
+        Float64 => tast::Type::Float64,
+        String => tast::Type::String,
+        Char => tast::Type::Char,
+        Tuple { items } => {
             tast::Type::Tuple { items: normalize_types(ctx, items, active) }
         },
-        tast::Type::Con { name } => tast::Type::Con { name },
-        tast::Type::Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
-        tast::Type::Projection { for_ty: base, name, trait_ref: reference } => {
+        Con { name } => tast::Type::Con { name },
+        Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        Projection { for_ty: base, name, trait_ref: reference } => {
             let base = normalize_type(ctx, base, active);
             let reference = normalize_optional_trait_ref(ctx, reference, active);
             normalize_projection(ctx, base, name, reference, active)
         },
-        tast::Type::App { ty: base, args } => tast::Type::App {
+        App { ty: base, args } => tast::Type::App {
             ty: normalize_type(ctx, base, active),
             args: normalize_types(ctx, args, active),
         },
-        tast::Type::Array { len: length, elem } => {
+        Array { len: length, elem } => {
             tast::Type::Array { len: length, elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::Slice { elem } => {
+        Slice { elem } => {
             tast::Type::Slice { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::VecType { elem } => {
+        VecType { elem } => {
             tast::Type::VecType { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::RefType { elem } => {
+        RefType { elem } => {
             tast::Type::RefType { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::Channel { elem } => {
+        Channel { elem } => {
             tast::Type::Channel { elem: normalize_type(ctx, elem, active) }
         },
-        tast::Type::HashMap { key, value } => tast::Type::HashMap {
+        HashMap { key, value } => tast::Type::HashMap {
             key: normalize_type(ctx, key, active),
             value: normalize_type(ctx, value, active),
         },
-        tast::Type::Param { name } => tast::Type::Param { name },
-        tast::Type::Func { params, ret_ty } => tast::Type::Func {
+        Param { name } => tast::Type::Param { name },
+        Func { params, ret_ty } => tast::Type::Func {
             params: normalize_types(ctx, params, active),
             ret_ty: normalize_type(ctx, ret_ty, active),
         },
-        tast::Type::Error => tast::Type::Error,
+        Error => tast::Type::Error,
     }
 }
 
@@ -1181,47 +1181,47 @@ fn types_contain_associated_projection(values: Vec[tast::Type]) -> bool {
 
 fn type_contains_associated_projection(value: tast::Type) -> bool {
     match value {
-        tast::Type::Projection { for_ty: _, name: _, trait_ref: _ } => true,
-        tast::Type::Tuple { items } => types_contain_associated_projection(items),
-        tast::Type::App { ty: base, args } => {
+        Projection { for_ty: _, name: _, trait_ref: _ } => true,
+        Tuple { items } => types_contain_associated_projection(items),
+        App { ty: base, args } => {
             type_contains_associated_projection(base)
                 || types_contain_associated_projection(args)
         },
-        tast::Type::Array { len: _, elem }
-        | tast::Type::Slice { elem }
-        | tast::Type::VecType { elem }
-        | tast::Type::RefType { elem }
-        | tast::Type::Channel { elem } => type_contains_associated_projection(elem),
-        tast::Type::HashMap { key, value } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | RefType { elem }
+        | Channel { elem } => type_contains_associated_projection(elem),
+        HashMap { key, value } => {
             type_contains_associated_projection(key)
                 || type_contains_associated_projection(value)
         },
-        tast::Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             types_contain_associated_projection(params)
                 || type_contains_associated_projection(ret_ty)
         },
-        tast::Type::Var(_)
-        | tast::Type::Unit
-        | tast::Type::Never
-        | tast::Type::Bool
-        | tast::Type::Int
-        | tast::Type::Int8
-        | tast::Type::Int16
-        | tast::Type::Int32
-        | tast::Type::Int64
-        | tast::Type::Uint
-        | tast::Type::Uint8
-        | tast::Type::Uint16
-        | tast::Type::Uint32
-        | tast::Type::Uint64
-        | tast::Type::Float32
-        | tast::Type::Float64
-        | tast::Type::String
-        | tast::Type::Char
-        | tast::Type::Con { name: _ }
-        | tast::Type::Dyn { trait_name: _ }
-        | tast::Type::Param { name: _ }
-        | tast::Type::Error => false,
+        Var(_)
+        | Unit
+        | Never
+        | Bool
+        | Int
+        | Int8
+        | Int16
+        | Int32
+        | Int64
+        | Uint
+        | Uint8
+        | Uint16
+        | Uint32
+        | Uint64
+        | Float32
+        | Float64
+        | String
+        | Char
+        | Con { name: _ }
+        | Dyn { trait_name: _ }
+        | Param { name: _ }
+        | Error => false,
     }
 }
 
@@ -1274,7 +1274,7 @@ fn complete_function_bindings_up_to(
         for index in range(0, predicate_count) {
             let predicate = value.predicates.get(index);
             match predicate {
-                tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
+                Trait { for_ty, trait_ref: reference } => {
                     let for_ty = substitute_type(for_ty, bindings);
                     if type_is_concrete(for_ty) {
                         let reference = substitute_trait_ref(reference, bindings);
@@ -1320,7 +1320,7 @@ fn complete_function_bindings_up_to(
                         ()
                     }
                 },
-                tast::TypePredicate::Equality { lhs, rhs } => {
+                Equality { lhs, rhs } => {
                     let lhs = substitute_type(lhs, bindings);
                     let rhs = substitute_type(rhs, bindings);
                     if unify_type(lhs, rhs, bindings) {
@@ -1349,7 +1349,7 @@ fn predicates_are_satisfied_up_to(
     for index in range(0, predicate_count) {
         let predicate = value.predicates.get(index);
         match predicate {
-            tast::TypePredicate::Trait { for_ty, trait_ref: reference } => {
+            Trait { for_ty, trait_ref: reference } => {
                 let for_ty = substitute_type(for_ty, bindings);
                 let reference = substitute_trait_ref(reference, bindings);
                 if type_is_concrete(for_ty)
@@ -1366,7 +1366,7 @@ fn predicates_are_satisfied_up_to(
                     return false
                 }
             },
-            tast::TypePredicate::Equality { lhs, rhs } => {
+            Equality { lhs, rhs } => {
                 let lhs = substitute_type(lhs, bindings);
                 let rhs = substitute_type(rhs, bindings);
                 if compact_type(lhs) == compact_type(rhs) {
@@ -1382,29 +1382,29 @@ fn predicates_are_satisfied_up_to(
 
 fn builtin_scalar_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::Unit
-        | tast::Type::Bool
-        | tast::Type::Int
-        | tast::Type::Int8
-        | tast::Type::Int16
-        | tast::Type::Int32
-        | tast::Type::Int64
-        | tast::Type::Uint
-        | tast::Type::Uint8
-        | tast::Type::Uint16
-        | tast::Type::Uint32
-        | tast::Type::Uint64
-        | tast::Type::Float32
-        | tast::Type::Float64
-        | tast::Type::String
-        | tast::Type::Char => true,
+        Unit
+        | Bool
+        | Int
+        | Int8
+        | Int16
+        | Int32
+        | Int64
+        | Uint
+        | Uint8
+        | Uint16
+        | Uint32
+        | Uint64
+        | Float32
+        | Float64
+        | String
+        | Char => true,
         _ => false,
     }
 }
 
 fn builtin_iterator_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        tast::Type::App { ty: tast::Type::Con { name }, args } => {
+        App { ty: Con { name }, args } => {
             (name == "FnIterator" && args.len() == 1)
                 || (name == "MapIterator" && args.len() == 3)
                 || (name == "FilterIterator" && args.len() == 2)
@@ -1419,7 +1419,7 @@ fn builtin_trait_satisfied(
     reference: tast::TraitRef,
 ) -> bool {
     reference.args.len() == 0 && match tast::resolve_type(for_ty) {
-        tast::Type::Dyn { trait_name: name } => reference.name == name,
+        Dyn { trait_name: name } => reference.name == name,
         other => if reference.name == "ToString"
             || reference.name == "Eq"
             || reference.name == "Hash"
@@ -1429,7 +1429,7 @@ fn builtin_trait_satisfied(
             builtin_iterator_type(other)
         } else if reference.name == "IntoIterator" {
             match other {
-                tast::Type::VecType { elem: _ } | tast::Type::Slice { elem: _ } => true,
+                VecType { elem: _ } | Slice { elem: _ } => true,
                 value => builtin_iterator_type(value),
             }
         } else {
@@ -1455,12 +1455,12 @@ fn complete_bindings_up_to(
     for index in range(0, generic_count) {
         let generic = value.generics.get(index);
         match find_binding(bindings, generic) {
-            Option::Some(ty) => if type_is_concrete(ty) {
+            Some(ty) => if type_is_concrete(ty) {
                 ()
             } else {
                 return false
             },
-            Option::None => return false,
+            None => return false,
         }
     };
     predicates_are_satisfied_up_to(ctx, value, bindings, predicate_count)
@@ -1486,16 +1486,16 @@ fn specialize_callable(
     bindings: Vec[TypeBinding],
 ) -> tast::Callable {
     match value {
-        tast::Callable::Function(name) => tast::Callable::Function(name),
-        tast::Callable::Runtime(name) => tast::Callable::Runtime(name),
-        tast::Callable::Intrinsic(name) => tast::Callable::Intrinsic(name),
-        tast::Callable::TraitMethod { trait_ref: reference, method_name: name } => {
+        Function(name) => tast::Callable::Function(name),
+        Runtime(name) => tast::Callable::Runtime(name),
+        Intrinsic(name) => tast::Callable::Intrinsic(name),
+        TraitMethod { trait_ref: reference, method_name: name } => {
             tast::Callable::TraitMethod {
                 trait_ref: specialize_trait_ref(ctx, reference, bindings),
                 method_name: name,
             }
         },
-        tast::Callable::DynTraitMethod {
+        DynTraitMethod {
             trait_name: owner,
             dispatch_name: dispatch,
             method_name: name,
@@ -1506,7 +1506,7 @@ fn specialize_callable(
                 method_name: name,
             }
         },
-        tast::Callable::InherentMethod { receiver_ty: owner, method_name: name } => {
+        InherentMethod { receiver_ty: owner, method_name: name } => {
             tast::Callable::InherentMethod {
                 receiver_ty: specialize_type(ctx, owner, bindings),
                 method_name: name,
@@ -1548,8 +1548,8 @@ fn specialize_optional_expr(
     value: Option[core::Expr],
 ) -> Option[core::Expr] {
     match value {
-        Option::Some(expr) => Option::Some(specialize_expr(ctx, bindings, expr)),
-        Option::None => Option::None,
+        Some(expr) => Option::Some(specialize_expr(ctx, bindings, expr)),
+        None => Option::None,
     }
 }
 
@@ -1604,8 +1604,8 @@ fn trait_method_bindings(
 ) -> Option[Vec[TypeBinding]] {
     let bindings = Vec::new();
     let metadata = match function.trait_impl {
-        Option::Some(value) => value,
-        Option::None => return Option::None,
+        Some(value) => value,
+        None => return Option::None,
     };
     if metadata.trait_ref.args.len() != reference.args.len()
         || !unify_type(metadata.for_ty, actual_types.get(0), bindings)
@@ -1651,7 +1651,7 @@ fn ensure_trait_method_instance(
             actual_types,
             ret_ty,
         ) {
-            Option::Some(bindings) => if complete_bindings(
+            Some(bindings) => if complete_bindings(
                 ctx,
                 function,
                 bindings,
@@ -1667,12 +1667,12 @@ fn ensure_trait_method_instance(
                     bindings,
                 );
                 match base_name {
-                    Option::Some(base) => if base != name {
+                    Some(base) => if base != name {
                         instance_name.set(Option::Some(name))
                     } else {
                         ()
                     },
-                    Option::None => (),
+                    None => (),
                 };
                 resolved.set(specialize_trait_ref(
                     ctx,
@@ -1682,7 +1682,7 @@ fn ensure_trait_method_instance(
             } else {
                 ()
             },
-            Option::None => (),
+            None => (),
         }
     };
     (resolved.get(), instance_name.get())
@@ -1712,7 +1712,7 @@ fn ensure_dyn_trait_impls(
 ) -> unit {
     for function in indexed_functions(ctx.trait_function_index, trait_name) {
         match function.trait_impl {
-            Option::Some(metadata) => {
+            Some(metadata) => {
                 let bindings = Vec::new();
                 if unify_type(metadata.for_ty, for_ty, bindings)
                     && complete_bindings(ctx, function, bindings)
@@ -1723,7 +1723,7 @@ fn ensure_dyn_trait_impls(
                     ()
                 }
             },
-            Option::None => (),
+            None => (),
         }
     }
 }
@@ -1796,8 +1796,8 @@ fn specialize_var(
 ) -> core::Expr {
     let ty = specialize_type(ctx, ty, bindings);
     match find_function(ctx, name) {
-        Option::Some(function) => specialize_found_var(ctx, function, name, ty),
-        Option::None => core::Expr::Var { name, ty },
+        Some(function) => specialize_found_var(ctx, function, name, ty),
+        None => core::Expr::Var { name, ty },
     }
 }
 
@@ -1812,8 +1812,8 @@ fn specialize_call(
     let args = specialize_exprs(ctx, bindings, args);
     let ty = specialize_type(ctx, ty, bindings);
     let func = match func {
-        core::Expr::Var { name, ty: func_ty } => match find_callee_function(ctx, name) {
-            Option::Some(function) => if function_is_generic(function) {
+        Var { name, ty: func_ty } => match find_callee_function(ctx, name) {
+            Some(function) => if function_is_generic(function) {
                 specialize_call_var(ctx, function, name, func_ty)
             } else {
                 core::Expr::Var {
@@ -1821,7 +1821,7 @@ fn specialize_call(
                     ty: func_ty,
                 }
             },
-            Option::None => core::Expr::Var { name, ty: func_ty },
+            None => core::Expr::Var { name, ty: func_ty },
         },
         other => other,
     };
@@ -1834,66 +1834,66 @@ fn specialize_expr(
     value: core::Expr,
 ) -> core::Expr {
     match value {
-        core::Expr::Var { name, ty } => specialize_var(ctx, bindings, name, ty),
-        core::Expr::Callable { callable, ty } => core::Expr::Callable {
+        Var { name, ty } => specialize_var(ctx, bindings, name, ty),
+        Callable { callable, ty } => core::Expr::Callable {
             callable: specialize_callable(ctx, callable, bindings),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Prim { value, ty } => {
+        Prim { value, ty } => {
             core::Expr::Prim { value, ty: specialize_type(ctx, ty, bindings) }
         },
-        core::Expr::Constr { constructor, args, ty } => core::Expr::Constr {
+        Constr { constructor, args, ty } => core::Expr::Constr {
             constructor,
             args: specialize_exprs(ctx, bindings, args),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Tuple { items, ty } => core::Expr::Tuple {
+        Tuple { items, ty } => core::Expr::Tuple {
             items: specialize_exprs(ctx, bindings, items),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Array { items, ty } => core::Expr::Array {
+        Array { items, ty } => core::Expr::Array {
             items: specialize_exprs(ctx, bindings, items),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Closure { params, body, ty } => core::Expr::Closure {
+        Closure { params, body, ty } => core::Expr::Closure {
             params: specialize_closure_params(ctx, params, bindings),
             body: specialize_expr(ctx, bindings, body),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Block { block, ty } => core::Expr::Block {
+        Block { block, ty } => core::Expr::Block {
             block: specialize_block(ctx, bindings, block),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Match { expr, arms, default, ty } => core::Expr::Match {
+        Match { expr, arms, default, ty } => core::Expr::Match {
             expr: specialize_expr(ctx, bindings, expr),
             arms: specialize_arms(ctx, bindings, arms),
             default: specialize_optional_expr(ctx, bindings, default),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::If { cond, then_branch, else_branch, ty } => core::Expr::If {
+        If { cond, then_branch, else_branch, ty } => core::Expr::If {
             cond: specialize_expr(ctx, bindings, cond),
             then_branch: specialize_expr(ctx, bindings, then_branch),
             else_branch: specialize_expr(ctx, bindings, else_branch),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::While { cond, body, ty } => core::Expr::While {
+        While { cond, body, ty } => core::Expr::While {
             cond: specialize_expr(ctx, bindings, cond),
             body: specialize_expr(ctx, bindings, body),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Break { ty } => core::Expr::Break { ty: specialize_type(ctx, ty, bindings) },
-        core::Expr::Continue { ty } => {
+        Break { ty } => core::Expr::Break { ty: specialize_type(ctx, ty, bindings) },
+        Continue { ty } => {
             core::Expr::Continue { ty: specialize_type(ctx, ty, bindings) }
         },
-        core::Expr::Return { expr, ty } => core::Expr::Return {
+        Return { expr, ty } => core::Expr::Return {
             expr: specialize_optional_expr(ctx, bindings, expr),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Go { expr, ty } => core::Expr::Go {
+        Go { expr, ty } => core::Expr::Go {
             expr: specialize_expr(ctx, bindings, expr),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::ConstrGet { expr, constructor, field_index, ty } => {
+        ConstrGet { expr, constructor, field_index, ty } => {
             core::Expr::ConstrGet {
                 expr: specialize_expr(ctx, bindings, expr),
                 constructor,
@@ -1901,31 +1901,31 @@ fn specialize_expr(
                 ty: specialize_type(ctx, ty, bindings),
             }
         },
-        core::Expr::Unary { op, expr, ty } => core::Expr::Unary {
+        Unary { op, expr, ty } => core::Expr::Unary {
             op,
             expr: specialize_expr(ctx, bindings, expr),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Cast { expr, ty } => core::Expr::Cast {
+        Cast { expr, ty } => core::Expr::Cast {
             expr: specialize_expr(ctx, bindings, expr),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Binary { op, lhs, rhs, ty } => core::Expr::Binary {
+        Binary { op, lhs, rhs, ty } => core::Expr::Binary {
             op,
             lhs: specialize_expr(ctx, bindings, lhs),
             rhs: specialize_expr(ctx, bindings, rhs),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Assign { name, value, target_ty, ty } => core::Expr::Assign {
+        Assign { name, value, target_ty, ty } => core::Expr::Assign {
             name,
             value: specialize_expr(ctx, bindings, value),
             target_ty: specialize_type(ctx, target_ty, bindings),
             ty: specialize_type(ctx, ty, bindings),
         },
-        core::Expr::Call { func, args, ty } => {
+        Call { func, args, ty } => {
             specialize_call(ctx, bindings, func, args, ty)
         },
-        core::Expr::ToDyn { trait_name, for_ty, expr, ty } => {
+        ToDyn { trait_name, for_ty, expr, ty } => {
             let for_ty = specialize_type(ctx, for_ty, bindings);
             ensure_dyn_trait_impls(ctx, trait_name, for_ty);
             core::Expr::ToDyn {
@@ -1935,7 +1935,7 @@ fn specialize_expr(
                 ty: specialize_type(ctx, ty, bindings),
             }
         },
-        core::Expr::DynCall { trait_name, method_name, receiver, args, ty } => {
+        DynCall { trait_name, method_name, receiver, args, ty } => {
             core::Expr::DynCall {
                 trait_name,
                 method_name,
@@ -1944,7 +1944,7 @@ fn specialize_expr(
                 ty: specialize_type(ctx, ty, bindings),
             }
         },
-        core::Expr::TraitCall {
+        TraitCall {
             trait_ref: reference,
             method_name,
             instance_name: _,
@@ -1973,7 +1973,7 @@ fn specialize_expr(
                 ty,
             }
         },
-        core::Expr::Proj { tuple, index, ty } => core::Expr::Proj {
+        Proj { tuple, index, ty } => core::Expr::Proj {
             tuple: specialize_expr(ctx, bindings, tuple),
             index,
             ty: specialize_type(ctx, ty, bindings),
@@ -2031,34 +2031,34 @@ fn ensure_runtime_trait_impls_for_type(
     value: tast::Type,
 ) -> unit {
     match tast::resolve_type(value) {
-        tast::Type::Tuple { items } => ensure_runtime_trait_impls_for_types(ctx, items),
-        tast::Type::Projection { for_ty: base, name: _, trait_ref: reference } => {
+        Tuple { items } => ensure_runtime_trait_impls_for_types(ctx, items),
+        Projection { for_ty: base, name: _, trait_ref: reference } => {
             ensure_runtime_trait_impls_for_type(ctx, base);
             match reference {
-                Option::Some(reference) => {
+                Some(reference) => {
                     ensure_runtime_trait_impls_for_types(ctx, reference.args)
                 },
-                Option::None => (),
+                None => (),
             }
         },
-        tast::Type::App { ty: base, args } => {
+        App { ty: base, args } => {
             ensure_runtime_trait_impls_for_type(ctx, base);
             ensure_runtime_trait_impls_for_types(ctx, args)
         },
-        tast::Type::Array { len: _, elem }
-        | tast::Type::Slice { elem }
-        | tast::Type::VecType { elem }
-        | tast::Type::Channel { elem } => ensure_runtime_trait_impls_for_type(ctx, elem),
-        tast::Type::RefType { elem } => {
+        Array { len: _, elem }
+        | Slice { elem }
+        | VecType { elem }
+        | Channel { elem } => ensure_runtime_trait_impls_for_type(ctx, elem),
+        RefType { elem } => {
             ensure_eq_hash_impls(ctx, elem);
             ensure_runtime_trait_impls_for_type(ctx, elem)
         },
-        tast::Type::HashMap { key, value } => {
+        HashMap { key, value } => {
             ensure_eq_hash_impls(ctx, key);
             ensure_runtime_trait_impls_for_type(ctx, key);
             ensure_runtime_trait_impls_for_type(ctx, value)
         },
-        tast::Type::Func { params, ret_ty } => {
+        Func { params, ret_ty } => {
             ensure_runtime_trait_impls_for_types(ctx, params);
             ensure_runtime_trait_impls_for_type(ctx, ret_ty)
         },
@@ -2071,8 +2071,8 @@ fn ensure_runtime_trait_impls_for_optional_expr(
     value: Option[core::Expr],
 ) -> unit {
     match value {
-        Option::Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
-        Option::None => (),
+        Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
+        None => (),
     }
 }
 
@@ -2102,18 +2102,18 @@ fn ensure_runtime_trait_impls_for_expr(
 ) -> unit {
     ensure_runtime_trait_impls_for_type(ctx, core::expr_type(value));
     match value {
-        core::Expr::Constr { constructor: _, args, ty: _ } => ensure_runtime_trait_impls_for_exprs(ctx, args),
-        core::Expr::Tuple { items, ty: _ } | core::Expr::Array { items, ty: _ } => {
+        Constr { constructor: _, args, ty: _ } => ensure_runtime_trait_impls_for_exprs(ctx, args),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => {
             ensure_runtime_trait_impls_for_exprs(ctx, items)
         },
-        core::Expr::Closure { params, body, ty: _ } => {
+        Closure { params, body, ty: _ } => {
             for param in params {
                 ensure_runtime_trait_impls_for_type(ctx, param.ty)
             };
             ensure_runtime_trait_impls_for_expr(ctx, body)
         },
-        core::Expr::Block { block, ty: _ } => ensure_runtime_trait_impls_for_block(ctx, block),
-        core::Expr::Match { expr, arms, default, ty: _ } => {
+        Block { block, ty: _ } => ensure_runtime_trait_impls_for_block(ctx, block),
+        Match { expr, arms, default, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, expr);
             for arm in arms {
                 ensure_runtime_trait_impls_for_expr(ctx, arm.lhs);
@@ -2121,47 +2121,47 @@ fn ensure_runtime_trait_impls_for_expr(
             };
             ensure_runtime_trait_impls_for_optional_expr(ctx, default)
         },
-        core::Expr::If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
+        If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, cond);
             ensure_runtime_trait_impls_for_expr(ctx, then_);
             ensure_runtime_trait_impls_for_expr(ctx, else_)
         },
-        core::Expr::While { cond, body, ty: _ } => {
+        While { cond, body, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, cond);
             ensure_runtime_trait_impls_for_expr(ctx, body)
         },
-        core::Expr::Return { expr, ty: _ } => ensure_runtime_trait_impls_for_optional_expr(ctx, expr),
-        core::Expr::Go { expr, ty: _ }
-        | core::Expr::ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | core::Expr::Unary { op: _, expr, ty: _ }
-        | core::Expr::Cast { expr, ty: _ }
-        | core::Expr::Proj { tuple: expr, index: _, ty: _ } => ensure_runtime_trait_impls_for_expr(ctx, expr),
-        core::Expr::Binary { op: _, lhs, rhs, ty: _ } => {
+        Return { expr, ty: _ } => ensure_runtime_trait_impls_for_optional_expr(ctx, expr),
+        Go { expr, ty: _ }
+        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
+        | Unary { op: _, expr, ty: _ }
+        | Cast { expr, ty: _ }
+        | Proj { tuple: expr, index: _, ty: _ } => ensure_runtime_trait_impls_for_expr(ctx, expr),
+        Binary { op: _, lhs, rhs, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, lhs);
             ensure_runtime_trait_impls_for_expr(ctx, rhs)
         },
-        core::Expr::Assign { name: _, value: expr, target_ty, ty: _ } => {
+        Assign { name: _, value: expr, target_ty, ty: _ } => {
             ensure_runtime_trait_impls_for_type(ctx, target_ty);
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
-        core::Expr::Call { func, args, ty: _ } => {
+        Call { func, args, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, func);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        core::Expr::ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
+        ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
             ensure_runtime_trait_impls_for_type(ctx, for_ty);
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
-        core::Expr::DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | core::Expr::TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
+        | TraitCall { receiver, args, .. } => {
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        core::Expr::Var { name: _, ty: _ }
-        | core::Expr::Callable { callable: _, ty: _ }
-        | core::Expr::Prim { value: _, ty: _ }
-        | core::Expr::Break { ty: _ }
-        | core::Expr::Continue { ty: _ } => (),
+        Var { name: _, ty: _ }
+        | Callable { callable: _, ty: _ }
+        | Prim { value: _, ty: _ }
+        | Break { ty: _ }
+        | Continue { ty: _ } => (),
     }
 }
 
@@ -2196,7 +2196,7 @@ fn specialize_function(
         generics: Vec::new(),
         predicates: Vec::new(),
         trait_impl: match value.trait_impl {
-            Option::Some(metadata) => Option::Some(core::TraitImpl {
+            Some(metadata) => Option::Some(core::TraitImpl {
                 trait_ref: specialize_trait_ref(
                     ctx,
                     metadata.trait_ref,
@@ -2211,7 +2211,7 @@ fn specialize_function(
                 generic_count: 0,
                 predicate_count: 0,
             }),
-            Option::None => Option::None,
+            None => Option::None,
         },
         params,
         ret_ty: specialize_type(ctx, value.ret_ty, instance.bindings),
@@ -2238,24 +2238,24 @@ fn specialize(
         used_names.set(function.name, ());
         if function_is_generic(function) {
             match inherent_method_key(function.name) {
-                Option::Some(key) => generic_inherent_index.set(
+                Some(key) => generic_inherent_index.set(
                     lookup_pair_key(key.0, key.1),
                     function,
                 ),
-                Option::None => (),
+                None => (),
             }
         } else {
             ()
         };
         match function.trait_impl {
-            Option::Some(metadata) => {
+            Some(metadata) => {
                 add_indexed_function(
                     trait_function_index,
                     metadata.trait_ref.name,
                     function,
                 );
                 match trait_impl_method_name(function.name) {
-                    Option::Some(method_name) => {
+                    Some(method_name) => {
                         trait_method_names.set(function.name, method_name);
                         add_indexed_function(
                             trait_method_index,
@@ -2263,10 +2263,10 @@ fn specialize(
                             function,
                         )
                     },
-                    Option::None => (),
+                    None => (),
                 }
             },
-            Option::None => (),
+            None => (),
         }
     };
     let ctx = SpecializeCtx {
@@ -2298,12 +2298,12 @@ fn specialize(
             let instance = ctx.work.get(index.get());
             index.set(index.get() + 1);
             match find_function(ctx, instance.original_name) {
-                Option::Some(function) => {
+                Some(function) => {
                     ctx.active.set(Option::Some(instance));
                     output.push(specialize_function(ctx, instance, function));
                     ctx.active.set(Option::None)
                 },
-                Option::None => (),
+                None => (),
             }
         };
         let previous_len = ctx.work.len();

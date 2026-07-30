@@ -4,15 +4,15 @@ use gomlc::core;
 
 fn try_imm(value: core::Expr) -> Option[Imm] {
     match value {
-        core::Expr::Var { name, ty } => Option::Some(Imm::Var { name, ty }),
-        core::Expr::Callable { callable, ty } => {
+        Var { name, ty } => Option::Some(Imm::Var { name, ty }),
+        Callable { callable, ty } => {
             Option::Some(Imm::Callable { callable, ty })
         },
-        core::Expr::Prim { value, ty } => Option::Some(Imm::Prim { value, ty }),
-        core::Expr::Constr { constructor, args, ty } => if args.len() == 0 {
+        Prim { value, ty } => Option::Some(Imm::Prim { value, ty }),
+        Constr { constructor, args, ty } => if args.len() == 0 {
             match constructor.tag {
-                Option::Some(tag) => Option::Some(Imm::Tag { index: tag, ty }),
-                Option::None => Option::None,
+                Some(tag) => Option::Some(Imm::Tag { index: tag, ty }),
+                None => Option::None,
             }
         } else {
             Option::None
@@ -23,13 +23,13 @@ fn try_imm(value: core::Expr) -> Option[Imm] {
 
 fn match_imm(value: core::Expr) -> Imm {
     match value {
-        core::Expr::Constr { constructor, args: _, ty } => match constructor.tag {
-            Option::Some(tag) => Imm::Tag { index: tag, ty },
-            Option::None => unit_imm(),
+        Constr { constructor, args: _, ty } => match constructor.tag {
+            Some(tag) => Imm::Tag { index: tag, ty },
+            None => unit_imm(),
         },
         other => match try_imm(other) {
-            Option::Some(value) => value,
-            Option::None => unit_imm(),
+            Some(value) => value,
+            None => unit_imm(),
         },
     }
 }
@@ -55,8 +55,8 @@ fn lower_imm(
     k: (Imm) -> Block,
 ) -> Block {
     match try_imm(value) {
-        Option::Some(value) => k(value),
-        Option::None => lower_value(state, value, |value| {
+        Some(value) => k(value),
+        None => lower_value(state, value, |value| {
             bind_value(state, value, k)
         }),
     }
@@ -104,51 +104,51 @@ fn lower_value(
 ) -> Block {
     let ty = core::expr_type(value);
     match try_imm(value) {
-        Option::Some(value) => k(Value::Imm(value)),
-        Option::None => match value {
-            core::Expr::Constr { constructor, args, ty: _ } => {
+        Some(value) => k(Value::Imm(value)),
+        None => match value {
+            Constr { constructor, args, ty: _ } => {
                 lower_list(state, args, |args| {
                     k(Value::Constr { constructor, args, ty })
                 })
             },
-            core::Expr::Tuple { items, ty: _ } => lower_list(state, items, |items| {
+            Tuple { items, ty: _ } => lower_list(state, items, |items| {
                 k(Value::Tuple { items, ty })
             }),
-            core::Expr::Array { items, ty: _ } => lower_list(state, items, |items| {
+            Array { items, ty: _ } => lower_list(state, items, |items| {
                 k(Value::Array { items, ty })
             }),
-            core::Expr::ConstrGet { expr, constructor, field_index: index, ty: _ } => {
+            ConstrGet { expr, constructor, field_index: index, ty: _ } => {
                 lower_expr(state, expr, |expr| {
                     k(Value::ConstrGet { expr, constructor, field_index: index, ty })
                 })
             },
-            core::Expr::Unary { op, expr, ty: _ } => lower_expr(state, expr, |expr| {
+            Unary { op, expr, ty: _ } => lower_expr(state, expr, |expr| {
                 k(Value::Unary { op, expr, ty })
             }),
-            core::Expr::Cast { expr, ty: _ } => lower_expr(state, expr, |expr| {
+            Cast { expr, ty: _ } => lower_expr(state, expr, |expr| {
                 k(Value::Cast { expr, ty })
             }),
-            core::Expr::Binary { op, lhs, rhs, ty: _ } => lower_expr(state, lhs, |lhs| {
+            Binary { op, lhs, rhs, ty: _ } => lower_expr(state, lhs, |lhs| {
                 lower_expr(state, rhs, |rhs| {
                     k(Value::Binary { op, lhs, rhs, ty })
                 })
             }),
-            core::Expr::Assign { name, value: expr, target_ty, ty: _ } => {
+            Assign { name, value: expr, target_ty, ty: _ } => {
                 lower_expr(state, expr, |expr| {
                     k(Value::Assign { name, value: expr, target_ty, ty })
                 })
             },
-            core::Expr::Call { func, args, ty: _ } => lower_expr(state, func, |func| {
+            Call { func, args, ty: _ } => lower_expr(state, func, |func| {
                 lower_list(state, args, |args| {
                     k(Value::Call { func, args, ty })
                 })
             }),
-            core::Expr::ToDyn { trait_name, for_ty, expr, ty: _ } => {
+            ToDyn { trait_name, for_ty, expr, ty: _ } => {
                 lower_expr(state, expr, |expr| {
                     k(Value::ToDyn { trait_name, for_ty, expr, ty })
                 })
             },
-            core::Expr::DynCall { trait_name, method_name, receiver, args, ty: _ } => {
+            DynCall { trait_name, method_name, receiver, args, ty: _ } => {
                 lower_expr(state, receiver, |receiver| {
                     lower_list(state, args, |args| {
                         k(Value::DynCall {
@@ -161,10 +161,10 @@ fn lower_value(
                     })
                 })
             },
-            core::Expr::Go { expr, ty: _ } => lower_expr(state, expr, |expr| {
+            Go { expr, ty: _ } => lower_expr(state, expr, |expr| {
                 k(Value::Go { closure: expr, ty })
             }),
-            core::Expr::Proj { tuple: expr, index, ty: _ } => lower_expr(state, expr, |expr| {
+            Proj { tuple: expr, index, ty: _ } => lower_expr(state, expr, |expr| {
                 k(Value::Proj { tuple: expr, index, ty })
             }),
             other => lower_expr(state, other, |value| k(Value::Imm(value))),
