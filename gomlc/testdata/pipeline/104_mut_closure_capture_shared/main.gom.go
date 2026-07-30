@@ -42,40 +42,40 @@ func main0() struct{} {
         x_0: x__0,
     }
     _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
-    var t73 int = ref_get__Ref_3int(x__0)
-    var t74 string = _goml_m_inherent_i_int_i_int_i_to__string(t73)
-    println__T_string(t74)
+    var t113 int = ref_get__Ref_3int(x__0)
+    var t114 string = _goml_m_inherent_i_int_i_int_i_to__string(t113)
+    println__T_string(t114)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t76 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t76)
+    var t116 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t116)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv79 string
-    var t80 string = _goml_runtime_core_int_to_string(self__5)
-    retv79 = t80
-    return retv79
+    var retv119 string
+    var t120 string = _goml_runtime_core_int_to_string(self__5)
+    retv119 = t120
+    return retv119
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv82 string
-    retv82 = self__38
-    return retv82
+    var retv122 string
+    retv122 = self__38
+    return retv122
 }
 
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env71 closure_env_inc_0) int {
-    var retv90 int
-    var x__0 *ref_int_x = env71.x_0
-    var t91 int = ref_get__Ref_3int(x__0)
-    var t92 int = t91 + 1
-    ref_set__Ref_3int(x__0, t92)
-    var t93 int = ref_get__Ref_3int(x__0)
-    retv90 = t93
-    return retv90
+func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env111 closure_env_inc_0) int {
+    var retv130 int
+    var x__0 *ref_int_x = env111.x_0
+    var t131 int = ref_get__Ref_3int(x__0)
+    var t132 int = t131 + 1
+    ref_set__Ref_3int(x__0, t132)
+    var t133 int = ref_get__Ref_3int(x__0)
+    retv130 = t133
+    return retv130
 }
 
 func main() {

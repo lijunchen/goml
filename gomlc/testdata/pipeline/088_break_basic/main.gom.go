@@ -34,25 +34,25 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 func main0() struct{} {
     var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop75:
+    Loop_loop115:
     for {
-        var t76 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-        var t77 bool = t76 < 10
-        if t77 {
-            var t82 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-            var t83 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t82, 5)
-            if t83 {
-                break Loop_loop75
+        var t116 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+        var t117 bool = t116 < 10
+        if t117 {
+            var t122 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+            var t123 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t122, 5)
+            if t123 {
+                break Loop_loop115
             } else {
-                var t79 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-                println__T_int(t79)
-                var t80 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-                var t81 int = t80 + 1
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__0, t81)
+                var t119 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+                println__T_int(t119)
+                var t120 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+                var t121 int = t120 + 1
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__0, t121)
                 continue
             }
         } else {
-            break Loop_loop75
+            break Loop_loop115
         }
     }
     println__T_string("done")
@@ -60,29 +60,29 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv85 *ref_int_x
-    var t86 *ref_int_x = ref__Ref_3int(value__207)
-    retv85 = t86
-    return retv85
+    var retv125 *ref_int_x
+    var t126 *ref_int_x = ref__Ref_3int(value__207)
+    retv125 = t126
+    return retv125
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv88 int
-    var t89 int = ref_get__Ref_3int(self__208)
-    retv88 = t89
-    return retv88
+    var retv128 int
+    var t129 int = ref_get__Ref_3int(self__208)
+    retv128 = t129
+    return retv128
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv91 bool
-    var t92 bool = self__59 == other__60
-    retv91 = t92
-    return retv91
+    var retv131 bool
+    var t132 bool = self__59 == other__60
+    retv131 = t132
+    return retv131
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t94 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t94)
+    var t134 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    _goml_runtime_core_string_println(t134)
     return struct{}{}
 }
 
@@ -92,22 +92,22 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, v
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t99 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t99)
+    var t139 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t139)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv102 string
-    var t103 string = _goml_runtime_core_int_to_string(self__40)
-    retv102 = t103
-    return retv102
+    var retv142 string
+    var t143 string = _goml_runtime_core_int_to_string(self__40)
+    retv142 = t143
+    return retv142
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv105 string
-    retv105 = self__38
-    return retv105
+    var retv145 string
+    retv145 = self__38
+    return retv145
 }
 
 func main() {

@@ -1,68 +1,68 @@
 fn trait_impl#Show#Boxed__int32#show(self/0: Boxed__int32) -> string {
-  join ret69(retv70: string) -> string {
-    retv70
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  join k71(jp72: string) -> string {
-    jump ret69(jp72)
+  join k111(jp112: string) -> string {
+    jump ret109(jp112)
   } in
   match self/0 {
     Tag_0 => {
-      let x68 = Boxed__int32::One._0(self/0) in
-      let value/1 = x68 in
-      let t73 = inherent#int32#int32#to_string(value/1) in
-      jump k71(t73)
+      let x108 = Boxed__int32::One._0(self/0) in
+      let value/1 = x108 in
+      let t113 = inherent#int32#int32#to_string(value/1) in
+      jump k111(t113)
     },
   }
 }
 
 fn render(value/3: dyn Show) -> string {
-  join ret74(retv75: string) -> string {
-    retv75
+  join ret114(retv115: string) -> string {
+    retv115
   } in
-  let t76 = dyn_call[Show::show](value/3) in
-  jump ret74(t76)
+  let t116 = dyn_call[Show::show](value/3) in
+  jump ret114(t116)
 }
 
 fn main() -> unit {
-  join ret77() -> unit {
+  join ret117() -> unit {
     ()
   } in
   let value/4 = 42 in
-  let t78 = make_boxed__T_int32(value/4) in
-  let t79 = to_dyn[Show]{Boxed__int32}(t78) in
-  let t80 = render(t79) in
-  let t81 = println__T_string(t80) in
-  jump ret77()
+  let t118 = make_boxed__T_int32(value/4) in
+  let t119 = to_dyn[Show]{Boxed__int32}(t118) in
+  let t120 = render(t119) in
+  let t121 = println__T_string(t120) in
+  jump ret117()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret82(retv83: string) -> string {
-    retv83
+  join ret122(retv123: string) -> string {
+    retv123
   } in
-  let t84 = @runtime(core.int32_to_string)(self/6) in
-  jump ret82(t84)
+  let t124 = @runtime(core.int32_to_string)(self/6) in
+  jump ret122(t124)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret85() -> unit {
+  join ret125() -> unit {
     ()
   } in
-  let t86 = trait_impl#ToString#string#to_string(value/1) in
-  let t87 = @runtime(core.string_println)(t86) in
-  jump ret85()
+  let t126 = trait_impl#ToString#string#to_string(value/1) in
+  let t127 = @runtime(core.string_println)(t126) in
+  jump ret125()
 }
 
 fn make_boxed__T_int32(value/2: int32) -> Boxed__int32 {
-  join ret88(retv89: Boxed__int32) -> Boxed__int32 {
-    retv89
+  join ret128(retv129: Boxed__int32) -> Boxed__int32 {
+    retv129
   } in
-  let t90 = Boxed__int32::One(value/2) in
-  jump ret88(t90)
+  let t130 = Boxed__int32::One(value/2) in
+  jump ret128(t130)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret91(retv92: string) -> string {
-    retv92
+  join ret131(retv132: string) -> string {
+    retv132
   } in
-  jump ret91(self/38)
+  jump ret131(self/38)
 }

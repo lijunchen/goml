@@ -12,22 +12,22 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 
 fn normalize_text(ok/1: bool) -> Result__string__string {
   let text/2 = {
-    let mtmp68 = parse_text(ok/1) in
-    match mtmp68 {
-      Result__string__string::Ok(x69) => {
+    let mtmp108 = parse_text(ok/1) in
+    match mtmp108 {
+      Result__string__string::Ok(x109) => {
         {
-          let x69 = Result__string__string::Ok._0(mtmp68) in
+          let x109 = Result__string__string::Ok._0(mtmp108) in
           {
-            let try_value/12 = x69 in
+            let try_value/12 = x109 in
             try_value/12
           }
         }
       },
-      Result__string__string::Err(x70) => {
+      Result__string__string::Err(x110) => {
         {
-          let x70 = Result__string__string::Err._0(mtmp68) in
+          let x110 = Result__string__string::Err._0(mtmp108) in
           {
-            let try_residual/12 = x70 in
+            let try_residual/12 = x110 in
             return Result__string__string::Err(try_residual/12)
           }
         }
@@ -39,22 +39,22 @@ fn normalize_text(ok/1: bool) -> Result__string__string {
 
 fn decorate_text(ok/3: bool) -> Result__string__string {
   let text/4 = {
-    let mtmp71 = normalize_text(ok/3) in
-    match mtmp71 {
-      Result__string__string::Ok(x72) => {
+    let mtmp111 = normalize_text(ok/3) in
+    match mtmp111 {
+      Result__string__string::Ok(x112) => {
         {
-          let x72 = Result__string__string::Ok._0(mtmp71) in
+          let x112 = Result__string__string::Ok._0(mtmp111) in
           {
-            let try_value/20 = x72 in
+            let try_value/20 = x112 in
             try_value/20
           }
         }
       },
-      Result__string__string::Err(x73) => {
+      Result__string__string::Err(x113) => {
         {
-          let x73 = Result__string__string::Err._0(mtmp71) in
+          let x113 = Result__string__string::Err._0(mtmp111) in
           {
-            let try_residual/20 = x73 in
+            let try_residual/20 = x113 in
             return Result__string__string::Err(try_residual/20)
           }
         }
@@ -66,20 +66,20 @@ fn decorate_text(ok/3: bool) -> Result__string__string {
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x74) => {
+    Result__string__string::Ok(x114) => {
       {
-        let x74 = Result__string__string::Ok._0(res/5) in
+        let x114 = Result__string__string::Ok._0(res/5) in
         {
-          let value/6 = x74 in
+          let value/6 = x114 in
           ("ok " + value/6)
         }
       }
     },
-    Result__string__string::Err(x75) => {
+    Result__string__string::Err(x115) => {
       {
-        let x75 = Result__string__string::Err._0(res/5) in
+        let x115 = Result__string__string::Err._0(res/5) in
         {
-          let err/7 = x75 in
+          let err/7 = x115 in
           ("err " + err/7)
         }
       }
@@ -88,8 +88,8 @@ fn show(res/5: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild76 = println__T_string(show(decorate_text(true))) in
-  let _wild77 = println__T_string(show(decorate_text(false))) in
+  let _wild116 = println__T_string(show(decorate_text(true))) in
+  let _wild117 = println__T_string(show(decorate_text(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {

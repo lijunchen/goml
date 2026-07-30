@@ -22,34 +22,34 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func a_value() int8 {
-    var retv80 int8
-    retv80 = 90
-    return retv80
+    var retv120 int8
+    retv120 = 90
+    return retv120
 }
 
 func b_value() int8 {
-    var retv82 int8
-    retv82 = -20
-    return retv82
+    var retv122 int8
+    retv122 = -20
+    return retv122
 }
 
 func c_value() int8 {
-    var retv84 int8
-    retv84 = 3
-    return retv84
+    var retv124 int8
+    retv124 = 3
+    return retv124
 }
 
 func show_int8(label__0 string, value__1 int8) struct{} {
-    var t86 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(value__1)
-    var t87 string = label__0 + t86
-    println__T_string(t87)
+    var t126 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(value__1)
+    var t127 string = label__0 + t126
+    println__T_string(t127)
     return struct{}{}
 }
 
 func show_bool(label__2 string, value__3 bool) struct{} {
-    var t89 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__3)
-    var t90 string = label__2 + t89
-    println__T_string(t90)
+    var t129 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__3)
+    var t130 string = label__2 + t129
+    println__T_string(t130)
     return struct{}{}
 }
 
@@ -76,29 +76,29 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t93 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t93)
+    var t133 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t133)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__41 int8) string {
-    var retv96 string
-    var t97 string = _goml_runtime_core_int8_to_string(self__41)
-    retv96 = t97
-    return retv96
+    var retv136 string
+    var t137 string = _goml_runtime_core_int8_to_string(self__41)
+    retv136 = t137
+    return retv136
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv99 string
-    var t100 string = _goml_runtime_core_bool_to_string(self__37)
-    retv99 = t100
-    return retv99
+    var retv139 string
+    var t140 string = _goml_runtime_core_bool_to_string(self__37)
+    retv139 = t140
+    return retv139
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv102 string
-    retv102 = self__38
-    return retv102
+    var retv142 string
+    retv142 = self__38
+    return retv142
 }
 
 func main() {

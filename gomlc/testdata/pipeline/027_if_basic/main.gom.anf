@@ -1,52 +1,52 @@
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
-  join ret70(retv71: int32) -> int32 {
-    retv71
+  join ret110(retv111: int32) -> int32 {
+    retv111
   } in
-  join k72(jp73: int32) -> int32 {
-    jump ret70(jp73)
+  join k112(jp113: int32) -> int32 {
+    jump ret110(jp113)
   } in
   if flag/0 {
-    jump k72(x/1)
+    jump k112(x/1)
   } else {
-    jump k72(y/2)
+    jump k112(y/2)
   }
 }
 
 fn main() -> unit {
-  join ret74() -> unit {
+  join ret114() -> unit {
     ()
   } in
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let t75 = inherent#int32#int32#to_string(yes/3) in
-  let t76 = ("yes=" + t75) in
-  let mtmp68 = println__T_string(t76) in
-  let t77 = inherent#int32#int32#to_string(no/4) in
-  let t78 = ("no=" + t77) in
-  let mtmp69 = println__T_string(t78) in
-  jump ret74()
+  let t115 = inherent#int32#int32#to_string(yes/3) in
+  let t116 = ("yes=" + t115) in
+  let mtmp108 = println__T_string(t116) in
+  let t117 = inherent#int32#int32#to_string(no/4) in
+  let t118 = ("no=" + t117) in
+  let mtmp109 = println__T_string(t118) in
+  jump ret114()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret79() -> unit {
+  join ret119() -> unit {
     ()
   } in
-  let t80 = trait_impl#ToString#string#to_string(value/1) in
-  let t81 = @runtime(core.string_println)(t80) in
-  jump ret79()
+  let t120 = trait_impl#ToString#string#to_string(value/1) in
+  let t121 = @runtime(core.string_println)(t120) in
+  jump ret119()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret82(retv83: string) -> string {
-    retv83
+  join ret122(retv123: string) -> string {
+    retv123
   } in
-  let t84 = @runtime(core.int32_to_string)(self/6) in
-  jump ret82(t84)
+  let t124 = @runtime(core.int32_to_string)(self/6) in
+  jump ret122(t124)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret85(retv86: string) -> string {
-    retv86
+  join ret125(retv126: string) -> string {
+    retv126
   } in
-  jump ret85(self/38)
+  jump ret125(self/38)
 }

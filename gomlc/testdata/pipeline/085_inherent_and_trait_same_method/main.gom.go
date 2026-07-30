@@ -18,50 +18,50 @@ type Boxed struct {
 }
 
 func _goml_m_inherent_i_Boxed_i_Boxed_i_format(self__0 Boxed) string {
-    var retv71 string
-    retv71 = "inherent"
-    return retv71
+    var retv111 string
+    retv111 = "inherent"
+    return retv111
 }
 
 func _goml_m_trait__impl_i_Render_i_Boxed_i_format(self__1 Boxed) string {
-    var retv73 string
-    var t74 int32 = self__1.value
-    var t75 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t74)
-    retv73 = t75
-    return retv73
+    var retv113 string
+    var t114 int32 = self__1.value
+    var t115 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t114)
+    retv113 = t115
+    return retv113
 }
 
 func main0() struct{} {
-    var t77 Boxed = Boxed{
+    var t117 Boxed = Boxed{
         value: 9,
     }
-    var t78 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t77)
-    println__T_string(t78)
-    var t79 Boxed = Boxed{
+    var t118 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t117)
+    println__T_string(t118)
+    var t119 Boxed = Boxed{
         value: 9,
     }
-    var t80 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t79)
-    println__T_string(t80)
+    var t120 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t119)
+    println__T_string(t120)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv82 string
-    var t83 string = _goml_runtime_core_int32_to_string(self__6)
-    retv82 = t83
-    return retv82
+    var retv122 string
+    var t123 string = _goml_runtime_core_int32_to_string(self__6)
+    retv122 = t123
+    return retv122
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t85 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t85)
+    var t125 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t125)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv88 string
-    retv88 = self__38
-    return retv88
+    var retv128 string
+    retv128 = self__38
+    return retv128
 }
 
 func main() {

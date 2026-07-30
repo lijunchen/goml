@@ -54,15 +54,15 @@ type Some struct {
 func (_ Some) isOption__char() {}
 
 func show_scalar(value__0 uint32) struct{} {
-    var mtmp68 Option__char = char_from_uint32(value__0)
-    switch mtmp68.(type) {
+    var mtmp108 Option__char = char_from_uint32(value__0)
+    switch mtmp108.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var x69 rune = mtmp68.(Some)._0
-        var result__1 rune = x69
-        var t83 uint32 = uint32(rune(result__1))
-        println__T_uint32(t83)
+        var x109 rune = mtmp108.(Some)._0
+        var result__1 rune = x109
+        var t123 uint32 = uint32(rune(result__1))
+        println__T_uint32(t123)
     default:
         panic("non-exhaustive match")
     }
@@ -78,15 +78,15 @@ func main0() struct{} {
     show_scalar(57344)
     show_scalar(1114111)
     show_scalar(1114112)
-    var mtmp78 Option__char = char_from_uint32(128512)
-    switch mtmp78.(type) {
+    var mtmp118 Option__char = char_from_uint32(128512)
+    switch mtmp118.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var x79 rune = mtmp78.(Some)._0
-        var result__2 rune = x79
-        var t88 string = _goml_m_inherent_i_char_i_char_i_to__string(result__2)
-        println__T_string(t88)
+        var x119 rune = mtmp118.(Some)._0
+        var result__2 rune = x119
+        var t128 string = _goml_m_inherent_i_char_i_char_i_to__string(result__2)
+        println__T_string(t128)
     default:
         panic("non-exhaustive match")
     }
@@ -94,55 +94,55 @@ func main0() struct{} {
 }
 
 func char_from_uint32(value__2 uint32) Option__char {
-    var retv91 Option__char
+    var retv131 Option__char
     var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__2)
     var x1 bool = mtmp0._0
     var x2 rune = mtmp0._1
     var value__4 rune = x2
     var valid__3 bool = x1
-    var jp93 Option__char
+    var jp133 Option__char
     if valid__3 {
-        var t94 Option__char = Some{
+        var t134 Option__char = Some{
             _0: value__4,
         }
-        jp93 = t94
+        jp133 = t134
     } else {
-        jp93 = None{}
+        jp133 = None{}
     }
-    retv91 = jp93
-    return retv91
+    retv131 = jp133
+    return retv131
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t96 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t96)
+    var t136 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t136)
     return struct{}{}
 }
 
 func println__T_uint32(value__1 uint32) struct{} {
-    var t99 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t99)
+    var t139 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t139)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var retv102 string
-    var t103 string = _goml_runtime_core_char_to_string(self__7)
-    retv102 = t103
-    return retv102
+    var retv142 string
+    var t143 string = _goml_runtime_core_char_to_string(self__7)
+    retv142 = t143
+    return retv142
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv105 string
-    retv105 = self__38
-    return retv105
+    var retv145 string
+    retv145 = self__38
+    return retv145
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__47 uint32) string {
-    var retv107 string
-    var t108 string = _goml_runtime_core_uint32_to_string(self__47)
-    retv107 = t108
-    return retv107
+    var retv147 string
+    var t148 string = _goml_runtime_core_uint32_to_string(self__47)
+    retv147 = t148
+    return retv147
 }
 
 func main() {

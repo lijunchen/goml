@@ -961,6 +961,457 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
   }
 }
 
+fn trait_impl#Iterator#EnumerateIterator[I]#next(self/237: EnumerateIterator[I]) -> Option[(int, I::Item)] {
+  {
+    let mtmp68 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
+    match mtmp68 {
+      Option::None => {
+        Option::None
+      },
+      Option::Some(x69) => {
+        {
+          let x69 = Option::Some._0(mtmp68) in
+          {
+            let value/238 = x69 in
+            {
+              let index/239 = inherent#Ref#Ref[int]#get(EnumerateIterator.index(self/237)) in
+              let _wild70 = inherent#Ref#Ref[int]#set(EnumerateIterator.index(self/237), (index/239 + 1)) in
+              Option::Some((index/239, value/238))
+            }
+          }
+        }
+      },
+    }
+  }
+}
+
+fn trait_impl#Iterator#ZipIterator[A,B]#next(self/240: ZipIterator[A, B]) -> Option[(A::Item, B::Item)] {
+  {
+    let mtmp71 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
+    match mtmp71 {
+      Option::None => {
+        Option::None
+      },
+      Option::Some(x72) => {
+        {
+          let x72 = Option::Some._0(mtmp71) in
+          {
+            let left/241 = x72 in
+            {
+              let mtmp73 = trait_call[Iterator::next](ZipIterator.right(self/240)) in
+              match mtmp73 {
+                Option::None => {
+                  Option::None
+                },
+                Option::Some(x74) => {
+                  {
+                    let x74 = Option::Some._0(mtmp73) in
+                    {
+                      let right/242 = x74 in
+                      Option::Some((left/241, right/242))
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+    }
+  }
+}
+
+fn trait_impl#Iterator#SkipIterator[I]#next(self/243: SkipIterator[I]) -> Option[I::Item] {
+  let _wild78 = while (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) > 0) {
+      {
+        {
+          let mtmp75 = trait_call[Iterator::next](SkipIterator.iterator(self/243)) in
+          match mtmp75 {
+            Option::None => {
+              {
+                let _wild77 = inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), 0) in
+                return Option::None
+              }
+            },
+            Option::Some(x76) => {
+              {
+                let x76 = Option::Some._0(mtmp75) in
+                inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) - 1))
+              }
+            },
+          }
+        }
+      }
+  } in
+  trait_call[Iterator::next](SkipIterator.iterator(self/243))
+}
+
+fn trait_impl#Iterator#ChainIterator[T,A,B]#next(self/244: ChainIterator[T, A, B]) -> Option[T] {
+  let _wild81 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
+      {
+        {
+          let mtmp79 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
+          match mtmp79 {
+            Option::None => {
+              inherent#Ref#Ref[bool]#set(ChainIterator.first_done(self/244), true)
+            },
+            Option::Some(x80) => {
+              {
+                let x80 = Option::Some._0(mtmp79) in
+                {
+                  let value/245 = x80 in
+                  return Option::Some(value/245)
+                }
+              }
+            },
+          }
+        }
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  trait_call[Iterator::next](ChainIterator.second(self/244))
+}
+
+fn iterator_enumerate(iterator/246: I) -> EnumerateIterator[I] {
+  EnumerateIterator { iterator: iterator/246, index: inherent#Ref#Ref[int]#new(0) }
+}
+
+fn iterator_zip(left/247: A, right/248: B) -> ZipIterator[A, B] {
+  ZipIterator { left: left/247, right: right/248 }
+}
+
+fn iterator_skip(iterator/249: I, count/250: int) -> SkipIterator[I] {
+  SkipIterator { iterator: iterator/249, remaining: inherent#Ref#Ref[int]#new(if (count/250 > 0) {
+      {
+        count/250
+      }
+  } else {
+      {
+        0
+      }
+  }) }
+}
+
+fn iterator_chain(first/251: A, second/252: B) -> ChainIterator[T, A, B] {
+  ChainIterator { first: first/251, second: second/252, first_done: inherent#Ref#Ref[bool]#new(false) }
+}
+
+fn iterator_find(iterator/253: I, predicate/254: (T) -> bool) -> Option[T] {
+  let _wild84 = while true {
+      {
+        {
+          let mtmp82 = trait_call[Iterator::next](iterator/253) in
+          match mtmp82 {
+            Option::None => {
+              return Option::None
+            },
+            Option::Some(x83) => {
+              {
+                let x83 = Option::Some._0(mtmp82) in
+                {
+                  let value/255 = x83 in
+                  if predicate/254(value/255) {
+                      {
+                        return Option::Some(value/255)
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  }
+                }
+              }
+            },
+          }
+        }
+      }
+  } in
+  Option::None
+}
+
+fn iterator_any(iterator/256: I, predicate/257: (T) -> bool) -> bool {
+  {
+    let mtmp85 = iterator_find(iterator/256, predicate/257) in
+    match mtmp85 {
+      Option::None => {
+        false
+      },
+      Option::Some(x86) => {
+        {
+          let x86 = Option::Some._0(mtmp85) in
+          true
+        }
+      },
+    }
+  }
+}
+
+fn iterator_all(iterator/258: I, predicate/259: (T) -> bool) -> bool {
+  trait_impl#Eq#bool#eq(iterator_any(iterator/258, |value/260: T| => trait_impl#Eq#bool#eq(predicate/259(value/260), false)), false)
+}
+
+fn iterator_count(iterator/261: I) -> int {
+  let count/262 = inherent#Ref#Ref[int]#new(0) in
+  let _wild89 = while true {
+      {
+        {
+          let mtmp87 = trait_call[Iterator::next](iterator/261) in
+          match mtmp87 {
+            Option::None => {
+              break
+            },
+            Option::Some(x88) => {
+              {
+                let x88 = Option::Some._0(mtmp87) in
+                inherent#Ref#Ref[int]#set(count/262, (inherent#Ref#Ref[int]#get(count/262) + 1))
+              }
+            },
+          }
+        }
+      }
+  } in
+  inherent#Ref#Ref[int]#get(count/262)
+}
+
+fn inherent#Option#Option[T]#is_some(self/263: Option[T]) -> bool {
+  match self/263 {
+    Option::None => {
+      false
+    },
+    Option::Some(x90) => {
+      {
+        let x90 = Option::Some._0(self/263) in
+        true
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#is_none(self/264: Option[T]) -> bool {
+  trait_impl#Eq#bool#eq(inherent#Option#Option[T]#is_some(self/264), false)
+}
+
+fn inherent#Option#Option[T]#unwrap_or(self/265: Option[T], fallback/266: T) -> T {
+  match self/265 {
+    Option::None => {
+      fallback/266
+    },
+    Option::Some(x91) => {
+      {
+        let x91 = Option::Some._0(self/265) in
+        {
+          let value/267 = x91 in
+          value/267
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or_else(self/268: Option[T], fallback/269: () -> T) -> T {
+  match self/268 {
+    Option::None => {
+      fallback/269()
+    },
+    Option::Some(x92) => {
+      {
+        let x92 = Option::Some._0(self/268) in
+        {
+          let value/270 = x92 in
+          value/270
+        }
+      }
+    },
+  }
+}
+
+fn option_map(value/271: Option[T], map_fn/272: (T) -> U) -> Option[U] {
+  match value/271 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x93) => {
+      {
+        let x93 = Option::Some._0(value/271) in
+        {
+          let inner/273 = x93 in
+          Option::Some(map_fn/272(inner/273))
+        }
+      }
+    },
+  }
+}
+
+fn option_and_then(value/274: Option[T], next/275: (T) -> Option[U]) -> Option[U] {
+  match value/274 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x94) => {
+      {
+        let x94 = Option::Some._0(value/274) in
+        {
+          let inner/276 = x94 in
+          next/275(inner/276)
+        }
+      }
+    },
+  }
+}
+
+fn option_ok_or(value/277: Option[T], error/278: E) -> Result[T, E] {
+  match value/277 {
+    Option::None => {
+      Result::Err(error/278)
+    },
+    Option::Some(x95) => {
+      {
+        let x95 = Option::Some._0(value/277) in
+        {
+          let inner/279 = x95 in
+          Result::Ok(inner/279)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_ok(self/280: Result[T, E]) -> bool {
+  match self/280 {
+    Result::Ok(x96) => {
+      {
+        let x96 = Result::Ok._0(self/280) in
+        true
+      }
+    },
+    Result::Err(x97) => {
+      {
+        let x97 = Result::Err._0(self/280) in
+        false
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_err(self/281: Result[T, E]) -> bool {
+  trait_impl#Eq#bool#eq(inherent#Result#Result[T,E]#is_ok(self/281), false)
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or(self/282: Result[T, E], fallback/283: T) -> T {
+  match self/282 {
+    Result::Ok(x98) => {
+      {
+        let x98 = Result::Ok._0(self/282) in
+        {
+          let value/284 = x98 in
+          value/284
+        }
+      }
+    },
+    Result::Err(x99) => {
+      {
+        let x99 = Result::Err._0(self/282) in
+        fallback/283
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or_else(self/285: Result[T, E], fallback/286: (E) -> T) -> T {
+  match self/285 {
+    Result::Ok(x100) => {
+      {
+        let x100 = Result::Ok._0(self/285) in
+        {
+          let value/287 = x100 in
+          value/287
+        }
+      }
+    },
+    Result::Err(x101) => {
+      {
+        let x101 = Result::Err._0(self/285) in
+        {
+          let error/288 = x101 in
+          fallback/286(error/288)
+        }
+      }
+    },
+  }
+}
+
+fn result_map(value/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
+  match value/289 {
+    Result::Ok(x102) => {
+      {
+        let x102 = Result::Ok._0(value/289) in
+        {
+          let inner/291 = x102 in
+          Result::Ok(map_fn/290(inner/291))
+        }
+      }
+    },
+    Result::Err(x103) => {
+      {
+        let x103 = Result::Err._0(value/289) in
+        {
+          let error/292 = x103 in
+          Result::Err(error/292)
+        }
+      }
+    },
+  }
+}
+
+fn result_map_err(value/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
+  match value/293 {
+    Result::Ok(x104) => {
+      {
+        let x104 = Result::Ok._0(value/293) in
+        {
+          let inner/295 = x104 in
+          Result::Ok(inner/295)
+        }
+      }
+    },
+    Result::Err(x105) => {
+      {
+        let x105 = Result::Err._0(value/293) in
+        {
+          let error/296 = x105 in
+          Result::Err(map_fn/294(error/296))
+        }
+      }
+    },
+  }
+}
+
+fn result_and_then(value/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
+  match value/297 {
+    Result::Ok(x106) => {
+      {
+        let x106 = Result::Ok._0(value/297) in
+        {
+          let inner/299 = x106 in
+          next/298(inner/299)
+        }
+      }
+    },
+    Result::Err(x107) => {
+      {
+        let x107 = Result::Err._0(value/297) in
+        {
+          let error/300 = x107 in
+          Result::Err(error/300)
+        }
+      }
+    },
+  }
+}
+
 fn parse_flag(flag/0: bool) -> Result[int32, string] {
   if flag/0 {
       {
@@ -980,22 +1431,22 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 fn plus_one(flag/3: bool) -> Result[int32, string] {
   let run/5 = || => {
     let value/4 = {
-      let mtmp68 = parse_flag(flag/3) in
-      match mtmp68 {
-        Result::Ok(x69) => {
+      let mtmp108 = parse_flag(flag/3) in
+      match mtmp108 {
+        Result::Ok(x109) => {
           {
-            let x69 = Result::Ok._0(mtmp68) in
+            let x109 = Result::Ok._0(mtmp108) in
             {
-              let try_value/15 = x69 in
+              let try_value/15 = x109 in
               try_value/15
             }
           }
         },
-        Result::Err(x70) => {
+        Result::Err(x110) => {
           {
-            let x70 = Result::Err._0(mtmp68) in
+            let x110 = Result::Err._0(mtmp108) in
             {
-              let try_residual/15 = x70 in
+              let try_residual/15 = x110 in
               return Result::Err(try_residual/15)
             }
           }
@@ -1009,20 +1460,20 @@ fn plus_one(flag/3: bool) -> Result[int32, string] {
 
 fn show(res/6: Result[int32, string]) -> string {
   match res/6 {
-    Result::Ok(x71) => {
+    Result::Ok(x111) => {
       {
-        let x71 = Result::Ok._0(res/6) in
+        let x111 = Result::Ok._0(res/6) in
         {
-          let value/7 = x71 in
+          let value/7 = x111 in
           ("ok=" + inherent#int32#int32#to_string(value/7))
         }
       }
     },
-    Result::Err(x72) => {
+    Result::Err(x112) => {
       {
-        let x72 = Result::Err._0(res/6) in
+        let x112 = Result::Err._0(res/6) in
         {
-          let err/8 = x72 in
+          let err/8 = x112 in
           ("err=" + err/8)
         }
       }
@@ -1031,6 +1482,6 @@ fn show(res/6: Result[int32, string]) -> string {
 }
 
 fn main() -> unit {
-  let _wild73 = println(show(plus_one(true))) in
-  let _wild74 = println(show(plus_one(false))) in
+  let _wild113 = println(show(plus_one(true))) in
+  let _wild114 = println(show(plus_one(false))) in
 }

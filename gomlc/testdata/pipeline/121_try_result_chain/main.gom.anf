@@ -1,120 +1,120 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret78(retv79: Result__string__string) -> Result__string__string {
-    retv79
+  join ret118(retv119: Result__string__string) -> Result__string__string {
+    retv119
   } in
-  join k80(jp81: Result__string__string) -> Result__string__string {
-    jump ret78(jp81)
+  join k120(jp121: Result__string__string) -> Result__string__string {
+    jump ret118(jp121)
   } in
   if ok/0 {
-    let t82 = Result__string__string::Ok("goml") in
-    jump k80(t82)
+    let t122 = Result__string__string::Ok("goml") in
+    jump k120(t122)
   } else {
-    let t83 = Result__string__string::Err("parse failed") in
-    jump k80(t83)
+    let t123 = Result__string__string::Err("parse failed") in
+    jump k120(t123)
   }
 }
 
 fn normalize_text(ok/1: bool) -> Result__string__string {
-  join ret84(retv85: Result__string__string) -> Result__string__string {
-    retv85
+  join ret124(retv125: Result__string__string) -> Result__string__string {
+    retv125
   } in
-  let mtmp68 = parse_text(ok/1) in
-  join k86(jp87: string) -> Result__string__string {
-    let text/2 = jp87 in
-    let t88 = (text/2 + "!") in
-    let t89 = Result__string__string::Ok(t88) in
-    jump ret84(t89)
+  let mtmp108 = parse_text(ok/1) in
+  join k126(jp127: string) -> Result__string__string {
+    let text/2 = jp127 in
+    let t128 = (text/2 + "!") in
+    let t129 = Result__string__string::Ok(t128) in
+    jump ret124(t129)
   } in
-  match mtmp68 {
+  match mtmp108 {
     Tag_0 => {
-      let x69 = Result__string__string::Ok._0(mtmp68) in
-      let try_value/12 = x69 in
-      jump k86(try_value/12)
+      let x109 = Result__string__string::Ok._0(mtmp108) in
+      let try_value/12 = x109 in
+      jump k126(try_value/12)
     },
     Tag_1 => {
-      let x70 = Result__string__string::Err._0(mtmp68) in
-      let try_residual/12 = x70 in
-      let t90 = Result__string__string::Err(try_residual/12) in
-      jump ret84(t90)
+      let x110 = Result__string__string::Err._0(mtmp108) in
+      let try_residual/12 = x110 in
+      let t130 = Result__string__string::Err(try_residual/12) in
+      jump ret124(t130)
     },
   }
 }
 
 fn decorate_text(ok/3: bool) -> Result__string__string {
-  join ret91(retv92: Result__string__string) -> Result__string__string {
-    retv92
+  join ret131(retv132: Result__string__string) -> Result__string__string {
+    retv132
   } in
-  let mtmp71 = normalize_text(ok/3) in
-  join k93(jp94: string) -> Result__string__string {
-    let text/4 = jp94 in
-    let t95 = ("[" + text/4) in
-    let t96 = (t95 + "]") in
-    let t97 = Result__string__string::Ok(t96) in
-    jump ret91(t97)
+  let mtmp111 = normalize_text(ok/3) in
+  join k133(jp134: string) -> Result__string__string {
+    let text/4 = jp134 in
+    let t135 = ("[" + text/4) in
+    let t136 = (t135 + "]") in
+    let t137 = Result__string__string::Ok(t136) in
+    jump ret131(t137)
   } in
-  match mtmp71 {
+  match mtmp111 {
     Tag_0 => {
-      let x72 = Result__string__string::Ok._0(mtmp71) in
-      let try_value/20 = x72 in
-      jump k93(try_value/20)
+      let x112 = Result__string__string::Ok._0(mtmp111) in
+      let try_value/20 = x112 in
+      jump k133(try_value/20)
     },
     Tag_1 => {
-      let x73 = Result__string__string::Err._0(mtmp71) in
-      let try_residual/20 = x73 in
-      let t98 = Result__string__string::Err(try_residual/20) in
-      jump ret91(t98)
+      let x113 = Result__string__string::Err._0(mtmp111) in
+      let try_residual/20 = x113 in
+      let t138 = Result__string__string::Err(try_residual/20) in
+      jump ret131(t138)
     },
   }
 }
 
 fn show(res/5: Result__string__string) -> string {
-  join ret99(retv100: string) -> string {
-    retv100
+  join ret139(retv140: string) -> string {
+    retv140
   } in
-  join k101(jp102: string) -> string {
-    jump ret99(jp102)
+  join k141(jp142: string) -> string {
+    jump ret139(jp142)
   } in
   match res/5 {
     Tag_0 => {
-      let x74 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x74 in
-      let t103 = ("ok " + value/6) in
-      jump k101(t103)
+      let x114 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x114 in
+      let t143 = ("ok " + value/6) in
+      jump k141(t143)
     },
     Tag_1 => {
-      let x75 = Result__string__string::Err._0(res/5) in
-      let err/7 = x75 in
-      let t104 = ("err " + err/7) in
-      jump k101(t104)
+      let x115 = Result__string__string::Err._0(res/5) in
+      let err/7 = x115 in
+      let t144 = ("err " + err/7) in
+      jump k141(t144)
     },
   }
 }
 
 fn main() -> unit {
-  join ret105() -> unit {
+  join ret145() -> unit {
     ()
   } in
-  let t106 = decorate_text(true) in
-  let t107 = show(t106) in
-  let _wild76 = println__T_string(t107) in
-  let t108 = decorate_text(false) in
-  let t109 = show(t108) in
-  let _wild77 = println__T_string(t109) in
-  jump ret105()
+  let t146 = decorate_text(true) in
+  let t147 = show(t146) in
+  let _wild116 = println__T_string(t147) in
+  let t148 = decorate_text(false) in
+  let t149 = show(t148) in
+  let _wild117 = println__T_string(t149) in
+  jump ret145()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret110() -> unit {
+  join ret150() -> unit {
     ()
   } in
-  let t111 = trait_impl#ToString#string#to_string(value/1) in
-  let t112 = @runtime(core.string_println)(t111) in
-  jump ret110()
+  let t151 = trait_impl#ToString#string#to_string(value/1) in
+  let t152 = @runtime(core.string_println)(t151) in
+  jump ret150()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret113(retv114: string) -> string {
-    retv114
+  join ret153(retv154: string) -> string {
+    retv154
   } in
-  jump ret113(self/38)
+  jump ret153(self/38)
 }

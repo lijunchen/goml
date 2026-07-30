@@ -13,11 +13,11 @@ fn step(i/0: int32) -> Option__int32 {
 fn accumulate(limit/1: int32) -> Option__int32 {
   let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild73 = while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
+  let _wild113 = while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
       {
         let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-        let _wild68 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
-        let _wild69 = if trait_impl#Eq#int32#eq(cur/4, 1) {
+        let _wild108 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
+        let _wild109 = if trait_impl#Eq#int32#eq(cur/4, 1) {
             {
               continue
             }
@@ -27,23 +27,23 @@ fn accumulate(limit/1: int32) -> Option__int32 {
             }
         } in
         let value/5 = {
-          let mtmp70 = step(cur/4) in
-          match mtmp70 {
+          let mtmp110 = step(cur/4) in
+          match mtmp110 {
             Option__int32::None => {
               return Option__int32::None
             },
-            Option__int32::Some(x71) => {
+            Option__int32::Some(x111) => {
               {
-                let x71 = Option__int32::Some._0(mtmp70) in
+                let x111 = Option__int32::Some._0(mtmp110) in
                 {
-                  let try_value/43 = x71 in
+                  let try_value/43 = x111 in
                   try_value/43
                 }
               }
             },
           }
         } in
-        let _wild72 = inherent#Ref#Ref[T]#set__T_int32(sum/2, (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)) in
+        let _wild112 = inherent#Ref#Ref[T]#set__T_int32(sum/2, (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)) in
       }
   } in
   Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(sum/2))
@@ -54,11 +54,11 @@ fn show(opt/6: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x74) => {
+    Option__int32::Some(x114) => {
       {
-        let x74 = Option__int32::Some._0(opt/6) in
+        let x114 = Option__int32::Some._0(opt/6) in
         {
-          let value/7 = x74 in
+          let value/7 = x114 in
           ("some=" + inherent#int32#int32#to_string(value/7))
         }
       }
@@ -67,8 +67,8 @@ fn show(opt/6: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild75 = println__T_string(show(accumulate(2))) in
-  let _wild76 = println__T_string(show(accumulate(4))) in
+  let _wild115 = println__T_string(show(accumulate(2))) in
+  let _wild116 = println__T_string(show(accumulate(4))) in
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {

@@ -12,22 +12,22 @@ fn parse(flag/0: bool) -> Result__int32__string {
 
 fn compute(flag/1: bool) -> Result__int32__string {
   let value/2 = {
-    let mtmp68 = parse(flag/1) in
-    match mtmp68 {
-      Result__int32__string::Err(x69) => {
+    let mtmp108 = parse(flag/1) in
+    match mtmp108 {
+      Result__int32__string::Err(x109) => {
         {
-          let x69 = Result__int32__string::Err._0(mtmp68) in
+          let x109 = Result__int32__string::Err._0(mtmp108) in
           {
-            let try_residual/12 = x69 in
+            let try_residual/12 = x109 in
             return Result__int32__string::Err(try_residual/12)
           }
         }
       },
-      Result__int32__string::Ok(x70) => {
+      Result__int32__string::Ok(x110) => {
         {
-          let x70 = Result__int32__string::Ok._0(mtmp68) in
+          let x110 = Result__int32__string::Ok._0(mtmp108) in
           {
-            let try_value/12 = x70 in
+            let try_value/12 = x110 in
             try_value/12
           }
         }
@@ -39,20 +39,20 @@ fn compute(flag/1: bool) -> Result__int32__string {
 
 fn show(value/3: Result__int32__string) -> string {
   match value/3 {
-    Result__int32__string::Err(x71) => {
+    Result__int32__string::Err(x111) => {
       {
-        let x71 = Result__int32__string::Err._0(value/3) in
+        let x111 = Result__int32__string::Err._0(value/3) in
         {
-          let error/5 = x71 in
+          let error/5 = x111 in
           error/5
         }
       }
     },
-    Result__int32__string::Ok(x72) => {
+    Result__int32__string::Ok(x112) => {
       {
-        let x72 = Result__int32__string::Ok._0(value/3) in
+        let x112 = Result__int32__string::Ok._0(value/3) in
         {
-          let value/4 = x72 in
+          let value/4 = x112 in
           inherent#int32#int32#to_string(value/4)
         }
       }
@@ -61,7 +61,7 @@ fn show(value/3: Result__int32__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild73 = println__T_string(show(compute(true))) in
+  let _wild113 = println__T_string(show(compute(true))) in
   println__T_string(show(compute(false)))
 }
 

@@ -1,490 +1,370 @@
 fn trait_impl#Eq#FloatKey#eq(self/0: FloatKey, other/1: FloatKey) -> bool {
-  join ret115(retv116: bool) -> bool {
-    retv116
+  join ret155(retv156: bool) -> bool {
+    retv156
   } in
-  join k117(jp118: bool) -> bool {
-    jump ret115(jp118)
+  join k157(jp158: bool) -> bool {
+    jump ret155(jp158)
   } in
   if true {
-    let t119 = FloatKey.value(self/0) in
-    let t120 = FloatKey.value(other/1) in
-    let t121 = trait_impl#Eq#float64#eq(t119, t120) in
-    jump k117(t121)
+    let t159 = FloatKey.value(self/0) in
+    let t160 = FloatKey.value(other/1) in
+    let t161 = trait_impl#Eq#float64#eq(t159, t160) in
+    jump k157(t161)
   } else {
-    jump k117(false)
+    jump k157(false)
   }
 }
 
 fn trait_impl#Hash#FloatKey#hash(self/2: FloatKey) -> uint64 {
-  join ret122(retv123: uint64) -> uint64 {
-    retv123
+  join ret162(retv163: uint64) -> uint64 {
+    retv163
   } in
   let h/3 = 14695981039346656037 in
-  let t124 = (h/3 * 1099511628211) in
-  let t125 = FloatKey.value(self/2) in
-  let t126 = trait_impl#Hash#float64#hash(t125) in
-  let h/4 = (t124 + t126) in
-  jump ret122(h/4)
+  let t164 = (h/3 * 1099511628211) in
+  let t165 = FloatKey.value(self/2) in
+  let t166 = trait_impl#Hash#float64#hash(t165) in
+  let h/4 = (t164 + t166) in
+  jump ret162(h/4)
 }
 
 fn trait_impl#Eq#CollisionKey#eq(self/5: CollisionKey, other/6: CollisionKey) -> bool {
-  join ret127(retv128: bool) -> bool {
-    retv128
+  join ret167(retv168: bool) -> bool {
+    retv168
   } in
-  let t129 = CollisionKey.value(self/5) in
-  let t130 = CollisionKey.value(other/6) in
-  let t131 = trait_impl#Eq#int32#eq(t129, t130) in
-  jump ret127(t131)
+  let t169 = CollisionKey.value(self/5) in
+  let t170 = CollisionKey.value(other/6) in
+  let t171 = trait_impl#Eq#int32#eq(t169, t170) in
+  jump ret167(t171)
 }
 
 fn trait_impl#Hash#CollisionKey#hash(self/7: CollisionKey) -> uint64 {
-  join ret132(retv133: uint64) -> uint64 {
-    retv133
+  join ret172(retv173: uint64) -> uint64 {
+    retv173
   } in
-  jump ret132(1)
+  jump ret172(1)
 }
 
 fn print_opt_string(value/8: Option__string) -> unit {
-  join ret134() -> unit {
+  join ret174() -> unit {
     ()
   } in
-  join k135() -> unit {
-    jump ret134()
+  join k175() -> unit {
+    jump ret174()
   } in
   match value/8 {
     Tag_0 => {
-      let t136 = println__T_string("none") in
-      jump k135()
+      let t176 = println__T_string("none") in
+      jump k175()
     },
     Tag_1 => {
-      let x68 = Option__string::Some._0(value/8) in
-      let text/9 = x68 in
-      let t137 = println__T_string(text/9) in
-      jump k135()
+      let x108 = Option__string::Some._0(value/8) in
+      let text/9 = x108 in
+      let t177 = println__T_string(text/9) in
+      jump k175()
     },
   }
 }
 
 fn print_opt_int(value/10: Option__int32) -> unit {
-  join ret138() -> unit {
+  join ret178() -> unit {
     ()
   } in
-  join k139() -> unit {
-    jump ret138()
+  join k179() -> unit {
+    jump ret178()
   } in
   match value/10 {
     Tag_0 => {
-      let t140 = println__T_string("none") in
-      jump k139()
+      let t180 = println__T_string("none") in
+      jump k179()
     },
     Tag_1 => {
-      let x69 = Option__int32::Some._0(value/10) in
-      let number/11 = x69 in
-      let t141 = println__T_int32(number/11) in
-      jump k139()
+      let x109 = Option__int32::Some._0(value/10) in
+      let number/11 = x109 in
+      let t181 = println__T_int32(number/11) in
+      jump k179()
     },
   }
 }
 
 fn float_zero_contracts() -> unit {
-  join ret142() -> unit {
+  join ret182() -> unit {
     ()
   } in
   let zero32/12 = 0 in
   let negative_zero32/13 = (-zero32/12) in
-  let t143 = trait_impl#Hash#float32#hash(zero32/12) in
-  let t144 = trait_impl#Hash#float32#hash(negative_zero32/13) in
-  let t145 = trait_impl#Eq#uint64#eq(t143, t144) in
-  let t146 = trait_impl#ToString#bool#to_string(t145) in
-  let _wild70 = println__T_string(t146) in
+  let t183 = trait_impl#Hash#float32#hash(zero32/12) in
+  let t184 = trait_impl#Hash#float32#hash(negative_zero32/13) in
+  let t185 = trait_impl#Eq#uint64#eq(t183, t184) in
+  let t186 = trait_impl#ToString#bool#to_string(t185) in
+  let _wild110 = println__T_string(t186) in
   let values32/14 = inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() in
-  let _wild71 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
-  let t147 = inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13) in
-  let _wild72 = print_opt_string(t147) in
-  let _wild73 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, negative_zero32/13, "f32-updated") in
-  let t148 = inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14) in
-  let _wild74 = println__T_int(t148) in
-  let t149 = inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, zero32/12) in
-  let _wild75 = print_opt_string(t149) in
-  let _wild76 = inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(values32/14, negative_zero32/13) in
-  let t150 = inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14) in
-  let _wild77 = println__T_int(t150) in
+  let _wild111 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
+  let t187 = inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13) in
+  let _wild112 = print_opt_string(t187) in
+  let _wild113 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, negative_zero32/13, "f32-updated") in
+  let t188 = inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14) in
+  let _wild114 = println__T_int(t188) in
+  let t189 = inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, zero32/12) in
+  let _wild115 = print_opt_string(t189) in
+  let _wild116 = inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(values32/14, negative_zero32/13) in
+  let t190 = inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14) in
+  let _wild117 = println__T_int(t190) in
   let zero64/15 = 0 in
   let negative_zero64/16 = (-zero64/15) in
-  let t151 = trait_impl#Hash#float64#hash(zero64/15) in
-  let t152 = trait_impl#Hash#float64#hash(negative_zero64/16) in
-  let t153 = trait_impl#Eq#uint64#eq(t151, t152) in
-  let t154 = trait_impl#ToString#bool#to_string(t153) in
-  let _wild78 = println__T_string(t154) in
+  let t191 = trait_impl#Hash#float64#hash(zero64/15) in
+  let t192 = trait_impl#Hash#float64#hash(negative_zero64/16) in
+  let t193 = trait_impl#Eq#uint64#eq(t191, t192) in
+  let t194 = trait_impl#ToString#bool#to_string(t193) in
+  let _wild118 = println__T_string(t194) in
   let values64/17 = inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() in
-  let _wild79 = inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(values64/17, zero64/15, "f64") in
-  let t155 = inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(values64/17, negative_zero64/16) in
-  let _wild80 = print_opt_string(t155) in
+  let _wild119 = inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(values64/17, zero64/15, "f64") in
+  let t195 = inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(values64/17, negative_zero64/16) in
+  let _wild120 = print_opt_string(t195) in
   let derived/18 = inherent#HashMap#HashMap[K,V]#new__K_FloatKey__V_string() in
-  let t156 = FloatKey { value: zero64/15 } in
-  let _wild81 = inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(derived/18, t156, "derived") in
-  let t157 = FloatKey { value: negative_zero64/16 } in
-  let t158 = inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(derived/18, t157) in
-  let _wild82 = print_opt_string(t158) in
-  jump ret142()
+  let t196 = FloatKey { value: zero64/15 } in
+  let _wild121 = inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(derived/18, t196, "derived") in
+  let t197 = FloatKey { value: negative_zero64/16 } in
+  let t198 = inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(derived/18, t197) in
+  let _wild122 = print_opt_string(t198) in
+  jump ret182()
 }
 
 fn collision_contracts() -> unit {
-  join ret159() -> unit {
+  join ret199() -> unit {
     ()
   } in
   let values/19 = inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() in
-  let t160 = CollisionKey { value: 1 } in
-  let _wild83 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t160, 10) in
-  let t161 = CollisionKey { value: 2 } in
-  let _wild84 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t161, 20) in
-  let t162 = CollisionKey { value: 3 } in
-  let _wild85 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t162, 30) in
-  let t163 = CollisionKey { value: 2 } in
-  let _wild86 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t163) in
-  let t164 = CollisionKey { value: 1 } in
-  let t165 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t164) in
-  let _wild87 = print_opt_int(t165) in
-  let t166 = CollisionKey { value: 2 } in
-  let t167 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t166) in
-  let _wild88 = print_opt_int(t167) in
-  let t168 = CollisionKey { value: 3 } in
-  let t169 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t168) in
-  let _wild89 = print_opt_int(t169) in
-  let t170 = CollisionKey { value: 4 } in
-  let _wild90 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t170, 40) in
-  let t171 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
-  let _wild91 = println__T_int(t171) in
-  let t172 = CollisionKey { value: 4 } in
-  let t173 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t172) in
-  let _wild92 = print_opt_int(t173) in
-  let t174 = CollisionKey { value: 4 } in
-  let _wild93 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t174, 41) in
-  let t175 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
-  let _wild94 = println__T_int(t175) in
-  let t176 = CollisionKey { value: 4 } in
-  let t177 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t176) in
-  let _wild95 = print_opt_int(t177) in
-  let t178 = CollisionKey { value: 99 } in
-  let _wild96 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t178) in
-  let t179 = CollisionKey { value: 99 } in
-  let _wild97 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t179) in
-  let t180 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
-  let _wild98 = println__T_int(t180) in
+  let t200 = CollisionKey { value: 1 } in
+  let _wild123 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t200, 10) in
+  let t201 = CollisionKey { value: 2 } in
+  let _wild124 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t201, 20) in
+  let t202 = CollisionKey { value: 3 } in
+  let _wild125 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t202, 30) in
+  let t203 = CollisionKey { value: 2 } in
+  let _wild126 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t203) in
+  let t204 = CollisionKey { value: 1 } in
+  let t205 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t204) in
+  let _wild127 = print_opt_int(t205) in
+  let t206 = CollisionKey { value: 2 } in
+  let t207 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t206) in
+  let _wild128 = print_opt_int(t207) in
+  let t208 = CollisionKey { value: 3 } in
+  let t209 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t208) in
+  let _wild129 = print_opt_int(t209) in
+  let t210 = CollisionKey { value: 4 } in
+  let _wild130 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t210, 40) in
+  let t211 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
+  let _wild131 = println__T_int(t211) in
+  let t212 = CollisionKey { value: 4 } in
+  let t213 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t212) in
+  let _wild132 = print_opt_int(t213) in
+  let t214 = CollisionKey { value: 4 } in
+  let _wild133 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t214, 41) in
+  let t215 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
+  let _wild134 = println__T_int(t215) in
+  let t216 = CollisionKey { value: 4 } in
+  let t217 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t216) in
+  let _wild135 = print_opt_int(t217) in
+  let t218 = CollisionKey { value: 99 } in
+  let _wild136 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t218) in
+  let t219 = CollisionKey { value: 99 } in
+  let _wild137 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t219) in
+  let t220 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
+  let _wild138 = println__T_int(t220) in
   let index/20 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit181() -> unit {
-    let _wild102 = () in
-    let t182 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
-    let _wild103 = println__T_int(t182) in
-    jump ret159()
+  join exit221() -> unit {
+    let _wild142 = () in
+    let t222 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
+    let _wild143 = println__T_int(t222) in
+    jump ret199()
   } in
   joinrec {
-    join loop183() -> unit {
-      let t184 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
-      let t185 = (t184 < 2000) in
-      if t185 {
-        let t186 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
-        let t187 = (1000 + t186) in
-        let key/21 = CollisionKey { value: t187 } in
-        let t188 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
-        let _wild99 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, key/21, t188) in
-        let _wild100 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, key/21) in
-        let t189 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
-        let t190 = (t189 + 1) in
-        let _wild101 = inherent#Ref#Ref[T]#set__T_int32(index/20, t190) in
-        jump loop183()
+    join loop223() -> unit {
+      let t224 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
+      let t225 = (t224 < 2000) in
+      if t225 {
+        let t226 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
+        let t227 = (1000 + t226) in
+        let key/21 = CollisionKey { value: t227 } in
+        let t228 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
+        let _wild139 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, key/21, t228) in
+        let _wild140 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, key/21) in
+        let t229 = inherent#Ref#Ref[T]#get__T_int32(index/20) in
+        let t230 = (t229 + 1) in
+        let _wild141 = inherent#Ref#Ref[T]#set__T_int32(index/20, t230) in
+        jump loop223()
       } else {
-        jump exit181()
+        jump exit221()
       }
     } in
   } in
-  jump loop183()
+  jump loop223()
 }
 
 fn reference_contracts() -> unit {
-  join ret191() -> unit {
-    ()
-  } in
-  let values/22 = inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() in
-  let t192 = CollisionKey { value: 1 } in
-  let key/23 = inherent#Ref#Ref[T]#new__T_CollisionKey(t192) in
-  let alias/24 = key/23 in
-  let t193 = CollisionKey { value: 1 } in
-  let equal_value/25 = inherent#Ref#Ref[T]#new__T_CollisionKey(t193) in
-  let _wild104 = inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(values/22, key/23, "identity") in
-  let t194 = trait_impl#Eq#Ref[CollisionKey]#eq(key/23, alias/24) in
-  let _wild105 = println__T_bool(t194) in
-  let t195 = trait_impl#Eq#Ref[CollisionKey]#eq(key/23, equal_value/25) in
-  let _wild106 = println__T_bool(t195) in
-  let t196 = trait_impl#Hash#Ref[CollisionKey]#hash(key/23) in
-  let t197 = trait_impl#Hash#Ref[CollisionKey]#hash(alias/24) in
-  let t198 = trait_impl#Eq#uint64#eq(t196, t197) in
-  let _wild107 = println__T_bool(t198) in
-  let t199 = inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, alias/24) in
-  let _wild108 = print_opt_string(t199) in
-  let t200 = inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, equal_value/25) in
-  let _wild109 = print_opt_string(t200) in
-  let t201 = CollisionKey { value: 99 } in
-  let _wild110 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/23, t201) in
-  let t202 = inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, key/23) in
-  let _wild111 = print_opt_string(t202) in
-  jump ret191()
-}
-
-fn main() -> unit {
-  join ret203() -> unit {
-    ()
-  } in
-  let _wild112 = float_zero_contracts() in
-  let _wild113 = collision_contracts() in
-  let _wild114 = reference_contracts() in
-  jump ret203()
-}
-
-fn trait_impl#Eq#float64#eq(self/79: float64, other/80: float64) -> bool {
-  join ret204(retv205: bool) -> bool {
-    retv205
-  } in
-  let t206 = @intrinsic(eq.primitive)(self/79, other/80) in
-  jump ret204(t206)
-}
-
-fn trait_impl#Hash#float64#hash(self/95: float64) -> uint64 {
-  join ret207(retv208: uint64) -> uint64 {
-    retv208
-  } in
-  let t209 = @runtime(core.float64_hash)(self/95) in
-  jump ret207(t209)
-}
-
-fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret210(retv211: bool) -> bool {
-    retv211
-  } in
-  let t212 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret210(t212)
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret213() -> unit {
-    ()
-  } in
-  let t214 = trait_impl#ToString#string#to_string(value/1) in
-  let t215 = @runtime(core.string_println)(t214) in
-  jump ret213()
-}
-
-fn println__T_int32(value/1: int32) -> unit {
-  join ret216() -> unit {
-    ()
-  } in
-  let t217 = trait_impl#ToString#int32#to_string(value/1) in
-  let t218 = @runtime(core.string_println)(t217) in
-  jump ret216()
-}
-
-fn trait_impl#Hash#float32#hash(self/94: float32) -> uint64 {
-  join ret219(retv220: uint64) -> uint64 {
-    retv220
-  } in
-  let t221 = @runtime(core.float32_hash)(self/94) in
-  jump ret219(t221)
-}
-
-fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
-  join ret222(retv223: bool) -> bool {
-    retv223
-  } in
-  let t224 = @intrinsic(eq.primitive)(self/75, other/76) in
-  jump ret222(t224)
-}
-
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret225(retv226: string) -> string {
-    retv226
-  } in
-  let t227 = @runtime(core.bool_to_string)(self/37) in
-  jump ret225(t227)
-}
-
-fn inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() -> HashMap[float32, string] {
-  join ret228(retv229: HashMap[float32, string]) -> HashMap[float32, string] {
-    retv229
-  } in
-  let t230 = @intrinsic(hashmap.new)() in
-  jump ret228(t230)
-}
-
-fn inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(self/198: HashMap[float32, string], key/199: float32, value/200: string) -> unit {
   join ret231() -> unit {
     ()
   } in
-  let t232 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  let values/22 = inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() in
+  let t232 = CollisionKey { value: 1 } in
+  let key/23 = inherent#Ref#Ref[T]#new__T_CollisionKey(t232) in
+  let alias/24 = key/23 in
+  let t233 = CollisionKey { value: 1 } in
+  let equal_value/25 = inherent#Ref#Ref[T]#new__T_CollisionKey(t233) in
+  let _wild144 = inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(values/22, key/23, "identity") in
+  let t234 = trait_impl#Eq#Ref[CollisionKey]#eq(key/23, alias/24) in
+  let _wild145 = println__T_bool(t234) in
+  let t235 = trait_impl#Eq#Ref[CollisionKey]#eq(key/23, equal_value/25) in
+  let _wild146 = println__T_bool(t235) in
+  let t236 = trait_impl#Hash#Ref[CollisionKey]#hash(key/23) in
+  let t237 = trait_impl#Hash#Ref[CollisionKey]#hash(alias/24) in
+  let t238 = trait_impl#Eq#uint64#eq(t236, t237) in
+  let _wild147 = println__T_bool(t238) in
+  let t239 = inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, alias/24) in
+  let _wild148 = print_opt_string(t239) in
+  let t240 = inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, equal_value/25) in
+  let _wild149 = print_opt_string(t240) in
+  let t241 = CollisionKey { value: 99 } in
+  let _wild150 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/23, t241) in
+  let t242 = inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, key/23) in
+  let _wild151 = print_opt_string(t242) in
   jump ret231()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(self/196: HashMap[float32, string], key/197: float32) -> Option__string {
-  join ret233(retv234: Option__string) -> Option__string {
-    retv234
-  } in
-  let t235 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret233(t235)
-}
-
-fn println__T_int(value/1: int) -> unit {
-  join ret236() -> unit {
+fn main() -> unit {
+  join ret243() -> unit {
     ()
   } in
-  let t237 = trait_impl#ToString#int#to_string(value/1) in
-  let t238 = @runtime(core.string_println)(t237) in
-  jump ret236()
+  let _wild152 = float_zero_contracts() in
+  let _wild153 = collision_contracts() in
+  let _wild154 = reference_contracts() in
+  jump ret243()
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(self/203: HashMap[float32, string]) -> int {
-  join ret239(retv240: int) -> int {
-    retv240
-  } in
-  let t241 = @intrinsic(hashmap.len)(self/203) in
-  jump ret239(t241)
-}
-
-fn inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(self/201: HashMap[float32, string], key/202: float32) -> unit {
-  join ret242() -> unit {
-    ()
-  } in
-  let t243 = @intrinsic(hashmap.remove)(self/201, key/202) in
-  jump ret242()
-}
-
-fn inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() -> HashMap[float64, string] {
-  join ret244(retv245: HashMap[float64, string]) -> HashMap[float64, string] {
+fn trait_impl#Eq#float64#eq(self/79: float64, other/80: float64) -> bool {
+  join ret244(retv245: bool) -> bool {
     retv245
   } in
-  let t246 = @intrinsic(hashmap.new)() in
+  let t246 = @intrinsic(eq.primitive)(self/79, other/80) in
   jump ret244(t246)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(self/198: HashMap[float64, string], key/199: float64, value/200: string) -> unit {
-  join ret247() -> unit {
+fn trait_impl#Hash#float64#hash(self/95: float64) -> uint64 {
+  join ret247(retv248: uint64) -> uint64 {
+    retv248
+  } in
+  let t249 = @runtime(core.float64_hash)(self/95) in
+  jump ret247(t249)
+}
+
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  join ret250(retv251: bool) -> bool {
+    retv251
+  } in
+  let t252 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret250(t252)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret253() -> unit {
     ()
   } in
-  let t248 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
-  jump ret247()
+  let t254 = trait_impl#ToString#string#to_string(value/1) in
+  let t255 = @runtime(core.string_println)(t254) in
+  jump ret253()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(self/196: HashMap[float64, string], key/197: float64) -> Option__string {
-  join ret249(retv250: Option__string) -> Option__string {
-    retv250
-  } in
-  let t251 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret249(t251)
-}
-
-fn inherent#HashMap#HashMap[K,V]#new__K_FloatKey__V_string() -> HashMap[FloatKey, string] {
-  join ret252(retv253: HashMap[FloatKey, string]) -> HashMap[FloatKey, string] {
-    retv253
-  } in
-  let t254 = @intrinsic(hashmap.new)() in
-  jump ret252(t254)
-}
-
-fn inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(self/198: HashMap[FloatKey, string], key/199: FloatKey, value/200: string) -> unit {
-  join ret255() -> unit {
+fn println__T_int32(value/1: int32) -> unit {
+  join ret256() -> unit {
     ()
   } in
-  let t256 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
-  jump ret255()
+  let t257 = trait_impl#ToString#int32#to_string(value/1) in
+  let t258 = @runtime(core.string_println)(t257) in
+  jump ret256()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(self/196: HashMap[FloatKey, string], key/197: FloatKey) -> Option__string {
-  join ret257(retv258: Option__string) -> Option__string {
-    retv258
+fn trait_impl#Hash#float32#hash(self/94: float32) -> uint64 {
+  join ret259(retv260: uint64) -> uint64 {
+    retv260
   } in
-  let t259 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret257(t259)
+  let t261 = @runtime(core.float32_hash)(self/94) in
+  jump ret259(t261)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() -> HashMap[CollisionKey, int32] {
-  join ret260(retv261: HashMap[CollisionKey, int32]) -> HashMap[CollisionKey, int32] {
-    retv261
+fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
+  join ret262(retv263: bool) -> bool {
+    retv263
   } in
-  let t262 = @intrinsic(hashmap.new)() in
-  jump ret260(t262)
+  let t264 = @intrinsic(eq.primitive)(self/75, other/76) in
+  jump ret262(t264)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(self/198: HashMap[CollisionKey, int32], key/199: CollisionKey, value/200: int32) -> unit {
-  join ret263() -> unit {
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  join ret265(retv266: string) -> string {
+    retv266
+  } in
+  let t267 = @runtime(core.bool_to_string)(self/37) in
+  jump ret265(t267)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() -> HashMap[float32, string] {
+  join ret268(retv269: HashMap[float32, string]) -> HashMap[float32, string] {
+    retv269
+  } in
+  let t270 = @intrinsic(hashmap.new)() in
+  jump ret268(t270)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(self/198: HashMap[float32, string], key/199: float32, value/200: string) -> unit {
+  join ret271() -> unit {
     ()
   } in
-  let t264 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
-  jump ret263()
+  let t272 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  jump ret271()
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(self/201: HashMap[CollisionKey, int32], key/202: CollisionKey) -> unit {
-  join ret265() -> unit {
-    ()
-  } in
-  let t266 = @intrinsic(hashmap.remove)(self/201, key/202) in
-  jump ret265()
-}
-
-fn inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(self/196: HashMap[CollisionKey, int32], key/197: CollisionKey) -> Option__int32 {
-  join ret267(retv268: Option__int32) -> Option__int32 {
-    retv268
-  } in
-  let t269 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret267(t269)
-}
-
-fn inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(self/203: HashMap[CollisionKey, int32]) -> int {
-  join ret270(retv271: int) -> int {
-    retv271
-  } in
-  let t272 = @intrinsic(hashmap.len)(self/203) in
-  jump ret270(t272)
-}
-
-fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
-  join ret273(retv274: Ref[int32]) -> Ref[int32] {
+fn inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(self/196: HashMap[float32, string], key/197: float32) -> Option__string {
+  join ret273(retv274: Option__string) -> Option__string {
     retv274
   } in
-  let t275 = @intrinsic(ref.new)(value/207) in
+  let t275 = @intrinsic(hashmap.get)(self/196, key/197) in
   jump ret273(t275)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
-  join ret276(retv277: int32) -> int32 {
-    retv277
-  } in
-  let t278 = @intrinsic(ref.get)(self/208) in
-  jump ret276(t278)
-}
-
-fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
-  join ret279() -> unit {
+fn println__T_int(value/1: int) -> unit {
+  join ret276() -> unit {
     ()
   } in
-  let t280 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret279()
+  let t277 = trait_impl#ToString#int#to_string(value/1) in
+  let t278 = @runtime(core.string_println)(t277) in
+  jump ret276()
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() -> HashMap[Ref[CollisionKey], string] {
-  join ret281(retv282: HashMap[Ref[CollisionKey], string]) -> HashMap[Ref[CollisionKey], string] {
-    retv282
+fn inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(self/203: HashMap[float32, string]) -> int {
+  join ret279(retv280: int) -> int {
+    retv280
   } in
-  let t283 = @intrinsic(hashmap.new)() in
-  jump ret281(t283)
+  let t281 = @intrinsic(hashmap.len)(self/203) in
+  jump ret279(t281)
 }
 
-fn inherent#Ref#Ref[T]#new__T_CollisionKey(value/207: CollisionKey) -> Ref[CollisionKey] {
-  join ret284(retv285: Ref[CollisionKey]) -> Ref[CollisionKey] {
+fn inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(self/201: HashMap[float32, string], key/202: float32) -> unit {
+  join ret282() -> unit {
+    ()
+  } in
+  let t283 = @intrinsic(hashmap.remove)(self/201, key/202) in
+  jump ret282()
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() -> HashMap[float64, string] {
+  join ret284(retv285: HashMap[float64, string]) -> HashMap[float64, string] {
     retv285
   } in
-  let t286 = @intrinsic(ref.new)(value/207) in
+  let t286 = @intrinsic(hashmap.new)() in
   jump ret284(t286)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(self/198: HashMap[Ref[CollisionKey], string], key/199: Ref[CollisionKey], value/200: string) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(self/198: HashMap[float64, string], key/199: float64, value/200: string) -> unit {
   join ret287() -> unit {
     ()
   } in
@@ -492,82 +372,202 @@ fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(self/198: Ha
   jump ret287()
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  join ret289() -> unit {
-    ()
+fn inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(self/196: HashMap[float64, string], key/197: float64) -> Option__string {
+  join ret289(retv290: Option__string) -> Option__string {
+    retv290
   } in
-  let t290 = trait_impl#ToString#bool#to_string(value/1) in
-  let t291 = @runtime(core.string_println)(t290) in
-  jump ret289()
+  let t291 = @intrinsic(hashmap.get)(self/196, key/197) in
+  jump ret289(t291)
 }
 
-fn trait_impl#Eq#Ref[CollisionKey]#eq(self/96: Ref[CollisionKey], other/97: Ref[CollisionKey]) -> bool {
-  join ret292(retv293: bool) -> bool {
+fn inherent#HashMap#HashMap[K,V]#new__K_FloatKey__V_string() -> HashMap[FloatKey, string] {
+  join ret292(retv293: HashMap[FloatKey, string]) -> HashMap[FloatKey, string] {
     retv293
   } in
-  let t294 = @intrinsic(ref.ptr_eq)(self/96, other/97) in
+  let t294 = @intrinsic(hashmap.new)() in
   jump ret292(t294)
 }
 
-fn trait_impl#Hash#Ref[CollisionKey]#hash(self/98: Ref[CollisionKey]) -> uint64 {
-  join ret295(retv296: uint64) -> uint64 {
-    retv296
+fn inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(self/198: HashMap[FloatKey, string], key/199: FloatKey, value/200: string) -> unit {
+  join ret295() -> unit {
+    ()
   } in
-  let t297 = @intrinsic(ref.ptr_hash)(self/98) in
-  jump ret295(t297)
+  let t296 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  jump ret295()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(self/196: HashMap[FloatKey, string], key/197: FloatKey) -> Option__string {
+  join ret297(retv298: Option__string) -> Option__string {
+    retv298
+  } in
+  let t299 = @intrinsic(hashmap.get)(self/196, key/197) in
+  jump ret297(t299)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() -> HashMap[CollisionKey, int32] {
+  join ret300(retv301: HashMap[CollisionKey, int32]) -> HashMap[CollisionKey, int32] {
+    retv301
+  } in
+  let t302 = @intrinsic(hashmap.new)() in
+  jump ret300(t302)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(self/198: HashMap[CollisionKey, int32], key/199: CollisionKey, value/200: int32) -> unit {
+  join ret303() -> unit {
+    ()
+  } in
+  let t304 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  jump ret303()
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(self/201: HashMap[CollisionKey, int32], key/202: CollisionKey) -> unit {
+  join ret305() -> unit {
+    ()
+  } in
+  let t306 = @intrinsic(hashmap.remove)(self/201, key/202) in
+  jump ret305()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(self/196: HashMap[CollisionKey, int32], key/197: CollisionKey) -> Option__int32 {
+  join ret307(retv308: Option__int32) -> Option__int32 {
+    retv308
+  } in
+  let t309 = @intrinsic(hashmap.get)(self/196, key/197) in
+  jump ret307(t309)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(self/203: HashMap[CollisionKey, int32]) -> int {
+  join ret310(retv311: int) -> int {
+    retv311
+  } in
+  let t312 = @intrinsic(hashmap.len)(self/203) in
+  jump ret310(t312)
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
+  join ret313(retv314: Ref[int32]) -> Ref[int32] {
+    retv314
+  } in
+  let t315 = @intrinsic(ref.new)(value/207) in
+  jump ret313(t315)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
+  join ret316(retv317: int32) -> int32 {
+    retv317
+  } in
+  let t318 = @intrinsic(ref.get)(self/208) in
+  jump ret316(t318)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
+  join ret319() -> unit {
+    ()
+  } in
+  let t320 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret319()
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() -> HashMap[Ref[CollisionKey], string] {
+  join ret321(retv322: HashMap[Ref[CollisionKey], string]) -> HashMap[Ref[CollisionKey], string] {
+    retv322
+  } in
+  let t323 = @intrinsic(hashmap.new)() in
+  jump ret321(t323)
+}
+
+fn inherent#Ref#Ref[T]#new__T_CollisionKey(value/207: CollisionKey) -> Ref[CollisionKey] {
+  join ret324(retv325: Ref[CollisionKey]) -> Ref[CollisionKey] {
+    retv325
+  } in
+  let t326 = @intrinsic(ref.new)(value/207) in
+  jump ret324(t326)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(self/198: HashMap[Ref[CollisionKey], string], key/199: Ref[CollisionKey], value/200: string) -> unit {
+  join ret327() -> unit {
+    ()
+  } in
+  let t328 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  jump ret327()
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  join ret329() -> unit {
+    ()
+  } in
+  let t330 = trait_impl#ToString#bool#to_string(value/1) in
+  let t331 = @runtime(core.string_println)(t330) in
+  jump ret329()
+}
+
+fn trait_impl#Eq#Ref[CollisionKey]#eq(self/96: Ref[CollisionKey], other/97: Ref[CollisionKey]) -> bool {
+  join ret332(retv333: bool) -> bool {
+    retv333
+  } in
+  let t334 = @intrinsic(ref.ptr_eq)(self/96, other/97) in
+  jump ret332(t334)
+}
+
+fn trait_impl#Hash#Ref[CollisionKey]#hash(self/98: Ref[CollisionKey]) -> uint64 {
+  join ret335(retv336: uint64) -> uint64 {
+    retv336
+  } in
+  let t337 = @intrinsic(ref.ptr_hash)(self/98) in
+  jump ret335(t337)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(self/196: HashMap[Ref[CollisionKey], string], key/197: Ref[CollisionKey]) -> Option__string {
-  join ret298(retv299: Option__string) -> Option__string {
-    retv299
+  join ret338(retv339: Option__string) -> Option__string {
+    retv339
   } in
-  let t300 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret298(t300)
+  let t340 = @intrinsic(hashmap.get)(self/196, key/197) in
+  jump ret338(t340)
 }
 
 fn inherent#Ref#Ref[T]#set__T_CollisionKey(self/209: Ref[CollisionKey], value/210: CollisionKey) -> unit {
-  join ret301() -> unit {
+  join ret341() -> unit {
     ()
   } in
-  let t302 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret301()
+  let t342 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret341()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret303(retv304: string) -> string {
-    retv304
+  join ret343(retv344: string) -> string {
+    retv344
   } in
-  jump ret303(self/38)
+  jump ret343(self/38)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret305(retv306: string) -> string {
-    retv306
+  join ret345(retv346: string) -> string {
+    retv346
   } in
-  let t307 = @runtime(core.int32_to_string)(self/43) in
-  jump ret305(t307)
+  let t347 = @runtime(core.int32_to_string)(self/43) in
+  jump ret345(t347)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret308(retv309: string) -> string {
-    retv309
+  join ret348(retv349: string) -> string {
+    retv349
   } in
-  let t310 = @runtime(core.int_to_string)(self/40) in
-  jump ret308(t310)
+  let t350 = @runtime(core.int_to_string)(self/40) in
+  jump ret348(t350)
 }
 
 fn trait_impl#Eq#float32#eq(self/77: float32, other/78: float32) -> bool {
-  join ret311(retv312: bool) -> bool {
-    retv312
+  join ret351(retv352: bool) -> bool {
+    retv352
   } in
-  let t313 = @intrinsic(eq.primitive)(self/77, other/78) in
-  jump ret311(t313)
+  let t353 = @intrinsic(eq.primitive)(self/77, other/78) in
+  jump ret351(t353)
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret314(retv315: uint64) -> uint64 {
-    retv315
+  join ret354(retv355: uint64) -> uint64 {
+    retv355
   } in
-  let t316 = @runtime(core.int32_hash)(self/88) in
-  jump ret314(t316)
+  let t356 = @runtime(core.int32_hash)(self/88) in
+  jump ret354(t356)
 }

@@ -15,25 +15,25 @@ fn maybe_secondary(flag/1: bool) -> Option__int32 {
 }
 
 fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
-  let value/4 = let mtmp68 = maybe_primary(primary/2) in
-  match mtmp68 {
+  let value/4 = let mtmp108 = maybe_primary(primary/2) in
+  match mtmp108 {
     Option__int32::None => {
       return Option__string::None
     },
-    Option__int32::Some(x69) => {
-      let x69 = Option__int32::Some._0(mtmp68) in
-      let try_value/18 = x69 in
+    Option__int32::Some(x109) => {
+      let x109 = Option__int32::Some._0(mtmp108) in
+      let try_value/18 = x109 in
       try_value/18
     },
   } in
-  let label/6 = let mtmp70 = maybe_secondary(secondary/3) in
-  match mtmp70 {
+  let label/6 = let mtmp110 = maybe_secondary(secondary/3) in
+  match mtmp110 {
     Option__int32::None => {
       "extra=none"
     },
-    Option__int32::Some(x71) => {
-      let x71 = Option__int32::Some._0(mtmp70) in
-      let extra/5 = x71 in
+    Option__int32::Some(x111) => {
+      let x111 = Option__int32::Some._0(mtmp110) in
+      let extra/5 = x111 in
       ("extra=" + inherent#int32#int32#to_string(extra/5))
     },
   } in
@@ -45,18 +45,18 @@ fn show(opt/7: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x72) => {
-      let x72 = Option__string::Some._0(opt/7) in
-      let value/8 = x72 in
+    Option__string::Some(x112) => {
+      let x112 = Option__string::Some._0(opt/7) in
+      let value/8 = x112 in
       ("some=" + value/8)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild73 = println__T_string(show(mixed(true, true))) in
-  let _wild74 = println__T_string(show(mixed(true, false))) in
-  let _wild75 = println__T_string(show(mixed(false, true))) in
+  let _wild113 = println__T_string(show(mixed(true, true))) in
+  let _wild114 = println__T_string(show(mixed(true, false))) in
+  let _wild115 = println__T_string(show(mixed(false, true))) in
   ()
 }
 

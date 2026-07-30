@@ -1,59 +1,59 @@
 fn trait_impl#Mark#int32#mark(self/0: int32) -> string {
-  join ret69(retv70: string) -> string {
-    retv70
+  join ret109(retv110: string) -> string {
+    retv110
   } in
-  let t71 = inherent#int32#int32#to_string(self/0) in
-  let t72 = ("marked:" + t71) in
-  jump ret69(t72)
+  let t111 = inherent#int32#int32#to_string(self/0) in
+  let t112 = ("marked:" + t111) in
+  jump ret109(t112)
 }
 
 fn trait_impl#Container#[int32]@NumberBox#value(self/1: NumberBox) -> int32 {
-  join ret73(retv74: int32) -> int32 {
-    retv74
+  join ret113(retv114: int32) -> int32 {
+    retv114
   } in
-  let t75 = NumberBox.value(self/1) in
-  jump ret73(t75)
+  let t115 = NumberBox.value(self/1) in
+  jump ret113(t115)
 }
 
 fn main() -> unit {
-  join ret76() -> unit {
+  join ret116() -> unit {
     ()
   } in
-  let t77 = NumberBox { value: 7 } in
-  let t78 = describe__C_NumberBox__T_int32(t77) in
-  let _wild68 = println__T_string(t78) in
-  jump ret76()
+  let t117 = NumberBox { value: 7 } in
+  let t118 = describe__C_NumberBox__T_int32(t117) in
+  let _wild108 = println__T_string(t118) in
+  jump ret116()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret119(retv120: string) -> string {
+    retv120
   } in
-  let t81 = @runtime(core.int32_to_string)(self/6) in
-  jump ret79(t81)
+  let t121 = @runtime(core.int32_to_string)(self/6) in
+  jump ret119(t121)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret82() -> unit {
+  join ret122() -> unit {
     ()
   } in
-  let t83 = trait_impl#ToString#string#to_string(value/1) in
-  let t84 = @runtime(core.string_println)(t83) in
-  jump ret82()
+  let t123 = trait_impl#ToString#string#to_string(value/1) in
+  let t124 = @runtime(core.string_println)(t123) in
+  jump ret122()
 }
 
 fn describe__C_NumberBox__T_int32(container/2: NumberBox) -> string {
-  join ret85(retv86: string) -> string {
-    retv86
+  join ret125(retv126: string) -> string {
+    retv126
   } in
-  let t87 = trait_impl#Container#[int32]@NumberBox#value(container/2) in
-  let t88 = trait_impl#Mark#int32#mark(t87) in
-  jump ret85(t88)
+  let t127 = trait_impl#Container#[int32]@NumberBox#value(container/2) in
+  let t128 = trait_impl#Mark#int32#mark(t127) in
+  jump ret125(t128)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret89(retv90: string) -> string {
-    retv90
+  join ret129(retv130: string) -> string {
+    retv130
   } in
-  jump ret89(self/38)
+  jump ret129(self/38)
 }

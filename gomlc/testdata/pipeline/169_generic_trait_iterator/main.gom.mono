@@ -14,7 +14,7 @@ fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option__int32 {
   let current/7 = inherent#Ref#Ref[T]#get__T_int32(Counter.current(self/6)) in
   if (current/7 < Counter.end(self/6)) {
       {
-        let _wild68 = inherent#Ref#Ref[T]#set__T_int32(Counter.current(self/6), (current/7 + 1)) in
+        let _wild108 = inherent#Ref#Ref[T]#set__T_int32(Counter.current(self/6), (current/7 + 1)) in
         Option__int32::Some(current/7)
       }
   } else {
@@ -25,32 +25,32 @@ fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option__int32 {
 }
 
 fn main() -> unit {
-  let _wild69 = println__T_int32(trait_impl#Convert#[int32]@Token#convert(Token {})) in
-  let _wild70 = println__T_string(trait_impl#Convert#[string]@Token#convert(Token {})) in
+  let _wild109 = println__T_int32(trait_impl#Convert#[int32]@Token#convert(Token {})) in
+  let _wild110 = println__T_string(trait_impl#Convert#[string]@Token#convert(Token {})) in
   let converted/8 = convert_to__T_int32__V_Token(Token {}) in
-  let _wild71 = println__T_int32(converted/8) in
-  let _wild72 = println__T_string(trait_impl#Marker#[int32]@Any#marker(Any {})) in
-  let _wild73 = println__T_string(trait_impl#Marker#[string]@Any#marker(Any {})) in
-  let _wild74 = println__T_string(trait_impl#Marker#[Vec[int32]]@Any#marker(Any {})) in
+  let _wild111 = println__T_int32(converted/8) in
+  let _wild112 = println__T_string(trait_impl#Marker#[int32]@Any#marker(Any {})) in
+  let _wild113 = println__T_string(trait_impl#Marker#[string]@Any#marker(Any {})) in
+  let _wild114 = println__T_string(trait_impl#Marker#[Vec[int32]]@Any#marker(Any {})) in
   let mapped/10 = iterator_map__A_int32__B_int32__I_Counter(inherent#Counter#Counter#new(0, 8), |value/9| (value/9 * 2)) in
   let filtered/12 = iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(mapped/10, |value/11| (value/11 > 4)) in
   let limited/13 = iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](filtered/12, 3) in
-  let _wild79 = {
-    let for_iter75 = trait_impl#IntoIterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#into_iter(limited/13) in
+  let _wild119 = {
+    let for_iter115 = trait_impl#IntoIterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#into_iter(limited/13) in
     while true {
         {
-          let for_next76 = trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#next(for_iter75) in
-          match for_next76 {
+          let for_next116 = trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#next(for_iter115) in
+          match for_next116 {
             Option__int32::None => {
               break
             },
-            Option__int32::Some(x77) => {
+            Option__int32::Some(x117) => {
               {
-                let x77 = Option__int32::Some._0(for_next76) in
+                let x117 = Option__int32::Some._0(for_next116) in
                 {
-                  let value/14 = x77 in
+                  let value/14 = x117 in
                   {
-                    let _wild78 = println__T_int32(value/14) in
+                    let _wild118 = println__T_int32(value/14) in
                   }
                 }
               }
@@ -62,20 +62,20 @@ fn main() -> unit {
   let sum/17 = iterator_fold__A_int__I_FnIterator[int]__T_int(range(1, 5), 0, |total/15, value/16| {
     (total/15 + value/16)
   }) in
-  let _wild80 = println__T_int(sum/17) in
+  let _wild120 = println__T_int(sum/17) in
   let texts/19 = iterator_collect__I_MapIterator[int,string,FnIterator[int]]__T_string(iterator_map__A_int__B_string__I_FnIterator[int](range(1, 4), |value/18| ("v" + inherent#int#int#to_string(value/18)))) in
-  let _wild87 = {
-    let for_source81 = texts/19 in
-    let for_limit82 = @intrinsic(vec.len)(for_source81) in
-    let for_index83 = 0 in
-    while (for_index83 < for_limit82) {
+  let _wild127 = {
+    let for_source121 = texts/19 in
+    let for_limit122 = @intrinsic(vec.len)(for_source121) in
+    let for_index123 = 0 in
+    while (for_index123 < for_limit122) {
         {
-          let for_item84 = @intrinsic(vec.get)(for_source81, for_index83) in
-          let _wild85 = for_index83 = (for_index83 + 1) in
+          let for_item124 = @intrinsic(vec.get)(for_source121, for_index123) in
+          let _wild125 = for_index123 = (for_index123 + 1) in
           {
-            let text/20 = for_item84 in
+            let text/20 = for_item124 in
             {
-              let _wild86 = println__T_string(text/20) in
+              let _wild126 = println__T_string(text/20) in
             }
           }
         }

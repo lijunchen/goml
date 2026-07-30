@@ -28,44 +28,44 @@ func main0() struct{} {
     var b__2 Wrap__string = Wrap__string{
         value: "x",
     }
-    var t71 int32 = _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(a__1)
-    var t72 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t71)
-    println__T_string(t72)
-    var t73 int32 = _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(b__2)
-    var t74 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t73)
-    println__T_string(t74)
+    var t111 int32 = _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(a__1)
+    var t112 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t111)
+    println__T_string(t112)
+    var t113 int32 = _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(b__2)
+    var t114 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t113)
+    println__T_string(t114)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t76 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t76)
+    var t116 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t116)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(self__0 Wrap__int) int32 {
-    var retv79 int32
-    retv79 = 1
-    return retv79
+    var retv119 int32
+    retv119 = 1
+    return retv119
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv81 string
-    var t82 string = _goml_runtime_core_int32_to_string(self__6)
-    retv81 = t82
-    return retv81
+    var retv121 string
+    var t122 string = _goml_runtime_core_int32_to_string(self__6)
+    retv121 = t122
+    return retv121
 }
 
 func _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(self__0 Wrap__string) int32 {
-    var retv84 int32
-    retv84 = 1
-    return retv84
+    var retv124 int32
+    retv124 = 1
+    return retv124
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv86 string
-    retv86 = self__38
-    return retv86
+    var retv126 string
+    retv126 = self__38
+    return retv126
 }
 
 func main() {

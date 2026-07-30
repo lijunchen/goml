@@ -11,23 +11,23 @@ fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
 }
 
 fn render(ok/1: bool) -> Result__string__string {
-  let mtmp71 = {
-    let mtmp68 = split_host_port(ok/1) in
-    match mtmp68 {
-      Result__(string,string)__string::Ok(x69) => {
+  let mtmp111 = {
+    let mtmp108 = split_host_port(ok/1) in
+    match mtmp108 {
+      Result__(string,string)__string::Ok(x109) => {
         {
-          let x69 = Result__(string,string)__string::Ok._0(mtmp68) in
+          let x109 = Result__(string,string)__string::Ok._0(mtmp108) in
           {
-            let try_value/14 = x69 in
+            let try_value/14 = x109 in
             try_value/14
           }
         }
       },
-      Result__(string,string)__string::Err(x70) => {
+      Result__(string,string)__string::Err(x110) => {
         {
-          let x70 = Result__(string,string)__string::Err._0(mtmp68) in
+          let x110 = Result__(string,string)__string::Err._0(mtmp108) in
           {
-            let try_residual/14 = x70 in
+            let try_residual/14 = x110 in
             return Result__string__string::Err(try_residual/14)
           }
         }
@@ -35,12 +35,12 @@ fn render(ok/1: bool) -> Result__string__string {
     }
   } in
   {
-    let x72 = mtmp71.0 in
-    let x73 = mtmp71.1 in
+    let x112 = mtmp111.0 in
+    let x113 = mtmp111.1 in
     {
-      let port/3 = x73 in
+      let port/3 = x113 in
       {
-        let host/2 = x72 in
+        let host/2 = x112 in
         {
           Result__string__string::Ok(((host/2 + ":") + port/3))
         }
@@ -51,20 +51,20 @@ fn render(ok/1: bool) -> Result__string__string {
 
 fn show(res/4: Result__string__string) -> string {
   match res/4 {
-    Result__string__string::Ok(x74) => {
+    Result__string__string::Ok(x114) => {
       {
-        let x74 = Result__string__string::Ok._0(res/4) in
+        let x114 = Result__string__string::Ok._0(res/4) in
         {
-          let value/5 = x74 in
+          let value/5 = x114 in
           ("ok " + value/5)
         }
       }
     },
-    Result__string__string::Err(x75) => {
+    Result__string__string::Err(x115) => {
       {
-        let x75 = Result__string__string::Err._0(res/4) in
+        let x115 = Result__string__string::Err._0(res/4) in
         {
-          let err/6 = x75 in
+          let err/6 = x115 in
           ("err " + err/6)
         }
       }
@@ -73,8 +73,8 @@ fn show(res/4: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild76 = println__T_string(show(render(true))) in
-  let _wild77 = println__T_string(show(render(false))) in
+  let _wild116 = println__T_string(show(render(true))) in
+  let _wild117 = println__T_string(show(render(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {

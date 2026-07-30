@@ -33,103 +33,103 @@ const (
 )
 
 func point32_to_string(p__0 Point) string {
-    var retv80 string
-    var mtmp68 Point = p__0
-    var x69 int32 = mtmp68.x
-    var x70 int32 = mtmp68.y
-    var y__2 int32 = x70
-    var x__1 int32 = x69
-    var t81 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
-    var t82 string = "Point { x: " + t81
-    var t83 string = t82 + ", y: "
-    var t84 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__2)
-    var t85 string = t83 + t84
-    var t86 string = t85 + " }"
-    retv80 = t86
-    return retv80
+    var retv120 string
+    var mtmp108 Point = p__0
+    var x109 int32 = mtmp108.x
+    var x110 int32 = mtmp108.y
+    var y__2 int32 = x110
+    var x__1 int32 = x109
+    var t121 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
+    var t122 string = "Point { x: " + t121
+    var t123 string = t122 + ", y: "
+    var t124 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__2)
+    var t125 string = t123 + t124
+    var t126 string = t125 + " }"
+    retv120 = t126
+    return retv120
 }
 
 func color_to_string(c__3 Color) string {
-    var retv88 string
-    var jp90 string
+    var retv128 string
+    var jp130 string
     switch c__3 {
     case Red:
-        jp90 = "Red"
+        jp130 = "Red"
     case Green:
-        jp90 = "Green"
+        jp130 = "Green"
     case Blue:
-        jp90 = "Blue"
+        jp130 = "Blue"
     default:
         panic("non-exhaustive match")
     }
-    retv88 = jp90
-    return retv88
+    retv128 = jp130
+    return retv128
 }
 
 func line_to_string(l__4 Line) string {
-    var retv92 string
-    var mtmp71 Line = l__4
-    var x72 Point = mtmp71.from
-    var x73 Point = mtmp71.to
-    var x74 Color = mtmp71.color
-    var color__7 Color = x74
-    var to__6 Point = x73
-    var from__5 Point = x72
-    var t93 string = point32_to_string(from__5)
-    var t94 string = "Line { from: " + t93
-    var t95 string = t94 + ", to: "
-    var t96 string = point32_to_string(to__6)
-    var t97 string = t95 + t96
-    var t98 string = t97 + ", color: "
-    var t99 string = color_to_string(color__7)
-    var t100 string = t98 + t99
-    var t101 string = t100 + " }"
-    retv92 = t101
-    return retv92
+    var retv132 string
+    var mtmp111 Line = l__4
+    var x112 Point = mtmp111.from
+    var x113 Point = mtmp111.to
+    var x114 Color = mtmp111.color
+    var color__7 Color = x114
+    var to__6 Point = x113
+    var from__5 Point = x112
+    var t133 string = point32_to_string(from__5)
+    var t134 string = "Line { from: " + t133
+    var t135 string = t134 + ", to: "
+    var t136 string = point32_to_string(to__6)
+    var t137 string = t135 + t136
+    var t138 string = t137 + ", color: "
+    var t139 string = color_to_string(color__7)
+    var t140 string = t138 + t139
+    var t141 string = t140 + " }"
+    retv132 = t141
+    return retv132
 }
 
 func point_type(p__8 Point) string {
-    var retv103 string
-    var x75 int32 = p__8.x
-    var x76 int32 = p__8.y
-    var jp105 string
-    switch x75 {
+    var retv143 string
+    var x115 int32 = p__8.x
+    var x116 int32 = p__8.y
+    var jp145 string
+    switch x115 {
     case 0:
-        var jp107 string
-        switch x76 {
+        var jp147 string
+        switch x116 {
         case 0:
-            jp107 = "origin"
+            jp147 = "origin"
         case 1:
-            jp107 = "up"
+            jp147 = "up"
         default:
-            var y__9 int32 = x76
-            var mtmp77 bool = 0 < y__9
-            var jp109 string
-            switch mtmp77 {
+            var y__9 int32 = x116
+            var mtmp117 bool = 0 < y__9
+            var jp149 string
+            switch mtmp117 {
             case true:
-                jp109 = "above"
+                jp149 = "above"
             case false:
-                jp109 = "below"
+                jp149 = "below"
             default:
                 panic("non-exhaustive match")
             }
-            jp107 = jp109
+            jp147 = jp149
         }
-        jp105 = jp107
+        jp145 = jp147
     case 1:
-        var jp111 string
-        switch x76 {
+        var jp151 string
+        switch x116 {
         case 0:
-            jp111 = "right"
+            jp151 = "right"
         default:
-            jp111 = "unknown"
+            jp151 = "unknown"
         }
-        jp105 = jp111
+        jp145 = jp151
     default:
-        jp105 = "unknown"
+        jp145 = "unknown"
     }
-    retv103 = jp105
-    return retv103
+    retv143 = jp145
+    return retv143
 }
 
 func main0() struct{} {
@@ -137,8 +137,8 @@ func main0() struct{} {
         x: 0,
         y: 0,
     }
-    var t113 string = point_type(p0__10)
-    println__T_string(t113)
+    var t153 string = point_type(p0__10)
+    println__T_string(t153)
     var p1__11 Point = Point{
         x: 10,
         y: 10,
@@ -148,28 +148,28 @@ func main0() struct{} {
         to: p1__11,
         color: Red,
     }
-    var t114 string = line_to_string(line__12)
-    println__T_string(t114)
+    var t154 string = line_to_string(line__12)
+    println__T_string(t154)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv117 string
-    var t118 string = _goml_runtime_core_int32_to_string(self__6)
-    retv117 = t118
-    return retv117
+    var retv157 string
+    var t158 string = _goml_runtime_core_int32_to_string(self__6)
+    retv157 = t158
+    return retv157
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t120 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t120)
+    var t160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t160)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv123 string
-    retv123 = self__38
-    return retv123
+    var retv163 string
+    retv163 = self__38
+    return retv163
 }
 
 func main() {

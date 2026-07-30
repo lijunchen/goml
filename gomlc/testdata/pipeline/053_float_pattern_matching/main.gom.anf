@@ -1,54 +1,54 @@
 fn summarize(event/0: FloatEvent) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret115(retv116: string) -> string {
+    retv116
   } in
-  join k77(jp78: string) -> string {
-    jump ret75(jp78)
+  join k117(jp118: string) -> string {
+    jump ret115(jp118)
   } in
   match event/0 {
     Tag_0 => {
-      let x68 = FloatEvent::Sample32._0(event/0) in
-      let x69 = FloatEvent::Sample32._1(event/0) in
-      let value/2 = x69 in
-      let label/1 = x68 in
-      let t79 = trait_impl#ToString#float32#to_string(value/2) in
-      let t80 = (label/1 + t79) in
-      jump k77(t80)
+      let x108 = FloatEvent::Sample32._0(event/0) in
+      let x109 = FloatEvent::Sample32._1(event/0) in
+      let value/2 = x109 in
+      let label/1 = x108 in
+      let t119 = trait_impl#ToString#float32#to_string(value/2) in
+      let t120 = (label/1 + t119) in
+      jump k117(t120)
     },
     Tag_1 => {
-      let x70 = FloatEvent::Sample64._0(event/0) in
-      let x71 = FloatEvent::Sample64._1(event/0) in
-      let value/4 = x71 in
-      let label/3 = x70 in
-      let t81 = trait_impl#ToString#float64#to_string(value/4) in
-      let t82 = (label/3 + t81) in
-      jump k77(t82)
+      let x110 = FloatEvent::Sample64._0(event/0) in
+      let x111 = FloatEvent::Sample64._1(event/0) in
+      let value/4 = x111 in
+      let label/3 = x110 in
+      let t121 = trait_impl#ToString#float64#to_string(value/4) in
+      let t122 = (label/3 + t121) in
+      jump k117(t122)
     },
   }
 }
 
 fn compare(values/5: (float32, float64)) -> string {
-  join ret83(retv84: string) -> string {
-    retv84
+  join ret123(retv124: string) -> string {
+    retv124
   } in
-  let x72 = values/5.0 in
-  let x73 = values/5.1 in
-  let right/7 = x73 in
-  let left/6 = x72 in
+  let x112 = values/5.0 in
+  let x113 = values/5.1 in
+  let right/7 = x113 in
+  let left/6 = x112 in
   let limit32/8 = 1 in
   let limit64/9 = 5 in
   let less_left/10 = (left/6 < limit32/8) in
   let less_right/11 = (right/7 < limit64/9) in
-  let t85 = trait_impl#ToString#bool#to_string(less_left/10) in
-  let t86 = ("left<1?=" + t85) in
-  let t87 = (t86 + ",right<5?=") in
-  let t88 = trait_impl#ToString#bool#to_string(less_right/11) in
-  let t89 = (t87 + t88) in
-  jump ret83(t89)
+  let t125 = trait_impl#ToString#bool#to_string(less_left/10) in
+  let t126 = ("left<1?=" + t125) in
+  let t127 = (t126 + ",right<5?=") in
+  let t128 = trait_impl#ToString#bool#to_string(less_right/11) in
+  let t129 = (t127 + t128) in
+  jump ret123(t129)
 }
 
 fn main() -> unit {
-  join ret90() -> unit {
+  join ret130() -> unit {
     ()
   } in
   let first_value/12 = 0.5 in
@@ -59,55 +59,55 @@ fn main() -> unit {
   let third/17 = FloatEvent::Sample64("f64=", third_value/14) in
   let tuple/18 = (0.75, 4) in
   let tuple_other/19 = (1.5, 7.25) in
-  let t91 = summarize(first/15) in
-  let t92 = summarize(second/16) in
-  let t93 = (t91 + t92) in
-  let t94 = summarize(third/17) in
-  let t95 = (t93 + t94) in
-  let t96 = compare(tuple/18) in
-  let t97 = (t95 + t96) in
-  let t98 = compare(tuple_other/19) in
-  let message/20 = (t97 + t98) in
-  let mtmp74 = println__T_string(message/20) in
-  jump ret90()
+  let t131 = summarize(first/15) in
+  let t132 = summarize(second/16) in
+  let t133 = (t131 + t132) in
+  let t134 = summarize(third/17) in
+  let t135 = (t133 + t134) in
+  let t136 = compare(tuple/18) in
+  let t137 = (t135 + t136) in
+  let t138 = compare(tuple_other/19) in
+  let message/20 = (t137 + t138) in
+  let mtmp114 = println__T_string(message/20) in
+  jump ret130()
 }
 
 fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
-  join ret99(retv100: string) -> string {
-    retv100
+  join ret139(retv140: string) -> string {
+    retv140
   } in
-  let t101 = @runtime(core.float32_to_string)(self/49) in
-  jump ret99(t101)
+  let t141 = @runtime(core.float32_to_string)(self/49) in
+  jump ret139(t141)
 }
 
 fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
-  join ret102(retv103: string) -> string {
-    retv103
+  join ret142(retv143: string) -> string {
+    retv143
   } in
-  let t104 = @runtime(core.float64_to_string)(self/50) in
-  jump ret102(t104)
+  let t144 = @runtime(core.float64_to_string)(self/50) in
+  jump ret142(t144)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret105(retv106: string) -> string {
-    retv106
+  join ret145(retv146: string) -> string {
+    retv146
   } in
-  let t107 = @runtime(core.bool_to_string)(self/37) in
-  jump ret105(t107)
+  let t147 = @runtime(core.bool_to_string)(self/37) in
+  jump ret145(t147)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret108() -> unit {
+  join ret148() -> unit {
     ()
   } in
-  let t109 = trait_impl#ToString#string#to_string(value/1) in
-  let t110 = @runtime(core.string_println)(t109) in
-  jump ret108()
+  let t149 = trait_impl#ToString#string#to_string(value/1) in
+  let t150 = @runtime(core.string_println)(t149) in
+  jump ret148()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret111(retv112: string) -> string {
-    retv112
+  join ret151(retv152: string) -> string {
+    retv152
   } in
-  jump ret111(self/38)
+  jump ret151(self/38)
 }

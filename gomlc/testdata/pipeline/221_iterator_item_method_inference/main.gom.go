@@ -30,48 +30,48 @@ type Some struct {
 func (_ Some) isOption__int32() {}
 
 func _goml_m_trait__impl_i_Iterator_i_Values_i_next(self__0 Values) Option__int32 {
-    var retv74 Option__int32
-    retv74 = None{}
-    return retv74
+    var retv114 Option__int32
+    retv114 = None{}
+    return retv114
 }
 
 func main0() struct{} {
-    var t76 Values = Values{}
-    var for_iter68 Values = _goml_m_trait__impl_i_IntoIterator_i_Values_i_into__iter(t76)
-    Loop_loop78:
+    var t116 Values = Values{}
+    var for_iter108 Values = _goml_m_trait__impl_i_IntoIterator_i_Values_i_into__iter(t116)
+    Loop_loop118:
     for {
         if true {
-            var for_next69 Option__int32 = _goml_m_trait__impl_i_Iterator_i_Values_i_next(for_iter68)
-            switch for_next69.(type) {
+            var for_next109 Option__int32 = _goml_m_trait__impl_i_Iterator_i_Values_i_next(for_iter108)
+            switch for_next109.(type) {
             case None:
-                break Loop_loop78
+                break Loop_loop118
             case Some:
-                var x70 int32 = for_next69.(Some)._0
-                var value__1 int32 = x70
-                var t80 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__1)
-                _goml_runtime_core_string_println(t80)
+                var x110 int32 = for_next109.(Some)._0
+                var value__1 int32 = x110
+                var t120 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__1)
+                _goml_runtime_core_string_println(t120)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop78
+            break Loop_loop118
         }
     }
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_IntoIterator_i_Values_i_into__iter(self__109 Values) Values {
-    var retv82 Values
-    retv82 = self__109
-    return retv82
+    var retv122 Values
+    retv122 = self__109
+    return retv122
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv84 string
-    var t85 string = _goml_runtime_core_int32_to_string(self__6)
-    retv84 = t85
-    return retv84
+    var retv124 string
+    var t125 string = _goml_runtime_core_int32_to_string(self__6)
+    retv124 = t125
+    return retv124
 }
 
 func main() {

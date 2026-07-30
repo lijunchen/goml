@@ -31,61 +31,61 @@ const (
 )
 
 func main0() bool {
-    var retv72 bool
+    var retv112 bool
     var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
         _0: Blue,
         _1: Blue,
     }
-    var x68 Color = a__0._0
-    var x69 Color = a__0._1
-    var jp74 bool
-    switch x69 {
+    var x108 Color = a__0._0
+    var x109 Color = a__0._1
+    var jp114 bool
+    switch x109 {
     case Red:
-        var jp76 bool
-        switch x68 {
+        var jp116 bool
+        switch x108 {
         case Red:
-            jp76 = true
+            jp116 = true
         default:
-            jp76 = false
+            jp116 = false
         }
-        jp74 = jp76
+        jp114 = jp116
     case Green:
-        var jp78 bool
-        switch x68 {
+        var jp118 bool
+        switch x108 {
         case Red:
-            jp78 = true
+            jp118 = true
         default:
-            jp78 = false
+            jp118 = false
         }
-        jp74 = jp78
+        jp114 = jp118
     case Blue:
-        var jp80 bool
-        switch x68 {
+        var jp120 bool
+        switch x108 {
         case Blue:
             print__T_bool(true)
-            jp80 = false
+            jp120 = false
         default:
-            jp80 = false
+            jp120 = false
         }
-        jp74 = jp80
+        jp114 = jp120
     default:
         panic("non-exhaustive match")
     }
-    retv72 = jp74
-    return retv72
+    retv112 = jp114
+    return retv112
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t82 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t82)
+    var t122 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
+    _goml_runtime_core_string_print(t122)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv85 string
-    var t86 string = _goml_runtime_core_bool_to_string(self__37)
-    retv85 = t86
-    return retv85
+    var retv125 string
+    var t126 string = _goml_runtime_core_bool_to_string(self__37)
+    retv125 = t126
+    return retv125
 }
 
 func main() {

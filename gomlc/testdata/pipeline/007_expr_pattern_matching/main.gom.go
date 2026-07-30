@@ -42,21 +42,21 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var t104 Expr = Add{
+    var t144 Expr = Add{
         _0: Zero{},
         _1: Zero{},
     }
     var a__0 Expr = Mul{
-        _0: t104,
+        _0: t144,
         _1: Zero{},
     }
     switch a__0.(type) {
     case Add:
-        var x69 Expr = a__0.(Add)._0
-        var x70 Expr = a__0.(Add)._1
-        switch x70.(type) {
+        var x109 Expr = a__0.(Add)._0
+        var x110 Expr = a__0.(Add)._1
+        switch x110.(type) {
         case Zero:
-            switch x69.(type) {
+            switch x109.(type) {
             case Zero:
                 print__T_int(0)
             case Succ:
@@ -65,7 +65,7 @@ func main0() struct{} {
                 print__T_int(5)
             }
         default:
-            switch x69.(type) {
+            switch x109.(type) {
             case Succ:
                 print__T_int(2)
             default:
@@ -73,20 +73,20 @@ func main0() struct{} {
             }
         }
     case Mul:
-        var x71 Expr = a__0.(Mul)._0
-        var x72 Expr = a__0.(Mul)._1
-        switch x71.(type) {
+        var x111 Expr = a__0.(Mul)._0
+        var x112 Expr = a__0.(Mul)._1
+        switch x111.(type) {
         case Zero:
             print__T_int(1)
         case Add:
-            switch x72.(type) {
+            switch x112.(type) {
             case Zero:
                 print__T_int(3)
             default:
                 print__T_int(4)
             }
         default:
-            switch x72.(type) {
+            switch x112.(type) {
             case Zero:
                 print__T_int(3)
             default:
@@ -100,16 +100,16 @@ func main0() struct{} {
 }
 
 func print__T_int(value__0 int) struct{} {
-    var t124 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
-    _goml_runtime_core_string_print(t124)
+    var t164 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
+    _goml_runtime_core_string_print(t164)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv127 string
-    var t128 string = _goml_runtime_core_int_to_string(self__40)
-    retv127 = t128
-    return retv127
+    var retv167 string
+    var t168 string = _goml_runtime_core_int_to_string(self__40)
+    retv167 = t168
+    return retv167
 }
 
 func main() {

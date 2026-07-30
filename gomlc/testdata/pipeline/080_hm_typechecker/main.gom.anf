@@ -1,769 +1,769 @@
 fn state_new() -> CheckerState {
-  join ret264(retv265: CheckerState) -> CheckerState {
-    retv265
+  join ret304(retv305: CheckerState) -> CheckerState {
+    retv305
   } in
-  let t266 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let t267 = inherent#Ref#Ref[T]#new__T_int32(1) in
-  let t268 = CheckerState { gensym_counter: t266, current_level: t267 } in
-  jump ret264(t268)
+  let t306 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let t307 = inherent#Ref#Ref[T]#new__T_int32(1) in
+  let t308 = CheckerState { gensym_counter: t306, current_level: t307 } in
+  jump ret304(t308)
 }
 
 fn reset_gensym(st/0: CheckerState) -> unit {
-  join ret269() -> unit {
+  join ret309() -> unit {
     ()
   } in
-  let t270 = CheckerState.gensym_counter(st/0) in
-  let mtmp68 = inherent#Ref#Ref[T]#set__T_int32(t270, 0) in
-  jump ret269()
+  let t310 = CheckerState.gensym_counter(st/0) in
+  let mtmp108 = inherent#Ref#Ref[T]#set__T_int32(t310, 0) in
+  jump ret309()
 }
 
 fn reset_level(st/1: CheckerState) -> unit {
-  join ret271() -> unit {
+  join ret311() -> unit {
     ()
   } in
-  let t272 = CheckerState.current_level(st/1) in
-  let mtmp69 = inherent#Ref#Ref[T]#set__T_int32(t272, 1) in
-  jump ret271()
+  let t312 = CheckerState.current_level(st/1) in
+  let mtmp109 = inherent#Ref#Ref[T]#set__T_int32(t312, 1) in
+  jump ret311()
 }
 
 fn reset_type_variables(st/2: CheckerState) -> unit {
-  join ret273() -> unit {
+  join ret313() -> unit {
     ()
   } in
-  let _wild70 = reset_gensym(st/2) in
-  let t274 = reset_level(st/2) in
-  jump ret273()
+  let _wild110 = reset_gensym(st/2) in
+  let t314 = reset_level(st/2) in
+  jump ret313()
 }
 
 fn enter_level(st/3: CheckerState) -> unit {
-  join ret275() -> unit {
+  join ret315() -> unit {
     ()
   } in
-  let t276 = CheckerState.current_level(st/3) in
-  let l/4 = inherent#Ref#Ref[T]#get__T_int32(t276) in
-  let t277 = CheckerState.current_level(st/3) in
-  let t278 = (l/4 + 1) in
-  let mtmp71 = inherent#Ref#Ref[T]#set__T_int32(t277, t278) in
-  jump ret275()
+  let t316 = CheckerState.current_level(st/3) in
+  let l/4 = inherent#Ref#Ref[T]#get__T_int32(t316) in
+  let t317 = CheckerState.current_level(st/3) in
+  let t318 = (l/4 + 1) in
+  let mtmp111 = inherent#Ref#Ref[T]#set__T_int32(t317, t318) in
+  jump ret315()
 }
 
 fn leave_level(st/5: CheckerState) -> unit {
-  join ret279() -> unit {
+  join ret319() -> unit {
     ()
   } in
-  let t280 = CheckerState.current_level(st/5) in
-  let l/6 = inherent#Ref#Ref[T]#get__T_int32(t280) in
-  let t281 = CheckerState.current_level(st/5) in
-  let t282 = (l/6 - 1) in
-  let mtmp72 = inherent#Ref#Ref[T]#set__T_int32(t281, t282) in
-  jump ret279()
+  let t320 = CheckerState.current_level(st/5) in
+  let l/6 = inherent#Ref#Ref[T]#get__T_int32(t320) in
+  let t321 = CheckerState.current_level(st/5) in
+  let t322 = (l/6 - 1) in
+  let mtmp112 = inherent#Ref#Ref[T]#set__T_int32(t321, t322) in
+  jump ret319()
 }
 
 fn min_i32(a/7: int32, b/8: int32) -> int32 {
-  join ret283(retv284: int32) -> int32 {
-    retv284
+  join ret323(retv324: int32) -> int32 {
+    retv324
   } in
-  let t287 = (a/7 < b/8) in
-  join k285(jp286: int32) -> int32 {
-    jump ret283(jp286)
+  let t327 = (a/7 < b/8) in
+  join k325(jp326: int32) -> int32 {
+    jump ret323(jp326)
   } in
-  if t287 {
-    jump k285(a/7)
+  if t327 {
+    jump k325(a/7)
   } else {
-    jump k285(b/8)
+    jump k325(b/8)
   }
 }
 
 fn nth_letter(n/9: int32) -> char {
-  join ret288(retv289: char) -> char {
-    retv289
+  join ret328(retv329: char) -> char {
+    retv329
   } in
-  join k290(jp291: char) -> char {
-    jump ret288(jp291)
+  join k330(jp331: char) -> char {
+    jump ret328(jp331)
   } in
   match n/9 {
     0 => {
-      jump k290('a')
+      jump k330('a')
     },
     1 => {
-      jump k290('b')
+      jump k330('b')
     },
     2 => {
-      jump k290('c')
+      jump k330('c')
     },
     3 => {
-      jump k290('d')
+      jump k330('d')
     },
     4 => {
-      jump k290('e')
+      jump k330('e')
     },
     5 => {
-      jump k290('f')
+      jump k330('f')
     },
     6 => {
-      jump k290('g')
+      jump k330('g')
     },
     7 => {
-      jump k290('h')
+      jump k330('h')
     },
     8 => {
-      jump k290('i')
+      jump k330('i')
     },
     9 => {
-      jump k290('j')
+      jump k330('j')
     },
     10 => {
-      jump k290('k')
+      jump k330('k')
     },
     11 => {
-      jump k290('l')
+      jump k330('l')
     },
     12 => {
-      jump k290('m')
+      jump k330('m')
     },
     13 => {
-      jump k290('n')
+      jump k330('n')
     },
     14 => {
-      jump k290('o')
+      jump k330('o')
     },
     15 => {
-      jump k290('p')
+      jump k330('p')
     },
     16 => {
-      jump k290('q')
+      jump k330('q')
     },
     17 => {
-      jump k290('r')
+      jump k330('r')
     },
     18 => {
-      jump k290('s')
+      jump k330('s')
     },
     19 => {
-      jump k290('t')
+      jump k330('t')
     },
     20 => {
-      jump k290('u')
+      jump k330('u')
     },
     21 => {
-      jump k290('v')
+      jump k330('v')
     },
     22 => {
-      jump k290('w')
+      jump k330('w')
     },
     23 => {
-      jump k290('x')
+      jump k330('x')
     },
     24 => {
-      jump k290('y')
+      jump k330('y')
     },
     25 => {
-      jump k290('z')
+      jump k330('z')
     },
     _ => {
-      jump k290('a')
+      jump k330('a')
     },
   }
 }
 
 fn gensym(st/10: CheckerState) -> string {
-  join ret292(retv293: string) -> string {
-    retv293
+  join ret332(retv333: string) -> string {
+    retv333
   } in
-  let t294 = CheckerState.gensym_counter(st/10) in
-  let n/11 = inherent#Ref#Ref[T]#get__T_int32(t294) in
-  let t295 = CheckerState.gensym_counter(st/10) in
-  let t296 = (n/11 + 1) in
-  let mtmp73 = inherent#Ref#Ref[T]#set__T_int32(t295, t296) in
-  let t299 = (n/11 < 26) in
-  join k297(jp298: string) -> string {
-    jump ret292(jp298)
+  let t334 = CheckerState.gensym_counter(st/10) in
+  let n/11 = inherent#Ref#Ref[T]#get__T_int32(t334) in
+  let t335 = CheckerState.gensym_counter(st/10) in
+  let t336 = (n/11 + 1) in
+  let mtmp113 = inherent#Ref#Ref[T]#set__T_int32(t335, t336) in
+  let t339 = (n/11 < 26) in
+  join k337(jp338: string) -> string {
+    jump ret332(jp338)
   } in
-  if t299 {
-    let t300 = nth_letter(n/11) in
-    let t301 = inherent#char#char#to_string(t300) in
-    jump k297(t301)
+  if t339 {
+    let t340 = nth_letter(n/11) in
+    let t341 = inherent#char#char#to_string(t340) in
+    jump k337(t341)
   } else {
-    let t302 = inherent#int32#int32#to_string(n/11) in
-    let t303 = ("t" + t302) in
-    jump k297(t303)
+    let t342 = inherent#int32#int32#to_string(n/11) in
+    let t343 = ("t" + t342) in
+    jump k337(t343)
   }
 }
 
 fn newvar(st/12: CheckerState) -> Typ {
-  join ret304(retv305: Typ) -> Typ {
-    retv305
+  join ret344(retv345: Typ) -> Typ {
+    retv345
   } in
   let name/13 = gensym(st/12) in
-  let t306 = CheckerState.current_level(st/12) in
-  let level/14 = inherent#Ref#Ref[T]#get__T_int32(t306) in
-  let t307 = Tv::Unbound(name/13, level/14) in
-  let t308 = inherent#Ref#Ref[T]#new__T_Tv(t307) in
-  let t309 = Typ::TVar(t308) in
-  jump ret304(t309)
+  let t346 = CheckerState.current_level(st/12) in
+  let level/14 = inherent#Ref#Ref[T]#get__T_int32(t346) in
+  let t347 = Tv::Unbound(name/13, level/14) in
+  let t348 = inherent#Ref#Ref[T]#new__T_Tv(t347) in
+  let t349 = Typ::TVar(t348) in
+  jump ret344(t349)
 }
 
 fn typ_is_arrow(ty/15: Typ) -> bool {
-  join ret310(retv311: bool) -> bool {
-    retv311
+  join ret350(retv351: bool) -> bool {
+    retv351
   } in
-  join k312(jp313: bool) -> bool {
-    jump ret310(jp313)
+  join k352(jp353: bool) -> bool {
+    jump ret350(jp353)
   } in
   match ty/15 {
     Tag_0 => {
-      let x74 = Typ::TVar._0(ty/15) in
-      let tvref/16 = x74 in
-      let mtmp78 = inherent#Ref#Ref[T]#get__T_Tv(tvref/16) in
-      join k314(jp315: bool) -> bool {
-        jump k312(jp315)
+      let x114 = Typ::TVar._0(ty/15) in
+      let tvref/16 = x114 in
+      let mtmp118 = inherent#Ref#Ref[T]#get__T_Tv(tvref/16) in
+      join k354(jp355: bool) -> bool {
+        jump k352(jp355)
       } in
-      match mtmp78 {
+      match mtmp118 {
         Tag_1 => {
-          let x81 = Tv::Link._0(mtmp78) in
-          let inner/17 = x81 in
-          let t316 = typ_is_arrow(inner/17) in
-          jump k314(t316)
+          let x121 = Tv::Link._0(mtmp118) in
+          let inner/17 = x121 in
+          let t356 = typ_is_arrow(inner/17) in
+          jump k354(t356)
         },
         _ => {
-          jump k314(false)
+          jump k354(false)
         },
       }
     },
     Tag_2 => {
-      let x76 = Typ::TArrow._0(ty/15) in
-      let x77 = Typ::TArrow._1(ty/15) in
-      jump k312(true)
+      let x116 = Typ::TArrow._0(ty/15) in
+      let x117 = Typ::TArrow._1(ty/15) in
+      jump k352(true)
     },
     _ => {
-      jump k312(false)
+      jump k352(false)
     },
   }
 }
 
 fn typ_to_string(ty/18: Typ) -> string {
-  join ret317(retv318: string) -> string {
-    retv318
+  join ret357(retv358: string) -> string {
+    retv358
   } in
-  join k319(jp320: string) -> string {
-    jump ret317(jp320)
+  join k359(jp360: string) -> string {
+    jump ret357(jp360)
   } in
   match ty/18 {
     Tag_0 => {
-      let x82 = Typ::TVar._0(ty/18) in
-      let tvref/20 = x82 in
-      let mtmp86 = inherent#Ref#Ref[T]#get__T_Tv(tvref/20) in
-      join k321(jp322: string) -> string {
-        jump k319(jp322)
+      let x122 = Typ::TVar._0(ty/18) in
+      let tvref/20 = x122 in
+      let mtmp126 = inherent#Ref#Ref[T]#get__T_Tv(tvref/20) in
+      join k361(jp362: string) -> string {
+        jump k359(jp362)
       } in
-      match mtmp86 {
+      match mtmp126 {
         Tag_0 => {
-          let x87 = Tv::Unbound._0(mtmp86) in
-          let x88 = Tv::Unbound._1(mtmp86) in
-          let name/21 = x87 in
-          let t323 = ("'" + name/21) in
-          jump k321(t323)
+          let x127 = Tv::Unbound._0(mtmp126) in
+          let x128 = Tv::Unbound._1(mtmp126) in
+          let name/21 = x127 in
+          let t363 = ("'" + name/21) in
+          jump k361(t363)
         },
         Tag_1 => {
-          let x89 = Tv::Link._0(mtmp86) in
-          let inner/22 = x89 in
-          let t324 = typ_to_string(inner/22) in
-          jump k321(t324)
+          let x129 = Tv::Link._0(mtmp126) in
+          let inner/22 = x129 in
+          let t364 = typ_to_string(inner/22) in
+          jump k361(t364)
         },
       }
     },
     Tag_1 => {
-      let x83 = Typ::QVar._0(ty/18) in
-      let name/19 = x83 in
-      let t325 = ("'" + name/19) in
-      jump k319(t325)
+      let x123 = Typ::QVar._0(ty/18) in
+      let name/19 = x123 in
+      let t365 = ("'" + name/19) in
+      jump k359(t365)
     },
     Tag_2 => {
-      let x84 = Typ::TArrow._0(ty/18) in
-      let x85 = Typ::TArrow._1(ty/18) in
-      let t2/24 = x85 in
-      let t1/23 = x84 in
-      let t330 = typ_is_arrow(t1/23) in
-      join k326(jp327: string) -> string {
-        let s1/25 = jp327 in
+      let x124 = Typ::TArrow._0(ty/18) in
+      let x125 = Typ::TArrow._1(ty/18) in
+      let t2/24 = x125 in
+      let t1/23 = x124 in
+      let t370 = typ_is_arrow(t1/23) in
+      join k366(jp367: string) -> string {
+        let s1/25 = jp367 in
         let s2/26 = typ_to_string(t2/24) in
-        let t328 = (s1/25 + " -> ") in
-        let t329 = (t328 + s2/26) in
-        jump k319(t329)
+        let t368 = (s1/25 + " -> ") in
+        let t369 = (t368 + s2/26) in
+        jump k359(t369)
       } in
-      if t330 {
-        let t331 = typ_to_string(t1/23) in
-        let t332 = ("(" + t331) in
-        let t333 = (t332 + ")") in
-        jump k326(t333)
+      if t370 {
+        let t371 = typ_to_string(t1/23) in
+        let t372 = ("(" + t371) in
+        let t373 = (t372 + ")") in
+        jump k366(t373)
       } else {
-        let t334 = typ_to_string(t1/23) in
-        jump k326(t334)
+        let t374 = typ_to_string(t1/23) in
+        jump k366(t374)
       }
     },
   }
 }
 
 fn env_empty() -> Vec[EnvEntry] {
-  join ret335(retv336: Vec[EnvEntry]) -> Vec[EnvEntry] {
-    retv336
+  join ret375(retv376: Vec[EnvEntry]) -> Vec[EnvEntry] {
+    retv376
   } in
   let env/27 = inherent#Vec#Vec[T]#new__T_EnvEntry() in
-  jump ret335(env/27)
+  jump ret375(env/27)
 }
 
 fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
-  join ret337(retv338: Option__Typ) -> Option__Typ {
-    retv338
+  join ret377(retv378: Option__Typ) -> Option__Typ {
+    retv378
   } in
-  let t339 = inherent#Vec#Vec[T]#len__T_EnvEntry(env/28) in
-  let t340 = (t339 - 1) in
-  let i/30 = inherent#Ref#Ref[T]#new__T_int(t340) in
+  let t379 = inherent#Vec#Vec[T]#len__T_EnvEntry(env/28) in
+  let t380 = (t379 - 1) in
+  let i/30 = inherent#Ref#Ref[T]#new__T_int(t380) in
   let found/31 = inherent#Ref#Ref[T]#new__T_Option[Typ](Tag_0) in
   let done/32 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join exit341() -> Option__Typ {
-    let mtmp91 = () in
-    let t342 = inherent#Ref#Ref[T]#get__T_Option[Typ](found/31) in
-    jump ret337(t342)
+  join exit381() -> Option__Typ {
+    let mtmp131 = () in
+    let t382 = inherent#Ref#Ref[T]#get__T_Option[Typ](found/31) in
+    jump ret377(t382)
   } in
   joinrec {
-    join loop343() -> Option__Typ {
-      let t356 = inherent#Ref#Ref[T]#get__T_bool(done/32) in
-      let t357 = (!t356) in
-      join k344(jp345: bool) -> Option__Typ {
-        if jp345 {
-          let t346 = inherent#Ref#Ref[T]#get__T_int(i/30) in
-          let entry/33 = @intrinsic(vec.get)(env/28, t346) in
-          let t348 = EnvEntry.name(entry/33) in
-          let t349 = trait_impl#Eq#string#eq(t348, name/29) in
-          join k347() -> Option__Typ {
-            jump loop343()
+    join loop383() -> Option__Typ {
+      let t396 = inherent#Ref#Ref[T]#get__T_bool(done/32) in
+      let t397 = (!t396) in
+      join k384(jp385: bool) -> Option__Typ {
+        if jp385 {
+          let t386 = inherent#Ref#Ref[T]#get__T_int(i/30) in
+          let entry/33 = @intrinsic(vec.get)(env/28, t386) in
+          let t388 = EnvEntry.name(entry/33) in
+          let t389 = trait_impl#Eq#string#eq(t388, name/29) in
+          join k387() -> Option__Typ {
+            jump loop383()
           } in
-          if t349 {
-            let t350 = EnvEntry.ty(entry/33) in
-            let t351 = Option__Typ::Some(t350) in
-            let mtmp90 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/31, t351) in
-            let t352 = inherent#Ref#Ref[T]#set__T_bool(done/32, true) in
-            jump k347()
+          if t389 {
+            let t390 = EnvEntry.ty(entry/33) in
+            let t391 = Option__Typ::Some(t390) in
+            let mtmp130 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/31, t391) in
+            let t392 = inherent#Ref#Ref[T]#set__T_bool(done/32, true) in
+            jump k387()
           } else {
-            let t353 = inherent#Ref#Ref[T]#get__T_int(i/30) in
-            let t354 = (t353 - 1) in
-            let t355 = inherent#Ref#Ref[T]#set__T_int(i/30, t354) in
-            jump k347()
+            let t393 = inherent#Ref#Ref[T]#get__T_int(i/30) in
+            let t394 = (t393 - 1) in
+            let t395 = inherent#Ref#Ref[T]#set__T_int(i/30, t394) in
+            jump k387()
           }
         } else {
-          jump exit341()
+          jump exit381()
         }
       } in
-      if t357 {
-        let t358 = inherent#Ref#Ref[T]#get__T_int(i/30) in
-        let t359 = (t358 >= 0) in
-        jump k344(t359)
+      if t397 {
+        let t398 = inherent#Ref#Ref[T]#get__T_int(i/30) in
+        let t399 = (t398 >= 0) in
+        jump k384(t399)
       } else {
-        jump k344(false)
+        jump k384(false)
       }
     } in
   } in
-  jump loop343()
+  jump loop383()
 }
 
 fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
-  join ret360(retv361: Option__Typ) -> Option__Typ {
-    retv361
+  join ret400(retv401: Option__Typ) -> Option__Typ {
+    retv401
   } in
-  let t362 = inherent#Vec#Vec[T]#len__T_SubstEntry(subst/34) in
-  let t363 = (t362 - 1) in
-  let i/36 = inherent#Ref#Ref[T]#new__T_int(t363) in
+  let t402 = inherent#Vec#Vec[T]#len__T_SubstEntry(subst/34) in
+  let t403 = (t402 - 1) in
+  let i/36 = inherent#Ref#Ref[T]#new__T_int(t403) in
   let found/37 = inherent#Ref#Ref[T]#new__T_Option[Typ](Tag_0) in
   let done/38 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join exit364() -> Option__Typ {
-    let mtmp93 = () in
-    let t365 = inherent#Ref#Ref[T]#get__T_Option[Typ](found/37) in
-    jump ret360(t365)
+  join exit404() -> Option__Typ {
+    let mtmp133 = () in
+    let t405 = inherent#Ref#Ref[T]#get__T_Option[Typ](found/37) in
+    jump ret400(t405)
   } in
   joinrec {
-    join loop366() -> Option__Typ {
-      let t379 = inherent#Ref#Ref[T]#get__T_bool(done/38) in
-      let t380 = (!t379) in
-      join k367(jp368: bool) -> Option__Typ {
-        if jp368 {
-          let t369 = inherent#Ref#Ref[T]#get__T_int(i/36) in
-          let entry/39 = @intrinsic(vec.get)(subst/34, t369) in
-          let t371 = SubstEntry.name(entry/39) in
-          let t372 = trait_impl#Eq#string#eq(t371, name/35) in
-          join k370() -> Option__Typ {
-            jump loop366()
+    join loop406() -> Option__Typ {
+      let t419 = inherent#Ref#Ref[T]#get__T_bool(done/38) in
+      let t420 = (!t419) in
+      join k407(jp408: bool) -> Option__Typ {
+        if jp408 {
+          let t409 = inherent#Ref#Ref[T]#get__T_int(i/36) in
+          let entry/39 = @intrinsic(vec.get)(subst/34, t409) in
+          let t411 = SubstEntry.name(entry/39) in
+          let t412 = trait_impl#Eq#string#eq(t411, name/35) in
+          join k410() -> Option__Typ {
+            jump loop406()
           } in
-          if t372 {
-            let t373 = SubstEntry.ty(entry/39) in
-            let t374 = Option__Typ::Some(t373) in
-            let mtmp92 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/37, t374) in
-            let t375 = inherent#Ref#Ref[T]#set__T_bool(done/38, true) in
-            jump k370()
+          if t412 {
+            let t413 = SubstEntry.ty(entry/39) in
+            let t414 = Option__Typ::Some(t413) in
+            let mtmp132 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/37, t414) in
+            let t415 = inherent#Ref#Ref[T]#set__T_bool(done/38, true) in
+            jump k410()
           } else {
-            let t376 = inherent#Ref#Ref[T]#get__T_int(i/36) in
-            let t377 = (t376 - 1) in
-            let t378 = inherent#Ref#Ref[T]#set__T_int(i/36, t377) in
-            jump k370()
+            let t416 = inherent#Ref#Ref[T]#get__T_int(i/36) in
+            let t417 = (t416 - 1) in
+            let t418 = inherent#Ref#Ref[T]#set__T_int(i/36, t417) in
+            jump k410()
           }
         } else {
-          jump exit364()
+          jump exit404()
         }
       } in
-      if t380 {
-        let t381 = inherent#Ref#Ref[T]#get__T_int(i/36) in
-        let t382 = (t381 >= 0) in
-        jump k367(t382)
+      if t420 {
+        let t421 = inherent#Ref#Ref[T]#get__T_int(i/36) in
+        let t422 = (t421 >= 0) in
+        jump k407(t422)
       } else {
-        jump k367(false)
+        jump k407(false)
       }
     } in
   } in
-  jump loop366()
+  jump loop406()
 }
 
 fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__string {
-  join ret383(retv384: Result__unit__string) -> Result__unit__string {
-    retv384
+  join ret423(retv424: Result__unit__string) -> Result__unit__string {
+    retv424
   } in
-  join k385(jp386: Result__unit__string) -> Result__unit__string {
-    jump ret383(jp386)
+  join k425(jp426: Result__unit__string) -> Result__unit__string {
+    jump ret423(jp426)
   } in
   match ty/42 {
     Tag_0 => {
-      let x94 = Typ::TVar._0(ty/42) in
-      let tvr2/43 = x94 in
-      let t389 = @intrinsic(ref.ptr_eq)(tvr/41, tvr2/43) in
-      join k387(jp388: Result__unit__string) -> Result__unit__string {
-        jump k385(jp388)
+      let x134 = Typ::TVar._0(ty/42) in
+      let tvr2/43 = x134 in
+      let t429 = @intrinsic(ref.ptr_eq)(tvr/41, tvr2/43) in
+      join k427(jp428: Result__unit__string) -> Result__unit__string {
+        jump k425(jp428)
       } in
-      if t389 {
-        let t390 = Result__unit__string::Err("occurs check") in
-        jump k387(t390)
+      if t429 {
+        let t430 = Result__unit__string::Err("occurs check") in
+        jump k427(t430)
       } else {
-        let mtmp98 = inherent#Ref#Ref[T]#get__T_Tv(tvr2/43) in
-        join k391(jp392: Result__unit__string) -> Result__unit__string {
-          jump k387(jp392)
+        let mtmp138 = inherent#Ref#Ref[T]#get__T_Tv(tvr2/43) in
+        join k431(jp432: Result__unit__string) -> Result__unit__string {
+          jump k427(jp432)
         } in
-        match mtmp98 {
+        match mtmp138 {
           Tag_0 => {
-            let x99 = Tv::Unbound._0(mtmp98) in
-            let x100 = Tv::Unbound._1(mtmp98) in
-            let l2/45 = x100 in
-            let name/44 = x99 in
-            let mtmp102 = inherent#Ref#Ref[T]#get__T_Tv(tvr/41) in
-            join k393(jp394: int32) -> Result__unit__string {
-              let min_level/47 = jp394 in
-              let t395 = Tv::Unbound(name/44, min_level/47) in
-              let mtmp106 = inherent#Ref#Ref[T]#set__T_Tv(tvr2/43, t395) in
-              let t396 = Result__unit__string::Ok(()) in
-              jump k391(t396)
+            let x139 = Tv::Unbound._0(mtmp138) in
+            let x140 = Tv::Unbound._1(mtmp138) in
+            let l2/45 = x140 in
+            let name/44 = x139 in
+            let mtmp142 = inherent#Ref#Ref[T]#get__T_Tv(tvr/41) in
+            join k433(jp434: int32) -> Result__unit__string {
+              let min_level/47 = jp434 in
+              let t435 = Tv::Unbound(name/44, min_level/47) in
+              let mtmp146 = inherent#Ref#Ref[T]#set__T_Tv(tvr2/43, t435) in
+              let t436 = Result__unit__string::Ok(()) in
+              jump k431(t436)
             } in
-            match mtmp102 {
+            match mtmp142 {
               Tag_0 => {
-                let x103 = Tv::Unbound._0(mtmp102) in
-                let x104 = Tv::Unbound._1(mtmp102) in
-                let l/46 = x104 in
-                let t397 = min_i32(l/46, l2/45) in
-                jump k393(t397)
+                let x143 = Tv::Unbound._0(mtmp142) in
+                let x144 = Tv::Unbound._1(mtmp142) in
+                let l/46 = x144 in
+                let t437 = min_i32(l/46, l2/45) in
+                jump k433(t437)
               },
               _ => {
-                jump k393(l2/45)
+                jump k433(l2/45)
               },
             }
           },
           Tag_1 => {
-            let x101 = Tv::Link._0(mtmp98) in
-            let inner/48 = x101 in
-            let t398 = occurs(st/40, tvr/41, inner/48) in
-            jump k391(t398)
+            let x141 = Tv::Link._0(mtmp138) in
+            let inner/48 = x141 in
+            let t438 = occurs(st/40, tvr/41, inner/48) in
+            jump k431(t438)
           },
         }
       }
     },
     Tag_2 => {
-      let x96 = Typ::TArrow._0(ty/42) in
-      let x97 = Typ::TArrow._1(ty/42) in
-      let t2/50 = x97 in
-      let t1/49 = x96 in
-      let mtmp107 = occurs(st/40, tvr/41, t1/49) in
-      join k399(jp400: Result__unit__string) -> Result__unit__string {
-        jump k385(jp400)
+      let x136 = Typ::TArrow._0(ty/42) in
+      let x137 = Typ::TArrow._1(ty/42) in
+      let t2/50 = x137 in
+      let t1/49 = x136 in
+      let mtmp147 = occurs(st/40, tvr/41, t1/49) in
+      join k439(jp440: Result__unit__string) -> Result__unit__string {
+        jump k425(jp440)
       } in
-      match mtmp107 {
+      match mtmp147 {
         Tag_0 => {
-          let x108 = Result__unit__string::Ok._0(mtmp107) in
-          let t401 = occurs(st/40, tvr/41, t2/50) in
-          jump k399(t401)
+          let x148 = Result__unit__string::Ok._0(mtmp147) in
+          let t441 = occurs(st/40, tvr/41, t2/50) in
+          jump k439(t441)
         },
         Tag_1 => {
-          let x109 = Result__unit__string::Err._0(mtmp107) in
-          let e/51 = x109 in
-          let t402 = Result__unit__string::Err(e/51) in
-          jump k399(t402)
+          let x149 = Result__unit__string::Err._0(mtmp147) in
+          let e/51 = x149 in
+          let t442 = Result__unit__string::Err(e/51) in
+          jump k439(t442)
         },
       }
     },
     _ => {
-      let t403 = Result__unit__string::Ok(()) in
-      jump k385(t403)
+      let t443 = Result__unit__string::Ok(()) in
+      jump k425(t443)
     },
   }
 }
 
 fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
-  join ret404(retv405: Result__unit__string) -> Result__unit__string {
-    retv405
+  join ret444(retv445: Result__unit__string) -> Result__unit__string {
+    retv445
   } in
-  let mtmp110 = (t1/53, t2/54) in
-  let x111 = mtmp110.0 in
-  let x112 = mtmp110.1 in
-  join k406(jp407: Result__unit__string) -> Result__unit__string {
-    jump ret404(jp407)
+  let mtmp150 = (t1/53, t2/54) in
+  let x151 = mtmp150.0 in
+  let x152 = mtmp150.1 in
+  join k446(jp447: Result__unit__string) -> Result__unit__string {
+    jump ret444(jp447)
   } in
-  match x112 {
+  match x152 {
     Tag_0 => {
-      let x113 = Typ::TVar._0(x112) in
-      join k408(jp409: Result__unit__string) -> Result__unit__string {
-        jump k406(jp409)
+      let x153 = Typ::TVar._0(x152) in
+      join k448(jp449: Result__unit__string) -> Result__unit__string {
+        jump k446(jp449)
       } in
-      match x111 {
+      match x151 {
         Tag_0 => {
-          let x117 = Typ::TVar._0(x111) in
-          let r1/55 = x117 in
-          let r2/56 = x113 in
-          let t412 = @intrinsic(ref.ptr_eq)(r1/55, r2/56) in
-          join k410(jp411: Result__unit__string) -> Result__unit__string {
-            jump k408(jp411)
+          let x157 = Typ::TVar._0(x151) in
+          let r1/55 = x157 in
+          let r2/56 = x153 in
+          let t452 = @intrinsic(ref.ptr_eq)(r1/55, r2/56) in
+          join k450(jp451: Result__unit__string) -> Result__unit__string {
+            jump k448(jp451)
           } in
-          if t412 {
-            let t413 = Result__unit__string::Ok(()) in
-            jump k410(t413)
+          if t452 {
+            let t453 = Result__unit__string::Ok(()) in
+            jump k450(t453)
           } else {
-            let mtmp121 = inherent#Ref#Ref[T]#get__T_Tv(r1/55) in
-            join k414(jp415: Result__unit__string) -> Result__unit__string {
-              jump k410(jp415)
+            let mtmp161 = inherent#Ref#Ref[T]#get__T_Tv(r1/55) in
+            join k454(jp455: Result__unit__string) -> Result__unit__string {
+              jump k450(jp455)
             } in
-            match mtmp121 {
+            match mtmp161 {
               Tag_0 => {
-                let x122 = Tv::Unbound._0(mtmp121) in
-                let x123 = Tv::Unbound._1(mtmp121) in
-                let mtmp125 = inherent#Ref#Ref[T]#get__T_Tv(r2/56) in
-                join k416(jp417: Result__unit__string) -> Result__unit__string {
-                  jump k414(jp417)
+                let x162 = Tv::Unbound._0(mtmp161) in
+                let x163 = Tv::Unbound._1(mtmp161) in
+                let mtmp165 = inherent#Ref#Ref[T]#get__T_Tv(r2/56) in
+                join k456(jp457: Result__unit__string) -> Result__unit__string {
+                  jump k454(jp457)
                 } in
-                match mtmp125 {
+                match mtmp165 {
                   Tag_0 => {
-                    let x126 = Tv::Unbound._0(mtmp125) in
-                    let x127 = Tv::Unbound._1(mtmp125) in
-                    let t418 = Typ::TVar(r2/56) in
-                    let mtmp129 = occurs(st/52, r1/55, t418) in
-                    join k419(jp420: Result__unit__string) -> Result__unit__string {
-                      jump k416(jp420)
+                    let x166 = Tv::Unbound._0(mtmp165) in
+                    let x167 = Tv::Unbound._1(mtmp165) in
+                    let t458 = Typ::TVar(r2/56) in
+                    let mtmp169 = occurs(st/52, r1/55, t458) in
+                    join k459(jp460: Result__unit__string) -> Result__unit__string {
+                      jump k456(jp460)
                     } in
-                    match mtmp129 {
+                    match mtmp169 {
                       Tag_0 => {
-                        let x130 = Result__unit__string::Ok._0(mtmp129) in
-                        let t421 = Typ::TVar(r2/56) in
-                        let t422 = Tv::Link(t421) in
-                        let mtmp132 = inherent#Ref#Ref[T]#set__T_Tv(r1/55, t422) in
-                        let t423 = Result__unit__string::Ok(()) in
-                        jump k419(t423)
+                        let x170 = Result__unit__string::Ok._0(mtmp169) in
+                        let t461 = Typ::TVar(r2/56) in
+                        let t462 = Tv::Link(t461) in
+                        let mtmp172 = inherent#Ref#Ref[T]#set__T_Tv(r1/55, t462) in
+                        let t463 = Result__unit__string::Ok(()) in
+                        jump k459(t463)
                       },
                       Tag_1 => {
-                        let x131 = Result__unit__string::Err._0(mtmp129) in
-                        let e/59 = x131 in
-                        let t424 = Result__unit__string::Err(e/59) in
-                        jump k419(t424)
+                        let x171 = Result__unit__string::Err._0(mtmp169) in
+                        let e/59 = x171 in
+                        let t464 = Result__unit__string::Err(e/59) in
+                        jump k459(t464)
                       },
                     }
                   },
                   Tag_1 => {
-                    let x128 = Tv::Link._0(mtmp125) in
-                    let inner/58 = x128 in
-                    let t425 = Typ::TVar(r1/55) in
-                    let t426 = unify(st/52, t425, inner/58) in
-                    jump k416(t426)
+                    let x168 = Tv::Link._0(mtmp165) in
+                    let inner/58 = x168 in
+                    let t465 = Typ::TVar(r1/55) in
+                    let t466 = unify(st/52, t465, inner/58) in
+                    jump k456(t466)
                   },
                 }
               },
               Tag_1 => {
-                let x124 = Tv::Link._0(mtmp121) in
-                let inner/57 = x124 in
-                let t427 = Typ::TVar(r2/56) in
-                let t428 = unify(st/52, inner/57, t427) in
-                jump k414(t428)
+                let x164 = Tv::Link._0(mtmp161) in
+                let inner/57 = x164 in
+                let t467 = Typ::TVar(r2/56) in
+                let t468 = unify(st/52, inner/57, t467) in
+                jump k454(t468)
               },
             }
           }
         },
         _ => {
-          let r2/65 = x113 in
-          let other/64 = x111 in
-          let mtmp133 = inherent#Ref#Ref[T]#get__T_Tv(r2/65) in
-          join k429(jp430: Result__unit__string) -> Result__unit__string {
-            jump k408(jp430)
+          let r2/65 = x153 in
+          let other/64 = x151 in
+          let mtmp173 = inherent#Ref#Ref[T]#get__T_Tv(r2/65) in
+          join k469(jp470: Result__unit__string) -> Result__unit__string {
+            jump k448(jp470)
           } in
-          match mtmp133 {
+          match mtmp173 {
             Tag_0 => {
-              let x134 = Tv::Unbound._0(mtmp133) in
-              let x135 = Tv::Unbound._1(mtmp133) in
-              let mtmp137 = occurs(st/52, r2/65, other/64) in
-              join k431(jp432: Result__unit__string) -> Result__unit__string {
-                jump k429(jp432)
+              let x174 = Tv::Unbound._0(mtmp173) in
+              let x175 = Tv::Unbound._1(mtmp173) in
+              let mtmp177 = occurs(st/52, r2/65, other/64) in
+              join k471(jp472: Result__unit__string) -> Result__unit__string {
+                jump k469(jp472)
               } in
-              match mtmp137 {
+              match mtmp177 {
                 Tag_0 => {
-                  let x138 = Result__unit__string::Ok._0(mtmp137) in
-                  let t433 = Tv::Link(other/64) in
-                  let mtmp140 = inherent#Ref#Ref[T]#set__T_Tv(r2/65, t433) in
-                  let t434 = Result__unit__string::Ok(()) in
-                  jump k431(t434)
+                  let x178 = Result__unit__string::Ok._0(mtmp177) in
+                  let t473 = Tv::Link(other/64) in
+                  let mtmp180 = inherent#Ref#Ref[T]#set__T_Tv(r2/65, t473) in
+                  let t474 = Result__unit__string::Ok(()) in
+                  jump k471(t474)
                 },
                 Tag_1 => {
-                  let x139 = Result__unit__string::Err._0(mtmp137) in
-                  let e/67 = x139 in
-                  let t435 = Result__unit__string::Err(e/67) in
-                  jump k431(t435)
+                  let x179 = Result__unit__string::Err._0(mtmp177) in
+                  let e/67 = x179 in
+                  let t475 = Result__unit__string::Err(e/67) in
+                  jump k471(t475)
                 },
               }
             },
             Tag_1 => {
-              let x136 = Tv::Link._0(mtmp133) in
-              let inner/66 = x136 in
-              let t436 = unify(st/52, other/64, inner/66) in
-              jump k429(t436)
+              let x176 = Tv::Link._0(mtmp173) in
+              let inner/66 = x176 in
+              let t476 = unify(st/52, other/64, inner/66) in
+              jump k469(t476)
             },
           }
         },
       }
     },
     Tag_2 => {
-      let x115 = Typ::TArrow._0(x112) in
-      let x116 = Typ::TArrow._1(x112) in
-      join k437(jp438: Result__unit__string) -> Result__unit__string {
-        jump k406(jp438)
+      let x155 = Typ::TArrow._0(x152) in
+      let x156 = Typ::TArrow._1(x152) in
+      join k477(jp478: Result__unit__string) -> Result__unit__string {
+        jump k446(jp478)
       } in
-      match x111 {
+      match x151 {
         Tag_0 => {
-          let x141 = Typ::TVar._0(x111) in
-          let r1/60 = x141 in
-          let other/61 = x112 in
-          let mtmp145 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
-          join k439(jp440: Result__unit__string) -> Result__unit__string {
-            jump k437(jp440)
+          let x181 = Typ::TVar._0(x151) in
+          let r1/60 = x181 in
+          let other/61 = x152 in
+          let mtmp185 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
+          join k479(jp480: Result__unit__string) -> Result__unit__string {
+            jump k477(jp480)
           } in
-          match mtmp145 {
+          match mtmp185 {
             Tag_0 => {
-              let x146 = Tv::Unbound._0(mtmp145) in
-              let x147 = Tv::Unbound._1(mtmp145) in
-              let mtmp149 = occurs(st/52, r1/60, other/61) in
-              join k441(jp442: Result__unit__string) -> Result__unit__string {
-                jump k439(jp442)
+              let x186 = Tv::Unbound._0(mtmp185) in
+              let x187 = Tv::Unbound._1(mtmp185) in
+              let mtmp189 = occurs(st/52, r1/60, other/61) in
+              join k481(jp482: Result__unit__string) -> Result__unit__string {
+                jump k479(jp482)
               } in
-              match mtmp149 {
+              match mtmp189 {
                 Tag_0 => {
-                  let x150 = Result__unit__string::Ok._0(mtmp149) in
-                  let t443 = Tv::Link(other/61) in
-                  let mtmp152 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, t443) in
-                  let t444 = Result__unit__string::Ok(()) in
-                  jump k441(t444)
+                  let x190 = Result__unit__string::Ok._0(mtmp189) in
+                  let t483 = Tv::Link(other/61) in
+                  let mtmp192 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, t483) in
+                  let t484 = Result__unit__string::Ok(()) in
+                  jump k481(t484)
                 },
                 Tag_1 => {
-                  let x151 = Result__unit__string::Err._0(mtmp149) in
-                  let e/63 = x151 in
-                  let t445 = Result__unit__string::Err(e/63) in
-                  jump k441(t445)
+                  let x191 = Result__unit__string::Err._0(mtmp189) in
+                  let e/63 = x191 in
+                  let t485 = Result__unit__string::Err(e/63) in
+                  jump k481(t485)
                 },
               }
             },
             Tag_1 => {
-              let x148 = Tv::Link._0(mtmp145) in
-              let inner/62 = x148 in
-              let t446 = unify(st/52, inner/62, other/61) in
-              jump k439(t446)
+              let x188 = Tv::Link._0(mtmp185) in
+              let inner/62 = x188 in
+              let t486 = unify(st/52, inner/62, other/61) in
+              jump k479(t486)
             },
           }
         },
         Tag_2 => {
-          let x143 = Typ::TArrow._0(x111) in
-          let x144 = Typ::TArrow._1(x111) in
-          let a2/69 = x144 in
-          let a1/68 = x143 in
-          let b2/71 = x116 in
-          let b1/70 = x115 in
-          let mtmp153 = unify(st/52, a1/68, b1/70) in
-          join k447(jp448: Result__unit__string) -> Result__unit__string {
-            jump k437(jp448)
+          let x183 = Typ::TArrow._0(x151) in
+          let x184 = Typ::TArrow._1(x151) in
+          let a2/69 = x184 in
+          let a1/68 = x183 in
+          let b2/71 = x156 in
+          let b1/70 = x155 in
+          let mtmp193 = unify(st/52, a1/68, b1/70) in
+          join k487(jp488: Result__unit__string) -> Result__unit__string {
+            jump k477(jp488)
           } in
-          match mtmp153 {
+          match mtmp193 {
             Tag_0 => {
-              let x154 = Result__unit__string::Ok._0(mtmp153) in
-              let t449 = unify(st/52, a2/69, b2/71) in
-              jump k447(t449)
+              let x194 = Result__unit__string::Ok._0(mtmp193) in
+              let t489 = unify(st/52, a2/69, b2/71) in
+              jump k487(t489)
             },
             Tag_1 => {
-              let x155 = Result__unit__string::Err._0(mtmp153) in
-              let e/72 = x155 in
-              let t450 = Result__unit__string::Err(e/72) in
-              jump k447(t450)
+              let x195 = Result__unit__string::Err._0(mtmp193) in
+              let e/72 = x195 in
+              let t490 = Result__unit__string::Err(e/72) in
+              jump k487(t490)
             },
           }
         },
         _ => {
-          let t451 = Result__unit__string::Err("unify error") in
-          jump k437(t451)
+          let t491 = Result__unit__string::Err("unify error") in
+          jump k477(t491)
         },
       }
     },
     _ => {
-      join k452(jp453: Result__unit__string) -> Result__unit__string {
-        jump k406(jp453)
+      join k492(jp493: Result__unit__string) -> Result__unit__string {
+        jump k446(jp493)
       } in
-      match x111 {
+      match x151 {
         Tag_0 => {
-          let x156 = Typ::TVar._0(x111) in
-          let r1/60 = x156 in
-          let other/61 = x112 in
-          let mtmp160 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
-          join k454(jp455: Result__unit__string) -> Result__unit__string {
-            jump k452(jp455)
+          let x196 = Typ::TVar._0(x151) in
+          let r1/60 = x196 in
+          let other/61 = x152 in
+          let mtmp200 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
+          join k494(jp495: Result__unit__string) -> Result__unit__string {
+            jump k492(jp495)
           } in
-          match mtmp160 {
+          match mtmp200 {
             Tag_0 => {
-              let x161 = Tv::Unbound._0(mtmp160) in
-              let x162 = Tv::Unbound._1(mtmp160) in
-              let mtmp164 = occurs(st/52, r1/60, other/61) in
-              join k456(jp457: Result__unit__string) -> Result__unit__string {
-                jump k454(jp457)
+              let x201 = Tv::Unbound._0(mtmp200) in
+              let x202 = Tv::Unbound._1(mtmp200) in
+              let mtmp204 = occurs(st/52, r1/60, other/61) in
+              join k496(jp497: Result__unit__string) -> Result__unit__string {
+                jump k494(jp497)
               } in
-              match mtmp164 {
+              match mtmp204 {
                 Tag_0 => {
-                  let x165 = Result__unit__string::Ok._0(mtmp164) in
-                  let t458 = Tv::Link(other/61) in
-                  let mtmp167 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, t458) in
-                  let t459 = Result__unit__string::Ok(()) in
-                  jump k456(t459)
+                  let x205 = Result__unit__string::Ok._0(mtmp204) in
+                  let t498 = Tv::Link(other/61) in
+                  let mtmp207 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, t498) in
+                  let t499 = Result__unit__string::Ok(()) in
+                  jump k496(t499)
                 },
                 Tag_1 => {
-                  let x166 = Result__unit__string::Err._0(mtmp164) in
-                  let e/63 = x166 in
-                  let t460 = Result__unit__string::Err(e/63) in
-                  jump k456(t460)
+                  let x206 = Result__unit__string::Err._0(mtmp204) in
+                  let e/63 = x206 in
+                  let t500 = Result__unit__string::Err(e/63) in
+                  jump k496(t500)
                 },
               }
             },
             Tag_1 => {
-              let x163 = Tv::Link._0(mtmp160) in
-              let inner/62 = x163 in
-              let t461 = unify(st/52, inner/62, other/61) in
-              jump k454(t461)
+              let x203 = Tv::Link._0(mtmp200) in
+              let inner/62 = x203 in
+              let t501 = unify(st/52, inner/62, other/61) in
+              jump k494(t501)
             },
           }
         },
         _ => {
-          let t462 = Result__unit__string::Err("unify error") in
-          jump k452(t462)
+          let t502 = Result__unit__string::Err("unify error") in
+          jump k492(t502)
         },
       }
     },
@@ -771,293 +771,293 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
 }
 
 fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
-  join ret463(retv464: Typ) -> Typ {
-    retv464
+  join ret503(retv504: Typ) -> Typ {
+    retv504
   } in
-  join k465(jp466: Typ) -> Typ {
-    jump ret463(jp466)
+  join k505(jp506: Typ) -> Typ {
+    jump ret503(jp506)
   } in
   match ty/74 {
     Tag_0 => {
-      let x168 = Typ::TVar._0(ty/74) in
-      let tvref/75 = x168 in
-      let mtmp172 = inherent#Ref#Ref[T]#get__T_Tv(tvref/75) in
-      join k467(jp468: Typ) -> Typ {
-        jump k465(jp468)
+      let x208 = Typ::TVar._0(ty/74) in
+      let tvref/75 = x208 in
+      let mtmp212 = inherent#Ref#Ref[T]#get__T_Tv(tvref/75) in
+      join k507(jp508: Typ) -> Typ {
+        jump k505(jp508)
       } in
-      match mtmp172 {
+      match mtmp212 {
         Tag_0 => {
-          let x173 = Tv::Unbound._0(mtmp172) in
-          let x174 = Tv::Unbound._1(mtmp172) in
-          let l/77 = x174 in
-          let name/76 = x173 in
-          let t469 = CheckerState.current_level(st/73) in
-          let cur/78 = inherent#Ref#Ref[T]#get__T_int32(t469) in
-          let t472 = (l/77 > cur/78) in
-          join k470(jp471: Typ) -> Typ {
-            jump k467(jp471)
+          let x213 = Tv::Unbound._0(mtmp212) in
+          let x214 = Tv::Unbound._1(mtmp212) in
+          let l/77 = x214 in
+          let name/76 = x213 in
+          let t509 = CheckerState.current_level(st/73) in
+          let cur/78 = inherent#Ref#Ref[T]#get__T_int32(t509) in
+          let t512 = (l/77 > cur/78) in
+          join k510(jp511: Typ) -> Typ {
+            jump k507(jp511)
           } in
-          if t472 {
-            let t473 = Typ::QVar(name/76) in
-            jump k470(t473)
+          if t512 {
+            let t513 = Typ::QVar(name/76) in
+            jump k510(t513)
           } else {
-            let t474 = Typ::TVar(tvref/75) in
-            jump k470(t474)
+            let t514 = Typ::TVar(tvref/75) in
+            jump k510(t514)
           }
         },
         Tag_1 => {
-          let x175 = Tv::Link._0(mtmp172) in
-          let inner/79 = x175 in
-          let t475 = gen(st/73, inner/79) in
-          jump k467(t475)
+          let x215 = Tv::Link._0(mtmp212) in
+          let inner/79 = x215 in
+          let t515 = gen(st/73, inner/79) in
+          jump k507(t515)
         },
       }
     },
     Tag_2 => {
-      let x170 = Typ::TArrow._0(ty/74) in
-      let x171 = Typ::TArrow._1(ty/74) in
-      let t2/81 = x171 in
-      let t1/80 = x170 in
-      let t476 = gen(st/73, t1/80) in
-      let t477 = gen(st/73, t2/81) in
-      let t478 = Typ::TArrow(t476, t477) in
-      jump k465(t478)
+      let x210 = Typ::TArrow._0(ty/74) in
+      let x211 = Typ::TArrow._1(ty/74) in
+      let t2/81 = x211 in
+      let t1/80 = x210 in
+      let t516 = gen(st/73, t1/80) in
+      let t517 = gen(st/73, t2/81) in
+      let t518 = Typ::TArrow(t516, t517) in
+      jump k505(t518)
     },
     _ => {
       let other/82 = ty/74 in
-      jump k465(other/82)
+      jump k505(other/82)
     },
   }
 }
 
 fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ, Vec[SubstEntry]) {
-  join ret479(retv480: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
-    retv480
+  join ret519(retv520: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
+    retv520
   } in
-  join k481(jp482: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
-    jump ret479(jp482)
+  join k521(jp522: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
+    jump ret519(jp522)
   } in
   match ty/85 {
     Tag_0 => {
-      let x176 = Typ::TVar._0(ty/85) in
-      let tvref/90 = x176 in
-      let mtmp180 = inherent#Ref#Ref[T]#get__T_Tv(tvref/90) in
-      join k483(jp484: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
-        jump k481(jp484)
+      let x216 = Typ::TVar._0(ty/85) in
+      let tvref/90 = x216 in
+      let mtmp220 = inherent#Ref#Ref[T]#get__T_Tv(tvref/90) in
+      join k523(jp524: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
+        jump k521(jp524)
       } in
-      match mtmp180 {
+      match mtmp220 {
         Tag_1 => {
-          let x183 = Tv::Link._0(mtmp180) in
-          let inner/91 = x183 in
-          let t485 = inst_loop(st/83, subst/84, inner/91) in
-          jump k483(t485)
+          let x223 = Tv::Link._0(mtmp220) in
+          let inner/91 = x223 in
+          let t525 = inst_loop(st/83, subst/84, inner/91) in
+          jump k523(t525)
         },
         _ => {
-          let t486 = Typ::TVar(tvref/90) in
-          let t487 = (t486, subst/84) in
-          jump k483(t487)
+          let t526 = Typ::TVar(tvref/90) in
+          let t527 = (t526, subst/84) in
+          jump k523(t527)
         },
       }
     },
     Tag_1 => {
-      let x177 = Typ::QVar._0(ty/85) in
-      let name/86 = x177 in
-      let mtmp184 = subst_lookup(subst/84, name/86) in
-      join k488(jp489: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
-        jump k481(jp489)
+      let x217 = Typ::QVar._0(ty/85) in
+      let name/86 = x217 in
+      let mtmp224 = subst_lookup(subst/84, name/86) in
+      join k528(jp529: (Typ, Vec[SubstEntry])) -> (Typ, Vec[SubstEntry]) {
+        jump k521(jp529)
       } in
-      match mtmp184 {
+      match mtmp224 {
         Tag_0 => {
           let tv/88 = newvar(st/83) in
-          let t490 = SubstEntry { name: name/86, ty: tv/88 } in
-          let new_subst/89 = inherent#Vec#Vec[T]#pushed__T_SubstEntry(subst/84, t490) in
-          let t491 = (tv/88, new_subst/89) in
-          jump k488(t491)
+          let t530 = SubstEntry { name: name/86, ty: tv/88 } in
+          let new_subst/89 = inherent#Vec#Vec[T]#pushed__T_SubstEntry(subst/84, t530) in
+          let t531 = (tv/88, new_subst/89) in
+          jump k528(t531)
         },
         Tag_1 => {
-          let x185 = Option__Typ::Some._0(mtmp184) in
-          let t/87 = x185 in
-          let t492 = (t/87, subst/84) in
-          jump k488(t492)
+          let x225 = Option__Typ::Some._0(mtmp224) in
+          let t/87 = x225 in
+          let t532 = (t/87, subst/84) in
+          jump k528(t532)
         },
       }
     },
     Tag_2 => {
-      let x178 = Typ::TArrow._0(ty/85) in
-      let x179 = Typ::TArrow._1(ty/85) in
-      let t2/93 = x179 in
-      let t1/92 = x178 in
-      let mtmp186 = inst_loop(st/83, subst/84, t1/92) in
-      let x187 = mtmp186.0 in
-      let x188 = mtmp186.1 in
-      let subst1/95 = x188 in
-      let ty1/94 = x187 in
-      let mtmp189 = inst_loop(st/83, subst1/95, t2/93) in
-      let x190 = mtmp189.0 in
-      let x191 = mtmp189.1 in
-      let subst2/97 = x191 in
-      let ty2/96 = x190 in
-      let t493 = Typ::TArrow(ty1/94, ty2/96) in
-      let t494 = (t493, subst2/97) in
-      jump k481(t494)
+      let x218 = Typ::TArrow._0(ty/85) in
+      let x219 = Typ::TArrow._1(ty/85) in
+      let t2/93 = x219 in
+      let t1/92 = x218 in
+      let mtmp226 = inst_loop(st/83, subst/84, t1/92) in
+      let x227 = mtmp226.0 in
+      let x228 = mtmp226.1 in
+      let subst1/95 = x228 in
+      let ty1/94 = x227 in
+      let mtmp229 = inst_loop(st/83, subst1/95, t2/93) in
+      let x230 = mtmp229.0 in
+      let x231 = mtmp229.1 in
+      let subst2/97 = x231 in
+      let ty2/96 = x230 in
+      let t533 = Typ::TArrow(ty1/94, ty2/96) in
+      let t534 = (t533, subst2/97) in
+      jump k521(t534)
     },
   }
 }
 
 fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
-  join ret495(retv496: Typ) -> Typ {
-    retv496
+  join ret535(retv536: Typ) -> Typ {
+    retv536
   } in
   let subst0/100 = inherent#Vec#Vec[T]#new__T_SubstEntry() in
-  let mtmp192 = inst_loop(st/98, subst0/100, ty/99) in
-  let x193 = mtmp192.0 in
-  let x194 = mtmp192.1 in
-  let t/101 = x193 in
-  jump ret495(t/101)
+  let mtmp232 = inst_loop(st/98, subst0/100, ty/99) in
+  let x233 = mtmp232.0 in
+  let x234 = mtmp232.1 in
+  let t/101 = x233 in
+  jump ret535(t/101)
 }
 
 fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__Typ__string {
-  join ret497(retv498: Result__Typ__string) -> Result__Typ__string {
-    retv498
+  join ret537(retv538: Result__Typ__string) -> Result__Typ__string {
+    retv538
   } in
-  join k499(jp500: Result__Typ__string) -> Result__Typ__string {
-    jump ret497(jp500)
+  join k539(jp540: Result__Typ__string) -> Result__Typ__string {
+    jump ret537(jp540)
   } in
   match e/104 {
     Tag_0 => {
-      let x195 = Exp::Var._0(e/104) in
-      let x/105 = x195 in
-      let mtmp203 = env_lookup(env/103, x/105) in
-      join k501(jp502: Result__Typ__string) -> Result__Typ__string {
-        jump k499(jp502)
+      let x235 = Exp::Var._0(e/104) in
+      let x/105 = x235 in
+      let mtmp243 = env_lookup(env/103, x/105) in
+      join k541(jp542: Result__Typ__string) -> Result__Typ__string {
+        jump k539(jp542)
       } in
-      match mtmp203 {
+      match mtmp243 {
         Tag_0 => {
-          let t503 = Result__Typ__string::Err("unbound var") in
-          jump k501(t503)
+          let t543 = Result__Typ__string::Err("unbound var") in
+          jump k541(t543)
         },
         Tag_1 => {
-          let x204 = Option__Typ::Some._0(mtmp203) in
-          let ty/106 = x204 in
-          let t504 = inst(st/102, ty/106) in
-          let t505 = Result__Typ__string::Ok(t504) in
-          jump k501(t505)
+          let x244 = Option__Typ::Some._0(mtmp243) in
+          let ty/106 = x244 in
+          let t544 = inst(st/102, ty/106) in
+          let t545 = Result__Typ__string::Ok(t544) in
+          jump k541(t545)
         },
       }
     },
     Tag_1 => {
-      let x196 = Exp::App._0(e/104) in
-      let x197 = Exp::App._1(e/104) in
-      let e2/114 = x197 in
-      let e1/113 = x196 in
-      let mtmp205 = typeof(st/102, env/103, e1/113) in
-      join k506(jp507: Result__Typ__string) -> Result__Typ__string {
-        jump k499(jp507)
+      let x236 = Exp::App._0(e/104) in
+      let x237 = Exp::App._1(e/104) in
+      let e2/114 = x237 in
+      let e1/113 = x236 in
+      let mtmp245 = typeof(st/102, env/103, e1/113) in
+      join k546(jp547: Result__Typ__string) -> Result__Typ__string {
+        jump k539(jp547)
       } in
-      match mtmp205 {
+      match mtmp245 {
         Tag_0 => {
-          let x206 = Result__Typ__string::Ok._0(mtmp205) in
-          let ty_fun/116 = x206 in
-          let mtmp208 = typeof(st/102, env/103, e2/114) in
-          join k508(jp509: Result__Typ__string) -> Result__Typ__string {
-            jump k506(jp509)
+          let x246 = Result__Typ__string::Ok._0(mtmp245) in
+          let ty_fun/116 = x246 in
+          let mtmp248 = typeof(st/102, env/103, e2/114) in
+          join k548(jp549: Result__Typ__string) -> Result__Typ__string {
+            jump k546(jp549)
           } in
-          match mtmp208 {
+          match mtmp248 {
             Tag_0 => {
-              let x209 = Result__Typ__string::Ok._0(mtmp208) in
-              let ty_arg/118 = x209 in
+              let x249 = Result__Typ__string::Ok._0(mtmp248) in
+              let ty_arg/118 = x249 in
               let ty_res/119 = newvar(st/102) in
               let arrow/120 = Typ::TArrow(ty_arg/118, ty_res/119) in
-              let mtmp211 = unify(st/102, ty_fun/116, arrow/120) in
-              join k510(jp511: Result__Typ__string) -> Result__Typ__string {
-                jump k508(jp511)
+              let mtmp251 = unify(st/102, ty_fun/116, arrow/120) in
+              join k550(jp551: Result__Typ__string) -> Result__Typ__string {
+                jump k548(jp551)
               } in
-              match mtmp211 {
+              match mtmp251 {
                 Tag_0 => {
-                  let x212 = Result__unit__string::Ok._0(mtmp211) in
-                  let t512 = Result__Typ__string::Ok(ty_res/119) in
-                  jump k510(t512)
+                  let x252 = Result__unit__string::Ok._0(mtmp251) in
+                  let t552 = Result__Typ__string::Ok(ty_res/119) in
+                  jump k550(t552)
                 },
                 Tag_1 => {
-                  let x213 = Result__unit__string::Err._0(mtmp211) in
-                  let e/121 = x213 in
-                  let t513 = Result__Typ__string::Err(e/121) in
-                  jump k510(t513)
+                  let x253 = Result__unit__string::Err._0(mtmp251) in
+                  let e/121 = x253 in
+                  let t553 = Result__Typ__string::Err(e/121) in
+                  jump k550(t553)
                 },
               }
             },
             Tag_1 => {
-              let x210 = Result__Typ__string::Err._0(mtmp208) in
-              let e/117 = x210 in
-              let t514 = Result__Typ__string::Err(e/117) in
-              jump k508(t514)
+              let x250 = Result__Typ__string::Err._0(mtmp248) in
+              let e/117 = x250 in
+              let t554 = Result__Typ__string::Err(e/117) in
+              jump k548(t554)
             },
           }
         },
         Tag_1 => {
-          let x207 = Result__Typ__string::Err._0(mtmp205) in
-          let e/115 = x207 in
-          let t515 = Result__Typ__string::Err(e/115) in
-          jump k506(t515)
+          let x247 = Result__Typ__string::Err._0(mtmp245) in
+          let e/115 = x247 in
+          let t555 = Result__Typ__string::Err(e/115) in
+          jump k546(t555)
         },
       }
     },
     Tag_2 => {
-      let x198 = Exp::Lam._0(e/104) in
-      let x199 = Exp::Lam._1(e/104) in
-      let body/108 = x199 in
-      let x/107 = x198 in
+      let x238 = Exp::Lam._0(e/104) in
+      let x239 = Exp::Lam._1(e/104) in
+      let body/108 = x239 in
+      let x/107 = x238 in
       let ty_x/109 = newvar(st/102) in
-      let t516 = EnvEntry { name: x/107, ty: ty_x/109 } in
-      let env2/110 = inherent#Vec#Vec[T]#pushed__T_EnvEntry(env/103, t516) in
-      let mtmp214 = typeof(st/102, env2/110, body/108) in
-      join k517(jp518: Result__Typ__string) -> Result__Typ__string {
-        jump k499(jp518)
+      let t556 = EnvEntry { name: x/107, ty: ty_x/109 } in
+      let env2/110 = inherent#Vec#Vec[T]#pushed__T_EnvEntry(env/103, t556) in
+      let mtmp254 = typeof(st/102, env2/110, body/108) in
+      join k557(jp558: Result__Typ__string) -> Result__Typ__string {
+        jump k539(jp558)
       } in
-      match mtmp214 {
+      match mtmp254 {
         Tag_0 => {
-          let x215 = Result__Typ__string::Ok._0(mtmp214) in
-          let ty_e/111 = x215 in
-          let t519 = Typ::TArrow(ty_x/109, ty_e/111) in
-          let t520 = Result__Typ__string::Ok(t519) in
-          jump k517(t520)
+          let x255 = Result__Typ__string::Ok._0(mtmp254) in
+          let ty_e/111 = x255 in
+          let t559 = Typ::TArrow(ty_x/109, ty_e/111) in
+          let t560 = Result__Typ__string::Ok(t559) in
+          jump k557(t560)
         },
         Tag_1 => {
-          let x216 = Result__Typ__string::Err._0(mtmp214) in
-          let e/112 = x216 in
-          let t521 = Result__Typ__string::Err(e/112) in
-          jump k517(t521)
+          let x256 = Result__Typ__string::Err._0(mtmp254) in
+          let e/112 = x256 in
+          let t561 = Result__Typ__string::Err(e/112) in
+          jump k557(t561)
         },
       }
     },
     Tag_3 => {
-      let x200 = Exp::Let._0(e/104) in
-      let x201 = Exp::Let._1(e/104) in
-      let x202 = Exp::Let._2(e/104) in
-      let e2/124 = x202 in
-      let e1/123 = x201 in
-      let x/122 = x200 in
-      let _wild217 = enter_level(st/102) in
+      let x240 = Exp::Let._0(e/104) in
+      let x241 = Exp::Let._1(e/104) in
+      let x242 = Exp::Let._2(e/104) in
+      let e2/124 = x242 in
+      let e1/123 = x241 in
+      let x/122 = x240 in
+      let _wild257 = enter_level(st/102) in
       let ty_e/125 = typeof(st/102, env/103, e1/123) in
-      let _wild218 = leave_level(st/102) in
-      join k522(jp523: Result__Typ__string) -> Result__Typ__string {
-        jump k499(jp523)
+      let _wild258 = leave_level(st/102) in
+      join k562(jp563: Result__Typ__string) -> Result__Typ__string {
+        jump k539(jp563)
       } in
       match ty_e/125 {
         Tag_0 => {
-          let x219 = Result__Typ__string::Ok._0(ty_e/125) in
-          let ty1/127 = x219 in
-          let t524 = gen(st/102, ty1/127) in
-          let t525 = EnvEntry { name: x/122, ty: t524 } in
-          let env2/128 = inherent#Vec#Vec[T]#pushed__T_EnvEntry(env/103, t525) in
-          let t526 = typeof(st/102, env2/128, e2/124) in
-          jump k522(t526)
+          let x259 = Result__Typ__string::Ok._0(ty_e/125) in
+          let ty1/127 = x259 in
+          let t564 = gen(st/102, ty1/127) in
+          let t565 = EnvEntry { name: x/122, ty: t564 } in
+          let env2/128 = inherent#Vec#Vec[T]#pushed__T_EnvEntry(env/103, t565) in
+          let t566 = typeof(st/102, env2/128, e2/124) in
+          jump k562(t566)
         },
         Tag_1 => {
-          let x220 = Result__Typ__string::Err._0(ty_e/125) in
-          let e/126 = x220 in
-          let t527 = Result__Typ__string::Err(e/126) in
-          jump k522(t527)
+          let x260 = Result__Typ__string::Err._0(ty_e/125) in
+          let e/126 = x260 in
+          let t567 = Result__Typ__string::Err(e/126) in
+          jump k562(t567)
         },
       }
     },
@@ -1065,604 +1065,604 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
 }
 
 fn exp_var(name/129: string) -> Exp {
-  join ret528(retv529: Exp) -> Exp {
-    retv529
+  join ret568(retv569: Exp) -> Exp {
+    retv569
   } in
-  let t530 = Exp::Var(name/129) in
-  jump ret528(t530)
+  let t570 = Exp::Var(name/129) in
+  jump ret568(t570)
 }
 
 fn exp_lam(name/130: string, body/131: Exp) -> Exp {
-  join ret531(retv532: Exp) -> Exp {
-    retv532
+  join ret571(retv572: Exp) -> Exp {
+    retv572
   } in
-  let t533 = Exp::Lam(name/130, body/131) in
-  jump ret531(t533)
+  let t573 = Exp::Lam(name/130, body/131) in
+  jump ret571(t573)
 }
 
 fn exp_app(a/132: Exp, b/133: Exp) -> Exp {
-  join ret534(retv535: Exp) -> Exp {
-    retv535
+  join ret574(retv575: Exp) -> Exp {
+    retv575
   } in
-  let t536 = Exp::App(a/132, b/133) in
-  jump ret534(t536)
+  let t576 = Exp::App(a/132, b/133) in
+  jump ret574(t576)
 }
 
 fn exp_let(name/134: string, a/135: Exp, b/136: Exp) -> Exp {
-  join ret537(retv538: Exp) -> Exp {
-    retv538
+  join ret577(retv578: Exp) -> Exp {
+    retv578
   } in
-  let t539 = Exp::Let(name/134, a/135, b/136) in
-  jump ret537(t539)
+  let t579 = Exp::Let(name/134, a/135, b/136) in
+  jump ret577(t579)
 }
 
 fn show_result(label/137: string, res/138: Result__Typ__string) -> unit {
-  join ret540() -> unit {
+  join ret580() -> unit {
     ()
   } in
-  join k541() -> unit {
-    jump ret540()
+  join k581() -> unit {
+    jump ret580()
   } in
   match res/138 {
     Tag_0 => {
-      let x221 = Result__Typ__string::Ok._0(res/138) in
-      let ty/139 = x221 in
-      let t542 = (label/137 + ": ") in
-      let t543 = typ_to_string(ty/139) in
-      let t544 = (t542 + t543) in
-      let t545 = println__T_string(t544) in
-      jump k541()
+      let x261 = Result__Typ__string::Ok._0(res/138) in
+      let ty/139 = x261 in
+      let t582 = (label/137 + ": ") in
+      let t583 = typ_to_string(ty/139) in
+      let t584 = (t582 + t583) in
+      let t585 = println__T_string(t584) in
+      jump k581()
     },
     Tag_1 => {
-      let x222 = Result__Typ__string::Err._0(res/138) in
-      let e/140 = x222 in
-      let t546 = (label/137 + ": ") in
-      let t547 = (t546 + e/140) in
-      let t548 = println__T_string(t547) in
-      jump k541()
+      let x262 = Result__Typ__string::Err._0(res/138) in
+      let e/140 = x262 in
+      let t586 = (label/137 + ": ") in
+      let t587 = (t586 + e/140) in
+      let t588 = println__T_string(t587) in
+      jump k581()
     },
   }
 }
 
 fn main() -> unit {
-  join ret549() -> unit {
+  join ret589() -> unit {
     ()
   } in
   let st/141 = state_new() in
-  let t550 = exp_var("x") in
-  let id/142 = exp_lam("x", t550) in
-  let t551 = exp_var("x") in
-  let t552 = exp_var("y") in
-  let t553 = exp_app(t551, t552) in
-  let t554 = exp_lam("y", t553) in
-  let c1/143 = exp_lam("x", t554) in
-  let _wild223 = reset_type_variables(st/141) in
-  let t555 = env_empty() in
-  let t556 = typeof(st/141, t555, id/142) in
-  let _wild224 = show_result("id", t556) in
-  let _wild225 = reset_type_variables(st/141) in
-  let t557 = env_empty() in
-  let t558 = typeof(st/141, t557, c1/143) in
-  let _wild226 = show_result("c1", t558) in
-  let _wild227 = reset_type_variables(st/141) in
-  let t559 = env_empty() in
-  let t560 = exp_var("x") in
-  let t561 = exp_let("x", c1/143, t560) in
-  let t562 = typeof(st/141, t559, t561) in
-  let _wild228 = show_result("let_x_c1_x", t562) in
-  let _wild229 = reset_type_variables(st/141) in
-  let t563 = env_empty() in
-  let t564 = exp_var("z") in
-  let t565 = exp_lam("z", t564) in
-  let t566 = exp_var("y") in
-  let t567 = exp_let("y", t565, t566) in
-  let t568 = typeof(st/141, t563, t567) in
-  let _wild230 = show_result("let_y_id_y", t568) in
-  let _wild231 = reset_type_variables(st/141) in
-  let t569 = env_empty() in
-  let t570 = exp_var("z") in
-  let t571 = exp_lam("z", t570) in
-  let t572 = exp_var("y") in
-  let t573 = exp_let("y", t571, t572) in
-  let t574 = exp_lam("x", t573) in
-  let t575 = typeof(st/141, t569, t574) in
-  let _wild232 = show_result("lam_x_let_y_id_y", t575) in
-  let _wild233 = reset_type_variables(st/141) in
-  let t576 = env_empty() in
-  let t577 = exp_var("z") in
-  let t578 = exp_lam("z", t577) in
-  let t579 = exp_var("y") in
-  let t580 = exp_var("x") in
-  let t581 = exp_app(t579, t580) in
-  let t582 = exp_let("y", t578, t581) in
-  let t583 = exp_lam("x", t582) in
-  let t584 = typeof(st/141, t576, t583) in
-  let _wild234 = show_result("lam_x_let_y_id_yx", t584) in
-  let _wild235 = reset_type_variables(st/141) in
-  let t585 = env_empty() in
-  let t586 = exp_var("x") in
-  let t587 = exp_var("x") in
-  let t588 = exp_app(t586, t587) in
-  let t589 = exp_lam("x", t588) in
-  let t590 = typeof(st/141, t585, t589) in
-  let _wild236 = show_result("self_apply", t590) in
-  let _wild237 = reset_type_variables(st/141) in
-  let t591 = env_empty() in
-  let t592 = exp_var("x") in
-  let t593 = exp_var("x") in
-  let t594 = exp_let("x", t592, t593) in
-  let t595 = typeof(st/141, t591, t594) in
-  let _wild238 = show_result("unbound_var", t595) in
-  let _wild239 = reset_type_variables(st/141) in
-  let t596 = env_empty() in
-  let t597 = exp_var("y") in
-  let t598 = exp_var("y") in
-  let t599 = exp_var("z") in
-  let t600 = exp_app(t598, t599) in
-  let t601 = exp_lam("z", t600) in
-  let t602 = exp_app(t597, t601) in
-  let t603 = exp_lam("y", t602) in
-  let t604 = typeof(st/141, t596, t603) in
-  let _wild240 = show_result("max_heiber", t604) in
-  let _wild241 = reset_type_variables(st/141) in
-  let t605 = env_empty() in
-  let t606 = exp_var("k") in
-  let t607 = exp_var("k") in
-  let t608 = exp_var("x") in
-  let t609 = exp_app(t607, t608) in
-  let t610 = exp_var("y") in
-  let t611 = exp_app(t609, t610) in
-  let t612 = exp_app(t606, t611) in
-  let t613 = exp_var("k") in
-  let t614 = exp_var("y") in
-  let t615 = exp_app(t613, t614) in
-  let t616 = exp_var("x") in
-  let t617 = exp_app(t615, t616) in
-  let t618 = exp_app(t612, t617) in
-  let t619 = exp_lam("k", t618) in
-  let t620 = exp_lam("y", t619) in
-  let t621 = exp_lam("x", t620) in
-  let t622 = typeof(st/141, t605, t621) in
-  let _wild242 = show_result("kirang", t622) in
-  let _wild243 = reset_type_variables(st/141) in
-  let t623 = env_empty() in
-  let t624 = exp_var("id") in
-  let t625 = exp_var("id") in
-  let t626 = exp_app(t624, t625) in
-  let t627 = exp_let("id", id/142, t626) in
-  let t628 = typeof(st/141, t623, t627) in
-  let _wild244 = show_result("let_id_idid", t628) in
-  let _wild245 = reset_type_variables(st/141) in
-  let t629 = env_empty() in
-  let t630 = exp_var("x") in
-  let t631 = exp_app(t630, id/142) in
-  let t632 = exp_var("z") in
-  let t633 = exp_let("z", t631, t632) in
-  let t634 = exp_var("y") in
-  let t635 = exp_let("y", t633, t634) in
-  let t636 = exp_let("x", c1/143, t635) in
-  let t637 = typeof(st/141, t629, t636) in
-  let _wild246 = show_result("nested_lets", t637) in
-  let _wild247 = reset_type_variables(st/141) in
-  let t638 = env_empty() in
-  let t639 = exp_var("x") in
-  let t640 = exp_var("y") in
-  let t641 = exp_app(t639, t640) in
-  let t642 = exp_var("y") in
-  let t643 = exp_var("x") in
-  let t644 = exp_app(t642, t643) in
-  let t645 = exp_lam("x", t644) in
-  let t646 = exp_let("x", t641, t645) in
-  let t647 = exp_lam("y", t646) in
-  let t648 = exp_lam("x", t647) in
-  let t649 = typeof(st/141, t638, t648) in
-  let _wild248 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", t649) in
-  let _wild249 = reset_type_variables(st/141) in
-  let t650 = env_empty() in
-  let t651 = exp_var("x") in
-  let t652 = exp_var("y") in
-  let t653 = exp_let("y", t651, t652) in
-  let t654 = exp_lam("x", t653) in
-  let t655 = typeof(st/141, t650, t654) in
-  let _wild250 = show_result("sound_gen_1", t655) in
-  let _wild251 = reset_type_variables(st/141) in
-  let t656 = env_empty() in
-  let t657 = exp_var("x") in
-  let t658 = exp_lam("z", t657) in
-  let t659 = exp_var("y") in
-  let t660 = exp_let("y", t658, t659) in
+  let t590 = exp_var("x") in
+  let id/142 = exp_lam("x", t590) in
+  let t591 = exp_var("x") in
+  let t592 = exp_var("y") in
+  let t593 = exp_app(t591, t592) in
+  let t594 = exp_lam("y", t593) in
+  let c1/143 = exp_lam("x", t594) in
+  let _wild263 = reset_type_variables(st/141) in
+  let t595 = env_empty() in
+  let t596 = typeof(st/141, t595, id/142) in
+  let _wild264 = show_result("id", t596) in
+  let _wild265 = reset_type_variables(st/141) in
+  let t597 = env_empty() in
+  let t598 = typeof(st/141, t597, c1/143) in
+  let _wild266 = show_result("c1", t598) in
+  let _wild267 = reset_type_variables(st/141) in
+  let t599 = env_empty() in
+  let t600 = exp_var("x") in
+  let t601 = exp_let("x", c1/143, t600) in
+  let t602 = typeof(st/141, t599, t601) in
+  let _wild268 = show_result("let_x_c1_x", t602) in
+  let _wild269 = reset_type_variables(st/141) in
+  let t603 = env_empty() in
+  let t604 = exp_var("z") in
+  let t605 = exp_lam("z", t604) in
+  let t606 = exp_var("y") in
+  let t607 = exp_let("y", t605, t606) in
+  let t608 = typeof(st/141, t603, t607) in
+  let _wild270 = show_result("let_y_id_y", t608) in
+  let _wild271 = reset_type_variables(st/141) in
+  let t609 = env_empty() in
+  let t610 = exp_var("z") in
+  let t611 = exp_lam("z", t610) in
+  let t612 = exp_var("y") in
+  let t613 = exp_let("y", t611, t612) in
+  let t614 = exp_lam("x", t613) in
+  let t615 = typeof(st/141, t609, t614) in
+  let _wild272 = show_result("lam_x_let_y_id_y", t615) in
+  let _wild273 = reset_type_variables(st/141) in
+  let t616 = env_empty() in
+  let t617 = exp_var("z") in
+  let t618 = exp_lam("z", t617) in
+  let t619 = exp_var("y") in
+  let t620 = exp_var("x") in
+  let t621 = exp_app(t619, t620) in
+  let t622 = exp_let("y", t618, t621) in
+  let t623 = exp_lam("x", t622) in
+  let t624 = typeof(st/141, t616, t623) in
+  let _wild274 = show_result("lam_x_let_y_id_yx", t624) in
+  let _wild275 = reset_type_variables(st/141) in
+  let t625 = env_empty() in
+  let t626 = exp_var("x") in
+  let t627 = exp_var("x") in
+  let t628 = exp_app(t626, t627) in
+  let t629 = exp_lam("x", t628) in
+  let t630 = typeof(st/141, t625, t629) in
+  let _wild276 = show_result("self_apply", t630) in
+  let _wild277 = reset_type_variables(st/141) in
+  let t631 = env_empty() in
+  let t632 = exp_var("x") in
+  let t633 = exp_var("x") in
+  let t634 = exp_let("x", t632, t633) in
+  let t635 = typeof(st/141, t631, t634) in
+  let _wild278 = show_result("unbound_var", t635) in
+  let _wild279 = reset_type_variables(st/141) in
+  let t636 = env_empty() in
+  let t637 = exp_var("y") in
+  let t638 = exp_var("y") in
+  let t639 = exp_var("z") in
+  let t640 = exp_app(t638, t639) in
+  let t641 = exp_lam("z", t640) in
+  let t642 = exp_app(t637, t641) in
+  let t643 = exp_lam("y", t642) in
+  let t644 = typeof(st/141, t636, t643) in
+  let _wild280 = show_result("max_heiber", t644) in
+  let _wild281 = reset_type_variables(st/141) in
+  let t645 = env_empty() in
+  let t646 = exp_var("k") in
+  let t647 = exp_var("k") in
+  let t648 = exp_var("x") in
+  let t649 = exp_app(t647, t648) in
+  let t650 = exp_var("y") in
+  let t651 = exp_app(t649, t650) in
+  let t652 = exp_app(t646, t651) in
+  let t653 = exp_var("k") in
+  let t654 = exp_var("y") in
+  let t655 = exp_app(t653, t654) in
+  let t656 = exp_var("x") in
+  let t657 = exp_app(t655, t656) in
+  let t658 = exp_app(t652, t657) in
+  let t659 = exp_lam("k", t658) in
+  let t660 = exp_lam("y", t659) in
   let t661 = exp_lam("x", t660) in
-  let t662 = typeof(st/141, t656, t661) in
-  let _wild252 = show_result("sound_gen_2", t662) in
-  let _wild253 = reset_type_variables(st/141) in
+  let t662 = typeof(st/141, t645, t661) in
+  let _wild282 = show_result("kirang", t662) in
+  let _wild283 = reset_type_variables(st/141) in
   let t663 = env_empty() in
-  let t664 = exp_var("x") in
-  let t665 = exp_var("z") in
+  let t664 = exp_var("id") in
+  let t665 = exp_var("id") in
   let t666 = exp_app(t664, t665) in
-  let t667 = exp_lam("z", t666) in
-  let t668 = exp_var("y") in
-  let t669 = exp_let("y", t667, t668) in
-  let t670 = exp_lam("x", t669) in
-  let t671 = typeof(st/141, t663, t670) in
-  let _wild254 = show_result("sound_gen_3", t671) in
-  let _wild255 = reset_type_variables(st/141) in
-  let t672 = env_empty() in
-  let t673 = exp_var("x") in
+  let t667 = exp_let("id", id/142, t666) in
+  let t668 = typeof(st/141, t663, t667) in
+  let _wild284 = show_result("let_id_idid", t668) in
+  let _wild285 = reset_type_variables(st/141) in
+  let t669 = env_empty() in
+  let t670 = exp_var("x") in
+  let t671 = exp_app(t670, id/142) in
+  let t672 = exp_var("z") in
+  let t673 = exp_let("z", t671, t672) in
   let t674 = exp_var("y") in
-  let t675 = exp_app(t673, t674) in
-  let t676 = exp_var("x") in
-  let t677 = exp_var("y") in
-  let t678 = exp_app(t676, t677) in
-  let t679 = exp_let("x", t675, t678) in
-  let t680 = exp_lam("y", t679) in
-  let t681 = exp_lam("x", t680) in
-  let t682 = typeof(st/141, t672, t681) in
-  let _wild256 = show_result("double_apply", t682) in
-  let _wild257 = reset_type_variables(st/141) in
-  let t683 = env_empty() in
-  let t684 = exp_var("x") in
-  let t685 = exp_var("y") in
-  let t686 = exp_var("y") in
-  let t687 = exp_app(t685, t686) in
-  let t688 = exp_let("y", t684, t687) in
-  let t689 = exp_lam("x", t688) in
-  let t690 = typeof(st/141, t683, t689) in
-  let _wild258 = show_result("sound_gen_occurs", t690) in
-  let _wild259 = reset_gensym(st/141) in
-  let t691 = env_empty() in
-  let t692 = exp_var("x") in
-  let t693 = exp_app(t692, id/142) in
-  let t694 = exp_var("z") in
-  let t695 = exp_let("z", t693, t694) in
-  let t696 = exp_var("y") in
-  let t697 = exp_let("y", t695, t696) in
-  let t698 = exp_lam("x", t697) in
-  let t699 = typeof(st/141, t691, t698) in
-  let _wild260 = show_result("fun_x_let_y_let_z_x_id_z_y", t699) in
-  let _wild261 = println__T_string("") in
-  let _wild262 = println__T_string("All Done") in
-  let _wild263 = println__T_string("") in
-  jump ret549()
+  let t675 = exp_let("y", t673, t674) in
+  let t676 = exp_let("x", c1/143, t675) in
+  let t677 = typeof(st/141, t669, t676) in
+  let _wild286 = show_result("nested_lets", t677) in
+  let _wild287 = reset_type_variables(st/141) in
+  let t678 = env_empty() in
+  let t679 = exp_var("x") in
+  let t680 = exp_var("y") in
+  let t681 = exp_app(t679, t680) in
+  let t682 = exp_var("y") in
+  let t683 = exp_var("x") in
+  let t684 = exp_app(t682, t683) in
+  let t685 = exp_lam("x", t684) in
+  let t686 = exp_let("x", t681, t685) in
+  let t687 = exp_lam("y", t686) in
+  let t688 = exp_lam("x", t687) in
+  let t689 = typeof(st/141, t678, t688) in
+  let _wild288 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", t689) in
+  let _wild289 = reset_type_variables(st/141) in
+  let t690 = env_empty() in
+  let t691 = exp_var("x") in
+  let t692 = exp_var("y") in
+  let t693 = exp_let("y", t691, t692) in
+  let t694 = exp_lam("x", t693) in
+  let t695 = typeof(st/141, t690, t694) in
+  let _wild290 = show_result("sound_gen_1", t695) in
+  let _wild291 = reset_type_variables(st/141) in
+  let t696 = env_empty() in
+  let t697 = exp_var("x") in
+  let t698 = exp_lam("z", t697) in
+  let t699 = exp_var("y") in
+  let t700 = exp_let("y", t698, t699) in
+  let t701 = exp_lam("x", t700) in
+  let t702 = typeof(st/141, t696, t701) in
+  let _wild292 = show_result("sound_gen_2", t702) in
+  let _wild293 = reset_type_variables(st/141) in
+  let t703 = env_empty() in
+  let t704 = exp_var("x") in
+  let t705 = exp_var("z") in
+  let t706 = exp_app(t704, t705) in
+  let t707 = exp_lam("z", t706) in
+  let t708 = exp_var("y") in
+  let t709 = exp_let("y", t707, t708) in
+  let t710 = exp_lam("x", t709) in
+  let t711 = typeof(st/141, t703, t710) in
+  let _wild294 = show_result("sound_gen_3", t711) in
+  let _wild295 = reset_type_variables(st/141) in
+  let t712 = env_empty() in
+  let t713 = exp_var("x") in
+  let t714 = exp_var("y") in
+  let t715 = exp_app(t713, t714) in
+  let t716 = exp_var("x") in
+  let t717 = exp_var("y") in
+  let t718 = exp_app(t716, t717) in
+  let t719 = exp_let("x", t715, t718) in
+  let t720 = exp_lam("y", t719) in
+  let t721 = exp_lam("x", t720) in
+  let t722 = typeof(st/141, t712, t721) in
+  let _wild296 = show_result("double_apply", t722) in
+  let _wild297 = reset_type_variables(st/141) in
+  let t723 = env_empty() in
+  let t724 = exp_var("x") in
+  let t725 = exp_var("y") in
+  let t726 = exp_var("y") in
+  let t727 = exp_app(t725, t726) in
+  let t728 = exp_let("y", t724, t727) in
+  let t729 = exp_lam("x", t728) in
+  let t730 = typeof(st/141, t723, t729) in
+  let _wild298 = show_result("sound_gen_occurs", t730) in
+  let _wild299 = reset_gensym(st/141) in
+  let t731 = env_empty() in
+  let t732 = exp_var("x") in
+  let t733 = exp_app(t732, id/142) in
+  let t734 = exp_var("z") in
+  let t735 = exp_let("z", t733, t734) in
+  let t736 = exp_var("y") in
+  let t737 = exp_let("y", t735, t736) in
+  let t738 = exp_lam("x", t737) in
+  let t739 = typeof(st/141, t731, t738) in
+  let _wild300 = show_result("fun_x_let_y_let_z_x_id_z_y", t739) in
+  let _wild301 = println__T_string("") in
+  let _wild302 = println__T_string("All Done") in
+  let _wild303 = println__T_string("") in
+  jump ret589()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
-  join ret700(retv701: Ref[int32]) -> Ref[int32] {
-    retv701
+  join ret740(retv741: Ref[int32]) -> Ref[int32] {
+    retv741
   } in
-  let t702 = @intrinsic(ref.new)(value/207) in
-  jump ret700(t702)
+  let t742 = @intrinsic(ref.new)(value/207) in
+  jump ret740(t742)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
-  join ret703() -> unit {
+  join ret743() -> unit {
     ()
   } in
-  let t704 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret703()
+  let t744 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret743()
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
-  join ret705(retv706: int32) -> int32 {
-    retv706
+  join ret745(retv746: int32) -> int32 {
+    retv746
   } in
-  let t707 = @intrinsic(ref.get)(self/208) in
-  jump ret705(t707)
+  let t747 = @intrinsic(ref.get)(self/208) in
+  jump ret745(t747)
 }
 
 fn inherent#char#char#to_string(self/7: char) -> string {
-  join ret708(retv709: string) -> string {
-    retv709
+  join ret748(retv749: string) -> string {
+    retv749
   } in
-  let t710 = @runtime(core.char_to_string)(self/7) in
-  jump ret708(t710)
+  let t750 = @runtime(core.char_to_string)(self/7) in
+  jump ret748(t750)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret711(retv712: string) -> string {
-    retv712
+  join ret751(retv752: string) -> string {
+    retv752
   } in
-  let t713 = @runtime(core.int32_to_string)(self/6) in
-  jump ret711(t713)
+  let t753 = @runtime(core.int32_to_string)(self/6) in
+  jump ret751(t753)
 }
 
 fn inherent#Ref#Ref[T]#new__T_Tv(value/207: Tv) -> Ref[Tv] {
-  join ret714(retv715: Ref[Tv]) -> Ref[Tv] {
-    retv715
+  join ret754(retv755: Ref[Tv]) -> Ref[Tv] {
+    retv755
   } in
-  let t716 = @intrinsic(ref.new)(value/207) in
-  jump ret714(t716)
+  let t756 = @intrinsic(ref.new)(value/207) in
+  jump ret754(t756)
 }
 
 fn inherent#Ref#Ref[T]#get__T_Tv(self/208: Ref[Tv]) -> Tv {
-  join ret717(retv718: Tv) -> Tv {
-    retv718
+  join ret757(retv758: Tv) -> Tv {
+    retv758
   } in
-  let t719 = @intrinsic(ref.get)(self/208) in
-  jump ret717(t719)
+  let t759 = @intrinsic(ref.get)(self/208) in
+  jump ret757(t759)
 }
 
 fn inherent#Vec#Vec[T]#new__T_EnvEntry() -> Vec[EnvEntry] {
-  join ret720(retv721: Vec[EnvEntry]) -> Vec[EnvEntry] {
-    retv721
+  join ret760(retv761: Vec[EnvEntry]) -> Vec[EnvEntry] {
+    retv761
   } in
-  let t722 = @intrinsic(vec.new)() in
-  jump ret720(t722)
+  let t762 = @intrinsic(vec.new)() in
+  jump ret760(t762)
 }
 
 fn inherent#Vec#Vec[T]#len__T_EnvEntry(self/137: Vec[EnvEntry]) -> int {
-  join ret723(retv724: int) -> int {
-    retv724
+  join ret763(retv764: int) -> int {
+    retv764
   } in
-  let t725 = @intrinsic(vec.len)(self/137) in
-  jump ret723(t725)
+  let t765 = @intrinsic(vec.len)(self/137) in
+  jump ret763(t765)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret726(retv727: Ref[int]) -> Ref[int] {
-    retv727
+  join ret766(retv767: Ref[int]) -> Ref[int] {
+    retv767
   } in
-  let t728 = @intrinsic(ref.new)(value/207) in
-  jump ret726(t728)
+  let t768 = @intrinsic(ref.new)(value/207) in
+  jump ret766(t768)
 }
 
 fn inherent#Ref#Ref[T]#new__T_Option[Typ](value/207: Option__Typ) -> Ref[Option__Typ] {
-  join ret729(retv730: Ref[Option__Typ]) -> Ref[Option__Typ] {
-    retv730
-  } in
-  let t731 = @intrinsic(ref.new)(value/207) in
-  jump ret729(t731)
-}
-
-fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
-  join ret732(retv733: Ref[bool]) -> Ref[bool] {
-    retv733
-  } in
-  let t734 = @intrinsic(ref.new)(value/207) in
-  jump ret732(t734)
-}
-
-fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
-  join ret735(retv736: bool) -> bool {
-    retv736
-  } in
-  let t737 = @intrinsic(ref.get)(self/208) in
-  jump ret735(t737)
-}
-
-fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret738(retv739: int) -> int {
-    retv739
-  } in
-  let t740 = @intrinsic(ref.get)(self/208) in
-  jump ret738(t740)
-}
-
-fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
-  join ret741(retv742: bool) -> bool {
-    retv742
-  } in
-  let t743 = @intrinsic(eq.primitive)(self/55, other/56) in
-  jump ret741(t743)
-}
-
-fn inherent#Ref#Ref[T]#set__T_Option[Typ](self/209: Ref[Option__Typ], value/210: Option__Typ) -> unit {
-  join ret744() -> unit {
-    ()
-  } in
-  let t745 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret744()
-}
-
-fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit {
-  join ret746() -> unit {
-    ()
-  } in
-  let t747 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret746()
-}
-
-fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret748() -> unit {
-    ()
-  } in
-  let t749 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret748()
-}
-
-fn inherent#Ref#Ref[T]#get__T_Option[Typ](self/208: Ref[Option__Typ]) -> Option__Typ {
-  join ret750(retv751: Option__Typ) -> Option__Typ {
-    retv751
-  } in
-  let t752 = @intrinsic(ref.get)(self/208) in
-  jump ret750(t752)
-}
-
-fn inherent#Vec#Vec[T]#len__T_SubstEntry(self/137: Vec[SubstEntry]) -> int {
-  join ret753(retv754: int) -> int {
-    retv754
-  } in
-  let t755 = @intrinsic(vec.len)(self/137) in
-  jump ret753(t755)
-}
-
-fn inherent#Ref#Ref[T]#set__T_Tv(self/209: Ref[Tv], value/210: Tv) -> unit {
-  join ret756() -> unit {
-    ()
-  } in
-  let t757 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret756()
-}
-
-fn inherent#Vec#Vec[T]#pushed__T_SubstEntry(self/128: Vec[SubstEntry], elem/129: SubstEntry) -> Vec[SubstEntry] {
-  join ret758(retv759: Vec[SubstEntry]) -> Vec[SubstEntry] {
-    retv759
-  } in
-  let result/130 = inherent#Vec#Vec[T]#new__T_SubstEntry() in
-  let index/131 = inherent#Ref#Ref[T]#new__T_int(0) in
-  join exit760() -> Vec[SubstEntry] {
-    let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_SubstEntry(result/130, elem/129) in
-    jump ret758(result/130)
-  } in
-  joinrec {
-    join loop761() -> Vec[SubstEntry] {
-      let t762 = inherent#Ref#Ref[T]#get__T_int(index/131) in
-      let t763 = inherent#Vec#Vec[T]#len__T_SubstEntry(self/128) in
-      let t764 = (t762 < t763) in
-      if t764 {
-        let t765 = inherent#Ref#Ref[T]#get__T_int(index/131) in
-        let t766 = inherent#Vec#Vec[T]#get__T_SubstEntry(self/128, t765) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_SubstEntry(result/130, t766) in
-        let t767 = inherent#Ref#Ref[T]#get__T_int(index/131) in
-        let t768 = (t767 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/131, t768) in
-        jump loop761()
-      } else {
-        jump exit760()
-      }
-    } in
-  } in
-  jump loop761()
-}
-
-fn inherent#Vec#Vec[T]#new__T_SubstEntry() -> Vec[SubstEntry] {
-  join ret769(retv770: Vec[SubstEntry]) -> Vec[SubstEntry] {
+  join ret769(retv770: Ref[Option__Typ]) -> Ref[Option__Typ] {
     retv770
   } in
-  let t771 = @intrinsic(vec.new)() in
+  let t771 = @intrinsic(ref.new)(value/207) in
   jump ret769(t771)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_EnvEntry(self/128: Vec[EnvEntry], elem/129: EnvEntry) -> Vec[EnvEntry] {
-  join ret772(retv773: Vec[EnvEntry]) -> Vec[EnvEntry] {
+fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
+  join ret772(retv773: Ref[bool]) -> Ref[bool] {
     retv773
   } in
-  let result/130 = inherent#Vec#Vec[T]#new__T_EnvEntry() in
-  let index/131 = inherent#Ref#Ref[T]#new__T_int(0) in
-  join exit774() -> Vec[EnvEntry] {
-    let _wild36 = () in
-    let _wild37 = inherent#Vec#Vec[T]#push__T_EnvEntry(result/130, elem/129) in
-    jump ret772(result/130)
-  } in
-  joinrec {
-    join loop775() -> Vec[EnvEntry] {
-      let t776 = inherent#Ref#Ref[T]#get__T_int(index/131) in
-      let t777 = inherent#Vec#Vec[T]#len__T_EnvEntry(self/128) in
-      let t778 = (t776 < t777) in
-      if t778 {
-        let t779 = inherent#Ref#Ref[T]#get__T_int(index/131) in
-        let t780 = inherent#Vec#Vec[T]#get__T_EnvEntry(self/128, t779) in
-        let _wild34 = inherent#Vec#Vec[T]#push__T_EnvEntry(result/130, t780) in
-        let t781 = inherent#Ref#Ref[T]#get__T_int(index/131) in
-        let t782 = (t781 + 1) in
-        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/131, t782) in
-        jump loop775()
-      } else {
-        jump exit774()
-      }
-    } in
-  } in
-  jump loop775()
+  let t774 = @intrinsic(ref.new)(value/207) in
+  jump ret772(t774)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join ret783() -> unit {
+fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
+  join ret775(retv776: bool) -> bool {
+    retv776
+  } in
+  let t777 = @intrinsic(ref.get)(self/208) in
+  jump ret775(t777)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  join ret778(retv779: int) -> int {
+    retv779
+  } in
+  let t780 = @intrinsic(ref.get)(self/208) in
+  jump ret778(t780)
+}
+
+fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
+  join ret781(retv782: bool) -> bool {
+    retv782
+  } in
+  let t783 = @intrinsic(eq.primitive)(self/55, other/56) in
+  jump ret781(t783)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[Typ](self/209: Ref[Option__Typ], value/210: Option__Typ) -> unit {
+  join ret784() -> unit {
     ()
   } in
-  let t784 = trait_impl#ToString#string#to_string(value/1) in
-  let t785 = @runtime(core.string_println)(t784) in
-  jump ret783()
+  let t785 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret784()
 }
 
-fn inherent#Vec#Vec[T]#push__T_SubstEntry(self/126: Vec[SubstEntry], elem/127: SubstEntry) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit {
   join ret786() -> unit {
     ()
   } in
-  let t787 = @intrinsic(vec.push)(self/126, elem/127) in
+  let t787 = @intrinsic(ref.set)(self/209, value/210) in
   jump ret786()
 }
 
-fn inherent#Vec#Vec[T]#get__T_SubstEntry(self/132: Vec[SubstEntry], index/133: int) -> SubstEntry {
-  join ret788(retv789: SubstEntry) -> SubstEntry {
-    retv789
-  } in
-  let t790 = @intrinsic(vec.get)(self/132, index/133) in
-  jump ret788(t790)
-}
-
-fn inherent#Vec#Vec[T]#push__T_EnvEntry(self/126: Vec[EnvEntry], elem/127: EnvEntry) -> unit {
-  join ret791() -> unit {
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  join ret788() -> unit {
     ()
   } in
-  let t792 = @intrinsic(vec.push)(self/126, elem/127) in
-  jump ret791()
+  let t789 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret788()
 }
 
-fn inherent#Vec#Vec[T]#get__T_EnvEntry(self/132: Vec[EnvEntry], index/133: int) -> EnvEntry {
-  join ret793(retv794: EnvEntry) -> EnvEntry {
+fn inherent#Ref#Ref[T]#get__T_Option[Typ](self/208: Ref[Option__Typ]) -> Option__Typ {
+  join ret790(retv791: Option__Typ) -> Option__Typ {
+    retv791
+  } in
+  let t792 = @intrinsic(ref.get)(self/208) in
+  jump ret790(t792)
+}
+
+fn inherent#Vec#Vec[T]#len__T_SubstEntry(self/137: Vec[SubstEntry]) -> int {
+  join ret793(retv794: int) -> int {
     retv794
   } in
-  let t795 = @intrinsic(vec.get)(self/132, index/133) in
+  let t795 = @intrinsic(vec.len)(self/137) in
   jump ret793(t795)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret796(retv797: string) -> string {
-    retv797
+fn inherent#Ref#Ref[T]#set__T_Tv(self/209: Ref[Tv], value/210: Tv) -> unit {
+  join ret796() -> unit {
+    ()
   } in
-  jump ret796(self/38)
+  let t797 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret796()
+}
+
+fn inherent#Vec#Vec[T]#pushed__T_SubstEntry(self/128: Vec[SubstEntry], elem/129: SubstEntry) -> Vec[SubstEntry] {
+  join ret798(retv799: Vec[SubstEntry]) -> Vec[SubstEntry] {
+    retv799
+  } in
+  let result/130 = inherent#Vec#Vec[T]#new__T_SubstEntry() in
+  let index/131 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit800() -> Vec[SubstEntry] {
+    let _wild36 = () in
+    let _wild37 = inherent#Vec#Vec[T]#push__T_SubstEntry(result/130, elem/129) in
+    jump ret798(result/130)
+  } in
+  joinrec {
+    join loop801() -> Vec[SubstEntry] {
+      let t802 = inherent#Ref#Ref[T]#get__T_int(index/131) in
+      let t803 = inherent#Vec#Vec[T]#len__T_SubstEntry(self/128) in
+      let t804 = (t802 < t803) in
+      if t804 {
+        let t805 = inherent#Ref#Ref[T]#get__T_int(index/131) in
+        let t806 = inherent#Vec#Vec[T]#get__T_SubstEntry(self/128, t805) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_SubstEntry(result/130, t806) in
+        let t807 = inherent#Ref#Ref[T]#get__T_int(index/131) in
+        let t808 = (t807 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/131, t808) in
+        jump loop801()
+      } else {
+        jump exit800()
+      }
+    } in
+  } in
+  jump loop801()
+}
+
+fn inherent#Vec#Vec[T]#new__T_SubstEntry() -> Vec[SubstEntry] {
+  join ret809(retv810: Vec[SubstEntry]) -> Vec[SubstEntry] {
+    retv810
+  } in
+  let t811 = @intrinsic(vec.new)() in
+  jump ret809(t811)
+}
+
+fn inherent#Vec#Vec[T]#pushed__T_EnvEntry(self/128: Vec[EnvEntry], elem/129: EnvEntry) -> Vec[EnvEntry] {
+  join ret812(retv813: Vec[EnvEntry]) -> Vec[EnvEntry] {
+    retv813
+  } in
+  let result/130 = inherent#Vec#Vec[T]#new__T_EnvEntry() in
+  let index/131 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit814() -> Vec[EnvEntry] {
+    let _wild36 = () in
+    let _wild37 = inherent#Vec#Vec[T]#push__T_EnvEntry(result/130, elem/129) in
+    jump ret812(result/130)
+  } in
+  joinrec {
+    join loop815() -> Vec[EnvEntry] {
+      let t816 = inherent#Ref#Ref[T]#get__T_int(index/131) in
+      let t817 = inherent#Vec#Vec[T]#len__T_EnvEntry(self/128) in
+      let t818 = (t816 < t817) in
+      if t818 {
+        let t819 = inherent#Ref#Ref[T]#get__T_int(index/131) in
+        let t820 = inherent#Vec#Vec[T]#get__T_EnvEntry(self/128, t819) in
+        let _wild34 = inherent#Vec#Vec[T]#push__T_EnvEntry(result/130, t820) in
+        let t821 = inherent#Ref#Ref[T]#get__T_int(index/131) in
+        let t822 = (t821 + 1) in
+        let _wild35 = inherent#Ref#Ref[T]#set__T_int(index/131, t822) in
+        jump loop815()
+      } else {
+        jump exit814()
+      }
+    } in
+  } in
+  jump loop815()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret823() -> unit {
+    ()
+  } in
+  let t824 = trait_impl#ToString#string#to_string(value/1) in
+  let t825 = @runtime(core.string_println)(t824) in
+  jump ret823()
+}
+
+fn inherent#Vec#Vec[T]#push__T_SubstEntry(self/126: Vec[SubstEntry], elem/127: SubstEntry) -> unit {
+  join ret826() -> unit {
+    ()
+  } in
+  let t827 = @intrinsic(vec.push)(self/126, elem/127) in
+  jump ret826()
+}
+
+fn inherent#Vec#Vec[T]#get__T_SubstEntry(self/132: Vec[SubstEntry], index/133: int) -> SubstEntry {
+  join ret828(retv829: SubstEntry) -> SubstEntry {
+    retv829
+  } in
+  let t830 = @intrinsic(vec.get)(self/132, index/133) in
+  jump ret828(t830)
+}
+
+fn inherent#Vec#Vec[T]#push__T_EnvEntry(self/126: Vec[EnvEntry], elem/127: EnvEntry) -> unit {
+  join ret831() -> unit {
+    ()
+  } in
+  let t832 = @intrinsic(vec.push)(self/126, elem/127) in
+  jump ret831()
+}
+
+fn inherent#Vec#Vec[T]#get__T_EnvEntry(self/132: Vec[EnvEntry], index/133: int) -> EnvEntry {
+  join ret833(retv834: EnvEntry) -> EnvEntry {
+    retv834
+  } in
+  let t835 = @intrinsic(vec.get)(self/132, index/133) in
+  jump ret833(t835)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret836(retv837: string) -> string {
+    retv837
+  } in
+  jump ret836(self/38)
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret798(retv799: bool) -> bool {
-    retv799
+  join ret838(retv839: bool) -> bool {
+    retv839
   } in
-  let t800 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret798(t800)
+  let t840 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret838(t840)
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret801(retv802: uint64) -> uint64 {
-    retv802
+  join ret841(retv842: uint64) -> uint64 {
+    retv842
   } in
-  let t803 = @runtime(core.int32_hash)(self/88) in
-  jump ret801(t803)
+  let t843 = @runtime(core.int32_hash)(self/88) in
+  jump ret841(t843)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret804(retv805: bool) -> bool {
-    retv805
+  join ret844(retv845: bool) -> bool {
+    retv845
   } in
-  let t806 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret804(t806)
+  let t846 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret844(t846)
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret807(retv808: uint64) -> uint64 {
-    retv808
+  join ret847(retv848: uint64) -> uint64 {
+    retv848
   } in
-  let t809 = @runtime(core.int_hash)(self/85) in
-  jump ret807(t809)
+  let t849 = @runtime(core.int_hash)(self/85) in
+  jump ret847(t849)
 }
 
 fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
-  join ret810(retv811: bool) -> bool {
-    retv811
+  join ret850(retv851: bool) -> bool {
+    retv851
   } in
-  let t812 = @intrinsic(eq.primitive)(self/53, other/54) in
-  jump ret810(t812)
+  let t852 = @intrinsic(eq.primitive)(self/53, other/54) in
+  jump ret850(t852)
 }
 
 fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
-  join ret813(retv814: uint64) -> uint64 {
-    retv814
+  join ret853(retv854: uint64) -> uint64 {
+    retv854
   } in
-  join k815(jp816: uint64) -> uint64 {
-    jump ret813(jp816)
+  join k855(jp856: uint64) -> uint64 {
+    jump ret853(jp856)
   } in
   if self/82 {
-    jump k815(1)
+    jump k855(1)
   } else {
-    jump k815(0)
+    jump k855(0)
   }
 }

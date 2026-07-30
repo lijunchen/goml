@@ -1,92 +1,92 @@
 fn match_string(s/0: string) -> int32 {
-  join ret73(retv74: int32) -> int32 {
-    retv74
+  join ret113(retv114: int32) -> int32 {
+    retv114
   } in
-  join k75(jp76: int32) -> int32 {
-    jump ret73(jp76)
+  join k115(jp116: int32) -> int32 {
+    jump ret113(jp116)
   } in
   match s/0 {
     "hello" => {
-      jump k75(1)
+      jump k115(1)
     },
     "world" => {
-      jump k75(2)
+      jump k115(2)
     },
     _ => {
-      jump k75(3)
+      jump k115(3)
     },
   }
 }
 
 fn wildcard_position(s/1: string) -> int32 {
-  join ret77(retv78: int32) -> int32 {
-    retv78
+  join ret117(retv118: int32) -> int32 {
+    retv118
   } in
-  jump ret77(4)
+  jump ret117(4)
 }
 
 fn repeated_string(s/2: string) -> int32 {
-  join ret79(retv80: int32) -> int32 {
-    retv80
+  join ret119(retv120: int32) -> int32 {
+    retv120
   } in
-  join k81(jp82: int32) -> int32 {
-    jump ret79(jp82)
+  join k121(jp122: int32) -> int32 {
+    jump ret119(jp122)
   } in
   match s/2 {
     "hello" => {
-      jump k81(6)
+      jump k121(6)
     },
     _ => {
-      jump k81(8)
+      jump k121(8)
     },
   }
 }
 
 fn main() -> unit {
-  join ret83() -> unit {
+  join ret123() -> unit {
     ()
   } in
-  let t84 = match_string("hello") in
-  let t85 = inherent#int32#int32#to_string(t84) in
-  let mtmp68 = println__T_string(t85) in
-  let t86 = match_string("planet") in
-  let t87 = inherent#int32#int32#to_string(t86) in
-  let mtmp69 = println__T_string(t87) in
-  let t88 = wildcard_position("world") in
-  let t89 = inherent#int32#int32#to_string(t88) in
-  let mtmp70 = println__T_string(t89) in
-  let t90 = wildcard_position("sun") in
-  let t91 = inherent#int32#int32#to_string(t90) in
-  let mtmp71 = println__T_string(t91) in
-  let t92 = repeated_string("hello") in
-  let t93 = inherent#int32#int32#to_string(t92) in
-  let mtmp72 = println__T_string(t93) in
-  let t94 = repeated_string("mars") in
-  let t95 = inherent#int32#int32#to_string(t94) in
-  let t96 = println__T_string(t95) in
-  jump ret83()
+  let t124 = match_string("hello") in
+  let t125 = inherent#int32#int32#to_string(t124) in
+  let mtmp108 = println__T_string(t125) in
+  let t126 = match_string("planet") in
+  let t127 = inherent#int32#int32#to_string(t126) in
+  let mtmp109 = println__T_string(t127) in
+  let t128 = wildcard_position("world") in
+  let t129 = inherent#int32#int32#to_string(t128) in
+  let mtmp110 = println__T_string(t129) in
+  let t130 = wildcard_position("sun") in
+  let t131 = inherent#int32#int32#to_string(t130) in
+  let mtmp111 = println__T_string(t131) in
+  let t132 = repeated_string("hello") in
+  let t133 = inherent#int32#int32#to_string(t132) in
+  let mtmp112 = println__T_string(t133) in
+  let t134 = repeated_string("mars") in
+  let t135 = inherent#int32#int32#to_string(t134) in
+  let t136 = println__T_string(t135) in
+  jump ret123()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret97() -> unit {
+  join ret137() -> unit {
     ()
   } in
-  let t98 = trait_impl#ToString#string#to_string(value/1) in
-  let t99 = @runtime(core.string_println)(t98) in
-  jump ret97()
+  let t138 = trait_impl#ToString#string#to_string(value/1) in
+  let t139 = @runtime(core.string_println)(t138) in
+  jump ret137()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret100(retv101: string) -> string {
-    retv101
+  join ret140(retv141: string) -> string {
+    retv141
   } in
-  let t102 = @runtime(core.int32_to_string)(self/6) in
-  jump ret100(t102)
+  let t142 = @runtime(core.int32_to_string)(self/6) in
+  jump ret140(t142)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret103(retv104: string) -> string {
-    retv104
+  join ret143(retv144: string) -> string {
+    retv144
   } in
-  jump ret103(self/38)
+  jump ret143(self/38)
 }

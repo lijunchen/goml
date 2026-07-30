@@ -12,50 +12,50 @@ func _goml_runtime_core_string_println(s string) struct{} {
 type S struct {}
 
 func _goml_m_trait__impl_i_A_i_S_i_foo(self__0 S) string {
-    var retv71 string
-    retv71 = "A"
-    return retv71
+    var retv111 string
+    retv111 = "A"
+    return retv111
 }
 
 func _goml_m_trait__impl_i_C_i_S_i_bar(self__2 S) string {
-    var retv75 string
-    retv75 = "C"
-    return retv75
+    var retv115 string
+    retv115 = "C"
+    return retv115
 }
 
 func main0() struct{} {
     var s__5 S = S{}
-    var t77 string = pick_a__T_S(s__5)
-    println__T_string(t77)
-    var t78 string = bar_it__T_S(s__5)
-    println__T_string(t78)
+    var t117 string = pick_a__T_S(s__5)
+    println__T_string(t117)
+    var t118 string = bar_it__T_S(s__5)
+    println__T_string(t118)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t80 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t80)
+    var t120 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t120)
     return struct{}{}
 }
 
 func pick_a__T_S(x__3 S) string {
-    var retv83 string
-    var t84 string = _goml_m_trait__impl_i_A_i_S_i_foo(x__3)
-    retv83 = t84
-    return retv83
+    var retv123 string
+    var t124 string = _goml_m_trait__impl_i_A_i_S_i_foo(x__3)
+    retv123 = t124
+    return retv123
 }
 
 func bar_it__T_S(x__4 S) string {
-    var retv86 string
-    var t87 string = _goml_m_trait__impl_i_C_i_S_i_bar(x__4)
-    retv86 = t87
-    return retv86
+    var retv126 string
+    var t127 string = _goml_m_trait__impl_i_C_i_S_i_bar(x__4)
+    retv126 = t127
+    return retv126
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv89 string
-    retv89 = self__38
-    return retv89
+    var retv129 string
+    retv129 = self__38
+    return retv129
 }
 
 func main() {

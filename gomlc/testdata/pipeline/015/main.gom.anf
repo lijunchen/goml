@@ -1,140 +1,140 @@
 fn print_int_list(xs/0: IntList) -> unit {
-  join ret93() -> unit {
+  join ret133() -> unit {
     ()
   } in
-  join k94() -> unit {
-    jump ret93()
+  join k134() -> unit {
+    jump ret133()
   } in
   match xs/0 {
     Tag_0 => {
-      let t95 = println__T_string("Nil") in
-      jump k94()
+      let t135 = println__T_string("Nil") in
+      jump k134()
     },
     Tag_1 => {
-      let x68 = IntList::Cons._0(xs/0) in
-      let x69 = IntList::Cons._1(xs/0) in
-      let xs/2 = x69 in
-      let x/1 = x68 in
-      let mtmp70 = println__T_string("Cons") in
-      let mtmp71 = println__T_string("(") in
-      let t96 = inherent#int32#int32#to_string(x/1) in
-      let mtmp72 = println__T_string(t96) in
-      let mtmp73 = println__T_string(", ") in
-      let mtmp74 = print_int_list(xs/2) in
-      let mtmp75 = println__T_string(")") in
-      jump k94()
+      let x108 = IntList::Cons._0(xs/0) in
+      let x109 = IntList::Cons._1(xs/0) in
+      let xs/2 = x109 in
+      let x/1 = x108 in
+      let mtmp110 = println__T_string("Cons") in
+      let mtmp111 = println__T_string("(") in
+      let t136 = inherent#int32#int32#to_string(x/1) in
+      let mtmp112 = println__T_string(t136) in
+      let mtmp113 = println__T_string(", ") in
+      let mtmp114 = print_int_list(xs/2) in
+      let mtmp115 = println__T_string(")") in
+      jump k134()
     },
   }
 }
 
 fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
-  join ret97(retv98: IntList) -> IntList {
-    retv98
+  join ret137(retv138: IntList) -> IntList {
+    retv138
   } in
-  join k99(jp100: IntList) -> IntList {
-    jump ret97(jp100)
+  join k139(jp140: IntList) -> IntList {
+    jump ret137(jp140)
   } in
   match xs/3 {
     Tag_0 => {
-      jump k99(acc/4)
+      jump k139(acc/4)
     },
     Tag_1 => {
-      let x76 = IntList::Cons._0(xs/3) in
-      let x77 = IntList::Cons._1(xs/3) in
-      let tail/6 = x77 in
-      let head/5 = x76 in
-      let t101 = IntList::Cons(head/5, acc/4) in
-      let t102 = int_list_rev_aux(tail/6, t101) in
-      jump k99(t102)
+      let x116 = IntList::Cons._0(xs/3) in
+      let x117 = IntList::Cons._1(xs/3) in
+      let tail/6 = x117 in
+      let head/5 = x116 in
+      let t141 = IntList::Cons(head/5, acc/4) in
+      let t142 = int_list_rev_aux(tail/6, t141) in
+      jump k139(t142)
     },
   }
 }
 
 fn int_list_rev(xs/7: IntList) -> IntList {
-  join ret103(retv104: IntList) -> IntList {
-    retv104
+  join ret143(retv144: IntList) -> IntList {
+    retv144
   } in
-  let t105 = int_list_rev_aux(xs/7, Tag_0) in
-  jump ret103(t105)
+  let t145 = int_list_rev_aux(xs/7, Tag_0) in
+  jump ret143(t145)
 }
 
 fn int_list_length(xs/8: IntList) -> int32 {
-  join ret106(retv107: int32) -> int32 {
-    retv107
+  join ret146(retv147: int32) -> int32 {
+    retv147
   } in
-  join k108(jp109: int32) -> int32 {
-    jump ret106(jp109)
+  join k148(jp149: int32) -> int32 {
+    jump ret146(jp149)
   } in
   match xs/8 {
     Tag_0 => {
-      jump k108(0)
+      jump k148(0)
     },
     Tag_1 => {
-      let x78 = IntList::Cons._0(xs/8) in
-      let x79 = IntList::Cons._1(xs/8) in
-      let xs/9 = x79 in
-      let t110 = int_list_length(xs/9) in
-      let t111 = (1 + t110) in
-      jump k108(t111)
+      let x118 = IntList::Cons._0(xs/8) in
+      let x119 = IntList::Cons._1(xs/8) in
+      let xs/9 = x119 in
+      let t150 = int_list_length(xs/9) in
+      let t151 = (1 + t150) in
+      jump k148(t151)
     },
   }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
-  join ret112() -> unit {
+  join ret152() -> unit {
     ()
   } in
-  let mtmp80 = println__T_string("Length: ") in
-  let t113 = int_list_length(xs/10) in
-  let t114 = inherent#int32#int32#to_string(t113) in
-  let mtmp81 = println__T_string(t114) in
-  jump ret112()
+  let mtmp120 = println__T_string("Length: ") in
+  let t153 = int_list_length(xs/10) in
+  let t154 = inherent#int32#int32#to_string(t153) in
+  let mtmp121 = println__T_string(t154) in
+  jump ret152()
 }
 
 fn main() -> unit {
-  join ret115() -> unit {
+  join ret155() -> unit {
     ()
   } in
   let x/11 = Tag_0 in
-  let mtmp82 = print_int_list(x/11) in
-  let mtmp83 = println__T_string("") in
-  let mtmp84 = print_int_list_length(x/11) in
+  let mtmp122 = print_int_list(x/11) in
+  let mtmp123 = println__T_string("") in
+  let mtmp124 = print_int_list_length(x/11) in
   let x/12 = IntList::Cons(1, Tag_0) in
-  let mtmp85 = print_int_list(x/12) in
-  let mtmp86 = println__T_string("") in
-  let mtmp87 = print_int_list_length(x/12) in
-  let t116 = IntList::Cons(3, Tag_0) in
-  let t117 = IntList::Cons(2, t116) in
-  let x/13 = IntList::Cons(1, t117) in
-  let mtmp88 = print_int_list(x/13) in
-  let mtmp89 = println__T_string("") in
-  let mtmp90 = print_int_list_length(x/13) in
+  let mtmp125 = print_int_list(x/12) in
+  let mtmp126 = println__T_string("") in
+  let mtmp127 = print_int_list_length(x/12) in
+  let t156 = IntList::Cons(3, Tag_0) in
+  let t157 = IntList::Cons(2, t156) in
+  let x/13 = IntList::Cons(1, t157) in
+  let mtmp128 = print_int_list(x/13) in
+  let mtmp129 = println__T_string("") in
+  let mtmp130 = print_int_list_length(x/13) in
   let y/14 = int_list_rev(x/13) in
-  let mtmp91 = print_int_list(y/14) in
-  let mtmp92 = println__T_string("") in
-  jump ret115()
+  let mtmp131 = print_int_list(y/14) in
+  let mtmp132 = println__T_string("") in
+  jump ret155()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret118() -> unit {
+  join ret158() -> unit {
     ()
   } in
-  let t119 = trait_impl#ToString#string#to_string(value/1) in
-  let t120 = @runtime(core.string_println)(t119) in
-  jump ret118()
+  let t159 = trait_impl#ToString#string#to_string(value/1) in
+  let t160 = @runtime(core.string_println)(t159) in
+  jump ret158()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret121(retv122: string) -> string {
-    retv122
+  join ret161(retv162: string) -> string {
+    retv162
   } in
-  let t123 = @runtime(core.int32_to_string)(self/6) in
-  jump ret121(t123)
+  let t163 = @runtime(core.int32_to_string)(self/6) in
+  jump ret161(t163)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret124(retv125: string) -> string {
-    retv125
+  join ret164(retv165: string) -> string {
+    retv165
   } in
-  jump ret124(self/38)
+  jump ret164(self/38)
 }

@@ -1,58 +1,58 @@
 fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int {
-  join ret68(retv69: int) -> int {
-    retv69
+  join ret108(retv109: int) -> int {
+    retv109
   } in
-  let t70 = inherent#Vec#Vec[T]#len__T_int32(self/0) in
-  jump ret68(t70)
+  let t110 = inherent#Vec#Vec[T]#len__T_int32(self/0) in
+  jump ret108(t110)
 }
 
 fn main() -> unit {
-  join ret71() -> unit {
+  join ret111() -> unit {
     ()
   } in
   let values/2 = @intrinsic(vec.new)() in
-  let t72 = read_measure__T_Vec[int32](values/2) in
-  let t73 = inherent#int#int#to_string(t72) in
-  let t74 = println__T_string(t73) in
-  jump ret71()
+  let t112 = read_measure__T_Vec[int32](values/2) in
+  let t113 = inherent#int#int#to_string(t112) in
+  let t114 = println__T_string(t113) in
+  jump ret111()
 }
 
 fn inherent#Vec#Vec[T]#len__T_int32(self/137: Vec[int32]) -> int {
-  join ret75(retv76: int) -> int {
-    retv76
+  join ret115(retv116: int) -> int {
+    retv116
   } in
-  let t77 = @intrinsic(vec.len)(self/137) in
-  jump ret75(t77)
+  let t117 = @intrinsic(vec.len)(self/137) in
+  jump ret115(t117)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret78() -> unit {
+  join ret118() -> unit {
     ()
   } in
-  let t79 = trait_impl#ToString#string#to_string(value/1) in
-  let t80 = @runtime(core.string_println)(t79) in
-  jump ret78()
+  let t119 = trait_impl#ToString#string#to_string(value/1) in
+  let t120 = @runtime(core.string_println)(t119) in
+  jump ret118()
 }
 
 fn read_measure__T_Vec[int32](value/1: Vec[int32]) -> int {
-  join ret81(retv82: int) -> int {
-    retv82
+  join ret121(retv122: int) -> int {
+    retv122
   } in
-  let t83 = trait_impl#Measure#Vec[int32]#measure(value/1) in
-  jump ret81(t83)
+  let t123 = trait_impl#Measure#Vec[int32]#measure(value/1) in
+  jump ret121(t123)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret84(retv85: string) -> string {
-    retv85
+  join ret124(retv125: string) -> string {
+    retv125
   } in
-  let t86 = @runtime(core.int_to_string)(self/5) in
-  jump ret84(t86)
+  let t126 = @runtime(core.int_to_string)(self/5) in
+  jump ret124(t126)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret87(retv88: string) -> string {
-    retv88
+  join ret127(retv128: string) -> string {
+    retv128
   } in
-  jump ret87(self/38)
+  jump ret127(self/38)
 }

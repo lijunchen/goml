@@ -1,155 +1,155 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret72(retv73: string) -> string {
-    retv73
+  join ret112(retv113: string) -> string {
+    retv113
   } in
-  let t74 = inherent#int32#int32#to_string(self/0) in
-  jump ret72(t74)
+  let t114 = inherent#int32#int32#to_string(self/0) in
+  jump ret112(t114)
 }
 
 fn trait_impl#Debug#int32#show(self/1: int32) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret115(retv116: string) -> string {
+    retv116
   } in
-  let t77 = inherent#int32#int32#to_string(self/1) in
-  let t78 = ("i32(" + t77) in
-  let t79 = (t78 + ")") in
-  jump ret75(t79)
+  let t117 = inherent#int32#int32#to_string(self/1) in
+  let t118 = ("i32(" + t117) in
+  let t119 = (t118 + ")") in
+  jump ret115(t119)
 }
 
 fn trait_impl#MyEq#int32#eq(self/2: int32, other/3: int32) -> bool {
-  join ret80(retv81: bool) -> bool {
-    retv81
+  join ret120(retv121: bool) -> bool {
+    retv121
   } in
-  let t82 = trait_impl#Eq#int32#eq(self/2, other/3) in
-  jump ret80(t82)
+  let t122 = trait_impl#Eq#int32#eq(self/2, other/3) in
+  jump ret120(t122)
 }
 
 fn trait_impl#MyHash#int32#hash(self/4: int32) -> int32 {
-  join ret83(retv84: int32) -> int32 {
-    retv84
+  join ret123(retv124: int32) -> int32 {
+    retv124
   } in
-  let t85 = (self/4 * 16777619) in
-  let t86 = (t85 + 216613626) in
-  jump ret83(t86)
+  let t125 = (self/4 * 16777619) in
+  let t126 = (t125 + 216613626) in
+  jump ret123(t126)
 }
 
 fn trait_impl#Add#int32#add(self/5: int32, other/6: int32) -> int32 {
-  join ret87(retv88: int32) -> int32 {
-    retv88
+  join ret127(retv128: int32) -> int32 {
+    retv128
   } in
-  let t89 = (self/5 + other/6) in
-  jump ret87(t89)
+  let t129 = (self/5 + other/6) in
+  jump ret127(t129)
 }
 
 fn trait_impl#Scale#int32#scale(self/7: int32, factor/8: int32) -> int32 {
-  join ret90(retv91: int32) -> int32 {
-    retv91
+  join ret130(retv131: int32) -> int32 {
+    retv131
   } in
-  let t92 = (self/7 * factor/8) in
-  jump ret90(t92)
+  let t132 = (self/7 * factor/8) in
+  jump ret130(t132)
 }
 
 fn trait_impl#Inspect#int32#inspect(self/9: int32) -> string {
-  join ret93(retv94: string) -> string {
-    retv94
+  join ret133(retv134: string) -> string {
+    retv134
   } in
-  let t95 = inherent#int32#int32#to_string(self/9) in
-  let t96 = ("<" + t95) in
-  let t97 = (t96 + ">") in
-  jump ret93(t97)
+  let t135 = inherent#int32#int32#to_string(self/9) in
+  let t136 = ("<" + t135) in
+  let t137 = (t136 + ">") in
+  jump ret133(t137)
 }
 
 fn trait_impl#Display#Boxed#show(self/10: Boxed) -> string {
-  join ret98(retv99: string) -> string {
-    retv99
-  } in
-  let t100 = Boxed.value(self/10) in
-  let t101 = inherent#int32#int32#to_string(t100) in
-  let t102 = ("Boxed(" + t101) in
-  let t103 = (t102 + ")") in
-  jump ret98(t103)
-}
-
-fn trait_impl#Debug#Boxed#show(self/11: Boxed) -> string {
-  join ret104(retv105: string) -> string {
-    retv105
-  } in
-  let t106 = Boxed.value(self/11) in
-  let t107 = inherent#int32#int32#to_string(t106) in
-  let t108 = ("Boxed{value=" + t107) in
-  let t109 = (t108 + "}") in
-  jump ret104(t109)
-}
-
-fn trait_impl#MyEq#Boxed#eq(self/12: Boxed, other/13: Boxed) -> bool {
-  join ret110(retv111: bool) -> bool {
-    retv111
-  } in
-  let t112 = Boxed.value(self/12) in
-  let t113 = Boxed.value(other/13) in
-  let t114 = trait_impl#Eq#int32#eq(t112, t113) in
-  jump ret110(t114)
-}
-
-fn trait_impl#MyHash#Boxed#hash(self/14: Boxed) -> int32 {
-  join ret115(retv116: int32) -> int32 {
-    retv116
-  } in
-  let t117 = Boxed.value(self/14) in
-  let t118 = (t117 * 31) in
-  let t119 = (t118 + 7) in
-  let t120 = (t119 * 1315423911) in
-  jump ret115(t120)
-}
-
-fn trait_impl#Add#Boxed#add(self/15: Boxed, other/16: Boxed) -> Boxed {
-  join ret121(retv122: Boxed) -> Boxed {
-    retv122
-  } in
-  let t123 = Boxed.value(self/15) in
-  let t124 = Boxed.value(other/16) in
-  let t125 = (t123 + t124) in
-  let t126 = Boxed { value: t125 } in
-  jump ret121(t126)
-}
-
-fn trait_impl#Scale#Boxed#scale(self/17: Boxed, factor/18: int32) -> Boxed {
-  join ret127(retv128: Boxed) -> Boxed {
-    retv128
-  } in
-  let t129 = Boxed.value(self/17) in
-  let t130 = (t129 * factor/18) in
-  let t131 = Boxed { value: t130 } in
-  jump ret127(t131)
-}
-
-fn trait_impl#Inspect#Boxed#inspect(self/19: Boxed) -> string {
-  join ret132(retv133: string) -> string {
-    retv133
-  } in
-  let t134 = Boxed.value(self/19) in
-  let t135 = inherent#int32#int32#to_string(t134) in
-  let t136 = ("[" + t135) in
-  let t137 = (t136 + "]") in
-  jump ret132(t137)
-}
-
-fn bool_text(x/20: bool) -> string {
   join ret138(retv139: string) -> string {
     retv139
   } in
-  join k140(jp141: string) -> string {
-    jump ret138(jp141)
+  let t140 = Boxed.value(self/10) in
+  let t141 = inherent#int32#int32#to_string(t140) in
+  let t142 = ("Boxed(" + t141) in
+  let t143 = (t142 + ")") in
+  jump ret138(t143)
+}
+
+fn trait_impl#Debug#Boxed#show(self/11: Boxed) -> string {
+  join ret144(retv145: string) -> string {
+    retv145
+  } in
+  let t146 = Boxed.value(self/11) in
+  let t147 = inherent#int32#int32#to_string(t146) in
+  let t148 = ("Boxed{value=" + t147) in
+  let t149 = (t148 + "}") in
+  jump ret144(t149)
+}
+
+fn trait_impl#MyEq#Boxed#eq(self/12: Boxed, other/13: Boxed) -> bool {
+  join ret150(retv151: bool) -> bool {
+    retv151
+  } in
+  let t152 = Boxed.value(self/12) in
+  let t153 = Boxed.value(other/13) in
+  let t154 = trait_impl#Eq#int32#eq(t152, t153) in
+  jump ret150(t154)
+}
+
+fn trait_impl#MyHash#Boxed#hash(self/14: Boxed) -> int32 {
+  join ret155(retv156: int32) -> int32 {
+    retv156
+  } in
+  let t157 = Boxed.value(self/14) in
+  let t158 = (t157 * 31) in
+  let t159 = (t158 + 7) in
+  let t160 = (t159 * 1315423911) in
+  jump ret155(t160)
+}
+
+fn trait_impl#Add#Boxed#add(self/15: Boxed, other/16: Boxed) -> Boxed {
+  join ret161(retv162: Boxed) -> Boxed {
+    retv162
+  } in
+  let t163 = Boxed.value(self/15) in
+  let t164 = Boxed.value(other/16) in
+  let t165 = (t163 + t164) in
+  let t166 = Boxed { value: t165 } in
+  jump ret161(t166)
+}
+
+fn trait_impl#Scale#Boxed#scale(self/17: Boxed, factor/18: int32) -> Boxed {
+  join ret167(retv168: Boxed) -> Boxed {
+    retv168
+  } in
+  let t169 = Boxed.value(self/17) in
+  let t170 = (t169 * factor/18) in
+  let t171 = Boxed { value: t170 } in
+  jump ret167(t171)
+}
+
+fn trait_impl#Inspect#Boxed#inspect(self/19: Boxed) -> string {
+  join ret172(retv173: string) -> string {
+    retv173
+  } in
+  let t174 = Boxed.value(self/19) in
+  let t175 = inherent#int32#int32#to_string(t174) in
+  let t176 = ("[" + t175) in
+  let t177 = (t176 + "]") in
+  jump ret172(t177)
+}
+
+fn bool_text(x/20: bool) -> string {
+  join ret178(retv179: string) -> string {
+    retv179
+  } in
+  join k180(jp181: string) -> string {
+    jump ret178(jp181)
   } in
   if x/20 {
-    jump k140("true")
+    jump k180("true")
   } else {
-    jump k140("false")
+    jump k180("false")
   }
 }
 
 fn main() -> unit {
-  join ret142() -> unit {
+  join ret182() -> unit {
     ()
   } in
   let tag/45 = 7 in
@@ -159,206 +159,206 @@ fn main() -> unit {
   let first/49 = 1 in
   let second/50 = 2 in
   let third/51 = 3 in
-  let t143 = full_report__Q_int32__T_int32(tag/45, left/46, right/47) in
-  let mtmp68 = println__T_string(t143) in
-  let t144 = Boxed { value: 99 } in
-  let t145 = Boxed { value: 3 } in
-  let t146 = Boxed { value: 4 } in
-  let t147 = full_report__Q_Boxed__T_Boxed(t144, t145, t146) in
-  let mtmp69 = println__T_string(t147) in
-  let t148 = sum_and_tag__Q_int32__T_int32(sum_tag/48, first/49, second/50, third/51) in
-  let mtmp70 = println__T_string(t148) in
-  let t149 = Boxed { value: 1 } in
-  let t150 = Boxed { value: 5 } in
-  let t151 = Boxed { value: 6 } in
-  let t152 = Boxed { value: 7 } in
-  let t153 = sum_and_tag__Q_Boxed__T_Boxed(t149, t150, t151, t152) in
-  let mtmp71 = println__T_string(t153) in
-  jump ret142()
+  let t183 = full_report__Q_int32__T_int32(tag/45, left/46, right/47) in
+  let mtmp108 = println__T_string(t183) in
+  let t184 = Boxed { value: 99 } in
+  let t185 = Boxed { value: 3 } in
+  let t186 = Boxed { value: 4 } in
+  let t187 = full_report__Q_Boxed__T_Boxed(t184, t185, t186) in
+  let mtmp109 = println__T_string(t187) in
+  let t188 = sum_and_tag__Q_int32__T_int32(sum_tag/48, first/49, second/50, third/51) in
+  let mtmp110 = println__T_string(t188) in
+  let t189 = Boxed { value: 1 } in
+  let t190 = Boxed { value: 5 } in
+  let t191 = Boxed { value: 6 } in
+  let t192 = Boxed { value: 7 } in
+  let t193 = sum_and_tag__Q_Boxed__T_Boxed(t189, t190, t191, t192) in
+  let mtmp111 = println__T_string(t193) in
+  jump ret182()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret154(retv155: string) -> string {
-    retv155
+  join ret194(retv195: string) -> string {
+    retv195
   } in
-  let t156 = @runtime(core.int32_to_string)(self/6) in
-  jump ret154(t156)
+  let t196 = @runtime(core.int32_to_string)(self/6) in
+  jump ret194(t196)
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret157(retv158: bool) -> bool {
-    retv158
+  join ret197(retv198: bool) -> bool {
+    retv198
   } in
-  let t159 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret157(t159)
+  let t199 = @intrinsic(eq.primitive)(self/65, other/66) in
+  jump ret197(t199)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret160() -> unit {
+  join ret200() -> unit {
     ()
   } in
-  let t161 = trait_impl#ToString#string#to_string(value/1) in
-  let t162 = @runtime(core.string_println)(t161) in
-  jump ret160()
+  let t201 = trait_impl#ToString#string#to_string(value/1) in
+  let t202 = @runtime(core.string_println)(t201) in
+  jump ret200()
 }
 
 fn full_report__Q_int32__T_int32(tag/34: int32, a/35: int32, b/36: int32) -> string {
-  join ret163(retv164: string) -> string {
-    retv164
+  join ret203(retv204: string) -> string {
+    retv204
   } in
   let combined/37 = combine_scaled__T_int32(a/35, b/36, 2) in
-  let t165 = report_pair__Q_int32__T_int32(tag/34, a/35, b/36, combined/37) in
-  jump ret163(t165)
+  let t205 = report_pair__Q_int32__T_int32(tag/34, a/35, b/36, combined/37) in
+  jump ret203(t205)
 }
 
 fn full_report__Q_Boxed__T_Boxed(tag/34: Boxed, a/35: Boxed, b/36: Boxed) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
+  join ret206(retv207: string) -> string {
+    retv207
   } in
   let combined/37 = combine_scaled__T_Boxed(a/35, b/36, 2) in
-  let t168 = report_pair__Q_Boxed__T_Boxed(tag/34, a/35, b/36, combined/37) in
-  jump ret166(t168)
+  let t208 = report_pair__Q_Boxed__T_Boxed(tag/34, a/35, b/36, combined/37) in
+  jump ret206(t208)
 }
 
 fn sum_and_tag__Q_int32__T_int32(tag/38: int32, x/39: int32, y/40: int32, z/41: int32) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
+  join ret209(retv210: string) -> string {
+    retv210
   } in
-  let t171 = trait_impl#Add#int32#add(x/39, y/40) in
-  let total/42 = trait_impl#Add#int32#add(t171, z/41) in
+  let t211 = trait_impl#Add#int32#add(x/39, y/40) in
+  let total/42 = trait_impl#Add#int32#add(t211, z/41) in
   let header/43 = tag_text__Q_int32(tag/38) in
   let h/44 = trait_impl#MyHash#int32#hash(total/42) in
-  let t172 = (header/43 + " ") in
-  let t173 = trait_impl#Inspect#int32#inspect(total/42) in
-  let t174 = (t172 + t173) in
-  let t175 = inherent#int32#int32#to_string(h/44) in
-  let t176 = (" @" + t175) in
-  let t177 = (t174 + t176) in
-  jump ret169(t177)
+  let t212 = (header/43 + " ") in
+  let t213 = trait_impl#Inspect#int32#inspect(total/42) in
+  let t214 = (t212 + t213) in
+  let t215 = inherent#int32#int32#to_string(h/44) in
+  let t216 = (" @" + t215) in
+  let t217 = (t214 + t216) in
+  jump ret209(t217)
 }
 
 fn sum_and_tag__Q_Boxed__T_Boxed(tag/38: Boxed, x/39: Boxed, y/40: Boxed, z/41: Boxed) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
+  join ret218(retv219: string) -> string {
+    retv219
   } in
-  let t180 = trait_impl#Add#Boxed#add(x/39, y/40) in
-  let total/42 = trait_impl#Add#Boxed#add(t180, z/41) in
+  let t220 = trait_impl#Add#Boxed#add(x/39, y/40) in
+  let total/42 = trait_impl#Add#Boxed#add(t220, z/41) in
   let header/43 = tag_text__Q_Boxed(tag/38) in
   let h/44 = trait_impl#MyHash#Boxed#hash(total/42) in
-  let t181 = (header/43 + " ") in
-  let t182 = trait_impl#Inspect#Boxed#inspect(total/42) in
-  let t183 = (t181 + t182) in
-  let t184 = inherent#int32#int32#to_string(h/44) in
-  let t185 = (" @" + t184) in
-  let t186 = (t183 + t185) in
-  jump ret178(t186)
+  let t221 = (header/43 + " ") in
+  let t222 = trait_impl#Inspect#Boxed#inspect(total/42) in
+  let t223 = (t221 + t222) in
+  let t224 = inherent#int32#int32#to_string(h/44) in
+  let t225 = (" @" + t224) in
+  let t226 = (t223 + t225) in
+  jump ret218(t226)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret187(retv188: string) -> string {
-    retv188
+  join ret227(retv228: string) -> string {
+    retv228
   } in
-  jump ret187(self/38)
+  jump ret227(self/38)
 }
 
 fn combine_scaled__T_int32(a/23: int32, b/24: int32, factor/25: int32) -> int32 {
-  join ret189(retv190: int32) -> int32 {
-    retv190
+  join ret229(retv230: int32) -> int32 {
+    retv230
   } in
-  let t191 = trait_impl#Add#int32#add(a/23, b/24) in
-  let t192 = trait_impl#Scale#int32#scale(t191, factor/25) in
-  jump ret189(t192)
+  let t231 = trait_impl#Add#int32#add(a/23, b/24) in
+  let t232 = trait_impl#Scale#int32#scale(t231, factor/25) in
+  jump ret229(t232)
 }
 
 fn report_pair__Q_int32__T_int32(tag/26: int32, a/27: int32, b/28: int32, combined/29: int32) -> string {
-  join ret193(retv194: string) -> string {
-    retv194
+  join ret233(retv234: string) -> string {
+    retv234
   } in
   let same/30 = trait_impl#MyEq#int32#eq(a/27, b/28) in
   let header/31 = tag_text__Q_int32(tag/26) in
   let repr/32 = show_both__T_int32(combined/29) in
   let h/33 = trait_impl#MyHash#int32#hash(combined/29) in
-  let t195 = (header/31 + " ") in
-  let t196 = (t195 + repr/32) in
-  let t197 = bool_text(same/30) in
-  let t198 = (" | eq=" + t197) in
-  let t199 = inherent#int32#int32#to_string(h/33) in
-  let t200 = (" | hash=" + t199) in
-  let t201 = (t198 + t200) in
-  let t202 = (t196 + t201) in
-  jump ret193(t202)
+  let t235 = (header/31 + " ") in
+  let t236 = (t235 + repr/32) in
+  let t237 = bool_text(same/30) in
+  let t238 = (" | eq=" + t237) in
+  let t239 = inherent#int32#int32#to_string(h/33) in
+  let t240 = (" | hash=" + t239) in
+  let t241 = (t238 + t240) in
+  let t242 = (t236 + t241) in
+  jump ret233(t242)
 }
 
 fn combine_scaled__T_Boxed(a/23: Boxed, b/24: Boxed, factor/25: int32) -> Boxed {
-  join ret203(retv204: Boxed) -> Boxed {
-    retv204
+  join ret243(retv244: Boxed) -> Boxed {
+    retv244
   } in
-  let t205 = trait_impl#Add#Boxed#add(a/23, b/24) in
-  let t206 = trait_impl#Scale#Boxed#scale(t205, factor/25) in
-  jump ret203(t206)
+  let t245 = trait_impl#Add#Boxed#add(a/23, b/24) in
+  let t246 = trait_impl#Scale#Boxed#scale(t245, factor/25) in
+  jump ret243(t246)
 }
 
 fn report_pair__Q_Boxed__T_Boxed(tag/26: Boxed, a/27: Boxed, b/28: Boxed, combined/29: Boxed) -> string {
-  join ret207(retv208: string) -> string {
-    retv208
+  join ret247(retv248: string) -> string {
+    retv248
   } in
   let same/30 = trait_impl#MyEq#Boxed#eq(a/27, b/28) in
   let header/31 = tag_text__Q_Boxed(tag/26) in
   let repr/32 = show_both__T_Boxed(combined/29) in
   let h/33 = trait_impl#MyHash#Boxed#hash(combined/29) in
-  let t209 = (header/31 + " ") in
-  let t210 = (t209 + repr/32) in
-  let t211 = bool_text(same/30) in
-  let t212 = (" | eq=" + t211) in
-  let t213 = inherent#int32#int32#to_string(h/33) in
-  let t214 = (" | hash=" + t213) in
-  let t215 = (t212 + t214) in
-  let t216 = (t210 + t215) in
-  jump ret207(t216)
+  let t249 = (header/31 + " ") in
+  let t250 = (t249 + repr/32) in
+  let t251 = bool_text(same/30) in
+  let t252 = (" | eq=" + t251) in
+  let t253 = inherent#int32#int32#to_string(h/33) in
+  let t254 = (" | hash=" + t253) in
+  let t255 = (t252 + t254) in
+  let t256 = (t250 + t255) in
+  jump ret247(t256)
 }
 
 fn tag_text__Q_int32(tag/22: int32) -> string {
-  join ret217(retv218: string) -> string {
-    retv218
+  join ret257(retv258: string) -> string {
+    retv258
   } in
-  let t219 = trait_impl#Debug#int32#show(tag/22) in
-  let t220 = (t219 + "#") in
-  let t221 = trait_impl#MyHash#int32#hash(tag/22) in
-  let t222 = inherent#int32#int32#to_string(t221) in
-  let t223 = (t220 + t222) in
-  jump ret217(t223)
+  let t259 = trait_impl#Debug#int32#show(tag/22) in
+  let t260 = (t259 + "#") in
+  let t261 = trait_impl#MyHash#int32#hash(tag/22) in
+  let t262 = inherent#int32#int32#to_string(t261) in
+  let t263 = (t260 + t262) in
+  jump ret257(t263)
 }
 
 fn tag_text__Q_Boxed(tag/22: Boxed) -> string {
-  join ret224(retv225: string) -> string {
-    retv225
+  join ret264(retv265: string) -> string {
+    retv265
   } in
-  let t226 = trait_impl#Debug#Boxed#show(tag/22) in
-  let t227 = (t226 + "#") in
-  let t228 = trait_impl#MyHash#Boxed#hash(tag/22) in
-  let t229 = inherent#int32#int32#to_string(t228) in
-  let t230 = (t227 + t229) in
-  jump ret224(t230)
+  let t266 = trait_impl#Debug#Boxed#show(tag/22) in
+  let t267 = (t266 + "#") in
+  let t268 = trait_impl#MyHash#Boxed#hash(tag/22) in
+  let t269 = inherent#int32#int32#to_string(t268) in
+  let t270 = (t267 + t269) in
+  jump ret264(t270)
 }
 
 fn show_both__T_int32(x/21: int32) -> string {
-  join ret231(retv232: string) -> string {
-    retv232
+  join ret271(retv272: string) -> string {
+    retv272
   } in
-  let t233 = trait_impl#Debug#int32#show(x/21) in
-  let t234 = (t233 + " / ") in
-  let t235 = trait_impl#Display#int32#show(x/21) in
-  let t236 = (t234 + t235) in
-  jump ret231(t236)
+  let t273 = trait_impl#Debug#int32#show(x/21) in
+  let t274 = (t273 + " / ") in
+  let t275 = trait_impl#Display#int32#show(x/21) in
+  let t276 = (t274 + t275) in
+  jump ret271(t276)
 }
 
 fn show_both__T_Boxed(x/21: Boxed) -> string {
-  join ret237(retv238: string) -> string {
-    retv238
+  join ret277(retv278: string) -> string {
+    retv278
   } in
-  let t239 = trait_impl#Debug#Boxed#show(x/21) in
-  let t240 = (t239 + " / ") in
-  let t241 = trait_impl#Display#Boxed#show(x/21) in
-  let t242 = (t240 + t241) in
-  jump ret237(t242)
+  let t279 = trait_impl#Debug#Boxed#show(x/21) in
+  let t280 = (t279 + " / ") in
+  let t281 = trait_impl#Display#Boxed#show(x/21) in
+  let t282 = (t280 + t281) in
+  jump ret277(t282)
 }

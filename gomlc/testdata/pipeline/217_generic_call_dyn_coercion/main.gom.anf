@@ -1,60 +1,60 @@
 fn trait_impl#Show#Wrap__int32#show(self/0: Wrap__int32) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
+  join ret108(retv109: string) -> string {
+    retv109
   } in
-  let t70 = Wrap__int32.value(self/0) in
-  let t71 = inherent#int32#int32#to_string(t70) in
-  jump ret68(t71)
+  let t110 = Wrap__int32.value(self/0) in
+  let t111 = inherent#int32#int32#to_string(t110) in
+  jump ret108(t111)
 }
 
 fn render(value/2: dyn Show) -> string {
-  join ret72(retv73: string) -> string {
-    retv73
+  join ret112(retv113: string) -> string {
+    retv113
   } in
-  let t74 = dyn_call[Show::show](value/2) in
-  jump ret72(t74)
+  let t114 = dyn_call[Show::show](value/2) in
+  jump ret112(t114)
 }
 
 fn main() -> unit {
-  join ret75() -> unit {
+  join ret115() -> unit {
     ()
   } in
   let value/3 = 42 in
-  let t76 = make_wrap__T_int32(value/3) in
-  let t77 = to_dyn[Show]{Wrap__int32}(t76) in
-  let t78 = render(t77) in
-  let t79 = println__T_string(t78) in
-  jump ret75()
+  let t116 = make_wrap__T_int32(value/3) in
+  let t117 = to_dyn[Show]{Wrap__int32}(t116) in
+  let t118 = render(t117) in
+  let t119 = println__T_string(t118) in
+  jump ret115()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret80(retv81: string) -> string {
-    retv81
+  join ret120(retv121: string) -> string {
+    retv121
   } in
-  let t82 = @runtime(core.int32_to_string)(self/6) in
-  jump ret80(t82)
+  let t122 = @runtime(core.int32_to_string)(self/6) in
+  jump ret120(t122)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret83() -> unit {
+  join ret123() -> unit {
     ()
   } in
-  let t84 = trait_impl#ToString#string#to_string(value/1) in
-  let t85 = @runtime(core.string_println)(t84) in
-  jump ret83()
+  let t124 = trait_impl#ToString#string#to_string(value/1) in
+  let t125 = @runtime(core.string_println)(t124) in
+  jump ret123()
 }
 
 fn make_wrap__T_int32(value/1: int32) -> Wrap__int32 {
-  join ret86(retv87: Wrap__int32) -> Wrap__int32 {
-    retv87
+  join ret126(retv127: Wrap__int32) -> Wrap__int32 {
+    retv127
   } in
-  let t88 = Wrap__int32 { value: value/1 } in
-  jump ret86(t88)
+  let t128 = Wrap__int32 { value: value/1 } in
+  jump ret126(t128)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret89(retv90: string) -> string {
-    retv90
+  join ret129(retv130: string) -> string {
+    retv130
   } in
-  jump ret89(self/38)
+  jump ret129(self/38)
 }

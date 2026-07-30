@@ -281,13 +281,13 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_unit(result/0: Result__unit__string) -> string {
   match result/0 {
-    Result__unit__string::Ok(x68) => {
-      let x68 = Result__unit__string::Ok._0(result/0) in
+    Result__unit__string::Ok(x108) => {
+      let x108 = Result__unit__string::Ok._0(result/0) in
       "ok"
     },
-    Result__unit__string::Err(x69) => {
-      let x69 = Result__unit__string::Err._0(result/0) in
-      let err/1 = x69 in
+    Result__unit__string::Err(x109) => {
+      let x109 = Result__unit__string::Err._0(result/0) in
+      let err/1 = x109 in
       ("err " + err/1)
     },
   }
@@ -295,25 +295,25 @@ fn show_unit(result/0: Result__unit__string) -> string {
 
 fn show_string(result/2: Result__string__string) -> string {
   match result/2 {
-    Result__string__string::Ok(x70) => {
-      let x70 = Result__string__string::Ok._0(result/2) in
-      let value/3 = x70 in
+    Result__string__string::Ok(x110) => {
+      let x110 = Result__string__string::Ok._0(result/2) in
+      let value/3 = x110 in
       value/3
     },
-    Result__string__string::Err(x71) => {
-      let x71 = Result__string__string::Err._0(result/2) in
-      let err/4 = x71 in
+    Result__string__string::Err(x111) => {
+      let x111 = Result__string__string::Err._0(result/2) in
+      let err/4 = x111 in
       ("err " + err/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild72 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
-  let _wild73 = std::io::eprint__T_string("") in
-  let _wild74 = std::io::eprintln__T_string("") in
-  let _wild75 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
-  let _wild76 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
+  let _wild112 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
+  let _wild113 = std::io::eprint__T_string("") in
+  let _wild114 = std::io::eprintln__T_string("") in
+  let _wild115 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
+  let _wild116 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
   std::io::println__T_string(show_string(std::fs::read_file("goml-self-host/nested/output.txt")))
 }
 

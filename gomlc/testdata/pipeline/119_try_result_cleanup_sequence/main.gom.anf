@@ -1,133 +1,133 @@
 fn open_handle(ok/0: bool) -> Result__Handle__string {
-  join ret80(retv81: Result__Handle__string) -> Result__Handle__string {
-    retv81
+  join ret120(retv121: Result__Handle__string) -> Result__Handle__string {
+    retv121
   } in
-  join k82(jp83: Result__Handle__string) -> Result__Handle__string {
-    jump ret80(jp83)
+  join k122(jp123: Result__Handle__string) -> Result__Handle__string {
+    jump ret120(jp123)
   } in
   if ok/0 {
-    let t84 = Handle { name: "config" } in
-    let t85 = Result__Handle__string::Ok(t84) in
-    jump k82(t85)
+    let t124 = Handle { name: "config" } in
+    let t125 = Result__Handle__string::Ok(t124) in
+    jump k122(t125)
   } else {
-    let t86 = Result__Handle__string::Err("open failed") in
-    jump k82(t86)
+    let t126 = Result__Handle__string::Err("open failed") in
+    jump k122(t126)
   }
 }
 
 fn close_handle(handle/1: Handle, ok/2: bool) -> Result__unit__string {
-  join ret87(retv88: Result__unit__string) -> Result__unit__string {
-    retv88
+  join ret127(retv128: Result__unit__string) -> Result__unit__string {
+    retv128
   } in
-  join k89(jp90: Result__unit__string) -> Result__unit__string {
-    jump ret87(jp90)
+  join k129(jp130: Result__unit__string) -> Result__unit__string {
+    jump ret127(jp130)
   } in
   if ok/2 {
-    let t91 = Result__unit__string::Ok(()) in
-    jump k89(t91)
+    let t131 = Result__unit__string::Ok(()) in
+    jump k129(t131)
   } else {
-    let t92 = Handle.name(handle/1) in
-    let t93 = ("close failed for " + t92) in
-    let t94 = Result__unit__string::Err(t93) in
-    jump k89(t94)
+    let t132 = Handle.name(handle/1) in
+    let t133 = ("close failed for " + t132) in
+    let t134 = Result__unit__string::Err(t133) in
+    jump k129(t134)
   }
 }
 
 fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
-  join ret95(retv96: Result__string__string) -> Result__string__string {
-    retv96
+  join ret135(retv136: Result__string__string) -> Result__string__string {
+    retv136
   } in
-  let mtmp68 = open_handle(open_ok/3) in
-  join k97(jp98: Handle) -> Result__string__string {
-    let handle/5 = jp98 in
+  let mtmp108 = open_handle(open_ok/3) in
+  join k137(jp138: Handle) -> Result__string__string {
+    let handle/5 = jp138 in
     let name/6 = Handle.name(handle/5) in
-    let mtmp71 = close_handle(handle/5, close_ok/4) in
-    join k99() -> Result__string__string {
-      let _wild74 = () in
-      let t100 = ("closed " + name/6) in
-      let t101 = Result__string__string::Ok(t100) in
-      jump ret95(t101)
+    let mtmp111 = close_handle(handle/5, close_ok/4) in
+    join k139() -> Result__string__string {
+      let _wild114 = () in
+      let t140 = ("closed " + name/6) in
+      let t141 = Result__string__string::Ok(t140) in
+      jump ret135(t141)
     } in
-    match mtmp71 {
+    match mtmp111 {
       Tag_0 => {
-        let x72 = Result__unit__string::Ok._0(mtmp71) in
-        let try_value/31 = x72 in
-        jump k99()
+        let x112 = Result__unit__string::Ok._0(mtmp111) in
+        let try_value/31 = x112 in
+        jump k139()
       },
       Tag_1 => {
-        let x73 = Result__unit__string::Err._0(mtmp71) in
-        let try_residual/31 = x73 in
-        let t102 = Result__string__string::Err(try_residual/31) in
-        jump ret95(t102)
+        let x113 = Result__unit__string::Err._0(mtmp111) in
+        let try_residual/31 = x113 in
+        let t142 = Result__string__string::Err(try_residual/31) in
+        jump ret135(t142)
       },
     }
   } in
-  match mtmp68 {
+  match mtmp108 {
     Tag_0 => {
-      let x69 = Result__Handle__string::Ok._0(mtmp68) in
-      let try_value/24 = x69 in
-      jump k97(try_value/24)
+      let x109 = Result__Handle__string::Ok._0(mtmp108) in
+      let try_value/24 = x109 in
+      jump k137(try_value/24)
     },
     Tag_1 => {
-      let x70 = Result__Handle__string::Err._0(mtmp68) in
-      let try_residual/24 = x70 in
-      let t103 = Result__string__string::Err(try_residual/24) in
-      jump ret95(t103)
+      let x110 = Result__Handle__string::Err._0(mtmp108) in
+      let try_residual/24 = x110 in
+      let t143 = Result__string__string::Err(try_residual/24) in
+      jump ret135(t143)
     },
   }
 }
 
 fn show(res/7: Result__string__string) -> string {
-  join ret104(retv105: string) -> string {
-    retv105
+  join ret144(retv145: string) -> string {
+    retv145
   } in
-  join k106(jp107: string) -> string {
-    jump ret104(jp107)
+  join k146(jp147: string) -> string {
+    jump ret144(jp147)
   } in
   match res/7 {
     Tag_0 => {
-      let x75 = Result__string__string::Ok._0(res/7) in
-      let value/8 = x75 in
-      let t108 = ("ok " + value/8) in
-      jump k106(t108)
+      let x115 = Result__string__string::Ok._0(res/7) in
+      let value/8 = x115 in
+      let t148 = ("ok " + value/8) in
+      jump k146(t148)
     },
     Tag_1 => {
-      let x76 = Result__string__string::Err._0(res/7) in
-      let err/9 = x76 in
-      let t109 = ("err " + err/9) in
-      jump k106(t109)
+      let x116 = Result__string__string::Err._0(res/7) in
+      let err/9 = x116 in
+      let t149 = ("err " + err/9) in
+      jump k146(t149)
     },
   }
 }
 
 fn main() -> unit {
-  join ret110() -> unit {
+  join ret150() -> unit {
     ()
   } in
-  let t111 = use_handle(true, true) in
-  let t112 = show(t111) in
-  let _wild77 = println__T_string(t112) in
-  let t113 = use_handle(false, true) in
-  let t114 = show(t113) in
-  let _wild78 = println__T_string(t114) in
-  let t115 = use_handle(true, false) in
-  let t116 = show(t115) in
-  let _wild79 = println__T_string(t116) in
-  jump ret110()
+  let t151 = use_handle(true, true) in
+  let t152 = show(t151) in
+  let _wild117 = println__T_string(t152) in
+  let t153 = use_handle(false, true) in
+  let t154 = show(t153) in
+  let _wild118 = println__T_string(t154) in
+  let t155 = use_handle(true, false) in
+  let t156 = show(t155) in
+  let _wild119 = println__T_string(t156) in
+  jump ret150()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret117() -> unit {
+  join ret157() -> unit {
     ()
   } in
-  let t118 = trait_impl#ToString#string#to_string(value/1) in
-  let t119 = @runtime(core.string_println)(t118) in
-  jump ret117()
+  let t158 = trait_impl#ToString#string#to_string(value/1) in
+  let t159 = @runtime(core.string_println)(t158) in
+  jump ret157()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret120(retv121: string) -> string {
-    retv121
+  join ret160(retv161: string) -> string {
+    retv161
   } in
-  jump ret120(self/38)
+  jump ret160(self/38)
 }

@@ -3,17 +3,17 @@ fn print_int_list(xs/0: IntList) -> unit {
     IntList::Nil => {
       println__T_string("Nil")
     },
-    IntList::Cons(x68, x69) => {
-      let x68 = IntList::Cons._0(xs/0) in
-      let x69 = IntList::Cons._1(xs/0) in
-      let xs/2 = x69 in
-      let x/1 = x68 in
-      let mtmp70 = println__T_string("Cons") in
-      let mtmp71 = println__T_string("(") in
-      let mtmp72 = println__T_string(inherent#int32#int32#to_string(x/1)) in
-      let mtmp73 = println__T_string(", ") in
-      let mtmp74 = print_int_list(xs/2) in
-      let mtmp75 = println__T_string(")") in
+    IntList::Cons(x108, x109) => {
+      let x108 = IntList::Cons._0(xs/0) in
+      let x109 = IntList::Cons._1(xs/0) in
+      let xs/2 = x109 in
+      let x/1 = x108 in
+      let mtmp110 = println__T_string("Cons") in
+      let mtmp111 = println__T_string("(") in
+      let mtmp112 = println__T_string(inherent#int32#int32#to_string(x/1)) in
+      let mtmp113 = println__T_string(", ") in
+      let mtmp114 = print_int_list(xs/2) in
+      let mtmp115 = println__T_string(")") in
       ()
     },
   }
@@ -24,11 +24,11 @@ fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
     IntList::Nil => {
       acc/4
     },
-    IntList::Cons(x76, x77) => {
-      let x76 = IntList::Cons._0(xs/3) in
-      let x77 = IntList::Cons._1(xs/3) in
-      let tail/6 = x77 in
-      let head/5 = x76 in
+    IntList::Cons(x116, x117) => {
+      let x116 = IntList::Cons._0(xs/3) in
+      let x117 = IntList::Cons._1(xs/3) in
+      let tail/6 = x117 in
+      let head/5 = x116 in
       int_list_rev_aux(tail/6, IntList::Cons(head/5, acc/4))
     },
   }
@@ -43,37 +43,37 @@ fn int_list_length(xs/8: IntList) -> int32 {
     IntList::Nil => {
       0
     },
-    IntList::Cons(x78, x79) => {
-      let x78 = IntList::Cons._0(xs/8) in
-      let x79 = IntList::Cons._1(xs/8) in
-      let xs/9 = x79 in
+    IntList::Cons(x118, x119) => {
+      let x118 = IntList::Cons._0(xs/8) in
+      let x119 = IntList::Cons._1(xs/8) in
+      let xs/9 = x119 in
       (1 + int_list_length(xs/9))
     },
   }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
-  let mtmp80 = println__T_string("Length: ") in
-  let mtmp81 = println__T_string(inherent#int32#int32#to_string(int_list_length(xs/10))) in
+  let mtmp120 = println__T_string("Length: ") in
+  let mtmp121 = println__T_string(inherent#int32#int32#to_string(int_list_length(xs/10))) in
   ()
 }
 
 fn main() -> unit {
   let x/11 = IntList::Nil in
-  let mtmp82 = print_int_list(x/11) in
-  let mtmp83 = println__T_string("") in
-  let mtmp84 = print_int_list_length(x/11) in
+  let mtmp122 = print_int_list(x/11) in
+  let mtmp123 = println__T_string("") in
+  let mtmp124 = print_int_list_length(x/11) in
   let x/12 = IntList::Cons(1, IntList::Nil) in
-  let mtmp85 = print_int_list(x/12) in
-  let mtmp86 = println__T_string("") in
-  let mtmp87 = print_int_list_length(x/12) in
+  let mtmp125 = print_int_list(x/12) in
+  let mtmp126 = println__T_string("") in
+  let mtmp127 = print_int_list_length(x/12) in
   let x/13 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
-  let mtmp88 = print_int_list(x/13) in
-  let mtmp89 = println__T_string("") in
-  let mtmp90 = print_int_list_length(x/13) in
+  let mtmp128 = print_int_list(x/13) in
+  let mtmp129 = println__T_string("") in
+  let mtmp130 = print_int_list_length(x/13) in
   let y/14 = int_list_rev(x/13) in
-  let mtmp91 = print_int_list(y/14) in
-  let mtmp92 = println__T_string("") in
+  let mtmp131 = print_int_list(y/14) in
+  let mtmp132 = println__T_string("") in
   ()
 }
 
