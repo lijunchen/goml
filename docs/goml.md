@@ -14,7 +14,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 6. `if` is an expression; when `else` is omitted, the then branch must return `unit`.`match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
 8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while` and `for` as statements.
-9. Enumeration constructors and patterns prefer to write their full names, such as `Option::Some(value)`, to avoid name conflicts.
+9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package first and then write `use alias::Trait;`; when in doubt, use UFCS: `Trait::method(value)`.
 12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, Go `var` / `:=` or user `extern fn`.
@@ -58,7 +58,7 @@ The single `_` is a wildcard character, not an ordinary variable name.The curren
 - Structures, enumerations, traits, enumeration variants, generic parameters, and associated types must start with a capital letter;
 - Paths retain the appropriate case for the referenced name.
 
-Enumeration variants should be used via `Enum::Variant` to avoid name conflicts.
+Enumeration construction should use `Enum::Variant`.Patterns may omit `Enum::` because their expected type determines the variant owner.
 
 Common keywords include:
 
@@ -470,7 +470,7 @@ match named {
 }
 ```
 
-Naked variant names are available if they can be resolved uniquely, but multiple enumerations may define variants with the same name.Variant names must be uppercase; `Enum::Variant` is preferred when generating code.
+Patterns may omit the enum qualifier.When the expected pattern type is `Option[T]`, `Some(value)` and `None` resolve to `Option::Some(value)` and `Option::None`.The same rule applies to unit, tuple-like, and struct-like variants of user enums, including enums imported from another package and enums reached through a type alias.Duplicate variant names in unrelated enums are not ambiguous because the expected enum type selects the owner.Nested patterns are resolved recursively, so `Some(Ok(value))` uses the payload type of `Some` to resolve `Ok`.
 
 ## Functions and generics
 
@@ -773,13 +773,24 @@ When you need to get values ​​from two branches, you must write `else` expli
 ```goml
 fn unwrap_or(value: Option[int32], fallback: int32) -> int32 {
     match value {
-        Option::Some(inner) => inner,
-        Option::None => fallback,
+        Some(inner) => inner,
+        None => fallback,
     }
 }
 ```
 
 The matched expression is evaluated only once, and the pattern is tried from top to bottom.All branches must produce compatible types, and the compiler is required to cover all possible values.
+
+An unqualified variant in a pattern is resolved only against the matched value's type.The compiler does not search unrelated enums for a fallback.If that type is not an enum, does not contain the variant, or cannot be inferred, the pattern is rejected.Fully qualified patterns remain available:
+
+```goml
+match value {
+    Option::Some(inner) => inner,
+    Option::None => fallback,
+}
+```
+
+The rule is shared by `match`, `if let`, `while let`, `let`, `for`, nested patterns, and or-patterns.Existing refutability requirements still apply to `let` and `for`.
 
 Branches can be guarded.guard must be a `bool`, and bindings introduced by this branching pattern can be used:
 
@@ -923,8 +934,9 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | Single element tuple | `(value,)` |
 | exact structure | `Point { x, y: other }` |
 | partial structure | `Point { x, .. }` |
-| Enumerate unloaded variants | `Color::Red` |
-| Enum load variants | `Option::Some(value)` |
+| Enum unit variant | `Color::Red` or contextual `Red` |
+| Enum tuple variant | `Option::Some(value)` or contextual `Some(value)` |
+| Enum struct-like variant | `Message::Named { value }` or contextual `Named { value }` |
 | Array, Vec or Slice | `[first, second]`、`[first, .., last]` |
 | rest binding | `[first, middle @ .., last]` |
 | Alias | `whole @ Option::Some(value)` |
@@ -983,7 +995,7 @@ let Point { x, .. } = point;
 
 `..` appears at most once in the structure pattern and must be the last item.Duplicate fields, unknown fields, and missing fields without writing `..` will all generate diagnoses.
 
-The number of constructor parameters of the enumeration mode must be consistent with the definition.Naked variant names are available if they can be resolved uniquely in the entire current package, including variants defined in other files in the same package; ambiguities are reported when there are multiple candidates.In order to make the source code stable and clear, `Enum::Variant` should still be written first.
+The number of constructor parameters of the enumeration pattern must be consistent with the definition.An unqualified variant is resolved from the expected enum type rather than from global uniqueness.For example, `Shared` in a pattern for `First` means `First::Shared` even when `Second::Shared` also exists.If `First` has no `Shared` variant, the compiler reports that error instead of selecting `Second::Shared`.Type aliases and imported enum types participate after normalization.Nested variant payloads supply the expected type for nested patterns.
 
 ### Fixed arrays, Vec and Slice
 
@@ -1486,7 +1498,7 @@ enum Result[T, E] {
 }
 ```
 
-It is recommended to always write `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err` when constructing and matching.
+Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`.Patterns may use either those full names or contextual `Some`, `None`, `Ok` and `Err`.
 
 `Option[T]` provides `is_some`, `is_none`, `unwrap_or`, and `unwrap_or_else`, plus type-changing generic methods:
 

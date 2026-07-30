@@ -398,6 +398,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Structs: `struct Name { field: Type, ... }`. Construction supports key–value syntax or field shorthand. Field access uses `value.field`, and fields can be used for update reconstruction.
 * Enums: `enum Name { Variant, Variant(T1, T2), ... }`, with support for generics. Constructors may be uppercase or lowercase; namespaced access `Enum::Variant` avoids conflicts.
 * Pattern matching supports field patterns, shorthand, and wildcards for structs; enum matching can destructure payloads or match constructors directly.
+  * Enum variant patterns may omit the enum qualifier when the expected pattern type determines the enum: `Some(value)`, `None`, `Ok(value)`, `Data { field }`.
+  * Contextual resolution applies to `match`, `if let`, `while let`, `let`, `for`, nested patterns, and or-patterns. It normalizes type aliases and works with imported enums.
+  * The expected enum is authoritative. If it lacks the named variant, resolution must fail instead of selecting a same-named variant from another enum. Fully qualified `Enum::Variant` patterns remain supported.
 
 ### Built-in Containers and References
 
