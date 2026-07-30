@@ -865,6 +865,44 @@ fn checks_indexed_assignment_roots() -> unit {
 }
 
 #[test]
+fn checks_practical_expression_syntax() -> unit {
+    let valid = checked_diagnostics(
+        "struct Point { x: int, y: int } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[int] = Vec::[]; let table: HashMap[string, int] = HashMap::{ \"x\" => 1 }; let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
+    );
+    testing::assert_eq(valid.len(), 0)
+}
+
+#[test]
+fn rejects_uninferred_collection_literals() -> unit {
+    let empty = checked_diagnostics(
+        "fn main() -> unit { let values = Vec::[]; let _ = values; }",
+    );
+    testing::assert(has_diagnostic(empty, "Could not infer type"))
+}
+
+#[test]
+fn rejects_hashmap_index_compound_assignment() -> unit {
+    let hashmap_compound = checked_diagnostics(
+        "fn main() -> unit { let values: HashMap[string, int] = HashMap::{ \"x\" => 1 }; values[\"x\"] += 2; }",
+    );
+    testing::assert(has_diagnostic(
+        hashmap_compound,
+        "compound assignment is not supported for HashMap indexing because reads return Option[V]",
+    ))
+}
+
+#[test]
+fn rejects_non_stringifiable_interpolation() -> unit {
+    let interpolation = checked_diagnostics(
+        "fn main() -> unit { let _ = f\"{|| ()}\"; }",
+    );
+    testing::assert(has_diagnostic(
+        interpolation,
+        "interpolated expression of type () -> unit does not implement ToString",
+    ))
+}
+
+#[test]
 fn validates_trait_impl_contracts() -> unit {
     let duplicate = checked_diagnostics(
         "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn show(self: int32) -> string { \"b\" } }",
@@ -1111,7 +1149,11 @@ fn erases_indexed_assignment_read_types() -> unit {
     let file = checked_file("fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.stmts.get(1) {
-            Stmt::Assign { target: Expr::Index { base: _, index: _, ty: target_ty }, value } => {
+            Stmt::Assign {
+                target: Expr::Index { base: _, index: _, ty: target_ty },
+                op: _,
+                value,
+            } => {
                 match resolve_type(target_ty) {
                     Type::Unit => (),
                     _ => testing::fail("expected unit assignment target read type"),

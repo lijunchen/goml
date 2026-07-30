@@ -37,8 +37,56 @@ fn lexes_operator_tokens() -> unit {
     let tokens = lex(source);
     testing::assert_eq(
         encode_tokens(tokens),
-        "LParen\t0\t1\t28\nRParen\t1\t2\t29\nLBrace\t2\t3\t7b\nRBrace\t3\t4\t7d\nLBracket\t4\t5\t5b\nRBracket\t5\t6\t5d\nWhitespace\t6\t7\t20\nEq\t7\t8\t3d\nSemi\t8\t9\t3b\nComma\t9\t10\t2c\nColonColon\t10\t12\t3a3a\nColon\t12\t13\t3a\nPlus\t13\t14\t2b\nMinus\t14\t15\t2d\nStar\t15\t16\t2a\nSlash\t16\t17\t2f\nPercent\t17\t18\t25\nDotDot\t18\t20\t2e2e\nDotDotEq\t20\t23\t2e2e3d\nDotDot\t23\t25\t2e2e\nAt\t25\t26\t40\nAndAnd\t26\t28\t2626\nAmp\t28\t29\t26\nOrOr\t29\t31\t7c7c\nPipe\t31\t32\t7c\nCaret\t32\t33\t5e\nTilde\t33\t34\t7e\nBang\t34\t35\t21\nLessLess\t35\t37\t3c3c\nLess\t37\t38\t3c\nGreaterGreater\t38\t40\t3e3e\nGreaterGreater\t40\t42\t3e3e\nEq\t42\t43\t3d\nLessEq\t43\t45\t3c3d\nWhitespace\t45\t46\t20\nEqEq\t46\t48\t3d3d\nWhitespace\t48\t49\t20\nNotEq\t49\t51\t213d\nWhitespace\t51\t52\t20\nQuestion\t52\t53\t3f\nPound\t53\t54\t23\nWhitespace\t54\t55\t20\nArrow\t55\t57\t2d3e\nWhitespace\t57\t58\t20\nFatArrow\t58\t60\t3d3e\n",
+        "LParen\t0\t1\t28\nRParen\t1\t2\t29\nLBrace\t2\t3\t7b\nRBrace\t3\t4\t7d\nLBracket\t4\t5\t5b\nRBracket\t5\t6\t5d\nWhitespace\t6\t7\t20\nEq\t7\t8\t3d\nSemi\t8\t9\t3b\nComma\t9\t10\t2c\nColonColon\t10\t12\t3a3a\nColon\t12\t13\t3a\nPlus\t13\t14\t2b\nMinus\t14\t15\t2d\nStar\t15\t16\t2a\nSlash\t16\t17\t2f\nPercent\t17\t18\t25\nDotDot\t18\t20\t2e2e\nDotDotEq\t20\t23\t2e2e3d\nDotDot\t23\t25\t2e2e\nAt\t25\t26\t40\nAndAnd\t26\t28\t2626\nAmp\t28\t29\t26\nOrOr\t29\t31\t7c7c\nPipe\t31\t32\t7c\nCaret\t32\t33\t5e\nTilde\t33\t34\t7e\nBang\t34\t35\t21\nLessLess\t35\t37\t3c3c\nLess\t37\t38\t3c\nGreaterGreater\t38\t40\t3e3e\nGreaterGreaterEq\t40\t43\t3e3e3d\nLessEq\t43\t45\t3c3d\nWhitespace\t45\t46\t20\nEqEq\t46\t48\t3d3d\nWhitespace\t48\t49\t20\nNotEq\t49\t51\t213d\nWhitespace\t51\t52\t20\nQuestion\t52\t53\t3f\nPound\t53\t54\t23\nWhitespace\t54\t55\t20\nArrow\t55\t57\t2d3e\nWhitespace\t57\t58\t20\nFatArrow\t58\t60\t3d3e\n",
     )
+}
+
+#[test]
+fn lexes_compound_assignment_tokens() -> unit {
+    let tokens = lex("+= -= *= /= %= &= |= ^= <<= >>=");
+    let builder = text::StringBuilder::new();
+    for token in tokens {
+        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
+            if builder.is_empty() == false {
+                builder.write_string(" ")
+            } else {
+                ()
+            };
+            builder.write_string(token_kind_name(token.kind))
+        } else {
+            ()
+        }
+    };
+    testing::assert_eq(
+        builder.finish(),
+        "PlusEq MinusEq StarEq SlashEq PercentEq AmpEq PipeEq CaretEq LessLessEq GreaterGreaterEq",
+    )
+}
+
+#[test]
+fn lexes_interpolated_string_segments() -> unit {
+    let tokens = lex("f\"hi {{x}} {value + 1}!\"");
+    let builder = text::StringBuilder::new();
+    for token in tokens {
+        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
+            if builder.is_empty() == false {
+                builder.write_string("|")
+            } else {
+                ()
+            };
+            builder.write_string(token_kind_name(token.kind));
+            builder.write_string(":");
+            builder.write_string(token.text)
+        } else {
+            ()
+        }
+    };
+    testing::assert_eq(
+        builder.finish(),
+        "FStringStart:f\"|FStringText:hi {{x}} |FStringExprStart:{|Ident:value|Plus:+|IntLit:1|FStringExprEnd:}|FStringText:!|FStringEnd:\"",
+    );
+    testing::assert_eq(tokens.get(3).start, 12);
+    testing::assert_eq(tokens.get(3).end, 17)
 }
 
 #[test]

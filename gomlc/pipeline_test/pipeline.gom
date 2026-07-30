@@ -253,6 +253,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
 fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     let base = fixture_dir(name);
     let source_path = path::join(base, "main.gom");
+    let new_fixture = !fs::is_file(path::join(base, "main.gom.cst"));
     let source = match fs::read_file(source_path) {
         Result::Ok(value) => value,
         Result::Err(message) => {
@@ -275,21 +276,21 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     assert_snapshot(base, "anf", anf::encode(compilation.anf_value));
     assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
 
-    if has_out_snapshot(base) {
-        if can_run_go {
-            let go_source = go_backend::encode(compilation.go_value);
-            assert_snapshot(
-                base,
-                "out",
-                execute_go_and_read_stdout(
-                    go_source,
-                    read_snapshot(base, "out"),
-                    name,
-                ),
-            )
-        } else {
-            ()
-        }
+    if can_run_go && (has_out_snapshot(base) || (update_expected() && new_fixture)) {
+        let go_source = go_backend::encode(compilation.go_value);
+        assert_snapshot(
+            base,
+            "out",
+            execute_go_and_read_stdout(
+                go_source,
+                if has_out_snapshot(base) {
+                    read_snapshot(base, "out")
+                } else {
+                    ""
+                },
+                name,
+            ),
+        )
     } else {
         ()
     }
