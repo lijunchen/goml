@@ -29,6 +29,16 @@ pub enum ConstructorRef {
     Unresolved(string),
 }
 
+pub enum PatternHead {
+    Resolved {
+        enum_def: DefId,
+        variant_index: int,
+        span: ast::Span,
+    },
+    Qualified { name: string, span: ast::Span },
+    Contextual { name: string, span: ast::Span },
+}
+
 pub enum TypeExpr {
     Unit,
     Bool,
@@ -317,8 +327,8 @@ pub enum PatKind {
     String { value: string },
     Char { value: string },
     Byte { value: string },
-    Constr { constructor: ConstructorRef, args: Vec[Pat] },
-    Struct { name: string, fields: Vec[(string, Pat)], has_rest: bool },
+    Constr { head: PatternHead, args: Vec[Pat] },
+    Struct { head: PatternHead, fields: Vec[(string, Pat)], has_rest: bool },
     Tuple { items: Vec[Pat] },
     Array { prefix: Vec[Pat], rest: Option[ArrayPatRest], suffix: Vec[Pat] },
     Alias { name: LocalId, pat: Pat },

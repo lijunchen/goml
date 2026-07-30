@@ -3250,7 +3250,7 @@ fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
     let result = Vec::new();
     match value.kind {
         hir::PatKind::Var { name } => result.push(name),
-        hir::PatKind::Constr { constructor: _, args }
+        hir::PatKind::Constr { head: _, args }
         | hir::PatKind::Tuple { items: args }
         | hir::PatKind::Or { pats: args } => for arg in args {
             for local in hir_pattern_locals(arg) {
@@ -3261,7 +3261,7 @@ fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
                 }
             }
         },
-        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+        hir::PatKind::Struct { head: _, fields, has_rest: _ } => for field in fields {
             for local in hir_pattern_locals(field.1) {
                 if !contains_local(result, local) {
                     result.push(local)
@@ -3527,10 +3527,10 @@ fn check_match_expr(
     let useful_arms = match_useful_arms(ctx, analysis_arms);
     let invalid_coverage_seen = Ref::new(false);
     for index in range(0, useful_arms.len()) {
-        if follows_invalid_coverage.get(index)
-            || invalid_coverage_seen.get()
-            || !(useful_arms.get(index))
-        {
+        if !(invalid_pattern_arms.get(index))
+            && !(follows_invalid_coverage.get(index))
+            && !(invalid_coverage_seen.get())
+            && !(useful_arms.get(index)) {
             push_warning_at(
                 ctx,
                 "Unreachable match arm",
@@ -5063,14 +5063,76 @@ fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)]
     }
 }
 
+fn contextual_pattern_enum_name(
+    ctx: Checker,
+    expected: Type,
+) -> Option[string] {
+    match pattern_expected_owner(ctx, expected) {
+        Option::Some(owner) => match find_expected_enum(ctx, owner) {
+            Option::Some(info) => Option::Some(info.name),
+            Option::None => if pattern_owner_is_builtin_enum(ctx, owner) {
+                Option::Some(owner)
+            } else {
+                Option::None
+            },
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn push_contextual_pattern_diagnostic(
+    ctx: Checker,
+    name: string,
+    expected: Type,
+    span: ast::Span,
+) -> unit {
+    let normalized = normalized_pattern_expected(ctx, expected);
+    match prune(normalized) {
+        Type::Error => (),
+        Type::Var(_) | Type::Projection {
+            for_ty: _,
+            name: _,
+            trait_ref: _,
+        } => push_diagnostic_at(
+            ctx,
+            "Could not infer enum type for variant " + name,
+            Option::Some(span),
+        ),
+        _ => match contextual_pattern_enum_name(ctx, normalized) {
+            Option::Some(enum_name) => push_diagnostic_at(
+                ctx,
+                "Enum "
+                    + short_name(enum_name)
+                    + " has no variant "
+                    + name,
+                Option::Some(span),
+            ),
+            Option::None => push_diagnostic_at(
+                ctx,
+                "Contextual variant "
+                    + name
+                    + " cannot match value of type "
+                    + type_text(normalized),
+                Option::Some(span),
+            ),
+        },
+    }
+}
+
 fn check_constructor_pattern(
     ctx: Checker,
-    constructor: hir::ConstructorRef,
+    head: hir::PatternHead,
     args: Vec[hir::Pat],
     expected: Type,
 ) -> Pat {
-    match resolve_constructor(ctx, constructor) {
+    match resolve_pattern_constructor(ctx, head, expected) {
         Option::Some(info) => {
+            ctx.typeck_results.references.push(ReferenceFact {
+                source_path: ctx.source_path,
+                span: pattern_head_span(head),
+                target: ReferenceTarget::Constructor(info.constructor),
+                ty: info.ty,
+            });
             if info.named {
                 for value in args {
                     mark_unresolved_pattern_locals(ctx, value)
@@ -5112,15 +5174,27 @@ fn check_constructor_pattern(
             Pat::Constr { constructor: info.constructor, args: values, ty: expected }
         },
         Option::None => {
-            match constructor {
-                hir::ConstructorRef::Unresolved(name) => {
-                    if bare_constructor_match_count(ctx, name) > 1 {
-                        push_diagnostic(ctx, "Ambiguous constructor " + name)
-                    } else {
-                        push_diagnostic(ctx, "pattern constructor not found")
-                    }
+            for value in args {
+                mark_unresolved_pattern_locals(ctx, value)
+            };
+            match head {
+                hir::PatternHead::Contextual {
+                    name: contextual_name,
+                    span: _,
+                } => {
+                    push_contextual_pattern_diagnostic(
+                        ctx,
+                        contextual_name,
+                        expected,
+                        pattern_head_span(head),
+                    )
                 },
-                hir::ConstructorRef::Resolved { enum_def: _, variant_index: _ } => {
+                hir::PatternHead::Qualified { name: _, span: _ }
+                | hir::PatternHead::Resolved {
+                    enum_def: _,
+                    variant_index: _,
+                    span: _,
+                } => {
                     push_diagnostic(ctx, "pattern constructor not found")
                 },
             };
@@ -5134,14 +5208,15 @@ fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
         hir::PatKind::Var { name: local } => if contains_local(ctx.unresolved_locals, local) {
             ()
         } else {
-            ctx.unresolved_locals.push(local)
+            ctx.unresolved_locals.push(local);
+            insert_local(ctx, local, Type::Error)
         },
-        hir::PatKind::Constr { constructor: _, args: values }
+        hir::PatKind::Constr { head: _, args: values }
         | hir::PatKind::Tuple { items: values }
         | hir::PatKind::Or { pats: values } => for value in values {
             mark_unresolved_pattern_locals(ctx, value)
         },
-        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+        hir::PatKind::Struct { head: _, fields, has_rest: _ } => for field in fields {
             mark_unresolved_pattern_locals(ctx, field.1)
         },
         hir::PatKind::Array { prefix, rest: _, suffix } => {
@@ -5185,13 +5260,20 @@ fn named_pattern_field_before(
 
 fn check_struct_pattern(
     ctx: Checker,
-    name: string,
+    head: hir::PatternHead,
     fields: Vec[(string, hir::Pat)],
     has_rest: bool,
     expected: Type,
 ) -> Pat {
-    match resolve_named_field_constructor(ctx, name) {
+    let name = pattern_head_name(ctx, head);
+    match resolve_pattern_named_field_constructor(ctx, head, expected) {
         NamedFieldConstructorResolution::Found(info) => {
+            ctx.typeck_results.references.push(ReferenceFact {
+                source_path: ctx.source_path,
+                span: pattern_head_span(head),
+                target: ReferenceTarget::Constructor(info.constructor),
+                ty: info.ty,
+            });
             expect_type(ctx, info.ty, expected);
             if info.has_hidden_fields && !has_rest {
                 push_diagnostic(
@@ -5287,10 +5369,26 @@ fn check_struct_pattern(
             for field in fields {
                 mark_unresolved_pattern_locals(ctx, field.1)
             };
-            push_diagnostic(
-                ctx,
-                "Constructor " + name + " not found when checking pattern",
-            );
+            match head {
+                hir::PatternHead::Contextual {
+                    name: contextual_name,
+                    span: _,
+                } => push_contextual_pattern_diagnostic(
+                    ctx,
+                    contextual_name,
+                    expected,
+                    pattern_head_span(head),
+                ),
+                hir::PatternHead::Qualified { name: _, span: _ }
+                | hir::PatternHead::Resolved {
+                    enum_def: _,
+                    variant_index: _,
+                    span: _,
+                } => push_diagnostic(
+                    ctx,
+                    "Constructor " + name + " not found when checking pattern",
+                ),
+            };
             Pat::Wild { ty: expected }
         },
     }
@@ -5391,11 +5489,11 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 insert_local(ctx, local, expected);
                 Pat::Var { name: local_name(local), ty: expected }
             },
-            hir::PatKind::Constr { constructor, args } => {
-                check_constructor_pattern(ctx, constructor, args, expected)
+            hir::PatKind::Constr { head, args } => {
+                check_constructor_pattern(ctx, head, args, expected)
             },
-            hir::PatKind::Struct { name, fields, has_rest } => {
-                check_struct_pattern(ctx, name, fields, has_rest, expected)
+            hir::PatKind::Struct { head, fields, has_rest } => {
+                check_struct_pattern(ctx, head, fields, has_rest, expected)
             },
             hir::PatKind::Tuple { items: values } => {
                 let types: Vec[Type] = Vec::new();
@@ -5596,14 +5694,14 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
 fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
     match value.kind {
         hir::PatKind::Var { name: local } => mark_mutable_local(ctx, local),
-        hir::PatKind::Constr { constructor: _, args: values } | hir::PatKind::Tuple { items: values } | hir::PatKind::Or {
+        hir::PatKind::Constr { head: _, args: values } | hir::PatKind::Tuple { items: values } | hir::PatKind::Or {
             pats: values,
         } => {
             for value in values {
                 mark_mutable_pattern(ctx, value)
             }
         },
-        hir::PatKind::Struct { name: _, fields, has_rest: _ } => for field in fields {
+        hir::PatKind::Struct { head: _, fields, has_rest: _ } => for field in fields {
             mark_mutable_pattern(ctx, field.1)
         },
         hir::PatKind::Array { prefix, rest, suffix } => {

@@ -236,7 +236,7 @@ fn pattern_has_unresolved_inference(
             Option::Some(ty) => contains_unresolved_inference(ctx, ty),
             Option::None => false,
         },
-        hir::PatKind::Constr { constructor: _, args }
+        hir::PatKind::Constr { head: _, args }
         | hir::PatKind::Tuple { items: args }
         | hir::PatKind::Or { pats: args } => {
             for arg in args {
@@ -248,7 +248,7 @@ fn pattern_has_unresolved_inference(
             };
             false
         },
-        hir::PatKind::Struct { name: _, fields, has_rest: _ } => {
+        hir::PatKind::Struct { head: _, fields, has_rest: _ } => {
             for field in fields {
                 if pattern_has_unresolved_inference(ctx, field.1) {
                     return true

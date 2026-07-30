@@ -678,7 +678,8 @@ pub fn goto_definitions(
     };
     match reference.get() {
         Option::Some(fact) => match fact.target {
-            tast::ReferenceTarget::Local(_) => if result.len() == 0 {
+            tast::ReferenceTarget::Local(_)
+            | tast::ReferenceTarget::Constructor(_) => if result.len() == 0 {
                 match semantic_definition(
                 value,
                 offset,

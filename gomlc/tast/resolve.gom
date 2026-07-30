@@ -147,6 +147,17 @@ fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
     }
 }
 
+fn find_enum_by_exact_name(ctx: Checker, name: string) -> Option[EnumInfo] {
+    for value in ctx.enums {
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
     match ctx.struct_names.get(name) {
         Option::Some(index) => Option::Some(ctx.structs.get(index)),
@@ -159,6 +170,51 @@ fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
             Option::None => Option::None,
         },
     }
+}
+
+fn find_struct_by_exact_name(
+    ctx: Checker,
+    name: string,
+) -> Option[StructInfo] {
+    for value in ctx.structs {
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn find_expected_enum(ctx: Checker, name: string) -> Option[EnumInfo] {
+    match find_enum_by_exact_name(ctx, name) {
+        Option::Some(value) => Option::Some(value),
+        Option::None => match find_struct_by_exact_name(ctx, name) {
+            Option::Some(_) => Option::None,
+            Option::None => find_enum_by_name(ctx, name),
+        },
+    }
+}
+
+fn find_expected_struct(ctx: Checker, name: string) -> Option[StructInfo] {
+    match find_struct_by_exact_name(ctx, name) {
+        Option::Some(value) => Option::Some(value),
+        Option::None => match find_enum_by_exact_name(ctx, name) {
+            Option::Some(_) => Option::None,
+            Option::None => find_struct_by_name(ctx, name),
+        },
+    }
+}
+
+fn pattern_owner_is_builtin_enum(ctx: Checker, name: string) -> bool {
+    (name == "Option" || name == "Result")
+        && match find_enum_by_exact_name(ctx, name) {
+            Option::Some(_) => false,
+            Option::None => match find_struct_by_exact_name(ctx, name) {
+                Option::Some(_) => false,
+                Option::None => true,
+            },
+        }
 }
 
 fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
@@ -314,18 +370,95 @@ fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[Resol
     }
 }
 
-fn bare_constructor_match_count(ctx: Checker, name: string) -> int {
-    let count = Ref::new(0);
-    for info in ctx.enums {
-        for variant in info.variants {
-            if variant.name == name {
-                count.set(count.get() + 1)
-            } else {
-                ()
-            }
+fn pattern_head_span(value: hir::PatternHead) -> ast::Span {
+    match value {
+        hir::PatternHead::Resolved {
+            enum_def: _,
+            variant_index: _,
+            span,
         }
-    };
-    count.get()
+        | hir::PatternHead::Qualified { name: _, span }
+        | hir::PatternHead::Contextual { name: _, span } => span,
+    }
+}
+
+fn pattern_head_name(ctx: Checker, value: hir::PatternHead) -> string {
+    match value {
+        hir::PatternHead::Resolved {
+            enum_def,
+            variant_index,
+            span: _,
+        } => match find_enum_by_def(ctx, enum_def) {
+            Option::Some(info) => match find_variant(info, variant_index) {
+                Option::Some(variant) => info.name + "::" + variant.name,
+                Option::None => "<resolved>",
+            },
+            Option::None => "<resolved>",
+        },
+        hir::PatternHead::Qualified { name, span: _ }
+        | hir::PatternHead::Contextual { name, span: _ } => name,
+    }
+}
+
+fn normalized_pattern_expected(ctx: Checker, expected: Type) -> Type {
+    normalize_type(ctx, expand_type_aliases(ctx, expected, false))
+}
+
+fn pattern_expected_owner(ctx: Checker, expected: Type) -> Option[string] {
+    type_constructor_name(normalized_pattern_expected(ctx, expected))
+}
+
+fn resolve_contextual_constructor(
+    ctx: Checker,
+    name: string,
+    expected: Type,
+) -> Option[ResolvedConstructor] {
+    match pattern_expected_owner(ctx, expected) {
+        Option::Some(owner) => match find_expected_enum(ctx, owner) {
+            Option::Some(value) => {
+                for index in range(0, value.variants.len()) {
+                    if value.variants.get(index).name == name {
+                        return resolve_user_constructor(ctx, value, index)
+                    } else {
+                        ()
+                    }
+                };
+                Option::None
+            },
+            Option::None => if pattern_owner_is_builtin_enum(ctx, owner) {
+                resolve_builtin_constructor(ctx, owner + "::" + name)
+            } else {
+                Option::None
+            },
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn resolve_pattern_constructor(
+    ctx: Checker,
+    head: hir::PatternHead,
+    expected: Type,
+) -> Option[ResolvedConstructor] {
+    match head {
+        hir::PatternHead::Resolved {
+            enum_def,
+            variant_index,
+            span: _,
+        } => resolve_constructor(
+            ctx,
+            hir::ConstructorRef::Resolved {
+                enum_def,
+                variant_index,
+            },
+        ),
+        hir::PatternHead::Qualified { name, span: _ } => {
+            resolve_constructor(ctx, hir::ConstructorRef::Unresolved(name))
+        },
+        hir::PatternHead::Contextual { name, span: _ } => {
+            resolve_contextual_constructor(ctx, name, expected)
+        },
+    }
 }
 
 fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
@@ -411,6 +544,27 @@ fn resolve_named_variant_in(
     NamedFieldConstructorResolution::Missing
 }
 
+fn resolve_named_variant_at(
+    ctx: Checker,
+    value: EnumInfo,
+    variant_index: int,
+) -> NamedFieldConstructorResolution {
+    match find_variant(value, variant_index) {
+        Option::Some(variant) => match enum_variant_named_fields(variant.fields) {
+            Option::Some(fields) => NamedFieldConstructorResolution::Found(
+                instantiate_named_variant(
+                    ctx,
+                    value,
+                    variant_index,
+                    fields,
+                ),
+            ),
+            Option::None => NamedFieldConstructorResolution::WrongStyle,
+        },
+        Option::None => NamedFieldConstructorResolution::Missing,
+    }
+}
+
 fn resolve_named_field_constructor(
     ctx: Checker,
     name: string,
@@ -458,6 +612,54 @@ fn resolve_named_field_constructor(
             ),
             Option::None => NamedFieldConstructorResolution::WrongStyle,
         }
+    }
+}
+
+fn resolve_contextual_named_field_constructor(
+    ctx: Checker,
+    name: string,
+    expected: Type,
+) -> NamedFieldConstructorResolution {
+    match pattern_expected_owner(ctx, expected) {
+        Option::Some(owner) => match find_expected_enum(ctx, owner) {
+            Option::Some(value) => resolve_named_variant_in(ctx, value, name),
+            Option::None => match find_expected_struct(ctx, owner) {
+                Option::Some(value) => if names_match(value.name, name) {
+                    NamedFieldConstructorResolution::Found(
+                        instantiate_struct(ctx, value),
+                    )
+                } else {
+                    NamedFieldConstructorResolution::Missing
+                },
+                Option::None => NamedFieldConstructorResolution::Missing,
+            },
+        },
+        Option::None => NamedFieldConstructorResolution::Missing,
+    }
+}
+
+fn resolve_pattern_named_field_constructor(
+    ctx: Checker,
+    head: hir::PatternHead,
+    expected: Type,
+) -> NamedFieldConstructorResolution {
+    match head {
+        hir::PatternHead::Resolved {
+            enum_def,
+            variant_index,
+            span: _,
+        } => match find_enum_by_def(ctx, enum_def) {
+            Option::Some(value) => {
+                resolve_named_variant_at(ctx, value, variant_index)
+            },
+            Option::None => NamedFieldConstructorResolution::Missing,
+        },
+        hir::PatternHead::Qualified { name, span: _ } => {
+            resolve_named_field_constructor(ctx, name)
+        },
+        hir::PatternHead::Contextual { name, span: _ } => {
+            resolve_contextual_named_field_constructor(ctx, name, expected)
+        },
     }
 }
 

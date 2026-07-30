@@ -473,6 +473,42 @@ fn unresolved_constructor(ctx: LowerCtx, path: ast::Path) -> ConstructorRef {
     }
 }
 
+fn pattern_head_span(path: ast::Path) -> ast::Span {
+    if path.segments.len() == 0 {
+        ast::span(0, 0)
+    } else {
+        path.segments.get(path.segments.len() - 1).span
+    }
+}
+
+fn pattern_head(ctx: LowerCtx, path: ast::Path) -> PatternHead {
+    let span = pattern_head_span(path);
+    if path.segments.len() == 1 {
+        PatternHead::Contextual {
+            name: path.segments.get(0).ident,
+            span,
+        }
+    } else {
+        match constructor_ref(ctx, path) {
+            Option::Some(ConstructorRef::Resolved {
+                enum_def,
+                variant_index,
+            }) => PatternHead::Resolved {
+                enum_def,
+                variant_index,
+                span,
+            },
+            Option::Some(ConstructorRef::Unresolved(name)) => {
+                PatternHead::Qualified { name, span }
+            },
+            Option::None => PatternHead::Qualified {
+                name: path_text(ctx, path),
+                span,
+            },
+        }
+    }
+}
+
 fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> TypeExpr {
     match value {
         ast::TypeExpr::Unit => TypeExpr::Unit,
@@ -734,9 +770,22 @@ fn lower_pattern_inner(
     let previous_span = ctx.current_pattern_span.get();
     ctx.current_pattern_span.set(Option::Some(span));
     let kind = match value {
-        ast::Pat::Var { name, span: _ } => match constructor_ref(ctx, single_path(name)) {
-            Option::Some(constructor) => PatKind::Constr { constructor, args: Vec::new() },
+        ast::Pat::Var { name, span } => match constructor_ref(ctx, single_path(name)) {
+            Option::Some(ConstructorRef::Resolved {
+                enum_def,
+                variant_index,
+            }) => PatKind::Constr {
+                head: PatternHead::Resolved {
+                    enum_def,
+                    variant_index,
+                    span,
+                },
+                args: Vec::new(),
+            },
             Option::None => PatKind::Var { name: bind_pattern_name(ctx, env, state, name) },
+            Option::Some(ConstructorRef::Unresolved(_)) => {
+                PatKind::Var { name: bind_pattern_name(ctx, env, state, name) }
+            },
         },
         ast::Pat::Unit { span: _ } => PatKind::Unit,
         ast::Pat::Bool { value, span: _ } => PatKind::Bool { value },
@@ -750,14 +799,14 @@ fn lower_pattern_inner(
             for arg in args {
                 result.push(lower_pattern_inner(ctx, arg, env, state))
             };
-            PatKind::Constr { constructor: unresolved_constructor(ctx, path), args: result }
+            PatKind::Constr { head: pattern_head(ctx, path), args: result }
         },
         ast::Pat::Struct { name: path, fields, has_rest, span: _ } => {
             let result: Vec[(string, Pat)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_pattern_inner(ctx, field.1, env, state)))
             };
-            PatKind::Struct { name: path_text(ctx, path), fields: result, has_rest }
+            PatKind::Struct { head: pattern_head(ctx, path), fields: result, has_rest }
         },
         ast::Pat::Tuple { items: values, span: _ } => {
             let result: Vec[Pat] = Vec::new();
