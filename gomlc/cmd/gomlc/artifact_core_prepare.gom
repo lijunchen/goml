@@ -334,3 +334,75 @@ fn artifact_prepare_core_units(
         }
     }
 }
+
+fn artifact_world_struct_definitions(
+    world: PackageWorld,
+) -> Vec[tast::StructDef] {
+    let result = Vec::new();
+    for definition in world.builtins.structs {
+        result.push(definition)
+    };
+    let packages: Vec[ArtifactStandardPackage] = Vec::new()
+        .pushed(world.standard.root)
+        .pushed(world.standard.host)
+        .pushed(world.standard.bytes)
+        .pushed(world.standard.collections)
+        .pushed(world.standard.env)
+        .pushed(world.standard.fs)
+        .pushed(world.standard.io)
+        .pushed(world.standard.json)
+        .pushed(world.standard.path)
+        .pushed(world.standard.process)
+        .pushed(world.standard.testing)
+        .pushed(world.standard.text);
+    for package_value in packages {
+        for definition in package_value.environment_exports.structs {
+            result.push(definition)
+        }
+    };
+    result
+}
+
+fn artifact_prepare_world_core(
+    value: core::File,
+    exports: ArtifactPackageExports,
+    definitions: Vec[tast::StructDef],
+) -> unit {
+    for index in range(0, value.functions.len()) {
+        let function = artifact_prepare_core_function_metadata(
+            value.functions.get(index),
+            exports,
+        );
+        value.functions.set(index, function);
+        artifact_prepare_core_block(function.body, definitions)
+    }
+}
+
+fn artifact_prepare_world(world: PackageWorld) -> unit {
+    let definitions = artifact_world_struct_definitions(world);
+    artifact_prepare_world_core(
+        world.builtins,
+        world.builtin_interface.exports,
+        definitions,
+    );
+    let packages: Vec[ArtifactStandardPackage] = Vec::new()
+        .pushed(world.standard.root)
+        .pushed(world.standard.host)
+        .pushed(world.standard.bytes)
+        .pushed(world.standard.collections)
+        .pushed(world.standard.env)
+        .pushed(world.standard.fs)
+        .pushed(world.standard.io)
+        .pushed(world.standard.json)
+        .pushed(world.standard.path)
+        .pushed(world.standard.process)
+        .pushed(world.standard.testing)
+        .pushed(world.standard.text);
+    for package_value in packages {
+        artifact_prepare_world_core(
+            package_value.core_value,
+            package_value.environment_exports,
+            definitions,
+        )
+    }
+}

@@ -132,7 +132,7 @@ fn encode_artifact_binary_container(
     kind: uint8,
     sections: Vec[ArtifactBinarySection],
 ) -> Result[bytes::Bytes, string] {
-    if kind != 1 && kind != 2 {
+    if kind != 1 && kind != 2 && kind != 3 {
         return Result::Err("invalid binary artifact kind")
     } else {
         ()
@@ -234,7 +234,7 @@ fn decode_artifact_binary_container(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    if kind != 1 && kind != 2 {
+    if kind != 1 && kind != 2 && kind != 3 {
         return Result::Err("invalid binary artifact kind")
     } else {
         ()
@@ -312,12 +312,12 @@ fn decode_artifact_binary_container(
     } else {
         ()
     };
-    let section_ids = Vec::new();
-    let section_versions = Vec::new();
-    let section_flags = Vec::new();
-    let section_offsets = Vec::new();
-    let section_lengths = Vec::new();
-    let section_hashes = Vec::new();
+    let section_ids = Vec::with_capacity(section_count);
+    let section_versions = Vec::with_capacity(section_count);
+    let section_flags = Vec::with_capacity(section_count);
+    let section_offsets = Vec::with_capacity(section_count);
+    let section_lengths = Vec::with_capacity(section_count);
+    let section_hashes = Vec::with_capacity(section_count);
     for _ in range(0, section_count) {
         let id = match artifact_binary_read_u16(reader) {
             Result::Ok(value) => value,

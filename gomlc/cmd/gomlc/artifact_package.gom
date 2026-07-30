@@ -13,8 +13,8 @@ struct ArtifactDependencyRequest {
     expected_hash: Option[string],
 }
 
-fn artifact_builtin_interface_hash() -> string {
-    builtin_artifact_dependency().1
+fn artifact_builtin_interface_hash(world: PackageWorld) -> string {
+    world.builtin_interface.interface_hash
 }
 
 fn artifact_find_interface_unit(
@@ -63,9 +63,9 @@ fn artifact_read_interface_units(
 }
 
 fn artifact_standard_package(
-    standard: StandardLibrary,
+    standard: ArtifactStandardLibrary,
     package_name: string,
-) -> Option[PackageCompilation] {
+) -> Option[ArtifactStandardPackage] {
     match package_name {
         "std" => Option::Some(standard.root),
         "std::internal::host" => Option::Some(standard.host),
@@ -83,14 +83,17 @@ fn artifact_standard_package(
     }
 }
 
-fn artifact_interface_builtin_valid(value: ArtifactInterfaceUnit) -> bool {
+fn artifact_interface_builtin_valid(
+    world: PackageWorld,
+    value: ArtifactInterfaceUnit,
+) -> bool {
     if value.package_name == "builtin" {
         true
     } else {
         let valid = Ref::new(false);
         for dependency in value.deps {
             if dependency.0 == "builtin"
-                && dependency.1 == artifact_builtin_interface_hash()
+                && dependency.1 == artifact_builtin_interface_hash(world)
             {
                 valid.set(true)
             } else {
@@ -132,7 +135,7 @@ fn artifact_resolve_interface_units(
         if request.package_name == "builtin" {
             if artifact_dependency_hash_matches(
                 request.expected_hash,
-                artifact_builtin_interface_hash(),
+                artifact_builtin_interface_hash(world),
             ) {
                 ()
             } else {
@@ -184,7 +187,7 @@ fn artifact_resolve_interface_units(
                     ),
                 },
             };
-            if !artifact_interface_builtin_valid(interface) {
+            if !artifact_interface_builtin_valid(world, interface) {
                 return Result::Err(
                     "interface "
                         + interface.package_name
@@ -392,13 +395,19 @@ fn artifact_standard_needs_from_units(
 }
 
 fn artifact_dependency_environments(
-    standard: StandardLibrary,
+    standard: ArtifactStandardLibrary,
     needs: StandardNeeds,
     units: Vec[ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
-    let result = tast::dependency_environments(
-        selected_standard_hir_for_needs(standard, needs),
-    );
+    let result: Vec[tast::DependencyEnvironment] = Vec::new();
+    for package_value in selected_standard_packages_for_needs(standard, needs) {
+        match artifact_dependency_environment_from_exports(
+            package_value.environment_exports,
+        ) {
+            Result::Ok(value) => result.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
     for interface in units {
         match artifact_dependency_environment_from_exports(interface.exports) {
             Result::Ok(value) => result.push(value),
@@ -429,7 +438,7 @@ fn artifact_direct_dependency_hashes(
     units: Vec[ArtifactInterfaceUnit],
 ) -> Result[Vec[(string, string)], string] {
     let result = Vec::new();
-    result.push(builtin_artifact_dependency());
+    result.push(("builtin", artifact_builtin_interface_hash(world)));
     let names = sort_artifact_names(names);
     for name in names {
         if name == "builtin" {
@@ -1080,7 +1089,7 @@ fn artifact_validate_link_core_units(
     for value in values {
         for dependency in value.deps {
             if dependency.0 == "builtin" {
-                if dependency.1 != artifact_builtin_interface_hash() {
+                if dependency.1 != artifact_builtin_interface_hash(world) {
                     return Result::Err(
                         "package "
                             + value.package_name

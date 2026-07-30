@@ -302,10 +302,14 @@ fn artifact_inherent_impl(
             ArtifactInherentImplKey::Exact(value.for_type)
         },
         definition: ArtifactImplDef {
-            params: Vec::new(),
-            constraints: Vec::new(),
+            params: value.generics,
+            constraints: value.predicates,
             associated_types: Vec::new(),
-            methods: artifact_impl_methods(value, 0, public_only),
+            methods: artifact_impl_methods(
+                value,
+                value.predicates.len(),
+                public_only,
+            ),
             valid: true,
         },
     }

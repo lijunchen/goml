@@ -64,6 +64,56 @@ struct StandardLibrary {
     text: PackageCompilation,
 }
 
+struct ArtifactStandardPackage {
+    core_value: core::File,
+    interface_unit: ArtifactInterfaceUnit,
+    environment_exports: ArtifactPackageExports,
+}
+
+struct ArtifactStandardLibrary {
+    root: ArtifactStandardPackage,
+    host: ArtifactStandardPackage,
+    bytes: ArtifactStandardPackage,
+    collections: ArtifactStandardPackage,
+    env: ArtifactStandardPackage,
+    fs: ArtifactStandardPackage,
+    io: ArtifactStandardPackage,
+    json: ArtifactStandardPackage,
+    path: ArtifactStandardPackage,
+    process: ArtifactStandardPackage,
+    testing: ArtifactStandardPackage,
+    text: ArtifactStandardPackage,
+}
+
+fn artifact_standard_package_from_compilation(
+    value: PackageCompilation,
+) -> ArtifactStandardPackage {
+    ArtifactStandardPackage {
+        core_value: value.core_value,
+        interface_unit: value.interface_unit,
+        environment_exports: value.exports,
+    }
+}
+
+fn artifact_standard_library(
+    value: StandardLibrary,
+) -> ArtifactStandardLibrary {
+    ArtifactStandardLibrary {
+        root: artifact_standard_package_from_compilation(value.root),
+        host: artifact_standard_package_from_compilation(value.host),
+        bytes: artifact_standard_package_from_compilation(value.bytes),
+        collections: artifact_standard_package_from_compilation(value.collections),
+        env: artifact_standard_package_from_compilation(value.env),
+        fs: artifact_standard_package_from_compilation(value.fs),
+        io: artifact_standard_package_from_compilation(value.io),
+        json: artifact_standard_package_from_compilation(value.json),
+        path: artifact_standard_package_from_compilation(value.path),
+        process: artifact_standard_package_from_compilation(value.process),
+        testing: artifact_standard_package_from_compilation(value.testing),
+        text: artifact_standard_package_from_compilation(value.text),
+    }
+}
+
 fn import_path_text(value: ast::Path) -> string {
     let result = Ref::new("");
     let index = Ref::new(0);
@@ -448,10 +498,11 @@ fn builtin_artifact_json() -> string {
 }
 
 fn standard_artifact_deps(
+    builtin_hash: string,
     dependencies: Vec[PackageCompilation],
 ) -> Vec[(string, string)] {
     let result = Vec::new();
-    result.push(builtin_artifact_dependency());
+    result.push(("builtin", builtin_hash));
     for dependency in dependencies {
         result.push((
             dependency.interface_unit.package_name,
@@ -461,7 +512,10 @@ fn standard_artifact_deps(
     result
 }
 
-fn compile_standard_library(builtins: core::File) -> StandardLibrary {
+fn compile_standard_library(
+    builtins: core::File,
+    builtin_hash: string,
+) -> StandardLibrary {
     let host = compile_standard_package(
         stdlib::host_source(),
         "host.gom",
@@ -470,7 +524,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         Vec::new(),
         Vec::new(),
         builtins,
-        standard_artifact_deps(Vec::new()),
+        standard_artifact_deps(builtin_hash, Vec::new()),
     );
     let bytes = compile_standard_package(
         stdlib::bytes_source(),
@@ -480,7 +534,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         Vec::new(),
         Vec::new(),
         builtins,
-        standard_artifact_deps(Vec::new()),
+        standard_artifact_deps(builtin_hash, Vec::new()),
     );
     let collections = compile_standard_package(
         stdlib::collections_source(),
@@ -490,7 +544,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         Vec::new(),
         Vec::new(),
         builtins,
-        standard_artifact_deps(Vec::new()),
+        standard_artifact_deps(builtin_hash, Vec::new()),
     );
     let env_hir_dependencies: Vec[hir::File] = Vec::new();
     env_hir_dependencies.push(host.hir_file);
@@ -502,7 +556,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         env_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
     );
     let fs_hir_dependencies: Vec[hir::File] = Vec::new();
     fs_hir_dependencies.push(host.hir_file);
@@ -517,7 +571,10 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         fs_hir_dependencies,
         fs_core_dependencies,
         builtins,
-        standard_artifact_deps(Vec::new().pushed(bytes).pushed(host)),
+        standard_artifact_deps(
+            builtin_hash,
+            Vec::new().pushed(bytes).pushed(host),
+        ),
     );
     let io_hir_dependencies: Vec[hir::File] = Vec::new();
     io_hir_dependencies.push(host.hir_file);
@@ -532,7 +589,10 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         io_hir_dependencies,
         io_core_dependencies,
         builtins,
-        standard_artifact_deps(Vec::new().pushed(bytes).pushed(host)),
+        standard_artifact_deps(
+            builtin_hash,
+            Vec::new().pushed(bytes).pushed(host),
+        ),
     );
     let path_hir_dependencies: Vec[hir::File] = Vec::new();
     path_hir_dependencies.push(host.hir_file);
@@ -544,7 +604,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         path_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
     );
     let process_hir_dependencies: Vec[hir::File] = Vec::new();
     process_hir_dependencies.push(host.hir_file);
@@ -559,7 +619,10 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         process_hir_dependencies,
         process_core_dependencies,
         builtins,
-        standard_artifact_deps(Vec::new().pushed(bytes).pushed(host)),
+        standard_artifact_deps(
+            builtin_hash,
+            Vec::new().pushed(bytes).pushed(host),
+        ),
     );
     let testing_hir_dependencies: Vec[hir::File] = Vec::new();
     testing_hir_dependencies.push(host.hir_file);
@@ -571,7 +634,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         testing_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
     );
     let text_hir_dependencies: Vec[hir::File] = Vec::new();
     text_hir_dependencies.push(bytes.hir_file);
@@ -585,7 +648,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         text_hir_dependencies,
         text_core_dependencies,
         builtins,
-        standard_artifact_deps(Vec::new().pushed(bytes)),
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(bytes)),
     );
     let json_hir_dependencies: Vec[hir::File] = Vec::new();
     json_hir_dependencies.push(text.hir_file);
@@ -599,7 +662,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         json_hir_dependencies,
         json_core_dependencies,
         builtins,
-        standard_artifact_deps(Vec::new().pushed(text)),
+        standard_artifact_deps(builtin_hash, Vec::new().pushed(text)),
     );
     let root_hir_dependencies = Vec::new()
         .pushed(bytes.hir_file)
@@ -630,6 +693,7 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         root_core_dependencies,
         builtins,
         standard_artifact_deps(
+            builtin_hash,
             Vec::new()
                 .pushed(bytes)
                 .pushed(collections)
@@ -1422,7 +1486,10 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(builtins))
+        Option::Some(compile_standard_library(
+            builtins,
+            builtin_artifact_dependency().1,
+        ))
     } else {
         Option::None
     };
@@ -1534,7 +1601,10 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(builtins))
+        Option::Some(compile_standard_library(
+            builtins,
+            builtin_artifact_dependency().1,
+        ))
     } else {
         Option::None
     };
@@ -1626,7 +1696,10 @@ pub fn compile_source_or_diagnostics(
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(builtins))
+        Option::Some(compile_standard_library(
+            builtins,
+            builtin_artifact_dependency().1,
+        ))
     } else {
         Option::None
     };

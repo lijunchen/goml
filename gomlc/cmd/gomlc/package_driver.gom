@@ -39,7 +39,8 @@ struct ArtifactCompiledPackage {
 struct PackageWorld {
     counter: Ref[int],
     builtins: core::File,
-    standard: StandardLibrary,
+    builtin_interface: ArtifactInterfaceUnit,
+    standard: ArtifactStandardLibrary,
 }
 
 fn no_standard_needs() -> StandardNeeds {
@@ -106,10 +107,15 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
 fn package_world() -> PackageWorld {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
-    let standard = compile_standard_library(builtins);
+    let builtin_interface = builtin_artifact_interface_unit();
+    let standard = artifact_standard_library(compile_standard_library(
+        builtins,
+        builtin_interface.interface_hash,
+    ));
     PackageWorld {
         counter,
         builtins,
+        builtin_interface,
         standard,
     }
 }
@@ -709,63 +715,63 @@ fn validate_public_fields_and_inherent_methods(
     Result::Ok(())
 }
 
-fn selected_standard_hir_for_needs(
-    standard: StandardLibrary,
+fn selected_standard_packages_for_needs(
+    standard: ArtifactStandardLibrary,
     needs: StandardNeeds,
-) -> Vec[hir::File] {
-    let result: Vec[hir::File] = Vec::new();
+) -> Vec[ArtifactStandardPackage] {
+    let result: Vec[ArtifactStandardPackage] = Vec::new();
     if needs.bytes {
-        result.push(standard.bytes.hir_file)
+        result.push(standard.bytes)
     } else {
         ()
     };
     if needs.collections {
-        result.push(standard.collections.hir_file)
+        result.push(standard.collections)
     } else {
         ()
     };
     if needs.env {
-        result.push(standard.env.hir_file)
+        result.push(standard.env)
     } else {
         ()
     };
     if needs.fs {
-        result.push(standard.fs.hir_file)
+        result.push(standard.fs)
     } else {
         ()
     };
     if needs.io {
-        result.push(standard.io.hir_file)
+        result.push(standard.io)
     } else {
         ()
     };
     if needs.path {
-        result.push(standard.path.hir_file)
+        result.push(standard.path)
     } else {
         ()
     };
     if needs.process {
-        result.push(standard.process.hir_file)
+        result.push(standard.process)
     } else {
         ()
     };
     if needs.testing {
-        result.push(standard.testing.hir_file)
+        result.push(standard.testing)
     } else {
         ()
     };
     if needs.text {
-        result.push(standard.text.hir_file)
+        result.push(standard.text)
     } else {
         ()
     };
     if needs.json {
-        result.push(standard.json.hir_file)
+        result.push(standard.json)
     } else {
         ()
     };
     if needs.root {
-        result.push(standard.root.hir_file)
+        result.push(standard.root)
     } else {
         ()
     };
@@ -878,7 +884,7 @@ fn entry_core(value: core::File, package_name: string) -> core::File {
 }
 
 fn selected_link_standard_core(
-    standard: StandardLibrary,
+    standard: ArtifactStandardLibrary,
     needs: StandardNeeds,
 ) -> Vec[core::File] {
     let result = Vec::new();
@@ -954,15 +960,21 @@ fn run_package_command(
                 inputs: Vec::new(),
                 interface_paths: Vec::new(),
                 output: "package",
+                world: Option::None,
             }
         },
     };
-    let artifact = match compile_artifact_package(
-        package_world(),
-        command,
-        build,
-        emit_tests,
-    ) {
+    let world = match command.world {
+        Option::Some(path) => match read_package_world(path) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                fail("error[compile]: " + error);
+                package_world()
+            },
+        },
+        Option::None => package_world(),
+    };
+    let artifact = match compile_artifact_package(world, command, build, emit_tests) {
         Result::Ok(value) => value,
         Result::Err(error) => {
             if artifact_string_starts_with(error, "error[") {
@@ -979,7 +991,7 @@ fn run_package_command(
                     value_exports: Vec::new(),
                     enum_variants: Vec::new(),
                 },
-                Vec::new().pushed(builtin_artifact_dependency()),
+                Vec::new().pushed(("builtin", artifact_builtin_interface_hash(world))),
             );
             ArtifactCompiledPackage {
                 interface_unit,
@@ -989,7 +1001,10 @@ fn run_package_command(
                     interface_hash: interface_unit.interface_hash,
                     exports: empty_artifact_package_exports(),
                     core_ir: empty_core_file(),
-                    deps: Vec::new().pushed(builtin_artifact_dependency()),
+                    deps: Vec::new().pushed((
+                        "builtin",
+                        artifact_builtin_interface_hash(world),
+                    )),
                     sources: Vec::new(),
                     tests: Vec::new(),
                 },
@@ -1031,10 +1046,20 @@ fn run_link_command(args: Vec[string]) -> unit {
                 inputs: Vec::new(),
                 entry: "main",
                 output: "main.go",
+                world: Option::None,
             }
         },
     };
-    let world = package_world();
+    let world = match command.world {
+        Option::Some(path) => match read_package_world(path) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                fail("error[compile]: " + error);
+                package_world()
+            },
+        },
+        Option::None => package_world(),
+    };
     let core_units = match artifact_read_core_units(command.inputs) {
         Result::Ok(value) => value,
         Result::Err(error) => {
@@ -1143,10 +1168,20 @@ fn run_test_link_command(args: Vec[string]) -> unit {
                 packages: Vec::new(),
                 output: "main.go",
                 manifest: "tests.json",
+                world: Option::None,
             }
         },
     };
-    let world = package_world();
+    let world = match command.world {
+        Option::Some(path) => match read_package_world(path) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                fail("error[compile]: " + error);
+                package_world()
+            },
+        },
+        Option::None => package_world(),
+    };
     let core_units = match artifact_read_core_units(command.inputs) {
         Result::Ok(value) => value,
         Result::Err(error) => {

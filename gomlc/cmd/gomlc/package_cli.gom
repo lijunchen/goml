@@ -8,12 +8,14 @@ struct PackageCommandArgs {
     inputs: Vec[string],
     interface_paths: Vec[string],
     output: string,
+    world: Option[string],
 }
 
 struct LinkCommandArgs {
     inputs: Vec[string],
     entry: string,
     output: string,
+    world: Option[string],
 }
 
 struct TestLinkCommandArgs {
@@ -21,6 +23,72 @@ struct TestLinkCommandArgs {
     packages: Vec[string],
     output: string,
     manifest: string,
+    world: Option[string],
+}
+
+struct ExtractedWorldArgs {
+    args: Vec[string],
+    world: Option[string],
+}
+
+fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
+    let result = Vec::new();
+    let world: Ref[Option[string]] = Ref::new(Option::None);
+    let index = Ref::new(0);
+    let positional = Ref::new(false);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if index.get() >= 2 && positional.get() == false && argument == "--" {
+            positional.set(true);
+            result.push(argument);
+            index.set(index.get() + 1)
+        } else if index.get() >= 2
+            && positional.get() == false
+            && argument == "--world"
+        {
+            if option_string_present(world.get()) {
+                return Result::Err(repeated_argument_error(
+                    args.get(1),
+                    "--world <WORLD>",
+                ))
+            } else if index.get() + 1 >= args.len()
+                || cli_option(args.get(index.get() + 1))
+            {
+                return Result::Err(value_required_error(
+                    "--world <WORLD>",
+                    Option::None,
+                ))
+            } else {
+                world.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else if index.get() >= 2
+            && positional.get() == false
+            && option_string_present(inline_cli_value(argument, "--world"))
+        {
+            if option_string_present(world.get()) {
+                return Result::Err(repeated_argument_error(
+                    args.get(1),
+                    "--world <WORLD>",
+                ))
+            } else if option_string_empty(inline_cli_value(argument, "--world")) {
+                return Result::Err(value_required_error(
+                    "--world <WORLD>",
+                    Option::None,
+                ))
+            } else {
+                world.set(inline_cli_value(argument, "--world"));
+                index.set(index.get() + 1)
+            }
+        } else {
+            result.push(argument);
+            index.set(index.get() + 1)
+        }
+    };
+    Result::Ok(ExtractedWorldArgs {
+        args: result,
+        world: world.get(),
+    })
 }
 
 fn cli_option(value: string) -> bool {
@@ -74,6 +142,11 @@ fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
 }
 
 fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, string] {
+    let extracted = match extract_world_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = extracted.args;
     let package_name: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let inputs = Vec::new();
@@ -309,11 +382,17 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 Option::Some(value) => value,
                 Option::None => "",
             },
+            world: extracted.world,
         })
     }
 }
 
 fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string] {
+    let extracted = match extract_world_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = extracted.args;
     let entry: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let inputs = Vec::new();
@@ -478,11 +557,17 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 Option::Some(value) => value,
                 Option::None => "",
             },
+            world: extracted.world,
         })
     }
 }
 
 fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs, string] {
+    let extracted = match extract_world_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let args = extracted.args;
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let manifest: Ref[Option[string]] = Ref::new(Option::None);
     let inputs = Vec::new();
@@ -683,6 +768,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 Option::Some(value) => value,
                 Option::None => "",
             },
+            world: extracted.world,
         })
     }
 }

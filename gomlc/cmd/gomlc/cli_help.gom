@@ -4,7 +4,7 @@ use std::io;
 use std::process;
 
 fn top_level_help() -> string {
-    "Usage: gomlc <COMMAND>\n\nCommands:\n  check         \n  test-check    \n  build         \n  test-build    \n  link          \n  test-link     \n  package-info  \n  run-single    \n  version       \n  help          Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
+    "Usage: gomlc <COMMAND>\n\nCommands:\n  check          \n  test-check     \n  build          \n  test-build     \n  link           \n  test-link      \n  prepare-world  \n  package-info   \n  run-single     \n  version        \n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn package_command_help(command: string) -> string {
@@ -22,6 +22,8 @@ fn command_help(command: string) -> Option[string] {
         Option::Some("Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help")
     } else if command == "test-link" {
         Option::Some("Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help")
+    } else if command == "prepare-world" {
+        Option::Some("Usage: gomlc prepare-world --output <OUTPUT>\n\nOptions:\n      --output <OUTPUT>  \n  -h, --help             Print help")
     } else if command == "package-info" {
         Option::Some("Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help")
     } else if command == "run-single" {
@@ -46,6 +48,10 @@ fn command_usage(command: string) -> string {
         "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>"
     } else if command == "test-link" {
         "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>"
+    } else if command == "prepare-world" {
+        "gomlc prepare-world --output <OUTPUT>"
+    } else if command == "prepare-world" {
+        "gomlc prepare-world --output <OUTPUT>"
     } else if command == "package-info" {
         "gomlc package-info [OPTIONS] --input <INPUT>..."
     } else if command == "run-single" {
@@ -66,6 +72,8 @@ fn required_command_usage(command: string) -> string {
         "gomlc " + command + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
     } else if command == "run-single" {
         "gomlc run-single <FILE>"
+    } else if command == "prepare-world" {
+        "gomlc prepare-world --output <OUTPUT>"
     } else if command == "package-info" {
         "gomlc package-info --input <INPUT>..."
     } else {
@@ -175,6 +183,9 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         candidates.push("--output");
         candidates.push("--manifest");
         candidates.push("--help")
+    } else if command == "prepare-world" {
+        candidates.push("--output");
+        candidates.push("--help")
     } else if command == "package-info" {
         candidates.push("--input");
         candidates.push("--format");
@@ -259,6 +270,8 @@ fn cli_value_option(command: string, argument: string) -> bool {
             || argument == "--package"
             || argument == "--output"
             || argument == "--manifest"
+    } else if command == "prepare-world" {
+        argument == "--output"
     } else if command == "package-info" {
         argument == "--input" || argument == "--format"
     } else if command == "version" {
@@ -293,6 +306,8 @@ fn known_cli_option(command: string, argument: string) -> bool {
             || option_string_present(inline_cli_value(argument, "--package"))
             || option_string_present(inline_cli_value(argument, "--output"))
             || option_string_present(inline_cli_value(argument, "--manifest"))
+    } else if command == "prepare-world" {
+        option_string_present(inline_cli_value(argument, "--output"))
     } else if command == "package-info" {
         option_string_present(inline_cli_value(argument, "--input"))
             || option_string_present(inline_cli_value(argument, "--format"))
@@ -578,6 +593,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     candidates.push("test-build");
     candidates.push("link");
     candidates.push("test-link");
+    candidates.push("prepare-world");
     candidates.push("package-info");
     candidates.push("run-single");
     candidates.push("version");
