@@ -1301,7 +1301,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
 
 #[test]
 fn writes_core_unit_from_checked_package() -> unit {
-    let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
+    let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { let values: Vec[int32] = Vec::[private_value(), 1]; values[0] + values[1] }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
     ast_values.push(lowered_ast);
@@ -1387,7 +1387,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         go_backend::sha256_hex(encoded),
-        "5f48bf2c917ccb45e2320bf003439eca838d7bb4cf9f565ad22203dd70c8d65d",
+        "51645ab8c570f0e0292a8967605f0b3fe56eee727ef49d7aaf46f9d1510feca3",
     );
     let binary = match encode_artifact_core_binary(core_unit) {
         Result::Ok(value) => value,
