@@ -1711,7 +1711,7 @@ use std::time;
 Current public entrances include:
 
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
-- `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexVec`, `Interner`, and `Stack`
+- `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
 - `collections::sort_by`, `stable_sort_by`, `binary_search_by`, `position_by`, `contains`, `min_by`, `max_by`, `dedup_by`, and `dedup`
 - `env::args`, `current_dir`, `current_exe`, and `var`
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
@@ -1723,6 +1723,32 @@ Current public entrances include:
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
 - `text::StringBuilder`, `find`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `to_ascii_lowercase`, and `to_ascii_uppercase`
 - `time::Duration`, `Instant`, `SystemTime`, and `sleep`
+
+### `collections::IndexMap[K, V]`
+
+`IndexMap` is an insertion-ordered hash map. Its key type must implement `Eq` and `Hash`:
+
+```goml
+use std::collections;
+
+let headers: collections::IndexMap[string, string] =
+    collections::IndexMap::new();
+headers.insert("content-type", "text/plain");
+headers.insert("content-length", "12");
+headers.insert("content-type", "application/json");
+
+for (name, value) in headers {
+    println(name + ": " + value)
+}
+```
+
+Inserting a new key appends it to the iteration order. Replacing an existing value does not move the key. Removing and inserting the key again appends it to the end.
+
+Common methods are `new`, `with_capacity`, `len`, `is_empty`, `contains`, `get`, `insert`, `remove`, `reserve`, `clear`, `entries`, `keys`, `values`, and `iter`. `insert` and `remove` return the previous value as `Option[V]`. `entries`, `keys`, and `values` return ordered snapshots, while `iter` and `for` traverse `(K, V)` pairs in insertion order.
+
+The implementation uses a sparse open-addressed index table and an insertion-ordered entry array. Deleted entries become tombstones and are compacted during later growth or when deletion density becomes high. Lookup, insertion, and removal are expected O(1); iteration and compaction are O(n). Structural mutation while an iterator is active is unsupported.
+
+`IndexMap` does not currently have literal or indexing syntax. Use `insert` and `get`.
 
 File system operations use `Result[..., string]` to report errors, and can be combined with `?`.
 

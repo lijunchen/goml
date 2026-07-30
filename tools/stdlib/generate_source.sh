@@ -48,6 +48,7 @@ append_source collections \
     stdlib/std/collections/bit_set.gom \
     stdlib/std/collections/deque.gom \
     stdlib/std/collections/hash_set.gom \
+    stdlib/std/collections/index_map.gom \
     stdlib/std/collections/index_vec.gom \
     stdlib/std/collections/interner.gom \
     stdlib/std/collections/stack.gom \

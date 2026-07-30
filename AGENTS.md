@@ -495,8 +495,16 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * `std::text` provides UTF-8 byte-indexed search, ASCII trimming and case conversion, splitting, lines, replacement, joining, and repetition.
 * `std::num` parses `int`, `uint`, `float32`, and `float64` values into `Result[_, string]`, including explicit-radix integer parsing.
-* `std::collections` provides stable in-place comparator sorting, comparator binary search, position and containment queries, min/max selection, and adjacent deduplication.
+* `std::collections` provides insertion-ordered `IndexMap[K, V]`, stable in-place comparator sorting, comparator binary search, position and containment queries, min/max selection, and adjacent deduplication.
 * `std::time` provides non-negative `Duration`, monotonic `Instant`, Unix-based `SystemTime`, and blocking `sleep`.
+
+### Standard `IndexMap`
+
+* `std::collections::IndexMap[K, V]` requires `K: Eq + Hash` and preserves insertion order.
+* New keys append to the order, replacing an existing value keeps its position, and removing then reinserting a key moves it to the end.
+* The implementation uses a sparse open-addressed `Vec[int]` index table and an insertion-ordered entry array with deletion tombstones. Rebuilds compact entries without changing their relative order.
+* Public methods: `new`, `with_capacity`, `len`, `is_empty`, `contains`, `get`, `insert`, `remove`, `reserve`, `clear`, `entries`, `keys`, `values`, and `iter`.
+* `IndexMap[K, V]` implements `IntoIterator` with item type `(K, V)`. Structural mutation while an iterator is active is unsupported.
 
 ### Builtin `Slice`
 
