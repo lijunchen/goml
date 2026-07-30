@@ -121,3 +121,24 @@ fn typechecks_path_process_and_testing_sources() -> unit {
         Vec::new().pushed(host),
     )
 }
+
+#[test]
+fn typechecks_num_and_time_sources() -> unit {
+    let host = lowered_standard_hir(
+        host_source(),
+        "host.gom",
+        "std::internal::host",
+    );
+    assert_standard_typechecks(
+        num_source(),
+        "num.gom",
+        "std::num",
+        Vec::new().pushed(host),
+    );
+    assert_standard_typechecks(
+        time_source(),
+        "time.gom",
+        "std::time",
+        Vec::new().pushed(host),
+    )
+}
