@@ -1452,9 +1452,13 @@ If the identity of the package under test is `alice::myapp::math`, the canonical
 goml check
 goml check --tests
 goml build
+goml fmt
+goml fmt --check
 ```
 
 Test source code cannot be used to fix a production package that itself fails inspection.
+
+`goml fmt` formats every `.gom` file in the module. It can be run from any nested package directory. It excludes build output, hidden directories, and nested modules. `goml fmt --check` only checks formatting and exits unsuccessfully when any source file would change.
 
 Run the test using:
 
@@ -1933,9 +1937,10 @@ goml build
 goml check --tests
 goml test
 goml run
+goml fmt
 ```
 
-`goml check`, `goml build`, and `goml test` always operate on the complete module and do not accept package or file targets. `goml run [TARGET]` accepts an optional entry package file or directory when a module has multiple executable packages.
+`goml check`, `goml build`, `goml test`, and `goml fmt` always operate on the complete module and do not accept package or file targets. `goml run [TARGET]` accepts an optional entry package file or directory when a module has multiple executable packages.
 
 When you need to inspect a compilation phase, add `--dump-ast`, `--dump-hir`, `--dump-tast`, `--dump-core`, `--dump-mono`, `--dump-lift`, `--dump-anf`, or `--dump-go` to `gomlc run-single`.
 

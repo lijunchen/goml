@@ -100,3 +100,14 @@ gomlfmt [OPTIONS] [FILE...]
 With no file, or with a single `-`, the formatter reads stdin and writes stdout. `-w` cannot be used with stdin. A single file without a mode is formatted to stdout. Multiple files require `-w`, `-l`, or `--check`.
 
 `--check` exits 0 when every file is formatted, 1 when a change is needed, and 2 for argument, I/O, or parse errors.
+
+From anywhere inside a module, use the project driver to format every `.gom` file:
+
+```text
+goml fmt
+goml fmt --check
+```
+
+`goml fmt` searches upward for `goml.toml`, recursively collects source files, and invokes `gomlfmt` once for the complete module. It skips the configured build target directory, `_artifact`, `_bootstrap`, hidden directories, and nested modules. `--check` does not write files.
+
+The formatter executable is resolved from `--formatter`, `GOMLFMT`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`.
