@@ -794,18 +794,17 @@ fn type_list_contains(values: Vec[Type], expected: Type) -> bool {
 fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type {
     let current = Ref::new(value);
     let seen = Vec::new();
-    while true {
+    loop {
         if type_list_contains(seen, current.get()) {
-            break
+            break current.get()
         } else {
             seen.push(current.get());
             match projection_alias(aliases, current.get()) {
                 Some(next) => current.set(next),
-                None => break,
+                None => break current.get(),
             }
         }
-    };
-    current.get()
+    }
 }
 
 fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[ProjectionAlias] {

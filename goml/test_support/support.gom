@@ -42,14 +42,14 @@ pub fn repository_root() -> string {
 pub fn goml_binary() -> string {
     match env::var("GOML_TEST_GOML") {
         Some(value) => absolute(value),
-        None => path::join(repository_root(), "bin/stage2/goml"),
+        None => path::join(repository_root(), "stage2/bin/goml"),
     }
 }
 
 pub fn gomlc_binary() -> string {
     match env::var("GOML_TEST_GOMLC") {
         Some(value) => absolute(value),
-        None => path::join(repository_root(), "bin/stage2/gomlc"),
+        None => path::join(repository_root(), "stage2/bin/gomlc"),
     }
 }
 

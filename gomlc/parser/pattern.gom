@@ -90,7 +90,7 @@ fn parse_pattern_list(parser: Parser) -> unit {
         ()
     } else {
         let _ = pattern(parser);
-        while true {
+        loop {
             if parser.at(lexer::TokenKind::Comma) {
                 parser.expect(lexer::TokenKind::Comma);
                 if parser.at(lexer::TokenKind::RParen) {

@@ -236,10 +236,7 @@ fn artifact_binary_decode_value_at(
             };
             let values = Vec::with_capacity(count);
             for _ in 0..count {
-                match artifact_binary_decode_value_at(reader, table, depth + 1) {
-                    Ok(value) => values.push(value),
-                    Err(error) => return Result::Err(error),
-                }
+                values.push(artifact_binary_decode_value_at(reader, table, depth + 1)?)
             };
             Result::Ok(ArtifactValue::Array(values))
         },

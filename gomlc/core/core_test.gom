@@ -7,6 +7,22 @@ use gomlc::strings;
 use gomlc::tast;
 use std::testing;
 
+fn test_builtins(counter: Ref[int]) -> File {
+    match lower_builtins(counter) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            File {
+                functions: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+            }
+        },
+    }
+}
+
 fn lower_source(source: string) -> File {
     lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")))
 }
@@ -131,7 +147,7 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
 #[test]
 fn lowers_linked_builtin_option_payload_patterns() -> unit {
     let counter = Ref::new(0);
-    let builtins = lower_builtins(counter);
+    let builtins = test_builtins(counter);
     let user = lower_with_counter_and_types(
         tast::check_for_link(
             hir::lower(
@@ -305,7 +321,7 @@ fn lowers_flat_struct_bindings_in_field_order() -> unit {
 #[test]
 fn links_builtin_core_before_user_core() -> unit {
     let counter = Ref::new(0);
-    let builtins = lower_builtins(counter);
+    let builtins = test_builtins(counter);
     testing::assert(builtins.functions.len() > 20);
     testing::assert_eq(builtins.functions.get(0).name, "print");
     let user = lower_with_counter_and_types(

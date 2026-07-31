@@ -29,9 +29,8 @@ fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
     } else {
         ()
     };
-    let operator = match direct_operator(node) {
-        Some(token) => token,
-        None => return format_generic(value, node),
+    let Some(operator) = direct_operator(node) else {
+        return format_generic(value, node)
     };
     let left = format_node(value, children[0]);
     let right = format_node(value, children[1]);
@@ -60,9 +59,8 @@ fn format_prefix(value: Builder, node: LocatedNode) -> BuiltDoc {
     } else {
         ()
     };
-    let operator = match direct_operator(node) {
-        Some(token) => token,
-        None => return format_generic(value, node),
+    let Some(operator) = direct_operator(node) else {
+        return format_generic(value, node)
     };
     let operand = format_node(value, children[0]);
     built(

@@ -508,7 +508,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 kinds.push(kind);
                 let mut event_index = index;
                 let mut parent = forward_parent;
-                while true {
+                loop {
                     match parent {
                         Some(distance) => {
                             event_index = event_index + distance;

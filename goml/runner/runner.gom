@@ -79,9 +79,8 @@ fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
 fn load_tests(group: Group) -> Result[Vec[Test], string] {
     let source = fs::read_file(group.manifest_path)?;
     let root = json::parse(source)?;
-    let values = match json::as_array(root) {
-        Some(value) => value,
-        None => return Result::Err("test manifest must be an array"),
+    let Some(values) = json::as_array(root) else {
+        return Result::Err("test manifest must be an array")
     };
     let result = Vec::new();
     for value in values {
@@ -259,7 +258,7 @@ fn worker(
     work: Channel[(int, Test)],
     results: Channel[Execution],
 ) -> unit {
-    while true {
+    loop {
         match work.recv() {
             Some(item) => results.send(run_one(module_dir, item.0, item.1, options)),
             None => break,

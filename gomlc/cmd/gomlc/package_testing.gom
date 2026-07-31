@@ -244,9 +244,8 @@ fn collect_function_test(
         ()
     };
     let test_attr = test_attrs[0];
-    let parsed_test = match parse_test_attribute(test_attr) {
-        Some(value) => value,
-        None => return,
+    let Some(parsed_test) = parse_test_attribute(test_attr) else {
+        return
     };
     match parsed_test.args {
         Some(_) => {
@@ -264,9 +263,8 @@ fn collect_function_test(
     };
     let ignore_reason = if ignore_attrs.len() > 0 {
         let ignore_attr = ignore_attrs[0];
-        let parsed_ignore = match parse_test_attribute(ignore_attr) {
-            Some(value) => value,
-            None => return,
+        let Some(parsed_ignore) = parse_test_attribute(ignore_attr) else {
+            return
         };
         match parsed_ignore.args {
             Some(args) => match parse_ignore_reason(args) {

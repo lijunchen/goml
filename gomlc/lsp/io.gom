@@ -6,7 +6,7 @@ use std::json;
 
 fn read_stdin_line() -> Result[bytes::Bytes, string] {
     let data = bytes::Bytes::new();
-    while true {
+    loop {
         match io::read_stdin_exact(1) {
             Ok(chunk) => {
                 let value = chunk.get(0);
@@ -23,19 +23,15 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
                 return Result::Err(error)
             },
         }
-    };
-    Result::Err("unreachable")
+    }
 }
 
 pub fn read_rpc_payload() -> Result[string, string] {
     let length = Ref::new(Option::None);
-    while true {
-        let line = match read_stdin_line() {
-            Ok(line) => line.to_string()?,
-            Err(error) => return Result::Err(error),
-        };
+    let length = loop {
+        let line = read_stdin_line()?.to_string()?;
         if header_line_content(line) == "" {
-            break
+            break length.get()
         } else if is_content_length_header(line) {
             match length.get() {
                 Some(_) => {
@@ -50,7 +46,7 @@ pub fn read_rpc_payload() -> Result[string, string] {
             ()
         }
     };
-    match length.get() {
+    match length {
         Some(length) => match io::read_stdin_exact(length) {
             Ok(data) => data.to_string(),
             Err(error) => Result::Err(error),

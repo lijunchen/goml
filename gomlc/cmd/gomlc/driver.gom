@@ -9,7 +9,7 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
-use gomlc::stdlib;
+use gomlc::resources;
 use gomlc::strings;
 use gomlc::tast;
 use std::bytes;
@@ -88,6 +88,22 @@ struct ArtifactStandardLibrary {
     testing: ArtifactStandardPackage,
     text: ArtifactStandardPackage,
     time: ArtifactStandardPackage,
+}
+
+fn lower_builtin_core(counter: Ref[int]) -> core::File {
+    match core::lower_builtins(counter) {
+        Ok(value) => value,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            core::File {
+                functions: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+            }
+        },
+    }
 }
 
 fn artifact_standard_package_from_compilation(value: PackageCompilation) -> ArtifactStandardPackage {
@@ -212,8 +228,7 @@ fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Ve
 }
 
 fn compile_standard_package(
-    source: string,
-    source_path: string,
+    sources: Vec[resources::Source],
     package_name: string,
     declared_name: string,
     hir_dependencies: Vec[hir::File],
@@ -221,38 +236,33 @@ fn compile_standard_package(
     builtins: core::File,
     deps: Vec[(string, string)],
 ) -> PackageCompilation {
-    let ast_value = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
-    ast_values.push(ast_value);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    for source in sources {
+        let ast_value = ast::lower(parser::parse(source.source));
+        ast_values.push(ast_value);
+        inputs.push((ast_value, source.path))
+    };
     let public_names = public_item_names(ast_values, package_name);
-    let hir_value = hir::lower_package(ast_value, source_path, package_name);
-    if hir_value.diagnostics.len() > 0 {
-        fail("error[compile]: failed to lower standard package " + package_name)
-    } else {
-        ()
+    let hir_files = Vec::new();
+    for lowered in hir::lower_package_files(inputs, package_name) {
+        if lowered.diagnostics.len() > 0 {
+            fail("error[compile]: failed to lower standard source " + lowered.source_path)
+        } else {
+            ()
+        };
+        match lowered.hir {
+            Some(file) => hir_files.push(file),
+            None => fail("error[compile]: missing standard source " + lowered.source_path),
+        }
     };
-    let hir_file = match hir_value.hir {
-        Some(file) => file,
-        None => {
-            fail("error[compile]: missing standard package " + package_name);
-            hir::File {
-                package_name,
-                path: source_path,
-                source_path,
-                imports: Vec::new(),
-                import_aliases: Vec::new(),
-                use_traits: Vec::new(),
-                items: Vec::new(),
-                invalid_self_type_spans: Vec::new(),
-            }
-        },
-    };
-    let tast_value = tast::check_for_link_with_dependencies_allowing_externs(
-        hir_value,
+    let hir_file = merge_hir_files(hir_files, package_name);
+    let tast_value = tast::check_package_files_for_link_with_dependencies_allowing_externs(
+        hir_files,
         hir_dependencies,
     );
     if tast_value.diagnostics.len() > 0 {
-        fail(render_typer_diagnostics(tast_value.diagnostics, source_path, source))
+        fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
     } else {
         ()
     };
@@ -311,21 +321,45 @@ fn compile_standard_package(
     PackageCompilation { hir_file, core_value, interface_unit, exports }
 }
 
-fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
-    let source = core::builtin_source();
-    let lowered = hir::lower(ast::lower(parser::parse(source)), "builtin_contract.gom");
-    let signatures = match lowered.hir {
-        Some(file) => tast::package_signatures(file),
-        None => {
-            fail("error[compile]: failed to lower builtin package");
-            tast::PackageSignatures {
-                traits: Vec::new(),
-                functions: Vec::new(),
-                type_aliases: Vec::new(),
-                constants: Vec::new(),
-            }
+fn required_standard_sources(package_name: string) -> Vec[resources::Source] {
+    match resources::standard_sources(package_name) {
+        Ok(Some(value)) => value,
+        Ok(None) => {
+            fail("error[compile]: unknown standard package " + package_name);
+            Vec::new()
+        },
+        Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
+    }
+}
+
+fn builtin_hir_files() -> Vec[hir::File] {
+    let sources = match resources::builtin_sources() {
+        Ok(value) => value,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
         },
     };
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    for source in sources {
+        inputs.push((ast::lower(parser::parse(source.source)), source.path))
+    };
+    let files = Vec::new();
+    for lowered in hir::lower_package_files(inputs, "builtin") {
+        match lowered.hir {
+            Some(file) => files.push(file),
+            None => fail("error[compile]: failed to lower builtin source " + lowered.source_path),
+        }
+    };
+    files
+}
+
+fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
+    let builtin_files = builtin_hir_files();
+    let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
     let traits = Vec::new();
     for value in signatures.traits {
         if value.name == "Iterator" || value.name == "IntoIterator" {
@@ -438,7 +472,7 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         type_aliases: signatures.type_aliases,
         constants: signatures.constants,
     };
-    let checked = tast::check(lowered);
+    let checked = tast::check_builtin_package_files(builtin_files);
     let file = match checked.tast {
         Some(file) => file,
         None => {
@@ -493,8 +527,7 @@ fn standard_artifact_deps(builtin_hash: string, dependencies: Vec[PackageCompila
 
 fn compile_standard_library(builtins: core::File, builtin_hash: string) -> StandardLibrary {
     let host = compile_standard_package(
-        stdlib::host_source(),
-        "host.gom",
+        required_standard_sources("std::internal::host"),
         "std::internal::host",
         "host",
         Vec::new(),
@@ -503,8 +536,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         standard_artifact_deps(builtin_hash, Vec::new()),
     );
     let bytes = compile_standard_package(
-        stdlib::bytes_source(),
-        "bytes.gom",
+        required_standard_sources("std::bytes"),
         "std::bytes",
         "bytes",
         Vec::new(),
@@ -513,8 +545,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         standard_artifact_deps(builtin_hash, Vec::new()),
     );
     let collections = compile_standard_package(
-        stdlib::collections_source(),
-        "collections.gom",
+        required_standard_sources("std::collections"),
         "std::collections",
         "collections",
         Vec::new(),
@@ -525,8 +556,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let env_hir_dependencies: Vec[hir::File] = Vec::new();
     env_hir_dependencies.push(host.hir_file);
     let env = compile_standard_package(
-        stdlib::env_source(),
-        "env.gom",
+        required_standard_sources("std::env"),
         "std::env",
         "env",
         env_hir_dependencies,
@@ -540,8 +570,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let fs_core_dependencies: Vec[core::File] = Vec::new();
     fs_core_dependencies.push(bytes.core_value);
     let fs = compile_standard_package(
-        stdlib::fs_source(),
-        "fs.gom",
+        required_standard_sources("std::fs"),
         "std::fs",
         "fs",
         fs_hir_dependencies,
@@ -555,8 +584,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let io_core_dependencies: Vec[core::File] = Vec::new();
     io_core_dependencies.push(bytes.core_value);
     let io = compile_standard_package(
-        stdlib::io_source(),
-        "io.gom",
+        required_standard_sources("std::io"),
         "std::io",
         "io",
         io_hir_dependencies,
@@ -567,8 +595,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let path_hir_dependencies: Vec[hir::File] = Vec::new();
     path_hir_dependencies.push(host.hir_file);
     let path = compile_standard_package(
-        stdlib::path_source(),
-        "path.gom",
+        required_standard_sources("std::path"),
         "std::path",
         "path",
         path_hir_dependencies,
@@ -582,8 +609,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let process_core_dependencies: Vec[core::File] = Vec::new();
     process_core_dependencies.push(bytes.core_value);
     let process = compile_standard_package(
-        stdlib::process_source(),
-        "process.gom",
+        required_standard_sources("std::process"),
         "std::process",
         "process",
         process_hir_dependencies,
@@ -594,8 +620,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let testing_hir_dependencies: Vec[hir::File] = Vec::new();
     testing_hir_dependencies.push(host.hir_file);
     let testing = compile_standard_package(
-        stdlib::testing_source(),
-        "testing.gom",
+        required_standard_sources("std::testing"),
         "std::testing",
         "testing",
         testing_hir_dependencies,
@@ -608,8 +633,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let text_core_dependencies: Vec[core::File] = Vec::new();
     text_core_dependencies.push(bytes.core_value);
     let text = compile_standard_package(
-        stdlib::text_source(),
-        "string_builder.gom",
+        required_standard_sources("std::text"),
         "std::text",
         "text",
         text_hir_dependencies,
@@ -622,8 +646,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let json_core_dependencies: Vec[core::File] = Vec::new();
     json_core_dependencies.push(text.core_value);
     let json = compile_standard_package(
-        stdlib::json_source(),
-        "json.gom",
+        required_standard_sources("std::json"),
         "std::json",
         "json",
         json_hir_dependencies,
@@ -634,8 +657,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let num_hir_dependencies: Vec[hir::File] = Vec::new();
     num_hir_dependencies.push(host.hir_file);
     let num = compile_standard_package(
-        stdlib::num_source(),
-        "num.gom",
+        required_standard_sources("std::num"),
         "std::num",
         "num",
         num_hir_dependencies,
@@ -646,8 +668,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let time_hir_dependencies: Vec[hir::File] = Vec::new();
     time_hir_dependencies.push(host.hir_file);
     let time = compile_standard_package(
-        stdlib::time_source(),
-        "time.gom",
+        required_standard_sources("std::time"),
         "std::time",
         "time",
         time_hir_dependencies,
@@ -682,8 +703,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         time.core_value,
     ];
     let root = compile_standard_package(
-        stdlib::root_source(),
-        "lib.gom",
+        required_standard_sources("std"),
         "std",
         "std",
         root_hir_dependencies,
@@ -1435,7 +1455,7 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         ()
     };
     let counter = Ref::new(0);
-    let builtins = core::lower_builtins(counter);
+    let builtins = lower_builtin_core(counter);
     let standard = if has_standard_import(ast_value) {
         Option::Some(compile_standard_library(builtins, builtin_artifact_dependency().1))
     } else {
@@ -1540,7 +1560,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     let counter = Ref::new(0);
-    let builtins = core::lower_builtins(counter);
+    let builtins = lower_builtin_core(counter);
     let standard = if has_standard_import(ast_value) {
         Option::Some(compile_standard_library(builtins, builtin_artifact_dependency().1))
     } else {
@@ -1624,7 +1644,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         ()
     };
     let counter = Ref::new(0);
-    let builtins = core::lower_builtins(counter);
+    let builtins = lower_builtin_core(counter);
     let standard = if has_standard_import(ast_value) {
         Option::Some(compile_standard_library(builtins, builtin_artifact_dependency().1))
     } else {

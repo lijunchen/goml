@@ -238,18 +238,14 @@ fn artifact_dependency_environment_from_exports(value: ArtifactPackageExports) -
     };
     let traits = Vec::new();
     for definition in value.traits {
-        match artifact_dependency_trait(definition) {
-            Ok(value) => traits.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        traits.push(artifact_dependency_trait(definition)?)
     };
     let functions = Vec::new();
     for function in value.functions {
         let callable = function.body;
-        match artifact_dependency_function_scheme(function, Vec::new(), Vec::new(), callable) {
-            Ok(value) => functions.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        functions.push(
+            artifact_dependency_function_scheme(function, Vec::new(), Vec::new(), callable)?,
+        )
     };
     let constants = Vec::new();
     for value in value.constants {
@@ -277,24 +273,22 @@ fn artifact_dependency_environment_from_exports(value: ArtifactPackageExports) -
                     trait_ref: implementation.trait_ref,
                     method_name: method.name,
                 };
-                match artifact_dependency_function_scheme(
+                let function = artifact_dependency_function_scheme(
                     method,
                     implementation.definition.params,
                     implementation.definition.constraints,
                     callable,
-                ) {
-                    Ok(function) => methods.push(
-                        tast::MethodInfo {
-                            owner_generics: implementation.definition.params,
-                            method_generics: method.type_params,
-                            owner_predicate_count: implementation.definition.constraints.len(),
-                            trait_ref: Option::Some(implementation.trait_ref),
-                            for_type: implementation.for_ty,
-                            function,
-                        },
-                    ),
-                    Err(error) => return Result::Err(error),
-                }
+                )?;
+                methods.push(
+                    tast::MethodInfo {
+                        owner_generics: implementation.definition.params,
+                        method_generics: method.type_params,
+                        owner_predicate_count: implementation.definition.constraints.len(),
+                        trait_ref: Option::Some(implementation.trait_ref),
+                        for_type: implementation.for_ty,
+                        function,
+                    },
+                )
             }
         } else {
             ()
@@ -308,24 +302,22 @@ fn artifact_dependency_environment_from_exports(value: ArtifactPackageExports) -
                     receiver_ty: for_type,
                     method_name: method.name,
                 };
-                match artifact_dependency_function_scheme(
+                let function = artifact_dependency_function_scheme(
                     method,
                     implementation.definition.params,
                     implementation.definition.constraints,
                     callable,
-                ) {
-                    Ok(function) => methods.push(
-                        tast::MethodInfo {
-                            owner_generics: implementation.definition.params,
-                            method_generics: method.type_params,
-                            owner_predicate_count: implementation.definition.constraints.len(),
-                            trait_ref: Option::None,
-                            for_type,
-                            function,
-                        },
-                    ),
-                    Err(error) => return Result::Err(error),
-                }
+                )?;
+                methods.push(
+                    tast::MethodInfo {
+                        owner_generics: implementation.definition.params,
+                        method_generics: method.type_params,
+                        owner_predicate_count: implementation.definition.constraints.len(),
+                        trait_ref: Option::None,
+                        for_type,
+                        function,
+                    },
+                )
             }
         } else {
             ()

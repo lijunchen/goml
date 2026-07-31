@@ -179,10 +179,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
         ()
     };
     let counter_section = world_required_section(container, 1)?;
-    let counter = match world_decode_counter(counter_section.data) {
-        Ok(value) => Ref::new(value),
-        Err(error) => return Result::Err(error),
-    };
+    let counter = Ref::new(world_decode_counter(counter_section.data)?);
     let builtin_interface_section = world_required_section(container, 2)?;
     let builtin_core_section = world_required_section(container, 3)?;
     let builtin_interface = decode_artifact_interface_binary(builtin_interface_section.data)?;

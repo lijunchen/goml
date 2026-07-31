@@ -139,10 +139,7 @@ fn artifact_interface_binary_string_array(reader: ArtifactInterfaceBinaryReader,
     let count = artifact_interface_binary_array(reader, expected)?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        match artifact_interface_binary_string(reader, expected) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        result.push(artifact_interface_binary_string(reader, expected)?)
     };
     Result::Ok(result)
 }
@@ -155,10 +152,7 @@ fn artifact_interface_binary_type_array(
     let count = artifact_interface_binary_array(reader, expected)?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        match artifact_interface_binary_type(reader, context) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        result.push(artifact_interface_binary_type(reader, context)?)
     };
     Result::Ok(result)
 }
@@ -322,19 +316,15 @@ fn artifact_interface_binary_type(
         artifact_interface_binary_field(reader, "key")?;
         let key = artifact_interface_binary_type(reader, context)?;
         artifact_interface_binary_field(reader, "value")?;
-        match artifact_interface_binary_type(reader, context) {
-            Ok(value) => Result::Ok(tast::Type::HashMap { key, value }),
-            Err(error) => Result::Err(error),
-        }
+        let value = artifact_interface_binary_type(reader, context)?;
+        Result::Ok(tast::Type::HashMap { key, value })
     } else if kind == "TFunc" {
         artifact_interface_binary_object(reader, 2, "function type")?;
         artifact_interface_binary_field(reader, "params")?;
         let params = artifact_interface_binary_type_array(reader, context, "function parameters")?;
         artifact_interface_binary_field(reader, "ret_ty")?;
-        match artifact_interface_binary_type(reader, context) {
-            Ok(ret_ty) => Result::Ok(tast::Type::Func { params, ret_ty }),
-            Err(error) => Result::Err(error),
-        }
+        let ret_ty = artifact_interface_binary_type(reader, context)?;
+        Result::Ok(tast::Type::Func { params, ret_ty })
     } else {
         Result::Err(artifact_interface_binary_error("supported type variant"))
     }
@@ -347,10 +337,7 @@ fn artifact_interface_binary_trait_refs(
     let count = artifact_interface_binary_array(reader, "trait references")?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        match artifact_interface_binary_trait_ref(reader, context) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        result.push(artifact_interface_binary_trait_ref(reader, context)?)
     };
     Result::Ok(result)
 }
@@ -366,18 +353,14 @@ fn artifact_interface_binary_predicate(
         artifact_interface_binary_field(reader, "for_ty")?;
         let for_ty = artifact_interface_binary_type(reader, context)?;
         artifact_interface_binary_field(reader, "trait_ref")?;
-        match artifact_interface_binary_trait_ref(reader, context) {
-            Ok(trait_ref) => Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref }),
-            Err(error) => Result::Err(error),
-        }
+        let trait_ref = artifact_interface_binary_trait_ref(reader, context)?;
+        Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref })
     } else if kind == "Equality" {
         artifact_interface_binary_field(reader, "lhs")?;
         let lhs = artifact_interface_binary_type(reader, context)?;
         artifact_interface_binary_field(reader, "rhs")?;
-        match artifact_interface_binary_type(reader, context) {
-            Ok(rhs) => Result::Ok(tast::TypePredicate::Equality { lhs, rhs }),
-            Err(error) => Result::Err(error),
-        }
+        let rhs = artifact_interface_binary_type(reader, context)?;
+        Result::Ok(tast::TypePredicate::Equality { lhs, rhs })
     } else {
         Result::Err(artifact_interface_binary_error("supported type predicate"))
     }
@@ -390,10 +373,7 @@ fn artifact_interface_binary_predicates(
     let count = artifact_interface_binary_array(reader, "type predicates")?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        match artifact_interface_binary_predicate(reader, context) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        result.push(artifact_interface_binary_predicate(reader, context)?)
     };
     Result::Ok(result)
 }
@@ -413,10 +393,7 @@ fn artifact_interface_binary_type_pairs(
             ()
         };
         let name = artifact_interface_binary_string(reader, expected)?;
-        match artifact_interface_binary_type(reader, context) {
-            Ok(value) => result.push((name, value)),
-            Err(error) => return Result::Err(error),
-        }
+        result.push((name, artifact_interface_binary_type(reader, context)?))
     };
     Result::Ok(result)
 }
@@ -587,10 +564,7 @@ fn artifact_interface_binary_fn_map(
     let result = Vec::with_capacity(count);
     for _ in 0..count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_fn_scheme(reader, context, name) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        result.push(artifact_interface_binary_fn_scheme(reader, context, name)?)
     };
     Result::Ok(result)
 }
@@ -640,10 +614,7 @@ fn artifact_interface_binary_associated_types(
     let result = Vec::with_capacity(count);
     for _ in 0..count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_type(reader, context) {
-            Ok(value) => result.push((name, value)),
-            Err(error) => return Result::Err(error),
-        }
+        result.push((name, artifact_interface_binary_type(reader, context)?))
     };
     Result::Ok(result)
 }
@@ -748,30 +719,21 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
     let enums = Vec::with_capacity(enum_count);
     for _ in 0..enum_count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_enum_def(reader, context, name) {
-            Ok(value) => enums.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        enums.push(artifact_interface_binary_enum_def(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "structs")?;
     let struct_count = artifact_interface_binary_read_count(reader, 6, "struct map")?;
     let structs = Vec::with_capacity(struct_count);
     for _ in 0..struct_count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_struct_def(reader, context, name) {
-            Ok(value) => structs.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        structs.push(artifact_interface_binary_struct_def(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "aliases")?;
     let alias_count = artifact_interface_binary_read_count(reader, 6, "type alias map")?;
     let type_aliases = Vec::with_capacity(alias_count);
     for _ in 0..alias_count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_type_alias(reader, context, name) {
-            Ok(value) => type_aliases.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        type_aliases.push(artifact_interface_binary_type_alias(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "trait_env")?;
     artifact_interface_binary_object(reader, 3, "trait environment")?;
@@ -780,10 +742,7 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
     let traits = Vec::with_capacity(trait_count);
     for _ in 0..trait_count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_trait_def(reader, context, name) {
-            Ok(value) => traits.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        traits.push(artifact_interface_binary_trait_def(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "trait_impls")?;
     let trait_impls = artifact_interface_binary_trait_impls(reader, context)?;
@@ -834,20 +793,16 @@ fn artifact_interface_binary_package_interface(reader: ArtifactInterfaceBinaryRe
     for _ in 0..value_count {
         let export_name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
         let number = artifact_interface_binary_number(reader, "value export index")?;
-        match artifact_parse_nonnegative_int(number) {
-            Ok(value) => value_exports.push((export_name, value)),
-            Err(error) => return Result::Err(error),
-        }
+        value_exports.push((export_name, artifact_parse_nonnegative_int(number)?))
     };
     artifact_interface_binary_field(reader, "enum_variants")?;
     let enum_count = artifact_interface_binary_read_count(reader, 6, "enum variants")?;
     let enum_variants = Vec::with_capacity(enum_count);
     for _ in 0..enum_count {
         let enum_name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_string_array(reader, "enum variant names") {
-            Ok(value) => enum_variants.push((enum_name, value)),
-            Err(error) => return Result::Err(error),
-        }
+        enum_variants.push(
+            (enum_name, artifact_interface_binary_string_array(reader, "enum variant names")?),
+        )
     };
     Result::Ok(ArtifactPackageInterface { package_name, name, value_exports, enum_variants })
 }
@@ -860,10 +815,7 @@ fn artifact_interface_binary_string_map(reader: ArtifactInterfaceBinaryReader, e
     let result = Vec::with_capacity(count);
     for _ in 0..count {
         let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
-        match artifact_interface_binary_string(reader, expected) {
-            Ok(value) => result.push((name, value)),
-            Err(error) => return Result::Err(error),
-        }
+        result.push((name, artifact_interface_binary_string(reader, expected)?))
     };
     Result::Ok(result)
 }

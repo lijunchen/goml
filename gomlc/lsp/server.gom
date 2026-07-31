@@ -265,10 +265,7 @@ fn signature_response(server: Server, params: json::Value) -> Result[json::Value
 
 fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, string] {
     let document = request_document(server, params)?;
-    let requested_range = match required_field(params, "range") {
-        Ok(value) => parse_range(value)?,
-        Err(error) => return Result::Err(error),
-    };
+    let requested_range = parse_range(required_field(params, "range")?)?;
     let range_start = request_offset(document, requested_range.start)?;
     let range_end = request_offset(document, requested_range.end)?;
     let analysis = document_analysis(server, document);
@@ -364,15 +361,15 @@ fn code_lens_response(server: Server, params: json::Value) -> Result[json::Value
 }
 
 fn fix_action(diagnostic: json::Value, fix: json::Value) -> Option[json::Value] {
-    let uri = match json::field(fix, "uri") {
-        Some(value) => json::as_string(value)?,
-        None => return Option::None,
+    let Some(uri_value) = json::field(fix, "uri") else {
+        return Option::None
     };
+    let uri = json::as_string(uri_value)?;
     let range = json::field(fix, "range")?;
-    let replacement = match json::field(fix, "replacement") {
-        Some(value) => json::as_string(value)?,
-        None => return Option::None,
+    let Some(replacement_value) = json::field(fix, "replacement") else {
+        return Option::None
     };
+    let replacement = json::as_string(replacement_value)?;
     let title = match json::field(fix, "title") {
         Some(value) => match json::as_string(value) {
             Some(value) => value,

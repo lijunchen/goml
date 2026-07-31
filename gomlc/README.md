@@ -15,17 +15,19 @@ just make
 Use `just bootstrap` when a clean stage2/stage3 fixed-point verification is required. The stable tools are:
 
 ```text
-bin/stage2/gomlc
-bin/stage2/gomllsp
-bin/stage2/goml
+stage2/bin/gomlc
+stage2/bin/gomllsp
+stage2/bin/goml
 ```
+
+Each stage is a complete toolchain prefix. The compiler loads builtin and standard-library sources from `stage2/lib`, derived only from the executable's location.
 
 Run a single source or inspect an IR stage:
 
 ```sh
-bin/stage2/gomlc run-single file.gom
-bin/stage2/gomlc anf file.gom
-bin/stage2/gomlc run-single --dump-go file.gom
+stage2/bin/gomlc run-single file.gom
+stage2/bin/gomlc anf file.gom
+stage2/bin/gomlc run-single --dump-go file.gom
 ```
 
 The regression corpus and every generated golden file live in `gomlc/testdata`. Verify or update them with:

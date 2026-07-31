@@ -470,11 +470,13 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
             push_package_completion(result, child, context.namespace + "::" + child, context.prefix)
         }
     };
-    match standard_library_source(context.namespace) {
-        Some(source) => for item in complete_source_package(source, context.prefix) {
-            push_completion(result, item, context.prefix)
+    match standard_library_sources(context.namespace) {
+        Ok(Some(sources)) => for source in sources {
+            for item in complete_source_package(source, context.prefix) {
+                push_completion(result, item, context.prefix)
+            }
         },
-        None => (),
+        Ok(None) | Err(_) => (),
     };
     match discover_project(value.source_path, value.source, value.overrides) {
         Ok(Some(project)) => {

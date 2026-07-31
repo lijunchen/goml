@@ -69,9 +69,8 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
     } else {
         ()
     };
-    let delimiters = match direct_delimiter_tokens(node) {
-        Some(value) => value,
-        None => return format_generic(value, node),
+    let Some(delimiters) = direct_delimiter_tokens(node) else {
+        return format_generic(value, node)
     };
     let (open, close) = delimiters;
     if open.start == close.start {
@@ -115,9 +114,8 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
 }
 
 fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
-    let delimiters = match direct_delimiter_tokens(node) {
-        Some(value) => value,
-        None => return format_generic(value, node),
+    let Some(delimiters) = direct_delimiter_tokens(node) else {
+        return format_generic(value, node)
     };
     let (open, close) = delimiters;
     let body = parts();

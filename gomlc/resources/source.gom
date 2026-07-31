@@ -1,0 +1,98 @@
+package resources;
+
+use std::env;
+use std::fs;
+use std::path;
+
+pub struct Source {
+    pub path: string,
+    pub source: string,
+}
+
+pub fn toolchain_lib_dir() -> Result[string, string] {
+    let executable = match env::current_exe() {
+        Ok(value) => value,
+        Err(error) => return Result::Err("could not locate compiler executable: " + error),
+    };
+    let binary_dir = match path::parent(executable) {
+        Some(value) => value,
+        None => return Result::Err("compiler executable has no parent directory: " + executable),
+    };
+    let prefix = match path::parent(binary_dir) {
+        Some(value) => value,
+        None => return Result::Err("compiler bin directory has no parent directory: " + binary_dir),
+    };
+    Result::Ok(path::join(prefix, "lib"))
+}
+
+fn read_sources(relative_paths: Vec[string]) -> Result[Vec[Source], string] {
+    let lib_dir = toolchain_lib_dir()?;
+    let result = Vec::new();
+    for relative_path in relative_paths {
+        let source_path = path::join(lib_dir, relative_path);
+        match fs::read_file(source_path) {
+            Ok(source) => result.push(Source { path: source_path, source }),
+            Err(error) => return Result::Err(
+                "could not read compiler resource " + source_path + ": " + error,
+            ),
+        }
+    };
+    Result::Ok(result)
+}
+
+pub fn builtin_sources() -> Result[Vec[Source], string] {
+    read_sources(Vec::["builtin_contract.gom", "builtin_prelude.gom"])
+}
+
+pub fn standard_sources(package_name: string) -> Result[Option[Vec[Source]], string] {
+    let relative_paths = if package_name == "std" {
+        Option::Some(Vec::["std/lib.gom"])
+    } else if package_name == "std::internal::host" {
+        Option::Some(Vec::["std/internal/host/host.gom"])
+    } else if package_name == "std::bytes" {
+        Option::Some(Vec::["std/bytes/bytes.gom"])
+    } else if package_name == "std::collections" {
+        Option::Some(
+            Vec::[
+                "std/collections/algorithms.gom",
+                "std/collections/arena.gom",
+                "std/collections/bit_set.gom",
+                "std/collections/deque.gom",
+                "std/collections/hash_set.gom",
+                "std/collections/index_map.gom",
+                "std/collections/index_vec.gom",
+                "std/collections/interner.gom",
+                "std/collections/stack.gom",
+            ],
+        )
+    } else if package_name == "std::env" {
+        Option::Some(Vec::["std/env/env.gom"])
+    } else if package_name == "std::fs" {
+        Option::Some(Vec::["std/fs/fs.gom"])
+    } else if package_name == "std::io" {
+        Option::Some(Vec::["std/io/io.gom"])
+    } else if package_name == "std::json" {
+        Option::Some(Vec::["std/json/json.gom"])
+    } else if package_name == "std::num" {
+        Option::Some(Vec::["std/num/num.gom"])
+    } else if package_name == "std::path" {
+        Option::Some(Vec::["std/path/path.gom"])
+    } else if package_name == "std::process" {
+        Option::Some(Vec::["std/process/process.gom"])
+    } else if package_name == "std::testing" {
+        Option::Some(Vec::["std/testing/testing.gom"])
+    } else if package_name == "std::text" {
+        Option::Some(Vec::["std/text/string_builder.gom", "std/text/text.gom"])
+    } else if package_name == "std::time" {
+        Option::Some(Vec::["std/time/time.gom"])
+    } else {
+        Option::None
+    };
+    match relative_paths {
+        Some(value) => match read_sources(value) {
+            Ok(sources) => Result::Ok(Option::Some(sources)),
+            Err(error) => Result::Err(error),
+        },
+        None => Result::Ok(Option::None),
+    }
+}

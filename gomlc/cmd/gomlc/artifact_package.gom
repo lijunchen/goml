@@ -427,53 +427,45 @@ fn artifact_dependency_environments(
     units: Vec[ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
     let result: Vec[tast::DependencyEnvironment] = Vec::new();
-    match artifact_dependency_environment_from_exports(builtin) {
-        Ok(value) => {
-            let methods = Vec::new();
-            for method in value.methods {
-                match method.trait_ref {
-                    Some(_) => if artifact_builtin_extension_iterator(method.for_type) {
-                        methods.push(method)
-                    } else {
-                        ()
-                    },
-                    None => methods.push(method),
-                }
-            };
-            let impls = Vec::new();
-            for implementation in value.impls {
-                if artifact_builtin_extension_iterator(implementation.for_type) {
-                    impls.push(implementation)
-                } else {
-                    ()
-                }
-            };
-            result.push(
-                tast::dependency_environment(
-                    value.enums,
-                    value.structs,
-                    value.type_aliases,
-                    value.constants,
-                    Vec::new(),
-                    value.functions,
-                    methods,
-                    impls,
-                ),
-            )
-        },
-        Err(error) => return Result::Err(error),
-    };
-    for package_value in selected_standard_packages_for_needs(standard, needs) {
-        match artifact_dependency_environment_from_exports(package_value.environment_exports) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
+    let value = artifact_dependency_environment_from_exports(builtin)?;
+    let methods = Vec::new();
+    for method in value.methods {
+        match method.trait_ref {
+            Some(_) => if artifact_builtin_extension_iterator(method.for_type) {
+                methods.push(method)
+            } else {
+                ()
+            },
+            None => methods.push(method),
         }
+    };
+    let impls = Vec::new();
+    for implementation in value.impls {
+        if artifact_builtin_extension_iterator(implementation.for_type) {
+            impls.push(implementation)
+        } else {
+            ()
+        }
+    };
+    result.push(
+        tast::dependency_environment(
+            value.enums,
+            value.structs,
+            value.type_aliases,
+            value.constants,
+            Vec::new(),
+            value.functions,
+            methods,
+            impls,
+        ),
+    );
+    for package_value in selected_standard_packages_for_needs(standard, needs) {
+        result.push(
+            artifact_dependency_environment_from_exports(package_value.environment_exports)?,
+        )
     };
     for interface in units {
-        match artifact_dependency_environment_from_exports(interface.exports) {
-            Ok(value) => result.push(value),
-            Err(error) => return Result::Err(error),
-        }
+        result.push(artifact_dependency_environment_from_exports(interface.exports)?)
     };
     Result::Ok(result)
 }
@@ -862,9 +854,8 @@ fn compile_artifact_package(
     };
     let hir_file = merge_hir_files(hir_files, command.package_name);
     let signatures = tast::package_signatures(hir_file);
-    let tast_file = match checked.tast {
-        Some(value) => value,
-        None => return Result::Err("failed to typecheck package " + command.package_name),
+    let Some(tast_file) = checked.tast else {
+        return Result::Err("failed to typecheck package " + command.package_name)
     };
     let dependency_core = selected_link_standard_core(world.standard, needs);
     append_core_files(dependency_core, artifact_dependency_core_types(dependency_units));
@@ -1021,9 +1012,8 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[ArtifactCoreUni
         if vecs::contains(names, package_name) {
             ()
         } else {
-            let core_unit = match artifact_find_core_unit(values, package_name) {
-                Some(value) => value,
-                None => return Result::Err("missing core for package " + package_name),
+            let Some(core_unit) = artifact_find_core_unit(values, package_name) else {
+                return Result::Err("missing core for package " + package_name)
             };
             names.push(package_name);
             for dependency in core_unit.deps {

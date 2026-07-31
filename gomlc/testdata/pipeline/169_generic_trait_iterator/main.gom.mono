@@ -160,28 +160,26 @@ fn trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__
 
 fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int, initial/118: int, combine/119: (int, int) -> int) -> int {
   let accumulator/120 = initial/118 in
-  let _wild32 = while true {
-      {
-        let _wild31 = {
-          let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
-          match mtmp28 {
-            Option__int::None => {
-              break
-            },
-            Option__int::Some(x29) => {
+  let _wild32 = loop {
+    let _wild31 = {
+      let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
+      match mtmp28 {
+        Option__int::None => {
+          break
+        },
+        Option__int::Some(x29) => {
+          {
+            let x29 = Option__int::Some._0(mtmp28) in
+            {
+              let value/121 = x29 in
               {
-                let x29 = Option__int::Some._0(mtmp28) in
-                {
-                  let value/121 = x29 in
-                  {
-                    let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
-                  }
-                }
+                let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
               }
-            },
+            }
           }
-        } in
+        },
       }
+    } in
   } in
   accumulator/120
 }
@@ -196,26 +194,24 @@ fn println__T_int(value/1: int) -> unit {
 
 fn iterator_collect__I_MapIterator[int,string,FnIterator[int]]__T_string(iterator/122: MapIterator__int__string__FnIterator__int) -> Vec[string] {
   let values/123 = inherent#Vec#Vec[T]#new__T_string() in
-  let _wild36 = while true {
-      {
-        let _wild35 = {
-          let mtmp33 = trait_impl#Iterator#MapIterator__int__string__FnIterator__int#next(iterator/122) in
-          match mtmp33 {
-            Option__string::None => {
-              break
-            },
-            Option__string::Some(x34) => {
-              {
-                let x34 = Option__string::Some._0(mtmp33) in
-                {
-                  let value/124 = x34 in
-                  inherent#Vec#Vec[T]#push__T_string(values/123, value/124)
-                }
-              }
-            },
+  let _wild36 = loop {
+    let _wild35 = {
+      let mtmp33 = trait_impl#Iterator#MapIterator__int__string__FnIterator__int#next(iterator/122) in
+      match mtmp33 {
+        Option__string::None => {
+          break
+        },
+        Option__string::Some(x34) => {
+          {
+            let x34 = Option__string::Some._0(mtmp33) in
+            {
+              let value/124 = x34 in
+              inherent#Vec#Vec[T]#push__T_string(values/123, value/124)
+            }
           }
-        } in
+        },
       }
+    } in
   } in
   values/123
 }
@@ -249,34 +245,32 @@ fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
 }
 
 fn trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter#next(self/105: FilterIterator__int32__MapIterator__int32__int32__Counter) -> Option__int32 {
-  let _wild26 = while true {
-      {
-        let _wild25 = {
-          let mtmp23 = trait_impl#Iterator#MapIterator__int32__int32__Counter#next(FilterIterator__int32__MapIterator__int32__int32__Counter.iterator(self/105)) in
-          match mtmp23 {
-            Option__int32::None => {
-              return Option__int32::None
-            },
-            Option__int32::Some(x24) => {
-              {
-                let x24 = Option__int32::Some._0(mtmp23) in
-                {
-                  let value/106 = x24 in
-                  if FilterIterator__int32__MapIterator__int32__int32__Counter.predicate(self/105)(value/106) {
-                      {
-                        return Option__int32::Some(value/106)
-                      }
-                  } else {
-                      {
-                        ()
-                      }
+  let _wild26 = loop {
+    let _wild25 = {
+      let mtmp23 = trait_impl#Iterator#MapIterator__int32__int32__Counter#next(FilterIterator__int32__MapIterator__int32__int32__Counter.iterator(self/105)) in
+      match mtmp23 {
+        Option__int32::None => {
+          return Option__int32::None
+        },
+        Option__int32::Some(x24) => {
+          {
+            let x24 = Option__int32::Some._0(mtmp23) in
+            {
+              let value/106 = x24 in
+              if FilterIterator__int32__MapIterator__int32__int32__Counter.predicate(self/105)(value/106) {
+                  {
+                    return Option__int32::Some(value/106)
                   }
-                }
+              } else {
+                  {
+                    ()
+                  }
               }
-            },
+            }
           }
-        } in
+        },
       }
+    } in
   } in
   Option__int32::None
 }

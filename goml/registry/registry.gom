@@ -50,17 +50,14 @@ pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
     } else {
         ()
     };
-    let major = match decimal_number(parts[0]) {
-        Some(value) => value,
-        None => return Result::Err("invalid semver `" + value + "`"),
+    let Some(major) = decimal_number(parts[0]) else {
+        return Result::Err("invalid semver `" + value + "`")
     };
-    let minor = match decimal_number(parts[1]) {
-        Some(value) => value,
-        None => return Result::Err("invalid semver `" + value + "`"),
+    let Some(minor) = decimal_number(parts[1]) else {
+        return Result::Err("invalid semver `" + value + "`")
     };
-    let patch = match decimal_number(parts[2]) {
-        Some(value) => value,
-        None => return Result::Err("invalid semver `" + value + "`"),
+    let Some(patch) = decimal_number(parts[2]) else {
+        return Result::Err("invalid semver `" + value + "`")
     };
     Result::Ok(SemVersion { major, minor, patch })
 }
@@ -257,9 +254,8 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
     validate_coordinate(name)?;
     let minimum_value = parse_sem_version(minimum)?;
     let entries = load_index(root)?;
-    let entry = match find_entry(entries, name) {
-        Some(value) => value,
-        None => return Result::Err("module " + name + " not found in registry index"),
+    let Some(entry) = find_entry(entries, name) else {
+        return Result::Err("module " + name + " not found in registry index")
     };
     let selected: Ref[Option[string]] = Ref::new(Option::None);
     let selected_value: Ref[Option[SemVersion]] = Ref::new(Option::None);

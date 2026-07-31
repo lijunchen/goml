@@ -419,34 +419,32 @@ fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A,
 }
 
 fn trait_impl#Iterator#FilterIterator[T,I]#next[T, I](self/105: FilterIterator[T, I]) -> Option[T] {
-  let _wild26 = while true {
-      {
-        let _wild25 = {
-          let mtmp23 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
-          match mtmp23 {
-            Option::None => {
-              return Option::None
-            },
-            Option::Some(x24) => {
-              {
-                let x24 = Option::Some._0(mtmp23) in
-                {
-                  let value/106 = x24 in
-                  if FilterIterator.predicate(self/105)(value/106) {
-                      {
-                        return Option::Some(value/106)
-                      }
-                  } else {
-                      {
-                        ()
-                      }
+  let _wild26 = loop {
+    let _wild25 = {
+      let mtmp23 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
+      match mtmp23 {
+        Option::None => {
+          return Option::None
+        },
+        Option::Some(x24) => {
+          {
+            let x24 = Option::Some._0(mtmp23) in
+            {
+              let value/106 = x24 in
+              if FilterIterator.predicate(self/105)(value/106) {
+                  {
+                    return Option::Some(value/106)
                   }
-                }
+              } else {
+                  {
+                    ()
+                  }
               }
-            },
+            }
           }
-        } in
+        },
       }
+    } in
   } in
   Option::None
 }
@@ -492,54 +490,50 @@ fn iterator_take(iterator/114: I, count/115: int) -> TakeIterator[I] {
 
 fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A {
   let accumulator/120 = initial/118 in
-  let _wild32 = while true {
-      {
-        let _wild31 = {
-          let mtmp28 = trait_call[Iterator::next](iterator/117) in
-          match mtmp28 {
-            Option::None => {
-              break
-            },
-            Option::Some(x29) => {
+  let _wild32 = loop {
+    let _wild31 = {
+      let mtmp28 = trait_call[Iterator::next](iterator/117) in
+      match mtmp28 {
+        Option::None => {
+          break
+        },
+        Option::Some(x29) => {
+          {
+            let x29 = Option::Some._0(mtmp28) in
+            {
+              let value/121 = x29 in
               {
-                let x29 = Option::Some._0(mtmp28) in
-                {
-                  let value/121 = x29 in
-                  {
-                    let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
-                  }
-                }
+                let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
               }
-            },
+            }
           }
-        } in
+        },
       }
+    } in
   } in
   accumulator/120
 }
 
 fn iterator_collect(iterator/122: I) -> Vec[T] {
   let values/123 = inherent#Vec#Vec[T]#new() in
-  let _wild36 = while true {
-      {
-        let _wild35 = {
-          let mtmp33 = trait_call[Iterator::next](iterator/122) in
-          match mtmp33 {
-            Option::None => {
-              break
-            },
-            Option::Some(x34) => {
-              {
-                let x34 = Option::Some._0(mtmp33) in
-                {
-                  let value/124 = x34 in
-                  inherent#Vec#Vec[T]#push(values/123, value/124)
-                }
-              }
-            },
+  let _wild36 = loop {
+    let _wild35 = {
+      let mtmp33 = trait_call[Iterator::next](iterator/122) in
+      match mtmp33 {
+        Option::None => {
+          break
+        },
+        Option::Some(x34) => {
+          {
+            let x34 = Option::Some._0(mtmp33) in
+            {
+              let value/124 = x34 in
+              inherent#Vec#Vec[T]#push(values/123, value/124)
+            }
           }
-        } in
+        },
       }
+    } in
   } in
   values/123
 }
@@ -1172,34 +1166,32 @@ fn iterator_chain(first/251: A, second/252: B) -> ChainIterator[T, A, B] {
 }
 
 fn iterator_find(iterator/253: I, predicate/254: (T) -> bool) -> Option[T] {
-  let _wild125 = while true {
-      {
-        {
-          let mtmp123 = trait_call[Iterator::next](iterator/253) in
-          match mtmp123 {
-            Option::None => {
-              return Option::None
-            },
-            Option::Some(x124) => {
-              {
-                let x124 = Option::Some._0(mtmp123) in
-                {
-                  let value/255 = x124 in
-                  if predicate/254(value/255) {
-                      {
-                        return Option::Some(value/255)
-                      }
-                  } else {
-                      {
-                        ()
-                      }
+  let _wild125 = loop {
+    {
+      let mtmp123 = trait_call[Iterator::next](iterator/253) in
+      match mtmp123 {
+        Option::None => {
+          return Option::None
+        },
+        Option::Some(x124) => {
+          {
+            let x124 = Option::Some._0(mtmp123) in
+            {
+              let value/255 = x124 in
+              if predicate/254(value/255) {
+                  {
+                    return Option::Some(value/255)
                   }
-                }
+              } else {
+                  {
+                    ()
+                  }
               }
-            },
+            }
           }
-        }
+        },
       }
+    }
   } in
   Option::None
 }
@@ -1227,29 +1219,27 @@ fn iterator_all(iterator/258: I, predicate/259: (T) -> bool) -> bool {
 
 fn iterator_count(iterator/261: I) -> int {
   let count/262 = 0 in
-  let _wild133 = while true {
-      {
-        {
-          let mtmp128 = trait_call[Iterator::next](iterator/261) in
-          match mtmp128 {
-            Option::None => {
-              break
-            },
-            Option::Some(x129) => {
-              {
-                let x129 = Option::Some._0(mtmp128) in
-                {
-                  let _wild132 = {
-                    let compound_old130 = count/262 in
-                    let compound_value131 = 1 in
-                    count/262 = (compound_old130 + compound_value131)
-                  } in
-                }
-              }
-            },
+  let _wild133 = loop {
+    {
+      let mtmp128 = trait_call[Iterator::next](iterator/261) in
+      match mtmp128 {
+        Option::None => {
+          break
+        },
+        Option::Some(x129) => {
+          {
+            let x129 = Option::Some._0(mtmp128) in
+            {
+              let _wild132 = {
+                let compound_old130 = count/262 in
+                let compound_value131 = 1 in
+                count/262 = (compound_old130 + compound_value131)
+              } in
+            }
           }
-        }
+        },
       }
+    }
   } in
   count/262
 }

@@ -93,13 +93,13 @@ fn source_directory(source_path: string) -> string {
 
 fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
     let current = Ref::new(source_directory(source_path));
-    while true {
+    let result = loop {
         let manifest = path::join(current.get(), "goml.toml");
         if fs::is_file(manifest) {
             match fs::read_file(manifest) {
                 Ok(source) => match manifest_module_path(source) {
-                    Some(module_path) => return Result::Ok(
-                        Option::Some(ModuleInfo { root: current.get(), path: module_path }),
+                    Some(module_path) => break Option::Some(
+                        ModuleInfo { root: current.get(), path: module_path },
                     ),
                     None => (),
                 },
@@ -112,15 +112,15 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
             Some(parent) => {
                 let parent = path::clean(parent);
                 if parent == current.get() {
-                    break
+                    break Option::None
                 } else {
                     current.set(parent)
                 }
             },
-            None => break,
+            None => break Option::None,
         }
     };
-    Result::Ok(Option::None)
+    Result::Ok(result)
 }
 
 fn package_name(module_root: string, module_path: string, package_dir: string) -> Result[

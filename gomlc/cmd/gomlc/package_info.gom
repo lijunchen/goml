@@ -308,10 +308,7 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
                 return Result::Err(package_info_error(source_path, "expected package name"))
             },
         };
-        match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
-            Ok(_) => (),
-            Err(error) => return Result::Err(error),
-        };
+        package_info_expect_text(scanner, ";", source_path, "expected ';'")?;
         (package_name, true)
     } else {
         ("main", false)
@@ -319,10 +316,7 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
     let uses = Vec::new();
     package_info_skip_trivia(scanner);
     while package_info_consume_keyword(scanner, "use") {
-        match package_info_parse_use(scanner, source_path) {
-            Ok(value) => uses.push(value),
-            Err(error) => return Result::Err(error),
-        };
+        uses.push(package_info_parse_use(scanner, source_path)?);
         package_info_skip_trivia(scanner)
     };
     Result::Ok(

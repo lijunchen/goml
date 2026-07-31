@@ -14,10 +14,10 @@ Use the stage1 driver directly:
 
 ```sh
 cd goml
-../bin/stage1/goml check \
-  --compiler ../bin/stage1/gomlc
-../bin/stage1/goml test \
-  --compiler ../bin/stage1/gomlc \
+../stage1/bin/goml check \
+  --compiler ../stage1/bin/gomlc
+../stage1/bin/goml test \
+  --compiler ../stage1/bin/gomlc \
   --jobs 4 \
   --timeout 30s
 ```

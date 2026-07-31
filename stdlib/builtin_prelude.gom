@@ -1,3 +1,5 @@
+package builtin;
+
 fn print[T: ToString](value: T) -> unit {
     string_print(ToString::to_string(value))
 }
@@ -427,7 +429,7 @@ impl[T, I: Iterator] Iterator for FilterIterator[T, I] where I::Item = T  {
     type Item = T;
 
     fn next(self: Self) -> Option[T] {
-        while true {
+        loop {
             match Iterator::next(self.iterator) {
                 Some(value) => if self.predicate(value) {
                     return Option::Some(value)
@@ -493,7 +495,7 @@ where
     I::Item = T,
 {
     let mut accumulator = initial;
-    while true {
+    loop {
         match Iterator::next(iterator) {
             Some(value) => {
                 accumulator = combine(accumulator, value);
@@ -506,7 +508,7 @@ where
 
 fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
     let values: Vec[T] = Vec::new();
-    while true {
+    loop {
         match Iterator::next(iterator) {
             Some(value) => values.push(value),
             None => break,
@@ -990,7 +992,7 @@ fn iterator_find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[
 where
     I::Item = T,
 {
-    while true {
+    loop {
         match Iterator::next(iterator) {
             Some(value) => if predicate(value) {
                 return Option::Some(value)
@@ -1016,7 +1018,7 @@ fn iterator_all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool whe
 
 fn iterator_count[I: Iterator](iterator: I) -> int {
     let mut count = 0;
-    while true {
+    loop {
         match Iterator::next(iterator) {
             Some(_) => {
                 count += 1;

@@ -70,21 +70,17 @@ fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[ArtifactCoreUnit, s
         ()
     };
     artifact_binary_validate_core_sections(container)?;
-    let string_section = match artifact_binary_find_section(
+    let Some(string_section) = artifact_binary_find_section(
         container,
         artifact_binary_string_table_section_id(),
-    ) {
-        Some(value) => value,
-        None => {
-            return Result::Err("binary Core artifact is missing string table")
-        },
+    ) else {
+        return Result::Err("binary Core artifact is missing string table")
     };
-    let value_section = match artifact_binary_find_section(
+    let Some(value_section) = artifact_binary_find_section(
         container,
         artifact_binary_value_section_id(),
-    ) {
-        Some(value) => value,
-        None => return Result::Err("binary Core artifact is missing value"),
+    ) else {
+        return Result::Err("binary Core artifact is missing value")
     };
     let table = decode_artifact_binary_string_table(string_section.data)?;
     let value = decode_artifact_binary_value(table, value_section.data)?;
