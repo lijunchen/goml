@@ -46,7 +46,7 @@ impl string {
         string_get(self, index)
     }
 
-    fn byte_get(self: string, index: int) -> uint8 {
+    fn byte_get(self: string, index: int) -> byte {
         string_byte_get(self, index)
     }
 
@@ -67,38 +67,38 @@ impl string {
         }
     }
 
-    fn to_bytes(self: string) -> Vec[uint8] {
+    fn to_bytes(self: string) -> Vec[byte] {
         string_to_bytes(self)
     }
 
     fn chars(self: string) -> FnIterator[char] {
-        let index = Ref::new(0);
+        let mut index = 0;
         FnIterator::from_fn(
             || {
-                match self.decode_at(index.get()) {
-                    Option::Some(decoded) => {
+                match self.decode_at(index) {
+                    Some(decoded) => {
                         let (value, width) = decoded;
-                        index.set(index.get() + width);
+                        index += width;
                         Option::Some(value)
                     },
-                    Option::None => Option::None,
+                    None => Option::None,
                 }
             },
         )
     }
 
     fn char_indices(self: string) -> FnIterator[(int, char)] {
-        let index = Ref::new(0);
+        let mut index = 0;
         FnIterator::from_fn(
             || {
-                let current = index.get();
+                let current = index;
                 match self.decode_at(current) {
-                    Option::Some(decoded) => {
+                    Some(decoded) => {
                         let (value, width) = decoded;
-                        index.set(current + width);
+                        index = current + width;
                         Option::Some((current, value))
                     },
-                    Option::None => Option::None,
+                    None => Option::None,
                 }
             },
         )
@@ -417,8 +417,8 @@ impl[A, B, I: Iterator] Iterator for MapIterator[A, B, I] where I::Item = A  {
 
     fn next(self: Self) -> Option[B] {
         match Iterator::next(self.iterator) {
-            Option::Some(value) => Option::Some(self.map_fn(value)),
-            Option::None => Option::None,
+            Some(value) => Option::Some(self.map_fn(value)),
+            None => Option::None,
         }
     }
 }
@@ -429,12 +429,12 @@ impl[T, I: Iterator] Iterator for FilterIterator[T, I] where I::Item = T  {
     fn next(self: Self) -> Option[T] {
         while true {
             match Iterator::next(self.iterator) {
-                Option::Some(value) => if self.predicate(value) {
+                Some(value) => if self.predicate(value) {
                     return Option::Some(value)
                 } else {
                     ()
                 },
-                Option::None => return Option::None,
+                None => return Option::None,
             };
         };
         Option::None
@@ -492,22 +492,24 @@ fn iterator_fold[T, A, I: Iterator](iterator: I, initial: A, combine: (A, T) -> 
 where
     I::Item = T,
 {
-    let accumulator = Ref::new(initial);
+    let mut accumulator = initial;
     while true {
         match Iterator::next(iterator) {
-            Option::Some(value) => accumulator.set(combine(accumulator.get(), value)),
-            Option::None => break,
+            Some(value) => {
+                accumulator = combine(accumulator, value);
+            },
+            None => break,
         };
     };
-    accumulator.get()
+    accumulator
 }
 
 fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
     let values: Vec[T] = Vec::new();
     while true {
         match Iterator::next(iterator) {
-            Option::Some(value) => values.push(value),
-            Option::None => break,
+            Some(value) => values.push(value),
+            None => break,
         };
     };
     values
@@ -528,10 +530,10 @@ impl[T] Vec[T] {
 
     fn pushed(self: Self, elem: T) -> Self {
         let result: Vec[T] = Vec::new();
-        let index = Ref::new(0);
-        while index.get() < self.len() {
-            result.push(self.get(index.get()));
-            index.set(index.get() + 1);
+        let mut index = 0;
+        while index < self.len() {
+            result.push(self[index]);
+            index += 1;
         };
         result.push(elem);
         result
@@ -574,7 +576,7 @@ impl[T] Vec[T] {
         if len == 0 {
             Option::None
         } else {
-            Option::Some(self.get(len - 1))
+            Option::Some(self[len - 1])
         }
     }
 
@@ -583,23 +585,23 @@ impl[T] Vec[T] {
         if len == 0 {
             Option::None
         } else {
-            let value = self.get(len - 1);
+            let value = self[len - 1];
             self.truncate(len - 1);
             Option::Some(value)
         }
     }
 
     fn swap(self: Self, left: int, right: int) -> unit {
-        let value = self.get(left);
-        self.set(left, self.get(right));
-        self.set(right, value)
+        let value = self[left];
+        self[left] = self[right];
+        self[right] = value;
     }
 
     fn swap_remove(self: Self, index: int) -> T {
         let len = self.len();
-        let value = self.get(index);
+        let value = self[index];
         if index + 1 < len {
-            self.set(index, self.get(len - 1));
+            self[index] = self[len - 1];
         } else {
             ()
         };
@@ -612,46 +614,46 @@ impl[T] Vec[T] {
         if index == len {
             self.push(value)
         } else {
-            let _ = self.get(index);
-            self.push(self.get(len - 1));
-            let current = Ref::new(len - 1);
-            while current.get() > index {
-                self.set(current.get(), self.get(current.get() - 1));
-                current.set(current.get() - 1);
+            let _ = self[index];
+            self.push(self[len - 1]);
+            let mut current = len - 1;
+            while current > index {
+                self[current] = self[current - 1];
+                current -= 1;
             };
-            self.set(index, value)
+            self[index] = value;
         }
     }
 
     fn remove(self: Self, index: int) -> T {
         let len = self.len();
-        let value = self.get(index);
-        let current = Ref::new(index);
-        while current.get() + 1 < len {
-            self.set(current.get(), self.get(current.get() + 1));
-            current.set(current.get() + 1);
+        let value = self[index];
+        let mut current = index;
+        while current + 1 < len {
+            self[current] = self[current + 1];
+            current += 1;
         };
         self.truncate(len - 1);
         value
     }
 
     fn reverse(self: Self) -> unit {
-        let left = Ref::new(0);
-        let right = Ref::new(self.len() - 1);
-        while left.get() < right.get() {
-            self.swap(left.get(), right.get());
-            left.set(left.get() + 1);
-            right.set(right.get() - 1);
+        let mut left = 0;
+        let mut right = self.len() - 1;
+        while left < right {
+            self.swap(left, right);
+            left += 1;
+            right -= 1;
         }
     }
 
     fn extend(self: Self, other: Vec[T]) -> unit {
         let len = other.len();
         self.reserve(len);
-        let index = Ref::new(0);
-        while index.get() < len {
-            self.push(other.get(index.get()));
-            index.set(index.get() + 1);
+        let mut index = 0;
+        while index < len {
+            self.push(other[index]);
+            index += 1;
         }
     }
 
@@ -660,14 +662,14 @@ impl[T] Vec[T] {
     }
 
     fn iter(self: Self) -> FnIterator[T] {
-        let index = Ref::new(0);
+        let mut index = 0;
         let len = self.len();
         FnIterator::from_fn(
             || {
-                let current = index.get();
+                let current = index;
                 if current < len {
-                    let value = self.get(current);
-                    index.set(current + 1);
+                    let value = self[current];
+                    index = current + 1;
                     Option::Some(value)
                 } else {
                     Option::None
@@ -701,14 +703,14 @@ impl[T] Slice[T] {
     }
 
     fn iter(self: Self) -> FnIterator[T] {
-        let index = Ref::new(0);
+        let mut index = 0;
         let len = self.len();
         FnIterator::from_fn(
             || {
-                let current = index.get();
+                let current = index;
                 if current < len {
                     let value = self.get(current);
-                    index.set(current + 1);
+                    index = current + 1;
                     Option::Some(value)
                 } else {
                     Option::None
@@ -797,12 +799,12 @@ impl[T] Channel[T] {
 
 #[lang("range")]
 fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
-    let current = Ref::new(start);
+    let mut current = start;
     FnIterator::from_fn(
         || {
-            let value = current.get();
+            let value = current;
             if value < end {
-                current.set(value + 1);
+                current = value + 1;
                 Option::Some(value)
             } else {
                 Option::None
@@ -894,12 +896,12 @@ impl[I: Iterator] Iterator for EnumerateIterator[I] {
 
     fn next(self: Self) -> Option[(int, I::Item)] {
         match Iterator::next(self.iterator) {
-            Option::Some(value) => {
+            Some(value) => {
                 let index = self.index.get();
                 self.index.set(index + 1);
                 Option::Some((index, value))
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -909,11 +911,11 @@ impl[A: Iterator, B: Iterator] Iterator for ZipIterator[A, B] {
 
     fn next(self: Self) -> Option[(A::Item, B::Item)] {
         match Iterator::next(self.left) {
-            Option::Some(left) => match Iterator::next(self.right) {
-                Option::Some(right) => Option::Some((left, right)),
-                Option::None => Option::None,
+            Some(left) => match Iterator::next(self.right) {
+                Some(right) => Option::Some((left, right)),
+                None => Option::None,
             },
-            Option::None => Option::None,
+            None => Option::None,
         }
     }
 }
@@ -924,8 +926,8 @@ impl[I: Iterator] Iterator for SkipIterator[I] {
     fn next(self: Self) -> Option[I::Item] {
         while self.remaining.get() > 0 {
             match Iterator::next(self.iterator) {
-                Option::Some(_) => self.remaining.set(self.remaining.get() - 1),
-                Option::None => {
+                Some(_) => self.remaining.set(self.remaining.get() - 1),
+                None => {
                     self.remaining.set(0);
                     return Option::None
                 },
@@ -945,8 +947,8 @@ where
     fn next(self: Self) -> Option[T] {
         if self.first_done.get() == false {
             match Iterator::next(self.first) {
-                Option::Some(value) => return Option::Some(value),
-                Option::None => self.first_done.set(true),
+                Some(value) => return Option::Some(value),
+                None => self.first_done.set(true),
             }
         } else {
             ()
@@ -990,12 +992,12 @@ where
 {
     while true {
         match Iterator::next(iterator) {
-            Option::Some(value) => if predicate(value) {
+            Some(value) => if predicate(value) {
                 return Option::Some(value)
             } else {
                 ()
             },
-            Option::None => return Option::None,
+            None => return Option::None,
         }
     };
     Option::None
@@ -1003,8 +1005,8 @@ where
 
 fn iterator_any[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
     match iterator_find(iterator, predicate) {
-        Option::Some(_) => true,
-        Option::None => false,
+        Some(_) => true,
+        None => false,
     }
 }
 
@@ -1013,21 +1015,23 @@ fn iterator_all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool whe
 }
 
 fn iterator_count[I: Iterator](iterator: I) -> int {
-    let count = Ref::new(0);
+    let mut count = 0;
     while true {
         match Iterator::next(iterator) {
-            Option::Some(_) => count.set(count.get() + 1),
-            Option::None => break,
+            Some(_) => {
+                count += 1;
+            },
+            None => break,
         }
     };
-    count.get()
+    count
 }
 
 impl[T] Option[T] {
     fn is_some(self: Option[T]) -> bool {
         match self {
-            Option::Some(_) => true,
-            Option::None => false,
+            Some(_) => true,
+            None => false,
         }
     }
 
@@ -1037,15 +1041,15 @@ impl[T] Option[T] {
 
     fn unwrap_or(self: Option[T], fallback: T) -> T {
         match self {
-            Option::Some(value) => value,
-            Option::None => fallback,
+            Some(value) => value,
+            None => fallback,
         }
     }
 
     fn unwrap_or_else(self: Option[T], fallback: () -> T) -> T {
         match self {
-            Option::Some(value) => value,
-            Option::None => fallback(),
+            Some(value) => value,
+            None => fallback(),
         }
     }
 }
@@ -1053,8 +1057,8 @@ impl[T] Option[T] {
 impl[T, E] Result[T, E] {
     fn is_ok(self: Result[T, E]) -> bool {
         match self {
-            Result::Ok(_) => true,
-            Result::Err(_) => false,
+            Ok(_) => true,
+            Err(_) => false,
         }
     }
 
@@ -1064,15 +1068,15 @@ impl[T, E] Result[T, E] {
 
     fn unwrap_or(self: Result[T, E], fallback: T) -> T {
         match self {
-            Result::Ok(value) => value,
-            Result::Err(_) => fallback,
+            Ok(value) => value,
+            Err(_) => fallback,
         }
     }
 
     fn unwrap_or_else(self: Result[T, E], fallback: (E) -> T) -> T {
         match self {
-            Result::Ok(value) => value,
-            Result::Err(error) => fallback(error),
+            Ok(value) => value,
+            Err(error) => fallback(error),
         }
     }
 }
@@ -1080,22 +1084,22 @@ impl[T, E] Result[T, E] {
 impl[T] Option[T] {
     fn map[U](self: Option[T], map_fn: (T) -> U) -> Option[U] {
         match self {
-            Option::Some(value) => Option::Some(map_fn(value)),
-            Option::None => Option::None,
+            Some(value) => Option::Some(map_fn(value)),
+            None => Option::None,
         }
     }
 
     fn and_then[U](self: Option[T], next: (T) -> Option[U]) -> Option[U] {
         match self {
-            Option::Some(value) => next(value),
-            Option::None => Option::None,
+            Some(value) => next(value),
+            None => Option::None,
         }
     }
 
     fn ok_or[E](self: Option[T], error: E) -> Result[T, E] {
         match self {
-            Option::Some(value) => Result::Ok(value),
-            Option::None => Result::Err(error),
+            Some(value) => Result::Ok(value),
+            None => Result::Err(error),
         }
     }
 }
@@ -1103,22 +1107,22 @@ impl[T] Option[T] {
 impl[T, E] Result[T, E] {
     fn map[U](self: Result[T, E], map_fn: (T) -> U) -> Result[U, E] {
         match self {
-            Result::Ok(value) => Result::Ok(map_fn(value)),
-            Result::Err(error) => Result::Err(error),
+            Ok(value) => Result::Ok(map_fn(value)),
+            Err(error) => Result::Err(error),
         }
     }
 
     fn map_err[F](self: Result[T, E], map_fn: (E) -> F) -> Result[T, F] {
         match self {
-            Result::Ok(value) => Result::Ok(value),
-            Result::Err(error) => Result::Err(map_fn(error)),
+            Ok(value) => Result::Ok(value),
+            Err(error) => Result::Err(map_fn(error)),
         }
     }
 
     fn and_then[U](self: Result[T, E], next: (T) -> Result[U, E]) -> Result[U, E] {
         match self {
-            Result::Ok(value) => next(value),
-            Result::Err(error) => Result::Err(error),
+            Ok(value) => next(value),
+            Err(error) => Result::Err(error),
         }
     }
 }

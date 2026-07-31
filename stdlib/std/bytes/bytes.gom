@@ -1,7 +1,7 @@
 package bytes;
 
 pub struct Bytes {
-    pub values: Vec[uint8],
+    pub values: Vec[byte],
 }
 
 impl Bytes {
@@ -13,7 +13,7 @@ impl Bytes {
         Bytes { values: Vec::with_capacity(capacity) }
     }
 
-    pub fn from_vec(values: Vec[uint8]) -> Bytes {
+    pub fn from_vec(values: Vec[byte]) -> Bytes {
         Bytes { values }
     }
 
@@ -33,19 +33,19 @@ impl Bytes {
         self.values.is_empty()
     }
 
-    pub fn get(self: Bytes, index: int) -> uint8 {
-        self.values.get(index)
+    pub fn get(self: Bytes, index: int) -> byte {
+        self.values[index]
     }
 
-    pub fn set(self: Bytes, index: int, value: uint8) -> unit {
-        self.values.set(index, value)
+    pub fn set(self: Bytes, index: int, value: byte) -> unit {
+        self.values[index] = value;
     }
 
-    pub fn push(self: Bytes, value: uint8) -> unit {
+    pub fn push(self: Bytes, value: byte) -> unit {
         self.values.push(value)
     }
 
-    pub fn pop(self: Bytes) -> Option[uint8] {
+    pub fn pop(self: Bytes) -> Option[byte] {
         self.values.pop()
     }
 
@@ -61,11 +61,11 @@ impl Bytes {
         self.values.clear()
     }
 
-    pub fn slice(self: Bytes, start: int, end: int) -> Slice[uint8] {
+    pub fn slice(self: Bytes, start: int, end: int) -> Slice[byte] {
         self.values.slice(start, end)
     }
 
-    pub fn to_vec(self: Bytes) -> Vec[uint8] {
+    pub fn to_vec(self: Bytes) -> Vec[byte] {
         self.values
     }
 

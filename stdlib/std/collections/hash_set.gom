@@ -25,7 +25,7 @@ impl[K: Eq + Hash] HashSet[K] {
         if self.entries.contains(value) {
             false
         } else {
-            self.entries.set(value, ());
+            self.entries[value] = ();
             true
         }
     }

@@ -27,7 +27,7 @@ impl BitSet {
                 false
             } else {
                 let mask = 1 << (index % 64);
-                self.words.get(word_index) & mask != 0
+                self.words[word_index] & mask != 0
             }
         }
     }
@@ -41,11 +41,11 @@ impl BitSet {
                 self.words.push(0);
             };
             let mask = 1 << (index % 64);
-            let old = self.words.get(word_index);
+            let old = self.words[word_index];
             if old & mask != 0 {
                 false
             } else {
-                self.words.set(word_index, old | mask);
+                self.words[word_index] = old | mask;
                 self.len.set(self.len.get() + 1);
                 true
             }
@@ -58,7 +58,7 @@ impl BitSet {
         } else {
             let word_index = index / 64;
             let mask = 1 << (index % 64);
-            self.words.set(word_index, self.words.get(word_index) & ~mask);
+            self.words[word_index] = self.words[word_index] & ~mask;
             self.len.set(self.len.get() - 1);
             true
         }

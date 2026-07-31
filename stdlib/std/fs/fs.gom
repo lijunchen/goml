@@ -5,8 +5,8 @@ use std::internal::host;
 
 pub fn read_file(path: string) -> Result[string, string] {
     match read_bytes(path) {
-        Result::Ok(data) => data.to_string(),
-        Result::Err(error) => Result::Err(error),
+        Ok(data) => data.to_string(),
+        Err(error) => Result::Err(error),
     }
 }
 

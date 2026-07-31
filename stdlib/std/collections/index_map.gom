@@ -24,19 +24,19 @@ fn index_map_capacity_for_entries(entries: int) -> int {
     } else {
         entries
     };
-    let capacity = Ref::new(8);
-    while requested * 3 >= capacity.get() * 2 {
-        capacity.set(capacity.get() * 2)
+    let mut capacity = 8;
+    while requested * 3 >= capacity * 2 {
+        capacity *= 2;
     };
-    capacity.get()
+    capacity
 }
 
 fn index_map_empty_indices(capacity: int) -> Vec[int] {
     let indices = Vec::with_capacity(capacity);
-    let index = Ref::new(0);
-    while index.get() < capacity {
+    let mut index = 0;
+    while index < capacity {
         indices.push(-1);
-        index.set(index.get() + 1)
+        index += 1;
     };
     indices
 }
@@ -73,56 +73,54 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     fn probe(self: IndexMap[K, V], key: K, hash: uint64) -> IndexMapProbe {
         let indices = self.indices.get();
         let mask = indices.len() - 1;
-        let position = Ref::new((hash & mask as uint64) as int);
-        let perturb = Ref::new(hash);
-        let first_deleted = Ref::new(-1);
+        let mut position = (hash & mask as uint64) as int;
+        let mut perturb = hash;
+        let mut first_deleted = -1;
         while true {
-            let dense_index = indices.get(position.get());
+            let dense_index = indices[position];
             if dense_index == -1 {
                 return IndexMapProbe::Vacant(
-                    if first_deleted.get() >= 0 {
-                        first_deleted.get()
+                    if first_deleted >= 0 {
+                        first_deleted
                     } else {
-                        position.get()
+                        position
                     },
                 )
             } else if dense_index == -2 {
-                if first_deleted.get() < 0 {
-                    first_deleted.set(position.get())
+                if first_deleted < 0 {
+                    first_deleted = position;
                 } else {
                     ()
                 }
             } else {
-                match self.entries.get().get(dense_index) {
-                    Option::Some(entry) => {
+                match self.entries.get()[dense_index] {
+                    Some(entry) => {
                         if entry.hash == hash && Eq::eq(entry.key, key) {
-                            return IndexMapProbe::Found(position.get(), dense_index)
+                            return IndexMapProbe::Found(position, dense_index)
                         } else {
                             ()
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 }
             };
-            position.set(
-                ((position.get() as uint64 * 5 + perturb.get() + 1) & mask as uint64) as int,
-            );
-            perturb.set(perturb.get() >> 5)
+            position = ((position as uint64 * 5 + perturb + 1) & mask as uint64) as int;
+            perturb >>= 5;
         };
         IndexMapProbe::Vacant(0)
     }
 
     fn place_entry_index(self: IndexMap[K, V], dense_index: int) -> unit {
-        match self.entries.get().get(dense_index) {
-            Option::Some(entry) => match self.probe(entry.key, entry.hash) {
+        match self.entries.get()[dense_index] {
+            Some(entry) => match self.probe(entry.key, entry.hash) {
                 IndexMapProbe::Found(slot, _) => {
-                    self.indices.get().set(slot, dense_index)
+                    self.indices.get()[slot] = dense_index;
                 },
                 IndexMapProbe::Vacant(slot) => {
-                    self.indices.get().set(slot, dense_index)
+                    self.indices.get()[slot] = dense_index;
                 },
             },
-            Option::None => (),
+            None => (),
         }
     }
 
@@ -135,21 +133,21 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         };
         let old_entries = self.entries.get();
         let next_entries: Vec[Option[IndexMapEntry[K, V]]] = Vec::with_capacity(desired_entries);
-        let old_index = Ref::new(0);
-        while old_index.get() < old_entries.len() {
-            match old_entries.get(old_index.get()) {
-                Option::Some(entry) => next_entries.push(Option::Some(entry)),
-                Option::None => (),
+        let mut old_index = 0;
+        while old_index < old_entries.len() {
+            match old_entries[old_index] {
+                Some(entry) => next_entries.push(Option::Some(entry)),
+                None => (),
             };
-            old_index.set(old_index.get() + 1)
+            old_index += 1;
         };
         self.entries.set(next_entries);
         self.indices.set(index_map_empty_indices(index_map_capacity_for_entries(desired_entries)));
         self.deleted.set(0);
-        let dense_index = Ref::new(0);
-        while dense_index.get() < self.entries.get().len() {
-            self.place_entry_index(dense_index.get());
-            dense_index.set(dense_index.get() + 1)
+        let mut dense_index = 0;
+        while dense_index < self.entries.get().len() {
+            self.place_entry_index(dense_index);
+            dense_index += 1;
         }
     }
 
@@ -184,9 +182,9 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
             IndexMapProbe::Found(_, dense_index) => {
-                match self.entries.get().get(dense_index) {
-                    Option::Some(entry) => Option::Some(entry.value),
-                    Option::None => Option::None,
+                match self.entries.get()[dense_index] {
+                    Some(entry) => Option::Some(entry.value),
+                    None => Option::None,
                 }
             },
             IndexMapProbe::Vacant(_) => Option::None,
@@ -198,22 +196,21 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
             IndexMapProbe::Found(_, dense_index) => {
-                match self.entries.get().get(dense_index) {
-                    Option::Some(entry) => {
+                match self.entries.get()[dense_index] {
+                    Some(entry) => {
                         let previous = entry.value;
-                        self.entries.get().set(
-                            dense_index,
-                            Option::Some(IndexMapEntry { hash: entry.hash, key: entry.key, value }),
+                        self.entries.get()[dense_index] = Option::Some(
+                            IndexMapEntry { hash: entry.hash, key: entry.key, value },
                         );
                         Option::Some(previous)
                     },
-                    Option::None => Option::None,
+                    None => Option::None,
                 }
             },
             IndexMapProbe::Vacant(slot) => {
                 let dense_index = self.entries.get().len();
                 self.entries.get().push(Option::Some(IndexMapEntry { hash, key, value }));
-                self.indices.get().set(slot, dense_index);
+                self.indices.get()[slot] = dense_index;
                 self.len.set(self.len.get() + 1);
                 Option::None
             },
@@ -224,16 +221,16 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
             IndexMapProbe::Found(slot, dense_index) => {
-                match self.entries.get().get(dense_index) {
-                    Option::Some(entry) => {
-                        self.indices.get().set(slot, -2);
-                        self.entries.get().set(dense_index, Option::None);
+                match self.entries.get()[dense_index] {
+                    Some(entry) => {
+                        self.indices.get()[slot] = -2;
+                        self.entries.get()[dense_index] = Option::None;
                         self.len.set(self.len.get() - 1);
                         self.deleted.set(self.deleted.get() + 1);
                         self.compact_after_remove();
                         Option::Some(entry.value)
                     },
-                    Option::None => Option::None,
+                    None => Option::None,
                 }
             },
             IndexMapProbe::Vacant(_) => Option::None,
@@ -264,56 +261,56 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
 
     pub fn entries(self: IndexMap[K, V]) -> Vec[(K, V)] {
         let result = Vec::with_capacity(self.len.get());
-        let index = Ref::new(0);
-        while index.get() < self.entries.get().len() {
-            match self.entries.get().get(index.get()) {
-                Option::Some(entry) => result.push((entry.key, entry.value)),
-                Option::None => (),
+        let mut index = 0;
+        while index < self.entries.get().len() {
+            match self.entries.get()[index] {
+                Some(entry) => result.push((entry.key, entry.value)),
+                None => (),
             };
-            index.set(index.get() + 1)
+            index += 1;
         };
         result
     }
 
     pub fn keys(self: IndexMap[K, V]) -> Vec[K] {
         let result = Vec::with_capacity(self.len.get());
-        let index = Ref::new(0);
-        while index.get() < self.entries.get().len() {
-            match self.entries.get().get(index.get()) {
-                Option::Some(entry) => result.push(entry.key),
-                Option::None => (),
+        let mut index = 0;
+        while index < self.entries.get().len() {
+            match self.entries.get()[index] {
+                Some(entry) => result.push(entry.key),
+                None => (),
             };
-            index.set(index.get() + 1)
+            index += 1;
         };
         result
     }
 
     pub fn values(self: IndexMap[K, V]) -> Vec[V] {
         let result = Vec::with_capacity(self.len.get());
-        let index = Ref::new(0);
-        while index.get() < self.entries.get().len() {
-            match self.entries.get().get(index.get()) {
-                Option::Some(entry) => result.push(entry.value),
-                Option::None => (),
+        let mut index = 0;
+        while index < self.entries.get().len() {
+            match self.entries.get()[index] {
+                Some(entry) => result.push(entry.value),
+                None => (),
             };
-            index.set(index.get() + 1)
+            index += 1;
         };
         result
     }
 
     pub fn iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {
-        let index = Ref::new(0);
+        let mut index = 0;
         let entries_len = self.entries.get().len();
         FnIterator::from_fn(
             || {
-                while index.get() < entries_len {
-                    let current = index.get();
-                    index.set(current + 1);
-                    match self.entries.get().get(current) {
-                        Option::Some(entry) => {
+                while index < entries_len {
+                    let current = index;
+                    index += 1;
+                    match self.entries.get()[current] {
+                        Some(entry) => {
                             return Option::Some((entry.key, entry.value))
                         },
-                        Option::None => (),
+                        None => (),
                     }
                 };
                 Option::None

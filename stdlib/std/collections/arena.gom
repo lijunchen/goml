@@ -50,18 +50,18 @@ impl[T] Arena[T] {
     }
 
     pub fn get(self: Arena[T], id: ArenaId[T]) -> T {
-        self.values.get(id.index)
+        self.values[id.index]
     }
 
     pub fn try_get(self: Arena[T], id: ArenaId[T]) -> Option[T] {
         if self.contains_id(id) {
-            Option::Some(self.values.get(id.index))
+            Option::Some(self.values[id.index])
         } else {
             Option::None
         }
     }
 
     pub fn set(self: Arena[T], id: ArenaId[T], value: T) -> unit {
-        self.values.set(id.index, value)
+        self.values[id.index] = value;
     }
 }

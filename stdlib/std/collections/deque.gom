@@ -13,10 +13,10 @@ impl[T] Deque[T] {
 
     pub fn with_capacity(capacity: int) -> Deque[T] {
         let slots: Vec[Option[T]] = Vec::with_capacity(capacity);
-        let index = Ref::new(0);
-        while index.get() < capacity {
+        let mut index = 0;
+        while index < capacity {
             slots.push(Option::None);
-            index.set(index.get() + 1);
+            index += 1;
         };
         Deque { slots: Ref::new(slots), head: Ref::new(0), len: Ref::new(0) }
     }
@@ -45,16 +45,16 @@ impl[T] Deque[T] {
                 old_capacity * 2
             };
             let next: Vec[Option[T]] = Vec::with_capacity(new_capacity);
-            let index = Ref::new(0);
-            while index.get() < new_capacity {
+            let mut index = 0;
+            while index < new_capacity {
                 next.push(Option::None);
-                index.set(index.get() + 1);
+                index += 1;
             };
-            index.set(0);
-            while index.get() < self.len.get() {
-                let old_index = (self.head.get() + index.get()) % old_capacity;
-                next.set(index.get(), old.get(old_index));
-                index.set(index.get() + 1);
+            index = 0;
+            while index < self.len.get() {
+                let old_index = (self.head.get() + index) % old_capacity;
+                next[index] = old[old_index];
+                index += 1;
             };
             self.slots.set(next);
             self.head.set(0)
@@ -64,7 +64,7 @@ impl[T] Deque[T] {
     pub fn push_back(self: Deque[T], value: T) -> unit {
         self.ensure_space();
         let index = (self.head.get() + self.len.get()) % self.capacity();
-        self.slots.get().set(index, Option::Some(value));
+        self.slots.get()[index] = Option::Some(value);
         self.len.set(self.len.get() + 1)
     }
 
@@ -72,7 +72,7 @@ impl[T] Deque[T] {
         self.ensure_space();
         let index = (self.head.get() - 1 + self.capacity()) % self.capacity();
         self.head.set(index);
-        self.slots.get().set(index, Option::Some(value));
+        self.slots.get()[index] = Option::Some(value);
         self.len.set(self.len.get() + 1)
     }
 
@@ -81,8 +81,8 @@ impl[T] Deque[T] {
             Option::None
         } else {
             let index = self.head.get();
-            let value = self.slots.get().get(index);
-            self.slots.get().set(index, Option::None);
+            let value = self.slots.get()[index];
+            self.slots.get()[index] = Option::None;
             self.len.set(self.len.get() - 1);
             if self.len.get() == 0 {
                 self.head.set(0)
@@ -98,8 +98,8 @@ impl[T] Deque[T] {
             Option::None
         } else {
             let index = (self.head.get() + self.len.get() - 1) % self.capacity();
-            let value = self.slots.get().get(index);
-            self.slots.get().set(index, Option::None);
+            let value = self.slots.get()[index];
+            self.slots.get()[index] = Option::None;
             self.len.set(self.len.get() - 1);
             if self.len.get() == 0 {
                 self.head.set(0)
@@ -114,7 +114,7 @@ impl[T] Deque[T] {
         if self.len.get() == 0 {
             Option::None
         } else {
-            self.slots.get().get(self.head.get())
+            self.slots.get()[self.head.get()]
         }
     }
 
@@ -122,7 +122,7 @@ impl[T] Deque[T] {
         if self.len.get() == 0 {
             Option::None
         } else {
-            self.slots.get().get((self.head.get() + self.len.get() - 1) % self.capacity())
+            self.slots.get()[(self.head.get() + self.len.get() - 1) % self.capacity()]
         }
     }
 
@@ -130,7 +130,7 @@ impl[T] Deque[T] {
         if index < 0 || index >= self.len.get() {
             Option::None
         } else {
-            self.slots.get().get((self.head.get() + index) % self.capacity())
+            self.slots.get()[(self.head.get() + index) % self.capacity()]
         }
     }
 

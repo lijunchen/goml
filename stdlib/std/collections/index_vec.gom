@@ -54,18 +54,18 @@ impl[T] IndexVec[T] {
     }
 
     pub fn get(self: IndexVec[T], index: Index[T]) -> T {
-        self.values.get(index.value)
+        self.values[index.value]
     }
 
     pub fn try_get(self: IndexVec[T], index: Index[T]) -> Option[T] {
         if self.contains(index) {
-            Option::Some(self.values.get(index.value))
+            Option::Some(self.values[index.value])
         } else {
             Option::None
         }
     }
 
     pub fn set(self: IndexVec[T], index: Index[T], value: T) -> unit {
-        self.values.set(index.value, value)
+        self.values[index.value] = value;
     }
 }

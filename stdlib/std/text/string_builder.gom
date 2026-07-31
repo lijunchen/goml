@@ -3,7 +3,7 @@ package text;
 use std::bytes;
 
 pub struct StringBuilder {
-    pub values: Vec[uint8],
+    pub values: Vec[byte],
 }
 
 impl StringBuilder {
@@ -36,11 +36,11 @@ impl StringBuilder {
 
     pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
         match value.to_string() {
-            Result::Ok(text) => {
+            Ok(text) => {
                 self.write_string(text);
                 Result::Ok(())
             },
-            Result::Err(error) => Result::Err(error),
+            Err(error) => Result::Err(error),
         }
     }
 
