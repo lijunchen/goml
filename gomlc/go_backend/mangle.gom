@@ -13,9 +13,8 @@ fn is_ascii_digit(value: char) -> bool {
 
 fn is_valid_ident(value: string) -> bool {
     let characters = value.chars();
-    let first = match Iterator::next(characters) {
-        Some(value) => value,
-        None => return false,
+    let Some(first) = Iterator::next(characters) else {
+        return false
     };
     if !(is_ascii_letter(first) || first == '_') {
         return false

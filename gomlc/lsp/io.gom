@@ -30,10 +30,7 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
 pub fn read_rpc_payload() -> Result[string, string] {
     let length = Ref::new(Option::None);
     while true {
-        let line = match read_stdin_line() {
-            Ok(line) => line.to_string()?,
-            Err(error) => return Result::Err(error),
-        };
+        let line = read_stdin_line()?.to_string()?;
         if header_line_content(line) == "" {
             break
         } else if is_content_length_header(line) {

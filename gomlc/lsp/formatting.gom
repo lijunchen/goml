@@ -5,9 +5,8 @@ use std::json;
 
 fn formatting_response(server: Server, params: json::Value) -> Result[json::Value, string] {
     let document = request_document(server, params)?;
-    let formatted = match formatter::format_source(document.text) {
-        Ok(value) => value,
-        Err(_) => return Result::Ok(json::Value::Array(Vec::new())),
+    let Ok(formatted) = formatter::format_source(document.text) else {
+        return Result::Ok(json::Value::Array(Vec::new()))
     };
     if formatted == document.text {
         Result::Ok(json::Value::Array(Vec::new()))

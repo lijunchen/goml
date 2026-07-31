@@ -202,9 +202,8 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
     string,
     string,
 ] {
-    let minimum = match parse_sem_version(requirement.version) {
-        Some(value) => value,
-        None => return Result::Err("invalid semver `" + requirement.version + "`"),
+    let Some(minimum) = parse_sem_version(requirement.version) else {
+        return Result::Err("invalid semver `" + requirement.version + "`")
     };
     let versions = registry_versions(root, requirement.name)?;
     let selected = Ref::new(Option::None);
@@ -278,9 +277,8 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
         let requirement = queue[cursor.get()];
         cursor.set(cursor.get() + 1);
         let version = select_registry_version(registry, requirement)?;
-        let parsed = match parse_sem_version(version) {
-            Some(value) => value,
-            None => return Result::Err("invalid registry semver `" + version + "`"),
+        let Some(parsed) = parse_sem_version(version) else {
+            return Result::Err("invalid registry semver `" + version + "`")
         };
         let update = match selected_module_index(selected, requirement.name) {
             Some(index) => match parse_sem_version(selected[index].version) {
