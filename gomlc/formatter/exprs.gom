@@ -1,0 +1,93 @@
+package formatter;
+
+use gomlc::lexer;
+
+fn direct_operator(node: LocatedNode) -> Option[LocatedToken] {
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Token(token)) => if !lexer::token_is_trivia(token.token.kind) {
+                return Option::Some(token)
+            } else {
+                ()
+            },
+            _ => (),
+        }
+    };
+    Option::None
+}
+
+fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
+    if node_has_comment(node) {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let children = direct_nodes(node);
+    if children.len() != 2 {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let operator = match direct_operator(node) {
+        Some(token) => token,
+        None => return format_generic(value, node),
+    };
+    let left = format_node(value, children[0]);
+    let right = format_node(value, children[1]);
+    let content = if token_is(operator, lexer::TokenKind::Dot) {
+        concat(Vec::[left.doc, token_doc(operator), right.doc])
+    } else {
+        concat(Vec::[
+            left.doc,
+            indent(concat(Vec::[
+                Doc::SoftLine,
+                token_doc(operator),
+                text(" "),
+                right.doc,
+            ])),
+        ])
+    };
+    built(
+        value.docs.group(content).doc,
+        left.first,
+        right.last,
+    )
+}
+
+fn format_prefix(value: Builder, node: LocatedNode) -> BuiltDoc {
+    if node_has_comment(node) {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let children = direct_nodes(node);
+    if children.len() != 1 {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let operator = match direct_operator(node) {
+        Some(token) => token,
+        None => return format_generic(value, node),
+    };
+    let operand = format_node(value, children[0]);
+    built(
+        concat2(token_doc(operator), operand.doc),
+        Option::Some(operator.token.kind),
+        operand.last,
+    )
+}
+
+fn format_multiline_string(node: LocatedNode) -> BuiltDoc {
+    match first_significant_token(node) {
+        Some(token) => BuiltDoc {
+            doc: concat2(verbatim(token.token.text), Doc::HardLine),
+            first: Option::Some(token.token.kind),
+            last: Option::Some(token.token.kind),
+            starts_with_line: false,
+            trailing_lines: 1,
+        },
+        None => empty_built(),
+    }
+}

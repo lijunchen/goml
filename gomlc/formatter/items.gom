@@ -1,0 +1,321 @@
+package formatter;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+fn file_node_category(value: LocatedNode) -> int {
+    if node_is(value, cst::NodeKind::PACKAGE) {
+        1
+    } else if node_is(value, cst::NodeKind::USE) {
+        2
+    } else if node_is(value, cst::NodeKind::ATTRIBUTE_LIST) {
+        4
+    } else {
+        3
+    }
+}
+
+fn format_file(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let output = parts();
+    let previous_category: Ref[int] = Ref::new(0);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => {
+                let category = file_node_category(child);
+                if previous_category.get() == 0 {
+                    ()
+                } else if previous_category.get() == 4 {
+                    output.ensure_lines(1)
+                } else if category == 2 && previous_category.get() == 2 {
+                    output.ensure_lines(1)
+                } else {
+                    output.ensure_lines(2)
+                };
+                output.push_syntax(format_node(value, child));
+                previous_category.set(category)
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Whitespace) {
+                output.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                output.push_comment(token)
+            } else {
+                output.push_token(token)
+            },
+            None => (),
+        }
+    };
+    if output.values.len() > 0 {
+        output.ensure_lines(1)
+    } else {
+        ()
+    };
+    output.finish()
+}
+
+fn format_attribute_list(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let output = parts();
+    for attribute in direct_nodes(node) {
+        if output.values.len() > 0 {
+            output.ensure_lines(1)
+        } else {
+            ()
+        };
+        output.push_syntax(format_node(value, attribute))
+    };
+    if output.values.len() > 0 {
+        output.ensure_lines(1)
+    } else {
+        ()
+    };
+    output.finish()
+}
+
+fn format_semicolon_item(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let output = parts();
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => if node_is(child, cst::NodeKind::WHERE_CLAUSE) {
+                output.push_syntax(format_where_clause_signature(value, child))
+            } else {
+                output.push_syntax(format_node(value, child))
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Whitespace) {
+                output.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                output.push_comment(token)
+            } else {
+                output.push_token(token)
+            },
+            None => (),
+        }
+    };
+    output.finish()
+}
+
+fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let content = parts();
+    let meaningful: Ref[bool] = Ref::new(false);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => {
+                if meaningful.get() {
+                    content.ensure_lines(1)
+                } else {
+                    ()
+                };
+                content.push_syntax(format_node(value, child));
+                meaningful.set(true)
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::LBrace)
+                || token_is(token, lexer::TokenKind::RBrace)
+            {
+                ()
+            } else if token_is(token, lexer::TokenKind::Whitespace) {
+                content.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                content.push_comment(token);
+                meaningful.set(true)
+            } else {
+                content.push_token(token);
+                meaningful.set(true)
+            },
+            None => (),
+        }
+    };
+    if !(meaningful.get()) {
+        built(
+            text("{}"),
+            Option::Some(lexer::TokenKind::LBrace),
+            Option::Some(lexer::TokenKind::RBrace),
+        )
+    } else {
+        let body = content.finish();
+        let closing = if body.trailing_lines > 0 {
+            text("}")
+        } else {
+            concat2(Doc::HardLine, text("}"))
+        };
+        built(
+            concat(Vec::[
+                text("{"),
+                Doc::HardLine,
+                indent(body.doc),
+                closing,
+            ]),
+            Option::Some(lexer::TokenKind::LBrace),
+            Option::Some(lexer::TokenKind::RBrace),
+        )
+    }
+}
+
+fn format_impl(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let header = parts();
+    let body = parts();
+    let in_body: Ref[bool] = Ref::new(false);
+    let item_count: Ref[int] = Ref::new(0);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => if in_body.get() {
+                if item_count.get() > 0 {
+                    body.ensure_lines(2)
+                } else {
+                    ()
+                };
+                body.push_syntax(format_node(value, child));
+                item_count.set(item_count.get() + 1)
+            } else {
+                header.push_syntax(format_node(value, child))
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::LBrace) {
+                in_body.set(true)
+            } else if token_is(token, lexer::TokenKind::RBrace) {
+                ()
+            } else if token_is(token, lexer::TokenKind::Whitespace) {
+                if in_body.get() {
+                    body.add_pending_newlines(whitespace_newlines(token.token.text))
+                } else {
+                    header.add_pending_newlines(whitespace_newlines(token.token.text))
+                }
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                if in_body.get() {
+                    body.push_comment(token)
+                } else {
+                    header.push_comment(token)
+                }
+            } else if in_body.get() {
+                body.push_token(token)
+            } else {
+                header.push_token(token)
+            },
+            None => (),
+        }
+    };
+    let header_doc = header.finish();
+    if body.values.len() == 0 {
+        built(
+            concat3(header_doc.doc, text(" "), text("{}")),
+            header_doc.first,
+            Option::Some(lexer::TokenKind::RBrace),
+        )
+    } else {
+        let body_doc = body.finish();
+        let closing = if body_doc.trailing_lines > 0 {
+            text("}")
+        } else {
+            concat2(Doc::HardLine, text("}"))
+        };
+        built(
+            concat(Vec::[
+                header_doc.doc,
+                text(" {"),
+                Doc::HardLine,
+                indent(body_doc.doc),
+                closing,
+            ]),
+            header_doc.first,
+            Option::Some(lexer::TokenKind::RBrace),
+        )
+    }
+}
+
+fn vertical_body_uses_comma(kind: cst::NodeKind) -> bool {
+    match kind {
+        VARIANT_LIST | STRUCT_FIELD_LIST | MATCH_ARM_LIST => true,
+        _ => false,
+    }
+}
+
+fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let content = parts();
+    let item_count: Ref[int] = Ref::new(0);
+    let kind = cst::node_kind(node.node);
+    let owns_open = cst::node_kind_equal(kind, cst::NodeKind::MATCH_ARM_LIST);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => {
+                if item_count.get() > 0 {
+                    content.ensure_lines(1)
+                } else {
+                    ()
+                };
+                content.push_syntax(format_node(value, child));
+                if vertical_body_uses_comma(kind)
+                    && content.trailing_lines.get() == 0
+                {
+                    content.push_syntax(built(
+                        text(","),
+                        Option::Some(lexer::TokenKind::Comma),
+                        Option::Some(lexer::TokenKind::Comma),
+                    ))
+                } else {
+                    ()
+                };
+                item_count.set(item_count.get() + 1)
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::RBrace)
+                || owns_open && token_is(token, lexer::TokenKind::LBrace)
+                || token_is(token, lexer::TokenKind::Comma)
+            {
+                ()
+            } else if token_is(token, lexer::TokenKind::Whitespace) {
+                content.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                content.push_comment(token)
+            } else {
+                content.push_token(token)
+            },
+            None => (),
+        }
+    };
+    if item_count.get() == 0 && content.values.len() == 0 {
+        if owns_open {
+            built(
+                text("{}"),
+                Option::Some(lexer::TokenKind::LBrace),
+                Option::Some(lexer::TokenKind::RBrace),
+            )
+        } else {
+            built(
+                text("}"),
+                Option::Some(lexer::TokenKind::RBrace),
+                Option::Some(lexer::TokenKind::RBrace),
+            )
+        }
+    } else {
+        let body = content.finish();
+        let closing = if body.trailing_lines > 0 {
+            text("}")
+        } else {
+            concat2(Doc::HardLine, text("}"))
+        };
+        BuiltDoc {
+            doc: if owns_open {
+                concat(Vec::[
+                    text("{"),
+                    Doc::HardLine,
+                    indent(body.doc),
+                    closing,
+                ])
+            } else {
+                concat(Vec::[
+                    Doc::HardLine,
+                    indent(body.doc),
+                    closing,
+                ])
+            },
+            first: if owns_open {
+                Option::Some(lexer::TokenKind::LBrace)
+            } else {
+                body.first
+            },
+            last: Option::Some(lexer::TokenKind::RBrace),
+            starts_with_line: !owns_open,
+            trailing_lines: 0,
+        }
+    }
+}
