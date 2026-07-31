@@ -83,6 +83,8 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 | floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `float64` when unconstrained |
 | string | `"text"` | Type is `string` |
 | raw string | `r"text"`、`r#"text with \"quotes\""#` | Type is `string`; escapes are not processed |
+| byte string | `b"text\\n"` | Type is `Vec[byte]`; ASCII contents and byte escapes are supported |
+| raw byte string | `br"text"`、`br#"text with "quotes""#` | Type is `Vec[byte]`; escapes are not processed |
 | interpolated string | `f"value={value}"` | Type is `string`; embedded values use `ToString` |
 | character | `'a'`、`'\n'`、`'\u0041'` | Type is `char`, representing a Unicode scalar value |
 | byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `uint8` |
@@ -116,7 +118,23 @@ let count = 3;
 let message = f"{name} has {count} items {{ready}}";
 ```
 
-Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes.Non-ASCII contents are rejected.There is no builtin `bytes` type or byte-string literal; `b"..."` is deliberately rejected pending a separate design.
+Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes. Non-ASCII contents are rejected.
+
+Byte strings use `b"..."` and have type `Vec[byte]`. Ordinary byte strings accept ASCII contents together with `\"`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, `\/`, and two-digit `\xNN` escapes. Unicode escapes and non-ASCII source characters are rejected:
+
+```goml
+let request = b"GET / HTTP/1.0\r\n\r\n";
+let marker = b"\x00\xFF";
+```
+
+Raw byte strings use `br"..."` or matching hash delimiters such as `br#"..."#`. Their contents may span lines and are copied as ASCII bytes without escapes or interpolation:
+
+```goml
+let path = br"C:\tmp\file";
+let quoted = br#"say "hello""#;
+```
+
+The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. Use `bytes::Bytes::from_vec(value)` when an API requires it.
 
 Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
 
@@ -659,6 +677,7 @@ GoML supports:
 
 - Literals, variables and paths
 - Tuple, array, and structure literals
+- Block expressions `{ ... }`
 - Function call `f(a, b)`
 - Field access `value.field`
 - Tuple projection `pair.0`, `triple.2`
@@ -671,7 +690,30 @@ GoML supports:
 - closure
 - `return`, `break`, `continue`, `go` and `?`
 
-There is currently no separate arbitrary block expression syntax; blocks appear within functions, closures, and control flow constructs.
+A block is an expression in any ordinary expression position. Its last expression without a semicolon supplies the value; a block without a tail expression has type `unit`:
+
+```goml
+let answer = {
+    let base = 40;
+    base + 2
+};
+
+return {
+    cleanup();
+    answer
+};
+```
+
+In an `if`, `if let`, `while`, `while let`, `for`, or `match` header, the top-level `{` starts the control-flow body. Parenthesize a block expression used as the header value:
+
+```goml
+if ({
+    prepare();
+    ready()
+}) {
+    run()
+}
+```
 
 ### operator precedence
 
@@ -1811,6 +1853,8 @@ Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are sta
 | `id::<int32>(1)` | `id::[int32](1)` |
 | Ordinary function `id[int32](1)` | `id::[int32](1)`, or rely on parameter/result type inference |
 | `1i32`、`1u64`、`1.0f32` | Use the expected type, such as `let value: uint64 = 1;` |
+| Non-ASCII source text in `b"é"` | Use a `string`, or write its encoded bytes explicitly such as `b"\xC3\xA9"` |
+| A bare block as a control-flow header value | Parenthesize it, for example `if ({ prepare(); ready() }) { ... }` |
 | `let mut x: &T` | Use value `T` or `Ref[T]` as required |
 | Write `if cond { value }` in the value position | `if cond { value } else { other }` |
 | `let Option::Some(x) = value;` | `if let Option::Some(x) = value { ... };` or `match` |
@@ -1904,7 +1948,8 @@ statement     = "let" "mut"? pattern (":" type)? "=" expression ("else" block)? 
 assignment_operator = "=" | "+=" | "-=" | "*=" | "/=" | "%="
                     | "&=" | "|=" | "^=" | "<<=" | ">>="
 
-expression    = literal | raw_string | interpolated_string | path | tuple | array
+expression    = literal | raw_string | byte_string | raw_byte_string
+              | interpolated_string | path | tuple | array | block
               | vec_literal | hashmap_literal | struct_literal | closure
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
@@ -1912,6 +1957,8 @@ expression    = literal | raw_string | interpolated_string | path | tuple | arra
               | "return" expression? | "break" expression? | "continue" | "go" expression
 
 interpolated_string = "f\"" (string_text | "{{" | "}}" | "{" expression "}")* "\""
+byte_string   = "b\"" byte_string_content* "\""
+raw_byte_string = "br\"...\"" | "br#\"...\"#" | "br##\"...\"##" | ...
 raw_string    = "r" raw_hashes? "\"" raw_text "\"" raw_hashes?
 vec_literal   = "Vec" "::" "[" (expression ("," expression)* ","?)? "]"
 hashmap_literal = "HashMap" "::" "{"

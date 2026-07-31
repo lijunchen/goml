@@ -18,6 +18,17 @@ fn pretty_write_byte_literal(builder: text::StringBuilder, value: string) -> uni
     builder.write_char('\'')
 }
 
+fn pretty_write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> unit {
+    builder.write_string("b\"");
+    for value in values {
+        let byte = pretty_decimal_byte(value);
+        builder.write_string("\\x");
+        builder.write_char(pretty_hex_digit(byte / 16));
+        builder.write_char(pretty_hex_digit(byte % 16))
+    };
+    builder.write_char('"')
+}
+
 fn pretty_write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
@@ -213,6 +224,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('\'')
         },
         Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
+        ByteString { values, span: _ } => pretty_write_byte_string(builder, values),
         ConstructorValue { constructor: path, span: _ } => {
             pretty_write_path(builder, path)
         },

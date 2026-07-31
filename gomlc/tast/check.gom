@@ -1702,6 +1702,21 @@ fn check_vec_literal_expr(
     )
 }
 
+fn check_byte_string_expr(
+    ctx: Checker,
+    values: Vec[string],
+    expected: Option[Type],
+    value_span: ast::Span,
+) -> Expr {
+    let items: Vec[hir::Expr] = Vec::new();
+    for value in values {
+        items.push(hir::Expr { kind: hir::ExprKind::Byte { value }, span: value_span })
+    };
+    let byte_vec = Type::VecType { elem: Type::Uint8 };
+    let result = check_vec_literal_expr(ctx, items, Option::Some(byte_vec), value_span);
+    coerce_expr(ctx, result, expected)
+}
+
 fn check_hashmap_literal_expr(
     ctx: Checker,
     entries: Vec[(hir::Expr, hir::Expr)],
@@ -4244,6 +4259,9 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             VecLiteral { items: values } => {
                 check_vec_literal_expr(ctx, values, Option::None, value_span)
             },
+            ByteString { values } => {
+                check_byte_string_expr(ctx, values, Option::None, value_span)
+            },
             HashMapLiteral { entries } => {
                 check_hashmap_literal_expr(ctx, entries, Option::None, value_span)
             },
@@ -4528,6 +4546,9 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         Array { items: values } => check_array_expr(ctx, values, expected),
         VecLiteral { items: values } => {
             check_vec_literal_expr(ctx, values, expected, value_span)
+        },
+        ByteString { values } => {
+            check_byte_string_expr(ctx, values, expected, value_span)
         },
         HashMapLiteral { entries } => {
             check_hashmap_literal_expr(ctx, entries, expected, value_span)

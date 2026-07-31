@@ -954,6 +954,7 @@ fn lower_expr_value(
         },
         Char { value, span: _ } => ExprKind::Char { value },
         Byte { value, span: _ } => ExprKind::Byte { value },
+        ByteString { values, span: _ } => ExprKind::ByteString { values },
         ConstructorValue { constructor: path, span: _ } => {
             ExprKind::ConstructorValue { constructor: unresolved_constructor(ctx, path) }
         },

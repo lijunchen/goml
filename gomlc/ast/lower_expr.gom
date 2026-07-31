@@ -654,6 +654,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_FLOAT => lower_number_expr(ctx, node, trailing_args, lexer::TokenKind::Float, true),
             EXPR_CHAR => lower_char_expr(ctx, node, trailing_args),
             EXPR_BYTE => lower_byte_expr(ctx, node, trailing_args),
+            EXPR_BYTE_STRING => lower_byte_string_expr(ctx, node, trailing_args),
             EXPR_STR => lower_string_expr(ctx, node, trailing_args),
             EXPR_RAW_STR => lower_raw_string_expr(ctx, node, trailing_args),
             EXPR_MULTILINE_STR => if reject_trailing(
@@ -674,6 +675,27 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             },
             EXPR_IDENT => lower_ident_expr(ctx, node, trailing_args),
             EXPR_STRUCT_LITERAL => lower_struct_literal(ctx, node, trailing_args),
+            EXPR_BLOCK => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply type arguments to block expression",
+            ) {
+                Option::None
+            } else {
+                match first_child(node, cst::NodeKind::BLOCK) {
+                    Some(block_node) => match lower_block(ctx, block_node) {
+                        Some(block) => {
+                            Option::Some(Expr::Block { block, span: value_span })
+                        },
+                        None => Option::None,
+                    },
+                    None => {
+                        push_error(ctx, value_span, "Block expression has no block");
+                        Option::None
+                    },
+                }
+            },
             EXPR_ARRAY_LITERAL => lower_expr_sequence(ctx, node, trailing_args, false),
             EXPR_VEC_LITERAL => lower_vec_literal(ctx, node, trailing_args),
             EXPR_HASHMAP_LITERAL => lower_hashmap_literal(ctx, node, trailing_args),
@@ -806,8 +828,10 @@ fn lower_char_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
 fn byte_escape_value(value: uint8) -> Option[int] {
     match value {
         b'\'' => Option::Some(39),
+        b'"' => Option::Some(34),
         b'0' => Option::Some(0),
         b'\\' => Option::Some(92),
+        b'/' => Option::Some(47),
         b'b' => Option::Some(8),
         b'f' => Option::Some(12),
         b'n' => Option::Some(10),
@@ -815,6 +839,83 @@ fn byte_escape_value(value: uint8) -> Option[int] {
         b't' => Option::Some(9),
         _ => Option::None,
     }
+}
+
+fn byte_string_values(value: string) -> Option[Vec[string]] {
+    if value.byte_len() < 3 || value.byte_get(0) != b'b' || value.byte_get(1) != b'"'
+        || value.byte_get(value.byte_len() - 1) != b'"' {
+        return Option::None
+    } else {
+        ()
+    };
+    let result: Vec[string] = Vec::new();
+    let mut index = 2;
+    while index + 1 < value.byte_len() {
+        let byte = value.byte_get(index);
+        if byte == b'\\' {
+            if index + 1 >= value.byte_len() - 1 {
+                return Option::None
+            } else if value.byte_get(index + 1) == b'x' {
+                if index + 3 >= value.byte_len() - 1 {
+                    return Option::None
+                } else {
+                    match (
+                        hex_value(value.byte_get(index + 2)),
+                        hex_value(value.byte_get(index + 3)),
+                    ) {
+                        (Some(high), Some(low)) => {
+                            result.push((high * 16 + low).to_string());
+                            index = index + 4;
+                        },
+                        _ => return Option::None,
+                    }
+                }
+            } else {
+                match byte_escape_value(value.byte_get(index + 1)) {
+                    Some(decoded) => {
+                        result.push(decoded.to_string());
+                        index = index + 2;
+                    },
+                    None => return Option::None,
+                }
+            }
+        } else if byte > 127 {
+            return Option::None
+        } else {
+            result.push((byte as int).to_string());
+            index = index + 1;
+        }
+    };
+    Option::Some(result)
+}
+
+fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
+    if value.byte_len() < 4 || value.byte_get(0) != b'b' || value.byte_get(1) != b'r' {
+        return Option::None
+    } else {
+        ()
+    };
+    let mut hash_count = 0;
+    while 2 + hash_count < value.byte_len() && value.byte_get(2 + hash_count) == b'#' {
+        hash_count = hash_count + 1;
+    };
+    let start = hash_count + 3;
+    let end = value.byte_len() - hash_count - 1;
+    if start > end || value.byte_get(start - 1) != b'"' || value.byte_get(end) != b'"' {
+        return Option::None
+    } else {
+        ()
+    };
+    let result: Vec[string] = Vec::new();
+    for index in start..end {
+        let byte = value.byte_get(index);
+        if byte > 127 {
+            return Option::None
+        } else {
+            result.push((byte as int).to_string())
+        }
+    };
+    Option::Some(result)
 }
 
 fn byte_literal_value(value: string) -> Option[string] {
@@ -863,6 +964,31 @@ fn lower_byte_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     }
 }
 
+fn lower_byte_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[
+    Expr,
+] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to byte string literal") {
+        Option::None
+    } else {
+        let values = match first_token(node, lexer::TokenKind::ByteStr) {
+            Some(token) => byte_string_values(token.token.text),
+            None => match first_token(node, lexer::TokenKind::RawByteStr) {
+                Some(token) => raw_byte_string_values(token.token.text),
+                None => Option::None,
+            },
+        };
+        match values {
+            Some(values) => {
+                Option::Some(Expr::ByteString { values, span: node_span(node) })
+            },
+            None => {
+                push_error(ctx, node_span(node), "Invalid byte string literal");
+                Option::None
+            },
+        }
+    }
+}
+
 fn lower_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
         Option::None
@@ -885,11 +1011,7 @@ fn lower_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
     }
 }
 
-fn lower_raw_string_expr(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    trailing_args: Vec[Expr],
-) -> Option[Expr] {
+fn lower_raw_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
         Option::None
     } else {
@@ -897,8 +1019,7 @@ fn lower_raw_string_expr(
             Some(token) => {
                 let source = token.token.text;
                 let mut hash_count = 0;
-                while 1 + hash_count < source.byte_len()
-                    && source.byte_get(1 + hash_count) == b'#' {
+                while 1 + hash_count < source.byte_len() && source.byte_get(1 + hash_count) == b'#' {
                     hash_count = hash_count + 1;
                 };
                 let start = hash_count + 2;

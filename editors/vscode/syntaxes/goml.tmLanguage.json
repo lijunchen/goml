@@ -103,6 +103,46 @@
         "strings": {
             "patterns": [
                 {
+                    "name": "string.quoted.double.raw.byte.goml",
+                    "begin": "\\bbr(#{0,})\"",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.goml"
+                        }
+                    },
+                    "end": "\"\\1",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.goml"
+                        }
+                    }
+                },
+                {
+                    "name": "string.quoted.double.byte.goml",
+                    "begin": "\\bb\"",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.goml"
+                        }
+                    },
+                    "end": "\"|(?=$)",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.goml"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.goml",
+                            "match": "\\\\([\"\\\\0bnfrt/]|x[a-fA-F0-9]{2})"
+                        },
+                        {
+                            "name": "invalid.illegal.escape.goml",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
                     "name": "string.unquoted.multiline.goml",
                     "begin": "\\\\\\\\",
                     "beginCaptures": {

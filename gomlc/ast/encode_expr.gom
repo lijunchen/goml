@@ -118,6 +118,14 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
         },
         Char { value, span: value_span } => encode_literal_expr(builder, "Char", value, value_span),
         Byte { value, span: value_span } => encode_literal_expr(builder, "Byte", value, value_span),
+        ByteString { values, span: value_span } => {
+            encode_open(builder, "Expr.ByteString");
+            encode_span(builder, value_span);
+            encode_list(builder, values.len());
+            for value in values {
+                encode_string_value(builder, value)
+            }
+        },
         ConstructorValue { constructor: path, span: value_span } => {
             encode_open(builder, "Expr.Constr");
             encode_span(builder, value_span);

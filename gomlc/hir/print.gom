@@ -317,6 +317,17 @@ fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('\'')
 }
 
+fn write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> unit {
+    builder.write_string("b\"");
+    for value in values {
+        let byte = decimal_byte(value);
+        builder.write_string("\\x");
+        builder.write_char(hex_digit(byte / 16));
+        builder.write_char(hex_digit(byte % 16))
+    };
+    builder.write_char('"')
+}
+
 fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
     builder.write_string("\\u{");
     if value >= 16 {
@@ -575,6 +586,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             builder.write_char('\'')
         },
         Byte { value } => write_byte_literal(builder, value),
+        ByteString { values } => write_byte_string(builder, values),
         ConstructorValue { constructor } => {
             write_constructor(builder, constructor)
         },

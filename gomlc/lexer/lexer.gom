@@ -118,7 +118,8 @@ pub enum TokenKind {
     FStringEnd,
     CharLit,
     ByteCharLit,
-    UnsupportedByteStr,
+    ByteStr,
+    RawByteStr,
     Whitespace,
     Comment,
     Error,
@@ -497,6 +498,18 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
                 },
                 None => return Option::None,
             }
+        } else if value == b'b' && position + 1 < source.byte_len()
+            && byte_at(source, position + 1) == b'r'
+            && starts_raw_string(source, position + 1) {
+            match raw_string_hash_count(source, position + 1) {
+                Some(hash_count) => match scan_raw_string_end(source, position + 1, hash_count) {
+                    Some(end) => {
+                        index = end;
+                    },
+                    None => return Option::None,
+                },
+                None => return Option::None,
+            }
         } else if value == b'f' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'"' {
             match scan_fstring_end(source, position) {
@@ -507,11 +520,11 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
             }
         } else if value == b'b' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'"' {
-            let (valid, end) = scan_string(source, position + 1);
-            if valid {
-                index = end;
-            } else {
-                return Option::None
+            match scan_byte_string_end(source, position) {
+                Some(end) => {
+                    index = end;
+                },
+                None => return Option::None,
             }
         } else if value == b'"' {
             let (valid, end) = scan_string(source, position);
@@ -620,16 +633,17 @@ fn scan_char_end(source: string, start: int) -> Option[int] {
     }
 }
 
-fn scan_byte_escape_end(source: string, slash: int) -> Option[int] {
+fn scan_byte_escape_end(source: string, slash: int, quote: uint8) -> Option[int] {
     if slash + 1 >= source.byte_len() {
         Option::None
     } else {
         let escaped = byte_at(source, slash + 1);
-        if escaped == b'\'' || escaped == b'\\' || escaped == b'0' || escaped == b'b'
+        if escaped == quote || escaped == b'\\' || escaped == b'0' || escaped == b'b'
             || escaped == b'n'
             || escaped == b'f'
             || escaped == b'r'
-            || escaped == b't' {
+            || escaped == b't'
+            || (quote == b'"' && escaped == b'/') {
             Option::Some(slash + 2)
         } else if escaped == b'x' && slash + 3 < source.byte_len() {
             if is_hex_digit(byte_at(source, slash + 2)) && is_hex_digit(byte_at(source, slash + 3)) {
@@ -652,7 +666,7 @@ fn scan_byte_char_end(source: string, start: int) -> Option[int] {
         let content_end = if value < 32 || value > 126 || value == b'\'' {
             Option::None
         } else if value == b'\\' {
-            scan_byte_escape_end(source, content)
+            scan_byte_escape_end(source, content, b'\'')
         } else {
             Option::Some(content + 1)
         };
@@ -667,6 +681,41 @@ fn scan_byte_char_end(source: string, start: int) -> Option[int] {
             None => Option::None,
         }
     }
+}
+
+fn scan_byte_string_end(source: string, start: int) -> Option[int] {
+    let mut index = start + 2;
+    while index < source.byte_len() {
+        let value = byte_at(source, index);
+        if value == b'"' {
+            return Option::Some(index + 1)
+        } else if value < 32 || value > 126 {
+            return Option::None
+        } else if value == b'\\' {
+            match scan_byte_escape_end(source, index, b'"') {
+                Some(next) => {
+                    index = next;
+                },
+                None => return Option::None,
+            }
+        } else {
+            index = index + 1;
+        }
+    };
+    Option::None
+}
+
+fn raw_byte_string_is_ascii(source: string, raw_start: int, end: int, hash_count: int) -> bool {
+    let content_start = raw_start + hash_count + 2;
+    let content_end = end - hash_count - 1;
+    for index in content_start..content_end {
+        if byte_at(source, index) > 127 {
+            return false
+        } else {
+            ()
+        }
+    };
+    true
 }
 
 fn scan_invalid_prefixed_literal_end(source: string, start: int, quote: uint8) -> int {
@@ -962,6 +1011,32 @@ pub fn lex(source: string) -> Vec[Token] {
                 },
                 None => (),
             }
+        } else if value == b'b' && start + 1 < source.byte_len()
+            && byte_at(source, start + 1) == b'r'
+            && starts_raw_string(source, start + 1) {
+            match raw_string_hash_count(source, start + 1) {
+                Some(hash_count) => match scan_raw_string_end(source, start + 1, hash_count) {
+                    Some(end) => {
+                        index = end;
+                        push_token(
+                            tokens,
+                            source,
+                            if raw_byte_string_is_ascii(source, start + 1, end, hash_count) {
+                                TokenKind::RawByteStr
+                            } else {
+                                TokenKind::Error
+                            },
+                            start,
+                            end,
+                        )
+                    },
+                    None => {
+                        index = source.byte_len();
+                        push_token(tokens, source, TokenKind::Error, start, source.byte_len())
+                    },
+                },
+                None => (),
+            }
         } else if value == b'f' && start + 1 < source.byte_len()
             && byte_at(source, start + 1) == b'"' {
             index = lex_fstring(tokens, source, start);
@@ -980,19 +1055,17 @@ pub fn lex(source: string) -> Vec[Token] {
             }
         } else if value == b'b' && start + 1 < source.byte_len()
             && byte_at(source, start + 1) == b'"' {
-            let (valid, end) = scan_string(source, start + 1);
-            index = end;
-            push_token(
-                tokens,
-                source,
-                if valid {
-                    TokenKind::UnsupportedByteStr
-                } else {
-                    TokenKind::Error
+            match scan_byte_string_end(source, start) {
+                Some(end) => {
+                    index = end;
+                    push_token(tokens, source, TokenKind::ByteStr, start, end)
                 },
-                start,
-                end,
-            )
+                None => {
+                    let end = scan_invalid_prefixed_literal_end(source, start, 34);
+                    index = end;
+                    push_token(tokens, source, TokenKind::Error, start, end)
+                },
+            }
         } else if value == b'"' {
             let (valid, end) = scan_string(source, start);
             index = end;
@@ -1163,7 +1236,8 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         FStringEnd => "\"",
         CharLit => "char_lit",
         ByteCharLit => "byte_char_lit",
-        UnsupportedByteStr => "unsupported_byte_str",
+        ByteStr => "byte_str",
+        RawByteStr => "raw_byte_str",
         Whitespace => "whitespace",
         Comment => "comment",
         Error => "unknown token",

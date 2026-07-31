@@ -5,9 +5,14 @@ use gomlc::lexer;
 
 fn is_expr_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        IntLit | Float | Str | RawStr | MultilineStr | FStringStart | CharLit | ByteCharLit | UnsupportedByteStr | Ident | TrueKeyword | FalseKeyword | Minus | Bang | Tilde | LParen | LBracket | IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword | BreakKeyword | ContinueKeyword | ReturnKeyword | Pipe | OrOr | GoKeyword => true,
+        IntLit | Float | Str | RawStr | MultilineStr | FStringStart | CharLit | ByteCharLit | ByteStr | RawByteStr | Ident | TrueKeyword | FalseKeyword | Minus | Bang | Tilde | LParen | LBrace | LBracket | IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword | BreakKeyword | ContinueKeyword | ReturnKeyword | Pipe | OrOr | GoKeyword => true,
         _ => false,
     }
+}
+
+fn is_expr_first_here(parser: Parser) -> bool {
+    is_expr_first(parser.peek())
+        && (parser.at(lexer::TokenKind::LBrace) == false || parser.struct_literals_allowed.get())
 }
 
 fn expect_expr_with_message(parser: Parser, message: string) -> bool {
@@ -40,6 +45,12 @@ fn simple_expression(parser: Parser, kind: cst::NodeKind) -> MarkerClosed {
     let marker = parser.open();
     parser.advance();
     parser.close(marker, kind)
+}
+
+fn block_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    block(parser);
+    parser.close(marker, cst::NodeKind::EXPR_BLOCK)
 }
 
 fn interpolated_string(parser: Parser) -> MarkerClosed {
@@ -206,7 +217,7 @@ fn paren_expression(parser: Parser) -> MarkerClosed {
         if parser.at(lexer::TokenKind::Comma) {
             while parser.at(lexer::TokenKind::Comma) {
                 parser.expect(lexer::TokenKind::Comma);
-                if is_expr_first(parser.peek()) {
+                if is_expr_first_here(parser) {
                     expect_expr_with_message(parser, "expected an expression in tuple literal");
                 } else {
                     ()
@@ -228,13 +239,18 @@ fn if_expression(parser: Parser) -> MarkerClosed {
     parser.expect(lexer::TokenKind::IfKeyword);
     let condition = parser.open();
     let previous = parser.set_struct_literals_allowed(false);
-    let is_let_condition = parser.at(lexer::TokenKind::LetKeyword);
     if parser.eat(lexer::TokenKind::LetKeyword) {
         let _ = pattern(parser);
         parser.expect(lexer::TokenKind::Eq);
-        expect_expr_with_message(parser, "expected an expression after `=` in `if let`");
-    } else if is_expr_first(parser.peek()) {
+        if is_expr_first_here(parser) {
+            expect_expr_with_message(parser, "expected an expression after `=` in `if let`");
+        } else {
+            parser.error("expected an expression after `=` in `if let`")
+        };
+    } else if is_expr_first_here(parser) {
         expect_expr_with_message(parser, "expected an expression after `if`");
+    } else if parser.at(lexer::TokenKind::LBrace) {
+        parser.error("expected an expression after `if`")
     } else {
         parser.advance_with_error("expected an expression after `if`")
     };
@@ -245,7 +261,7 @@ fn if_expression(parser: Parser) -> MarkerClosed {
         block(parser)
     } else {
         parser.error("`if` then branches require a block");
-        if is_expr_first(parser.peek()) {
+        if is_expr_first_here(parser) {
             let _ = expect_expr_with_message(parser, "expected a then-branch block for `if`");
             ()
         } else {
@@ -262,7 +278,7 @@ fn if_expression(parser: Parser) -> MarkerClosed {
             let _ = if_expression(parser);
         } else {
             parser.error("`else` branches require a block or another `if`");
-            if is_expr_first(parser.peek()) {
+            if is_expr_first_here(parser) {
                 let _ = expect_expr_with_message(parser, "expected an else-branch block for `if`");
                 ()
             } else {
@@ -281,7 +297,11 @@ fn match_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::MatchKeyword);
     let previous = parser.set_struct_literals_allowed(false);
-    expect_expr_with_message(parser, "expected a scrutinee expression for `match`");
+    if is_expr_first_here(parser) {
+        expect_expr_with_message(parser, "expected a scrutinee expression for `match`");
+    } else {
+        parser.error("expected a scrutinee expression for `match`")
+    };
     parser.set_struct_literals_allowed(previous);
     if parser.at(lexer::TokenKind::LBrace) {
         match_arm_list(parser)
@@ -299,9 +319,15 @@ fn while_expression(parser: Parser) -> MarkerClosed {
     if parser.eat(lexer::TokenKind::LetKeyword) {
         let _ = pattern(parser);
         parser.expect(lexer::TokenKind::Eq);
-        expect_expr_with_message(parser, "expected an expression after `=` in `while let`");
-    } else if is_expr_first(parser.peek()) {
+        if is_expr_first_here(parser) {
+            expect_expr_with_message(parser, "expected an expression after `=` in `while let`");
+        } else {
+            parser.error("expected an expression after `=` in `while let`")
+        };
+    } else if is_expr_first_here(parser) {
         expect_expr_with_message(parser, "expected an expression after `while`");
+    } else if parser.at(lexer::TokenKind::LBrace) {
+        parser.error("expected an expression after `while`")
     } else {
         parser.advance_with_error("expected an expression after `while`")
     };
@@ -312,7 +338,7 @@ fn while_expression(parser: Parser) -> MarkerClosed {
         block(parser)
     } else {
         parser.error("`while` bodies require a block");
-        if is_expr_first(parser.peek()) {
+        if is_expr_first_here(parser) {
             let _ = expect_expr_with_message(parser, "expected a body block for `while`");
             ()
         } else {
@@ -333,7 +359,7 @@ fn for_expression(parser: Parser) -> MarkerClosed {
         ()
     };
     let previous = parser.set_struct_literals_allowed(false);
-    if is_expr_first(parser.peek()) {
+    if is_expr_first_here(parser) {
         expect_expr_with_message(parser, "expected an iterator expression after `in`");
     } else {
         parser.error("expected an iterator expression after `in`")
@@ -343,7 +369,7 @@ fn for_expression(parser: Parser) -> MarkerClosed {
         block(parser)
     } else {
         parser.error("expected a block for `for` loop body");
-        if is_expr_first(parser.peek()) {
+        if is_expr_first_here(parser) {
             let _ = expr(parser);
         } else {
             ()
@@ -363,9 +389,10 @@ fn loop_expression(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_LOOP)
 }
 
-fn return_stops_expression(kind: lexer::TokenKind) -> bool {
+fn return_stops_expression(parser: Parser, kind: lexer::TokenKind) -> bool {
     match kind {
-        Semi | Comma | LBrace | RParen | RBracket | RBrace | Eof => true,
+        Semi | Comma | RParen | RBracket | RBrace | Eof => true,
+        LBrace => parser.struct_literals_allowed.get() == false,
         _ => false,
     }
 }
@@ -373,9 +400,9 @@ fn return_stops_expression(kind: lexer::TokenKind) -> bool {
 fn return_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::ReturnKeyword);
-    if return_stops_expression(parser.peek()) == false
+    if return_stops_expression(parser, parser.peek()) == false
         && expect_expr_with_message(parser, "expected an expression after `return`") == false {
-        while parser.eof() == false && return_stops_expression(parser.peek()) == false {
+        while parser.eof() == false && return_stops_expression(parser, parser.peek()) == false {
             parser.advance()
         }
     } else {
@@ -387,9 +414,9 @@ fn return_expression(parser: Parser) -> MarkerClosed {
 fn break_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::BreakKeyword);
-    if return_stops_expression(parser.peek()) == false
+    if return_stops_expression(parser, parser.peek()) == false
         && expect_expr_with_message(parser, "expected an expression after `break`") == false {
-        while parser.eof() == false && return_stops_expression(parser.peek()) == false {
+        while parser.eof() == false && return_stops_expression(parser, parser.peek()) == false {
             parser.advance()
         }
     } else {
@@ -423,12 +450,7 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         FStringStart => interpolated_string(parser),
         CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
         ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
-        UnsupportedByteStr => {
-            let marker = parser.open();
-            parser.error("byte string literals are not supported");
-            parser.advance();
-            parser.close(marker, cst::NodeKind::ErrorTree)
-        },
+        ByteStr | RawByteStr => simple_expression(parser, cst::NodeKind::EXPR_BYTE_STRING),
         TrueKeyword | FalseKeyword => simple_expression(parser, cst::NodeKind::EXPR_BOOL),
         Ident => if looks_like_vec_literal(parser) {
             vec_literal(parser)
@@ -438,6 +460,11 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
             ident_expression(parser)
         },
         LParen => paren_expression(parser),
+        LBrace => if parser.struct_literals_allowed.get() {
+            block_expression(parser)
+        } else {
+            return Option::None
+        },
         IfKeyword => if_expression(parser),
         MatchKeyword => match_expression(parser),
         WhileKeyword => while_expression(parser),
@@ -793,7 +820,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                     let marker = lhs.precede(parser);
                                     parser.expect(lexer::TokenKind::LBracket);
                                     let previous = parser.set_struct_literals_allowed(true);
-                                    if is_expr_first(parser.peek()) {
+                                    if is_expr_first_here(parser) {
                                         expect_expr_with_message(
                                             parser,
                                             "expected an index expression",
@@ -864,7 +891,7 @@ fn arg_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LParen);
     let previous = parser.set_struct_literals_allowed(true);
     while parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
-        if is_expr_first(parser.peek()) {
+        if is_expr_first_here(parser) {
             arg(parser)
         } else {
             break

@@ -325,6 +325,10 @@ pub enum Expr {
         value: string,
         span: Span,
     },
+    ByteString {
+        values: Vec[string],
+        span: Span,
+    },
     ConstructorValue {
         constructor: Path,
         span: Span,
@@ -555,22 +559,25 @@ pub fn expr_span(value: Expr) -> Span {
         } | String { span, .. } | InterpolatedString { span, .. } | Char { span, .. } | Byte {
             span,
             ..,
-        } | ConstructorValue { span, .. } | Constr { span, .. } | StructLiteral { span, .. } | Tuple {
+        } | ByteString { span, .. } | ConstructorValue { span, .. } | Constr { span, .. } | StructLiteral {
             span,
             ..,
-        } | Array { span, .. } | VecLiteral { span, .. } | HashMapLiteral { span, .. } | Closure {
+        } | Tuple { span, .. } | Array { span, .. } | VecLiteral { span, .. } | HashMapLiteral {
             span,
             ..,
-        } | Match { span, .. } | If { span, .. } | While { span, .. } | Loop { span, .. } | For { span, .. } | Break {
+        } | Closure { span, .. } | Match { span, .. } | If { span, .. } | While { span, .. } | Loop {
             span,
             ..,
-        } | Continue { span } | Return { span, .. } | Go { span, .. } | Call { span, .. } | Unary {
+        } | For { span, .. } | Break { span, .. } | Continue { span } | Return { span, .. } | Go {
             span,
             ..,
-        } | Cast { span, .. } | Try { span, .. } | Range { span, .. } | Binary { span, .. } | Proj {
+        } | Call { span, .. } | Unary { span, .. } | Cast { span, .. } | Try { span, .. } | Range {
             span,
             ..,
-        } | Field { span, .. } | Index { span, .. } | Block { span, .. } => span,
+        } | Binary { span, .. } | Proj { span, .. } | Field { span, .. } | Index { span, .. } | Block {
+            span,
+            ..,
+        } => span,
     }
 }
 

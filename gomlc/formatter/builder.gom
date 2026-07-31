@@ -63,7 +63,7 @@ fn kind_is(kind: lexer::TokenKind, expected: lexer::TokenKind) -> bool {
 
 fn is_word(kind: lexer::TokenKind) -> bool {
     match kind {
-        ExternKeyword | PackageKeyword | UseKeyword | ImportKeyword | AsKeyword | PubKeyword | ModKeyword | CrateKeyword | SuperKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | WhileKeyword | LoopKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | ArrayKeyword | Ident | Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit | UnsupportedByteStr => true,
+        ExternKeyword | PackageKeyword | UseKeyword | ImportKeyword | AsKeyword | PubKeyword | ModKeyword | CrateKeyword | SuperKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | WhileKeyword | LoopKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | ArrayKeyword | Ident | Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit | ByteStr | RawByteStr => true,
         _ => false,
     }
 }
@@ -135,8 +135,8 @@ fn needs_space(previous: lexer::TokenKind, current: lexer::TokenKind) -> bool {
 }
 
 fn token_doc(value: LocatedToken) -> Doc {
-    if token_is(value, lexer::TokenKind::MultilineStr)
-        || token_is(value, lexer::TokenKind::RawStr) {
+    if token_is(value, lexer::TokenKind::MultilineStr) || token_is(value, lexer::TokenKind::RawStr)
+        || token_is(value, lexer::TokenKind::RawByteStr) {
         verbatim(value.token.text)
     } else {
         text(value.token.text)
