@@ -37,6 +37,51 @@ fn project_context(entry_package: string) -> project::Context {
 }
 
 #[test]
+fn parses_fmt_options() -> unit {
+    match parse_fmt(Vec::[
+        "goml",
+        "fmt",
+        "--check",
+        "--formatter",
+        "/tmp/gomlfmt",
+    ]) {
+        Ok(options) => {
+            testing::assert(options.check);
+            match options.formatter {
+                Some(value) => testing::assert_eq(value, "/tmp/gomlfmt"),
+                None => testing::fail("missing formatter override"),
+            }
+        },
+        Err(message) => testing::fail(message),
+    };
+    match parse_fmt(Vec::["goml", "fmt"]) {
+        Ok(options) => {
+            testing::assert(!options.check);
+            testing::assert(options.formatter.is_none())
+        },
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn rejects_invalid_fmt_options() -> unit {
+    match parse_fmt(Vec::["goml", "fmt", "--check", "--check"]) {
+        Ok(_) => testing::fail("repeated --check accepted"),
+        Err(message) => testing::assert_eq(
+            message,
+            "--check cannot be repeated",
+        ),
+    };
+    match parse_fmt(Vec::["goml", "fmt", "main.gom"]) {
+        Ok(_) => testing::fail("fmt file target accepted"),
+        Err(message) => testing::assert_eq(
+            message,
+            "unexpected argument main.gom",
+        ),
+    }
+}
+
+#[test]
 fn utility_text_operations_are_deterministic() -> unit {
     testing::assert_eq(util::trim(" \tvalue\r\n"), "value");
     testing::assert(util::starts_with("abc", "ab"));
