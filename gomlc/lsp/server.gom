@@ -166,6 +166,11 @@ fn initialize_result() -> json::Value {
         "codeActionProvider",
         json::Value::Bool(true),
     );
+    push_json_field(
+        capabilities,
+        "documentFormattingProvider",
+        json::Value::Bool(true),
+    );
     let server_info = Vec::new();
     push_json_field(
         server_info,
@@ -990,6 +995,8 @@ fn request_result(
         code_lens_response(server, message.params)
     } else if message.method == "textDocument/codeAction" {
         code_action_response(message.params)
+    } else if message.method == "textDocument/formatting" {
+        formatting_response(server, message.params)
     } else {
         Result::Err("method not found: " + message.method)
     }
