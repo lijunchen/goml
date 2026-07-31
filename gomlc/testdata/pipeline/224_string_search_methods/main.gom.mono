@@ -59,7 +59,7 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
       } else {
           {
             let _wild108 = {
-              let for_iter105 = trait_impl#IntoIterator#FnIterator__int#into_iter(range(0, ((inherent#string#string#byte_len(self/233) - inherent#string#string#byte_len(expected/234)) + 1))) in
+              let for_iter105 = trait_impl#IntoIterator#FnIterator__int#into_iter(__goml_builtin_range(0, ((inherent#string#string#byte_len(self/233) - inherent#string#string#byte_len(expected/234)) + 1))) in
               while true {
                   {
                     let for_next106 = trait_impl#Iterator#FnIterator__int#next(for_iter105) in
@@ -129,18 +129,6 @@ fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
   @intrinsic(eq.primitive)(self/59, other/60)
 }
 
-fn range(start/222: int, end/223: int) -> FnIterator__int {
-  __goml_builtin_range(start/222, end/223)
-}
-
-fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/109: FnIterator__int) -> FnIterator__int {
-  self/109
-}
-
-fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/102)()
-}
-
 fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
   let current/220 = @intrinsic(ref.new)(start/218) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(|| {
@@ -156,6 +144,14 @@ fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
         }
     }
   })
+}
+
+fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/109: FnIterator__int) -> FnIterator__int {
+  self/109
+}
+
+fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
+  FnIterator__int.next_fn(self/102)()
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {

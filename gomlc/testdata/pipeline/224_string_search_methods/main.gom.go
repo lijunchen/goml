@@ -192,7 +192,7 @@ func _goml_m_inherent_i_string_i_string_i_contains(self__233 string, expected__2
             var t220 int = _goml_m_inherent_i_string_i_string_i_byte__len(expected__234)
             var t221 int = t219 - t220
             var t222 int = t221 + 1
-            var t223 FnIterator__int = _goml_m_range(0, t222)
+            var t223 FnIterator__int = __goml_builtin_range(0, t222)
             var for_iter105 FnIterator__int = _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(t223)
             Loop_loop225:
             for {
@@ -285,69 +285,62 @@ func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
     return retv253
 }
 
-func _goml_m_range(start__222 int, end__223 int) FnIterator__int {
+func __goml_builtin_range(start__218 int, end__219 int) FnIterator__int {
     var retv256 FnIterator__int
-    var t257 FnIterator__int = __goml_builtin_range(start__222, end__223)
-    retv256 = t257
+    var current__220 *ref_int_x = ref__Ref_3int(start__218)
+    var t257 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
+        current_0: current__220,
+        end_1: end__219,
+    }
+    var t258 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
+        return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(t257)
+    })
+    retv256 = t258
     return retv256
 }
 
 func _goml_m_trait__impl_i_IntoIterator_i_FnIterator____int_i_into__iter(self__109 FnIterator__int) FnIterator__int {
-    var retv259 FnIterator__int
-    retv259 = self__109
-    return retv259
+    var retv260 FnIterator__int
+    retv260 = self__109
+    return retv260
 }
 
 func _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(self__102 FnIterator__int) Option__int {
-    var retv261 Option__int
-    var t262 func() Option__int = self__102.next_fn
-    var t263 Option__int = t262()
-    retv261 = t263
-    return retv261
-}
-
-func __goml_builtin_range(start__218 int, end__219 int) FnIterator__int {
-    var retv265 FnIterator__int
-    var current__220 *ref_int_x = ref__Ref_3int(start__218)
-    var t266 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
-        current_0: current__220,
-        end_1: end__219,
-    }
-    var t267 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
-        return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(t266)
-    })
-    retv265 = t267
-    return retv265
+    var retv262 Option__int
+    var t263 func() Option__int = self__102.next_fn
+    var t264 Option__int = t263()
+    retv262 = t264
+    return retv262
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__101 func() Option__int) FnIterator__int {
-    var retv269 FnIterator__int
-    var t270 FnIterator__int = FnIterator__int{
+    var retv266 FnIterator__int
+    var t267 FnIterator__int = FnIterator__int{
         next_fn: next_fn__101,
     }
-    retv269 = t270
-    return retv269
+    retv266 = t267
+    return retv266
 }
 
 func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(env162 closure_env_goml_builtin_range_0) Option__int {
-    var retv275 Option__int
+    var retv272 Option__int
     var current__220 *ref_int_x = env162.current_0
     var end__219 int = env162.end_1
     var value__221 int = ref_get__Ref_3int(current__220)
-    var t278 bool = value__221 < end__219
-    var jp277 Option__int
-    if t278 {
-        var t279 int = value__221 + 1
-        ref_set__Ref_3int(current__220, t279)
-        var t280 Option__int = Some{
+    var t275 bool = value__221 < end__219
+    var jp274 Option__int
+    if t275 {
+        var t276 int = value__221 + 1
+        ref_set__Ref_3int(current__220, t276)
+        var t277 Option__int = Some{
             _0: value__221,
         }
-        jp277 = t280
+        jp274 = t277
     } else {
-        jp277 = None{}
+        jp274 = None{}
     }
-    retv275 = jp277
-    return retv275
+    retv272 = jp274
+    return retv272
 }
 
 func main() {

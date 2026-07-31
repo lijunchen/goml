@@ -122,7 +122,7 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
       let t220 = inherent#string#string#byte_len(expected/234) in
       let t221 = (t219 - t220) in
       let t222 = (t221 + 1) in
-      let t223 = range(0, t222) in
+      let t223 = __goml_builtin_range(0, t222) in
       let for_iter105 = trait_impl#IntoIterator#FnIterator__int#into_iter(t223) in
       join exit224() -> bool {
         let _wild108 = () in
@@ -230,73 +230,65 @@ fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
   jump ret252(t254)
 }
 
-fn range(start/222: int, end/223: int) -> FnIterator__int {
+fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
   join ret255(retv256: FnIterator__int) -> FnIterator__int {
     retv256
   } in
-  let t257 = __goml_builtin_range(start/222, end/223) in
-  jump ret255(t257)
+  let current/220 = @intrinsic(ref.new)(start/218) in
+  let t257 = closure_env_goml_builtin_range_0 { current_0: current/220, end_1: end/219 } in
+  let t258 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(t257) in
+  jump ret255(t258)
 }
 
 fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/109: FnIterator__int) -> FnIterator__int {
-  join ret258(retv259: FnIterator__int) -> FnIterator__int {
-    retv259
+  join ret259(retv260: FnIterator__int) -> FnIterator__int {
+    retv260
   } in
-  jump ret258(self/109)
+  jump ret259(self/109)
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
-  join ret260(retv261: Option__int) -> Option__int {
-    retv261
+  join ret261(retv262: Option__int) -> Option__int {
+    retv262
   } in
-  let t262 = FnIterator__int.next_fn(self/102) in
-  let t263 = t262() in
-  jump ret260(t263)
-}
-
-fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
-  join ret264(retv265: FnIterator__int) -> FnIterator__int {
-    retv265
-  } in
-  let current/220 = @intrinsic(ref.new)(start/218) in
-  let t266 = closure_env_goml_builtin_range_0 { current_0: current/220, end_1: end/219 } in
-  let t267 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(t266) in
-  jump ret264(t267)
+  let t263 = FnIterator__int.next_fn(self/102) in
+  let t264 = t263() in
+  jump ret261(t264)
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
-  join ret268(retv269: FnIterator__int) -> FnIterator__int {
-    retv269
+  join ret265(retv266: FnIterator__int) -> FnIterator__int {
+    retv266
   } in
-  let t270 = FnIterator__int { next_fn: next_fn/101 } in
-  jump ret268(t270)
+  let t267 = FnIterator__int { next_fn: next_fn/101 } in
+  jump ret265(t267)
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret271(retv272: uint64) -> uint64 {
-    retv272
+  join ret268(retv269: uint64) -> uint64 {
+    retv269
   } in
-  let t273 = @runtime(core.int_hash)(self/85) in
-  jump ret271(t273)
+  let t270 = @runtime(core.int_hash)(self/85) in
+  jump ret268(t270)
 }
 
 fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(env162: closure_env_goml_builtin_range_0) -> Option__int {
-  join ret274(retv275: Option__int) -> Option__int {
-    retv275
+  join ret271(retv272: Option__int) -> Option__int {
+    retv272
   } in
   let current/220 = closure_env_goml_builtin_range_0.current_0(env162) in
   let end/219 = closure_env_goml_builtin_range_0.end_1(env162) in
   let value/221 = @intrinsic(ref.get)(current/220) in
-  let t278 = (value/221 < end/219) in
-  join k276(jp277: Option__int) -> Option__int {
-    jump ret274(jp277)
+  let t275 = (value/221 < end/219) in
+  join k273(jp274: Option__int) -> Option__int {
+    jump ret271(jp274)
   } in
-  if t278 {
-    let t279 = (value/221 + 1) in
-    let _wild104 = @intrinsic(ref.set)(current/220, t279) in
-    let t280 = Option__int::Some(value/221) in
-    jump k276(t280)
+  if t275 {
+    let t276 = (value/221 + 1) in
+    let _wild104 = @intrinsic(ref.set)(current/220, t276) in
+    let t277 = Option__int::Some(value/221) in
+    jump k273(t277)
   } else {
-    jump k276(Tag_0)
+    jump k273(Tag_0)
   }
 }
