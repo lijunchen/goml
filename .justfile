@@ -3,12 +3,14 @@ make:
     mkdir -p bin/stage1
     cd gomlc && ../_bootstrap/stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../_bootstrap/stage0/bin/gomlc
     cp gomlc/_bootstrap/stage1/bin/cmd/gomlc/gomlc bin/stage1/gomlc
+    cp gomlc/_bootstrap/stage1/bin/cmd/gomlfmt/gomlfmt bin/stage1/gomlfmt
     cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp bin/stage1/gomllsp
     cd goml && ../_bootstrap/stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../bin/stage1/gomlc
     cp goml/_bootstrap/stage1/bin/cmd/goml/goml bin/stage1/goml
     mkdir -p bin/stage2
     cd gomlc && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlc/gomlc bin/stage2/gomlc
+    cp gomlc/_bootstrap/stage2/bin/cmd/gomlfmt/gomlfmt bin/stage2/gomlfmt
     cp gomlc/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp bin/stage2/gomllsp
     cd goml && ../bin/stage1/goml build --target-dir _bootstrap/stage2 --compiler ../bin/stage1/gomlc
     cp goml/_bootstrap/stage2/bin/cmd/goml/goml bin/stage2/goml
@@ -34,6 +36,7 @@ bootstrap:
     mkdir -p bin/stage3
     cd gomlc && ../bin/stage2/goml build --target-dir _bootstrap/stage3 --compiler ../bin/stage2/gomlc
     cp gomlc/_bootstrap/stage3/bin/cmd/gomlc/gomlc bin/stage3/gomlc
+    cp gomlc/_bootstrap/stage3/bin/cmd/gomlfmt/gomlfmt bin/stage3/gomlfmt
     cp gomlc/_bootstrap/stage3/bin/cmd/gomllsp/gomllsp bin/stage3/gomllsp
     cd goml && ../bin/stage2/goml build --target-dir _bootstrap/stage3 --compiler ../bin/stage2/gomlc
     cp goml/_bootstrap/stage3/bin/cmd/goml/goml bin/stage3/goml
@@ -80,6 +83,7 @@ install: make
     mkdir -p "${GOML_HOME:-$HOME/.goml}/bin"
     cp bin/stage2/gomlc "${GOML_HOME:-$HOME/.goml}/bin/gomlc"
     cp bin/stage2/goml "${GOML_HOME:-$HOME/.goml}/bin/goml"
+    cp bin/stage2/gomlfmt "${GOML_HOME:-$HOME/.goml}/bin/gomlfmt"
     cp bin/stage2/gomllsp "${GOML_HOME:-$HOME/.goml}/bin/gomllsp"
     mkdir -p "${GOML_HOME:-$HOME/.goml}/lib/std"
     cp -R stdlib/std/. "${GOML_HOME:-$HOME/.goml}/lib/std/"
@@ -89,9 +93,11 @@ generate-stdlib-source:
     bash tools/stdlib/generate_source.sh
 
 update-golden: make
+    cd gomlc && UPDATE_EXPECT=1 ../bin/stage2/goml test formatter --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m
     cd gomlc && UPDATE_EXPECT=1 ../bin/stage2/goml test pipeline_test --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m
     cd gomlc && UPDATE_EXPECT=1 GOML_TEST_GOML=../bin/stage2/goml GOML_TEST_GOMLC=../bin/stage2/gomlc ../bin/stage2/goml test compiler_test --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m
 
 verify-golden: make
+    cd gomlc && ../bin/stage2/goml test formatter --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m
     cd gomlc && ../bin/stage2/goml test pipeline_test --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m
     cd gomlc && GOML_TEST_GOML=../bin/stage2/goml GOML_TEST_GOMLC=../bin/stage2/gomlc ../bin/stage2/goml test compiler_test --compiler ../bin/stage2/gomlc --jobs 16 --timeout 10m

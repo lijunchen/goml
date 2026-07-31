@@ -82,11 +82,13 @@ jobs:
           mkdir -p "dist/$package/lib"
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/goml" goml/_bootstrap/stage2/build/pkg/gomlang/bootstrap_goml/cmd/goml/goml_generated.go
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomlc" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomlfmt" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlfmt/goml_generated.go
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/gomllsp" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomllsp/goml_generated.go
           cp stdlib/builtin_prelude.gom "dist/$package/builtin_prelude.gom"
           cp -R stdlib/std "dist/$package/lib/std"
           test "$(dist/$package/goml version)" = "goml $RELEASE_VERSION"
           test "$(dist/$package/gomlc version --format json | jq -r .version)" = "$RELEASE_VERSION"
+          test "$(dist/$package/gomlfmt --version)" = "gomlfmt $RELEASE_VERSION"
           tar -C dist -czf "dist/$package.tar.gz" "$package"
           cd dist
           sha256sum ./*.tar.gz > SHA256SUMS
@@ -102,6 +104,8 @@ jobs:
           "$smoke_root/$package/goml" build
           test "$("$smoke_root/$package/goml" run)" = "std/works"
           "$smoke_root/$package/goml" test
+          "$smoke_root/$package/gomlfmt" -w ./*.gom
+          "$smoke_root/$package/gomlfmt" --check ./*.gom
           bash "$GITHUB_WORKSPACE/tools/release/lsp_smoke.sh" "$smoke_root/$package/gomllsp" "$RELEASE_VERSION"
       - uses: actions/upload-artifact@v4
         with:
