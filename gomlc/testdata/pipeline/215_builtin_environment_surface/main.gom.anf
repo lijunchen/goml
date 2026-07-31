@@ -57,31 +57,27 @@ fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int,
     jump ret185(accumulator/120)
   } in
   joinrec {
-    join loop188() -> int {
-      if true {
-        let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
-        join k189() -> int {
-          let _wild31 = () in
-          jump loop188()
-        } in
-        match mtmp28 {
-          Tag_0 => {
-            jump exit187()
-          },
-          Tag_1 => {
-            let x29 = Option__int::Some._0(mtmp28) in
-            let value/121 = x29 in
-            let t190 = combine/119(accumulator/120, value/121) in
-            let _wild30 = accumulator/120 = t190 in
-            jump k189()
-          },
-        }
-      } else {
-        jump exit187()
+    join loop_expr188() -> int {
+      let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
+      join k189() -> int {
+        let _wild31 = () in
+        jump loop_expr188()
+      } in
+      match mtmp28 {
+        Tag_0 => {
+          jump exit187()
+        },
+        Tag_1 => {
+          let x29 = Option__int::Some._0(mtmp28) in
+          let value/121 = x29 in
+          let t190 = combine/119(accumulator/120, value/121) in
+          let _wild30 = accumulator/120 = t190 in
+          jump k189()
+        },
       }
     } in
   } in
-  jump loop188()
+  jump loop_expr188()
 }
 
 fn range(start/222: int, end/223: int) -> FnIterator__int {

@@ -561,36 +561,32 @@ fn std::text::split(value/32: string, separator/33: string) -> Vec[string] {
       jump ret371(result/34)
     } in
     joinrec {
-      join loop375() -> Vec[string] {
-        if true {
-          let mtmp27 = std::text::find_from(value/32, separator/33, start/35) in
-          join k376() -> Vec[string] {
-            jump loop375()
-          } in
-          match mtmp27 {
-            Tag_0 => {
-              let t377 = inherent#string#string#byte_len(value/32) in
-              let t378 = inherent#string#string#byte_slice(value/32, start/35, t377) in
-              let _wild29 = inherent#Vec#Vec[T]#push__T_string(result/34, t378) in
-              jump exit374()
-            },
-            Tag_1 => {
-              let x28 = Option__int::Some._0(mtmp27) in
-              let index/36 = x28 in
-              let t379 = inherent#string#string#byte_slice(value/32, start/35, index/36) in
-              let _wild30 = inherent#Vec#Vec[T]#push__T_string(result/34, t379) in
-              let t380 = inherent#string#string#byte_len(separator/33) in
-              let t381 = (index/36 + t380) in
-              let _wild31 = start/35 = t381 in
-              jump k376()
-            },
-          }
-        } else {
-          jump exit374()
+      join loop_expr375() -> Vec[string] {
+        let mtmp27 = std::text::find_from(value/32, separator/33, start/35) in
+        join k376() -> Vec[string] {
+          jump loop_expr375()
+        } in
+        match mtmp27 {
+          Tag_0 => {
+            let t377 = inherent#string#string#byte_len(value/32) in
+            let t378 = inherent#string#string#byte_slice(value/32, start/35, t377) in
+            let _wild29 = inherent#Vec#Vec[T]#push__T_string(result/34, t378) in
+            jump exit374()
+          },
+          Tag_1 => {
+            let x28 = Option__int::Some._0(mtmp27) in
+            let index/36 = x28 in
+            let t379 = inherent#string#string#byte_slice(value/32, start/35, index/36) in
+            let _wild30 = inherent#Vec#Vec[T]#push__T_string(result/34, t379) in
+            let t380 = inherent#string#string#byte_len(separator/33) in
+            let t381 = (index/36 + t380) in
+            let _wild31 = start/35 = t381 in
+            jump k376()
+          },
         }
       } in
     } in
-    jump loop375()
+    jump loop_expr375()
   } in
   if t383 {
     let _wild25 = inherent#Vec#Vec[T]#push__T_string(result/34, value/32) in
@@ -736,37 +732,33 @@ fn std::text::replace(value/44: string, expected/45: string, replacement/46: str
       jump k428(t434)
     } in
     joinrec {
-      join loop435() -> string {
-        if true {
-          let mtmp47 = std::text::find_from(value/44, expected/45, start/48) in
-          join k436() -> string {
-            jump loop435()
-          } in
-          match mtmp47 {
-            Tag_0 => {
-              let t437 = inherent#string#string#byte_len(value/44) in
-              let t438 = inherent#string#string#byte_slice(value/44, start/48, t437) in
-              let _wild49 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, t438) in
-              jump exit433()
-            },
-            Tag_1 => {
-              let x48 = Option__int::Some._0(mtmp47) in
-              let index/49 = x48 in
-              let t439 = inherent#string#string#byte_slice(value/44, start/48, index/49) in
-              let _wild50 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, t439) in
-              let _wild51 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, replacement/46) in
-              let t440 = inherent#string#string#byte_len(expected/45) in
-              let t441 = (index/49 + t440) in
-              let _wild52 = start/48 = t441 in
-              jump k436()
-            },
-          }
-        } else {
-          jump exit433()
+      join loop_expr435() -> string {
+        let mtmp47 = std::text::find_from(value/44, expected/45, start/48) in
+        join k436() -> string {
+          jump loop_expr435()
+        } in
+        match mtmp47 {
+          Tag_0 => {
+            let t437 = inherent#string#string#byte_len(value/44) in
+            let t438 = inherent#string#string#byte_slice(value/44, start/48, t437) in
+            let _wild49 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, t438) in
+            jump exit433()
+          },
+          Tag_1 => {
+            let x48 = Option__int::Some._0(mtmp47) in
+            let index/49 = x48 in
+            let t439 = inherent#string#string#byte_slice(value/44, start/48, index/49) in
+            let _wild50 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, t439) in
+            let _wild51 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, replacement/46) in
+            let t440 = inherent#string#string#byte_len(expected/45) in
+            let t441 = (index/49 + t440) in
+            let _wild52 = start/48 = t441 in
+            jump k436()
+          },
         }
       } in
     } in
-    jump loop435()
+    jump loop_expr435()
   }
 }
 

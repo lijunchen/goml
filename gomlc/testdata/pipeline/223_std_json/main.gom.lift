@@ -263,21 +263,19 @@ fn std::text::split(value/32: string, separator/33: string) -> Vec[string] {
       ()
   } in
   let start/35 = 0 in
-  let _wild32 = while true {
-      let mtmp27 = std::text::find_from(value/32, separator/33, start/35) in
-      match mtmp27 {
-        Option__int::None => {
-          let _wild29 = inherent#Vec#Vec[T]#push__T_string(result/34, inherent#string#string#byte_slice(value/32, start/35, inherent#string#string#byte_len(value/32))) in
-          break
-        },
-        Option__int::Some(x28) => {
-          let x28 = Option__int::Some._0(mtmp27) in
-          let index/36 = x28 in
-          let _wild30 = inherent#Vec#Vec[T]#push__T_string(result/34, inherent#string#string#byte_slice(value/32, start/35, index/36)) in
-          let _wild31 = start/35 = (index/36 + inherent#string#string#byte_len(separator/33)) in
-          ()
-        },
-      }
+  let _wild32 = loop let mtmp27 = std::text::find_from(value/32, separator/33, start/35) in
+  match mtmp27 {
+    Option__int::None => {
+      let _wild29 = inherent#Vec#Vec[T]#push__T_string(result/34, inherent#string#string#byte_slice(value/32, start/35, inherent#string#string#byte_len(value/32))) in
+      break
+    },
+    Option__int::Some(x28) => {
+      let x28 = Option__int::Some._0(mtmp27) in
+      let index/36 = x28 in
+      let _wild30 = inherent#Vec#Vec[T]#push__T_string(result/34, inherent#string#string#byte_slice(value/32, start/35, index/36)) in
+      let _wild31 = start/35 = (index/36 + inherent#string#string#byte_len(separator/33)) in
+      ()
+    },
   } in
   result/34
 }
@@ -343,22 +341,20 @@ fn std::text::replace(value/44: string, expected/45: string, replacement/46: str
   } else {
       let builder/47 = inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(inherent#string#string#byte_len(value/44)) in
       let start/48 = 0 in
-      let _wild53 = while true {
-          let mtmp47 = std::text::find_from(value/44, expected/45, start/48) in
-          match mtmp47 {
-            Option__int::None => {
-              let _wild49 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, inherent#string#string#byte_slice(value/44, start/48, inherent#string#string#byte_len(value/44))) in
-              break
-            },
-            Option__int::Some(x48) => {
-              let x48 = Option__int::Some._0(mtmp47) in
-              let index/49 = x48 in
-              let _wild50 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, inherent#string#string#byte_slice(value/44, start/48, index/49)) in
-              let _wild51 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, replacement/46) in
-              let _wild52 = start/48 = (index/49 + inherent#string#string#byte_len(expected/45)) in
-              ()
-            },
-          }
+      let _wild53 = loop let mtmp47 = std::text::find_from(value/44, expected/45, start/48) in
+      match mtmp47 {
+        Option__int::None => {
+          let _wild49 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, inherent#string#string#byte_slice(value/44, start/48, inherent#string#string#byte_len(value/44))) in
+          break
+        },
+        Option__int::Some(x48) => {
+          let x48 = Option__int::Some._0(mtmp47) in
+          let index/49 = x48 in
+          let _wild50 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, inherent#string#string#byte_slice(value/44, start/48, index/49)) in
+          let _wild51 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, replacement/46) in
+          let _wild52 = start/48 = (index/49 + inherent#string#string#byte_len(expected/45)) in
+          ()
+        },
       } in
       inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/47)
   }

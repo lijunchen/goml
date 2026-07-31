@@ -219,24 +219,20 @@ func main0() struct{} {
 func _goml_m_iterator__fold____A__int____I__FnIterator_l_int_r_____T__int(iterator__117 FnIterator__int, initial__118 int, combine__119 func(int, int) int) int {
     var retv186 int
     var accumulator__120 int = initial__118
-    Loop_loop188:
+    Loop_loop_expr188:
     for {
-        if true {
-            var mtmp28 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(iterator__117)
-            switch mtmp28.(type) {
-            case None:
-                break Loop_loop188
-            case Some:
-                var x29 int = mtmp28.(Some)._0
-                var value__121 int = x29
-                var t190 int = combine__119(accumulator__120, value__121)
-                accumulator__120 = t190
-                continue
-            default:
-                panic("non-exhaustive match")
-            }
-        } else {
-            break Loop_loop188
+        var mtmp28 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(iterator__117)
+        switch mtmp28.(type) {
+        case None:
+            break Loop_loop_expr188
+        case Some:
+            var x29 int = mtmp28.(Some)._0
+            var value__121 int = x29
+            var t190 int = combine__119(accumulator__120, value__121)
+            accumulator__120 = t190
+            continue
+        default:
+            panic("non-exhaustive match")
         }
     }
     retv186 = accumulator__120

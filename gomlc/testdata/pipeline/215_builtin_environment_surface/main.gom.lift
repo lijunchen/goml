@@ -23,21 +23,19 @@ fn main() -> unit {
 
 fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int, initial/118: int, combine/119: (int, int) -> int) -> int {
   let accumulator/120 = initial/118 in
-  let _wild32 = while true {
-      let _wild31 = let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
-      match mtmp28 {
-        Option__int::None => {
-          break
-        },
-        Option__int::Some(x29) => {
-          let x29 = Option__int::Some._0(mtmp28) in
-          let value/121 = x29 in
-          let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
-          ()
-        },
-      } in
+  let _wild32 = loop let _wild31 = let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
+  match mtmp28 {
+    Option__int::None => {
+      break
+    },
+    Option__int::Some(x29) => {
+      let x29 = Option__int::Some._0(mtmp28) in
+      let value/121 = x29 in
+      let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
       ()
+    },
   } in
+  () in
   accumulator/120
 }
 
