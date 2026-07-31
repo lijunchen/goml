@@ -509,7 +509,10 @@ fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A
 }
 
 fn iterator_collect(iterator/122: I) -> Vec[T] {
-  let values/123 = inherent#Vec#Vec[T]#new() in
+  let values/123 = {
+    let vec_literal/10204 = inherent#Vec#Vec[T]#new() in
+    vec_literal/10204
+  } in
   let _wild36 = loop {
     let _wild35 = {
       let mtmp33 = trait_call[Iterator::next](iterator/122) in
@@ -545,7 +548,7 @@ fn inherent#Vec#Vec[T]#push[T](self/126: Vec[T], elem/127: T) -> unit {
 }
 
 fn inherent#Vec#Vec[T]#pushed[T](self/128: Vec[T], elem/129: T) -> Vec[T] {
-  let result/130 = inherent#Vec#Vec[T]#new() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity((inherent#Vec#Vec[T]#len(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len(self/128)) {
       {
@@ -578,7 +581,7 @@ fn inherent#Vec#Vec[T]#capacity[T](self/138: Vec[T]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#is_empty[T](self/139: Vec[T]) -> bool {
-  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len(self/139), 0)
+  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/139), 0)
 }
 
 fn inherent#Vec#Vec[T]#reserve[T](self/140: Vec[T], additional/141: int) -> unit {
@@ -1107,7 +1110,7 @@ fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Opt
 }
 
 fn trait_impl#Iterator#ChainIterator[T,A,B]#next[T, A, B](self/244: ChainIterator[T, A, B]) -> Option[T] {
-  let _wild122 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
+  let _wild122 = if (!inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244))) {
       {
         {
           let mtmp120 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
@@ -1208,7 +1211,7 @@ fn iterator_any(iterator/256: I, predicate/257: (T) -> bool) -> bool {
 }
 
 fn iterator_all(iterator/258: I, predicate/259: (T) -> bool) -> bool {
-  trait_impl#Eq#bool#eq(iterator_any(iterator/258, |value/260: T| => trait_impl#Eq#bool#eq(predicate/259(value/260), false)), false)
+  (!iterator_any(iterator/258, |value/260: T| => (!predicate/259(value/260))))
 }
 
 fn iterator_count(iterator/261: I) -> int {
@@ -1253,7 +1256,7 @@ fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
 }
 
 fn inherent#Option#Option[T]#is_none[T](self/264: Option[T]) -> bool {
-  trait_impl#Eq#bool#eq(inherent#Option#Option[T]#is_some(self/264), false)
+  (!inherent#Option#Option[T]#is_some(self/264))
 }
 
 fn inherent#Option#Option[T]#unwrap_or[T](self/265: Option[T], fallback/266: T) -> T {
@@ -1308,7 +1311,7 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/271: Result[T, E]) -> bool {
 }
 
 fn inherent#Result#Result[T,E]#is_err[T, E](self/272: Result[T, E]) -> bool {
-  trait_impl#Eq#bool#eq(inherent#Result#Result[T,E]#is_ok(self/272), false)
+  (!inherent#Result#Result[T,E]#is_ok(self/272))
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/274: T) -> T {

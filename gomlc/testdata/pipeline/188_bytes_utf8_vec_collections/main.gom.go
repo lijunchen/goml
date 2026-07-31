@@ -1169,7 +1169,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__int32(self__142 *_goml
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__int32(self__139 *_goml_vec_int32) bool {
     var retv490 bool
-    var t491 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__139)
+    var t491 int = vec_len__Vec_5int32(self__139)
     var t492 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t491, 0)
     retv490 = t492
     return retv490

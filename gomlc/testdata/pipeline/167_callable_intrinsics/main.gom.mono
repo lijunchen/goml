@@ -54,7 +54,7 @@ fn inherent#Vec#Vec[T]#get__T_int32(self/132: Vec[int32], index/133: int) -> int
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_int32(self/128: Vec[int32], elem/129: int32) -> Vec[int32] {
-  let result/130 = inherent#Vec#Vec[T]#new__T_int32() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_int32(self/128)) {
       {
@@ -80,4 +80,8 @@ fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
   @runtime(core.int_to_string)(self/40)
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/125: int) -> Vec[int32] {
+  @intrinsic(vec.with_capacity)(capacity/125)
 }

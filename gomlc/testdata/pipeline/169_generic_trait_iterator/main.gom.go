@@ -451,7 +451,8 @@ func println__T_int(value__1 int) struct{} {
 
 func _goml_m_iterator__collect____I_h71545e56394faca5741d280b5e9d3d51_r_____T__string(iterator__122 MapIterator__int__string__FnIterator__int) *_goml_vec_string {
     var retv283 *_goml_vec_string
-    var values__123 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+    var vec_literal__10204 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string()
+    var values__123 *_goml_vec_string = vec_literal__10204
     Loop_loop_expr285:
     for {
         var mtmp33 Option__string = _goml_m_trait__impl_i_Iterator_h0071ac0c0c2586bdcfed3250d498e716_r____int_i_next(iterator__122)

@@ -2,6 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
+    _goml_slices "slices"
 )
 
 func _goml_runtime_core_int_to_string(x int) string {
@@ -24,6 +25,12 @@ type _goml_vec_int32 struct {
 func vec_new__Vec_5int32() *_goml_vec_int32 {
     return &_goml_vec_int32{
         items: nil,
+    }
+}
+
+func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32 {
+    return &_goml_vec_int32{
+        items: _goml_slices.Grow([]int32{}, int(capacity)),
     }
 }
 
@@ -131,22 +138,24 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__132 *_goml_vec_
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__128 *_goml_vec_int32, elem__129 int32) *_goml_vec_int32 {
     var retv194 *_goml_vec_int32
-    var result__130 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
+    var t195 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__128)
+    var t196 int = t195 + 1
+    var result__130 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__int32(t196)
     var index__131 int = 0
-    Loop_loop196:
+    Loop_loop198:
     for {
-        var t197 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__128)
-        var t198 bool = index__131 < t197
-        if t198 {
-            var t199 int32 = vec_get__Vec_5int32(self__128, index__131)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__130, t199)
+        var t199 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__128)
+        var t200 bool = index__131 < t199
+        if t200 {
+            var t201 int32 = vec_get__Vec_5int32(self__128, index__131)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__130, t201)
             var compound_old38 int = index__131
             var compound_value39 int = 1
-            var t200 int = compound_old38 + compound_value39
-            index__131 = t200
+            var t202 int = compound_old38 + compound_value39
+            index__131 = t202
             continue
         } else {
-            break Loop_loop196
+            break Loop_loop198
         }
     }
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__130, elem__129)
@@ -155,23 +164,30 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__128 *_goml_v
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv203 string
-    retv203 = self__38
-    return retv203
-}
-
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
     var retv205 string
-    var t206 string = _goml_runtime_core_int32_to_string(self__43)
-    retv205 = t206
+    retv205 = self__38
     return retv205
 }
 
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
+    var retv207 string
+    var t208 string = _goml_runtime_core_int32_to_string(self__43)
+    retv207 = t208
+    return retv207
+}
+
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv208 string
-    var t209 string = _goml_runtime_core_int_to_string(self__40)
-    retv208 = t209
-    return retv208
+    var retv210 string
+    var t211 string = _goml_runtime_core_int_to_string(self__40)
+    retv210 = t211
+    return retv210
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__int32(capacity__125 int) *_goml_vec_int32 {
+    var retv213 *_goml_vec_int32
+    var t214 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(capacity__125)
+    retv213 = t214
+    return retv213
 }
 
 func main() {

@@ -2,6 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
+    _goml_slices "slices"
     _goml_utf8 "unicode/utf8"
 )
 
@@ -31,6 +32,12 @@ func vec_new__Vec_8EnvEntry() *_goml_vec_EnvEntry {
     }
 }
 
+func vec_with_capacity__Vec_8EnvEntry(capacity int) *_goml_vec_EnvEntry {
+    return &_goml_vec_EnvEntry{
+        items: _goml_slices.Grow([]EnvEntry{}, int(capacity)),
+    }
+}
+
 func vec_push__Vec_8EnvEntry(vec *_goml_vec_EnvEntry, elem EnvEntry) struct{} {
     vec.items = append(vec.items, elem)
     return struct{}{}
@@ -51,6 +58,12 @@ type _goml_vec_SubstEntry struct {
 func vec_new__Vec_10SubstEntry() *_goml_vec_SubstEntry {
     return &_goml_vec_SubstEntry{
         items: nil,
+    }
+}
+
+func vec_with_capacity__Vec_10SubstEntry(capacity int) *_goml_vec_SubstEntry {
+    return &_goml_vec_SubstEntry{
+        items: _goml_slices.Grow([]SubstEntry{}, int(capacity)),
     }
 }
 
@@ -1726,22 +1739,24 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(self__209 *ref_Tv_x, val
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__128 *_goml_vec_SubstEntry, elem__129 SubstEntry) *_goml_vec_SubstEntry {
     var retv843 *_goml_vec_SubstEntry
-    var result__130 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
+    var t844 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__128)
+    var t845 int = t844 + 1
+    var result__130 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__SubstEntry(t845)
     var index__131 int = 0
-    Loop_loop845:
+    Loop_loop847:
     for {
-        var t846 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__128)
-        var t847 bool = index__131 < t846
-        if t847 {
-            var t848 SubstEntry = vec_get__Vec_10SubstEntry(self__128, index__131)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(result__130, t848)
+        var t848 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__128)
+        var t849 bool = index__131 < t848
+        if t849 {
+            var t850 SubstEntry = vec_get__Vec_10SubstEntry(self__128, index__131)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(result__130, t850)
             var compound_old38 int = index__131
             var compound_value39 int = 1
-            var t849 int = compound_old38 + compound_value39
-            index__131 = t849
+            var t851 int = compound_old38 + compound_value39
+            index__131 = t851
             continue
         } else {
-            break Loop_loop845
+            break Loop_loop847
         }
     }
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(result__130, elem__129)
@@ -1750,46 +1765,62 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__128 *_g
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() *_goml_vec_SubstEntry {
-    var retv852 *_goml_vec_SubstEntry
-    var t853 *_goml_vec_SubstEntry = vec_new__Vec_10SubstEntry()
-    retv852 = t853
-    return retv852
+    var retv854 *_goml_vec_SubstEntry
+    var t855 *_goml_vec_SubstEntry = vec_new__Vec_10SubstEntry()
+    retv854 = t855
+    return retv854
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__128 *_goml_vec_EnvEntry, elem__129 EnvEntry) *_goml_vec_EnvEntry {
-    var retv855 *_goml_vec_EnvEntry
-    var result__130 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
+    var retv857 *_goml_vec_EnvEntry
+    var t858 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__128)
+    var t859 int = t858 + 1
+    var result__130 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__EnvEntry(t859)
     var index__131 int = 0
-    Loop_loop857:
+    Loop_loop861:
     for {
-        var t858 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__128)
-        var t859 bool = index__131 < t858
-        if t859 {
-            var t860 EnvEntry = vec_get__Vec_8EnvEntry(self__128, index__131)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(result__130, t860)
+        var t862 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__128)
+        var t863 bool = index__131 < t862
+        if t863 {
+            var t864 EnvEntry = vec_get__Vec_8EnvEntry(self__128, index__131)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(result__130, t864)
             var compound_old38 int = index__131
             var compound_value39 int = 1
-            var t861 int = compound_old38 + compound_value39
-            index__131 = t861
+            var t865 int = compound_old38 + compound_value39
+            index__131 = t865
             continue
         } else {
-            break Loop_loop857
+            break Loop_loop861
         }
     }
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(result__130, elem__129)
-    retv855 = result__130
-    return retv855
+    retv857 = result__130
+    return retv857
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t864 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t864)
+    var t868 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t868)
     return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__SubstEntry(capacity__125 int) *_goml_vec_SubstEntry {
+    var retv871 *_goml_vec_SubstEntry
+    var t872 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(capacity__125)
+    retv871 = t872
+    return retv871
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(self__126 *_goml_vec_SubstEntry, elem__127 SubstEntry) struct{} {
     vec_push__Vec_10SubstEntry(self__126, elem__127)
     return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__EnvEntry(capacity__125 int) *_goml_vec_EnvEntry {
+    var retv876 *_goml_vec_EnvEntry
+    var t877 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(capacity__125)
+    retv876 = t877
+    return retv876
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(self__126 *_goml_vec_EnvEntry, elem__127 EnvEntry) struct{} {
@@ -1798,9 +1829,9 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(self__126 *_goml_
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv871 string
-    retv871 = self__38
-    return retv871
+    var retv881 string
+    retv881 = self__38
+    return retv881
 }
 
 func main() {

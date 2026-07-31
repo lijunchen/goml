@@ -759,7 +759,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/208: Ref[Vec[Token]]) -> Vec[Token
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Token(self/128: Vec[Token], elem/129: Token) -> Vec[Token] {
-  let result/130 = inherent#Vec#Vec[T]#new__T_Token() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_Token((inherent#Vec#Vec[T]#len__T_Token(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_Token(self/128)) {
       let _wild37 = inherent#Vec#Vec[T]#push__T_Token(result/130, @intrinsic(vec.get)(self/128, index/131)) in
@@ -813,7 +813,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/208: Ref[Vec[SExpr]]) -> Vec[SExpr
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/128: Vec[SExpr], elem/129: SExpr) -> Vec[SExpr] {
-  let result/130 = inherent#Vec#Vec[T]#new__T_SExpr() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_SExpr((inherent#Vec#Vec[T]#len__T_SExpr(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_SExpr(self/128)) {
       let _wild37 = inherent#Vec#Vec[T]#push__T_SExpr(result/130, @intrinsic(vec.get)(self/128, index/131)) in
@@ -851,7 +851,7 @@ fn inherent#Vec#Vec[T]#len__T_SExpr(self/137: Vec[SExpr]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Binding(self/128: Vec[Binding], elem/129: Binding) -> Vec[Binding] {
-  let result/130 = inherent#Vec#Vec[T]#new__T_Binding() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_Binding((inherent#Vec#Vec[T]#len__T_Binding(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_Binding(self/128)) {
       let _wild37 = inherent#Vec#Vec[T]#push__T_Binding(result/130, @intrinsic(vec.get)(self/128, index/131)) in
@@ -881,7 +881,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[string](self/208: Ref[Vec[string]]) -> Vec[str
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_string(self/128: Vec[string], elem/129: string) -> Vec[string] {
-  let result/130 = inherent#Vec#Vec[T]#new__T_string() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_string((inherent#Vec#Vec[T]#len__T_string(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_string(self/128)) {
       let _wild37 = inherent#Vec#Vec[T]#push__T_string(result/130, @intrinsic(vec.get)(self/128, index/131)) in
@@ -911,7 +911,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/208: Ref[Vec[Value]]) -> Vec[Value
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Value(self/128: Vec[Value], elem/129: Value) -> Vec[Value] {
-  let result/130 = inherent#Vec#Vec[T]#new__T_Value() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_Value((inherent#Vec#Vec[T]#len__T_Value(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_Value(self/128)) {
       let _wild37 = inherent#Vec#Vec[T]#push__T_Value(result/130, @intrinsic(vec.get)(self/128, index/131)) in
@@ -952,20 +952,40 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
+fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/125: int) -> Vec[Token] {
+  @intrinsic(vec.with_capacity)(capacity/125)
+}
+
 fn inherent#Vec#Vec[T]#push__T_Token(self/126: Vec[Token], elem/127: Token) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/125: int) -> Vec[SExpr] {
+  @intrinsic(vec.with_capacity)(capacity/125)
 }
 
 fn inherent#Vec#Vec[T]#push__T_SExpr(self/126: Vec[SExpr], elem/127: SExpr) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
 }
 
+fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/125: int) -> Vec[Binding] {
+  @intrinsic(vec.with_capacity)(capacity/125)
+}
+
 fn inherent#Vec#Vec[T]#push__T_Binding(self/126: Vec[Binding], elem/127: Binding) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
 }
 
+fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/125: int) -> Vec[string] {
+  @intrinsic(vec.with_capacity)(capacity/125)
+}
+
 fn inherent#Vec#Vec[T]#push__T_string(self/126: Vec[string], elem/127: string) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/125: int) -> Vec[Value] {
+  @intrinsic(vec.with_capacity)(capacity/125)
 }
 
 fn inherent#Vec#Vec[T]#push__T_Value(self/126: Vec[Value], elem/127: Value) -> unit {
