@@ -111,3 +111,9 @@ goml fmt --check
 `goml fmt` searches upward for `goml.toml`, recursively collects source files, and invokes `gomlfmt` once for the complete module. It skips the configured build target directory, `_artifact`, `_bootstrap`, hidden directories, and nested modules. `--check` does not write files.
 
 The formatter executable is resolved from `--formatter`, `GOMLFMT`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`.
+
+## Editor formatting
+
+`gomllsp` implements `textDocument/formatting`. It formats the latest in-memory document and returns one full-document edit when the source changes. Already formatted or syntactically invalid documents return no edits.
+
+Editor-provided indentation options are ignored because GoML formatting uses the fixed settings defined above. The full-document edit range uses UTF-16 positions as required by the language server protocol.

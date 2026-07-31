@@ -1484,6 +1484,8 @@ Each test is executed in a separate runner process, and failure to exit and time
 
 LSP will construct the analysis package according to the production file, white box test file and black box test file respectively according to the path, so diagnosis, completion, hover and jump follow the corresponding visibility.`Run Test` CodeLens will appear on the `#[test]` function; the VS Code extension will save the dirty file first, and then call the module-level `goml test` with the complete test name and test type.
 
+`gomllsp` supports full-document formatting through `textDocument/formatting`. Formatting uses the latest unsaved document text and the fixed rules described in `docs/formatting.md`. Invalid documents are left unchanged.
+
 ## Built-in prelude
 
 The following names can be used without `use`.
