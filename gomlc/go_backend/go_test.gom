@@ -1027,19 +1027,24 @@ fn emits_blank_assignment_for_discarded_non_call_side_effects() -> unit {
 
 #[test]
 fn protects_index_intrinsics_from_user_functions() -> unit {
-    let source = "fn array_get(arr: [int32; 2], index: int32) -> int32 { 90 + index } fn array_set(arr: [int32; 2], index: int32, value: int32) -> [int32; 2] { [77, 88] } fn vec_get(v: Vec[int32], index: int32) -> int32 { 70 + index } fn vec_set(v: Vec[int32], index: int32, value: int32) -> unit { () } fn slice_get(s: Slice[int32], index: int32) -> int32 { 60 + index } fn hashmap_get(m: HashMap[string, int32], key: string) -> Option[int32] { Option::Some(55) } fn hashmap_set(m: HashMap[string, int32], key: string, value: int32) -> unit { () } fn main() -> unit { let a = [4, 5]; println(array_get(a, 1)); println(a[1]); let c: [int32; 2] = array_set(a, 0, 9); println(c[0]); let mut b = [1, 2]; b[0] = 9; println(array_get(b, 0)); println(b[0]); let v: Vec[int32] = Vec::new().pushed(8).pushed(9); println(vec_get(v, 1)); println(v[1]); let mut v2: Vec[int32] = Vec::new().pushed(1).pushed(2); vec_set(v2, 0, 99); println(v2[0]); v2[1] = 99; println(v2[1]); let s = v.slice(0, 2); println(slice_get(s, 1)); println(s[1]); let m: HashMap[string, int32] = HashMap::new(); hashmap_set(m, \"b\", 11); match m[\"b\"] { Option::Some(x) => println(x), Option::None => println(0), }; m[\"a\"] = 42; match hashmap_get(m, \"a\") { Option::Some(x) => println(x), Option::None => println(0), }; match m[\"a\"] { Option::Some(x) => println(x), Option::None => println(0), }; }";
+    let source = "fn array_get(arr: [int32; 2], index: int32) -> int32 { 90 + index } fn array_set(arr: [int32; 2], index: int32, value: int32) -> [int32; 2] { [77, 88] } fn vec_get(v: Vec[int32], index: int32) -> int32 { 70 + index } fn vec_set(v: Vec[int32], index: int32, value: int32) -> unit { () } fn slice_get(s: Slice[int32], index: int32) -> int32 { 60 + index } fn hashmap_get(m: HashMap[string, int32], key: string) -> Option[int32] { Option::Some(55) } fn hashmap_set(m: HashMap[string, int32], key: string, value: int32) -> unit { () } fn main() -> unit { let a = [4, 5]; println(array_get(a, 1)); println(a[1]); let c: [int32; 2] = array_set(a, 0, 9); println(c[0]); let mut b = [1, 2]; b[0] = 9; println(array_get(b, 0)); println(b[0]); let v: Vec[int32] = Vec::new().pushed(8).pushed(9); println(vec_get(v, 1)); println(v[1]); let mut v2: Vec[int32] = Vec::new().pushed(1).pushed(2); vec_set(v2, 0, 99); println(v2[0]); v2[1] = 99; println(v2[1]); let s = v.slice(0, 2); println(slice_get(s, 1)); println(s[1]); let text = \"ab\"; println(string_get(text, 0)); println(text[1]); let m: HashMap[string, int32] = HashMap::new(); hashmap_set(m, \"b\", 11); match m[\"b\"] { Option::Some(x) => println(x), Option::None => println(0), }; m[\"a\"] = 42; match hashmap_get(m, \"a\") { Option::Some(x) => println(x), Option::None => println(0), }; match m[\"a\"] { Option::Some(x) => println(x), Option::None => println(0), }; } fn string_get(s: string, index: int32) -> char { 'x' }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "func array_get__Array_2_5int32("));
     testing::assert(string_contains(output, "func array_set__Array_2_5int32("));
     testing::assert(string_contains(output, "func vec_get__Vec_5int32("));
     testing::assert(string_contains(output, "func vec_set__Vec_5int32("));
+    testing::assert(string_contains(output, "func string_get("));
     testing::assert(string_contains(output, "func hashmap_lookup__HashMap_6string_5int32("));
     testing::assert(string_contains(output, "func hashmap_get__HashMap_6string_5int32("));
     testing::assert(string_contains(output, "func hashmap_set__HashMap_6string_5int32("));
     testing::assert(string_contains(output, "func array_get(arr__0 [2]int32"));
     testing::assert(string_contains(output, "array_get__Array_2_5int32(a__17, 1)"));
     testing::assert(string_contains(output, "s__22[1]"));
-    testing::assert(string_contains(output, "hashmap_get__HashMap_6string_5int32(m__23, \"b\")"));
+    testing::assert(string_contains(output, "_goml_m_core_t_string__get("));
+    testing::assert(string_contains(
+        output,
+        "hashmap_get__HashMap_6string_5int32(m__",
+    ));
     testing::assert(!string_contains(output, "_goml_m_array_t_get"));
     testing::assert(!string_contains(output, "_goml_m_vec_t_get"));
     testing::assert(!string_contains(output, "_goml_m_hashmap_t_get"))
