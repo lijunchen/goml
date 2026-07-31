@@ -31,6 +31,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     let ignored = Vec::[
         path::join(path::join(root, "build/output"), "invalid.gom"),
         path::join(path::join(root, ".hidden"), "invalid.gom"),
+        path::join(path::join(root, "testdata"), "invalid.gom"),
     ];
     for file in ignored {
         test_support::write_file(file, "invalid {")
@@ -41,6 +42,11 @@ fn fmt_formats_module_from_nested_directory() -> unit {
         "[module]\npath = \"nested\"\n",
     );
     test_support::write_file(path::join(nested_module, "invalid.gom"), "invalid {");
+    let external_test_source = path::join(path::join(root, "tests"), "main.gom");
+    test_support::write_file(
+        external_test_source,
+        "package tests;\nfn external_helper( )->unit{()}\n",
+    );
     let output = test_support::run(Vec::["fmt"], path::join(root, "src"));
     test_support::assert_success(output);
     testing::assert_eq(
@@ -54,6 +60,10 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     testing::assert_eq(
         test_support::read_file(test_source),
         "package main;\n\nfn helper() -> unit {\n    ()\n}\n",
+    );
+    testing::assert_eq(
+        test_support::read_file(external_test_source),
+        "package tests;\n\nfn external_helper() -> unit {\n    ()\n}\n",
     );
     for file in ignored {
         testing::assert_eq(test_support::read_file(file), "invalid {")
