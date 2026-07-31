@@ -2,11 +2,7 @@ package ast;
 
 use gomlc::cst;
 
-fn lower_wrapped_branch(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    missing_message: string,
-) -> Option[Expr] {
+fn lower_wrapped_branch(ctx: LowerCtx, node: LocatedNode, missing_message: string) -> Option[Expr] {
     match first_child(node, cst::NodeKind::BLOCK) {
         Some(block_node) => match lower_block(ctx, block_node) {
             Some(block) => Option::Some(Expr::Block { block, span: node_span(block_node) }),
@@ -48,10 +44,9 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                 } else {
                     match first_child(node, cst::NodeKind::BLOCK) {
                         Some(block_node) => match lower_block(ctx, block_node) {
-                            Some(block) => Option::Some(Expr::Block {
-                                block,
-                                span: node_span(block_node),
-                            }),
+                            Some(block) => Option::Some(
+                                Expr::Block { block, span: node_span(block_node) },
+                            ),
                             None => Option::None,
                         },
                         None => {
@@ -61,11 +56,7 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                     }
                 };
                 match body {
-                    Some(value) => Option::Some(Arm {
-                        pat,
-                        guard,
-                        body: value,
-                    }),
+                    Some(value) => Option::Some(Arm { pat, guard, body: value }),
                     None => Option::None,
                 }
             },
@@ -131,42 +122,51 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                 "If expression then-branch missing body",
                             ) {
                                 Some(then_branch) => {
-                                    let else_branch = match first_child(node, cst::NodeKind::EXPR_IF_ELSE) {
+                                    let else_branch = match first_child(
+                                        node,
+                                        cst::NodeKind::EXPR_IF_ELSE,
+                                    ) {
                                         Some(else_node) => lower_wrapped_branch(
                                             ctx,
                                             else_node,
                                             "If expression else-branch missing body",
                                         ),
-                                        None => Option::Some(Expr::Unit {
-                                            span: node_span(node),
-                                        }),
+                                        None => Option::Some(Expr::Unit { span: node_span(node) }),
                                     };
                                     match else_branch {
                                         Some(else_value) => match let_pat {
                                             Some(pat) => {
                                                 let arms: Vec[Arm] = Vec::new();
-                                                arms.push(Arm {
-                                                    pat,
-                                                    guard: Option::None,
-                                                    body: then_branch,
-                                                });
-                                                arms.push(Arm {
-                                                    pat: Pat::Wild { span: node_span(node) },
-                                                    guard: Option::None,
-                                                    body: else_value,
-                                                });
-                                                Option::Some(Expr::Match {
-                                                    expr: cond,
-                                                    arms,
-                                                    span: node_span(node),
-                                                })
+                                                arms.push(
+                                                    Arm {
+                                                        pat,
+                                                        guard: Option::None,
+                                                        body: then_branch,
+                                                    },
+                                                );
+                                                arms.push(
+                                                    Arm {
+                                                        pat: Pat::Wild { span: node_span(node) },
+                                                        guard: Option::None,
+                                                        body: else_value,
+                                                    },
+                                                );
+                                                Option::Some(
+                                                    Expr::Match {
+                                                        expr: cond,
+                                                        arms,
+                                                        span: node_span(node),
+                                                    },
+                                                )
                                             },
-                                            None => Option::Some(Expr::If {
-                                                cond,
-                                                then_branch,
-                                                else_branch: else_value,
-                                                span: node_span(node),
-                                            }),
+                                            None => Option::Some(
+                                                Expr::If {
+                                                    cond,
+                                                    then_branch,
+                                                    else_branch: else_value,
+                                                    span: node_span(node),
+                                                },
+                                            ),
                                         },
                                         None => Option::None,
                                     }
@@ -174,7 +174,11 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                 None => Option::None,
                             },
                             None => {
-                                push_error(ctx, node_span(node), "If expression missing then branch");
+                                push_error(
+                                    ctx,
+                                    node_span(node),
+                                    "If expression missing then branch",
+                                );
                                 Option::None
                             },
                         },
@@ -217,27 +221,32 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                                 Some(body) => match let_pat {
                                     Some(pat) => {
                                         let arms: Vec[Arm] = Vec::new();
-                                        arms.push(Arm {
-                                            pat,
-                                            guard: Option::None,
-                                            body,
-                                        });
-                                        arms.push(Arm {
-                                            pat: Pat::Wild { span: node_span(node) },
-                                            guard: Option::None,
-                                            body: Expr::Break { span: node_span(node) },
-                                        });
-                                        Option::Some(Expr::While {
-                                            cond: Expr::Bool { value: true, span: node_span(node) },
-                                            body: Expr::Match { expr: cond, arms, span: node_span(node) },
-                                            span: node_span(node),
-                                        })
+                                        arms.push(Arm { pat, guard: Option::None, body });
+                                        arms.push(
+                                            Arm {
+                                                pat: Pat::Wild { span: node_span(node) },
+                                                guard: Option::None,
+                                                body: Expr::Break { span: node_span(node) },
+                                            },
+                                        );
+                                        Option::Some(
+                                            Expr::While {
+                                                cond: Expr::Bool {
+                                                    value: true,
+                                                    span: node_span(node),
+                                                },
+                                                body: Expr::Match {
+                                                    expr: cond,
+                                                    arms,
+                                                    span: node_span(node),
+                                                },
+                                                span: node_span(node),
+                                            },
+                                        )
                                     },
-                                    None => Option::Some(Expr::While {
-                                        cond,
-                                        body,
-                                        span: node_span(node),
-                                    }),
+                                    None => Option::Some(
+                                        Expr::While { cond, body, span: node_span(node) },
+                                    ),
                                 },
                                 None => Option::None,
                             },
@@ -275,12 +284,14 @@ fn lower_for_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
                 Some(pat) => match lower_expr(ctx, values[0]) {
                     Some(iterator) => match first_child(node, cst::NodeKind::BLOCK) {
                         Some(block_node) => match lower_block(ctx, block_node) {
-                            Some(block) => Option::Some(Expr::For {
-                                pat,
-                                iterator,
-                                body: Expr::Block { block, span: node_span(block_node) },
-                                span: node_span(node),
-                            }),
+                            Some(block) => Option::Some(
+                                Expr::For {
+                                    pat,
+                                    iterator,
+                                    body: Expr::Block { block, span: node_span(block_node) },
+                                    span: node_span(node),
+                                },
+                            ),
                             None => Option::None,
                         },
                         None => {

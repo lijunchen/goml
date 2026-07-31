@@ -3,16 +3,12 @@ package util;
 use std::text;
 
 pub fn starts_with(value: string, prefix: string) -> bool {
-    value.byte_len() >= prefix.byte_len()
-        && value.byte_slice(0, prefix.byte_len()) == prefix
+    value.byte_len() >= prefix.byte_len() && value.byte_slice(0, prefix.byte_len()) == prefix
 }
 
 pub fn ends_with(value: string, suffix: string) -> bool {
     value.byte_len() >= suffix.byte_len()
-        && value.byte_slice(
-            value.byte_len() - suffix.byte_len(),
-            value.byte_len(),
-        ) == suffix
+        && value.byte_slice(value.byte_len() - suffix.byte_len(), value.byte_len()) == suffix
 }
 
 fn whitespace(value: uint8) -> bool {
@@ -21,15 +17,11 @@ fn whitespace(value: uint8) -> bool {
 
 pub fn trim(value: string) -> string {
     let start = Ref::new(0);
-    while start.get() < value.byte_len()
-        && whitespace(value.byte_get(start.get()))
-    {
+    while start.get() < value.byte_len() && whitespace(value.byte_get(start.get())) {
         start.set(start.get() + 1)
     };
     let end = Ref::new(value.byte_len());
-    while end.get() > start.get()
-        && whitespace(value.byte_get(end.get() - 1))
-    {
+    while end.get() > start.get() && whitespace(value.byte_get(end.get() - 1)) {
         end.set(end.get() - 1)
     };
     value.byte_slice(start.get(), end.get())
@@ -83,9 +75,7 @@ pub fn split_lines(value: string) -> Vec[string] {
     let start = Ref::new(0);
     for index in range(0, value.byte_len()) {
         if value.byte_get(index) == 10 {
-            let end = if index > start.get()
-                && value.byte_get(index - 1) == 13
-            {
+            let end = if index > start.get() && value.byte_get(index - 1) == 13 {
                 index - 1
             } else {
                 index
@@ -115,10 +105,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
     let start = Ref::new(0);
     let index = Ref::new(0);
     while index.get() + separator.byte_len() <= value.byte_len() {
-        if value.byte_slice(
-            index.get(),
-            index.get() + separator.byte_len(),
-        ) == separator {
+        if value.byte_slice(index.get(), index.get() + separator.byte_len()) == separator {
             result.push(value.byte_slice(start.get(), index.get()));
             index.set(index.get() + separator.byte_len());
             start.set(index.get())
@@ -228,15 +215,13 @@ fn shell_plain(value: string) -> bool {
     } else {
         for index in range(0, value.byte_len()) {
             let byte = value.byte_get(index);
-            if (byte >= 48 && byte <= 57)
-                || (byte >= 65 && byte <= 90)
+            if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90)
                 || (byte >= 97 && byte <= 122)
                 || byte == 45
                 || byte == 46
                 || byte == 47
                 || byte == 58
-                || byte == 95
-            {
+                || byte == 95 {
                 ()
             } else {
                 return false

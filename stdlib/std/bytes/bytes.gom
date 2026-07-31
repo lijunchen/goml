@@ -10,9 +10,7 @@ impl Bytes {
     }
 
     pub fn with_capacity(capacity: int) -> Bytes {
-        Bytes {
-            values: Vec::with_capacity(capacity),
-        }
+        Bytes { values: Vec::with_capacity(capacity) }
     }
 
     pub fn from_vec(values: Vec[uint8]) -> Bytes {
@@ -20,9 +18,7 @@ impl Bytes {
     }
 
     pub fn from_string(value: string) -> Bytes {
-        Bytes {
-            values: value.to_bytes(),
-        }
+        Bytes { values: value.to_bytes() }
     }
 
     pub fn len(self: Bytes) -> int {

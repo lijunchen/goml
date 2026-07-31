@@ -19,8 +19,7 @@ pub fn assert_eq[T: Eq + ToString](actual: T, expected: T) -> unit {
         ()
     } else {
         fail(
-            "assertion failed: values are not equal\n  actual: "
-                + ToString::to_string(actual)
+            "assertion failed: values are not equal\n  actual: " + ToString::to_string(actual)
                 + "\nexpected: "
                 + ToString::to_string(expected),
         )
@@ -29,9 +28,7 @@ pub fn assert_eq[T: Eq + ToString](actual: T, expected: T) -> unit {
 
 pub fn assert_ne[T: Eq + ToString](actual: T, expected: T) -> unit {
     if Eq::eq(actual, expected) {
-        fail(
-            "assertion failed: values are equal\nvalue: " + ToString::to_string(actual),
-        )
+        fail("assertion failed: values are equal\nvalue: " + ToString::to_string(actual))
     } else {
         ()
     }

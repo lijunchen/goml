@@ -54,10 +54,7 @@ pub fn gomlc_binary() -> string {
 }
 
 pub fn workspace(name: string) -> string {
-    let result = path::join(
-        path::join(module_root(), "_artifact/test-work"),
-        name,
-    );
+    let result = path::join(path::join(module_root(), "_artifact/test-work"), name);
     if fs::exists(result) {
         match fs::remove_dir_all(result) {
             Ok(()) => (),
@@ -125,53 +122,32 @@ pub fn assert_success(output: process::Output) -> unit {
     if process::ExitStatus::success(process::Output::status(output)) {
         ()
     } else {
-        testing::fail(
-            "command failed\nstdout:\n"
-                + stdout(output)
-                + "\nstderr:\n"
-                + stderr(output),
-        )
+        testing::fail("command failed\nstdout:\n" + stdout(output) + "\nstderr:\n" + stderr(output))
     }
 }
 
 pub fn assert_failure(output: process::Output) -> unit {
-    testing::assert(
-        !process::ExitStatus::success(process::Output::status(output)),
-    )
+    testing::assert(!process::ExitStatus::success(process::Output::status(output)))
 }
 
 pub fn assert_contains(value: string, expected: string) -> unit {
     if util::contains(value, expected) {
         ()
     } else {
-        testing::fail(
-            "expected text to contain:\n"
-                + expected
-                + "\nactual:\n"
-                + value,
-        )
+        testing::fail("expected text to contain:\n" + expected + "\nactual:\n" + value)
     }
 }
 
 pub fn assert_not_contains(value: string, unexpected: string) -> unit {
     if util::contains(value, unexpected) {
-        testing::fail(
-            "expected text not to contain:\n"
-                + unexpected
-                + "\nactual:\n"
-                + value,
-        )
+        testing::fail("expected text not to contain:\n" + unexpected + "\nactual:\n" + value)
     } else {
         ()
     }
 }
 
 pub fn run(args: Vec[string], directory: string) -> process::Output {
-    match process::Command::new(goml_binary())
-        .args(args)
-        .current_dir(directory)
-        .output()
-    {
+    match process::Command::new(goml_binary()).args(args).current_dir(directory).output() {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
@@ -184,12 +160,7 @@ pub fn run(args: Vec[string], directory: string) -> process::Output {
     }
 }
 
-pub fn project_command(
-    command: string,
-    target: string,
-    extra: Vec[string],
-    directory: string,
-) -> process::Output {
+pub fn project_command(command: string, target: string, extra: Vec[string], directory: string) -> process::Output {
     let args = Vec::new().pushed(command);
     if command == "run" && target != "" {
         args.push(target)
@@ -206,10 +177,8 @@ pub fn project_command(
     } else {
         path::join(directory, target)
     };
-    let command_directory = if command != "run"
-        && target != ""
-        && fs::is_file(path::join(candidate, "goml.toml"))
-    {
+    let command_directory = if command != "run" && target != ""
+        && fs::is_file(path::join(candidate, "goml.toml")) {
         candidate
     } else {
         directory
@@ -218,10 +187,7 @@ pub fn project_command(
 }
 
 pub fn write_basic_project(root: string, module_path: string) -> unit {
-    write_file(
-        path::join(root, "goml.toml"),
-        "[module]\npath = \"" + module_path + "\"\n",
-    );
+    write_file(path::join(root, "goml.toml"), "[module]\npath = \"" + module_path + "\"\n");
     write_file(
         path::join(root, "main.gom"),
         "package main;\n\nfn main() -> unit {\n    println(\"hello\")\n}\n",

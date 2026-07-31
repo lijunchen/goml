@@ -80,10 +80,7 @@ fn observe_exprs(maximum: Ref[int], values: Vec[core::Expr]) -> unit {
     }
 }
 
-fn observe_optional_expr(
-    maximum: Ref[int],
-    value: Option[core::Expr],
-) -> unit {
+fn observe_optional_expr(maximum: Ref[int], value: Option[core::Expr]) -> unit {
     match value {
         Some(value) => observe_expr(maximum, value),
         None => (),
@@ -129,27 +126,31 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, body)
         },
         Return { expr, ty: _ } => observe_optional_expr(maximum, expr),
-        Go { expr, ty: _ }
-        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ } => observe_expr(maximum, expr),
+        Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
+            op: _,
+            expr,
+            ty: _,
+        } | Cast { expr, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } => observe_expr(maximum, expr),
         Assign { name: _, value: expr, target_ty: _, ty: _ } => observe_expr(maximum, expr),
         Call { func, args, ty: _ } => {
             observe_expr(maximum, func);
             observe_exprs(maximum, args)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+            receiver,
+            args,
+            ..,
+        } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break {
+            ty: _,
+        } | Continue { ty: _ } => (),
     }
 }
 

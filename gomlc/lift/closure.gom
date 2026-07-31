@@ -93,11 +93,9 @@ fn collect_used_types(values: Vec[string], ty: tast::Type) -> unit {
                 collect_used_types(values, arg)
             }
         },
-        Array { len: _, elem }
-        | Slice { elem }
-        | VecType { elem }
-        | RefType { elem }
-        | Channel { elem } => collect_used_types(values, elem),
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => collect_used_types(values, elem),
         HashMap { key, value } => {
             collect_used_types(values, key);
             collect_used_types(values, value)
@@ -118,10 +116,7 @@ fn collect_used_exprs(values: Vec[string], exprs: Vec[core::Expr]) -> unit {
     }
 }
 
-fn collect_used_optional_expr(
-    values: Vec[string],
-    expr: Option[core::Expr],
-) -> unit {
+fn collect_used_optional_expr(values: Vec[string], expr: Option[core::Expr]) -> unit {
     match expr {
         Some(expr) => collect_used_expr(values, expr),
         None => (),
@@ -168,11 +163,14 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_expr(values, body)
         },
         Return { expr, ty: _ } => collect_used_optional_expr(values, expr),
-        Go { expr, ty: _ }
-        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ } => collect_used_expr(values, expr),
+        Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
+            op: _,
+            expr,
+            ty: _,
+        } | Cast { expr, ty: _ } | Proj { tuple: expr, index: _, ty: _ } => collect_used_expr(
+            values,
+            expr,
+        ),
         Assign { name: _, value: expr, target_ty, ty: _ } => {
             collect_used_types(values, target_ty);
             collect_used_expr(values, expr)
@@ -185,16 +183,17 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_types(values, for_ty);
             collect_used_expr(values, expr)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+            receiver,
+            args,
+            ..,
+        } => {
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break {
+            ty: _,
+        } | Continue { ty: _ } => (),
     }
 }
 
@@ -220,9 +219,7 @@ fn initial_used_types(value: core::File) -> Vec[string] {
 }
 
 fn ascii_alphanumeric(value: uint8) -> bool {
-    (value >= 48 && value <= 57)
-        || (value >= 65 && value <= 90)
-        || (value >= 97 && value <= 122)
+    (value >= 48 && value <= 57) || (value >= 65 && value <= 90) || (value >= 97 && value <= 122)
 }
 
 fn primary_name(value: string) -> string {
@@ -419,26 +416,31 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, body)
         },
         Return { expr, ty: _ } => observe_optional_expr(maximum, expr),
-        Go { expr, ty: _ }
-        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ } => observe_expr(maximum, expr),
+        Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
+            op: _,
+            expr,
+            ty: _,
+        } | Cast { expr, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } => observe_expr(maximum, expr),
         Assign { name: _, value: expr, target_ty: _, ty: _ } => observe_expr(maximum, expr),
         Call { func, args, ty: _ } => {
             observe_expr(maximum, func);
             observe_exprs(maximum, args)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+            receiver,
+            args,
+            ..,
+        } => {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break { ty: _ } | Continue {
+            ty: _,
+        } => (),
     }
 }
 
@@ -513,29 +515,13 @@ fn transform_block(
             Some(info) => Option::Some(info.struct_name),
             None => Option::None,
         };
-        stmts.push(core::LetStmt {
-            name: stmt.name,
-            value: transformed,
-            ty,
-        });
-        scope.push(ScopeEntry {
-            name: stmt.name,
-            ty,
-            closure_struct,
-        })
+        stmts.push(core::LetStmt { name: stmt.name, value: transformed, ty });
+        scope.push(ScopeEntry { name: stmt.name, ty, closure_struct })
     };
-    core::Block {
-        stmts,
-        tail: transform_optional_expr(state, scope, value.tail, context),
-    }
+    core::Block { stmts, tail: transform_optional_expr(state, scope, value.tail, context) }
 }
 
-fn transform_arm(
-    state: State,
-    scope: Vec[ScopeEntry],
-    value: core::Arm,
-    context: Option[string],
-) -> core::Arm {
+fn transform_arm(state: State, scope: Vec[ScopeEntry], value: core::Arm, context: Option[string]) -> core::Arm {
     core::Arm {
         lhs: transform_expr(state, scope, value.lhs, context),
         body: transform_expr(state, scope, value.body, context),
@@ -592,12 +578,7 @@ fn transform_call(
     }
 }
 
-fn transform_expr(
-    state: State,
-    scope: Vec[ScopeEntry],
-    value: core::Expr,
-    context: Option[string],
-) -> core::Expr {
+fn transform_expr(state: State, scope: Vec[ScopeEntry], value: core::Expr, context: Option[string]) -> core::Expr {
     match value {
         Var { name, ty } => match find_scope(scope, name) {
             Some(entry) => core::Expr::Var { name, ty: entry.ty },
@@ -654,10 +635,7 @@ fn transform_expr(
             expr: transform_optional_expr(state, scope, expr, context),
             ty,
         },
-        Go { expr, ty } => core::Expr::Go {
-            expr: transform_expr(state, scope, expr, context),
-            ty,
-        },
+        Go { expr, ty } => core::Expr::Go { expr: transform_expr(state, scope, expr, context), ty },
         ConstrGet { expr, constructor, field_index: index, ty } => core::Expr::ConstrGet {
             expr: transform_expr(state, scope, expr, context),
             constructor,
@@ -703,14 +681,7 @@ fn transform_expr(
                 ty,
             }
         },
-        TraitCall {
-            trait_ref: reference,
-            method_name,
-            instance_name,
-            receiver,
-            args,
-            ty,
-        } => {
+        TraitCall { trait_ref: reference, method_name, instance_name, receiver, args, ty } => {
             core::Expr::TraitCall {
                 trait_ref: reference,
                 method_name,
@@ -794,10 +765,7 @@ fn collect_captured(
                 Some(entry) => if capture_exists(captured, name) {
                     ()
                 } else {
-                    captured.push(Capture {
-                        name,
-                        ty: entry.ty,
-                    })
+                    captured.push(Capture { name, ty: entry.ty })
                 },
                 None => (),
             }
@@ -834,12 +802,15 @@ fn collect_captured(
         Return { expr, ty: _ } => {
             collect_captured_optional(expr, bound, captured, scope)
         },
-        Go { expr, ty: _ }
-        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ } => {
+        Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
+            op: _,
+            expr,
+            ty: _,
+        } | Cast { expr, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } => {
             collect_captured(expr, bound, captured, scope)
         },
         Assign { name: _, value: expr, target_ty: _, ty: _ } => {
@@ -849,15 +820,17 @@ fn collect_captured(
             collect_captured(func, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+            receiver,
+            args,
+            ..,
+        } => {
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
-        Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break { ty: _ } | Continue {
+            ty: _,
+        } => (),
     }
 }
 
@@ -871,10 +844,7 @@ fn make_field_name(name: string, index: int) -> string {
 fn closure_body_block(value: core::Expr) -> core::Block {
     match value {
         Block { block, ty: _ } => block,
-        other => core::Block {
-            stmts: Vec::new(),
-            tail: Option::Some(other),
-        },
+        other => core::Block { stmts: Vec::new(), tail: Option::Some(other) },
     }
 }
 
@@ -888,24 +858,23 @@ fn prepend_captures(
     let stmts = Vec::new();
     for index in range(0, captures.len()) {
         let capture = captures[index];
-        stmts.push(core::LetStmt {
-            name: capture.name,
-            value: core::Expr::ConstrGet {
-                expr: core::Expr::Var { name: env_name, ty: env_ty },
-                constructor,
-                field_index: index,
+        stmts.push(
+            core::LetStmt {
+                name: capture.name,
+                value: core::Expr::ConstrGet {
+                    expr: core::Expr::Var { name: env_name, ty: env_ty },
+                    constructor,
+                    field_index: index,
+                    ty: capture.ty,
+                },
                 ty: capture.ty,
             },
-            ty: capture.ty,
-        })
+        )
     };
     for stmt in body.stmts {
         stmts.push(stmt)
     };
-    core::Block {
-        stmts,
-        tail: body.tail,
-    }
+    core::Block { stmts, tail: body.tail }
 }
 
 fn transform_closure(
@@ -929,14 +898,16 @@ fn transform_closure(
             for index in range(0, params.len()) {
                 let param = params[index];
                 let param_ty = signature.0[index];
-                closure_scope.push(ScopeEntry {
-                    name: param.name,
-                    ty: param_ty,
-                    closure_struct: match closure_for_type(state, param_ty) {
-                        Some(info) => Option::Some(info.struct_name),
-                        None => Option::None,
+                closure_scope.push(
+                    ScopeEntry {
+                        name: param.name,
+                        ty: param_ty,
+                        closure_struct: match closure_for_type(state, param_ty) {
+                            Some(info) => Option::Some(info.struct_name),
+                            None => Option::None,
+                        },
                     },
-                });
+                );
                 lowered_params.push((param.name, param_ty));
                 bound.push(param.name)
             };
@@ -979,18 +950,16 @@ fn transform_closure(
                 apply_param_types.push(param.1)
             };
             let apply_ty = tast::Type::Func { params: apply_param_types, ret_ty: signature.1 };
-            state.closures.push(ClosureInfo {
-                struct_name,
-                apply_name,
-                apply_ty,
-            });
-            state.generated_structs.push(tast::StructDef {
-                name: struct_name,
-                generics: Vec::new(),
-                fields: struct_fields,
-                public_fields: Vec::new(),
-                has_hidden_fields: false,
-            });
+            state.closures.push(ClosureInfo { struct_name, apply_name, apply_ty });
+            state.generated_structs.push(
+                tast::StructDef {
+                    name: struct_name,
+                    generics: Vec::new(),
+                    fields: struct_fields,
+                    public_fields: Vec::new(),
+                    has_hidden_fields: false,
+                },
+            );
             let fn_body = prepend_captures(
                 closure_body_block(body),
                 captures,
@@ -998,16 +967,18 @@ fn transform_closure(
                 env_ty,
                 constructor,
             );
-            state.generated.push(core::Function {
-                name: apply_name,
-                root: true,
-                generics: Vec::new(),
-                predicates: Vec::new(),
-                trait_impl: Option::None,
-                params: fn_params,
-                ret_ty: signature.1,
-                body: fn_body,
-            });
+            state.generated.push(
+                core::Function {
+                    name: apply_name,
+                    root: true,
+                    generics: Vec::new(),
+                    predicates: Vec::new(),
+                    trait_impl: Option::None,
+                    params: fn_params,
+                    ret_ty: signature.1,
+                    body: fn_body,
+                },
+            );
             core::Expr::Constr { constructor, args: captured_args, ty: env_ty }
         },
         None => core::Expr::Closure { params, body, ty },
@@ -1017,14 +988,16 @@ fn transform_closure(
 fn transform_function(state: State, value: core::Function) -> core::Function {
     let scope = Vec::new();
     for param in value.params {
-        scope.push(ScopeEntry {
-            name: param.0,
-            ty: param.1,
-            closure_struct: match closure_for_type(state, param.1) {
-                Some(info) => Option::Some(info.struct_name),
-                None => Option::None,
+        scope.push(
+            ScopeEntry {
+                name: param.0,
+                ty: param.1,
+                closure_struct: match closure_for_type(state, param.1) {
+                    Some(info) => Option::Some(info.struct_name),
+                    None => Option::None,
+                },
             },
-        })
+        )
     };
     let context = sanitize_name(value.name);
     core::Function {
@@ -1039,10 +1012,7 @@ fn transform_function(state: State, value: core::Function) -> core::Function {
     }
 }
 
-fn lambda_lift_with_counter(
-    value: core::File,
-    counter: Ref[int],
-) -> core::File {
+fn lambda_lift_with_counter(value: core::File, counter: Ref[int]) -> core::File {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;

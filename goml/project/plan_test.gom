@@ -4,15 +4,8 @@ use std::testing;
 
 #[test]
 fn derives_unicode_package_names_from_directories() -> unit {
-    match package_name_for_directory(
-        "/tmp/项目",
-        "alice::app",
-        "/tmp/项目/工具/解析",
-    ) {
-        Ok(value) => testing::assert_eq(
-            value,
-            "alice::app::工具::解析",
-        ),
+    match package_name_for_directory("/tmp/项目", "alice::app", "/tmp/项目/工具/解析") {
+        Ok(value) => testing::assert_eq(value, "alice::app::工具::解析"),
         Err(error) => testing::fail(error),
     }
 }
@@ -20,19 +13,12 @@ fn derives_unicode_package_names_from_directories() -> unit {
 #[test]
 fn displays_commands_with_unicode_and_quoted_arguments() -> unit {
     testing::assert_eq(
-        display_command(Command::GoBuild {
-            input: "源 code/main.go",
-            output: "输出's app",
-        }),
+        display_command(Command::GoBuild { input: "源 code/main.go", output: "输出's app" }),
         "go build -o '输出'\\''s app' '源 code/main.go'",
     )
 }
 
-fn compile_command(
-    name: string,
-    interface_files: Vec[string],
-    output: string,
-) -> Command {
+fn compile_command(name: string, interface_files: Vec[string], output: string) -> Command {
     Command::Compile {
         subcommand: "build",
         package_name: name,
@@ -45,25 +31,16 @@ fn compile_command(
 
 #[test]
 fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
-    let commands = Vec::new()
-        .pushed(compile_command("a", Vec::new(), "out/a"))
-        .pushed(compile_command(
-            "b",
-            Vec::new().pushed("out/a.interface"),
-            "out/b",
-        ))
-        .pushed(Command::Link {
-            input_cores: Vec::new()
-                .pushed("out/a.core")
-                .pushed("out/b.core"),
+    let commands = Vec::new().pushed(compile_command("a", Vec::new(), "out/a")).pushed(
+        compile_command("b", Vec::new().pushed("out/a.interface"), "out/b"),
+    ).pushed(
+        Command::Link {
+            input_cores: Vec::new().pushed("out/a.core").pushed("out/b.core"),
             output: "out/main.go",
             entry_package: "b",
             world: Option::None,
-        })
-        .pushed(Command::GoBuild {
-            input: "out/main.go",
-            output: "out/main",
-        });
+        },
+    ).pushed(Command::GoBuild { input: "out/main.go", output: "out/main" });
     let graph = match build_graph(commands) {
         Ok(value) => value,
         Err(message) => {
@@ -94,9 +71,7 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
         world: Option::Some(world),
     };
     let graph = match build_graph(
-        Vec::new()
-            .pushed(Command::PrepareWorld { output: world })
-            .pushed(command),
+        Vec::new().pushed(Command::PrepareWorld { output: world }).pushed(command),
     ) {
         Ok(value) => value,
         Err(message) => {
@@ -112,9 +87,9 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
 #[test]
 fn build_graph_serializes_duplicate_outputs() -> unit {
     let graph = match build_graph(
-        Vec::new()
-            .pushed(compile_command("a", Vec::new(), "out/shared"))
-            .pushed(compile_command("b", Vec::new(), "out/shared")),
+        Vec::new().pushed(compile_command("a", Vec::new(), "out/shared")).pushed(
+            compile_command("b", Vec::new(), "out/shared"),
+        ),
     ) {
         Ok(value) => value,
         Err(message) => {
@@ -130,17 +105,9 @@ fn build_graph_serializes_duplicate_outputs() -> unit {
 #[test]
 fn build_graph_exposes_dependency_cycles() -> unit {
     let graph = match build_graph(
-        Vec::new()
-            .pushed(compile_command(
-                "a",
-                Vec::new().pushed("out/b.interface"),
-                "out/a",
-            ))
-            .pushed(compile_command(
-                "b",
-                Vec::new().pushed("out/a.interface"),
-                "out/b",
-            )),
+        Vec::new().pushed(compile_command("a", Vec::new().pushed("out/b.interface"), "out/a")).pushed(
+            compile_command("b", Vec::new().pushed("out/a.interface"), "out/b"),
+        ),
     ) {
         Ok(value) => value,
         Err(message) => {

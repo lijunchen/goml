@@ -44,11 +44,8 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
             return Result::Err("help")
         } else if !(positional.get()) && argument == "--version" {
             return Result::Err("version")
-        } else if !(positional.get())
-            && argument.byte_len() > 0
-            && argument.byte_get(0) == 45
-            && argument != "-"
-        {
+        } else if !(positional.get()) && argument.byte_len() > 0 && argument.byte_get(0) == 45
+            && argument != "-" {
             return Result::Err("unrecognized option: " + argument)
         } else {
             paths.push(argument)
@@ -56,11 +53,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     };
     if write.get() && check.get() {
         Result::Err("-w and --check cannot be used together")
-    } else if paths.len() > 1
-        && !(write.get())
-        && !(list.get())
-        && !(check.get())
-    {
+    } else if paths.len() > 1 && !(write.get()) && !(list.get()) && !(check.get()) {
         Result::Err("multiple files require -w, -l, or --check")
     } else {
         if paths.len() == 0 {
@@ -81,12 +74,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
         } else if stdin_count.get() > 0 && paths.len() > 1 {
             Result::Err("stdin cannot be combined with file paths")
         } else {
-            Result::Ok(Options {
-                write: write.get(),
-                list: list.get(),
-                check: check.get(),
-                paths,
-            })
+            Result::Ok(Options { write: write.get(), list: list.get(), check: check.get(), paths })
         }
     }
 }
@@ -106,20 +94,16 @@ fn read_source(path: string) -> Result[string, string] {
     }
 }
 
-fn diagnostic_error(
-    path: string,
-    error: formatter::FormatError,
-) -> string {
+fn diagnostic_error(path: string, error: formatter::FormatError) -> string {
     let output: Ref[string] = Ref::new("");
     for diagnostic in error.diagnostics {
-        let prefix = if output.get() == "" { "" } else { "\n" };
+        let prefix = if output.get() == "" {
+            ""
+        } else {
+            "\n"
+        };
         output.set(
-            output.get()
-                + prefix
-                + path
-                + ":"
-                + diagnostic.start.to_string()
-                + ": "
+            output.get() + prefix + path + ":" + diagnostic.start.to_string() + ": "
                 + diagnostic.message,
         )
     };
@@ -137,11 +121,7 @@ fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
             Ok(value) => value,
             Err(error) => return Result::Err(diagnostic_error(path, error)),
         };
-        result.push(FormattedFile {
-            path,
-            source,
-            formatted,
-        })
+        result.push(FormattedFile { path, source, formatted })
     };
     Result::Ok(result)
 }
@@ -194,7 +174,11 @@ fn run(options: Options) -> int {
     } else {
         ()
     };
-    if options.check && changed.get() { 1 } else { 0 }
+    if options.check && changed.get() {
+        1
+    } else {
+        0
+    }
 }
 
 fn main() -> unit {

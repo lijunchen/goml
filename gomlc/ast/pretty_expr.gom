@@ -167,19 +167,20 @@ fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -
 
 fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
-        Path {
-            path,
-            owner_type_args,
-            member_type_args,
-            span: _,
-        } => pretty_write_path_expr(
+        Path { path, owner_type_args, member_type_args, span: _ } => pretty_write_path_expr(
             builder,
             path,
             owner_type_args,
             member_type_args,
         ),
         Unit { span: _ } => builder.write_string("()"),
-        Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value, span: _ } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value, span: _ } => builder.write_string(value),
         Float { value, span: _ } => builder.write_string(value.to_string()),
         String { value, span: _ } => pretty_write_quoted_string(builder, value),
@@ -221,10 +222,11 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
         StructLiteral { name: path, fields, base, span: _ } => {
             pretty_write_path(builder, path);
             builder.write_string(" {");
-            if fields.len() == 0 && match base {
-                Some(_) => false,
-                None => true,
-            } {
+            if fields.len() == 0
+                && match base {
+                    Some(_) => false,
+                    None => true,
+                } {
                 builder.write_char('}')
             } else {
                 let index = Ref::new(0);
@@ -403,12 +405,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('.');
             builder.write_string(index.to_string())
         },
-        Field {
-            expr,
-            field_name: field,
-            method_type_args,
-            span: _,
-        } => {
+        Field { expr, field_name: field, method_type_args, span: _ } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('.');
             builder.write_string(field);
@@ -451,12 +448,7 @@ fn pretty_pat_is_or(value: Pat) -> bool {
     }
 }
 
-fn pretty_write_pats(
-    builder: text::StringBuilder,
-    values: Vec[Pat],
-    separator: string,
-    indent: int,
-) -> unit {
+fn pretty_write_pats(builder: text::StringBuilder, values: Vec[Pat], separator: string, indent: int) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -473,7 +465,13 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
     match value {
         Var { name, span: _ } => builder.write_string(name),
         Unit { span: _ } => builder.write_string("()"),
-        Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value, span: _ } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value, span: _ } => builder.write_string(value),
         Float { value, span: _ } => builder.write_string(value),
         String { value, span: _ } => pretty_write_quoted_string(builder, value),
@@ -584,7 +582,13 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
         Or { pats: values, span: _ } => pretty_write_pats(builder, values, " | ", indent),
         Range { start, end, inclusive, span: _ } => {
             pretty_write_pat(builder, start, indent);
-            builder.write_string(if inclusive { "..=" } else { ".." });
+            builder.write_string(
+                if inclusive {
+                    "..="
+                } else {
+                    ".."
+                },
+            );
             pretty_write_pat(builder, end, indent)
         },
         Wild { span: _ } => builder.write_char('_'),

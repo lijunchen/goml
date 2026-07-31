@@ -24,18 +24,10 @@ fn artifact_core_decode_context(value: ArtifactPackageExports) -> ArtifactCoreDe
         };
         struct_fields.push((definition.name, fields))
     };
-    ArtifactCoreDecodeContext {
-        types,
-        struct_fields,
-        enums: value.enums,
-        structs: value.structs,
-    }
+    ArtifactCoreDecodeContext { types, struct_fields, enums: value.enums, structs: value.structs }
 }
 
-fn artifact_decode_struct_fields(
-    context: ArtifactCoreDecodeContext,
-    name: string,
-) -> Vec[string] {
+fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
     let result = Vec::new();
     for value in context.struct_fields {
         if value.0 == name {
@@ -49,9 +41,7 @@ fn artifact_decode_struct_fields(
     result
 }
 
-fn artifact_decode_primitive_payload(
-    value: ArtifactValue,
-) -> Result[ArtifactValue, string] {
+fn artifact_decode_primitive_payload(value: ArtifactValue) -> Result[ArtifactValue, string] {
     let object = match artifact_json_object(value, "primitive payload") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -59,10 +49,10 @@ fn artifact_decode_primitive_payload(
     artifact_json_required_field(object, "value")
 }
 
-fn artifact_decode_numeric_primitive(
-    kind: string,
-    value: ArtifactValue,
-) -> Result[tast::Primitive, string] {
+fn artifact_decode_numeric_primitive(kind: string, value: ArtifactValue) -> Result[
+    tast::Primitive,
+    string,
+] {
     let value = match artifact_decode_primitive_payload(value) {
         Ok(value) => match artifact_json_number_value(value, "numeric primitive") {
             Ok(value) => value,
@@ -139,10 +129,10 @@ fn artifact_decode_primitive(value: ArtifactValue) -> Result[tast::Primitive, st
     }
 }
 
-fn artifact_decode_constructor(
-    context: ArtifactCoreDecodeContext,
-    value: ArtifactValue,
-) -> Result[tast::Constructor, string] {
+fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+    tast::Constructor,
+    string,
+] {
     let object = match artifact_json_object(value, "constructor") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -155,12 +145,14 @@ fn artifact_decode_constructor(
             Err(error) => return Result::Err(error),
         };
         match artifact_json_field_string(payload, "type_name") {
-            Ok(name) => Result::Ok(tast::Constructor {
-                name,
-                fields: artifact_decode_struct_fields(context, name),
-                is_struct: true,
-                tag: Option::None,
-            }),
+            Ok(name) => Result::Ok(
+                tast::Constructor {
+                    name,
+                    fields: artifact_decode_struct_fields(context, name),
+                    is_struct: true,
+                    tag: Option::None,
+                },
+            ),
             Err(error) => Result::Err(error),
         }
     } else if object[0].0 == "Enum" {
@@ -186,12 +178,14 @@ fn artifact_decode_constructor(
             },
             Err(error) => return Result::Err(error),
         };
-        Result::Ok(tast::Constructor {
-            name: type_name + "::" + variant,
-            fields: Vec::new(),
-            is_struct: false,
-            tag: Option::Some(index),
-        })
+        Result::Ok(
+            tast::Constructor {
+                name: type_name + "::" + variant,
+                fields: Vec::new(),
+                is_struct: false,
+                tag: Option::Some(index),
+            },
+        )
     } else {
         Result::Err(artifact_decode_error("constructor kind"))
     }

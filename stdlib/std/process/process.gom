@@ -116,40 +116,40 @@ impl Command {
             self.input_value,
         );
         if ok {
-            Result::Ok(Output {
-                status_value: ExitStatus { code_value: code },
-                stdout_value: bytes::Bytes::from_vec(stdout),
-                stderr_value: bytes::Bytes::from_vec(stderr),
-            })
-        } else {
-            Result::Err(err)
-        }
-    }
-
-    pub fn output_timeout(
-        self: Command,
-        timeout_ms: int,
-    ) -> Result[(Output, bool), string] {
-        let (ok, code, stdout, stderr, err, timed_out) =
-            host::process_output_timeout(
-                self.program,
-                self.arguments,
-                self.has_directory,
-                self.directory,
-                self.environment,
-                self.has_input,
-                self.input_value,
-                timeout_ms,
-            );
-        if ok {
-            Result::Ok((
+            Result::Ok(
                 Output {
                     status_value: ExitStatus { code_value: code },
                     stdout_value: bytes::Bytes::from_vec(stdout),
                     stderr_value: bytes::Bytes::from_vec(stderr),
                 },
-                timed_out,
-            ))
+            )
+        } else {
+            Result::Err(err)
+        }
+    }
+
+    pub fn output_timeout(self: Command, timeout_ms: int) -> Result[(Output, bool), string] {
+        let (ok, code, stdout, stderr, err, timed_out) = host::process_output_timeout(
+            self.program,
+            self.arguments,
+            self.has_directory,
+            self.directory,
+            self.environment,
+            self.has_input,
+            self.input_value,
+            timeout_ms,
+        );
+        if ok {
+            Result::Ok(
+                (
+                    Output {
+                        status_value: ExitStatus { code_value: code },
+                        stdout_value: bytes::Bytes::from_vec(stdout),
+                        stderr_value: bytes::Bytes::from_vec(stderr),
+                    },
+                    timed_out,
+                ),
+            )
         } else {
             Result::Err(err)
         }
@@ -170,10 +170,7 @@ impl Command {
         }
     }
 
-    pub fn status_timeout(
-        self: Command,
-        timeout_ms: int,
-    ) -> Result[(ExitStatus, bool), string] {
+    pub fn status_timeout(self: Command, timeout_ms: int) -> Result[(ExitStatus, bool), string] {
         let (ok, code, err, timed_out) = host::process_status_timeout(
             self.program,
             self.arguments,

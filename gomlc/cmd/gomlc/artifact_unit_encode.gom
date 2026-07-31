@@ -13,10 +13,7 @@ struct ArtifactCoreUnit {
     tests: Vec[TestDescriptor],
 }
 
-fn artifact_json_test_descriptor(
-    writer: ArtifactJsonWriter,
-    value: TestDescriptor,
-) -> unit {
+fn artifact_json_test_descriptor(writer: ArtifactJsonWriter, value: TestDescriptor) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "id");
     artifact_json_string(writer, value.id);
@@ -42,10 +39,7 @@ fn artifact_json_test_descriptor(
     artifact_json_end_object(writer)
 }
 
-fn artifact_json_tests(
-    writer: ArtifactJsonWriter,
-    values: Vec[TestDescriptor],
-) -> unit {
+fn artifact_json_tests(writer: ArtifactJsonWriter, values: Vec[TestDescriptor]) -> unit {
     artifact_json_begin_array(writer);
     for value in values {
         artifact_json_test_descriptor(writer, value)
@@ -53,10 +47,7 @@ fn artifact_json_tests(
     artifact_json_end_array(writer)
 }
 
-fn artifact_json_core_unit(
-    writer: ArtifactJsonWriter,
-    value: ArtifactCoreUnit,
-) -> unit {
+fn artifact_json_core_unit(writer: ArtifactJsonWriter, value: ArtifactCoreUnit) -> unit {
     let context = artifact_exports_type_context(value.exports);
     artifact_json_begin_object(writer);
     if writer.binary_mode < 2 {

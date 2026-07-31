@@ -14,11 +14,7 @@ fn newline(builder: text::StringBuilder, indent: int) -> unit {
     write_spaces(builder, indent)
 }
 
-fn write_joined_strings(
-    builder: text::StringBuilder,
-    values: Vec[string],
-    separator: string,
-) -> unit {
+fn write_joined_strings(builder: text::StringBuilder, values: Vec[string], separator: string) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -31,11 +27,7 @@ fn write_joined_strings(
     }
 }
 
-fn write_types(
-    builder: text::StringBuilder,
-    values: Vec[TypeExpr],
-    separator: string,
-) -> unit {
+fn write_types(builder: text::StringBuilder, values: Vec[TypeExpr], separator: string) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -118,11 +110,7 @@ fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
     }
 }
 
-fn write_trait_refs(
-    builder: text::StringBuilder,
-    values: Vec[TraitRef],
-    separator: string,
-) -> unit {
+fn write_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef], separator: string) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -145,10 +133,7 @@ fn write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
     }
 }
 
-fn find_bounds(
-    values: Vec[(string, Vec[TraitRef])],
-    name: string,
-) -> Option[Vec[TraitRef]] {
+fn find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Option[Vec[TraitRef]] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
         let value = values[index.get()];
@@ -195,10 +180,7 @@ fn write_bounded_generics(
     }
 }
 
-fn write_predicates(
-    builder: text::StringBuilder,
-    values: Vec[Predicate],
-) -> unit {
+fn write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
     if values.len() > 0 {
         builder.write_string(" where ");
         let index = Ref::new(0);
@@ -276,19 +258,11 @@ fn write_constructor(builder: text::StringBuilder, value: ConstructorRef) -> uni
 
 fn write_pattern_head(builder: text::StringBuilder, value: PatternHead) -> unit {
     match value {
-        Resolved {
-            enum_def,
-            variant_index,
-            span: _,
-        } => write_constructor(
+        Resolved { enum_def, variant_index, span: _ } => write_constructor(
             builder,
-            ConstructorRef::Resolved {
-                enum_def,
-                variant_index,
-            },
+            ConstructorRef::Resolved { enum_def, variant_index },
         ),
-        Qualified { name, span: _ }
-        | Contextual { name, span: _ } => {
+        Qualified { name, span: _ } | Contextual { name, span: _ } => {
             builder.write_string(name)
         },
     }
@@ -439,12 +413,7 @@ fn binary_symbol(value: ast::BinaryOp) -> string {
     }
 }
 
-fn write_exprs(
-    builder: text::StringBuilder,
-    values: Vec[Expr],
-    separator: string,
-    indent: int,
-) -> unit {
+fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], separator: string, indent: int) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -564,16 +533,16 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             member_type_args,
             member_type_arg_spans: _,
         } => {
-            write_static_member(
-                builder,
-                owner,
-                member,
-                owner_type_args,
-                member_type_args,
-            )
+            write_static_member(builder, owner, member, owner_type_args, member_type_args)
         },
         Unit => builder.write_string("()"),
-        Bool { value } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value } => builder.write_string(value),
         Float { value } => builder.write_string(value.to_string()),
         String { value } => write_quoted_string(builder, value),
@@ -615,10 +584,11 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         StructLiteral { name, fields, base } => {
             builder.write_string(name);
             builder.write_string(" {");
-            if fields.len() == 0 && match base {
-                Some(_) => false,
-                None => true,
-            } {
+            if fields.len() == 0
+                && match base {
+                    Some(_) => false,
+                    None => true,
+                } {
                 builder.write_char('}')
             } else {
                 let index = Ref::new(0);
@@ -760,7 +730,11 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             write_expr(
                 builder,
                 func,
-                if args.len() == 0 { indent } else { indent + 2 },
+                if args.len() == 0 {
+                    indent
+                } else {
+                    indent + 2
+                },
             );
             builder.write_char('(');
             write_exprs(builder, args, ", ", indent + 2);
@@ -839,12 +813,7 @@ fn pat_is_or(value: Pat) -> bool {
     }
 }
 
-fn write_pats(
-    builder: text::StringBuilder,
-    values: Vec[Pat],
-    separator: string,
-    indent: int,
-) -> unit {
+fn write_pats(builder: text::StringBuilder, values: Vec[Pat], separator: string, indent: int) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -861,7 +830,13 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
     match value.kind {
         Var { name: local } => write_local_debug(builder, local),
         Unit => builder.write_string("()"),
-        Bool { value } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value } => builder.write_string(value),
         Float { value } => builder.write_string(value),
         String { value } => write_quoted_string(builder, value),
@@ -972,7 +947,13 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
         Or { pats: values } => write_pats(builder, values, " | ", indent),
         Range { start, end, inclusive } => {
             write_pat(builder, start, indent);
-            builder.write_string(if inclusive { "..=" } else { ".." });
+            builder.write_string(
+                if inclusive {
+                    "..="
+                } else {
+                    ".."
+                },
+            );
             write_pat(builder, end, indent)
         },
         Wild => builder.write_char('_'),
@@ -1041,17 +1022,10 @@ fn write_struct(builder: text::StringBuilder, value: StructDef, indent: int) -> 
     builder.write_char('}')
 }
 
-fn write_trait_method(
-    builder: text::StringBuilder,
-    value: TraitMethodSignature,
-) -> unit {
+fn write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
-    write_bounded_generics(
-        builder,
-        value.generics,
-        value.generic_bounds,
-    );
+    write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
     write_types(builder, value.params, ", ");
     builder.write_string(") -> ");
@@ -1097,11 +1071,7 @@ fn write_function(builder: text::StringBuilder, value: Function, indent: int) ->
     write_attributes(builder, value.attrs);
     builder.write_string("fn ");
     builder.write_string(value.name);
-    write_bounded_generics(
-        builder,
-        value.generics,
-        value.generic_bounds,
-    );
+    write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
     let index = Ref::new(0);
     for param in value.params {
@@ -1132,11 +1102,7 @@ fn write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
     write_attributes(builder, value.attrs);
     builder.write_string("extern fn ");
     builder.write_string(value.name);
-    write_bounded_generics(
-        builder,
-        value.generics,
-        value.generic_bounds,
-    );
+    write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
     let index = Ref::new(0);
     for param in value.params {

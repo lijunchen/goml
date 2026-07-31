@@ -9,20 +9,29 @@ use gomlc::tast;
 use std::testing;
 
 fn lower_source(source: string) -> core::File {
-    lower(mono::lower(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse(source)),
-        "main.gom",
-    )))))
+    lower(
+        mono::lower(
+            core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))),
+        ),
+    )
 }
 
 #[test]
 fn consumes_shared_names_for_lifted_parameters() -> unit {
-    let value = mono::lower(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse(
-            "fn main() { let result = (|x| x + 1)(41); println(result); }",
-        )),
-        "main.gom",
-    ))));
+    let value = mono::lower(
+        core::lower(
+            tast::check(
+                hir::lower(
+                    ast::lower(
+                        parser::parse(
+                            "fn main() { let result = (|x| x + 1)(41); println(result); }",
+                        ),
+                    ),
+                    "main.gom",
+                ),
+            ),
+        ),
+    );
     let counter = Ref::new(61);
     let file = lower_with_counter(value, counter);
     testing::assert_eq(counter.get(), 62);

@@ -26,11 +26,7 @@ fn lowered_file(source: string) -> File {
 }
 
 fn lowered_package_file(source: string, package_name: string) -> File {
-    let result = lower_package(
-        ast::lower(parser::parse(source)),
-        "package.gom",
-        package_name,
-    );
+    let result = lower_package(ast::lower(parser::parse(source)), "package.gom", package_name);
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.hir {
         Some(file) => file,
@@ -53,9 +49,7 @@ fn lowered_package_file(source: string, package_name: string) -> File {
 #[test]
 fn reports_pattern_binding_errors_during_resolution() -> unit {
     let duplicate = lower(
-        ast::lower(parser::parse(
-            "fn main() -> unit { let (value, value) = (1, 2); }",
-        )),
+        ast::lower(parser::parse("fn main() -> unit { let (value, value) = (1, 2); }")),
         "main.gom",
     );
     testing::assert_eq(duplicate.diagnostics.len(), 1);
@@ -68,9 +62,11 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
         None => testing::fail("expected duplicate pattern HIR"),
     };
     let inconsistent = lower(
-        ast::lower(parser::parse(
-            "enum Maybe { None, Some(int32) } fn main() -> unit { let value = Maybe::Some(1); let _ = match value { Maybe::Some(inner) | Maybe::None => inner, _ => 0 }; }",
-        )),
+        ast::lower(
+            parser::parse(
+                "enum Maybe { None, Some(int32) } fn main() -> unit { let value = Maybe::Some(1); let _ = match value { Maybe::Some(inner) | Maybe::None => inner, _ => 0 }; }",
+            ),
+        ),
         "main.gom",
     );
     testing::assert_eq(inconsistent.diagnostics.len(), 1);
@@ -111,15 +107,12 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
             match value.body.stmts.get(0) {
                 Expr {
                     expr: Expr {
-                                        kind: Call {
-                                            func: Expr {
-                                                                        kind: StaticMember { owner, member, .. },
-                                                                        span: _,
-                                                                    },
-                                            args: _,
-                                        },
-                                        span: _,
-                                    },
+                        kind: Call {
+                            func: Expr { kind: StaticMember { owner, member, .. }, span: _ },
+                            args: _,
+                        },
+                        span: _,
+                    },
                 } => {
                     testing::assert_eq(owner, "std::io");
                     testing::assert_eq(member, "println")
@@ -127,10 +120,7 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
                 _ => testing::fail("expected qualified package call"),
             };
             match value.body.tail {
-                Some(Expr {
-                    kind: StructLiteral { name, fields: _, base: _ },
-                    span: _,
-                }) => {
+                Some(Expr { kind: StructLiteral { name, fields: _, base: _ }, span: _ }) => {
                     testing::assert_eq(name, "std::sample::Value")
                 },
                 _ => testing::fail("expected qualified struct literal"),
@@ -155,9 +145,9 @@ fn resolves_traits_imported_through_package_aliases() -> unit {
 
 #[test]
 fn exposes_derived_impls_without_lowering_them_twice() -> unit {
-    let expanded = expand_derives(ast::lower(parser::parse(
-        "#[derive(Eq, Hash)] struct Key { value: int32 }",
-    )));
+    let expanded = expand_derives(
+        ast::lower(parser::parse("#[derive(Eq, Hash)] struct Key { value: int32 }")),
+    );
     match expanded.ast {
         Some(file) => {
             testing::assert_eq(file.items.len(), 3);
@@ -190,15 +180,9 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
             match value.body.stmts.get(0) {
                 Let {
                     is_mut: _,
-                    pat: Pat {
-                                        kind: Var { name: local },
-                                        span: _,
-                                    },
+                    pat: Pat { kind: Var { name: local }, span: _ },
                     annotation: _,
-                    value: Expr {
-                                        kind: Int { value: number },
-                                        span: _,
-                                    },
+                    value: Expr { kind: Int { value: number }, span: _ },
                 } => {
                     testing::assert_eq(local.pkg, 1);
                     testing::assert_eq(local.index, 1);
@@ -207,10 +191,7 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
                 _ => testing::fail("expected local binding"),
             };
             match value.body.tail {
-                Some(Expr {
-                    kind: Call { func: function, args },
-                    span: _,
-                }) => {
+                Some(Expr { kind: Call { func: function, args }, span: _ }) => {
                     match function.kind {
                         NameRef { name_ref: Def(definition) } => {
                             testing::assert_eq(definition.pkg, 1);
@@ -240,18 +221,11 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
     let file = lowered_file(source);
     match file.items.get(1) {
         Function(value) => match value.body.tail {
-            Some(Expr {
-                kind: Match { expr: _, arms },
-                span: _,
-            }) => {
+            Some(Expr { kind: Match { expr: _, arms }, span: _ }) => {
                 testing::assert_eq(arms.len(), 2);
                 match arms.get(0).pat.kind {
                     Constr {
-                        head: Resolved {
-                                                enum_def: definition,
-                                                variant_index: variant,
-                                                span: _,
-                                            },
+                        head: Resolved { enum_def: definition, variant_index: variant, span: _ },
                         args,
                     } => {
                         testing::assert_eq(definition.pkg, 1);
@@ -279,9 +253,11 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
 fn resolves_cross_file_constructor_patterns() -> unit {
     let parsed = Vec::new();
     parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
-    parsed.push(parser::parse(
-        "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
-    ));
+    parsed.push(
+        parser::parse(
+            "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
+        ),
+    );
     let ast_files = ast::lower_package(parsed);
     let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     inputs.push((ast_files.get(0), "types.gom"));
@@ -291,31 +267,16 @@ fn resolves_cross_file_constructor_patterns() -> unit {
     match lowered.get(1).hir {
         Some(file) => match file.items.get(0) {
             Function(function) => match function.body.tail {
-                Some(Expr {
-                    kind: Match { expr: _, arms },
-                    span: _,
-                }) => {
+                Some(Expr { kind: Match { expr: _, arms }, span: _ }) => {
                     match arms.get(0).pat.kind {
-                        Constr {
-                            head: Contextual {
-                                name,
-                                span: _,
-                            },
-                            args,
-                        } => {
+                        Constr { head: Contextual { name, span: _ }, args } => {
                             testing::assert_eq(name, "Idle");
                             testing::assert_eq(args.len(), 0)
                         },
                         _ => testing::fail("expected resolved Idle pattern"),
                     };
                     match arms.get(1).pat.kind {
-                        Constr {
-                            head: Contextual {
-                                name,
-                                span: _,
-                            },
-                            args,
-                        } => {
+                        Constr { head: Contextual { name, span: _ }, args } => {
                             testing::assert_eq(name, "Busy");
                             testing::assert_eq(args.len(), 1)
                         },
@@ -333,20 +294,13 @@ fn resolves_cross_file_constructor_patterns() -> unit {
 #[test]
 fn rejects_invalid_derives() -> unit {
     let unsupported = lower(
-        ast::lower(parser::parse(
-            "#[derive(ToJson)] struct User { name: string }",
-        )),
+        ast::lower(parser::parse("#[derive(ToJson)] struct User { name: string }")),
         "main.gom",
     );
     testing::assert_eq(unsupported.diagnostics.len(), 1);
-    testing::assert_eq(
-        unsupported.diagnostics.get(0).message,
-        "unsupported derive target `ToJson`",
-    );
+    testing::assert_eq(unsupported.diagnostics.get(0).message, "unsupported derive target `ToJson`");
     let generic = lower(
-        ast::lower(parser::parse(
-            "#[derive(ToString)] struct Box[T] { value: T }",
-        )),
+        ast::lower(parser::parse("#[derive(ToString)] struct Box[T] { value: T }")),
         "main.gom",
     );
     testing::assert_eq(generic.diagnostics.len(), 1);

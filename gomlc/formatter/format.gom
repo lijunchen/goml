@@ -26,10 +26,7 @@ fn canonical_file_ending(value: string) -> string {
     }
 }
 
-fn format_next_non_trivia(
-    tokens: Vec[lexer::Token],
-    start: int,
-) -> Option[lexer::TokenKind] {
+fn format_next_non_trivia(tokens: Vec[lexer::Token], start: int) -> Option[lexer::TokenKind] {
     for index in range(start, tokens.len()) {
         if lexer::token_is_trivia(tokens[index].kind) {
             ()
@@ -53,19 +50,15 @@ fn format_token_signature(source: string) -> string {
     let in_where: Ref[bool] = Ref::new(false);
     for index in range(0, tokens.len()) {
         let token = tokens[index];
-        let optional_comma = lexer::token_kind_equal(
-            token.kind,
-            lexer::TokenKind::Comma,
-        ) && match format_next_non_trivia(tokens, index + 1) {
-            Some(kind) => format_closing_delimiter(kind)
-                || in_where.get()
-                    && (lexer::token_kind_equal(kind, lexer::TokenKind::LBrace)
-                        || lexer::token_kind_equal(kind, lexer::TokenKind::Semi)),
-            None => false,
-        };
-        if lexer::token_kind_equal(token.kind, lexer::TokenKind::Whitespace)
-            || optional_comma
-        {
+        let optional_comma = lexer::token_kind_equal(token.kind, lexer::TokenKind::Comma)
+            && match format_next_non_trivia(tokens, index + 1) {
+                Some(kind) => format_closing_delimiter(kind)
+                    || in_where.get()
+                        && (lexer::token_kind_equal(kind, lexer::TokenKind::LBrace)
+                            || lexer::token_kind_equal(kind, lexer::TokenKind::Semi)),
+                None => false,
+            };
+        if lexer::token_kind_equal(token.kind, lexer::TokenKind::Whitespace) || optional_comma {
             ()
         } else {
             output.write_string(lexer::token_kind_name(token.kind));
@@ -76,8 +69,7 @@ fn format_token_signature(source: string) -> string {
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::WhereKeyword) {
             in_where.set(true)
         } else if lexer::token_kind_equal(token.kind, lexer::TokenKind::LBrace)
-            || lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi)
-        {
+            || lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi) {
             in_where.set(false)
         } else {
             ()
@@ -86,36 +78,24 @@ fn format_token_signature(source: string) -> string {
     output.finish()
 }
 
-fn format_source_with_width(
-    source: string,
-    line_width: int,
-) -> Result[string, FormatError] {
+fn format_source_with_width(source: string, line_width: int) -> Result[string, FormatError] {
     let parsed = parser::parse(source);
     if parsed.diagnostics.len() > 0 {
-        Result::Err(FormatError {
-            diagnostics: parsed.diagnostics,
-        })
+        Result::Err(FormatError { diagnostics: parsed.diagnostics })
     } else {
         let root = located_node(parsed.root, 0);
-        let formatted = canonical_file_ending(render(
-            format_node(builder(), root).doc,
-            line_width,
-        ));
+        let formatted = canonical_file_ending(render(format_node(builder(), root).doc, line_width));
         let reparsed = parser::parse(formatted);
         if reparsed.diagnostics.len() > 0 {
-            Result::Err(FormatError {
-                diagnostics: reparsed.diagnostics,
-            })
-        } else if format_token_signature(source)
-            != format_token_signature(formatted)
-        {
-            Result::Err(FormatError {
-                diagnostics: Vec::[cst::diagnostic(
-                    "formatter changed source tokens",
-                    0,
-                    source.byte_len(),
-                )],
-            })
+            Result::Err(FormatError { diagnostics: reparsed.diagnostics })
+        } else if format_token_signature(source) != format_token_signature(formatted) {
+            Result::Err(
+                FormatError {
+                    diagnostics: Vec::[
+                        cst::diagnostic("formatter changed source tokens", 0, source.byte_len()),
+                    ],
+                },
+            )
         } else {
             Result::Ok(formatted)
         }

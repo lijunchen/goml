@@ -57,11 +57,9 @@ pub fn normalize_integer(value: string) -> Option[string] {
     for index in range(start, value.byte_len()) {
         let source = value.byte_get(index);
         if source == b'_' {
-            if index == start
-                || index + 1 >= value.byte_len()
+            if index == start || index + 1 >= value.byte_len()
                 || !integer_digit_in_base(value.byte_get(index - 1), base)
-                || !integer_digit_in_base(value.byte_get(index + 1), base)
-            {
+                || !integer_digit_in_base(value.byte_get(index + 1), base) {
                 return Option::None
             } else {
                 ()
@@ -92,9 +90,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
     } else {
         let builder = text::StringBuilder::with_capacity(digits.len());
         for offset in range(0, digits.len()) {
-            builder.write_string(decimal_digit(
-                digits[digits.len() - offset - 1],
-            ))
+            builder.write_string(decimal_digit(digits[digits.len() - offset - 1]))
         };
         Option::Some(builder.finish())
     }

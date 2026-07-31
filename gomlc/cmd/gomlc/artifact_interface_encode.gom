@@ -397,19 +397,12 @@ fn artifact_json_package_exports(
     artifact_json_end_object(writer)
 }
 
-fn artifact_json_string_map(
-    writer: ArtifactJsonWriter,
-    values: Vec[(string, string)],
-) -> unit {
+fn artifact_json_string_map(writer: ArtifactJsonWriter, values: Vec[(string, string)]) -> unit {
     for index in range(1, values.len()) {
         let current = values[index];
         let destination = Ref::new(index);
         while destination.get() > 0
-            && artifact_string_less(
-                current.0,
-                values[destination.get() - 1].0,
-            )
-        {
+            && artifact_string_less(current.0, values[destination.get() - 1].0) {
             values[destination.get()] = values[destination.get() - 1];
             destination.set(destination.get() - 1)
         };
@@ -423,10 +416,7 @@ fn artifact_json_string_map(
     artifact_json_end_object(writer)
 }
 
-fn artifact_json_package_interface(
-    writer: ArtifactJsonWriter,
-    value: ArtifactPackageInterface,
-) -> unit {
+fn artifact_json_package_interface(writer: ArtifactJsonWriter, value: ArtifactPackageInterface) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "package");
     artifact_json_string(writer, value.package_name);
@@ -476,11 +466,7 @@ fn artifact_json_interface_hash_view(
 
 fn artifact_interface_hash(value: ArtifactInterfaceUnit) -> string {
     let writer = new_artifact_json_writer(false);
-    artifact_json_interface_hash_view(
-        writer,
-        artifact_exports_type_context(value.exports),
-        value,
-    );
+    artifact_json_interface_hash_view(writer, artifact_exports_type_context(value.exports), value);
     go_backend::sha256_hex(artifact_json_finish(writer))
 }
 
@@ -507,10 +493,7 @@ fn new_artifact_interface_unit(
     }
 }
 
-fn artifact_json_interface_unit(
-    writer: ArtifactJsonWriter,
-    value: ArtifactInterfaceUnit,
-) -> unit {
+fn artifact_json_interface_unit(writer: ArtifactJsonWriter, value: ArtifactInterfaceUnit) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "format_version");
     artifact_json_number(writer, "17");

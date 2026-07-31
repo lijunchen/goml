@@ -4,7 +4,10 @@ use gomlc::cst;
 use gomlc::lexer;
 
 enum Event {
-    Open { kind: cst::NodeKind, forward_parent: Option[int] },
+    Open {
+        kind: cst::NodeKind,
+        forward_parent: Option[int],
+    },
     Close,
     Advance,
     Error(string),
@@ -57,8 +60,7 @@ fn input_peek_raw(parser: Parser) -> lexer::TokenKind {
 
 fn input_eat_trivia(parser: Parser) -> unit {
     while parser.cursor.get() < parser.tokens.len()
-        && lexer::token_is_trivia(input_peek_raw(parser))
-    {
+        && lexer::token_is_trivia(input_peek_raw(parser)) {
         parser.cursor.set(parser.cursor.get() + 1)
     }
 }
@@ -156,11 +158,9 @@ impl Parser {
     pub fn report_stuck(self: Parser) -> unit {
         if self.stuck_reported.get() == false {
             let (start, end) = current_range(self);
-            self.diagnostics.push(cst::diagnostic(
-                "parser did not consume input while parsing",
-                start,
-                end,
-            ));
+            self.diagnostics.push(
+                cst::diagnostic("parser did not consume input while parsing", start, end),
+            );
             self.stuck_reported.set(true)
         } else {
             ()
@@ -216,8 +216,7 @@ impl Parser {
             }
         };
         if index.get() >= self.tokens.len()
-            || !token_is(self.tokens[index.get()].kind, lexer::TokenKind::LBracket)
-        {
+            || !token_is(self.tokens[index.get()].kind, lexer::TokenKind::LBracket) {
             false
         } else {
             let depth = Ref::new(0);
@@ -230,15 +229,11 @@ impl Parser {
                     if depth.get() == 0 {
                         index.set(index.get() + 1);
                         while index.get() < self.tokens.len()
-                            && lexer::token_is_trivia(self.tokens[index.get()].kind)
-                        {
+                            && lexer::token_is_trivia(self.tokens[index.get()].kind) {
                             index.set(index.get() + 1)
                         };
                         return index.get() < self.tokens.len()
-                            && token_is(
-                                self.tokens[index.get()].kind,
-                                lexer::TokenKind::ColonColon,
-                            )
+                            && token_is(self.tokens[index.get()].kind, lexer::TokenKind::ColonColon)
                     } else {
                         ()
                     }
@@ -329,9 +324,7 @@ impl Parser {
             ()
         } else {
             let actual = self.peek();
-            let message = "expect \""
-                + lexer::token_kind_display(kind)
-                + "\", actual \""
+            let message = "expect \"" + lexer::token_kind_display(kind) + "\", actual \""
                 + lexer::token_kind_display(actual)
                 + "\"";
             if self.at(lexer::TokenKind::Eof) || should_consume_on_expect_failure(actual) == false {
@@ -570,8 +563,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
             },
         };
         while cursor.get() < parser.tokens.len()
-            && lexer::token_is_trivia(parser.tokens[cursor.get()].kind)
-        {
+            && lexer::token_is_trivia(parser.tokens[cursor.get()].kind) {
             push_token(stack, parser.tokens[cursor.get()]);
             cursor.set(cursor.get() + 1)
         };

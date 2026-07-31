@@ -1,13 +1,14 @@
 package collections;
 
 fn smaller(left: int, right: int) -> int {
-    if left < right { left } else { right }
+    if left < right {
+        left
+    } else {
+        right
+    }
 }
 
-pub fn stable_sort_by[T](
-    values: Vec[T],
-    compare: (T, T) -> int,
-) -> unit {
+pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
     let length = values.len();
     if length < 2 {
         return
@@ -28,11 +29,7 @@ pub fn stable_sort_by[T](
             let second = Ref::new(middle);
             let output = Ref::new(left.get());
             while first.get() < middle && second.get() < right {
-                if compare(
-                    values.get(first.get()),
-                    values.get(second.get()),
-                ) <= 0
-                {
+                if compare(values.get(first.get()), values.get(second.get())) <= 0 {
                     buffer.set(output.get(), values.get(first.get()));
                     first.set(first.get() + 1)
                 } else {
@@ -70,10 +67,7 @@ pub fn sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
     stable_sort_by(values, compare)
 }
 
-pub fn binary_search_by[T](
-    values: Vec[T],
-    compare: (T) -> int,
-) -> Option[int] {
+pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
     let low = Ref::new(0);
     let high = Ref::new(values.len());
     while low.get() < high.get() {
@@ -91,10 +85,7 @@ pub fn binary_search_by[T](
     }
 }
 
-pub fn position_by[T](
-    values: Vec[T],
-    predicate: (T) -> bool,
-) -> Option[int] {
+pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
     for index in range(0, values.len()) {
         if predicate(values.get(index)) {
             return Option::Some(index)
@@ -112,10 +103,7 @@ pub fn contains[T: Eq](values: Vec[T], expected: T) -> bool {
     }
 }
 
-pub fn min_by[T](
-    values: Vec[T],
-    compare: (T, T) -> int,
-) -> Option[T] {
+pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
     if values.len() == 0 {
         Option::None
     } else {
@@ -132,10 +120,7 @@ pub fn min_by[T](
     }
 }
 
-pub fn max_by[T](
-    values: Vec[T],
-    compare: (T, T) -> int,
-) -> Option[T] {
+pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
     if values.len() == 0 {
         Option::None
     } else {
@@ -152,10 +137,7 @@ pub fn max_by[T](
     }
 }
 
-pub fn dedup_by[T](
-    values: Vec[T],
-    equal: (T, T) -> bool,
-) -> unit {
+pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
     if values.len() < 2 {
         return
     } else {

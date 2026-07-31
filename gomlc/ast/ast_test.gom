@@ -22,10 +22,7 @@ fn lowered_file(source: string) -> File {
     }
 }
 
-fn has_diagnostic(
-    values: Vec[cst::Diagnostic],
-    expected: string,
-) -> bool {
+fn has_diagnostic(values: Vec[cst::Diagnostic], expected: string) -> bool {
     let found = Ref::new(false);
     for value in values {
         if value.message == expected {
@@ -43,13 +40,8 @@ fn rejects_deeply_nested_patterns_without_overflowing() -> unit {
     for _ in range(0, 150) {
         pattern.set("(" + pattern.get() + ", _)")
     };
-    let result = lower(parser::parse(
-        "fn main() -> unit { let " + pattern.get() + " = (); }",
-    ));
-    testing::assert(has_diagnostic(
-        result.diagnostics,
-        "pattern is too deeply nested",
-    ))
+    let result = lower(parser::parse("fn main() -> unit { let " + pattern.get() + " = (); }"));
+    testing::assert(has_diagnostic(result.diagnostics, "pattern is too deeply nested"))
 }
 
 #[test]
@@ -58,15 +50,10 @@ fn rejects_deeply_nested_expressions_without_overflowing() -> unit {
     for _ in range(0, 600) {
         expression.set("(" + expression.get() + ")")
     };
-    let result = lower(parser::parse(
-        "fn main() -> unit { let value = "
-            + expression.get()
-            + "; println(value); }",
-    ));
-    testing::assert(has_diagnostic(
-        result.diagnostics,
-        "expression is too deeply nested",
-    ))
+    let result = lower(
+        parser::parse("fn main() -> unit { let value = " + expression.get() + "; println(value); }"),
+    );
+    testing::assert(has_diagnostic(result.diagnostics, "expression is too deeply nested"))
 }
 
 #[test]
@@ -131,9 +118,11 @@ fn lowers_unicode_strings_and_constructor_patterns() -> unit {
 fn lowers_cross_file_constructor_patterns() -> unit {
     let parsed = Vec::new();
     parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
-    parsed.push(parser::parse(
-        "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
-    ));
+    parsed.push(
+        parser::parse(
+            "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
+        ),
+    );
     let lowered = lower_package(parsed);
     testing::assert_eq(lowered.len(), 2);
     match lowered.get(1).ast {
@@ -166,18 +155,15 @@ fn parser_diagnostics_prevent_ast_creation() -> unit {
 
 #[test]
 fn reports_invalid_parameter_types() -> unit {
-    let result = lower(parser::parse(
-        "fn take(value: [int32; 18446744073709551615]) -> unit { () }",
-    ));
+    let result = lower(
+        parser::parse("fn take(value: [int32; 18446744073709551615]) -> unit { () }"),
+    );
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert_eq(
         result.diagnostics.get(0).message,
         "Invalid array length: 18446744073709551615",
     );
-    testing::assert_eq(
-        result.diagnostics.get(1).message,
-        "Param value has no type",
-    )
+    testing::assert_eq(result.diagnostics.get(1).message, "Param value has no type")
 }
 
 #[test]
@@ -191,17 +177,17 @@ fn reports_trait_impl_method_visibility_on_the_impl() -> unit {
 
 #[test]
 fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
-    let inconsistent = lower(parser::parse(
-        "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",
-    ));
+    let inconsistent = lower(
+        parser::parse(
+            "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",
+        ),
+    );
     testing::assert_eq(inconsistent.diagnostics.len(), 0);
     match inconsistent.ast {
         Some(_) => (),
         None => testing::fail("expected inconsistent pattern AST"),
     };
-    let duplicate = lower(parser::parse(
-        "fn main() -> unit { let (value, value) = (1, 2); }",
-    ));
+    let duplicate = lower(parser::parse("fn main() -> unit { let (value, value) = (1, 2); }"));
     testing::assert_eq(duplicate.diagnostics.len(), 0);
     match duplicate.ast {
         Some(_) => (),
@@ -212,9 +198,7 @@ fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
 #[test]
 fn pretty_prints_run_single_ast_dump() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
-    let expected = "package main;\n"
-        + "fn main() {\n"
-        + "    let _ = ();\n"
+    let expected = "package main;\n" + "fn main() {\n" + "    let _ = ();\n"
         + "    let a = (true, false, (true, false));\n"
         + "    let b = match a {\n"
         + "        (x, y, (z, w)) => w,\n"

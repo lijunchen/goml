@@ -19,7 +19,11 @@ pub struct IndexMap[K, V] {
 }
 
 fn index_map_capacity_for_entries(entries: int) -> int {
-    let requested = if entries < 0 { 0 } else { entries };
+    let requested = if entries < 0 {
+        0
+    } else {
+        entries
+    };
     let capacity = Ref::new(8);
     while requested * 3 >= capacity.get() * 2 {
         capacity.set(capacity.get() * 2)
@@ -43,11 +47,15 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     }
 
     pub fn with_capacity(capacity: int) -> IndexMap[K, V] {
-        let entry_capacity = if capacity < 0 { 0 } else { capacity };
+        let entry_capacity = if capacity < 0 {
+            0
+        } else {
+            capacity
+        };
         IndexMap {
-            indices: Ref::new(index_map_empty_indices(
-                index_map_capacity_for_entries(entry_capacity),
-            )),
+            indices: Ref::new(
+                index_map_empty_indices(index_map_capacity_for_entries(entry_capacity)),
+            ),
             entries: Ref::new(Vec::with_capacity(entry_capacity)),
             len: Ref::new(0),
             deleted: Ref::new(0),
@@ -97,13 +105,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                 }
             };
             position.set(
-                (
-                    (
-                        position.get() as uint64 * 5
-                            + perturb.get()
-                            + 1
-                    ) & mask as uint64
-                ) as int,
+                ((position.get() as uint64 * 5 + perturb.get() + 1) & mask as uint64) as int,
             );
             perturb.set(perturb.get() >> 5)
         };
@@ -132,8 +134,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             live_entries
         };
         let old_entries = self.entries.get();
-        let next_entries: Vec[Option[IndexMapEntry[K, V]]] =
-            Vec::with_capacity(desired_entries);
+        let next_entries: Vec[Option[IndexMapEntry[K, V]]] = Vec::with_capacity(desired_entries);
         let old_index = Ref::new(0);
         while old_index.get() < old_entries.len() {
             match old_entries.get(old_index.get()) {
@@ -143,9 +144,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             old_index.set(old_index.get() + 1)
         };
         self.entries.set(next_entries);
-        self.indices.set(index_map_empty_indices(
-            index_map_capacity_for_entries(desired_entries),
-        ));
+        self.indices.set(index_map_empty_indices(index_map_capacity_for_entries(desired_entries)));
         self.deleted.set(0);
         let dense_index = Ref::new(0);
         while dense_index.get() < self.entries.get().len() {
@@ -204,11 +203,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                         let previous = entry.value;
                         self.entries.get().set(
                             dense_index,
-                            Option::Some(IndexMapEntry {
-                                hash: entry.hash,
-                                key: entry.key,
-                                value,
-                            }),
+                            Option::Some(IndexMapEntry { hash: entry.hash, key: entry.key, value }),
                         );
                         Option::Some(previous)
                     },
@@ -217,11 +212,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             },
             IndexMapProbe::Vacant(slot) => {
                 let dense_index = self.entries.get().len();
-                self.entries.get().push(Option::Some(IndexMapEntry {
-                    hash,
-                    key,
-                    value,
-                }));
+                self.entries.get().push(Option::Some(IndexMapEntry { hash, key, value }));
                 self.indices.get().set(slot, dense_index);
                 self.len.set(self.len.get() + 1);
                 Option::None
@@ -313,24 +304,27 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     pub fn iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {
         let index = Ref::new(0);
         let entries_len = self.entries.get().len();
-        FnIterator::from_fn(|| {
-            while index.get() < entries_len {
-                let current = index.get();
-                index.set(current + 1);
-                match self.entries.get().get(current) {
-                    Option::Some(entry) => {
-                        return Option::Some((entry.key, entry.value))
-                    },
-                    Option::None => (),
-                }
-            };
-            Option::None
-        })
+        FnIterator::from_fn(
+            || {
+                while index.get() < entries_len {
+                    let current = index.get();
+                    index.set(current + 1);
+                    match self.entries.get().get(current) {
+                        Option::Some(entry) => {
+                            return Option::Some((entry.key, entry.value))
+                        },
+                        Option::None => (),
+                    }
+                };
+                Option::None
+            },
+        )
     }
 }
 
 impl[K: Eq + Hash, V] IntoIterator for IndexMap[K, V] {
     type Item = (K, V);
+
     type IntoIter = FnIterator[(K, V)];
 
     fn into_iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {

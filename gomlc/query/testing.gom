@@ -60,19 +60,13 @@ fn has_test_attribute(values: Vec[ast::Attribute]) -> bool {
     false
 }
 
-fn function_symbol_span(
-    symbols: SymbolIndex,
-    source_path: string,
-    name: string,
-) -> ast::Span {
+fn function_symbol_span(symbols: SymbolIndex, source_path: string, name: string) -> ast::Span {
     for symbol in symbols.symbols {
-        if symbol.source_path == source_path
-            && symbol.name == name
+        if symbol.source_path == source_path && symbol.name == name
             && match symbol.kind {
                 Function => true,
                 _ => false,
-            }
-        {
+            } {
             return symbol.span
         } else {
             ()
@@ -95,23 +89,21 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
                     };
                     let analysis_sources = Vec::new();
                     analysis_sources.push(source_file);
-                    let symbols = build_symbol_index_from_sources(
-                        analysis_sources,
-                    );
+                    let symbols = build_symbol_index_from_sources(analysis_sources);
                     for item in file.items {
                         match item {
-                            Function(function) => if has_test_attribute(
-                                function.attrs,
-                            ) {
-                                result.push(TestItem {
-                                    name: function.name,
-                                    span: function_symbol_span(
-                                        symbols,
-                                        source_path,
-                                        function.name,
-                                    ),
-                                    kind,
-                                })
+                            Function(function) => if has_test_attribute(function.attrs) {
+                                result.push(
+                                    TestItem {
+                                        name: function.name,
+                                        span: function_symbol_span(
+                                            symbols,
+                                            source_path,
+                                            function.name,
+                                        ),
+                                        kind,
+                                    },
+                                )
                             } else {
                                 ()
                             },

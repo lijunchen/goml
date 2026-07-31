@@ -32,9 +32,7 @@ impl[T] IndexVec[T] {
     }
 
     pub fn with_capacity(capacity: int) -> IndexVec[T] {
-        IndexVec {
-            values: Vec::with_capacity(capacity),
-        }
+        IndexVec { values: Vec::with_capacity(capacity) }
     }
 
     pub fn len(self: IndexVec[T]) -> int {
@@ -46,9 +44,7 @@ impl[T] IndexVec[T] {
     }
 
     pub fn push(self: IndexVec[T], value: T) -> Index[T] {
-        let index = Index {
-            value: self.values.len(),
-        };
+        let index = Index { value: self.values.len() };
         self.values.push(value);
         index
     }

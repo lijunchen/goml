@@ -278,10 +278,7 @@ fn diagnostic_trait_ref(value: TraitRef) -> TraitRef {
     for value in value.args {
         args.push(diagnostic_type(value))
     };
-    TraitRef {
-        name: value.name,
-        args,
-    }
+    TraitRef { name: value.name, args }
 }
 
 pub fn diagnostic_type_text(value: Type) -> string {
@@ -308,20 +305,18 @@ fn trait_ref_text(value: TraitRef) -> string {
 pub fn write_primitive(builder: text::StringBuilder, value: Primitive) -> unit {
     match value {
         Unit => builder.write_string("()"),
-        Bool { value } => builder.write_string(if value { "true" } else { "false" }),
-        Int { value }
-        | Int8 { value }
-        | Int16 { value }
-        | Int32 { value }
-        | Int64 { value }
-        | Uint { value }
-        | Uint8 { value }
-        | Uint16 { value }
-        | Uint32 { value }
-        | Uint64 { value }
-        | Float { value }
-        | Float32 { value }
-        | Float64 { value } => builder.write_string(value),
+        Bool { value } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
+        Int { value } | Int8 { value } | Int16 { value } | Int32 { value } | Int64 { value } | Uint {
+            value,
+        } | Uint8 { value } | Uint16 { value } | Uint32 { value } | Uint64 { value } | Float {
+            value,
+        } | Float32 { value } | Float64 { value } => builder.write_string(value),
         String { value } => write_quoted_string(builder, value),
         Char { value } => write_quoted_char(builder, value),
     }
@@ -390,11 +385,7 @@ fn write_callable(builder: text::StringBuilder, value: Callable) -> unit {
     }
 }
 
-fn write_exprs(
-    builder: text::StringBuilder,
-    values: Vec[Expr],
-    indent: int,
-) -> unit {
+fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -804,7 +795,13 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
         },
         Range { start, end, inclusive, ty: _ } => {
             write_primitive(builder, start);
-            builder.write_string(if inclusive { "..=" } else { ".." });
+            builder.write_string(
+                if inclusive {
+                    "..="
+                } else {
+                    ".."
+                },
+            );
             write_primitive(builder, end)
         },
         Wild { ty } => {
@@ -828,11 +825,7 @@ fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
     builder.write_char(',')
 }
 
-fn write_generics_from(
-    builder: text::StringBuilder,
-    values: Vec[string],
-    start: int,
-) -> unit {
+fn write_generics_from(builder: text::StringBuilder, values: Vec[string], start: int) -> unit {
     if start < values.len() {
         builder.write_char('[');
         for index in range(start, values.len()) {
@@ -849,11 +842,7 @@ fn write_generics_from(
     }
 }
 
-fn write_predicates_from(
-    builder: text::StringBuilder,
-    values: Vec[TypePredicate],
-    start: int,
-) -> unit {
+fn write_predicates_from(builder: text::StringBuilder, values: Vec[TypePredicate], start: int) -> unit {
     if start < values.len() {
         builder.write_string(" where ");
         for index in range(start, values.len()) {
@@ -948,10 +937,7 @@ fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     }
 }
 
-pub fn write_const_expr(
-    builder: text::StringBuilder,
-    value: ConstExpr,
-) -> unit {
+pub fn write_const_expr(builder: text::StringBuilder, value: ConstExpr) -> unit {
     match value {
         Prim { value, ty: _ } => write_primitive(builder, value),
         Ref { name, ty: _ } => builder.write_string(name),
@@ -981,10 +967,7 @@ pub fn write_const_expr(
     }
 }
 
-pub fn write_constant(
-    builder: text::StringBuilder,
-    value: Constant,
-) -> unit {
+pub fn write_constant(builder: text::StringBuilder, value: Constant) -> unit {
     builder.write_string("const ");
     builder.write_string(value.name);
     builder.write_string(": ");

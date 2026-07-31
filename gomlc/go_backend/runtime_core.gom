@@ -2,18 +2,15 @@ package go_backend;
 
 use gomlc::tast;
 
-fn core_function_item(
-    key: string,
-    params: Vec[(string, Type)],
-    ret_ty: Type,
-    stmts: Vec[Stmt],
-) -> Item {
-    Item::Function(Function {
-        name: runtime_hook_name(key),
-        params,
-        ret_ty: Option::Some(ret_ty),
-        body: Block { stmts },
-    })
+fn core_function_item(key: string, params: Vec[(string, Type)], ret_ty: Type, stmts: Vec[Stmt]) -> Item {
+    Item::Function(
+        Function {
+            name: runtime_hook_name(key),
+            params,
+            ret_ty: Option::Some(ret_ty),
+            body: Block { stmts },
+        },
+    )
 }
 
 fn core_call(name: string, args: Vec[Expr]) -> Expr {
@@ -79,67 +76,74 @@ fn string_decode_utf8_at_native_item() -> Item {
     let invalid_index = Expr::Binary {
         op: BinaryOp::Or,
         lhs: Expr::Binary {
-                    op: BinaryOp::Less,
-                    lhs: Expr::Var { name: "i" },
-                    rhs: Expr::Int { value: "0" },
-                },
+            op: BinaryOp::Less,
+            lhs: Expr::Var { name: "i" },
+            rhs: Expr::Int { value: "0" },
+        },
         rhs: Expr::Binary { op: BinaryOp::GreaterEq, lhs: Expr::Var { name: "i" }, rhs: length },
     };
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::If {
-        cond: invalid_index,
-        then_: Block { stmts: invalid_index_stmts },
-        else_: Option::None,
-    });
+    stmts.push(
+        Stmt::If {
+            cond: invalid_index,
+            then_: Block { stmts: invalid_index_stmts },
+            else_: Option::None,
+        },
+    );
     stmts.push(Stmt::Var { name: "value", ty: Type::Char, value: Option::None });
     stmts.push(Stmt::Var { name: "width", ty: Type::Named { name: "int" }, value: Option::None });
     let decode_args: Vec[Expr] = Vec::new();
-    decode_args.push(Expr::Slice {
-        base: Expr::Var { name: "s" },
-        start: Expr::Var { name: "i" },
-        end: core_int(core_len(Expr::Var { name: "s" })),
-    });
+    decode_args.push(
+        Expr::Slice {
+            base: Expr::Var { name: "s" },
+            start: Expr::Var { name: "i" },
+            end: core_int(core_len(Expr::Var { name: "s" })),
+        },
+    );
     let names: Vec[string] = Vec::new();
     names.push("value");
     names.push("width");
-    stmts.push(Stmt::MultiAssign {
-        names,
-        value: core_call("_goml_utf8.DecodeRuneInString", decode_args),
-    });
+    stmts.push(
+        Stmt::MultiAssign { names, value: core_call("_goml_utf8.DecodeRuneInString", decode_args) },
+    );
     let invalid_rune_stmts: Vec[Stmt] = Vec::new();
     let invalid_rune: Vec[Expr] = Vec::new();
     invalid_rune.push(Expr::Bool { value: false });
     invalid_rune.push(Expr::Int { value: "0" });
     invalid_rune.push(Expr::Int { value: "0" });
     invalid_rune_stmts.push(Stmt::ReturnMulti { exprs: invalid_rune });
-    stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::And,
-                    lhs: Expr::Binary {
-                                    op: BinaryOp::Eq,
-                                    lhs: Expr::Var { name: "value" },
-                                    rhs: Expr::Var { name: "_goml_utf8.RuneError" },
-                                },
-                    rhs: Expr::Binary {
-                                    op: BinaryOp::Eq,
-                                    lhs: Expr::Var { name: "width" },
-                                    rhs: Expr::Int { value: "1" },
-                                },
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::And,
+                lhs: Expr::Binary {
+                    op: BinaryOp::Eq,
+                    lhs: Expr::Var { name: "value" },
+                    rhs: Expr::Var { name: "_goml_utf8.RuneError" },
                 },
-        then_: Block { stmts: invalid_rune_stmts },
-        else_: Option::None,
-    });
+                rhs: Expr::Binary {
+                    op: BinaryOp::Eq,
+                    lhs: Expr::Var { name: "width" },
+                    rhs: Expr::Int { value: "1" },
+                },
+            },
+            then_: Block { stmts: invalid_rune_stmts },
+            else_: Option::None,
+        },
+    );
     let valid: Vec[Expr] = Vec::new();
     valid.push(Expr::Bool { value: true });
     valid.push(Expr::Var { name: "value" });
     valid.push(core_int(Expr::Var { name: "width" }));
     stmts.push(Stmt::ReturnMulti { exprs: valid });
-    Item::Function(Function {
-        name: go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
-        params,
-        ret_ty: Option::Some(Type::Multi { items: returns }),
-        body: Block { stmts },
-    })
+    Item::Function(
+        Function {
+            name: go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
+            params,
+            ret_ty: Option::Some(Type::Multi { items: returns }),
+            body: Block { stmts },
+        },
+    )
 }
 
 fn string_get_hook_item() -> Item {
@@ -156,20 +160,21 @@ fn string_get_hook_item() -> Item {
     let args: Vec[Expr] = Vec::new();
     args.push(Expr::Var { name: "s" });
     args.push(Expr::Var { name: "i" });
-    stmts.push(Stmt::MultiAssign {
-        names,
-        value: core_call(
-                    go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
-                    args,
-                ),
-    });
+    stmts.push(
+        Stmt::MultiAssign {
+            names,
+            value: core_call(go_generated_ident("_goml_runtime_string_decode_utf8_at_native"), args),
+        },
+    );
     let invalid_stmts: Vec[Stmt] = Vec::new();
     invalid_stmts.push(Stmt::Panic { message: "invalid string byte index" });
-    stmts.push(Stmt::If {
-        cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "valid" } },
-        then_: Block { stmts: invalid_stmts },
-        else_: Option::None,
-    });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "valid" } },
+            then_: Block { stmts: invalid_stmts },
+            else_: Option::None,
+        },
+    );
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "value" }) });
     core_function_item("core.string_get", params, Type::Char, stmts)
 }
@@ -179,12 +184,13 @@ fn string_byte_get_hook_item() -> Item {
     params.push(("s", Type::String));
     params.push(("i", Type::Int));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Return {
-        expr: Option::Some(Expr::Index {
-                base: Expr::Var { name: "s" },
-                index: Expr::Var { name: "i" },
-            }),
-    });
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Index { base: Expr::Var { name: "s" }, index: Expr::Var { name: "i" } },
+            ),
+        },
+    );
     core_function_item("core.string_byte_get", params, Type::Uint8, stmts)
 }
 
@@ -203,25 +209,31 @@ fn string_byte_slice_hook_item() -> Item {
     let invalid_stmts: Vec[Stmt] = Vec::new();
     invalid_stmts.push(Stmt::Panic { message: "invalid string byte slice" });
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::If {
-        cond: Expr::Unary {
-                    op: UnaryOp::Not,
-                    expr: Expr::Binary {
-                                    op: BinaryOp::And,
-                                    lhs: string_boundary_call("start"),
-                                    rhs: string_boundary_call("end"),
-                                },
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary {
+                op: UnaryOp::Not,
+                expr: Expr::Binary {
+                    op: BinaryOp::And,
+                    lhs: string_boundary_call("start"),
+                    rhs: string_boundary_call("end"),
                 },
-        then_: Block { stmts: invalid_stmts },
-        else_: Option::None,
-    });
-    stmts.push(Stmt::Return {
-        expr: Option::Some(Expr::Slice {
-                base: Expr::Var { name: "s" },
-                start: Expr::Var { name: "start" },
-                end: Expr::Var { name: "end" },
-            }),
-    });
+            },
+            then_: Block { stmts: invalid_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Slice {
+                    base: Expr::Var { name: "s" },
+                    start: Expr::Var { name: "start" },
+                    end: Expr::Var { name: "end" },
+                },
+            ),
+        },
+    );
     core_function_item("core.string_byte_slice", params, Type::String, stmts)
 }
 
@@ -235,42 +247,40 @@ fn string_is_char_boundary_hook_item() -> Item {
     at_end_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: true }) });
     let length = core_int(core_len(Expr::Var { name: "s" }));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::Or,
-                    lhs: Expr::Binary {
-                                    op: BinaryOp::Less,
-                                    lhs: Expr::Var { name: "i" },
-                                    rhs: Expr::Int { value: "0" },
-                                },
-                    rhs: Expr::Binary { op: BinaryOp::Greater, lhs: Expr::Var { name: "i" }, rhs: length },
-                },
-        then_: Block { stmts: out_of_range_stmts },
-        else_: Option::None,
-    });
-    stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::Eq,
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Or,
+                lhs: Expr::Binary {
+                    op: BinaryOp::Less,
                     lhs: Expr::Var { name: "i" },
-                    rhs: core_int(core_len(Expr::Var { name: "s" })),
+                    rhs: Expr::Int { value: "0" },
                 },
-        then_: Block { stmts: at_end_stmts },
-        else_: Option::None,
-    });
+                rhs: Expr::Binary {
+                    op: BinaryOp::Greater,
+                    lhs: Expr::Var { name: "i" },
+                    rhs: length,
+                },
+            },
+            then_: Block { stmts: out_of_range_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Var { name: "i" },
+                rhs: core_int(core_len(Expr::Var { name: "s" })),
+            },
+            then_: Block { stmts: at_end_stmts },
+            else_: Option::None,
+        },
+    );
     let args: Vec[Expr] = Vec::new();
     args.push(Expr::Index { base: Expr::Var { name: "s" }, index: Expr::Var { name: "i" } });
-    stmts.push(Stmt::Return {
-        expr: Option::Some(core_call(
-                "_goml_utf8.RuneStart",
-                args,
-            )),
-    });
-    core_function_item(
-        "core.string_is_char_boundary",
-        params,
-        Type::Bool,
-        stmts,
-    )
+    stmts.push(Stmt::Return { expr: Option::Some(core_call("_goml_utf8.RuneStart", args)) });
+    core_function_item("core.string_is_char_boundary", params, Type::Bool, stmts)
 }
 
 fn string_decode_utf8_at_hook_item() -> Item {
@@ -288,18 +298,13 @@ fn string_decode_utf8_at_hook_item() -> Item {
     let args: Vec[Expr] = Vec::new();
     args.push(Expr::Var { name: "s" });
     args.push(Expr::Var { name: "i" });
-    stmts.push(Stmt::MultiAssign {
-        names,
-        value: core_call(
-                    go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
-                    args,
-                ),
-    });
-    let ret_ty = core_tuple_type3(
-        tast::Type::Bool,
-        tast::Type::Char,
-        tast::Type::Int,
+    stmts.push(
+        Stmt::MultiAssign {
+            names,
+            value: core_call(go_generated_ident("_goml_runtime_string_decode_utf8_at_native"), args),
+        },
     );
+    let ret_ty = core_tuple_type3(tast::Type::Bool, tast::Type::Char, tast::Type::Int);
     let values: Vec[Expr] = Vec::new();
     values.push(Expr::Var { name: "valid" });
     values.push(Expr::Var { name: "value" });
@@ -314,20 +319,18 @@ fn string_to_bytes_hook_item() -> Item {
     let elem = tast::Type::Uint8;
     let vec_ty = tast::Type::VecType { elem };
     let fields: Vec[(string, Expr)] = Vec::new();
-    fields.push((
-        "items",
-        Expr::Convert { ty: Type::Named { name: "[]byte" }, expr: Expr::Var { name: "s" } },
-    ));
+    fields.push(
+        (
+            "items",
+            Expr::Convert { ty: Type::Named { name: "[]byte" }, expr: Expr::Var { name: "s" } },
+        ),
+    );
     let value = Expr::Unary {
         op: UnaryOp::Address,
         expr: Expr::StructLiteral {
-                    ty: Type::Named {
-                                    name: go_generated_ident(
-                                                    "_goml_vec_" + go_ident(encode_type(elem)),
-                                                ),
-                                },
-                    fields,
-                },
+            ty: Type::Named { name: go_generated_ident("_goml_vec_" + go_ident(encode_type(elem))) },
+            fields,
+        },
     };
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(Stmt::Return { expr: Option::Some(value) });
@@ -342,20 +345,21 @@ fn char_to_string_hook_item() -> Item {
     let invalid_stmts: Vec[Stmt] = Vec::new();
     invalid_stmts.push(Stmt::Panic { message: "invalid char" });
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::If {
-        cond: Expr::Unary {
-                    op: UnaryOp::Not,
-                    expr: core_call("_goml_utf8.ValidRune", valid_args),
-                },
-        then_: Block { stmts: invalid_stmts },
-        else_: Option::None,
-    });
-    stmts.push(Stmt::Return {
-        expr: Option::Some(Expr::Convert {
-                ty: Type::String,
-                expr: Expr::Var { name: "x" },
-            }),
-    });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary {
+                op: UnaryOp::Not,
+                expr: core_call("_goml_utf8.ValidRune", valid_args),
+            },
+            then_: Block { stmts: invalid_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(Expr::Convert { ty: Type::String, expr: Expr::Var { name: "x" } }),
+        },
+    );
     core_function_item("core.char_to_string", params, Type::String, stmts)
 }
 
@@ -367,39 +371,32 @@ fn char_from_uint32_hook_item() -> Item {
     invalid_values.push(Expr::Bool { value: false });
     invalid_values.push(Expr::Int { value: "0" });
     let invalid_stmts: Vec[Stmt] = Vec::new();
-    invalid_stmts.push(Stmt::Return {
-        expr: Option::Some(core_tuple_expr(
-                ret_ty,
-                invalid_values,
-            )),
-    });
+    invalid_stmts.push(Stmt::Return { expr: Option::Some(core_tuple_expr(ret_ty, invalid_values)) });
     let invalid = Expr::Binary {
         op: BinaryOp::Or,
         lhs: Expr::Binary {
-                    op: BinaryOp::Greater,
-                    lhs: Expr::Var { name: "value" },
-                    rhs: Expr::Int { value: "1114111" },
-                },
+            op: BinaryOp::Greater,
+            lhs: Expr::Var { name: "value" },
+            rhs: Expr::Int { value: "1114111" },
+        },
         rhs: Expr::Binary {
-                    op: BinaryOp::And,
-                    lhs: Expr::Binary {
-                                    op: BinaryOp::GreaterEq,
-                                    lhs: Expr::Var { name: "value" },
-                                    rhs: Expr::Int { value: "55296" },
-                                },
-                    rhs: Expr::Binary {
-                                    op: BinaryOp::LessEq,
-                                    lhs: Expr::Var { name: "value" },
-                                    rhs: Expr::Int { value: "57343" },
-                                },
-                },
+            op: BinaryOp::And,
+            lhs: Expr::Binary {
+                op: BinaryOp::GreaterEq,
+                lhs: Expr::Var { name: "value" },
+                rhs: Expr::Int { value: "55296" },
+            },
+            rhs: Expr::Binary {
+                op: BinaryOp::LessEq,
+                lhs: Expr::Var { name: "value" },
+                rhs: Expr::Int { value: "57343" },
+            },
+        },
     };
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::If {
-        cond: invalid,
-        then_: Block { stmts: invalid_stmts },
-        else_: Option::None,
-    });
+    stmts.push(
+        Stmt::If { cond: invalid, then_: Block { stmts: invalid_stmts }, else_: Option::None },
+    );
     let values: Vec[Expr] = Vec::new();
     values.push(Expr::Bool { value: true });
     values.push(Expr::Convert { ty: Type::Char, expr: Expr::Var { name: "value" } });
@@ -411,42 +408,50 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("x", ty));
     let args: Vec[Expr] = Vec::new();
-    args.push(if key == "core.float32_to_string" {
-        Expr::Convert { ty: Type::Float64, expr: Expr::Var { name: "x" } }
-    } else {
-        Expr::Var { name: "x" }
-    });
+    args.push(
+        if key == "core.float32_to_string" {
+            Expr::Convert { ty: Type::Float64, expr: Expr::Var { name: "x" } }
+        } else {
+            Expr::Var { name: "x" }
+        },
+    );
     args.push(Expr::Int { value: "102" });
     args.push(Expr::Int { value: "-1" });
     args.push(Expr::Int { value: bit_size });
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Var {
-        name: "formatted",
-        ty: Type::String,
-        value: Option::Some(core_call("_goml_strconv.FormatFloat", args)),
-    });
+    stmts.push(
+        Stmt::Var {
+            name: "formatted",
+            ty: Type::String,
+            value: Option::Some(core_call("_goml_strconv.FormatFloat", args)),
+        },
+    );
     let positive_stmts: Vec[Stmt] = Vec::new();
     positive_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "inf" }) });
-    stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::Eq,
-                    lhs: Expr::Var { name: "formatted" },
-                    rhs: Expr::String { value: "+Inf" },
-                },
-        then_: Block { stmts: positive_stmts },
-        else_: Option::None,
-    });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Var { name: "formatted" },
+                rhs: Expr::String { value: "+Inf" },
+            },
+            then_: Block { stmts: positive_stmts },
+            else_: Option::None,
+        },
+    );
     let negative_stmts: Vec[Stmt] = Vec::new();
     negative_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "-inf" }) });
-    stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::Eq,
-                    lhs: Expr::Var { name: "formatted" },
-                    rhs: Expr::String { value: "-Inf" },
-                },
-        then_: Block { stmts: negative_stmts },
-        else_: Option::None,
-    });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Var { name: "formatted" },
+                rhs: Expr::String { value: "-Inf" },
+            },
+            then_: Block { stmts: negative_stmts },
+            else_: Option::None,
+        },
+    );
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "formatted" }) });
     core_function_item(key, params, Type::String, stmts)
 }
@@ -481,12 +486,11 @@ fn integer_hash_hook_item(key: string, ty: Type) -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("x", ty));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Return {
-        expr: Option::Some(Expr::Convert {
-                ty: Type::Uint64,
-                expr: Expr::Var { name: "x" },
-            }),
-    });
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(Expr::Convert { ty: Type::Uint64, expr: Expr::Var { name: "x" } }),
+        },
+    );
     core_function_item(key, params, Type::Uint64, stmts)
 }
 
@@ -496,25 +500,31 @@ fn float_hash_hook_item(key: string, ty: Type, go_name: string) -> Item {
     let zero_stmts: Vec[Stmt] = Vec::new();
     zero_stmts.push(Stmt::Return { expr: Option::Some(Expr::Int { value: "0" }) });
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::Eq,
-                    lhs: Expr::Var { name: "x" },
-                    rhs: Expr::Int { value: "0" },
-                },
-        then_: Block { stmts: zero_stmts },
-        else_: Option::None,
-    });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Var { name: "x" },
+                rhs: Expr::Int { value: "0" },
+            },
+            then_: Block { stmts: zero_stmts },
+            else_: Option::None,
+        },
+    );
     let args: Vec[Expr] = Vec::new();
     args.push(Expr::Var { name: "x" });
     let bits = core_call(go_name, args);
-    stmts.push(Stmt::Return {
-        expr: Option::Some(if key == "core.float32_hash" {
-                Expr::Convert { ty: Type::Uint64, expr: bits }
-            } else {
-                bits
-            }),
-    });
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                if key == "core.float32_hash" {
+                    Expr::Convert { ty: Type::Uint64, expr: bits }
+                } else {
+                    bits
+                },
+            ),
+        },
+    );
     core_function_item(key, params, Type::Uint64, stmts)
 }
 
@@ -522,51 +532,60 @@ fn string_hash_hook_item() -> Item {
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("s", Type::String));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Var {
-        name: "h",
-        ty: Type::Uint64,
-        value: Option::Some(Expr::Int { value: "14695981039346656037" }),
-    });
-    stmts.push(Stmt::Var {
-        name: "i",
-        ty: Type::Int,
-        value: Option::Some(Expr::Int { value: "0" }),
-    });
+    stmts.push(
+        Stmt::Var {
+            name: "h",
+            ty: Type::Uint64,
+            value: Option::Some(Expr::Int { value: "14695981039346656037" }),
+        },
+    );
+    stmts.push(
+        Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
+    );
     let loop_stmts: Vec[Stmt] = Vec::new();
     let break_stmts: Vec[Stmt] = Vec::new();
     break_stmts.push(Stmt::Break);
-    loop_stmts.push(Stmt::If {
-        cond: Expr::Binary {
-                    op: BinaryOp::GreaterEq,
-                    lhs: Expr::Var { name: "i" },
-                    rhs: core_int(core_len(Expr::Var { name: "s" })),
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::GreaterEq,
+                lhs: Expr::Var { name: "i" },
+                rhs: core_int(core_len(Expr::Var { name: "s" })),
+            },
+            then_: Block { stmts: break_stmts },
+            else_: Option::None,
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "h",
+            value: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Binary {
+                    op: BinaryOp::Mul,
+                    lhs: Expr::Var { name: "h" },
+                    rhs: Expr::Int { value: "1099511628211" },
                 },
-        then_: Block { stmts: break_stmts },
-        else_: Option::None,
-    });
-    loop_stmts.push(Stmt::Assign {
-        name: "h",
-        value: Expr::Binary {
-                    op: BinaryOp::Add,
-                    lhs: Expr::Binary {
-                                    op: BinaryOp::Mul,
-                                    lhs: Expr::Var { name: "h" },
-                                    rhs: Expr::Int { value: "1099511628211" },
-                                },
-                    rhs: Expr::Convert {
-                                    ty: Type::Uint64,
-                                    expr: Expr::Index { base: Expr::Var { name: "s" }, index: Expr::Var { name: "i" } },
-                                },
+                rhs: Expr::Convert {
+                    ty: Type::Uint64,
+                    expr: Expr::Index {
+                        base: Expr::Var { name: "s" },
+                        index: Expr::Var { name: "i" },
+                    },
                 },
-    });
-    loop_stmts.push(Stmt::Assign {
-        name: "i",
-        value: Expr::Binary {
-                    op: BinaryOp::Add,
-                    lhs: Expr::Var { name: "i" },
-                    rhs: Expr::Int { value: "1" },
-                },
-    });
+            },
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "i",
+            value: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Var { name: "i" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
     stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "h" }) });
     core_function_item("core.string_hash", params, Type::Uint64, stmts)
@@ -598,17 +617,9 @@ fn extra_core_runtime_hook_item(key: string) -> Option[Item] {
         } else if key == "core.float64_to_string" {
             Option::Some(float_to_string_hook_item(key, Type::Float64, "64"))
         } else if key == "core.float32_hash" {
-            Option::Some(float_hash_hook_item(
-                key,
-                Type::Float32,
-                "_goml_math.Float32bits",
-            ))
+            Option::Some(float_hash_hook_item(key, Type::Float32, "_goml_math.Float32bits"))
         } else if key == "core.float64_hash" {
-            Option::Some(float_hash_hook_item(
-                key,
-                Type::Float64,
-                "_goml_math.Float64bits",
-            ))
+            Option::Some(float_hash_hook_item(key, Type::Float64, "_goml_math.Float64bits"))
         } else if key == "core.string_hash" {
             Option::Some(string_hash_hook_item())
         } else {

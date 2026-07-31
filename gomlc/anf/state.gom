@@ -79,23 +79,19 @@ fn prepend_bind(value: Bind, block: Block) -> Block {
     for bind in block.binds {
         binds.push(bind)
     };
-    Block {
-        binds,
-        term: block.term,
-    }
+    Block { binds, term: block.term }
 }
 
-fn jump_block(
-    target: string,
-    value: Imm,
-    takes_arg: bool,
-    ret_ty: tast::Type,
-) -> Block {
+fn jump_block(target: string, value: Imm, takes_arg: bool, ret_ty: tast::Type) -> Block {
     Block {
         binds: no_binds(),
         term: Term::Jump {
             target,
-            args: if takes_arg { one_imm(value) } else { no_imms() },
+            args: if takes_arg {
+                one_imm(value)
+            } else {
+                no_imms()
+            },
             ret_ty,
         },
     }
@@ -103,21 +99,20 @@ fn jump_block(
 
 fn expr_is_control(value: core::Expr) -> bool {
     match value {
-        Block { block: _, ty: _ }
-        | If { cond: _, then_branch: _, else_branch: _, ty: _ }
-        | Match { expr: _, arms: _, default: _, ty: _ }
-        | While { cond: _, body: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ }
-        | Return { expr: _, ty: _ } => true,
+        Block { block: _, ty: _ } | If { cond: _, then_branch: _, else_branch: _, ty: _ } | Match {
+            expr: _,
+            arms: _,
+            default: _,
+            ty: _,
+        } | While { cond: _, body: _, ty: _ } | Break { ty: _ } | Continue { ty: _ } | Return {
+            expr: _,
+            ty: _,
+        } => true,
         _ => false,
     }
 }
 
-fn match_has_catch_all(
-    arms: Vec[core::Arm],
-    default: Option[core::Expr],
-) -> bool {
+fn match_has_catch_all(arms: Vec[core::Arm], default: Option[core::Expr]) -> bool {
     match default {
         Some(_) => return true,
         None => (),
@@ -167,29 +162,34 @@ fn expr_always_exits(value: core::Expr) -> bool {
             true
         },
         While { cond, body: _, ty: _ } => expr_always_exits(cond),
-        Go { expr, ty: _ }
-        | ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ } => expr_always_exits(expr),
+        Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
+            op: _,
+            expr,
+            ty: _,
+        } | Cast { expr, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } => expr_always_exits(expr),
         Binary { op, lhs, rhs, ty: _ } => {
-            expr_always_exits(lhs) || match op {
-                And | Or => false,
-                _ => expr_always_exits(rhs),
-            }
+            expr_always_exits(lhs)
+                || match op {
+                    And | Or => false,
+                    _ => expr_always_exits(rhs),
+                }
         },
         Assign { name: _, value: expr, target_ty: _, ty: _ } => expr_always_exits(expr),
         Call { func, args, ty: _ } => {
             expr_always_exits(func) || exprs_always_exit(args)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+            receiver,
+            args,
+            ..,
+        } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ } => false,
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } => false,
     }
 }
 

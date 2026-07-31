@@ -7,8 +7,7 @@ fn self_type_occurrences(value: LocatedNode) -> int {
     let result = Ref::new(0);
     for token in direct_tokens(value) {
         if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
-            && token.token.text == "Self"
-        {
+            && token.token.text == "Self" {
             result.set(result.get() + 1)
         } else {
             ()
@@ -43,15 +42,15 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
         ENUM => {
             record_disallowed_self_types(ctx, node);
             match lower_enum(ctx, node) {
-            Some(value) => Option::Some(Item::EnumDef(value)),
-            None => Option::None,
+                Some(value) => Option::Some(Item::EnumDef(value)),
+                None => Option::None,
             }
         },
         STRUCT => {
             record_disallowed_self_types(ctx, node);
             match lower_struct(ctx, node) {
-            Some(value) => Option::Some(Item::StructDef(value)),
-            None => Option::None,
+                Some(value) => Option::Some(Item::StructDef(value)),
+                None => Option::None,
             }
         },
         TRAIT => match lower_trait(ctx, node) {
@@ -65,8 +64,8 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
         FN => {
             record_disallowed_self_types(ctx, node);
             match lower_function(ctx, node, Option::None) {
-            Some(value) => Option::Some(Item::Function(value)),
-            None => Option::None,
+                Some(value) => Option::Some(Item::Function(value)),
+                None => Option::None,
             }
         },
         EXTERN => {
@@ -88,23 +87,23 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
 fn lower_constant(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     let types = type_children(node);
     let values = expr_children(node);
-    match (
-        first_token(node, lexer::TokenKind::Ident),
-        types.len(),
-        values.len(),
-    ) {
+    match (first_token(node, lexer::TokenKind::Ident), types.len(), values.len()) {
         (Some(name), type_count, value_count) => {
             if type_count > 0 && value_count > 0 {
                 match lower_ty(ctx, types[0]) {
                     Some(ty) => match lower_expr(ctx, values[0]) {
-                        Some(value) => Option::Some(Item::Constant(Constant {
-                            attrs: lower_attributes(node),
-                            visibility: lower_visibility(node),
-                            name: name.token.text,
-                            ty,
-                            ty_span: type_head_span(types[0]),
-                            value,
-                        })),
+                        Some(value) => Option::Some(
+                            Item::Constant(
+                                Constant {
+                                    attrs: lower_attributes(node),
+                                    visibility: lower_visibility(node),
+                                    name: name.token.text,
+                                    ty,
+                                    ty_span: type_head_span(types[0]),
+                                    value,
+                                },
+                            ),
+                        ),
                         None => Option::None,
                     },
                     None => Option::None,
@@ -128,14 +127,18 @@ fn lower_type_alias(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
             match lower_ty(ctx, types[0]) {
                 Some(ty) => {
                     let (generics, _) = lower_generics(ctx, node);
-                    Option::Some(Item::TypeAlias(TypeAlias {
-                        attrs: lower_attributes(node),
-                        visibility: lower_visibility(node),
-                        name: name.token.text,
-                        generics,
-                        ty,
-                        ty_span: type_head_span(types[0]),
-                    }))
+                    Option::Some(
+                        Item::TypeAlias(
+                            TypeAlias {
+                                attrs: lower_attributes(node),
+                                visibility: lower_visibility(node),
+                                name: name.token.text,
+                                generics,
+                                ty,
+                                ty_span: type_head_span(types[0]),
+                            },
+                        ),
+                    )
                 },
                 None => Option::None,
             }
@@ -162,13 +165,11 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                         Some(variant_name) => {
                             if variant_name.token.text.byte_len() == 0
                                 || variant_name.token.text.byte_get(0) < 65
-                                || variant_name.token.text.byte_get(0) > 90
-                            {
+                                || variant_name.token.text.byte_get(0) > 90 {
                                 push_error(
                                     ctx,
                                     token_span(variant_name),
-                                    "Enum variant "
-                                        + variant_name.token.text
+                                    "Enum variant " + variant_name.token.text
                                         + " must start with an uppercase letter",
                                 )
                             } else {
@@ -187,10 +188,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                     };
                                     EnumVariantFields::Tuple(lowered)
                                 },
-                                None => match first_child(
-                                    variant,
-                                    cst::NodeKind::STRUCT_FIELD_LIST,
-                                ) {
+                                None => match first_child(variant, cst::NodeKind::STRUCT_FIELD_LIST) {
                                     Some(field_list) => {
                                         let named: Vec[(string, TypeExpr)] = Vec::new();
                                         for field in children_of_kind(
@@ -214,13 +212,10 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                                 Some(name) => if types.len() > 0 {
                                                     match lower_ty(ctx, types[0]) {
                                                         Some(ty) => {
-                                                            field_type_spans.push(type_head_span(
-                                                                types[0],
-                                                            ));
-                                                            named.push((
-                                                                name.token.text,
-                                                                ty,
-                                                            ))
+                                                            field_type_spans.push(
+                                                                type_head_span(types[0]),
+                                                            );
+                                                            named.push((name.token.text, ty))
                                                         },
                                                         None => (),
                                                     }
@@ -243,24 +238,32 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                     None => EnumVariantFields::Unit,
                                 },
                             };
-                            variants.push(EnumVariant {
-                                name: variant_name.token.text,
-                                fields,
-                                field_type_spans,
-                            })
+                            variants.push(
+                                EnumVariant {
+                                    name: variant_name.token.text,
+                                    fields,
+                                    field_type_spans,
+                                },
+                            )
                         },
-                        None => push_error(ctx, node_span(variant), "Enum variant is missing a name"),
+                        None => push_error(
+                            ctx,
+                            node_span(variant),
+                            "Enum variant is missing a name",
+                        ),
                     }
                 },
                 None => push_error(ctx, node_span(node), "Enum " + name + " has no variants"),
             };
-            Option::Some(EnumDef {
-                attrs: lower_attributes(node),
-                visibility: lower_visibility(node),
-                name,
-                generics,
-                variants,
-            })
+            Option::Some(
+                EnumDef {
+                    attrs: lower_attributes(node),
+                    visibility: lower_visibility(node),
+                    name,
+                    generics,
+                    variants,
+                },
+            )
         },
         None => {
             push_error(ctx, node_span(node), "Enum is missing a name");
@@ -302,15 +305,17 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                 },
                 None => (),
             };
-            Option::Some(StructDef {
-                attrs: lower_attributes(node),
-                visibility: lower_visibility(node),
-                name: name_token.token.text,
-                generics,
-                fields,
-                field_type_spans,
-                public_fields,
-            })
+            Option::Some(
+                StructDef {
+                    attrs: lower_attributes(node),
+                    visibility: lower_visibility(node),
+                    name: name_token.token.text,
+                    generics,
+                    fields,
+                    field_type_spans,
+                    public_fields,
+                },
+            )
         },
         None => Option::None,
     }
@@ -327,7 +332,11 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                     Option::Some(TypeExpr::Con { path: path_from_single_ident("Self") }),
                 ),
                 None => {
-                    push_error(ctx, node_span(node), "TraitMethod " + name_token.token.text + " has no params");
+                    push_error(
+                        ctx,
+                        node_span(node),
+                        "TraitMethod " + name_token.token.text + " has no params",
+                    );
                     Vec::new()
                 },
             };
@@ -364,16 +373,22 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                 lower_ty(ctx, returns[0])
             };
             match ret_ty {
-                Some(value) => Option::Some(TraitMethodSignature {
-                    name: name_token.token.text,
-                    generics,
-                    generic_bounds,
-                    predicates: lower_where_clause(ctx, node),
-                    params,
-                    ret_ty: value,
-                }),
+                Some(value) => Option::Some(
+                    TraitMethodSignature {
+                        name: name_token.token.text,
+                        generics,
+                        generic_bounds,
+                        predicates: lower_where_clause(ctx, node),
+                        params,
+                        ret_ty: value,
+                    },
+                ),
                 None => {
-                    push_error(ctx, node_span(node), "TraitMethod " + name_token.token.text + " has no return type");
+                    push_error(
+                        ctx,
+                        node_span(node),
+                        "TraitMethod " + name_token.token.text + " has no return type",
+                    );
                     Option::None
                 },
             }
@@ -414,10 +429,9 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
                                     Some(set) => lower_trait_set(ctx, set),
                                     None => Vec::new(),
                                 };
-                                associated_types.push(AssociatedType {
-                                    name: associated_name.token.text,
-                                    bounds,
-                                })
+                                associated_types.push(
+                                    AssociatedType { name: associated_name.token.text, bounds },
+                                )
                             },
                             None => (),
                         }
@@ -431,17 +445,19 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
                 },
                 None => push_error(ctx, node_span(node), "Trait " + name + " has no methods"),
             };
-            Option::Some(TraitDef {
-                attrs: lower_attributes(node),
-                visibility: lower_visibility(node),
-                name,
-                generics,
-                generic_bounds,
-                predicates: lower_where_clause(ctx, node),
-                supertraits,
-                associated_types,
-                method_sigs,
-            })
+            Option::Some(
+                TraitDef {
+                    attrs: lower_attributes(node),
+                    visibility: lower_visibility(node),
+                    name,
+                    generics,
+                    generic_bounds,
+                    predicates: lower_where_clause(ctx, node),
+                    supertraits,
+                    associated_types,
+                    method_sigs,
+                },
+            )
         },
         None => {
             push_error(ctx, node_span(node), "Trait is missing a name");
@@ -450,12 +466,9 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
     }
 }
 
-fn lower_param(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    index: int,
-    shorthand_self_ty: Option[TypeExpr],
-) -> Option[(string, TypeExpr)] {
+fn lower_param(ctx: LowerCtx, node: LocatedNode, index: int, shorthand_self_ty: Option[TypeExpr]) -> Option[
+    (string, TypeExpr),
+] {
     match first_token(node, lexer::TokenKind::Ident) {
         Some(name_token) => {
             let types = type_children(node);
@@ -472,7 +485,11 @@ fn lower_param(
                         Option::None
                     },
                     None => {
-                        push_error(ctx, node_span(node), "Param " + name_token.token.text + " has no type");
+                        push_error(
+                            ctx,
+                            node_span(node),
+                            "Param " + name_token.token.text + " has no type",
+                        );
                         Option::None
                     },
                 }
@@ -497,11 +514,9 @@ fn lower_param(
     }
 }
 
-fn lower_params(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    shorthand_self_ty: Option[TypeExpr],
-) -> Vec[(string, TypeExpr)] {
+fn lower_params(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[TypeExpr]) -> Vec[
+    (string, TypeExpr),
+] {
     let result: Vec[(string, TypeExpr)] = Vec::new();
     match first_child(node, cst::NodeKind::PARAM_LIST) {
         Some(list) => {
@@ -535,11 +550,9 @@ fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
     result
 }
 
-fn lower_function(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    shorthand_self_ty: Option[TypeExpr],
-) -> Option[Function] {
+fn lower_function(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[TypeExpr]) -> Option[
+    Function,
+] {
     match first_token(node, lexer::TokenKind::Ident) {
         Some(name_token) => match first_child(node, cst::NodeKind::PARAM_LIST) {
             Some(_) => match first_child(node, cst::NodeKind::BLOCK) {
@@ -552,26 +565,32 @@ fn lower_function(
                         } else {
                             Option::None
                         };
-                        Option::Some(Function {
-                            attrs: lower_attributes(node),
-                            visibility: lower_visibility(node),
-                            name: name_token.token.text,
-                            generics,
-                            generic_bounds,
-                            predicates: lower_where_clause(ctx, node),
-                            params: lower_params(ctx, node, shorthand_self_ty),
-                            param_type_spans: lower_param_type_spans(node),
-                            ret_ty,
-                            ret_ty_span: if returns.len() > 0 {
-                                Option::Some(type_head_span(returns[0]))
-                            } else {
-                                Option::None
+                        Option::Some(
+                            Function {
+                                attrs: lower_attributes(node),
+                                visibility: lower_visibility(node),
+                                name: name_token.token.text,
+                                generics,
+                                generic_bounds,
+                                predicates: lower_where_clause(ctx, node),
+                                params: lower_params(ctx, node, shorthand_self_ty),
+                                param_type_spans: lower_param_type_spans(node),
+                                ret_ty,
+                                ret_ty_span: if returns.len() > 0 {
+                                    Option::Some(type_head_span(returns[0]))
+                                } else {
+                                    Option::None
+                                },
+                                body,
                             },
-                            body,
-                        })
+                        )
                     },
                     None => {
-                        push_error(ctx, node_span(node), "Fn " + name_token.token.text + " has no body");
+                        push_error(
+                            ctx,
+                            node_span(node),
+                            "Fn " + name_token.token.text + " has no body",
+                        );
                         Option::None
                     },
                 },
@@ -605,7 +624,11 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
         } else {
             Option::None
         };
-        let target_index = if has_for { types.len() - 1 } else { types.len() - 1 };
+        let target_index = if has_for {
+            types.len() - 1
+        } else {
+            types.len() - 1
+        };
         record_disallowed_self_type(ctx, types[target_index]);
         match lower_ty(ctx, types[target_index]) {
             Some(for_type) => {
@@ -634,8 +657,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                                     Public => push_error(
                                         ctx,
                                         node_span(node),
-                                        "Trait implementation method "
-                                            + value.name
+                                        "Trait implementation method " + value.name
                                             + " must not use `pub`",
                                     ),
                                     Private => (),
@@ -647,17 +669,19 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                         None => (),
                     }
                 };
-                Option::Some(ImplBlock {
-                    attrs: lower_attributes(node),
-                    generics,
-                    generic_bounds,
-                    predicates: lower_where_clause(ctx, node),
-                    associated_types,
-                    trait_ref,
-                    for_type,
-                    for_type_span: type_head_span(types[target_index]),
-                    methods,
-                })
+                Option::Some(
+                    ImplBlock {
+                        attrs: lower_attributes(node),
+                        generics,
+                        generic_bounds,
+                        predicates: lower_where_clause(ctx, node),
+                        associated_types,
+                        trait_ref,
+                        for_type,
+                        for_type_span: type_head_span(types[target_index]),
+                        methods,
+                    },
+                )
             },
             None => {
                 push_error(ctx, node_span(node), "Impl block is missing a target type");
@@ -672,7 +696,11 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     let intrinsic = find_attribute(attrs, "intrinsic");
     let runtime = find_attribute(attrs, "runtime");
     if option_attribute_is_none(intrinsic) && option_attribute_is_none(runtime) {
-        push_error(ctx, node_span(node), "Extern declarations require `#[intrinsic(...)]` or `#[runtime(...)]`.");
+        push_error(
+            ctx,
+            node_span(node),
+            "Extern declarations require `#[intrinsic(...)]` or `#[runtime(...)]`.",
+        );
         Option::None
     } else if has_token(node, lexer::TokenKind::TypeKeyword) {
         let attr_span = match intrinsic {
@@ -687,7 +715,11 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     } else {
         let strings = tokens_of_kind(node, lexer::TokenKind::Str);
         if strings.len() > 0 {
-            push_error(ctx, token_span(strings[0]), "Extern function declarations should not specify a language string")
+            push_error(
+                ctx,
+                token_span(strings[0]),
+                "Extern function declarations should not specify a language string",
+            )
         } else {
             ()
         };
@@ -700,19 +732,27 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
                 } else {
                     Option::None
                 };
-                Option::Some(Item::ExternFunction(ExternFunction {
-                    attrs,
-                    visibility: lower_visibility(node),
-                    name: name_token.token.text,
-                    generics,
-                    generic_bounds,
-                    predicates: lower_where_clause(ctx, node),
-                    params: lower_params(ctx, node, Option::None),
-                    ret_ty,
-                }))
+                Option::Some(
+                    Item::ExternFunction(
+                        ExternFunction {
+                            attrs,
+                            visibility: lower_visibility(node),
+                            name: name_token.token.text,
+                            generics,
+                            generic_bounds,
+                            predicates: lower_where_clause(ctx, node),
+                            params: lower_params(ctx, node, Option::None),
+                            ret_ty,
+                        },
+                    ),
+                )
             },
             None => {
-                push_error(ctx, node_span(node), "Extern function declaration is missing function name");
+                push_error(
+                    ctx,
+                    node_span(node),
+                    "Extern function declaration is missing function name",
+                );
                 Option::None
             },
         }

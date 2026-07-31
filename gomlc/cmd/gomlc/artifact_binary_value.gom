@@ -8,17 +8,10 @@ struct ArtifactBinaryStringTable {
 }
 
 fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
-    ArtifactBinaryStringTable {
-        values: Vec::new(),
-        indexes: HashMap::new(),
-    }
+    ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::new() }
 }
 
-fn artifact_binary_collect_string(
-    seen: HashMap[string, unit],
-    values: Vec[string],
-    value: string,
-) -> unit {
+fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
     if seen.contains(value) {
         ()
     } else {
@@ -47,18 +40,14 @@ fn artifact_binary_collect_value_strings(
     }
 }
 
-fn artifact_binary_string_table(
-    value: ArtifactValue,
-) -> ArtifactBinaryStringTable {
+fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
     let seen: HashMap[string, unit] = HashMap::new();
     let values = Vec::new();
     artifact_binary_collect_value_strings(seen, values, value);
     artifact_binary_string_table_from_values(values)
 }
 
-fn artifact_binary_string_table_from_values(
-    values: Vec[string],
-) -> ArtifactBinaryStringTable {
+fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBinaryStringTable {
     let values = sort_artifact_names(values);
     let indexes: HashMap[string, int] = HashMap::new();
     for index in range(0, values.len()) {
@@ -67,19 +56,14 @@ fn artifact_binary_string_table_from_values(
     ArtifactBinaryStringTable { values, indexes }
 }
 
-fn artifact_binary_string_id(
-    table: ArtifactBinaryStringTable,
-    value: string,
-) -> int {
+fn artifact_binary_string_id(table: ArtifactBinaryStringTable, value: string) -> int {
     match table.indexes[value] {
         Some(value) => value,
         None => -1,
     }
 }
 
-fn encode_artifact_binary_string_table(
-    table: ArtifactBinaryStringTable,
-) -> bytes::Bytes {
+fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> bytes::Bytes {
     let writer = new_artifact_binary_writer();
     artifact_binary_write_uleb128(writer, table.values.len() as uint64);
     for value in table.values {
@@ -88,9 +72,10 @@ fn encode_artifact_binary_string_table(
     artifact_binary_writer_finish(writer)
 }
 
-fn decode_artifact_binary_string_table(
-    data: bytes::Bytes,
-) -> Result[ArtifactBinaryStringTable, string] {
+fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
+    ArtifactBinaryStringTable,
+    string,
+] {
     let reader = new_artifact_binary_reader(data);
     let count = match artifact_binary_read_length(reader) {
         Ok(value) => value,
@@ -110,9 +95,7 @@ fn decode_artifact_binary_string_table(
         };
         if indexes.contains(value) {
             return Result::Err("duplicate binary artifact string")
-        } else if index > 0
-            && !artifact_string_less(values[index - 1], value)
-        {
+        } else if index > 0 && !artifact_string_less(values[index - 1], value) {
             return Result::Err("binary artifact string table is not sorted")
         } else {
             indexes[value] = index;
@@ -140,28 +123,22 @@ fn artifact_binary_encode_string_id(
     }
 }
 
-fn artifact_binary_decode_string_id(
-    reader: ArtifactBinaryReader,
-    table: ArtifactBinaryStringTable,
-) -> Result[string, string] {
+fn artifact_binary_decode_string_id(reader: ArtifactBinaryReader, table: ArtifactBinaryStringTable) -> Result[
+    string,
+    string,
+] {
     let id = match artifact_binary_read_length(reader) {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
     };
     if id >= table.values.len() {
-        Result::Err(artifact_binary_reader_error(
-            reader,
-            "string table index out of bounds",
-        ))
+        Result::Err(artifact_binary_reader_error(reader, "string table index out of bounds"))
     } else {
         Result::Ok(table.values[id])
     }
 }
 
-fn artifact_binary_object_has_field(
-    fields: Vec[(string, ArtifactValue)],
-    name: string,
-) -> bool {
+fn artifact_binary_object_has_field(fields: Vec[(string, ArtifactValue)], name: string) -> bool {
     for field in fields {
         if field.0 == name {
             return true
@@ -209,12 +186,7 @@ fn artifact_binary_encode_value_at(
             artifact_binary_write_u8(writer, 5);
             artifact_binary_write_u32(writer, items.len() as uint32);
             for item in items {
-                match artifact_binary_encode_value_at(
-                    writer,
-                    table,
-                    item,
-                    depth + 1,
-                ) {
+                match artifact_binary_encode_value_at(writer, table, item, depth + 1) {
                     Ok(()) => (),
                     Err(error) => return Result::Err(error),
                 }
@@ -225,20 +197,11 @@ fn artifact_binary_encode_value_at(
             artifact_binary_write_u8(writer, 6);
             artifact_binary_write_u32(writer, fields.len() as uint32);
             for field in fields {
-                match artifact_binary_encode_string_id(
-                    writer,
-                    table,
-                    field.0,
-                ) {
+                match artifact_binary_encode_string_id(writer, table, field.0) {
                     Ok(()) => (),
                     Err(error) => return Result::Err(error),
                 };
-                match artifact_binary_encode_value_at(
-                    writer,
-                    table,
-                    field.1,
-                    depth + 1,
-                ) {
+                match artifact_binary_encode_value_at(writer, table, field.1, depth + 1) {
                     Ok(()) => (),
                     Err(error) => return Result::Err(error),
                 }
@@ -248,10 +211,10 @@ fn artifact_binary_encode_value_at(
     }
 }
 
-fn encode_artifact_binary_value(
-    table: ArtifactBinaryStringTable,
-    value: ArtifactValue,
-) -> Result[bytes::Bytes, string] {
+fn encode_artifact_binary_value(table: ArtifactBinaryStringTable, value: ArtifactValue) -> Result[
+    bytes::Bytes,
+    string,
+] {
     let writer = new_artifact_binary_writer();
     match artifact_binary_encode_value_at(writer, table, value, 0) {
         Ok(()) => Result::Ok(artifact_binary_writer_finish(writer)),
@@ -297,11 +260,7 @@ fn artifact_binary_decode_value_at(
             };
             let values = Vec::with_capacity(count);
             for _ in range(0, count) {
-                match artifact_binary_decode_value_at(
-                    reader,
-                    table,
-                    depth + 1,
-                ) {
+                match artifact_binary_decode_value_at(reader, table, depth + 1) {
                     Ok(value) => values.push(value),
                     Err(error) => return Result::Err(error),
                 }
@@ -331,10 +290,7 @@ fn artifact_binary_decode_value_at(
                 };
                 let duplicate = match names {
                     Some(value) => value.contains(name),
-                    None => artifact_binary_object_has_field(
-                        fields,
-                        name,
-                    ),
+                    None => artifact_binary_object_has_field(fields, name),
                 };
                 if duplicate {
                     return Result::Err("duplicate binary artifact object field")
@@ -344,11 +300,7 @@ fn artifact_binary_decode_value_at(
                         None => (),
                     }
                 };
-                let value = match artifact_binary_decode_value_at(
-                    reader,
-                    table,
-                    depth + 1,
-                ) {
+                let value = match artifact_binary_decode_value_at(reader, table, depth + 1) {
                     Ok(value) => value,
                     Err(error) => return Result::Err(error),
                 };
@@ -356,17 +308,14 @@ fn artifact_binary_decode_value_at(
             };
             Result::Ok(ArtifactValue::Object(fields))
         },
-        _ => Result::Err(artifact_binary_reader_error(
-            reader,
-            "invalid value tag",
-        )),
+        _ => Result::Err(artifact_binary_reader_error(reader, "invalid value tag")),
     }
 }
 
-fn decode_artifact_binary_value(
-    table: ArtifactBinaryStringTable,
-    data: bytes::Bytes,
-) -> Result[ArtifactValue, string] {
+fn decode_artifact_binary_value(table: ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
+    ArtifactValue,
+    string,
+] {
     let reader = new_artifact_binary_reader(data);
     let value = match artifact_binary_decode_value_at(reader, table, 0) {
         Ok(value) => value,

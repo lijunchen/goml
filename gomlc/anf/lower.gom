@@ -24,21 +24,20 @@ fn lower_function(state: State, value: core::Function) -> Function {
             name: ret_id,
             params: Vec::new(),
             ret_ty: value.ret_ty,
-            body: Block {
-                binds: no_binds(),
-                term: Term::Return(unit_imm()),
-            },
+            body: Block { binds: no_binds(), term: Term::Return(unit_imm()) },
         }
     };
     let previous = state.return_ctx.get();
-    state.return_ctx.set(Option::Some(ReturnCtx {
-        join_id: ret_id,
-        ret_ty: value.ret_ty,
-        takes_arg,
-    }));
-    let lowered = lower_core_block(state, value.body, |result| {
-        jump_block(ret_id, result, takes_arg, value.ret_ty)
-    });
+    state.return_ctx.set(
+        Option::Some(ReturnCtx { join_id: ret_id, ret_ty: value.ret_ty, takes_arg }),
+    );
+    let lowered = lower_core_block(
+        state,
+        value.body,
+        |result| {
+            jump_block(ret_id, result, takes_arg, value.ret_ty)
+        },
+    );
     state.return_ctx.set(previous);
     let binds = Vec::new();
     binds.push(Bind::Join(ret_join));
@@ -51,10 +50,7 @@ fn lower_function(state: State, value: core::Function) -> Function {
         trait_impl: value.trait_impl,
         params: value.params,
         ret_ty: value.ret_ty,
-        body: Block {
-            binds,
-            term: lowered.term,
-        },
+        body: Block { binds, term: lowered.term },
     }
 }
 

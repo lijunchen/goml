@@ -32,11 +32,7 @@ fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
     }
 }
 
-fn finish_assign_stmt(
-    parser: Parser,
-    target: MarkerClosed,
-    operator: lexer::TokenKind,
-) -> MarkerClosed {
+fn finish_assign_stmt(parser: Parser, target: MarkerClosed, operator: lexer::TokenKind) -> MarkerClosed {
     let marker = target.precede(parser);
     parser.expect(operator);
     if marker_is_none(expr(parser)) {

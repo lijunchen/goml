@@ -38,21 +38,14 @@ fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
     let content = if token_is(operator, lexer::TokenKind::Dot) {
         concat(Vec::[left.doc, token_doc(operator), right.doc])
     } else {
-        concat(Vec::[
-            left.doc,
-            indent(concat(Vec::[
-                Doc::SoftLine,
-                token_doc(operator),
-                text(" "),
-                right.doc,
-            ])),
-        ])
+        concat(
+            Vec::[
+                left.doc,
+                indent(concat(Vec::[Doc::SoftLine, token_doc(operator), text(" "), right.doc])),
+            ],
+        )
     };
-    built(
-        value.docs.group(content).doc,
-        left.first,
-        right.last,
-    )
+    built(value.docs.group(content).doc, left.first, right.last)
 }
 
 fn format_prefix(value: Builder, node: LocatedNode) -> BuiltDoc {

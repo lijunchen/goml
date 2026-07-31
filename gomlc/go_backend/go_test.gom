@@ -12,36 +12,42 @@ use gomlc::tast;
 use std::testing;
 
 fn lower_source(source: string) -> File {
-    lower(anf::lower(lift::lower(mono::lower(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse(source)),
-        "main.gom",
-    )))))))
+    lower(
+        anf::lower(
+            lift::lower(
+                mono::lower(
+                    core::lower(
+                        tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+                    ),
+                ),
+            ),
+        ),
+    )
 }
 
 fn lower_linked_source(source: string) -> File {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let user = core::lower_with_counter_and_types(
-        tast::check_for_link(hir::lower(
-            ast::lower(parser::parse(source)),
-            "main.gom",
-        )),
+        tast::check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
         counter,
         builtins.enums,
         builtins.structs,
     );
-    lower(anf::lower(lift::lower(mono::lower(core::link_with_builtins(
-        builtins,
-        user,
-    )))))
+    lower(anf::lower(lift::lower(mono::lower(core::link_with_builtins(builtins, user)))))
 }
 
 fn lower_test_source(source: string, test_cases: Vec[(string, string)]) -> File {
     lower_tests(
-        anf::lower(lift::lower(mono::lower(core::lower(tast::check(hir::lower(
-            ast::lower(parser::parse(source)),
-            "main.gom",
-        )))))),
+        anf::lower(
+            lift::lower(
+                mono::lower(
+                    core::lower(
+                        tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+                    ),
+                ),
+            ),
+        ),
         test_cases,
     )
 }
@@ -68,18 +74,22 @@ fn emits_test_runner_entrypoint() -> unit {
     let test_cases = Vec::new();
     test_cases.push(("example::alpha", "alpha"));
     test_cases.push(("example::beta", "beta"));
-    let output = encode(lower_test_source(
-        "fn beta() -> unit {} fn alpha() -> unit {} fn unused() -> unit {}",
-        test_cases,
-    ));
+    let output = encode(
+        lower_test_source(
+            "fn beta() -> unit {} fn alpha() -> unit {} fn unused() -> unit {}",
+            test_cases,
+        ),
+    );
     testing::assert(string_contains(output, "_goml_os \"os\""));
     testing::assert(string_contains(output, "switch _goml_os.Args[1]"));
     testing::assert(string_contains(output, "case \"example::alpha\":\n        alpha()"));
     testing::assert(string_contains(output, "case \"example::beta\":\n        beta()"));
-    testing::assert(string_contains(
-        output,
-        "default:\n        _goml_runtime_std_testing_fail(\"unknown test id\")",
-    ));
+    testing::assert(
+        string_contains(
+            output,
+            "default:\n        _goml_runtime_std_testing_fail(\"unknown test id\")",
+        ),
+    );
     testing::assert(!string_contains(output, "func unused("))
 }
 
@@ -95,14 +105,15 @@ fn emits_if_continuations() -> unit {
 #[test]
 fn emits_linked_bool_to_string_runtime() -> unit {
     let output = encode(lower_linked_source("fn main() -> unit { print(true) }"));
-    testing::assert(string_contains(
-        output,
-        "func _goml_runtime_core_bool_to_string(x bool) string {\n    if x {\n        return \"true\"\n    } else {\n        return \"false\"\n    }\n}",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func _goml_m_trait__impl_i_ToString_i_bool_i_to__string",
-    ))
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_runtime_core_bool_to_string(x bool) string {\n    if x {\n        return \"true\"\n    } else {\n        return \"false\"\n    }\n}",
+        ),
+    );
+    testing::assert(
+        string_contains(output, "func _goml_m_trait__impl_i_ToString_i_bool_i_to__string"),
+    )
 }
 
 fn all_core_runtime_hooks() -> Vec[string] {
@@ -158,46 +169,35 @@ fn emits_every_core_runtime_hook() -> unit {
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });
-    testing::assert(string_contains(
-        output,
-        "import (\n"
-            + "    _goml_fmt \"fmt\"\n"
-            + "    _goml_math \"math\"\n"
-            + "    _goml_strconv \"strconv\"\n"
-            + "    _goml_strings \"strings\"\n"
-            + "    _goml_utf8 \"unicode/utf8\"\n"
-            + ")",
-    ));
-    for key in hooks {
-        testing::assert(string_contains(
+    testing::assert(
+        string_contains(
             output,
-            "func " + runtime_hook_name(key) + "(",
-        ))
+            "import (\n" + "    _goml_fmt \"fmt\"\n" + "    _goml_math \"math\"\n"
+                + "    _goml_strconv \"strconv\"\n"
+                + "    _goml_strings \"strings\"\n"
+                + "    _goml_utf8 \"unicode/utf8\"\n"
+                + ")",
+        ),
+    );
+    for key in hooks {
+        testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
     };
-    testing::assert(string_contains(
-        output,
-        "func _goml_runtime_string_decode_utf8_at_native(",
-    ));
-    testing::assert(string_contains(
-        output,
-        "if !_goml_runtime_core_string_is_char_boundary(s, start) && _goml_runtime_core_string_is_char_boundary(s, end) {\n        panic(\"invalid string byte slice\")\n    }",
-    ));
-    testing::assert(string_contains(
-        output,
-        "items: []byte(s),",
-    ));
-    testing::assert(string_contains(
-        output,
-        "var formatted string = _goml_strconv.FormatFloat(float64(x), 102, -1, 32)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "return uint64(_goml_math.Float32bits(x))",
-    ));
-    testing::assert(string_contains(
-        output,
-        "h = h * 1099511628211 + uint64(s[i])",
-    ))
+    testing::assert(string_contains(output, "func _goml_runtime_string_decode_utf8_at_native("));
+    testing::assert(
+        string_contains(
+            output,
+            "if !_goml_runtime_core_string_is_char_boundary(s, start) && _goml_runtime_core_string_is_char_boundary(s, end) {\n        panic(\"invalid string byte slice\")\n    }",
+        ),
+    );
+    testing::assert(string_contains(output, "items: []byte(s),"));
+    testing::assert(
+        string_contains(
+            output,
+            "var formatted string = _goml_strconv.FormatFloat(float64(x), 102, -1, 32)",
+        ),
+    );
+    testing::assert(string_contains(output, "return uint64(_goml_math.Float32bits(x))"));
+    testing::assert(string_contains(output, "h = h * 1099511628211 + uint64(s[i])"))
 }
 
 fn all_standard_runtime_hooks() -> Vec[string] {
@@ -251,87 +251,46 @@ fn emits_every_standard_runtime_hook() -> unit {
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });
-    testing::assert(string_contains(
-        output,
-        "import (\n"
-            + "    _goml_bytes \"bytes\"\n"
-            + "    _goml_context \"context\"\n"
-            + "    _goml_fmt \"fmt\"\n"
-            + "    _goml_io \"io\"\n"
-            + "    _goml_os \"os\"\n"
-            + "    _goml_exec \"os/exec\"\n"
-            + "    _goml_filepath \"path/filepath\"\n"
-            + "    _goml_sha256 \"crypto/sha256\"\n"
-            + "    _goml_strings \"strings\"\n"
-            + "    _goml_time \"time\"\n"
-            + ")",
-    ));
-    for key in hooks {
-        testing::assert(string_contains(
+    testing::assert(
+        string_contains(
             output,
-            "func " + runtime_hook_name(key) + "(",
-        ))
+            "import (\n" + "    _goml_bytes \"bytes\"\n" + "    _goml_context \"context\"\n"
+                + "    _goml_fmt \"fmt\"\n"
+                + "    _goml_io \"io\"\n"
+                + "    _goml_os \"os\"\n"
+                + "    _goml_exec \"os/exec\"\n"
+                + "    _goml_filepath \"path/filepath\"\n"
+                + "    _goml_sha256 \"crypto/sha256\"\n"
+                + "    _goml_strings \"strings\"\n"
+                + "    _goml_time \"time\"\n"
+                + ")",
+        ),
+    );
+    for key in hooks {
+        testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
     };
-    testing::assert(string_contains(
-        output,
-        "data, err = _goml_os.ReadFile(path)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "var err error = _goml_os.WriteFile(path, data.items, 0644)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "var err error = _goml_os.MkdirAll(path, 0755)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "result, err = _goml_filepath.EvalSymlinks(absolute)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "names = append(names, entry.Name())",
-    ));
-    testing::assert(string_contains(
-        output,
-        "var digest [32]uint8 = _goml_sha256.Sum256(data)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "_goml_fmt.Fprint(_goml_os.Stderr, value)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "data, err = _goml_io.ReadAll(_goml_os.Stdin)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "_, err = _goml_io.ReadFull(_goml_os.Stdin, data)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "return _goml_filepath.Join(base, child)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "_goml_strings.TrimSuffix(base, extension)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "var cmd *_goml_exec.Cmd = _goml_exec.Command(program, arguments.items...)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "result, err = _goml_exec.LookPath(program)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "for _, entry := range environment.items",
-    ));
-    testing::assert(string_contains(
-        output,
-        "_goml_fmt.Fprintln(_goml_os.Stderr, message)",
-    ))
+    testing::assert(string_contains(output, "data, err = _goml_os.ReadFile(path)"));
+    testing::assert(
+        string_contains(output, "var err error = _goml_os.WriteFile(path, data.items, 0644)"),
+    );
+    testing::assert(string_contains(output, "var err error = _goml_os.MkdirAll(path, 0755)"));
+    testing::assert(string_contains(output, "result, err = _goml_filepath.EvalSymlinks(absolute)"));
+    testing::assert(string_contains(output, "names = append(names, entry.Name())"));
+    testing::assert(string_contains(output, "var digest [32]uint8 = _goml_sha256.Sum256(data)"));
+    testing::assert(string_contains(output, "_goml_fmt.Fprint(_goml_os.Stderr, value)"));
+    testing::assert(string_contains(output, "data, err = _goml_io.ReadAll(_goml_os.Stdin)"));
+    testing::assert(string_contains(output, "_, err = _goml_io.ReadFull(_goml_os.Stdin, data)"));
+    testing::assert(string_contains(output, "return _goml_filepath.Join(base, child)"));
+    testing::assert(string_contains(output, "_goml_strings.TrimSuffix(base, extension)"));
+    testing::assert(
+        string_contains(
+            output,
+            "var cmd *_goml_exec.Cmd = _goml_exec.Command(program, arguments.items...)",
+        ),
+    );
+    testing::assert(string_contains(output, "result, err = _goml_exec.LookPath(program)"));
+    testing::assert(string_contains(output, "for _, entry := range environment.items"));
+    testing::assert(string_contains(output, "_goml_fmt.Fprintln(_goml_os.Stderr, message)"))
 }
 
 #[test]
@@ -342,18 +301,9 @@ fn closes_string_runtime_dependencies() -> unit {
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });
-    testing::assert(string_contains(
-        output,
-        "func _goml_runtime_string_decode_utf8_at_native(",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func _goml_runtime_core_string_is_char_boundary(",
-    ));
-    testing::assert(string_contains(
-        output,
-        "_goml_utf8 \"unicode/utf8\"",
-    ))
+    testing::assert(string_contains(output, "func _goml_runtime_string_decode_utf8_at_native("));
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_is_char_boundary("));
+    testing::assert(string_contains(output, "_goml_utf8 \"unicode/utf8\""))
 }
 
 #[test]
@@ -364,28 +314,23 @@ fn imports_intrinsic_runtime_dependencies() -> unit {
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, Vec::new(), intrinsics);
     let output = encode(File { items });
-    testing::assert(string_contains(
-        output,
-        "import (\n"
-            + "    _goml_reflect \"reflect\"\n"
-            + "    _goml_slices \"slices\"\n"
-            + ")",
-    ))
+    testing::assert(
+        string_contains(
+            output,
+            "import (\n" + "    _goml_reflect \"reflect\"\n" + "    _goml_slices \"slices\"\n" + ")",
+        ),
+    )
 }
 
 #[test]
 fn prunes_imports_used_only_by_dead_helpers() -> unit {
-    let output = encode(lower_linked_source(
-        "fn main() -> unit { let cell = Ref::new(1); cell.set(cell.get() + 1); let values: Vec[int32] = Vec::new(); values.push(cell.get()); println(values.len()); }",
-    ));
-    testing::assert(!string_contains(
-        output,
-        "_goml_reflect \"reflect\"",
-    ));
-    testing::assert(!string_contains(
-        output,
-        "_goml_slices \"slices\"",
-    ))
+    let output = encode(
+        lower_linked_source(
+            "fn main() -> unit { let cell = Ref::new(1); cell.set(cell.get() + 1); let values: Vec[int32] = Vec::new(); values.push(cell.get()); println(values.len()); }",
+        ),
+    );
+    testing::assert(!string_contains(output, "_goml_reflect \"reflect\""));
+    testing::assert(!string_contains(output, "_goml_slices \"slices\""))
 }
 
 #[test]
@@ -393,19 +338,25 @@ fn keeps_imports_used_by_reachable_types() -> unit {
     let imports: Vec[(string, string)] = Vec::new();
     imports.push(("_goml_bytes", "bytes"));
     let stmts: Vec[Stmt] = Vec::new();
-    stmts.push(Stmt::Var {
-        name: "buffer",
-        ty: Type::Named { name: "_goml_bytes.Buffer" },
-        value: Option::None,
-    });
+    stmts.push(
+        Stmt::Var {
+            name: "buffer",
+            ty: Type::Named { name: "_goml_bytes.Buffer" },
+            value: Option::None,
+        },
+    );
     let items: Vec[Item] = Vec::new();
     items.push(Item::ImportGroup(imports));
-    items.push(Item::Function(Function {
-        name: "main",
-        params: Vec::new(),
-        ret_ty: Option::None,
-        body: Block { stmts },
-    }));
+    items.push(
+        Item::Function(
+            Function {
+                name: "main",
+                params: Vec::new(),
+                ret_ty: Option::None,
+                body: Block { stmts },
+            },
+        ),
+    );
     let output = encode(prune_functions(File { items }));
     testing::assert(string_contains(output, "_goml_bytes \"bytes\""))
 }
@@ -414,78 +365,57 @@ fn keeps_imports_used_by_reachable_types() -> unit {
 fn emits_complete_vec_runtime_helpers() -> unit {
     let ty = tast::Type::VecType { elem: tast::Type::Int32 };
     let output = encode(File { items: vec_runtime_items(ty) });
-    testing::assert(string_contains(
-        output,
-        "func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32",
-    ));
-    testing::assert(string_contains(
-        output,
-        "items: _goml_slices.Grow([]int32{}, int(capacity)),",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int) struct{}",
-    ));
-    testing::assert(string_contains(
-        output,
-        "clear(vec.items[new_len:int(len(vec.items))])",
-    ));
-    testing::assert(string_contains(
-        output,
-        "vec.items = vec.items[0:new_len]",
-    ))
+    testing::assert(
+        string_contains(output, "func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32"),
+    );
+    testing::assert(string_contains(output, "items: _goml_slices.Grow([]int32{}, int(capacity)),"));
+    testing::assert(
+        string_contains(
+            output,
+            "func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int) struct{}",
+        ),
+    );
+    testing::assert(string_contains(output, "clear(vec.items[new_len:int(len(vec.items))])"));
+    testing::assert(string_contains(output, "vec.items = vec.items[0:new_len]"))
 }
 
 #[test]
 fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
     let key = tast::Type::String;
     let value = tast::Type::Int32;
-    let map_output = encode(File {
-        items: hashmap_items(
-            key,
-            value,
-            Vec::new(),
-            Vec::new(),
-            Vec::new(),
-            new_function_names(),
-            true,
+    let map_output = encode(
+        File {
+            items: hashmap_items(
+                key,
+                value,
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                new_function_names(),
+                true,
+            ),
+        },
+    );
+    testing::assert(
+        string_contains(
+            map_output,
+            "func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x",
         ),
-    });
-    testing::assert(string_contains(
-        map_output,
-        "func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x",
-    ));
-    testing::assert(string_contains(
-        map_output,
-        "buckets: make(map[uint64][]hashmap_string_int32_x_entry),",
-    ));
-    testing::assert(string_contains(
-        map_output,
-        "func hashmap_len__HashMap_6string_5int32(",
-    ));
-    testing::assert(string_contains(
-        map_output,
-        "func hashmap_remove__HashMap_6string_5int32(",
-    ));
-    testing::assert(string_contains(
-        map_output,
-        "func hashmap_contains__HashMap_6string_5int32(",
-    ));
-    testing::assert(string_contains(
-        map_output,
-        "func hashmap_entries__HashMap_6string_5int32(",
-    ));
-    testing::assert(string_contains(
-        map_output,
-        "for _, h := range m.hashes {",
-    ));
-    let ref_output = encode(File {
-        items: ref_runtime_items(tast::Type::RefType { elem: tast::Type::Int32 }),
-    });
-    testing::assert(string_contains(
-        ref_output,
-        "return uint64(_goml_reflect.ValueOf(reference).Pointer())",
-    ))
+    );
+    testing::assert(
+        string_contains(map_output, "buckets: make(map[uint64][]hashmap_string_int32_x_entry),"),
+    );
+    testing::assert(string_contains(map_output, "func hashmap_len__HashMap_6string_5int32("));
+    testing::assert(string_contains(map_output, "func hashmap_remove__HashMap_6string_5int32("));
+    testing::assert(string_contains(map_output, "func hashmap_contains__HashMap_6string_5int32("));
+    testing::assert(string_contains(map_output, "func hashmap_entries__HashMap_6string_5int32("));
+    testing::assert(string_contains(map_output, "for _, h := range m.hashes {"));
+    let ref_output = encode(
+        File { items: ref_runtime_items(tast::Type::RefType { elem: tast::Type::Int32 }) },
+    );
+    testing::assert(
+        string_contains(ref_output, "return uint64(_goml_reflect.ValueOf(reference).Pointer())"),
+    )
 }
 
 #[test]
@@ -500,10 +430,12 @@ fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
 #[test]
 fn preserves_nested_tuple_discovery_order() -> unit {
     let source = "fn classify(p: ((int32, int32), string)) -> string { p.1 } fn main() -> unit { println(classify(((1, 2), \"value\"))); }";
-    testing::assert(string_contains(
-        encode(lower_source(source)),
-        "type Tuple2_20Tuple2_5int32_5int32_6string struct {\n    _0 Tuple2_5int32_5int32\n    _1 string\n}\n\ntype Tuple2_5int32_5int32 struct",
-    ))
+    testing::assert(
+        string_contains(
+            encode(lower_source(source)),
+            "type Tuple2_20Tuple2_5int32_5int32_6string struct {\n    _0 Tuple2_5int32_5int32\n    _1 string\n}\n\ntype Tuple2_5int32_5int32 struct",
+        ),
+    )
 }
 
 #[test]
@@ -527,20 +459,19 @@ fn emits_breaking_while_loops() -> unit {
 #[test]
 fn preserves_loop_carried_assignments() -> unit {
     let source = "fn main() -> unit { let mut i = 0; while i < 3 { println(i); i = i + 1; } }";
-    testing::assert(string_contains(
-        encode(lower_source(source)),
-        "\n            i__0 = ",
-    ))
+    testing::assert(string_contains(encode(lower_source(source)), "\n            i__0 = "))
 }
 
 #[test]
 fn preserves_all_exit_while_conditions() -> unit {
     let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; } fn main() -> unit { loop_return_unit(true) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "func loop_return_unit(flag__0 bool) struct{} {\n    for {\n        if flag__0 {\n            return struct{}{}\n        } else {\n            return struct{}{}\n        }\n    }\n    return struct{}{}\n}",
-    ))
+    testing::assert(
+        string_contains(
+            output,
+            "func loop_return_unit(flag__0 bool) struct{} {\n    for {\n        if flag__0 {\n            return struct{}{}\n        } else {\n            return struct{}{}\n        }\n    }\n    return struct{}{}\n}",
+        ),
+    )
 }
 
 #[test]
@@ -567,22 +498,25 @@ fn emits_vec_runtime_structs() -> unit {
 fn emits_builtin_iterator_structs() -> unit {
     let source = "fn main() -> unit { let mapped = iterator_map(range(0, 4), |value: int| value + 1); let filtered = iterator_filter(mapped, |value: int| value > 1); let limited = iterator_take(filtered, 2); for value in limited { println(value); }; }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "type MapIterator__int__int__FnIterator__int struct {\n    iterator FnIterator__int\n    map_fn func(int) int\n}",
-    ));
-    testing::assert(string_contains(
-        output,
-        "type FilterIterator__int__MapIterator__int__int__FnIterator__int struct {\n    iterator MapIterator__int__int__FnIterator__int\n    predicate func(int) bool\n}",
-    ));
-    testing::assert(string_contains(
-        output,
-        "type TakeIterator__",
-    ));
-    testing::assert(string_contains(
-        output,
-        "struct {\n    iterator FilterIterator__int__MapIterator__int__int__FnIterator__int\n    remaining *ref_int_x\n}",
-    ))
+    testing::assert(
+        string_contains(
+            output,
+            "type MapIterator__int__int__FnIterator__int struct {\n    iterator FnIterator__int\n    map_fn func(int) int\n}",
+        ),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "type FilterIterator__int__MapIterator__int__int__FnIterator__int struct {\n    iterator MapIterator__int__int__FnIterator__int\n    predicate func(int) bool\n}",
+        ),
+    );
+    testing::assert(string_contains(output, "type TakeIterator__"));
+    testing::assert(
+        string_contains(
+            output,
+            "struct {\n    iterator FilterIterator__int__MapIterator__int__int__FnIterator__int\n    remaining *ref_int_x\n}",
+        ),
+    )
 }
 
 #[test]
@@ -598,10 +532,7 @@ fn emits_hashmap_and_dyn_hash_runtime() -> unit {
 fn dispatches_dyn_hashmap_keys_through_vtables() -> unit {
     let source = "impl Eq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } fn main() -> unit { let values: HashMap[dyn Hash, string] = HashMap::new(); let key: dyn Hash = 1; values.set(key, \"one\"); println(values.contains(key).to_string()); }";
     let output = encode(lower_linked_source(source));
-    testing::assert_eq(
-        string_contains(output, "key.vtable.hash(key.data)"),
-        true,
-    );
+    testing::assert_eq(string_contains(output, "key.vtable.hash(key.data)"), true);
     testing::assert_eq(
         string_contains(output, "_goml_m_trait__impl_i_Hash_i_dynHash_i_hash"),
         false,
@@ -620,28 +551,31 @@ fn emits_generic_enum_instances_and_type_switches() -> unit {
 #[test]
 fn dispatches_trait_objects_for_enum_receivers() -> unit {
     let source = "trait Area { fn area(self: Self) -> int32; } enum Shape { Circle(int32), } impl Area for Shape { fn area(self: Shape) -> int32 { match self { Shape::Circle(radius) => radius * radius, } } } fn main() -> unit { let shape: dyn Area = Shape::Circle(3); println(Area::area(shape)); }";
-    testing::assert(string_contains(
-        encode(lower_source(source)),
-        "func dyn__Area__wrap__Shape__area(self any) int32 {\n    switch v := self.(type) {\n    case Shape:\n        return _goml_m_trait__impl_i_Area_i_Shape_i_area(v)\n    default:\n        panic(\"unexpected type\")\n    }\n}",
-    ))
+    testing::assert(
+        string_contains(
+            encode(lower_source(source)),
+            "func dyn__Area__wrap__Shape__area(self any) int32 {\n    switch v := self.(type) {\n    case Shape:\n        return _goml_m_trait__impl_i_Area_i_Shape_i_area(v)\n    default:\n        panic(\"unexpected type\")\n    }\n}",
+        ),
+    )
 }
 
 #[test]
 fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
     let source = "trait Mapper { fn map(self: Self, arg1: (int32) -> int32) -> int32; } struct Boxed { value: int32, } impl Mapper for Boxed { fn map(self: Boxed, f: (int32) -> int32) -> int32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = Boxed { value: 1 }; println(Mapper::map(x, |n| n + 1)); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "vtable._goml_m_map(x__2.data, func(p0 int32) int32 {",
-    ));
-    testing::assert(string_contains(
-        output,
-        "return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t8, p0)",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
-    ))
+    testing::assert(string_contains(output, "vtable._goml_m_map(x__2.data, func(p0 int32) int32 {"));
+    testing::assert(
+        string_contains(
+            output,
+            "return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t8, p0)",
+        ),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
+        ),
+    )
 }
 
 #[test]
@@ -675,14 +609,13 @@ fn emits_closures_inside_enum_payloads() -> unit {
 fn contextualizes_closures_in_generic_struct_fields() -> unit {
     let source = "struct Wrapper[T] { value: T, transform: (T) -> string, } fn show_wrapper[T](wrapper: Wrapper[T]) -> string { wrapper.transform(wrapper.value) } fn main() -> unit { let wrapper = if true { Wrapper { value: 42, transform: |value: int32| value.to_string() } } else { Wrapper { value: 0, transform: |value: int32| \"zero\" } }; println(show_wrapper(wrapper)); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "transform: func(p0 int32) string {",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
-    ));
+    testing::assert(string_contains(output, "transform: func(p0 int32) string {"));
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
+        ),
+    );
     testing::assert(!string_contains(output, "transform: t"))
 }
 
@@ -708,10 +641,12 @@ fn emits_runtime_types_nested_in_enum_fields() -> unit {
 fn resolves_generic_types_in_struct_fields() -> unit {
     let source = "struct Container { value: Option[int32], label: string, } fn main() -> unit { let c = Container { value: Option::Some(42), label: \"test\" }; match c.value { Option::Some(value) => println(value), Option::None => (), } }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "type Container struct {\n    value Option__int32\n    label string\n}",
-    ));
+    testing::assert(
+        string_contains(
+            output,
+            "type Container struct {\n    value Option__int32\n    label string\n}",
+        ),
+    );
     testing::assert(!string_contains(output, "value Option_5int32"))
 }
 
@@ -719,10 +654,9 @@ fn resolves_generic_types_in_struct_fields() -> unit {
 fn resolves_runtime_types_in_recursive_struct_fields() -> unit {
     let source = "enum Maybe[T] { None, Some(T), } struct Node { next: Ref[Maybe[Node]], } fn main() -> unit { let node: Node = Node { next: Ref::new(Maybe::None) }; let _ = node; }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "type ref_Maybe__Node_x struct {\n    value Maybe__Node\n}",
-    ));
+    testing::assert(
+        string_contains(output, "type ref_Maybe__Node_x struct {\n    value Maybe__Node\n}"),
+    );
     testing::assert(!string_contains(output, "type ref_App_"))
 }
 
@@ -752,9 +686,7 @@ fn hashes_and_compacts_long_go_identifiers() -> unit {
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
     );
     testing::assert_eq(
-        go_ident(
-            "inherent#closure_env_grow_T_int32_0#closure_env_grow_T_int32_0#apply",
-        ),
+        go_ident("inherent#closure_env_grow_T_int32_0#closure_env_grow_T_int32_0#apply"),
         "_goml_m_inherent_i_closure__en_hc8c2267ce73456d4efdb3aa5198c65a2_nt32__0_i_apply",
     )
 }
@@ -777,9 +709,11 @@ fn emits_structs_before_generic_enums() -> unit {
 
 #[test]
 fn preserves_enums_before_field_instances() -> unit {
-    let output = encode(lower_source(
-        "enum Expr { Num(int32), Add(Option[Expr]), } fn main() -> unit { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
-    ));
+    let output = encode(
+        lower_source(
+            "enum Expr { Num(int32), Add(Option[Expr]), } fn main() -> unit { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
+        ),
+    );
     let prefix = "package main\n\ntype Expr interface {\n    isExpr()\n}";
     testing::assert_eq(output.byte_slice(0, prefix.byte_len()), prefix);
     testing::assert(string_contains(output, "type Option__Expr interface"))
@@ -807,18 +741,24 @@ fn emits_pointer_equality_helpers() -> unit {
 fn emits_missing_runtime_helpers() -> unit {
     let source = "enum Never {} fn never() -> Never { never() } fn missing_int(value: Never) -> int32 { match value {} } fn missing_string(value: Never) -> string { match value {} } fn main() -> unit { println(missing_int(never())); println(missing_string(never())); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "func _goml_intrinsic_missing(s string) struct{} {\n    println(\"missing: \" + s)\n    panic(\"\")\n    return struct{}{}\n}",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func missing__int32(s string) int32 {\n    _goml_intrinsic_missing(s)\n    var ret int32\n    return ret\n}",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func missing__string(s string) string {\n    _goml_intrinsic_missing(s)\n    var ret string\n    return ret\n}",
-    ))
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_intrinsic_missing(s string) struct{} {\n    println(\"missing: \" + s)\n    panic(\"\")\n    return struct{}{}\n}",
+        ),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "func missing__int32(s string) int32 {\n    _goml_intrinsic_missing(s)\n    var ret int32\n    return ret\n}",
+        ),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "func missing__string(s string) string {\n    _goml_intrinsic_missing(s)\n    var ret string\n    return ret\n}",
+        ),
+    )
 }
 
 #[test]
@@ -896,14 +836,13 @@ fn sorts_dyn_helpers_and_compacts_builtin_impl_names() -> unit {
 fn uses_synthetic_hashmap_options_when_unmaterialized() -> unit {
     let source = "fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; println(\"ok\"); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "type _goml_synthetic__goml_option__string interface",
-    ));
-    testing::assert(string_contains(
-        output,
-        "func hashmap_get__HashMap_5int32_6string(m *hashmap_int32_string_x, key int32) _goml_synthetic__goml_option__string",
-    ));
+    testing::assert(string_contains(output, "type _goml_synthetic__goml_option__string interface"));
+    testing::assert(
+        string_contains(
+            output,
+            "func hashmap_get__HashMap_5int32_6string(m *hashmap_int32_string_x, key int32) _goml_synthetic__goml_option__string",
+        ),
+    );
     testing::assert(!string_contains(output, "type Option__string interface"))
 }
 
@@ -980,9 +919,11 @@ fn materializes_numeric_runtime_operands() -> unit {
 
 #[test]
 fn lowers_uint_and_runtime_traits() -> unit {
-    let output = encode(lower_linked_source(
-        "fn main() -> unit { let value: uint = 40 + 2; println(value.to_string()); let values: HashMap[uint, string] = HashMap::new(); values.set(value, \"stored\"); match values.get(42) { Option::Some(item) => println(item), Option::None => println(\"missing\"), }; }",
-    ));
+    let output = encode(
+        lower_linked_source(
+            "fn main() -> unit { let value: uint = 40 + 2; println(value.to_string()); let values: HashMap[uint, string] = HashMap::new(); values.set(value, \"stored\"); match values.get(42) { Option::Some(item) => println(item), Option::None => println(\"missing\"), }; }",
+        ),
+    );
     testing::assert(string_contains(output, "var value__0 uint"));
     testing::assert(string_contains(output, "core_uint_to_string"));
     testing::assert(string_contains(output, "key uint"))
@@ -992,19 +933,13 @@ fn lowers_uint_and_runtime_traits() -> unit {
 fn emits_rounded_float32_literals() -> unit {
     let source = "fn identity[T](x: T) -> T { x } fn main() -> unit { let value: float32 = identity(3.14); println(value.to_string()) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "identity__T_float32(3.140000104904175)",
-    ))
+    testing::assert(string_contains(output, "identity__T_float32(3.140000104904175)"))
 }
 
 #[test]
 fn canonicalizes_float64_literals() -> unit {
     let source = "fn main() -> unit { let value: float64 = 0.0; println(value.to_string()) }";
-    testing::assert(string_contains(
-        encode(lower_source(source)),
-        "var value__0 float64 = 0\n",
-    ))
+    testing::assert(string_contains(encode(lower_source(source)), "var value__0 float64 = 0\n"))
 }
 
 #[test]
@@ -1019,10 +954,7 @@ fn disambiguates_dyn_helper_names() -> unit {
 #[test]
 fn emits_blank_assignment_for_discarded_non_call_side_effects() -> unit {
     let source = "struct S {} impl ToString for S { fn to_string(self: S) -> string { \"S\" } } fn main() -> unit { let value = S {}; let dynamic: dyn ToString = value; let _ = dynamic; }";
-    testing::assert(string_contains(
-        encode(lower_source(source)),
-        "_ = dyn__ToString{",
-    ))
+    testing::assert(string_contains(encode(lower_source(source)), "_ = dyn__ToString{"))
 }
 
 #[test]
@@ -1041,10 +973,7 @@ fn protects_index_intrinsics_from_user_functions() -> unit {
     testing::assert(string_contains(output, "array_get__Array_2_5int32(a__17, 1)"));
     testing::assert(string_contains(output, "s__22[1]"));
     testing::assert(string_contains(output, "_goml_m_core_t_string__get("));
-    testing::assert(string_contains(
-        output,
-        "hashmap_get__HashMap_6string_5int32(m__",
-    ));
+    testing::assert(string_contains(output, "hashmap_get__HashMap_6string_5int32(m__"));
     testing::assert(!string_contains(output, "_goml_m_array_t_get"));
     testing::assert(!string_contains(output, "_goml_m_vec_t_get"));
     testing::assert(!string_contains(output, "_goml_m_hashmap_t_get"))
@@ -1061,10 +990,12 @@ fn emits_unused_non_generic_enums() -> unit {
 #[test]
 fn orders_runtime_types_before_tuples() -> unit {
     let source = "fn make_counter() -> (() -> int32, () -> unit) { let cell = Ref::new(0); let next = || cell.get(); let reset = || cell.set(0); (next, reset) } fn main() -> unit { let _ = make_counter(); }";
-    testing::assert(string_contains(
-        encode(lower_source(source)),
-        "type ref_int32_x struct {\n    value int32\n}\n\ntype Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit struct",
-    ))
+    testing::assert(
+        string_contains(
+            encode(lower_source(source)),
+            "type ref_int32_x struct {\n    value int32\n}\n\ntype Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit struct",
+        ),
+    )
 }
 
 #[test]
@@ -1098,10 +1029,12 @@ fn keeps_mixed_match_continuations_in_branches() -> unit {
 fn emits_string_hooks_and_vec_new_helpers() -> unit {
     let source = "fn main() -> unit { let values: Vec[int32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[uint8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n    _goml_utf8 \"unicode/utf8\"\n)",
-    ));
+    testing::assert(
+        string_contains(
+            output,
+            "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n    _goml_utf8 \"unicode/utf8\"\n)",
+        ),
+    );
     testing::assert(string_contains(output, "func _goml_runtime_core_string_from_utf8("));
     testing::assert(string_contains(output, "func _goml_runtime_core_string_concat("));
     testing::assert(string_contains(output, "func _goml_runtime_core_string_print("));

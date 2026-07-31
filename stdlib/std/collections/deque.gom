@@ -8,11 +8,7 @@ pub struct Deque[T] {
 
 impl[T] Deque[T] {
     pub fn new() -> Deque[T] {
-        Deque {
-            slots: Ref::new(Vec::new()),
-            head: Ref::new(0),
-            len: Ref::new(0),
-        }
+        Deque { slots: Ref::new(Vec::new()), head: Ref::new(0), len: Ref::new(0) }
     }
 
     pub fn with_capacity(capacity: int) -> Deque[T] {
@@ -22,11 +18,7 @@ impl[T] Deque[T] {
             slots.push(Option::None);
             index.set(index.get() + 1);
         };
-        Deque {
-            slots: Ref::new(slots),
-            head: Ref::new(0),
-            len: Ref::new(0),
-        }
+        Deque { slots: Ref::new(slots), head: Ref::new(0), len: Ref::new(0) }
     }
 
     pub fn len(self: Deque[T]) -> int {
@@ -47,7 +39,11 @@ impl[T] Deque[T] {
         } else {
             let old = self.slots.get();
             let old_capacity = old.len();
-            let new_capacity = if old_capacity == 0 { 4 } else { old_capacity * 2 };
+            let new_capacity = if old_capacity == 0 {
+                4
+            } else {
+                old_capacity * 2
+            };
             let next: Vec[Option[T]] = Vec::with_capacity(new_capacity);
             let index = Ref::new(0);
             while index.get() < new_capacity {

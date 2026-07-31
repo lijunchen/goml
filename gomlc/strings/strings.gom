@@ -33,10 +33,7 @@ pub fn find(value: string, expected: string) -> Option[int] {
     if expected.byte_len() > value.byte_len() {
         Option::None
     } else {
-        for start in range(
-            0,
-            value.byte_len() - expected.byte_len() + 1,
-        ) {
+        for start in range(0, value.byte_len() - expected.byte_len() + 1) {
             if region_matches(value, start, expected) {
                 return Option::Some(start)
             } else {

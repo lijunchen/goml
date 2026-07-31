@@ -53,10 +53,7 @@ fn path_segments(path: ast::Path) -> Vec[string] {
 
 fn single_path(name: string) -> ast::Path {
     let segments: Vec[ast::PathSegment] = Vec::new();
-    segments.push(ast::PathSegment {
-        ident: name,
-        span: ast::span(0, 0),
-    });
+    segments.push(ast::PathSegment { ident: name, span: ast::span(0, 0) });
     ast::Path { segments }
 }
 
@@ -130,7 +127,11 @@ fn basename(path: string) -> string {
             builder.write_char(character)
         }
     };
-    if builder.is_empty() { "<unknown>" } else { builder.finish() }
+    if builder.is_empty() {
+        "<unknown>"
+    } else {
+        builder.finish()
+    }
 }
 
 fn last_string(values: Vec[string]) -> Option[string] {
@@ -170,10 +171,7 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     let diagnostics: Vec[string] = Vec::new();
     for use_decl in file.uses {
         match use_decl.alias {
-            Some(alias) => aliases.push(AliasEntry {
-                alias,
-                target: path_segments(use_decl.path),
-            }),
+            Some(alias) => aliases.push(AliasEntry { alias, target: path_segments(use_decl.path) }),
             None => (),
         }
     };
@@ -187,10 +185,7 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
             None => match use_decl.alias {
                 Some(_) => (),
                 None => match last_string(target) {
-                    Some(default_alias) => aliases.push(AliasEntry {
-                        alias: default_alias,
-                        target,
-                    }),
+                    Some(default_alias) => aliases.push(AliasEntry { alias: default_alias, target }),
                     None => (),
                 },
             },
@@ -201,23 +196,15 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
         for previous_index in range(0, index) {
             let previous = aliases[previous_index];
             if join_segments(previous.target) == join_segments(current.target) {
-                diagnostics.push(
-                    "Duplicate package use " + join_segments(current.target),
-                )
+                diagnostics.push("Duplicate package use " + join_segments(current.target))
             } else if previous.alias == current.alias {
-                diagnostics.push(
-                    "Ambiguous package use alias " + current.alias,
-                )
+                diagnostics.push("Ambiguous package use alias " + current.alias)
             } else {
                 ()
             }
         }
     };
-    ResolvedUses {
-        aliases,
-        traits,
-        diagnostics,
-    }
+    ResolvedUses { aliases, traits, diagnostics }
 }
 
 fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
@@ -231,10 +218,7 @@ fn trait_uses_from_file(file: ast::File) -> Vec[string] {
 fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
     let result: Vec[ImportAlias] = Vec::new();
     for entry in aliases_from_file(file) {
-        result.push(ImportAlias {
-            alias: entry.alias,
-            package_name: join_segments(entry.target),
-        })
+        result.push(ImportAlias { alias: entry.alias, package_name: join_segments(entry.target) })
     };
     result
 }
@@ -270,10 +254,7 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
 
 fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
-    if ctx.qualify_imports
-        && values.len() > 0
-        && vecs::contains(ctx.nominal_types, values[0])
-    {
+    if ctx.qualify_imports && values.len() > 0 && vecs::contains(ctx.nominal_types, values[0]) {
         let result: Vec[string] = Vec::new();
         result.push(full_name(ctx.package_name, values[0]));
         for index in range(1, values.len()) {
@@ -307,8 +288,8 @@ fn static_member(
     ExprKind::StaticMember {
         owner: join_segments(owner_parts),
         member: match last_string(parts) {
-                    Some(member) => member,
-                    None => "<error>",
+            Some(member) => member,
+            None => "<error>",
         },
         owner_type_args,
         owner_type_arg_spans,
@@ -364,20 +345,13 @@ fn find_definition(ctx: LowerCtx, name: string) -> Option[DefId] {
 fn fresh_local(ctx: LowerCtx, hint: string) -> LocalId {
     let index = ctx.local_counter.get();
     ctx.local_counter.set(index + 1);
-    LocalId {
-        pkg: ctx.package_id,
-        index,
-        hint,
-    }
+    LocalId { pkg: ctx.package_id, index, hint }
 }
 
 fn fresh_method(ctx: LowerCtx) -> DefId {
     let index = ctx.method_counter.get();
     ctx.method_counter.set(index + 1);
-    DefId {
-        pkg: ctx.package_id,
-        index,
-    }
+    DefId { pkg: ctx.package_id, index }
 }
 
 fn enum_variant(info: EnumInfo, name: string) -> Option[int] {
@@ -408,12 +382,9 @@ fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> 
 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
     let parts = expand_segments(ctx, path);
-    if parts.len() == 2
-        && !has_local_variant(ctx, parts[0], parts[1])
-        && ((parts[0] == "Option"
-                && (parts[1] == "Some" || parts[1] == "None"))
-            || (parts[0] == "Result"
-                && (parts[1] == "Ok" || parts[1] == "Err"))) {
+    if parts.len() == 2 && !has_local_variant(ctx, parts[0], parts[1])
+        && ((parts[0] == "Option" && (parts[1] == "Some" || parts[1] == "None"))
+            || (parts[0] == "Result" && (parts[1] == "Ok" || parts[1] == "Err"))) {
         Option::Some(ConstructorRef::Unresolved(join_segments(parts)))
     } else if parts.len() == 1 {
         let matches: Vec[(DefId, int)] = Vec::new();
@@ -448,10 +419,7 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
                 if info.name == enum_name {
                     match enum_variant(info, variant) {
                         Some(variant_index) => return Option::Some(
-                            ConstructorRef::Resolved {
-                                enum_def: info.def_id,
-                                variant_index,
-                            },
+                            ConstructorRef::Resolved { enum_def: info.def_id, variant_index },
                         ),
                         None => index.set(index.get() - 1),
                     }
@@ -484,16 +452,10 @@ fn pattern_head_span(path: ast::Path) -> ast::Span {
 fn pattern_head(ctx: LowerCtx, path: ast::Path) -> PatternHead {
     let span = pattern_head_span(path);
     if path.segments.len() == 1 {
-        PatternHead::Contextual {
-            name: path.segments[0].ident,
-            span,
-        }
+        PatternHead::Contextual { name: path.segments[0].ident, span }
     } else {
         match constructor_ref(ctx, path) {
-            Some(Resolved {
-                enum_def,
-                variant_index,
-            }) => PatternHead::Resolved {
+            Some(Resolved { enum_def, variant_index }) => PatternHead::Resolved {
                 enum_def,
                 variant_index,
                 span,
@@ -501,10 +463,7 @@ fn pattern_head(ctx: LowerCtx, path: ast::Path) -> PatternHead {
             Some(Unresolved(name)) => {
                 PatternHead::Qualified { name, span }
             },
-            None => PatternHead::Qualified {
-                name: path_text(ctx, path),
-                span,
-            },
+            None => PatternHead::Qualified { name: path_text(ctx, path), span },
         }
     }
 }
@@ -536,8 +495,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         },
         Con { path } => {
             let parts = qualified_segments(ctx, path);
-            if parts.len() == 2
-                && (parts[0] == "Self" || vecs::contains(type_params, parts[0])) {
+            if parts.len() == 2 && (parts[0] == "Self" || vecs::contains(type_params, parts[0])) {
                 TypeExpr::Projection {
                     base: TypeExpr::Con { name: parts[0] },
                     associated: parts[1],
@@ -546,9 +504,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
                 TypeExpr::Con { name: join_segments(parts) }
             }
         },
-        Dyn { trait_path: path } => TypeExpr::Dyn {
-            trait_name: path_text(ctx, path),
-        },
+        Dyn { trait_path: path } => TypeExpr::Dyn { trait_name: path_text(ctx, path) },
         App { ty: base, args } => {
             let result: Vec[TypeExpr] = Vec::new();
             for arg in args {
@@ -569,29 +525,17 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
     }
 }
 
-fn lower_plain_trait_ref(
-    ctx: LowerCtx,
-    value: ast::TraitRef,
-    type_params: Vec[string],
-) -> TraitRef {
+fn lower_plain_trait_ref(ctx: LowerCtx, value: ast::TraitRef, type_params: Vec[string]) -> TraitRef {
     let args: Vec[TypeExpr] = Vec::new();
     let arg_spans: Vec[Option[ast::Span]] = Vec::new();
     for arg in value.args {
         arg_spans.push(ast_type_head_span(arg));
         args.push(lower_type(ctx, arg, type_params))
     };
-    TraitRef {
-        name: path_text(ctx, value.path),
-        args,
-        arg_spans,
-    }
+    TraitRef { name: path_text(ctx, value.path), args, arg_spans }
 }
 
-fn lower_impl_trait_ref(
-    ctx: LowerCtx,
-    value: ast::TraitRef,
-    type_params: Vec[string],
-) -> TraitRef {
+fn lower_impl_trait_ref(ctx: LowerCtx, value: ast::TraitRef, type_params: Vec[string]) -> TraitRef {
     let parts = expand_segments(ctx, value.path);
     let name = if parts.len() == 1 && vecs::contains(ctx.traits, parts[0]) {
         full_name(ctx.package_name, parts[0])
@@ -617,10 +561,10 @@ fn lower_predicate(
         Trait { ty, trait_ref } => Predicate::Trait {
             ty: lower_type(ctx, ty, type_params),
             trait_ref: if resolve_trait {
-                            lower_impl_trait_ref(ctx, trait_ref, type_params)
-                        } else {
-                            lower_plain_trait_ref(ctx, trait_ref, type_params)
-                        },
+                lower_impl_trait_ref(ctx, trait_ref, type_params)
+            } else {
+                lower_plain_trait_ref(ctx, trait_ref, type_params)
+            },
         },
         Equality { lhs, rhs } => Predicate::Equality {
             lhs: lower_type(ctx, lhs, type_params),
@@ -639,11 +583,13 @@ fn lower_bounds(
     for value in values {
         let bounds: Vec[TraitRef] = Vec::new();
         for bound in value.1 {
-            bounds.push(if resolve_trait {
-                lower_impl_trait_ref(ctx, bound, type_params)
-            } else {
-                lower_plain_trait_ref(ctx, bound, type_params)
-            })
+            bounds.push(
+                if resolve_trait {
+                    lower_impl_trait_ref(ctx, bound, type_params)
+                } else {
+                    lower_plain_trait_ref(ctx, bound, type_params)
+                },
+            )
         };
         result.push((value.0, bounds))
     };
@@ -682,10 +628,9 @@ fn join_pattern_names(values: Vec[string]) -> string {
     builder.finish()
 }
 
-fn pattern_binding_mismatch(
-    expected: Vec[(string, LocalId)],
-    actual: Vec[(string, LocalId)],
-) -> Option[string] {
+fn pattern_binding_mismatch(expected: Vec[(string, LocalId)], actual: Vec[(string, LocalId)]) -> Option[
+    string,
+] {
     let missing: Vec[string] = Vec::new();
     let extra: Vec[string] = Vec::new();
     for value in expected {
@@ -706,9 +651,7 @@ fn pattern_binding_mismatch(
         let details = text::StringBuilder::new();
         if missing.len() > 0 {
             details.write_string("missing ");
-            details.write_string(
-                join_pattern_names(sort_pattern_names(missing)),
-            )
+            details.write_string(join_pattern_names(sort_pattern_names(missing)))
         } else {
             ()
         };
@@ -719,33 +662,23 @@ fn pattern_binding_mismatch(
                 details.write_string("; ")
             };
             details.write_string("extra ");
-            details.write_string(
-                join_pattern_names(sort_pattern_names(extra)),
-            )
+            details.write_string(join_pattern_names(sort_pattern_names(extra)))
         } else {
             ()
         };
-        Option::Some(
-            "Or-pattern alternatives must bind the same variables: "
-                + details.finish(),
-        )
+        Option::Some("Or-pattern alternatives must bind the same variables: " + details.finish())
     }
 }
 
-fn bind_pattern_name(
-    ctx: LowerCtx,
-    env: Vec[(string, LocalId)],
-    state: PatternState,
-    name: string,
-) -> LocalId {
+fn bind_pattern_name(ctx: LowerCtx, env: Vec[(string, LocalId)], state: PatternState, name: string) -> LocalId {
     match find_binding(state.seen, name) {
         Some(existing) => {
-            ctx.diagnostics.push(Diagnostic {
-                message: "Variable "
-                    + name
-                    + " is bound more than once in the same pattern",
-                span: ctx.current_pattern_span.get(),
-            });
+            ctx.diagnostics.push(
+                Diagnostic {
+                    message: "Variable " + name + " is bound more than once in the same pattern",
+                    span: ctx.current_pattern_span.get(),
+                },
+            );
             existing
         },
         None => {
@@ -771,15 +704,8 @@ fn lower_pattern_inner(
     ctx.current_pattern_span.set(Option::Some(span));
     let kind = match value {
         Var { name, span } => match constructor_ref(ctx, single_path(name)) {
-            Some(Resolved {
-                enum_def,
-                variant_index,
-            }) => PatKind::Constr {
-                head: PatternHead::Resolved {
-                    enum_def,
-                    variant_index,
-                    span,
-                },
+            Some(Resolved { enum_def, variant_index }) => PatKind::Constr {
+                head: PatternHead::Resolved { enum_def, variant_index, span },
                 args: Vec::new(),
             },
             None => PatKind::Var { name: bind_pattern_name(ctx, env, state, name) },
@@ -821,12 +747,14 @@ fn lower_pattern_inner(
                 lowered_prefix.push(lower_pattern_inner(ctx, item, env, state))
             };
             let lowered_rest = match rest {
-                Some(value) => Option::Some(ArrayPatRest {
-                    binding: match value.binding {
-                        Some(name) => Option::Some(bind_pattern_name(ctx, env, state, name)),
-                        None => Option::None,
+                Some(value) => Option::Some(
+                    ArrayPatRest {
+                        binding: match value.binding {
+                            Some(name) => Option::Some(bind_pattern_name(ctx, env, state, name)),
+                            None => Option::None,
+                        },
                     },
-                }),
+                ),
                 None => Option::None,
             };
             let lowered_suffix: Vec[Pat] = Vec::new();
@@ -857,24 +785,15 @@ fn lower_pattern_inner(
                         seen: copy_bindings(base_seen),
                         preferred: expected,
                     };
-                    result.push(lower_pattern_inner(
-                        ctx,
-                        values[index],
-                        branch_env,
-                        branch_state,
-                    ));
+                    result.push(lower_pattern_inner(ctx, values[index], branch_env, branch_state));
                     let actual: Vec[(string, LocalId)] = Vec::new();
-                    for binding_index in range(
-                        base_seen.len(),
-                        branch_state.seen.len(),
-                    ) {
+                    for binding_index in range(base_seen.len(), branch_state.seen.len()) {
                         actual.push(branch_state.seen[binding_index])
                     };
                     match pattern_binding_mismatch(expected, actual) {
-                        Some(message) => ctx.diagnostics.push(Diagnostic {
-                            message,
-                            span: Option::Some(span),
-                        }),
+                        Some(message) => ctx.diagnostics.push(
+                            Diagnostic { message, span: Option::Some(span) },
+                        ),
                         None => (),
                     }
                 };
@@ -893,15 +812,7 @@ fn lower_pattern_inner(
 }
 
 fn lower_pattern(ctx: LowerCtx, value: ast::Pat, env: Vec[(string, LocalId)]) -> Pat {
-    lower_pattern_inner(
-        ctx,
-        value,
-        env,
-        PatternState {
-            seen: Vec::new(),
-            preferred: Vec::new(),
-        },
-    )
+    lower_pattern_inner(ctx, value, env, PatternState { seen: Vec::new(), preferred: Vec::new() })
 }
 
 fn lower_block(
@@ -916,21 +827,25 @@ fn lower_block(
             Let { is_mut, pat, annotation, value: expr, span: _ } => {
                 let lowered_expr = lower_expr(ctx, expr, env, type_params);
                 let lowered_pat = lower_pattern(ctx, pat, env);
-                stmts.push(Stmt::Let {
-                    is_mut,
-                    pat: lowered_pat,
-                    annotation: match annotation {
-                                            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
-                                            None => Option::None,
-                                        },
-                    value: lowered_expr,
-                })
+                stmts.push(
+                    Stmt::Let {
+                        is_mut,
+                        pat: lowered_pat,
+                        annotation: match annotation {
+                            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
+                            None => Option::None,
+                        },
+                        value: lowered_expr,
+                    },
+                )
             },
-            Assign { target, op, value: expr, span: _ } => stmts.push(Stmt::Assign {
-                target: lower_expr(ctx, target, env, type_params),
-                op,
-                value: lower_expr(ctx, expr, env, type_params),
-            }),
+            Assign { target, op, value: expr, span: _ } => stmts.push(
+                Stmt::Assign {
+                    target: lower_expr(ctx, target, env, type_params),
+                    op,
+                    value: lower_expr(ctx, expr, env, type_params),
+                },
+            ),
             Expr { expr, span: _ } => {
                 stmts.push(Stmt::Expr { expr: lower_expr(ctx, expr, env, type_params) })
             },
@@ -952,12 +867,7 @@ fn lower_expr_value(
     type_params: Vec[string],
 ) -> ExprKind {
     match value {
-        Path {
-            path,
-            owner_type_args,
-            member_type_args,
-            span: _,
-        } => {
+        Path { path, owner_type_args, member_type_args, span: _ } => {
             if owner_type_args.len() > 0 || member_type_args.len() > 0 {
                 let owner_args: Vec[TypeExpr] = Vec::new();
                 let owner_arg_spans: Vec[Option[ast::Span]] = Vec::new();
@@ -987,22 +897,20 @@ fn lower_expr_value(
                             let name = parts[0];
                             ExprKind::NameRef {
                                 name_ref: match find_binding(env, name) {
-                                                                Some(local) => NameRef::Local(local),
-                                                                None => match find_definition(
-                                                                    ctx,
-                                                                    full_name(ctx.package_name, name),
-                                                                ) {
-                                                                    Some(def_id) => NameRef::Def(def_id),
-                                                                    None => NameRef::Other(name),
-                                                                },
-                                                            },
+                                    Some(local) => NameRef::Local(local),
+                                    None => match find_definition(
+                                        ctx,
+                                        full_name(ctx.package_name, name),
+                                    ) {
+                                        Some(def_id) => NameRef::Def(def_id),
+                                        None => NameRef::Other(name),
+                                    },
+                                },
                             }
                         } else {
                             let name = join_segments(copy_strings(parts));
                             match find_definition(ctx, name) {
-                                Some(def_id) => ExprKind::NameRef {
-                                    name_ref: NameRef::Def(def_id),
-                                },
+                                Some(def_id) => ExprKind::NameRef { name_ref: NameRef::Def(def_id) },
                                 None => static_member(
                                     parts,
                                     Vec::new(),
@@ -1029,12 +937,9 @@ fn lower_expr_value(
                         result.push(InterpolatedStringPart::Text(value))
                     },
                     Expr(value) => {
-                        result.push(InterpolatedStringPart::Expr(lower_expr(
-                            ctx,
-                            value,
-                            env,
-                            type_params,
-                        )))
+                        result.push(
+                            InterpolatedStringPart::Expr(lower_expr(ctx, value, env, type_params)),
+                        )
                     },
                 }
             };
@@ -1043,9 +948,7 @@ fn lower_expr_value(
         Char { value, span: _ } => ExprKind::Char { value },
         Byte { value, span: _ } => ExprKind::Byte { value },
         ConstructorValue { constructor: path, span: _ } => {
-            ExprKind::ConstructorValue {
-                constructor: unresolved_constructor(ctx, path),
-            }
+            ExprKind::ConstructorValue { constructor: unresolved_constructor(ctx, path) }
         },
         Constr { constructor: path, args, span: _ } => {
             let result: Vec[Expr] = Vec::new();
@@ -1092,10 +995,12 @@ fn lower_expr_value(
         HashMapLiteral { entries, span: _ } => {
             let result: Vec[(Expr, Expr)] = Vec::new();
             for entry in entries {
-                result.push((
-                    lower_expr(ctx, entry.0, env, type_params),
-                    lower_expr(ctx, entry.1, env, type_params),
-                ))
+                result.push(
+                    (
+                        lower_expr(ctx, entry.0, env, type_params),
+                        lower_expr(ctx, entry.1, env, type_params),
+                    ),
+                )
             };
             ExprKind::HashMapLiteral { entries: result }
         },
@@ -1105,14 +1010,16 @@ fn lower_expr_value(
             for param in params {
                 let local = fresh_local(ctx, param.name);
                 closure_env.push((param.name, local));
-                lowered_params.push(ClosureParam {
-                    name: local,
-                    ty: match param.ty {
-                        Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
-                        None => Option::None,
+                lowered_params.push(
+                    ClosureParam {
+                        name: local,
+                        ty: match param.ty {
+                            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
+                            None => Option::None,
+                        },
+                        span: param.span,
                     },
-                    span: param.span,
-                })
+                )
             };
             ExprKind::Closure {
                 params: lowered_params,
@@ -1125,16 +1032,18 @@ fn lower_expr_value(
             for arm in arms {
                 let arm_env = copy_bindings(env);
                 let pat = lower_pattern(ctx, arm.pat, arm_env);
-                lowered_arms.push(Arm {
-                    pat,
-                    guard: match arm.guard {
-                        Some(guard) => {
-                            Option::Some(lower_expr(ctx, guard, arm_env, type_params))
+                lowered_arms.push(
+                    Arm {
+                        pat,
+                        guard: match arm.guard {
+                            Some(guard) => {
+                                Option::Some(lower_expr(ctx, guard, arm_env, type_params))
+                            },
+                            None => Option::None,
                         },
-                        None => Option::None,
+                        body: lower_expr(ctx, arm.body, arm_env, type_params),
                     },
-                    body: lower_expr(ctx, arm.body, arm_env, type_params),
-                })
+                )
             };
             ExprKind::Match { expr: lowered_expr, arms: lowered_arms }
         },
@@ -1161,13 +1070,11 @@ fn lower_expr_value(
         Continue { span: _ } => ExprKind::Continue,
         Return { expr, span: _ } => ExprKind::Return {
             expr: match expr {
-                        Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
-                        None => Option::None,
-                    },
+                Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
+                None => Option::None,
+            },
         },
-        Go { expr, span: _ } => ExprKind::Go {
-            expr: lower_expr(ctx, expr, env, type_params),
-        },
+        Go { expr, span: _ } => ExprKind::Go { expr: lower_expr(ctx, expr, env, type_params) },
         Call { func, args, span: _ } => {
             match func {
                 Path { path, .. } => match constructor_ref(ctx, path) {
@@ -1220,12 +1127,7 @@ fn lower_expr_value(
         Proj { tuple: expr, index, span: _ } => {
             ExprKind::Proj { tuple: lower_expr(ctx, expr, env, type_params), index }
         },
-        Field {
-            expr,
-            field_name: field,
-            method_type_args,
-            span: _,
-        } => {
+        Field { expr, field_name: field, method_type_args, span: _ } => {
             let args = Vec::new();
             for arg in method_type_args {
                 args.push(lower_type(ctx, arg, type_params))
@@ -1258,8 +1160,8 @@ fn lower_expr(
     ctx.expr_counter.set(index + 1);
     Expr {
         kind: match result {
-        Try { depth: _, expr } => ExprKind::Try { depth: index, expr },
-        _ => result,
+            Try { depth: _, expr } => ExprKind::Try { depth: index, expr },
+            _ => result,
         },
         span,
     }
@@ -1312,11 +1214,7 @@ fn lower_function(
     }
 }
 
-fn lower_extern(
-    ctx: LowerCtx,
-    value: ast::ExternFunction,
-    def_id: DefId,
-) -> ExternFunction {
+fn lower_extern(ctx: LowerCtx, value: ast::ExternFunction, def_id: DefId) -> ExternFunction {
     let type_params = copy_strings(value.generics);
     let params: Vec[(string, TypeExpr)] = Vec::new();
     for param in value.params {
@@ -1357,19 +1255,14 @@ fn lower_enum(ctx: LowerCtx, value: ast::EnumDef, def_id: DefId) -> EnumDef {
             Struct(fields) => {
                 let lowered: Vec[(string, TypeExpr)] = Vec::new();
                 for field in fields {
-                    lowered.push((
-                        field.0,
-                        lower_type(ctx, field.1, type_params),
-                    ))
+                    lowered.push((field.0, lower_type(ctx, field.1, type_params)))
                 };
                 EnumVariantFields::Struct(lowered)
             },
         };
-        variants.push(EnumVariant {
-            name: variant.name,
-            fields,
-            field_type_spans: variant.field_type_spans,
-        })
+        variants.push(
+            EnumVariant { name: variant.name, fields, field_type_spans: variant.field_type_spans },
+        )
     };
     EnumDef {
         def_id,
@@ -1436,10 +1329,7 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
         for bound in associated.bounds {
             bounds.push(lower_plain_trait_ref(ctx, bound, type_params))
         };
-        associated_types.push(AssociatedType {
-            name: associated.name,
-            bounds,
-        })
+        associated_types.push(AssociatedType { name: associated.name, bounds })
     };
     let method_sigs: Vec[TraitMethodSignature] = Vec::new();
     for method in value.method_sigs {
@@ -1450,27 +1340,19 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
         };
         let method_predicates = Vec::new();
         for predicate in method.predicates {
-            method_predicates.push(lower_predicate(
-                ctx,
-                predicate,
-                method_type_params,
-                false,
-            ))
+            method_predicates.push(lower_predicate(ctx, predicate, method_type_params, false))
         };
-        method_sigs.push(TraitMethodSignature {
-            name: method.name,
-            generics: method.generics,
-            generic_bounds: lower_bounds(
-                ctx,
-                method.generic_bounds,
-                method_type_params,
-                false,
-            ),
-            predicates: method_predicates,
-            params,
-            ret_ty_span: ast_type_head_span(method.ret_ty),
-            ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
-        })
+        method_sigs.push(
+            TraitMethodSignature {
+                name: method.name,
+                generics: method.generics,
+                generic_bounds: lower_bounds(ctx, method.generic_bounds, method_type_params, false),
+                predicates: method_predicates,
+                params,
+                ret_ty_span: ast_type_head_span(method.ret_ty),
+                ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
+            },
+        )
     };
     TraitDef {
         def_id,
@@ -1489,13 +1371,7 @@ fn lower_impl(ctx: LowerCtx, value: ast::ImplBlock, def_id: DefId) -> ImplBlock 
     let type_params = copy_strings(value.generics);
     let methods: Vec[Function] = Vec::new();
     for method in value.methods {
-        methods.push(lower_function(
-            ctx,
-            method,
-            fresh_method(ctx),
-            method.name,
-            type_params,
-        ))
+        methods.push(lower_function(ctx, method, fresh_method(ctx), method.name, type_params))
     };
     let predicates: Vec[Predicate] = Vec::new();
     for predicate in value.predicates {
@@ -1503,10 +1379,7 @@ fn lower_impl(ctx: LowerCtx, value: ast::ImplBlock, def_id: DefId) -> ImplBlock 
     };
     let associated_types: Vec[(string, TypeExpr)] = Vec::new();
     for associated in value.associated_types {
-        associated_types.push((
-            associated.0,
-            lower_type(ctx, associated.1, type_params),
-        ))
+        associated_types.push((associated.0, lower_type(ctx, associated.1, type_params)))
     };
     ImplBlock {
         def_id,
@@ -1540,11 +1413,7 @@ fn item_name(package_name: string, value: ast::Item) -> Option[string] {
     }
 }
 
-fn make_context(
-    files: Vec[ast::File],
-    canonical_package_name: string,
-    qualify_imports: bool,
-) -> LowerCtx {
+fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_imports: bool) -> LowerCtx {
     let id = package_id(canonical_package_name);
     let definitions: Vec[(string, DefId)] = Vec::new();
     let enums: Vec[EnumInfo] = Vec::new();
@@ -1553,10 +1422,7 @@ fn make_context(
     let index = Ref::new(0);
     for file in files {
         for item in file.items {
-            let def_id = DefId {
-                pkg: id,
-                index: index.get(),
-            };
+            let def_id = DefId { pkg: id, index: index.get() };
             match item_name(canonical_package_name, item) {
                 Some(name) => definitions.push((name, def_id)),
                 None => (),
@@ -1568,11 +1434,7 @@ fn make_context(
                     for variant in value.variants {
                         variants.push(variant.name)
                     };
-                    enums.push(EnumInfo {
-                        name: value.name,
-                        def_id,
-                        variants,
-                    })
+                    enums.push(EnumInfo { name: value.name, def_id, variants })
                 },
                 StructDef(value) => nominal_types.push(value.name),
                 TypeAlias(value) => nominal_types.push(value.name),
@@ -1599,16 +1461,9 @@ fn make_context(
     }
 }
 
-fn file_context(
-    base: LowerCtx,
-    file: ast::File,
-    diagnostics: Vec[Diagnostic],
-) -> LowerCtx {
+fn file_context(base: LowerCtx, file: ast::File, diagnostics: Vec[Diagnostic]) -> LowerCtx {
     for message in resolved_uses_from_file(file).diagnostics {
-        diagnostics.push(Diagnostic {
-            message,
-            span: Option::None,
-        })
+        diagnostics.push(Diagnostic { message, span: Option::None })
     };
     LowerCtx {
         package_name: base.package_name,
@@ -1640,10 +1495,7 @@ fn lower_file_with_context(
     let items: Vec[Item] = Vec::new();
     let index = Ref::new(item_offset);
     for item in file.items {
-        let def_id = DefId {
-            pkg: ctx.package_id,
-            index: index.get(),
-        };
+        let def_id = DefId { pkg: ctx.package_id, index: index.get() };
         match item {
             EnumDef(value) => items.push(Item::EnumDef(lower_enum(ctx, value, def_id))),
             StructDef(value) => {
@@ -1655,13 +1507,17 @@ fn lower_file_with_context(
             ImplBlock(value) => {
                 items.push(Item::ImplBlock(lower_impl(ctx, value, def_id)))
             },
-            Function(value) => items.push(Item::Function(lower_function(
-                ctx,
-                value,
-                def_id,
-                full_name(ctx.package_name, value.name),
-                Vec::new(),
-            ))),
+            Function(value) => items.push(
+                Item::Function(
+                    lower_function(
+                        ctx,
+                        value,
+                        def_id,
+                        full_name(ctx.package_name, value.name),
+                        Vec::new(),
+                    ),
+                ),
+            ),
             ExternFunction(value) => {
                 items.push(Item::ExternFunction(lower_extern(ctx, value, def_id)))
             },
@@ -1717,10 +1573,12 @@ fn lower_file(
 fn ast_diagnostics(values: Vec[cst::Diagnostic]) -> Vec[Diagnostic] {
     let result: Vec[Diagnostic] = Vec::new();
     for value in values {
-        result.push(Diagnostic {
-            message: value.message,
-            span: Option::Some(ast::span(value.start, value.end)),
-        })
+        result.push(
+            Diagnostic {
+                message: value.message,
+                span: Option::Some(ast::span(value.start, value.end)),
+            },
+        )
     };
     result
 }
@@ -1729,27 +1587,14 @@ pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResu
     let diagnostics = ast_diagnostics(value.diagnostics);
     match value.ast {
         Some(file) => LowerResult {
-            hir: Option::Some(lower_file(
-                file,
-                source_path,
-                file.package_name,
-                false,
-                diagnostics,
-            )),
+            hir: Option::Some(lower_file(file, source_path, file.package_name, false, diagnostics)),
             source_path,
             diagnostics,
         },
         None => {
             let diagnostics: Vec[Diagnostic] = Vec::new();
-            diagnostics.push(Diagnostic {
-                message: "AST lowering failed",
-                span: Option::None,
-            });
-            LowerResult {
-                hir: Option::None,
-                source_path,
-                diagnostics,
-            }
+            diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None });
+            LowerResult { hir: Option::None, source_path, diagnostics }
         },
     }
 }
@@ -1762,27 +1607,16 @@ pub fn lower_expanded_package(
     let diagnostics = ast_diagnostics(value.diagnostics);
     match value.ast {
         Some(file) => LowerResult {
-            hir: Option::Some(lower_file(
-                file,
-                source_path,
-                canonical_package_name,
-                true,
-                diagnostics,
-            )),
+            hir: Option::Some(
+                lower_file(file, source_path, canonical_package_name, true, diagnostics),
+            ),
             source_path,
             diagnostics,
         },
         None => {
             let diagnostics: Vec[Diagnostic] = Vec::new();
-            diagnostics.push(Diagnostic {
-                message: "AST lowering failed",
-                span: Option::None,
-            });
-            LowerResult {
-                hir: Option::None,
-                source_path,
-                diagnostics,
-            }
+            diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None });
+            LowerResult { hir: Option::None, source_path, diagnostics }
         },
     }
 }
@@ -1791,11 +1625,7 @@ pub fn lower(value: ast::LowerResult, source_path: string) -> LowerResult {
     lower_expanded(expand_derives(value), source_path)
 }
 
-pub fn lower_package(
-    value: ast::LowerResult,
-    source_path: string,
-    canonical_package_name: string,
-) -> LowerResult {
+pub fn lower_package(value: ast::LowerResult, source_path: string, canonical_package_name: string) -> LowerResult {
     lower_expanded_package(expand_derives(value), source_path, canonical_package_name)
 }
 
@@ -1817,42 +1647,38 @@ pub fn lower_expanded_package_files(
         match value.0.ast {
             Some(file) => {
                 let diagnostics = ast_diagnostics(value.0.diagnostics);
-                lowered.push(LowerResult {
-                    hir: Option::Some(lower_file_with_context(
-                        file,
-                        value.1,
-                        canonical_package_name,
-                        true,
-                        base,
-                        item_offset.get(),
+                lowered.push(
+                    LowerResult {
+                        hir: Option::Some(
+                            lower_file_with_context(
+                                file,
+                                value.1,
+                                canonical_package_name,
+                                true,
+                                base,
+                                item_offset.get(),
+                                diagnostics,
+                            ),
+                        ),
+                        source_path: value.1,
                         diagnostics,
-                    )),
-                    source_path: value.1,
-                    diagnostics,
-                });
+                    },
+                );
                 item_offset.set(item_offset.get() + file.items.len())
             },
             None => {
                 let diagnostics: Vec[Diagnostic] = Vec::new();
-                diagnostics.push(Diagnostic {
-                    message: "AST lowering failed",
-                    span: Option::None,
-                });
-                lowered.push(LowerResult {
-                    hir: Option::None,
-                    source_path: value.1,
-                    diagnostics,
-                })
+                diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None });
+                lowered.push(LowerResult { hir: Option::None, source_path: value.1, diagnostics })
             },
         }
     };
     lowered
 }
 
-pub fn lower_package_files(
-    values: Vec[(ast::LowerResult, string)],
-    canonical_package_name: string,
-) -> Vec[LowerResult] {
+pub fn lower_package_files(values: Vec[(ast::LowerResult, string)], canonical_package_name: string) -> Vec[
+    LowerResult,
+] {
     let expanded: Vec[(ast::LowerResult, string)] = Vec::new();
     for value in values {
         expanded.push((expand_derives(value.0), value.1))

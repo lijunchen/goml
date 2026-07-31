@@ -3,43 +3,24 @@ package anf;
 use gomlc::core;
 use gomlc::tast;
 
-fn reify_k(
-    state: State,
-    value_ty: tast::Type,
-    k: (Imm) -> Block,
-) -> (JoinBind, tast::Type) {
+fn reify_k(state: State, value_ty: tast::Type, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
     let name = fresh(state, "k");
     if type_is_unit(value_ty) {
         let body = k(unit_imm());
         let ret_ty = block_type(body);
-        (JoinBind {
-            name,
-            params: Vec::new(),
-            ret_ty,
-            body,
-        }, ret_ty)
+        (JoinBind { name, params: Vec::new(), ret_ty, body }, ret_ty)
     } else {
         let param = fresh(state, "jp");
         let body = k(Imm::Var { name: param, ty: value_ty });
         let ret_ty = block_type(body);
         let params = Vec::new();
         params.push((param, value_ty));
-        (JoinBind {
-            name,
-            params,
-            ret_ty,
-            body,
-        }, ret_ty)
+        (JoinBind { name, params, ret_ty, body }, ret_ty)
     }
 }
 
-fn reify_k_for_expr(
-    state: State,
-    value: core::Expr,
-    k: (Imm) -> Block,
-) -> (JoinBind, tast::Type) {
-    let value_ty = if type_is_error(core::expr_type(value))
-        && expr_always_exits(value) {
+fn reify_k_for_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
+    let value_ty = if type_is_error(core::expr_type(value)) && expr_always_exits(value) {
         tast::Type::Unit
     } else {
         core::expr_type(value)
@@ -47,15 +28,15 @@ fn reify_k_for_expr(
     if type_is_unit_or_never(value_ty) && expr_always_exits(value) {
         let name = fresh(state, "k");
         let ret_ty = block_type(k(unit_imm()));
-        (JoinBind {
-            name,
-            params: Vec::new(),
-            ret_ty,
-            body: Block {
-                binds: no_binds(),
-                term: Term::Unreachable { ty: ret_ty },
+        (
+            JoinBind {
+                name,
+                params: Vec::new(),
+                ret_ty,
+                body: Block { binds: no_binds(), term: Term::Unreachable { ty: ret_ty } },
             },
-        }, ret_ty)
+            ret_ty,
+        )
     } else {
         reify_k(state, value_ty, k)
     }
@@ -77,45 +58,34 @@ fn lower_core_stmts(
         let stmt = stmts[index];
         let value_ty = core::expr_type(stmt.value);
         if expr_is_control(stmt.value) {
-            lower_expr(state, stmt.value, |value| {
-                let block = lower_core_stmts(
-                    state,
-                    stmts,
-                    index + 1,
-                    tail,
-                    k,
-                );
-                prepend_bind(Bind::Let(LetBind {
-                    name: stmt.name,
-                    value: Value::Imm(value),
-                    ty: value_ty,
-                }), block)
-            })
+            lower_expr(
+                state,
+                stmt.value,
+                |value| {
+                    let block = lower_core_stmts(state, stmts, index + 1, tail, k);
+                    prepend_bind(
+                        Bind::Let(
+                            LetBind { name: stmt.name, value: Value::Imm(value), ty: value_ty },
+                        ),
+                        block,
+                    )
+                },
+            )
         } else {
-            lower_value(state, stmt.value, |value| {
-                let ty = value_type(value);
-                let block = lower_core_stmts(
-                    state,
-                    stmts,
-                    index + 1,
-                    tail,
-                    k,
-                );
-                prepend_bind(Bind::Let(LetBind {
-                    name: stmt.name,
-                    value,
-                    ty,
-                }), block)
-            })
+            lower_value(
+                state,
+                stmt.value,
+                |value| {
+                    let ty = value_type(value);
+                    let block = lower_core_stmts(state, stmts, index + 1, tail, k);
+                    prepend_bind(Bind::Let(LetBind { name: stmt.name, value, ty }), block)
+                },
+            )
         }
     }
 }
 
-fn lower_core_block(
-    state: State,
-    value: core::Block,
-    k: (Imm) -> Block,
-) -> Block {
+fn lower_core_block(state: State, value: core::Block, k: (Imm) -> Block) -> Block {
     lower_core_stmts(state, value.stmts, 0, value.tail, k)
 }
 
@@ -126,9 +96,13 @@ fn lower_branch(
     join_ret_ty: tast::Type,
     join_takes_arg: bool,
 ) -> Block {
-    lower_expr(state, value, |value| {
-        jump_block(join_id, value, join_takes_arg, join_ret_ty)
-    })
+    lower_expr(
+        state,
+        value,
+        |value| {
+            jump_block(join_id, value, join_takes_arg, join_ret_ty)
+        },
+    )
 }
 
 fn lower_if(
@@ -145,26 +119,18 @@ fn lower_if(
     let ret_ty = reified.1;
     let join_id = join.name;
     let takes_arg = join.params.len() > 0;
-    lower_expr(state, cond, |cond| {
-        let then_block = lower_branch(
-            state,
-            then_,
-            join_id,
-            ret_ty,
-            takes_arg,
-        );
-        let else_block = lower_branch(
-            state,
-            else_,
-            join_id,
-            ret_ty,
-            takes_arg,
-        );
-        Block {
-            binds: one_bind(Bind::Join(join)),
-            term: Term::If { cond, then_: then_block, else_: else_block, ret_ty },
-        }
-    })
+    lower_expr(
+        state,
+        cond,
+        |cond| {
+            let then_block = lower_branch(state, then_, join_id, ret_ty, takes_arg);
+            let else_block = lower_branch(state, else_, join_id, ret_ty, takes_arg);
+            Block {
+                binds: one_bind(Bind::Join(join)),
+                term: Term::If { cond, then_: then_block, else_: else_block, ret_ty },
+            }
+        },
+    )
 }
 
 fn lower_arms(
@@ -176,16 +142,12 @@ fn lower_arms(
 ) -> Vec[Arm] {
     let result = Vec::new();
     for value in values {
-        result.push(Arm {
-            lhs: match_imm(value.lhs),
-            body: lower_branch(
-                state,
-                value.body,
-                join_id,
-                join_ret_ty,
-                join_takes_arg,
-            ),
-        })
+        result.push(
+            Arm {
+                lhs: match_imm(value.lhs),
+                body: lower_branch(state, value.body, join_id, join_ret_ty, join_takes_arg),
+            },
+        )
     };
     result
 }
@@ -204,112 +166,91 @@ fn lower_match(
     let ret_ty = reified.1;
     let join_id = join.name;
     let takes_arg = join.params.len() > 0;
-    lower_expr(state, scrutinee, |scrutinee| {
-        let lowered_arms = lower_arms(
-            state,
-            arms,
-            join_id,
-            ret_ty,
-            takes_arg,
-        );
-        let lowered_default = match default {
-            Some(value) => Option::Some(lower_branch(
-                state,
-                value,
-                join_id,
-                ret_ty,
-                takes_arg,
-            )),
-            None => Option::None,
-        };
-        Block {
-            binds: one_bind(Bind::Join(join)),
-            term: Term::Match { scrutinee, arms: lowered_arms, default: lowered_default, ret_ty },
-        }
-    })
+    lower_expr(
+        state,
+        scrutinee,
+        |scrutinee| {
+            let lowered_arms = lower_arms(state, arms, join_id, ret_ty, takes_arg);
+            let lowered_default = match default {
+                Some(value) => Option::Some(lower_branch(state, value, join_id, ret_ty, takes_arg)),
+                None => Option::None,
+            };
+            Block {
+                binds: one_bind(Bind::Join(join)),
+                term: Term::Match {
+                    scrutinee,
+                    arms: lowered_arms,
+                    default: lowered_default,
+                    ret_ty,
+                },
+            }
+        },
+    )
 }
 
-fn lower_while(
-    state: State,
-    cond: core::Expr,
-    body: core::Expr,
-    k: (Imm) -> Block,
-) -> Block {
+fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Block) -> Block {
     let exit_id = fresh(state, "exit");
     let exit_body = k(unit_imm());
     let exit_ret_ty = block_type(exit_body);
-    let exit = JoinBind {
-        name: exit_id,
-        params: Vec::new(),
-        ret_ty: exit_ret_ty,
-        body: exit_body,
-    };
+    let exit = JoinBind { name: exit_id, params: Vec::new(), ret_ty: exit_ret_ty, body: exit_body };
     let loop_id = fresh(state, "loop");
     let previous = state.loop_ctx.get();
-    state.loop_ctx.set(Option::Some(LoopCtx {
-        loop_id,
-        exit_id,
-        exit_ret_ty,
-    }));
-    let loop_body = lower_expr(state, cond, |cond| {
-        let then_block = lower_expr(state, body, |_| {
+    state.loop_ctx.set(Option::Some(LoopCtx { loop_id, exit_id, exit_ret_ty }));
+    let loop_body = lower_expr(
+        state,
+        cond,
+        |cond| {
+            let then_block = lower_expr(
+                state,
+                body,
+                |_| {
+                    Block {
+                        binds: no_binds(),
+                        term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty },
+                    }
+                },
+            );
+            let else_block = Block {
+                binds: no_binds(),
+                term: Term::Jump { target: exit_id, args: no_imms(), ret_ty: exit_ret_ty },
+            };
             Block {
                 binds: no_binds(),
-                term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty },
+                term: Term::If { cond, then_: then_block, else_: else_block, ret_ty: exit_ret_ty },
             }
-        });
-        let else_block = Block {
-            binds: no_binds(),
-            term: Term::Jump { target: exit_id, args: no_imms(), ret_ty: exit_ret_ty },
-        };
-        Block {
-            binds: no_binds(),
-            term: Term::If { cond, then_: then_block, else_: else_block, ret_ty: exit_ret_ty },
-        }
-    });
+        },
+    );
     state.loop_ctx.set(previous);
     let recursive = Vec::new();
-    recursive.push(JoinBind {
-        name: loop_id,
-        params: Vec::new(),
-        ret_ty: exit_ret_ty,
-        body: loop_body,
-    });
+    recursive.push(
+        JoinBind { name: loop_id, params: Vec::new(), ret_ty: exit_ret_ty, body: loop_body },
+    );
     let binds = Vec::new();
     binds.push(Bind::Join(exit));
     binds.push(Bind::JoinRec(recursive));
-    Block {
-        binds,
-        term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty },
-    }
+    Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }
 }
 
-fn lower_return(
-    state: State,
-    value: Option[core::Expr],
-) -> Block {
+fn lower_return(state: State, value: Option[core::Expr]) -> Block {
     match state.return_ctx.get() {
         Some(ctx) => match value {
-            Some(value) => lower_expr(state, value, |value| {
-                jump_block(ctx.join_id, value, ctx.takes_arg, ctx.ret_ty)
-            }),
+            Some(value) => lower_expr(
+                state,
+                value,
+                |value| {
+                    jump_block(ctx.join_id, value, ctx.takes_arg, ctx.ret_ty)
+                },
+            ),
             None => Block {
                 binds: no_binds(),
                 term: Term::Jump { target: ctx.join_id, args: no_imms(), ret_ty: ctx.ret_ty },
             },
         },
-        None => Block {
-            binds: no_binds(),
-            term: Term::Unreachable { ty: tast::Type::Error },
-        },
+        None => Block { binds: no_binds(), term: Term::Unreachable { ty: tast::Type::Error } },
     }
 }
 
-fn lower_expr(
-    state: State,
-    value: core::Expr,
-    k: (Imm) -> Block,
-) -> Block {
+fn lower_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> Block {
     match try_imm(value) {
         Some(value) => k(value),
         None => match value {
@@ -350,8 +291,7 @@ fn lower_expr(
                 },
             },
             Return { expr: value, ty: _ } => lower_return(state, value),
-            Closure { params: _, body: _, ty: _ }
-            | TraitCall { .. } => {
+            Closure { params: _, body: _, ty: _ } | TraitCall { .. } => {
                 k(unit_imm())
             },
             other => lower_imm(state, other, k),

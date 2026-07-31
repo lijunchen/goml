@@ -8,14 +8,8 @@ struct ArtifactTypeContext {
     struct_names: Vec[string],
 }
 
-fn artifact_type_context(
-    enum_names: Vec[string],
-    struct_names: Vec[string],
-) -> ArtifactTypeContext {
-    ArtifactTypeContext {
-        enum_names,
-        struct_names,
-    }
+fn artifact_type_context(enum_names: Vec[string], struct_names: Vec[string]) -> ArtifactTypeContext {
+    ArtifactTypeContext { enum_names, struct_names }
 }
 
 fn artifact_json_type_array(
@@ -30,12 +24,7 @@ fn artifact_json_type_array(
     artifact_json_end_array(writer)
 }
 
-fn artifact_json_named_type(
-    writer: ArtifactJsonWriter,
-    kind: string,
-    field: string,
-    value: string,
-) -> unit {
+fn artifact_json_named_type(writer: ArtifactJsonWriter, kind: string, field: string, value: string) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, kind);
     artifact_json_begin_object(writer);
@@ -69,11 +58,7 @@ fn artifact_json_optional_trait_ref(
     }
 }
 
-fn artifact_json_type(
-    writer: ArtifactJsonWriter,
-    context: ArtifactTypeContext,
-    input: tast::Type,
-) -> unit {
+fn artifact_json_type(writer: ArtifactJsonWriter, context: ArtifactTypeContext, input: tast::Type) -> unit {
     match tast::resolve_type(input) {
         Unit => artifact_json_string(writer, "TUnit"),
         Never => artifact_json_string(writer, "TNever"),
@@ -106,12 +91,7 @@ fn artifact_json_type(
         } else {
             artifact_json_named_type(writer, "TStruct", "name", name)
         },
-        Dyn { trait_name: name } => artifact_json_named_type(
-            writer,
-            "TDyn",
-            "trait_name",
-            name,
-        ),
+        Dyn { trait_name: name } => artifact_json_named_type(writer, "TDyn", "trait_name", name),
         Projection { for_ty, name, trait_ref } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TProjection");
@@ -201,12 +181,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        Param { name } => artifact_json_named_type(
-            writer,
-            "TParam",
-            "name",
-            name,
-        ),
+        Param { name } => artifact_json_named_type(writer, "TParam", "name", name),
         Func { params, ret_ty } => {
             artifact_json_begin_object(writer);
             artifact_json_name(writer, "TFunc");
@@ -218,9 +193,7 @@ fn artifact_json_type(
             artifact_json_end_object(writer);
             artifact_json_end_object(writer)
         },
-        Var(_) | Error => fail(
-            "error[compile]: unresolved type in compiler artifact",
-        ),
+        Var(_) | Error => fail("error[compile]: unresolved type in compiler artifact"),
     }
 }
 

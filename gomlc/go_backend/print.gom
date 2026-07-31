@@ -154,36 +154,40 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
 }
 
 fn write_unary(builder: text::StringBuilder, value: UnaryOp) -> unit {
-    builder.write_string(match value {
-        Neg => "-",
-        Not => "!",
-        BitNot => "^",
-        Address => "&",
-        Deref => "*",
-    })
+    builder.write_string(
+        match value {
+            Neg => "-",
+            Not => "!",
+            BitNot => "^",
+            Address => "&",
+            Deref => "*",
+        },
+    )
 }
 
 fn write_binary(builder: text::StringBuilder, value: BinaryOp) -> unit {
-    builder.write_string(match value {
-        Add => "+",
-        Sub => "-",
-        Mul => "*",
-        Div => "/",
-        Rem => "%",
-        BitAnd => "&",
-        BitOr => "|",
-        BitXor => "^",
-        Shl => "<<",
-        Shr => ">>",
-        Less => "<",
-        Greater => ">",
-        LessEq => "<=",
-        GreaterEq => ">=",
-        Eq => "==",
-        NotEq => "!=",
-        And => "&&",
-        Or => "||",
-    })
+    builder.write_string(
+        match value {
+            Add => "+",
+            Sub => "-",
+            Mul => "*",
+            Div => "/",
+            Rem => "%",
+            BitAnd => "&",
+            BitOr => "|",
+            BitXor => "^",
+            Shl => "<<",
+            Shr => ">>",
+            Less => "<",
+            Greater => ">",
+            LessEq => "<=",
+            GreaterEq => ">=",
+            Eq => "==",
+            NotEq => "!=",
+            And => "&&",
+            Or => "||",
+        },
+    )
 }
 
 fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> unit {
@@ -202,7 +206,13 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         Nil => builder.write_string("nil"),
         Unit => builder.write_string("struct{}{}"),
         Var { name } => builder.write_string(name),
-        Bool { value } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value } | Float { value } => builder.write_string(value),
         String { value } => write_string_literal(builder, value),
         Call { func, args } => {

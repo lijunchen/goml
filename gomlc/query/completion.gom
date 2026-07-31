@@ -35,21 +35,19 @@ struct UseCompletionContext {
 }
 
 fn identifier_byte(value: uint8) -> bool {
-    (value >= 65 && value <= 90)
-        || (value >= 97 && value <= 122)
-        || (value >= 48 && value <= 57)
+    (value >= 65 && value <= 90) || (value >= 97 && value <= 122) || (value >= 48 && value <= 57)
         || value == 95
 }
 
 fn prefix_start(source: string, offset: int) -> int {
-    let start = Ref::new(if offset < source.byte_len() {
-        offset
-    } else {
-        source.byte_len()
-    });
-    while start.get() > 0
-        && identifier_byte(source.byte_get(start.get() - 1))
-    {
+    let start = Ref::new(
+        if offset < source.byte_len() {
+            offset
+        } else {
+            source.byte_len()
+        },
+    );
+    while start.get() > 0 && identifier_byte(source.byte_get(start.get() - 1)) {
         start.set(start.get() - 1)
     };
     start.get()
@@ -57,40 +55,32 @@ fn prefix_start(source: string, offset: int) -> int {
 
 fn completion_prefix(source: string, offset: int) -> string {
     let start = prefix_start(source, offset);
-    source.byte_slice(start, if offset < source.byte_len() {
-        offset
-    } else {
-        source.byte_len()
-    })
+    source.byte_slice(
+        start,
+        if offset < source.byte_len() {
+            offset
+        } else {
+            source.byte_len()
+        },
+    )
 }
 
-fn use_completion_context(
-    source: string,
-    offset: int,
-) -> Option[UseCompletionContext] {
+fn use_completion_context(source: string, offset: int) -> Option[UseCompletionContext] {
     let limit = if offset < source.byte_len() {
         offset
     } else {
         source.byte_len()
     };
     let line_start = Ref::new(limit);
-    while line_start.get() > 0
-        && source.byte_get(line_start.get() - 1) != 10
-    {
+    while line_start.get() > 0 && source.byte_get(line_start.get() - 1) != 10 {
         line_start.set(line_start.get() - 1)
     };
     let content_start = Ref::new(line_start.get());
-    while content_start.get() < limit
-        && completion_whitespace(source.byte_get(content_start.get()))
-    {
+    while content_start.get() < limit && completion_whitespace(source.byte_get(content_start.get())) {
         content_start.set(content_start.get() + 1)
     };
     if content_start.get() + 4 > limit
-        || source.byte_slice(
-            content_start.get(),
-            content_start.get() + 4,
-        ) != "use "
-    {
+        || source.byte_slice(content_start.get(), content_start.get() + 4) != "use " {
         Option::None
     } else {
         let path_start = content_start.get() + 4;
@@ -98,29 +88,21 @@ fn use_completion_context(
         let prefix_start = limit - prefix.byte_len();
         let namespace_end = Ref::new(prefix_start);
         while namespace_end.get() > path_start
-            && completion_whitespace(
-                source.byte_get(namespace_end.get() - 1),
-            )
-        {
+            && completion_whitespace(source.byte_get(namespace_end.get() - 1)) {
             namespace_end.set(namespace_end.get() - 1)
         };
         if namespace_end.get() >= path_start + 2
-            && source.byte_slice(
-                namespace_end.get() - 2,
-                namespace_end.get(),
-            ) == "::"
-        {
+            && source.byte_slice(namespace_end.get() - 2, namespace_end.get()) == "::" {
             namespace_end.set(namespace_end.get() - 2)
         } else {
             ()
         };
-        Option::Some(UseCompletionContext {
-            namespace: source.byte_slice(
-                path_start,
-                namespace_end.get(),
-            ),
-            prefix,
-        })
+        Option::Some(
+            UseCompletionContext {
+                namespace: source.byte_slice(path_start, namespace_end.get()),
+                prefix,
+            },
+        )
     }
 }
 
@@ -128,10 +110,7 @@ fn label_matches(label: string, prefix: string) -> bool {
     strings::starts_with(label, prefix)
 }
 
-fn contains_completion(
-    values: Vec[CompletionItem],
-    expected: string,
-) -> bool {
+fn contains_completion(values: Vec[CompletionItem], expected: string) -> bool {
     for value in values {
         if value.label == expected {
             return true
@@ -142,14 +121,8 @@ fn contains_completion(
     false
 }
 
-fn push_completion(
-    values: Vec[CompletionItem],
-    value: CompletionItem,
-    prefix: string,
-) -> unit {
-    if label_matches(value.label, prefix)
-        && !contains_completion(values, value.label)
-    {
+fn push_completion(values: Vec[CompletionItem], value: CompletionItem, prefix: string) -> unit {
+    if label_matches(value.label, prefix) && !contains_completion(values, value.label) {
         values.push(value)
     } else {
         ()
@@ -218,9 +191,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
 
 fn namespace_path(source: string, offset: int) -> Option[string] {
     let start = prefix_start(source, offset);
-    if start >= 2
-        && strings::starts_with_at(source, start - 2, "::")
-    {
+    if start >= 2 && strings::starts_with_at(source, start - 2, "::") {
         let owner_end = start - 2;
         let owner_start = Ref::new(owner_end);
         while owner_start.get() > 0 {
@@ -244,9 +215,7 @@ fn namespace_path(source: string, offset: int) -> Option[string] {
 fn first_namespace_segment(value: string) -> string {
     let index = Ref::new(0);
     while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58
-            && value.byte_get(index.get() + 1) == 58
-        {
+        if value.byte_get(index.get()) == 58 && value.byte_get(index.get() + 1) == 58 {
             return value.byte_slice(0, index.get())
         } else {
             index.set(index.get() + 1)
@@ -259,8 +228,7 @@ fn canonical_namespace(value: Analysis, namespace: string) -> string {
     let first = first_namespace_segment(namespace);
     match namespace_target(value, first) {
         Some(package_name) => {
-            package_name
-                + namespace.byte_slice(first.byte_len(), namespace.byte_len())
+            package_name + namespace.byte_slice(first.byte_len(), namespace.byte_len())
         },
         None => namespace,
     }
@@ -281,11 +249,9 @@ fn qualified_owner(value: string) -> string {
     symbol_owner(value)
 }
 
-fn complete_static_namespace(
-    value: Analysis,
-    namespace: string,
-    prefix: string,
-) -> Vec[CompletionItem] {
+fn complete_static_namespace(value: Analysis, namespace: string, prefix: string) -> Vec[
+    CompletionItem,
+] {
     let canonical = canonical_namespace(value, namespace);
     if namespace_is_package(value, canonical) {
         complete_namespace(value, canonical, prefix)
@@ -294,16 +260,13 @@ fn complete_static_namespace(
         let current_name = value.package_name + "::" + canonical;
         for symbol in build_symbol_index(value).symbols {
             let owner = qualified_owner(symbol.qualified_name);
-            if (owner == canonical
-                || owner == current_name
+            if (owner == canonical || owner == current_name
                 || short_type_name(owner) == short_type_name(canonical))
                 && match symbol.kind {
                     Variant | Method => true,
                     _ => false,
                 }
-                && (symbol.package_name == value.package_name
-                    || symbol.public)
-            {
+                && (symbol.package_name == value.package_name || symbol.public) {
                 push_completion(
                     result,
                     CompletionItem {
@@ -319,11 +282,8 @@ fn complete_static_namespace(
         };
         for environment in value.environments {
             for definition in environment.enums {
-                if definition.name == canonical
-                    || definition.name == current_name
-                    || short_type_name(definition.name)
-                        == short_type_name(canonical)
-                {
+                if definition.name == canonical || definition.name == current_name
+                    || short_type_name(definition.name) == short_type_name(canonical) {
                     for variant in definition.variants {
                         push_completion(
                             result,
@@ -340,20 +300,13 @@ fn complete_static_namespace(
                 }
             };
             for method in environment.methods {
-                let receiver = tast::diagnostic_type_text(
-                    tast::resolve_type(method.for_type),
-                );
-                if receiver == canonical
-                    || receiver == current_name
-                    || short_type_name(receiver)
-                        == short_type_name(canonical)
-                {
+                let receiver = tast::diagnostic_type_text(tast::resolve_type(method.for_type));
+                if receiver == canonical || receiver == current_name
+                    || short_type_name(receiver) == short_type_name(canonical) {
                     push_completion(
                         result,
                         CompletionItem {
-                            label: short_type_name(
-                                method.function.name,
-                            ),
+                            label: short_type_name(method.function.name),
                             detail: tast::diagnostic_type_text(
                                 tast::Type::Func {
                                     params: method.function.params,
@@ -373,25 +326,16 @@ fn complete_static_namespace(
     }
 }
 
-fn immediate_package_member(
-    qualified_name: string,
-    package_name: string,
-) -> bool {
+fn immediate_package_member(qualified_name: string, package_name: string) -> bool {
     let prefix = package_name + "::";
     if qualified_name.byte_len() <= prefix.byte_len()
-        || !strings::starts_with(qualified_name, prefix)
-    {
+        || !strings::starts_with(qualified_name, prefix) {
         false
     } else {
-        let remainder = qualified_name.byte_slice(
-            prefix.byte_len(),
-            qualified_name.byte_len(),
-        );
+        let remainder = qualified_name.byte_slice(prefix.byte_len(), qualified_name.byte_len());
         let index = Ref::new(0);
         while index.get() + 1 < remainder.byte_len() {
-            if remainder.byte_get(index.get()) == 58
-                && remainder.byte_get(index.get() + 1) == 58
-            {
+            if remainder.byte_get(index.get()) == 58 && remainder.byte_get(index.get() + 1) == 58 {
                 return false
             } else {
                 ()
@@ -413,16 +357,11 @@ fn analysis_has_package(value: Analysis, package_name: string) -> bool {
     false
 }
 
-fn complete_namespace(
-    value: Analysis,
-    package_name: string,
-    prefix: string,
-) -> Vec[CompletionItem] {
+fn complete_namespace(value: Analysis, package_name: string, prefix: string) -> Vec[CompletionItem] {
     let result = Vec::new();
     for symbol in build_symbol_index(value).symbols {
         if immediate_package_member(symbol.qualified_name, package_name)
-            && (symbol.package_name == value.package_name || symbol.public)
-        {
+            && (symbol.package_name == value.package_name || symbol.public) {
             push_completion(
                 result,
                 CompletionItem {
@@ -445,15 +384,7 @@ fn push_package_completion(
     detail: string,
     prefix: string,
 ) -> unit {
-    push_completion(
-        values,
-        CompletionItem {
-            label,
-            detail,
-            kind: CompletionKind::Package,
-        },
-        prefix,
-    )
+    push_completion(values, CompletionItem { label, detail, kind: CompletionKind::Package }, prefix)
 }
 
 fn namespace_next_segment(value: string, namespace: string) -> Option[string] {
@@ -461,15 +392,12 @@ fn namespace_next_segment(value: string, namespace: string) -> Option[string] {
         Option::Some(first_namespace_segment(value))
     } else {
         let prefix = namespace + "::";
-        if value.byte_len() <= prefix.byte_len()
-            || !strings::starts_with(value, prefix)
-        {
+        if value.byte_len() <= prefix.byte_len() || !strings::starts_with(value, prefix) {
             Option::None
         } else {
-            Option::Some(first_namespace_segment(value.byte_slice(
-                prefix.byte_len(),
-                value.byte_len(),
-            )))
+            Option::Some(
+                first_namespace_segment(value.byte_slice(prefix.byte_len(), value.byte_len())),
+            )
         }
     }
 }
@@ -483,8 +411,7 @@ fn package_directory_has_source(directory: string) -> bool {
                     && match path::extension(candidate) {
                         Some(extension) => extension == "gom",
                         None => false,
-                    }
-                {
+                    } {
                     return true
                 } else {
                     ()
@@ -502,23 +429,12 @@ fn complete_local_package_children(
     namespace: string,
     prefix: string,
 ) -> unit {
-    match local_package_directory(
-        project.module_root,
-        project.module_path,
-        namespace,
-    ) {
+    match local_package_directory(project.module_root, project.module_path, namespace) {
         Some(directory) => match fs::read_dir(directory) {
             Ok(names) => for name in names {
                 let candidate = path::join(directory, name);
-                if fs::is_dir(candidate)
-                    && package_directory_has_source(candidate)
-                {
-                    push_package_completion(
-                        result,
-                        name,
-                        namespace + "::" + name,
-                        prefix,
-                    )
+                if fs::is_dir(candidate) && package_directory_has_source(candidate) {
+                    push_package_completion(result, name, namespace + "::" + name, prefix)
                 } else {
                     ()
                 }
@@ -529,20 +445,12 @@ fn complete_local_package_children(
     }
 }
 
-fn complete_source_package(
-    source: SourceFile,
-    prefix: string,
-) -> Vec[CompletionItem] {
+fn complete_source_package(source: SourceFile, prefix: string) -> Vec[CompletionItem] {
     let result = Vec::new();
     let sources = Vec::new();
     sources.push(source);
     for symbol in build_symbol_index_from_sources(sources).symbols {
-        if symbol.public
-            && immediate_package_member(
-                symbol.qualified_name,
-                source.package_name,
-            )
-        {
+        if symbol.public && immediate_package_member(symbol.qualified_name, source.package_name) {
             push_completion(
                 result,
                 CompletionItem {
@@ -559,38 +467,24 @@ fn complete_source_package(
     result
 }
 
-fn complete_import_namespace(
-    value: Analysis,
-    context: UseCompletionContext,
-) -> Vec[CompletionItem] {
+fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> Vec[CompletionItem] {
     let result = Vec::new();
     if context.namespace == "" {
         push_package_completion(result, "std", "std", context.prefix)
     } else {
         for child in standard_library_children(context.namespace) {
-            push_package_completion(
-                result,
-                child,
-                context.namespace + "::" + child,
-                context.prefix,
-            )
+            push_package_completion(result, child, context.namespace + "::" + child, context.prefix)
         }
     };
     match standard_library_source(context.namespace) {
-        Some(source) => for item in complete_source_package(
-            source,
-            context.prefix,
-        ) {
+        Some(source) => for item in complete_source_package(source, context.prefix) {
             push_completion(result, item, context.prefix)
         },
         None => (),
     };
     match discover_project(value.source_path, value.source, value.overrides) {
         Ok(Some(project)) => {
-            match namespace_next_segment(
-                project.module_path,
-                context.namespace,
-            ) {
+            match namespace_next_segment(project.module_path, context.namespace) {
                 Some(segment) => push_package_completion(
                     result,
                     segment,
@@ -600,31 +494,14 @@ fn complete_import_namespace(
                 None => (),
             };
             if context.namespace == project.module_path
-                || strings::starts_with(
-                    context.namespace,
-                    project.module_path + "::",
-                )
-            {
-                complete_local_package_children(
-                    result,
-                    project,
-                    context.namespace,
-                    context.prefix,
-                )
+                || strings::starts_with(context.namespace, project.module_path + "::") {
+                complete_local_package_children(result, project, context.namespace, context.prefix)
             } else {
                 ()
             };
-            match fs::read_file(path::join(
-                project.module_root,
-                "goml.toml",
-            )) {
-                Ok(manifest) => for dependency in manifest_dependencies(
-                    manifest,
-                ) {
-                    match namespace_next_segment(
-                        dependency.name,
-                        context.namespace,
-                    ) {
+            match fs::read_file(path::join(project.module_root, "goml.toml")) {
+                Ok(manifest) => for dependency in manifest_dependencies(manifest) {
+                    match namespace_next_segment(dependency.name, context.namespace) {
                         Some(segment) => push_package_completion(
                             result,
                             segment,
@@ -646,9 +523,7 @@ fn short_type_name(value: string) -> string {
     let start = Ref::new(0);
     let index = Ref::new(0);
     while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58
-            && value.byte_get(index.get() + 1) == 58
-        {
+        if value.byte_get(index.get()) == 58 && value.byte_get(index.get() + 1) == 58 {
             start.set(index.get() + 2);
             index.set(index.get() + 1)
         } else {
@@ -661,9 +536,7 @@ fn short_type_name(value: string) -> string {
 
 fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken] {
     for distance in range(0, value.syntax.tokens.len()) {
-        let token = value.syntax.tokens[
-            value.syntax.tokens.len() - 1 - distance
-        ];
+        let token = value.syntax.tokens[value.syntax.tokens.len() - 1 - distance];
         if token.end <= offset && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
         } else {
@@ -673,17 +546,12 @@ fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken]
     Option::None
 }
 
-fn reference_receiver_fallback(
-    value: Analysis,
-    token: SyntaxToken,
-) -> Option[tast::Type] {
+fn reference_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::Type] {
     let facts = value.checked.typeck_results.references;
     for distance in range(0, facts.len()) {
         let fact = facts[facts.len() - 1 - distance];
-        if fact.source_path == value.source_path
-            && fact.span.start <= token.start
-            && fact.span.end >= token.end
-        {
+        if fact.source_path == value.source_path && fact.span.start <= token.start
+            && fact.span.end >= token.end {
             match tast::resolve_type(fact.ty) {
                 Error => (),
                 _ => return Option::Some(fact.ty),
@@ -695,16 +563,11 @@ fn reference_receiver_fallback(
     Option::None
 }
 
-fn local_receiver_fallback(
-    value: Analysis,
-    token: SyntaxToken,
-) -> Option[tast::Type] {
+fn local_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::Type] {
     let facts = value.checked.typeck_results.locals;
     for distance in range(0, facts.len()) {
         let fact = facts[facts.len() - 1 - distance];
-        if fact.source_path == value.source_path
-            && fact.local.hint == token.text
-        {
+        if fact.source_path == value.source_path && fact.local.hint == token.text {
             match fact.span {
                 Some(span) => if span.start < token.start {
                     return Option::Some(fact.ty)
@@ -727,11 +590,9 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
             let width = Ref::new(2147483647);
             for fact in value.checked.typeck_results.exprs {
                 let fact_width = fact.span.end - fact.span.start;
-                if fact.source_path == value.source_path
-                    && fact.span.start <= token.start
+                if fact.source_path == value.source_path && fact.span.start <= token.start
                     && fact.span.end >= token.end
-                    && fact_width <= width.get()
-                {
+                    && fact_width <= width.get() {
                     result.set(Option::Some(fact.ty));
                     width.set(fact_width)
                 } else {
@@ -743,10 +604,7 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
                     Error => {
                         match local_receiver_fallback(value, token) {
                             Some(value) => Option::Some(value),
-                            None => reference_receiver_fallback(
-                                value,
-                                token,
-                            ),
+                            None => reference_receiver_fallback(value, token),
                         }
                     },
                     _ => Option::Some(ty),
@@ -793,10 +651,7 @@ fn explicit_type_name(value: ast::TypeExpr) -> Option[string] {
     }
 }
 
-fn parameter_explicit_type(
-    parameters: Vec[(string, ast::TypeExpr)],
-    name: string,
-) -> Option[string] {
+fn parameter_explicit_type(parameters: Vec[(string, ast::TypeExpr)], name: string) -> Option[string] {
     let index = Ref::new(parameters.len() - 1);
     while index.get() >= 0 {
         let parameter = parameters[index.get()];
@@ -809,46 +664,24 @@ fn parameter_explicit_type(
     Option::None
 }
 
-fn source_explicit_receiver_type(
-    source: string,
-    name: string,
-    limit: int,
-) -> Option[string] {
+fn source_explicit_receiver_type(source: string, name: string, limit: int) -> Option[string] {
     let index = Ref::new(limit - name.byte_len());
     while index.get() >= 0 {
-        if source.byte_slice(
-            index.get(),
-            index.get() + name.byte_len(),
-        ) == name {
+        if source.byte_slice(index.get(), index.get() + name.byte_len()) == name {
             let cursor = Ref::new(index.get() + name.byte_len());
-            while cursor.get() < limit
-                && completion_whitespace(source.byte_get(cursor.get()))
-            {
+            while cursor.get() < limit && completion_whitespace(source.byte_get(cursor.get())) {
                 cursor.set(cursor.get() + 1)
             };
-            if cursor.get() < limit
-                && source.byte_get(cursor.get()) == 58
-            {
+            if cursor.get() < limit && source.byte_get(cursor.get()) == 58 {
                 cursor.set(cursor.get() + 1);
-                while cursor.get() < limit
-                    && completion_whitespace(
-                        source.byte_get(cursor.get()),
-                    )
-                {
+                while cursor.get() < limit && completion_whitespace(source.byte_get(cursor.get())) {
                     cursor.set(cursor.get() + 1)
                 };
                 if cursor.get() + 3 <= limit
-                    && source.byte_slice(
-                        cursor.get(),
-                        cursor.get() + 3,
-                    ) == "dyn"
-                {
+                    && source.byte_slice(cursor.get(), cursor.get() + 3) == "dyn" {
                     cursor.set(cursor.get() + 3);
                     while cursor.get() < limit
-                        && completion_whitespace(
-                            source.byte_get(cursor.get()),
-                        )
-                    {
+                        && completion_whitespace(source.byte_get(cursor.get())) {
                         cursor.set(cursor.get() + 1)
                     }
                 } else {
@@ -857,15 +690,11 @@ fn source_explicit_receiver_type(
                 let type_start = cursor.get();
                 while cursor.get() < limit
                     && (identifier_byte(source.byte_get(cursor.get()))
-                        || source.byte_get(cursor.get()) == 58)
-                {
+                        || source.byte_get(cursor.get()) == 58) {
                     cursor.set(cursor.get() + 1)
                 };
                 if cursor.get() > type_start {
-                    return Option::Some(source.byte_slice(
-                        type_start,
-                        cursor.get(),
-                    ))
+                    return Option::Some(source.byte_slice(type_start, cursor.get()))
                 } else {
                     ()
                 }
@@ -880,31 +709,20 @@ fn source_explicit_receiver_type(
     Option::None
 }
 
-fn file_parameter_explicit_type(
-    file: ast::File,
-    name: string,
-) -> Option[string] {
+fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string] {
     let item_index = Ref::new(file.items.len() - 1);
     while item_index.get() >= 0 {
         match file.items[item_index.get()] {
-            Function(function) => match parameter_explicit_type(
-                function.params,
-                name,
-            ) {
+            Function(function) => match parameter_explicit_type(function.params, name) {
                 Some(value) => return Option::Some(value),
                 None => (),
             },
             ImplBlock(block) => {
                 let method_index = Ref::new(block.methods.len() - 1);
                 while method_index.get() >= 0 {
-                    match parameter_explicit_type(
-                        block.methods[method_index.get()].params,
-                        name,
-                    ) {
+                    match parameter_explicit_type(block.methods[method_index.get()].params, name) {
                         Some(value) => return Option::Some(value),
-                        None => method_index.set(
-                            method_index.get() - 1,
-                        ),
+                        None => method_index.set(method_index.get() - 1),
                     }
                 }
             },
@@ -915,27 +733,17 @@ fn file_parameter_explicit_type(
     Option::None
 }
 
-fn explicit_receiver_type(
-    value: Analysis,
-    dot: int,
-) -> Option[string] {
+fn explicit_receiver_type(value: Analysis, dot: int) -> Option[string] {
     match significant_token_before(value, dot) {
         Some(token) => {
             let lowered = ast::lower(parser::parse(value.source));
             let explicit = match lowered.ast {
-                Some(file) => file_parameter_explicit_type(
-                    file,
-                    token.text,
-                ),
+                Some(file) => file_parameter_explicit_type(file, token.text),
                 None => Option::None,
             };
             match explicit {
                 Some(name) => Option::Some(name),
-                None => source_explicit_receiver_type(
-                    value.source,
-                    token.text,
-                    dot,
-                ),
+                None => source_explicit_receiver_type(value.source, token.text, dot),
             }
         },
         None => Option::None,
@@ -952,11 +760,10 @@ fn complete_named_methods(
         if match symbol.kind {
             Method => true,
             _ => false,
-        } && short_type_name(qualified_owner(
-            symbol.qualified_name,
-        )) == short_type_name(receiver_name)
-            && (symbol.package_name == value.package_name || symbol.public)
-        {
+        }
+            && short_type_name(qualified_owner(symbol.qualified_name))
+                == short_type_name(receiver_name)
+            && (symbol.package_name == value.package_name || symbol.public) {
             push_completion(
                 result,
                 CompletionItem {
@@ -973,19 +780,14 @@ fn complete_named_methods(
     for environment in value.environments {
         for definition in environment.traits {
             if definition.name == receiver_name
-                || short_type_name(definition.name)
-                    == short_type_name(receiver_name)
-            {
+                || short_type_name(definition.name) == short_type_name(receiver_name) {
                 for method in definition.methods {
                     push_completion(
                         result,
                         CompletionItem {
                             label: method.name,
                             detail: tast::diagnostic_type_text(
-                                tast::Type::Func {
-                                    params: method.params,
-                                    ret_ty: method.ret_ty,
-                                },
+                                tast::Type::Func { params: method.params, ret_ty: method.ret_ty },
                             ),
                             kind: CompletionKind::Method,
                         },
@@ -999,11 +801,7 @@ fn complete_named_methods(
     }
 }
 
-fn complete_members(
-    value: Analysis,
-    dot: int,
-    prefix: string,
-) -> Vec[CompletionItem] {
+fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[CompletionItem] {
     let result = Vec::new();
     match receiver_type(value, dot) {
         Some(receiver) => {
@@ -1013,17 +811,10 @@ fn complete_members(
                 Dyn { trait_name } => trait_name,
                 _ => receiver_name,
             };
-            complete_named_methods(
-                result,
-                value,
-                receiver_symbol_name,
-                prefix,
-            );
+            complete_named_methods(result, value, receiver_symbol_name, prefix);
             for environment in value.environments {
                 for info in environment.structs {
-                    if info.name == receiver_name
-                        || short_type_name(info.name) == receiver_short
-                    {
+                    if info.name == receiver_name || short_type_name(info.name) == receiver_short {
                         for field in info.fields {
                             push_completion(
                                 result,
@@ -1042,14 +833,11 @@ fn complete_members(
                 for method in environment.methods {
                     let method_receiver = type_owner_name(method.for_type);
                     if method_receiver == receiver_name
-                        || short_type_name(method_receiver) == receiver_short
-                    {
+                        || short_type_name(method_receiver) == receiver_short {
                         push_completion(
                             result,
                             CompletionItem {
-                                label: short_type_name(
-                                    method.function.name,
-                                ),
+                                label: short_type_name(method.function.name),
                                 detail: tast::diagnostic_type_text(
                                     tast::Type::Func {
                                         params: method.function.params,
@@ -1065,13 +853,9 @@ fn complete_members(
                     }
                 };
                 match tast::resolve_type(receiver) {
-                    Dyn { trait_name } => for definition in environment
-                        .traits
-                    {
+                    Dyn { trait_name } => for definition in environment.traits {
                         if definition.name == trait_name
-                            || short_type_name(definition.name)
-                                == short_type_name(trait_name)
-                        {
+                            || short_type_name(definition.name) == short_type_name(trait_name) {
                             for method in definition.methods {
                                 push_completion(
                                     result,
@@ -1096,22 +880,12 @@ fn complete_members(
                 }
             };
             match explicit_receiver_type(value, dot) {
-                Some(receiver_name) => complete_named_methods(
-                    result,
-                    value,
-                    receiver_name,
-                    prefix,
-                ),
+                Some(receiver_name) => complete_named_methods(result, value, receiver_name, prefix),
                 None => (),
             }
         },
         None => match explicit_receiver_type(value, dot) {
-            Some(receiver_name) => complete_named_methods(
-                result,
-                value,
-                receiver_name,
-                prefix,
-            ),
+            Some(receiver_name) => complete_named_methods(result, value, receiver_name, prefix),
             None => (),
         },
     };
@@ -1125,22 +899,14 @@ fn completion_scope_kind(value: cst::NodeKind) -> bool {
         || cst::node_kind_equal(value, cst::NodeKind::MATCH_ARM)
 }
 
-fn containing_completion_scope(
-    syntax: SyntaxIndex,
-    span: ast::Span,
-) -> Option[SyntaxNode] {
+fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[SyntaxNode] {
     let best = Ref::new(-1);
     for candidate in range(0, syntax.nodes.len()) {
         let node = syntax.nodes[candidate];
         let node_width = node.end - node.start;
-        if completion_scope_kind(node.kind)
-            && node.start <= span.start
-            && node.end >= span.end
+        if completion_scope_kind(node.kind) && node.start <= span.start && node.end >= span.end
             && (best.get() < 0
-                || node_width
-                    < syntax.nodes[best.get()].end
-                        - syntax.nodes[best.get()].start)
-        {
+                || node_width < syntax.nodes[best.get()].end - syntax.nodes[best.get()].start) {
             best.set(candidate)
         } else {
             ()
@@ -1153,11 +919,7 @@ fn containing_completion_scope(
     }
 }
 
-fn local_visible_at(
-    syntax: SyntaxIndex,
-    span: ast::Span,
-    offset: int,
-) -> bool {
+fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: int) -> bool {
     if span.start >= offset {
         false
     } else {
@@ -1170,10 +932,7 @@ fn local_visible_at(
     }
 }
 
-fn local_completion_index(
-    values: Vec[CompletionItem],
-    label: string,
-) -> Option[int] {
+fn local_completion_index(values: Vec[CompletionItem], label: string) -> Option[int] {
     for offset in range(0, values.len()) {
         let index = values.len() - 1 - offset;
         if values[index].label == label {
@@ -1185,11 +944,7 @@ fn local_completion_index(
     Option::None
 }
 
-fn push_local_completion(
-    values: Vec[CompletionItem],
-    value: CompletionItem,
-    prefix: string,
-) -> unit {
+fn push_local_completion(values: Vec[CompletionItem], value: CompletionItem, prefix: string) -> unit {
     if !label_matches(value.label, prefix) {
         ()
     } else {
@@ -1205,11 +960,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match fact.span {
-                Some(span) => if local_visible_at(
-                    value.syntax,
-                    span,
-                    offset,
-                ) {
+                Some(span) => if local_visible_at(value.syntax, span, offset) {
                     push_local_completion(
                         result,
                         CompletionItem {
@@ -1229,10 +980,8 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         }
     };
     for symbol in build_symbol_index(value).symbols {
-        if immediate_package_member(
-            symbol.qualified_name,
-            value.package_name,
-        ) && (symbol.package_name == value.package_name || symbol.public) {
+        if immediate_package_member(symbol.qualified_name, value.package_name)
+            && (symbol.package_name == value.package_name || symbol.public) {
             push_completion(
                 result,
                 CompletionItem {
@@ -1270,54 +1019,23 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         },
         None => (),
     };
-    let keywords = Vec::new()
-        .pushed("array")
-        .pushed("bool")
-        .pushed("char")
-        .pushed("dyn")
-        .pushed("else")
-        .pushed("enum")
-        .pushed("extern")
-        .pushed("false")
-        .pushed("float32")
-        .pushed("float64")
-        .pushed("fn")
-        .pushed("for")
-        .pushed("go")
-        .pushed("if")
-        .pushed("impl")
-        .pushed("in")
-        .pushed("int8")
-        .pushed("int16")
-        .pushed("int32")
-        .pushed("int64")
-        .pushed("let")
-        .pushed("match")
-        .pushed("package")
-        .pushed("pub")
-        .pushed("return")
-        .pushed("string")
-        .pushed("struct")
-        .pushed("trait")
-        .pushed("true")
-        .pushed("type")
-        .pushed("uint")
-        .pushed("uint8")
-        .pushed("uint16")
-        .pushed("uint32")
-        .pushed("uint64")
-        .pushed("unit")
-        .pushed("use")
-        .pushed("while")
-        .pushed("_");
+    let keywords = Vec::new().pushed("array").pushed("bool").pushed("char").pushed("dyn").pushed(
+        "else",
+    ).pushed("enum").pushed("extern").pushed("false").pushed("float32").pushed("float64").pushed(
+        "fn",
+    ).pushed("for").pushed("go").pushed("if").pushed("impl").pushed("in").pushed("int8").pushed(
+        "int16",
+    ).pushed("int32").pushed("int64").pushed("let").pushed("match").pushed("package").pushed("pub").pushed(
+        "return",
+    ).pushed("string").pushed("struct").pushed("trait").pushed("true").pushed("type").pushed("uint").pushed(
+        "uint8",
+    ).pushed("uint16").pushed("uint32").pushed("uint64").pushed("unit").pushed("use").pushed(
+        "while",
+    ).pushed("_");
     for keyword in keywords {
         push_completion(
             result,
-            CompletionItem {
-                label: keyword,
-                detail: "",
-                kind: CompletionKind::Keyword,
-            },
+            CompletionItem { label: keyword, detail: "", kind: CompletionKind::Keyword },
             prefix,
         )
     };
@@ -1330,9 +1048,7 @@ fn completion_whitespace(value: uint8) -> bool {
 
 fn previous_completion_byte(source: string, end: int) -> Option[int] {
     let index = Ref::new(end);
-    while index.get() > 0
-        && completion_whitespace(source.byte_get(index.get() - 1))
-    {
+    while index.get() > 0 && completion_whitespace(source.byte_get(index.get() - 1)) {
         index.set(index.get() - 1)
     };
     if index.get() == 0 {
@@ -1346,9 +1062,7 @@ fn completion_word_before(source: string, end: int) -> string {
     match previous_completion_byte(source, end) {
         Some(last) => {
             let start = Ref::new(last);
-            while start.get() > 0
-                && identifier_byte(source.byte_get(start.get() - 1))
-            {
+            while start.get() > 0 && identifier_byte(source.byte_get(start.get() - 1)) {
                 start.set(start.get() - 1)
             };
             source.byte_slice(start.get(), last + 1)
@@ -1383,10 +1097,7 @@ fn call_argument_context(source: string, offset: int) -> bool {
     match call_open_before(source, start) {
         Some(open) => {
             let previous = completion_word_before(source, open);
-            previous != ""
-                && previous != "if"
-                && previous != "while"
-                && previous != "for"
+            previous != "" && previous != "if" && previous != "while" && previous != "for"
                 && previous != "match"
                 && previous != "fn"
         },
@@ -1395,17 +1106,13 @@ fn call_argument_context(source: string, offset: int) -> bool {
 }
 
 fn insert_completion_placeholder(source: string, offset: int) -> string {
-    source.byte_slice(0, offset)
-        + "completion_placeholder"
+    source.byte_slice(0, offset) + "completion_placeholder"
         + source.byte_slice(offset, source.byte_len())
 }
 
-fn completion_query(
-    value: Analysis,
-    source: string,
-    offset: int,
-    prefix: string,
-) -> Vec[CompletionItem] {
+fn completion_query(value: Analysis, source: string, offset: int, prefix: string) -> Vec[
+    CompletionItem,
+] {
     match member_dot(source, offset) {
         Some(dot) => complete_members(value, dot, prefix),
         None => match namespace_path(source, offset) {
@@ -1421,44 +1128,28 @@ pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
     let prefix = completion_prefix(value.source, offset);
     match use_completion_context(value.source, offset) {
         Some(context) => complete_import_namespace(value, context),
-        None => if prefix == ""
-            && call_argument_context(value.source, offset)
-        {
+        None => if prefix == "" && call_argument_context(value.source, offset) {
             Vec::new()
         } else {
-        let result = completion_query(
-            value,
-            value.source,
-            offset,
-            prefix,
-        );
-        if result.len() > 0
-            || (match member_dot(value.source, offset) {
-                Some(_) => false,
-                None => match namespace_path(value.source, offset) {
+            let result = completion_query(value, value.source, offset, prefix);
+            if result.len() > 0
+                || (match member_dot(value.source, offset) {
                     Some(_) => false,
-                    None => true,
-                },
-            })
-        {
-            result
-        } else {
-            let repaired_source = insert_completion_placeholder(
-                value.source,
-                offset,
-            );
-            let repaired = analyze_with_overrides(
-                value.source_path,
-                repaired_source,
-                value.overrides,
-            );
-            completion_query(
-                repaired,
-                value.source,
-                offset,
-                prefix,
-            )
-        }
+                    None => match namespace_path(value.source, offset) {
+                        Some(_) => false,
+                        None => true,
+                    },
+                }) {
+                result
+            } else {
+                let repaired_source = insert_completion_placeholder(value.source, offset);
+                let repaired = analyze_with_overrides(
+                    value.source_path,
+                    repaired_source,
+                    value.overrides,
+                );
+                completion_query(repaired, value.source, offset, prefix)
+            }
         },
     }
 }

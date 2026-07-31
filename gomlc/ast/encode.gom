@@ -20,7 +20,13 @@ fn encode_string_value(builder: text::StringBuilder, value: string) -> unit {
 }
 
 fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
-    builder.write_string(if value { "B\t1\n" } else { "B\t0\n" })
+    builder.write_string(
+        if value {
+            "B\t1\n"
+        } else {
+            "B\t0\n"
+        },
+    )
 }
 
 fn encode_int_value(builder: text::StringBuilder, value: int) -> unit {
@@ -136,10 +142,13 @@ fn encode_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> un
 }
 
 fn encode_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
-    encode_string_value(builder, match value {
-        Private => "Private",
-        Public => "Public",
-    })
+    encode_string_value(
+        builder,
+        match value {
+            Private => "Private",
+            Public => "Public",
+        },
+    )
 }
 
 fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
@@ -166,10 +175,7 @@ fn encode_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
     }
 }
 
-fn encode_generic_bounds(
-    builder: text::StringBuilder,
-    values: Vec[(string, Vec[TraitRef])],
-) -> unit {
+fn encode_generic_bounds(builder: text::StringBuilder, values: Vec[(string, Vec[TraitRef])]) -> unit {
     encode_list(builder, values.len());
     for value in values {
         let (name, bounds) = value;

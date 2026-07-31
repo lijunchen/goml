@@ -20,28 +20,18 @@ fn artifact_core_trait_ref_key(value: tast::TraitRef) -> string {
     builder.finish()
 }
 
-fn artifact_core_trait_refs_equal(
-    left: tast::TraitRef,
-    right: tast::TraitRef,
-) -> bool {
+fn artifact_core_trait_refs_equal(left: tast::TraitRef, right: tast::TraitRef) -> bool {
     artifact_core_trait_ref_key(left) == artifact_core_trait_ref_key(right)
 }
 
-fn artifact_core_function_matches_scheme(
-    value: core::Function,
-    scheme: ArtifactFnScheme,
-) -> bool {
+fn artifact_core_function_matches_scheme(value: core::Function, scheme: ArtifactFnScheme) -> bool {
     match artifact_function_type_parts(scheme.ty) {
         Ok(function_type) => if value.params.len() != function_type.params.len()
-            || !artifact_core_types_equal(value.ret_ty, function_type.ret_ty)
-        {
+            || !artifact_core_types_equal(value.ret_ty, function_type.ret_ty) {
             false
         } else {
             for index in range(0, value.params.len()) {
-                if !artifact_core_types_equal(
-                    value.params[index].1,
-                    function_type.params[index],
-                ) {
+                if !artifact_core_types_equal(value.params[index].1, function_type.params[index]) {
                     return false
                 } else {
                     ()
@@ -69,10 +59,9 @@ fn artifact_core_method_name(value: string) -> Option[string] {
     }
 }
 
-fn artifact_core_predicates(
-    inherited: Vec[tast::TypePredicate],
-    own: Vec[tast::TypePredicate],
-) -> Vec[tast::TypePredicate] {
+fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::TypePredicate]) -> Vec[
+    tast::TypePredicate,
+] {
     let result = Vec::new();
     for predicate in inherited {
         result.push(predicate)
@@ -83,15 +72,10 @@ fn artifact_core_predicates(
     result
 }
 
-fn artifact_prepare_core_function_metadata(
-    value: core::Function,
-    exports: ArtifactPackageExports,
-) -> core::Function {
+fn artifact_prepare_core_function_metadata(value: core::Function, exports: ArtifactPackageExports) -> core::Function {
     let predicates = Ref::new(value.predicates);
     for function in exports.functions {
-        if function.name == value.name
-            && artifact_core_function_matches_scheme(value, function)
-        {
+        if function.name == value.name && artifact_core_function_matches_scheme(value, function) {
             predicates.set(function.constraints)
         } else {
             ()
@@ -105,27 +89,21 @@ fn artifact_prepare_core_function_metadata(
             let method_name = artifact_core_method_name(value.name);
             for implementation in exports.trait_impls {
                 if implementation.definition.valid
-                    && artifact_core_trait_refs_equal(
-                        metadata.trait_ref,
-                        implementation.trait_ref,
-                    )
-                    && artifact_core_types_equal(
-                        metadata.for_ty,
-                        implementation.for_ty,
-                    )
-                {
+                    && artifact_core_trait_refs_equal(metadata.trait_ref, implementation.trait_ref)
+                    && artifact_core_types_equal(metadata.for_ty, implementation.for_ty) {
                     associated_types.set(implementation.definition.associated_types);
                     generic_count.set(implementation.definition.params.len());
                     predicate_count.set(implementation.definition.constraints.len());
                     match method_name {
                         Some(method_name) => for method in implementation.definition.methods {
                             if method.name == method_name
-                                && artifact_core_function_matches_scheme(value, method)
-                            {
-                                predicates.set(artifact_core_predicates(
-                                    implementation.definition.constraints,
-                                    method.constraints,
-                                ))
+                                && artifact_core_function_matches_scheme(value, method) {
+                                predicates.set(
+                                    artifact_core_predicates(
+                                        implementation.definition.constraints,
+                                        method.constraints,
+                                    ),
+                                )
                             } else {
                                 ()
                             }
@@ -136,13 +114,15 @@ fn artifact_prepare_core_function_metadata(
                     ()
                 }
             };
-            Option::Some(core::TraitImpl {
-                trait_ref: metadata.trait_ref,
-                for_ty: metadata.for_ty,
-                associated_types: associated_types.get(),
-                generic_count: generic_count.get(),
-                predicate_count: predicate_count.get(),
-            })
+            Option::Some(
+                core::TraitImpl {
+                    trait_ref: metadata.trait_ref,
+                    for_ty: metadata.for_ty,
+                    associated_types: associated_types.get(),
+                    generic_count: generic_count.get(),
+                    predicate_count: predicate_count.get(),
+                },
+            )
         },
         None => {
             let method_name = artifact_core_method_name(value.name);
@@ -151,12 +131,13 @@ fn artifact_prepare_core_function_metadata(
                     if implementation.definition.valid {
                         for method in implementation.definition.methods {
                             if method.name == method_name
-                                && artifact_core_function_matches_scheme(value, method)
-                            {
-                                predicates.set(artifact_core_predicates(
-                                    implementation.definition.constraints,
-                                    method.constraints,
-                                ))
+                                && artifact_core_function_matches_scheme(value, method) {
+                                predicates.set(
+                                    artifact_core_predicates(
+                                        implementation.definition.constraints,
+                                        method.constraints,
+                                    ),
+                                )
                             } else {
                                 ()
                             }
@@ -182,10 +163,7 @@ fn artifact_prepare_core_function_metadata(
     }
 }
 
-fn artifact_fill_constructor_fields(
-    value: tast::Constructor,
-    definitions: Vec[tast::StructDef],
-) -> unit {
+fn artifact_fill_constructor_fields(value: tast::Constructor, definitions: Vec[tast::StructDef]) -> unit {
     if value.is_struct && value.fields.len() == 0 {
         for definition in definitions {
             if definition.name == value.name {
@@ -201,39 +179,27 @@ fn artifact_fill_constructor_fields(
     }
 }
 
-fn artifact_prepare_core_exprs(
-    values: Vec[core::Expr],
-    definitions: Vec[tast::StructDef],
-) -> unit {
+fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[tast::StructDef]) -> unit {
     for value in values {
         artifact_prepare_core_expr(value, definitions)
     }
 }
 
-fn artifact_prepare_optional_core_expr(
-    value: Option[core::Expr],
-    definitions: Vec[tast::StructDef],
-) -> unit {
+fn artifact_prepare_optional_core_expr(value: Option[core::Expr], definitions: Vec[tast::StructDef]) -> unit {
     match value {
         Some(value) => artifact_prepare_core_expr(value, definitions),
         None => (),
     }
 }
 
-fn artifact_prepare_core_block(
-    value: core::Block,
-    definitions: Vec[tast::StructDef],
-) -> unit {
+fn artifact_prepare_core_block(value: core::Block, definitions: Vec[tast::StructDef]) -> unit {
     for statement in value.stmts {
         artifact_prepare_core_expr(statement.value, definitions)
     };
     artifact_prepare_optional_core_expr(value.tail, definitions)
 }
 
-fn artifact_prepare_core_expr(
-    value: core::Expr,
-    definitions: Vec[tast::StructDef],
-) -> unit {
+fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDef]) -> unit {
     match value {
         Constr { constructor, args, ty: _ } => {
             artifact_fill_constructor_fields(constructor, definitions);
@@ -264,10 +230,11 @@ fn artifact_prepare_core_expr(
         Return { expr, ty: _ } => {
             artifact_prepare_optional_core_expr(expr, definitions)
         },
-        Go { expr, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ } => artifact_prepare_core_expr(expr, definitions),
+        Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } => artifact_prepare_core_expr(expr, definitions),
         ConstrGet { expr, constructor, field_index: _, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions);
             artifact_fill_constructor_fields(constructor, definitions)
@@ -286,23 +253,23 @@ fn artifact_prepare_core_expr(
         ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-        | TraitCall { receiver, args, .. } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+            receiver,
+            args,
+            ..,
+        } => {
             artifact_prepare_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break {
+            ty: _,
+        } | Continue { ty: _ } => (),
     }
 }
 
-fn artifact_link_struct_definitions(
-    world: PackageWorld,
-    values: Vec[ArtifactCoreUnit],
-) -> Vec[tast::StructDef] {
+fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[ArtifactCoreUnit]) -> Vec[
+    tast::StructDef,
+] {
     let result = Vec::new();
     for definition in world.builtins.structs {
         result.push(definition)
@@ -323,10 +290,7 @@ fn artifact_link_struct_definitions(
     result
 }
 
-fn artifact_prepare_core_units(
-    world: PackageWorld,
-    values: Vec[ArtifactCoreUnit],
-) -> unit {
+fn artifact_prepare_core_units(world: PackageWorld, values: Vec[ArtifactCoreUnit]) -> unit {
     let definitions = artifact_link_struct_definitions(world, values);
     for value in values {
         for index in range(0, value.core_ir.functions.len()) {
@@ -340,28 +304,20 @@ fn artifact_prepare_core_units(
     }
 }
 
-fn artifact_world_struct_definitions(
-    world: PackageWorld,
-) -> Vec[tast::StructDef] {
+fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef] {
     let result = Vec::new();
     for definition in world.builtins.structs {
         result.push(definition)
     };
-    let packages: Vec[ArtifactStandardPackage] = Vec::new()
-        .pushed(world.standard.root)
-        .pushed(world.standard.host)
-        .pushed(world.standard.bytes)
-        .pushed(world.standard.collections)
-        .pushed(world.standard.env)
-        .pushed(world.standard.fs)
-        .pushed(world.standard.io)
-        .pushed(world.standard.json)
-        .pushed(world.standard.num)
-        .pushed(world.standard.path)
-        .pushed(world.standard.process)
-        .pushed(world.standard.testing)
-        .pushed(world.standard.text)
-        .pushed(world.standard.time);
+    let packages: Vec[ArtifactStandardPackage] = Vec::new().pushed(world.standard.root).pushed(
+        world.standard.host,
+    ).pushed(world.standard.bytes).pushed(world.standard.collections).pushed(world.standard.env).pushed(
+        world.standard.fs,
+    ).pushed(world.standard.io).pushed(world.standard.json).pushed(world.standard.num).pushed(
+        world.standard.path,
+    ).pushed(world.standard.process).pushed(world.standard.testing).pushed(world.standard.text).pushed(
+        world.standard.time,
+    );
     for package_value in packages {
         for definition in package_value.environment_exports.structs {
             result.push(definition)
@@ -376,10 +332,7 @@ fn artifact_prepare_world_core(
     definitions: Vec[tast::StructDef],
 ) -> unit {
     for index in range(0, value.functions.len()) {
-        let function = artifact_prepare_core_function_metadata(
-            value.functions[index],
-            exports,
-        );
+        let function = artifact_prepare_core_function_metadata(value.functions[index], exports);
         value.functions[index] = function;
         artifact_prepare_core_block(function.body, definitions)
     }
@@ -387,26 +340,16 @@ fn artifact_prepare_world_core(
 
 fn artifact_prepare_world(world: PackageWorld) -> unit {
     let definitions = artifact_world_struct_definitions(world);
-    artifact_prepare_world_core(
-        world.builtins,
-        world.builtin_interface.exports,
-        definitions,
+    artifact_prepare_world_core(world.builtins, world.builtin_interface.exports, definitions);
+    let packages: Vec[ArtifactStandardPackage] = Vec::new().pushed(world.standard.root).pushed(
+        world.standard.host,
+    ).pushed(world.standard.bytes).pushed(world.standard.collections).pushed(world.standard.env).pushed(
+        world.standard.fs,
+    ).pushed(world.standard.io).pushed(world.standard.json).pushed(world.standard.num).pushed(
+        world.standard.path,
+    ).pushed(world.standard.process).pushed(world.standard.testing).pushed(world.standard.text).pushed(
+        world.standard.time,
     );
-    let packages: Vec[ArtifactStandardPackage] = Vec::new()
-        .pushed(world.standard.root)
-        .pushed(world.standard.host)
-        .pushed(world.standard.bytes)
-        .pushed(world.standard.collections)
-        .pushed(world.standard.env)
-        .pushed(world.standard.fs)
-        .pushed(world.standard.io)
-        .pushed(world.standard.json)
-        .pushed(world.standard.num)
-        .pushed(world.standard.path)
-        .pushed(world.standard.process)
-        .pushed(world.standard.testing)
-        .pushed(world.standard.text)
-        .pushed(world.standard.time);
     for package_value in packages {
         artifact_prepare_world_core(
             package_value.core_value,

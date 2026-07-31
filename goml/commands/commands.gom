@@ -95,21 +95,15 @@ fn valid_identifier(value: string) -> bool {
         ()
     };
     let first = value.byte_get(0);
-    if !((first >= 65 && first <= 90)
-        || (first >= 97 && first <= 122)
-        || first == 95)
-    {
+    if !((first >= 65 && first <= 90) || (first >= 97 && first <= 122) || first == 95) {
         return false
     } else {
         ()
     };
     for index in range(1, value.byte_len()) {
         let byte = value.byte_get(index);
-        if (byte >= 48 && byte <= 57)
-            || (byte >= 65 && byte <= 90)
-            || (byte >= 97 && byte <= 122)
-            || byte == 95
-        {
+        if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
+            || byte == 95 {
             ()
         } else {
             return false
@@ -121,9 +115,7 @@ fn valid_identifier(value: string) -> bool {
 fn validate_project_name(value: string) -> Result[unit, string] {
     if !valid_identifier(value) {
         Result::Err(
-            "invalid project name `"
-                + value
-                + "`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
+            "invalid project name `" + value + "`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
         )
     } else if value == "main" || value == "builtin" || value == "std" {
         Result::Err("module path `" + value + "` is reserved")
@@ -134,18 +126,14 @@ fn validate_project_name(value: string) -> Result[unit, string] {
 
 fn ensure_project_directory(value: string) -> Result[unit, string] {
     if fs::is_file(value) {
-        return Result::Err(
-            "target directory " + value + " already exists and is not empty",
-        )
+        return Result::Err("target directory " + value + " already exists and is not empty")
     } else if fs::is_dir(value) {
         let entries = match fs::read_dir(value) {
             Ok(entries) => entries,
             Err(message) => return Result::Err(message),
         };
         if entries.len() > 0 {
-            return Result::Err(
-                "target directory " + value + " already exists and is not empty",
-            )
+            return Result::Err("target directory " + value + " already exists and is not empty")
         } else {
             Result::Ok(())
         }
@@ -169,10 +157,7 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
     };
-    match write_file(
-        path::join(project, "goml.toml"),
-        "[module]\npath = \"" + name + "\"\n",
-    ) {
+    match write_file(path::join(project, "goml.toml"), "[module]\npath = \"" + name + "\"\n") {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
     };
@@ -182,8 +167,7 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
     };
     match write_file(
         path::join(project, "main.gom"),
-        "package main;\n\nuse "
-            + name
+        "package main;\n\nuse " + name
             + "::lib;\n\nfn main() -> unit {\n    println(lib::message())\n}\n",
     ) {
         Ok(()) => (),
@@ -229,9 +213,7 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
             return Result::Err("unknown option " + argument)
         } else {
             match name.get() {
-                Some(_) => return Result::Err(
-                    "unexpected argument " + argument,
-                ),
+                Some(_) => return Result::Err("unexpected argument " + argument),
                 None => {
                     name.set(Option::Some(argument));
                     index.set(index.get() + 1)

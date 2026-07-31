@@ -5,10 +5,7 @@ use std::path;
 use std::testing;
 
 fn corpus_skip_directory(name: string) -> bool {
-    name == "_artifact"
-        || name == "_bootstrap"
-        || name == "testdata"
-        || name == "bin"
+    name == "_artifact" || name == "_bootstrap" || name == "testdata" || name == "bin"
         || name.starts_with(".")
 }
 
@@ -28,8 +25,7 @@ fn collect_corpus(directory: string, result: Vec[string]) -> unit {
             && match path::extension(entry) {
                 Some(extension) => extension == "gom",
                 None => false,
-            }
-        {
+            } {
             result.push(entry)
         } else {
             ()

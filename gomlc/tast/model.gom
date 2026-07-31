@@ -9,7 +9,10 @@ pub enum VarKind {
 }
 
 pub enum TypeVar {
-    Unbound { id: int, kind: VarKind },
+    Unbound {
+        id: int,
+        kind: VarKind,
+    },
     Link(Type),
 }
 
@@ -32,19 +35,51 @@ pub enum Type {
     Float64,
     String,
     Char,
-    Tuple { items: Vec[Type] },
-    Con { name: string },
-    Dyn { trait_name: string },
-    Projection { for_ty: Type, name: string, trait_ref: Option[TraitRef] },
-    App { ty: Type, args: Vec[Type] },
-    Array { len: int, elem: Type },
-    Slice { elem: Type },
-    VecType { elem: Type },
-    RefType { elem: Type },
-    HashMap { key: Type, value: Type },
-    Channel { elem: Type },
-    Param { name: string },
-    Func { params: Vec[Type], ret_ty: Type },
+    Tuple {
+        items: Vec[Type],
+    },
+    Con {
+        name: string,
+    },
+    Dyn {
+        trait_name: string,
+    },
+    Projection {
+        for_ty: Type,
+        name: string,
+        trait_ref: Option[TraitRef],
+    },
+    App {
+        ty: Type,
+        args: Vec[Type],
+    },
+    Array {
+        len: int,
+        elem: Type,
+    },
+    Slice {
+        elem: Type,
+    },
+    VecType {
+        elem: Type,
+    },
+    RefType {
+        elem: Type,
+    },
+    HashMap {
+        key: Type,
+        value: Type,
+    },
+    Channel {
+        elem: Type,
+    },
+    Param {
+        name: string,
+    },
+    Func {
+        params: Vec[Type],
+        ret_ty: Type,
+    },
     Error,
 }
 
@@ -55,31 +90,83 @@ pub struct TraitRef {
 
 pub enum Primitive {
     Unit,
-    Bool { value: bool },
-    Int { value: string },
-    Int8 { value: string },
-    Int16 { value: string },
-    Int32 { value: string },
-    Int64 { value: string },
-    Uint { value: string },
-    Uint8 { value: string },
-    Uint16 { value: string },
-    Uint32 { value: string },
-    Uint64 { value: string },
-    Float { value: string },
-    Float32 { value: string },
-    Float64 { value: string },
-    String { value: string },
-    Char { value: char },
+    Bool {
+        value: bool,
+    },
+    Int {
+        value: string,
+    },
+    Int8 {
+        value: string,
+    },
+    Int16 {
+        value: string,
+    },
+    Int32 {
+        value: string,
+    },
+    Int64 {
+        value: string,
+    },
+    Uint {
+        value: string,
+    },
+    Uint8 {
+        value: string,
+    },
+    Uint16 {
+        value: string,
+    },
+    Uint32 {
+        value: string,
+    },
+    Uint64 {
+        value: string,
+    },
+    Float {
+        value: string,
+    },
+    Float32 {
+        value: string,
+    },
+    Float64 {
+        value: string,
+    },
+    String {
+        value: string,
+    },
+    Char {
+        value: char,
+    },
 }
 
 pub enum ConstExpr {
-    Prim { value: Primitive, ty: Type },
-    Ref { name: string, ty: Type },
-    Unary { op: ast::UnaryOp, expr: ConstExpr, ty: Type },
-    Cast { expr: ConstExpr, ty: Type },
-    Binary { op: ast::BinaryOp, lhs: ConstExpr, rhs: ConstExpr, ty: Type },
-    Error { ty: Type },
+    Prim {
+        value: Primitive,
+        ty: Type,
+    },
+    Ref {
+        name: string,
+        ty: Type,
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: ConstExpr,
+        ty: Type,
+    },
+    Cast {
+        expr: ConstExpr,
+        ty: Type,
+    },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: ConstExpr,
+        rhs: ConstExpr,
+        ty: Type,
+    },
+    Error {
+        ty: Type,
+    },
 }
 
 pub struct Constant {
@@ -99,14 +186,26 @@ pub enum Callable {
     Function(string),
     Runtime(string),
     Intrinsic(string),
-    TraitMethod { trait_ref: TraitRef, method_name: string },
-    DynTraitMethod { trait_name: string, dispatch_name: string, method_name: string },
-    InherentMethod { receiver_ty: Type, method_name: string },
+    TraitMethod {
+        trait_ref: TraitRef,
+        method_name: string,
+    },
+    DynTraitMethod {
+        trait_name: string,
+        dispatch_name: string,
+        method_name: string,
+    },
+    InherentMethod {
+        receiver_ty: Type,
+        method_name: string,
+    },
 }
 
 pub enum BinaryResolution {
     Builtin,
-    Overloaded { trait_name: string },
+    Overloaded {
+        trait_name: string,
+    },
 }
 
 pub struct ClosureParam {
@@ -115,17 +214,56 @@ pub struct ClosureParam {
 }
 
 pub enum Expr {
-    Var { name: string, ty: Type },
-    Callable { callable: Callable, ty: Type },
-    Prim { value: Primitive, ty: Type },
-    Constr { constructor: Constructor, args: Vec[Expr], ty: Type },
-    Tuple { items: Vec[Expr], ty: Type },
-    Array { items: Vec[Expr], ty: Type },
-    Closure { params: Vec[ClosureParam], body: Expr, ty: Type },
-    Block { block: Block, ty: Type },
-    Match { expr: Expr, arms: Vec[Arm], ty: Type },
-    If { cond: Expr, then_branch: Expr, else_branch: Expr, ty: Type },
-    While { cond: Expr, body: Expr, ty: Type },
+    Var {
+        name: string,
+        ty: Type,
+    },
+    Callable {
+        callable: Callable,
+        ty: Type,
+    },
+    Prim {
+        value: Primitive,
+        ty: Type,
+    },
+    Constr {
+        constructor: Constructor,
+        args: Vec[Expr],
+        ty: Type,
+    },
+    Tuple {
+        items: Vec[Expr],
+        ty: Type,
+    },
+    Array {
+        items: Vec[Expr],
+        ty: Type,
+    },
+    Closure {
+        params: Vec[ClosureParam],
+        body: Expr,
+        ty: Type,
+    },
+    Block {
+        block: Block,
+        ty: Type,
+    },
+    Match {
+        expr: Expr,
+        arms: Vec[Arm],
+        ty: Type,
+    },
+    If {
+        cond: Expr,
+        then_branch: Expr,
+        else_branch: Expr,
+        ty: Type,
+    },
+    While {
+        cond: Expr,
+        body: Expr,
+        ty: Type,
+    },
     For {
         pat: Pat,
         iterator: Expr,
@@ -135,16 +273,49 @@ pub enum Expr {
         body: Expr,
         ty: Type,
     },
-    Break { ty: Type },
-    Continue { ty: Type },
-    Return { expr: Option[Expr], ty: Type },
-    Go { expr: Expr, ty: Type },
-    Call { func: Expr, args: Vec[Expr], ty: Type },
-    Unary { op: ast::UnaryOp, expr: Expr, ty: Type },
-    Cast { expr: Expr, ty: Type },
-    Proj { tuple: Expr, index: int, ty: Type },
-    Field { expr: Expr, field_name: string, ty: Type },
-    Index { base: Expr, index: Expr, ty: Type },
+    Break {
+        ty: Type,
+    },
+    Continue {
+        ty: Type,
+    },
+    Return {
+        expr: Option[Expr],
+        ty: Type,
+    },
+    Go {
+        expr: Expr,
+        ty: Type,
+    },
+    Call {
+        func: Expr,
+        args: Vec[Expr],
+        ty: Type,
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: Expr,
+        ty: Type,
+    },
+    Cast {
+        expr: Expr,
+        ty: Type,
+    },
+    Proj {
+        tuple: Expr,
+        index: int,
+        ty: Type,
+    },
+    Field {
+        expr: Expr,
+        field_name: string,
+        ty: Type,
+    },
+    Index {
+        base: Expr,
+        index: Expr,
+        ty: Type,
+    },
     Binary {
         op: ast::BinaryOp,
         lhs: Expr,
@@ -152,7 +323,12 @@ pub enum Expr {
         ty: Type,
         resolution: BinaryResolution,
     },
-    ToDyn { trait_name: string, for_ty: Type, expr: Expr, ty: Type },
+    ToDyn {
+        trait_name: string,
+        for_ty: Type,
+        expr: Expr,
+        ty: Type,
+    },
 }
 
 pub struct Block {
@@ -161,13 +337,19 @@ pub struct Block {
 }
 
 pub enum Stmt {
-    Let { is_mut: bool, pat: Pat, value: Expr },
+    Let {
+        is_mut: bool,
+        pat: Pat,
+        value: Expr,
+    },
     Assign {
         target: Expr,
         op: ast::AssignmentOp,
         value: Expr,
     },
-    Expr { expr: Expr },
+    Expr {
+        expr: Expr,
+    },
 }
 
 pub struct Arm {
@@ -182,20 +364,47 @@ pub struct ArrayPatRest {
 }
 
 pub enum Pat {
-    Var { name: string, ty: Type },
-    Prim { value: Primitive, ty: Type },
-    Constr { constructor: Constructor, args: Vec[Pat], ty: Type },
-    Tuple { items: Vec[Pat], ty: Type },
+    Var {
+        name: string,
+        ty: Type,
+    },
+    Prim {
+        value: Primitive,
+        ty: Type,
+    },
+    Constr {
+        constructor: Constructor,
+        args: Vec[Pat],
+        ty: Type,
+    },
+    Tuple {
+        items: Vec[Pat],
+        ty: Type,
+    },
     Array {
         prefix: Vec[Pat],
         rest: Option[ArrayPatRest],
         suffix: Vec[Pat],
         ty: Type,
     },
-    Alias { name: string, pat: Pat, ty: Type },
-    Or { pats: Vec[Pat], ty: Type },
-    Range { start: Primitive, end: Primitive, inclusive: bool, ty: Type },
-    Wild { ty: Type },
+    Alias {
+        name: string,
+        pat: Pat,
+        ty: Type,
+    },
+    Or {
+        pats: Vec[Pat],
+        ty: Type,
+    },
+    Range {
+        start: Primitive,
+        end: Primitive,
+        inclusive: bool,
+        ty: Type,
+    },
+    Wild {
+        ty: Type,
+    },
 }
 
 pub struct Function {
@@ -288,43 +497,27 @@ pub fn diagnostic_message(value: Diagnostic) -> string {
 
 pub fn expr_type(value: Expr) -> Type {
     match value {
-        Var { ty, .. }
-        | Callable { ty, .. }
-        | Prim { ty, .. }
-        | Constr { ty, .. }
-        | Tuple { ty, .. }
-        | Array { ty, .. }
-        | Closure { ty, .. }
-        | Block { ty, .. }
-        | Match { ty, .. }
-        | If { ty, .. }
-        | While { ty, .. }
-        | For { ty, .. }
-        | Break { ty }
-        | Continue { ty }
-        | Return { ty, .. }
-        | Go { ty, .. }
-        | Call { ty, .. }
-        | Unary { ty, .. }
-        | Cast { ty, .. }
-        | Proj { ty, .. }
-        | Field { ty, .. }
-        | Index { ty, .. }
-        | Binary { ty, .. }
-        | ToDyn { ty, .. } => ty,
+        Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
+            ty,
+            ..,
+        } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
+            ty,
+            ..,
+        } | While { ty, .. } | For { ty, .. } | Break { ty } | Continue { ty } | Return { ty, .. } | Go {
+            ty,
+            ..,
+        } | Call { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Proj { ty, .. } | Field {
+            ty,
+            ..,
+        } | Index { ty, .. } | Binary { ty, .. } | ToDyn { ty, .. } => ty,
     }
 }
 
 pub fn pat_type(value: Pat) -> Type {
     match value {
-        Var { ty, .. }
-        | Prim { ty, .. }
-        | Constr { ty, .. }
-        | Tuple { ty, .. }
-        | Array { ty, .. }
-        | Alias { ty, .. }
-        | Or { ty, .. }
-        | Range { ty, .. }
-        | Wild { ty } => ty,
+        Var { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple { ty, .. } | Array { ty, .. } | Alias {
+            ty,
+            ..,
+        } | Or { ty, .. } | Range { ty, .. } | Wild { ty } => ty,
     }
 }

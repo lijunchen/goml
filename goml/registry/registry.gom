@@ -68,14 +68,11 @@ pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
 fn version_less(left: SemVersion, right: SemVersion) -> bool {
     left.major < right.major
         || (left.major == right.major
-            && (left.minor < right.minor
-                || (left.minor == right.minor && left.patch < right.patch)))
+            && (left.minor < right.minor || (left.minor == right.minor && left.patch < right.patch)))
 }
 
 fn version_equal(left: SemVersion, right: SemVersion) -> bool {
-    left.major == right.major
-        && left.minor == right.minor
-        && left.patch == right.patch
+    left.major == right.major && left.minor == right.minor && left.patch == right.patch
 }
 
 fn quoted_values(value: string) -> Vec[string] {
@@ -112,11 +109,7 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
                 return Result::Err("invalid registry module table " + line)
             } else {
                 current.set(Option::Some(values[0]));
-                entries.push(RegistryEntry {
-                    name: values[0],
-                    latest: "",
-                    versions: Vec::new(),
-                })
+                entries.push(RegistryEntry { name: values[0], latest: "", versions: Vec::new() })
             }
         } else {
             match current.get() {
@@ -127,20 +120,26 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
                     } else {
                         let index = entries.len() - 1;
                         let entry = entries[index];
-                        entries.set(index, RegistryEntry {
-                            name: entry.name,
-                            latest: values[0],
-                            versions: entry.versions,
-                        })
+                        entries.set(
+                            index,
+                            RegistryEntry {
+                                name: entry.name,
+                                latest: values[0],
+                                versions: entry.versions,
+                            },
+                        )
                     }
                 } else if util::starts_with(line, "versions") {
                     let index = entries.len() - 1;
                     let entry = entries[index];
-                    entries.set(index, RegistryEntry {
-                        name: entry.name,
-                        latest: entry.latest,
-                        versions: quoted_values(line),
-                    })
+                    entries.set(
+                        index,
+                        RegistryEntry {
+                            name: entry.name,
+                            latest: entry.latest,
+                            versions: quoted_values(line),
+                        },
+                    )
                 } else {
                     ()
                 },
@@ -158,21 +157,15 @@ fn valid_identifier(value: string) -> bool {
         ()
     };
     let first = value.byte_get(0);
-    if !((first >= 65 && first <= 90)
-        || (first >= 97 && first <= 122)
-        || first == 95)
-    {
+    if !((first >= 65 && first <= 90) || (first >= 97 && first <= 122) || first == 95) {
         return false
     } else {
         ()
     };
     for index in range(1, value.byte_len()) {
         let byte = value.byte_get(index);
-        if (byte >= 48 && byte <= 57)
-            || (byte >= 65 && byte <= 90)
-            || (byte >= 97 && byte <= 122)
-            || byte == 95
-        {
+        if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
+            || byte == 95 {
             ()
         } else {
             return false
@@ -183,28 +176,16 @@ fn valid_identifier(value: string) -> bool {
 
 pub fn validate_coordinate(value: string) -> Result[unit, string] {
     let parts = util::split(value, "::");
-    if parts.len() != 2
-        || !valid_identifier(parts[0])
-        || !valid_identifier(parts[1])
-    {
-        Result::Err(
-            "invalid module coordinate `"
-                + value
-                + "`: expected owner::module",
-        )
+    if parts.len() != 2 || !valid_identifier(parts[0]) || !valid_identifier(parts[1]) {
+        Result::Err("invalid module coordinate `" + value + "`: expected owner::module")
     } else if parts[0] == "std" {
-        Result::Err(
-            "invalid module coordinate `" + value + "`: owner std is reserved",
-        )
+        Result::Err("invalid module coordinate `" + value + "`: owner std is reserved")
     } else {
         Result::Ok(())
     }
 }
 
-fn find_entry(
-    entries: Vec[RegistryEntry],
-    name: string,
-) -> Option[RegistryEntry] {
+fn find_entry(entries: Vec[RegistryEntry], name: string) -> Option[RegistryEntry] {
     for entry in entries {
         if entry.name == name {
             return Option::Some(entry)
@@ -215,24 +196,14 @@ fn find_entry(
     Option::None
 }
 
-fn module_directory_unchecked(
-    root: string,
-    name: string,
-    version: string,
-) -> string {
+fn module_directory_unchecked(root: string, name: string, version: string) -> string {
     let parts = util::split(name, "::");
     path::join(path::join(path::join(root, parts[0]), parts[1]), version)
 }
 
-pub fn module_directory(
-    root: string,
-    name: string,
-    version: string,
-) -> Result[string, string] {
+pub fn module_directory(root: string, name: string, version: string) -> Result[string, string] {
     match validate_coordinate(name) {
-        Ok(()) => Result::Ok(
-            module_directory_unchecked(root, name, version),
-        ),
+        Ok(()) => Result::Ok(module_directory_unchecked(root, name, version)),
         Err(message) => Result::Err(message),
     }
 }
@@ -262,16 +233,10 @@ pub fn validate(root: string) -> Result[unit, string] {
             } else {
                 ()
             };
-            let directory = module_directory_unchecked(
-                root,
-                entry.name,
-                version,
-            );
+            let directory = module_directory_unchecked(root, entry.name, version);
             if !fs::is_dir(directory) {
                 return Result::Err(
-                    "registry index references missing module directory: "
-                        + entry.name
-                        + "@"
+                    "registry index references missing module directory: " + entry.name + "@"
                         + version,
                 )
             } else {
@@ -280,10 +245,7 @@ pub fn validate(root: string) -> Result[unit, string] {
         };
         if latest_matches.len() == 0 {
             return Result::Err(
-                "registry index latest version "
-                    + entry.latest
-                    + " for "
-                    + entry.name
+                "registry index latest version " + entry.latest + " for " + entry.name
                     + " is not listed in versions",
             )
         } else {
@@ -307,17 +269,11 @@ pub fn latest_version(root: string, name: string) -> Result[string, string] {
             Ok(_) => Result::Ok(entry.latest),
             Err(message) => Result::Err(message),
         },
-        None => Result::Err(
-            "module " + name + " not found in registry index",
-        ),
+        None => Result::Err("module " + name + " not found in registry index"),
     }
 }
 
-pub fn select_version(
-    root: string,
-    name: string,
-    minimum: string,
-) -> Result[string, string] {
+pub fn select_version(root: string, name: string, minimum: string) -> Result[string, string] {
     match validate_coordinate(name) {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
@@ -332,9 +288,7 @@ pub fn select_version(
     };
     let entry = match find_entry(entries, name) {
         Some(value) => value,
-        None => return Result::Err(
-            "module " + name + " not found in registry index",
-        ),
+        None => return Result::Err("module " + name + " not found in registry index"),
     };
     let selected: Ref[Option[string]] = Ref::new(Option::None);
     let selected_value: Ref[Option[SemVersion]] = Ref::new(Option::None);
@@ -347,8 +301,7 @@ pub fn select_version(
             && match selected_value.get() {
                 Some(current) => version_less(parsed, current),
                 None => true,
-            }
-        {
+            } {
             selected.set(Option::Some(version));
             selected_value.set(Option::Some(parsed))
         } else {
@@ -357,12 +310,7 @@ pub fn select_version(
     };
     match selected.get() {
         Some(value) => Result::Ok(value),
-        None => Result::Err(
-            "registry has no version for "
-                + name
-                + " satisfying >= "
-                + minimum,
-        ),
+        None => Result::Err("registry has no version for " + name + " satisfying >= " + minimum),
     }
 }
 
@@ -389,19 +337,14 @@ pub fn cached_root() -> Result[string, string] {
                 } else {
                     return Result::Err("failed to determine home directory")
                 },
-                None => return Result::Err(
-                    "failed to determine home directory",
-                ),
+                None => return Result::Err("failed to determine home directory"),
             },
         },
     };
     Result::Ok(path::join(path::join(home, "cache"), "registry"))
 }
 
-fn selected_index(
-    values: Vec[ResolvedModule],
-    name: string,
-) -> Option[int] {
+fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
     for index in range(0, values.len()) {
         if values[index].name == name {
             return Option::Some(index)
@@ -412,14 +355,8 @@ fn selected_index(
     Option::None
 }
 
-pub fn resolve_at(
-    module_root: string,
-    root: string,
-) -> Result[Vec[ResolvedModule], string] {
-    let root_manifest = match manifest::load(path::join(
-        module_root,
-        "goml.toml",
-    )) {
+pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModule], string] {
+    let root_manifest = match manifest::load(path::join(module_root, "goml.toml")) {
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
@@ -429,11 +366,7 @@ pub fn resolve_at(
     while cursor.get() < queue.len() {
         let requirement = queue[cursor.get()];
         cursor.set(cursor.get() + 1);
-        let version = match select_version(
-            root,
-            requirement.name,
-            requirement.version,
-        ) {
+        let version = match select_version(root, requirement.name, requirement.version) {
             Ok(value) => value,
             Err(message) => return Result::Err(message),
         };
@@ -443,9 +376,7 @@ pub fn resolve_at(
         };
         let update = match selected_index(selected, requirement.name) {
             Some(index) => {
-                let current = match parse_sem_version(
-                    selected[index].version,
-                ) {
+                let current = match parse_sem_version(selected[index].version) {
                     Ok(value) => value,
                     Err(message) => return Result::Err(message),
                 };
@@ -454,23 +385,14 @@ pub fn resolve_at(
             None => true,
         };
         if update {
-            let directory = module_directory_unchecked(
-                root,
-                requirement.name,
-                version,
-            );
-            let module_manifest = match manifest::load(path::join(
-                directory,
-                "goml.toml",
-            )) {
+            let directory = module_directory_unchecked(root, requirement.name, version);
+            let module_manifest = match manifest::load(path::join(directory, "goml.toml")) {
                 Ok(value) => value,
                 Err(message) => return Result::Err(message),
             };
             if module_manifest.module_path != requirement.name {
                 return Result::Err(
-                    "registry module "
-                        + requirement.name
-                        + " declares module path "
+                    "registry module " + requirement.name + " declares module path "
                         + module_manifest.module_path,
                 )
             } else {
@@ -502,35 +424,23 @@ pub fn resolve(module_root: string) -> Result[Vec[ResolvedModule], string] {
         Err(message) => return Result::Err(message),
     };
     if !fs::is_dir(root) {
-        return Result::Err(
-            "registry cache not found at " + root + "; run `goml update` first",
-        )
+        return Result::Err("registry cache not found at " + root + "; run `goml update` first")
     } else {
         ()
     };
     resolve_at(module_root, root)
 }
 
-pub fn module_matches_package(
-    module_name: string,
-    package_name: string,
-) -> bool {
-    package_name == module_name
-        || util::starts_with(package_name, module_name + "::")
+pub fn module_matches_package(module_name: string, package_name: string) -> bool {
+    package_name == module_name || util::starts_with(package_name, module_name + "::")
 }
 
-pub fn package_directory(
-    module: ResolvedModule,
-    package_name: string,
-) -> Option[string] {
+pub fn package_directory(module: ResolvedModule, package_name: string) -> Option[string] {
     if package_name == module.name {
         Option::Some(module.root)
     } else if module_matches_package(module.name, package_name) {
         let result = Ref::new(module.root);
-        let suffix = package_name.byte_slice(
-            module.name.byte_len() + 2,
-            package_name.byte_len(),
-        );
+        let suffix = package_name.byte_slice(module.name.byte_len() + 2, package_name.byte_len());
         for segment in util::split(suffix, "::") {
             result.set(path::join(result.get(), segment))
         };
@@ -543,13 +453,7 @@ pub fn package_directory(
 pub fn artifact_prefix(module: ResolvedModule) -> string {
     let parts = util::split(module.name, "::");
     path::join(
-        path::join(
-            path::join(
-                path::join("deps", parts[0]),
-                parts[1],
-            ),
-            module.version,
-        ),
+        path::join(path::join(path::join("deps", parts[0]), parts[1]), module.version),
         "pkg",
     )
 }

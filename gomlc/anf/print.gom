@@ -40,11 +40,7 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
             builder.write_string("::");
             builder.write_string(name)
         },
-        DynTraitMethod {
-            trait_name: owner,
-            dispatch_name: dispatch,
-            method_name: name,
-        } => {
+        DynTraitMethod { trait_name: owner, dispatch_name: dispatch, method_name: name } => {
             builder.write_string("dyn ");
             builder.write_string(owner);
             builder.write_string(" via ");
@@ -83,11 +79,7 @@ fn write_imms(builder: text::StringBuilder, values: Vec[Imm]) -> unit {
     }
 }
 
-fn write_constructor(
-    builder: text::StringBuilder,
-    constructor: tast::Constructor,
-    args: Vec[Imm],
-) -> unit {
+fn write_constructor(builder: text::StringBuilder, constructor: tast::Constructor, args: Vec[Imm]) -> unit {
     builder.write_string(constructor.name);
     if constructor.is_struct {
         if constructor.fields.len() == 0 && args.len() == 0 {
@@ -220,10 +212,7 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
     }
 }
 
-fn write_params(
-    builder: text::StringBuilder,
-    values: Vec[(string, tast::Type)],
-) -> unit {
+fn write_params(builder: text::StringBuilder, values: Vec[(string, tast::Type)]) -> unit {
     for index in range(0, values.len()) {
         if index > 0 {
             builder.write_string(", ")
@@ -237,11 +226,7 @@ fn write_params(
     }
 }
 
-fn write_join(
-    builder: text::StringBuilder,
-    value: JoinBind,
-    indent: int,
-) -> unit {
+fn write_join(builder: text::StringBuilder, value: JoinBind, indent: int) -> unit {
     builder.write_string("join ");
     builder.write_string(value.name);
     builder.write_char('(');

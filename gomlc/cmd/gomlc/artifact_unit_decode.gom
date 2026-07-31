@@ -2,10 +2,10 @@ package main;
 
 use gomlc::vecs;
 
-fn artifact_decode_optional_string(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[Option[string], string] {
+fn artifact_decode_optional_string(value: ArtifactValue, expected: string) -> Result[
+    Option[string],
+    string,
+] {
     match value {
         Null => Result::Ok(Option::None),
         other => match artifact_json_string_value(other, expected) {
@@ -15,9 +15,7 @@ fn artifact_decode_optional_string(
     }
 }
 
-fn artifact_decode_test_descriptor(
-    value: ArtifactValue,
-) -> Result[TestDescriptor, string] {
+fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[TestDescriptor, string] {
     let object = match artifact_json_object(value, "test descriptor") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -64,22 +62,22 @@ fn artifact_decode_test_descriptor(
         },
         Err(error) => return Result::Err(error),
     };
-    Result::Ok(TestDescriptor {
-        id,
-        package_name,
-        symbol,
-        display_name,
-        source_path,
-        start,
-        end,
-        ignored,
-        ignore_reason,
-    })
+    Result::Ok(
+        TestDescriptor {
+            id,
+            package_name,
+            symbol,
+            display_name,
+            source_path,
+            start,
+            end,
+            ignored,
+            ignore_reason,
+        },
+    )
 }
 
-fn artifact_decode_tests(
-    value: ArtifactValue,
-) -> Result[Vec[TestDescriptor], string] {
+fn artifact_decode_tests(value: ArtifactValue) -> Result[Vec[TestDescriptor], string] {
     let values = match artifact_json_array(value, "test descriptors") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -94,21 +92,15 @@ fn artifact_decode_tests(
     Result::Ok(result)
 }
 
-fn artifact_test_descriptors_valid(
-    package_name: string,
-    values: Vec[TestDescriptor],
-) -> bool {
+fn artifact_test_descriptors_valid(package_name: string, values: Vec[TestDescriptor]) -> bool {
     let ids = Vec::new();
     for value in values {
-        if value.package_name != package_name
-            || value.id == ""
-            || value.symbol == ""
+        if value.package_name != package_name || value.id == "" || value.symbol == ""
             || value.display_name == ""
             || value.source_path == ""
             || value.start > value.end
             || (!value.ignored && option_string_present(value.ignore_reason))
-            || vecs::contains(ids, value.id)
-        {
+            || vecs::contains(ids, value.id) {
             return false
         } else {
             ids.push(value.id)
@@ -117,9 +109,7 @@ fn artifact_test_descriptors_valid(
     true
 }
 
-fn artifact_decode_core_value(
-    value: ArtifactValue,
-) -> Result[ArtifactCoreUnit, string] {
+fn artifact_decode_core_value(value: ArtifactValue) -> Result[ArtifactCoreUnit, string] {
     let object = match artifact_json_object(value, "Core unit") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -128,17 +118,11 @@ fn artifact_decode_core_value(
         Ok(value) => value,
         Err(error) => return Result::Err(error),
     };
-    let declared_name = match artifact_json_field_string(
-        object,
-        "declared_name",
-    ) {
+    let declared_name = match artifact_json_field_string(object, "declared_name") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
     };
-    let interface_hash = match artifact_json_field_string(
-        object,
-        "interface_hash",
-    ) {
+    let interface_hash = match artifact_json_field_string(object, "interface_hash") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
     };
@@ -182,15 +166,17 @@ fn artifact_decode_core_value(
     if !artifact_test_descriptors_valid(package_name, tests) {
         Result::Err(artifact_decode_error("valid test descriptors"))
     } else {
-        Result::Ok(ArtifactCoreUnit {
-            package_name,
-            declared_name,
-            interface_hash,
-            exports,
-            core_ir,
-            deps,
-            sources,
-            tests,
-        })
+        Result::Ok(
+            ArtifactCoreUnit {
+                package_name,
+                declared_name,
+                interface_hash,
+                exports,
+                core_ir,
+                deps,
+                sources,
+                tests,
+            },
+        )
     }
 }

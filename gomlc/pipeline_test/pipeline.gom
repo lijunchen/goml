@@ -25,10 +25,7 @@ pub fn repo_root() -> string {
 }
 
 pub fn fixture_dir(name: string) -> string {
-    path::join(
-        path::join(repo_root(), "gomlc/testdata/pipeline"),
-        name,
-    )
+    path::join(path::join(repo_root(), "gomlc/testdata/pipeline"), name)
 }
 
 pub fn read_snapshot(base: string, extension: string) -> string {
@@ -51,9 +48,7 @@ fn assert_snapshot(base: string, extension: string, actual: string) -> unit {
     if update_expected() {
         match fs::write_file(file, actual) {
             Ok(()) => (),
-            Err(message) => testing::fail(
-                "failed to write " + file + ": " + message,
-            ),
+            Err(message) => testing::fail("failed to write " + file + ": " + message),
         }
     } else {
         testing::assert_eq(actual, read_snapshot(base, extension))
@@ -77,20 +72,17 @@ fn pipeline_case_insert_index(values: Vec[string], name: string) -> int {
 
 fn tmp_dir() -> string {
     match env::var("TMPDIR") {
-        Some(value) => if value == "" { "/tmp" } else { value },
+        Some(value) => if value == "" {
+            "/tmp"
+        } else {
+            value
+        },
         None => "/tmp",
     }
 }
 
-fn execute_go_and_read_stdout(
-    go_source: string,
-    expected: string,
-    name: string,
-) -> string {
-    let work_dir = path::join(
-        path::join(tmp_dir(), "gomlc-pipeline-test"),
-        name,
-    );
+fn execute_go_and_read_stdout(go_source: string, expected: string, name: string) -> string {
+    let work_dir = path::join(path::join(tmp_dir(), "gomlc-pipeline-test"), name);
     match fs::create_dir_all(work_dir) {
         Ok(()) => (),
         Err(message) => {
@@ -122,11 +114,7 @@ fn execute_go_and_read_stdout(
     let interpreted = if source_current && fs::is_file(executable) {
         Option::None
     } else {
-        match process::Command::new("yaegi")
-            .arg("main.go")
-            .current_dir(work_dir)
-            .output()
-        {
+        match process::Command::new("yaegi").arg("main.go").current_dir(work_dir).output() {
             Ok(output) => {
                 if process::ExitStatus::success(process::Output::status(output)) {
                     match process::Output::stdout(output).to_string() {
@@ -151,16 +139,9 @@ fn execute_go_and_read_stdout(
     if source_current && fs::is_file(executable) {
         ()
     } else {
-        match process::Command::new("go")
-            .arg("build")
-            .arg("-o")
-            .arg("main")
-            .arg("main.go")
-            .current_dir(work_dir)
-            .env("GOWORK", "off")
-            .env("GO111MODULE", "off")
-            .output()
-        {
+        match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
+            work_dir,
+        ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
             Ok(output) => {
                 if process::ExitStatus::success(process::Output::status(output)) {
                     ()
@@ -183,10 +164,7 @@ fn execute_go_and_read_stdout(
             },
         }
     };
-    match process::Command::new(executable)
-        .current_dir(work_dir)
-        .output()
-    {
+    match process::Command::new(executable).current_dir(work_dir).output() {
         Ok(output) => {
             if process::ExitStatus::success(process::Output::status(output)) {
                 match process::Output::stdout(output).to_string() {
@@ -203,9 +181,7 @@ fn execute_go_and_read_stdout(
                         ""
                     },
                     Err(_) => {
-                        testing::fail(
-                            "generated program failed (non-UTF-8 stderr)",
-                        );
+                        testing::fail("generated program failed (non-UTF-8 stderr)");
                         ""
                     },
                 }
@@ -220,16 +196,11 @@ fn execute_go_and_read_stdout(
 
 pub fn all_pipeline_cases() -> Vec[string] {
     let result = Vec::new();
-    let root = path::join(
-        repo_root(),
-        "gomlc/testdata/pipeline",
-    );
+    let root = path::join(repo_root(), "gomlc/testdata/pipeline");
     match fs::read_dir(root) {
         Ok(names) => for name in names {
             let directory = path::join(root, name);
-            if fs::is_dir(directory)
-                && fs::is_file(path::join(directory, "main.gom"))
-            {
+            if fs::is_dir(directory) && fs::is_file(path::join(directory, "main.gom")) {
                 let index = pipeline_case_insert_index(result, name);
                 if index == result.len() {
                     result.push(name)
@@ -258,12 +229,9 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
             ""
         },
     };
-
     let parsed = parser::parse(source);
     assert_snapshot(base, "cst", cst::debug_tree(parsed));
-
     let compilation = compiler_driver::compile_source(source_path, source);
-
     assert_snapshot(base, "ast", ast::pretty(compilation.ast_value));
     assert_snapshot(base, "hir", hir::encode(compilation.hir_value));
     assert_snapshot(base, "tast", tast::encode(compilation.tast_value));
@@ -272,7 +240,6 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     assert_snapshot(base, "lift", lift::encode(compilation.lift_value));
     assert_snapshot(base, "anf", anf::encode(compilation.anf_value));
     assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
-
     if can_run_go && (has_out_snapshot(base) || (update_expected() && new_fixture)) {
         let go_source = go_backend::encode(compilation.go_value);
         assert_snapshot(

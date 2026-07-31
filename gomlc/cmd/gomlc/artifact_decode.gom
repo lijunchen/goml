@@ -8,70 +8,55 @@ struct ArtifactDecodeContext {
 }
 
 fn new_artifact_decode_context() -> ArtifactDecodeContext {
-    ArtifactDecodeContext {
-        enum_names: Vec::new(),
-        struct_names: Vec::new(),
-    }
+    ArtifactDecodeContext { enum_names: Vec::new(), struct_names: Vec::new() }
 }
 
 fn artifact_decode_error(expected: string) -> string {
     "invalid compiler artifact: expected " + expected
 }
 
-fn artifact_json_object(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[Vec[(string, ArtifactValue)], string] {
+fn artifact_json_object(value: ArtifactValue, expected: string) -> Result[
+    Vec[(string, ArtifactValue)],
+    string,
+] {
     match value {
         Object(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_array(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[Vec[ArtifactValue], string] {
+fn artifact_json_array(value: ArtifactValue, expected: string) -> Result[Vec[ArtifactValue], string] {
     match value {
         Array(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_string_value(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[string, string] {
+fn artifact_json_string_value(value: ArtifactValue, expected: string) -> Result[string, string] {
     match value {
         String(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_number_value(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[string, string] {
+fn artifact_json_number_value(value: ArtifactValue, expected: string) -> Result[string, string] {
     match value {
         Number(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_bool_value(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[bool, string] {
+fn artifact_json_bool_value(value: ArtifactValue, expected: string) -> Result[bool, string] {
     match value {
         Bool(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_required_field(
-    values: Vec[(string, ArtifactValue)],
-    name: string,
-) -> Result[ArtifactValue, string] {
+fn artifact_json_required_field(values: Vec[(string, ArtifactValue)], name: string) -> Result[
+    ArtifactValue,
+    string,
+] {
     let matches: Vec[ArtifactValue] = Vec::new();
     for value in values {
         if value.0 == name {
@@ -87,10 +72,10 @@ fn artifact_json_required_field(
     }
 }
 
-fn artifact_json_optional_field(
-    values: Vec[(string, ArtifactValue)],
-    name: string,
-) -> Result[Option[ArtifactValue], string] {
+fn artifact_json_optional_field(values: Vec[(string, ArtifactValue)], name: string) -> Result[
+    Option[ArtifactValue],
+    string,
+] {
     let matches: Vec[ArtifactValue] = Vec::new();
     for value in values {
         if value.0 == name {
@@ -108,30 +93,30 @@ fn artifact_json_optional_field(
     }
 }
 
-fn artifact_json_field_string(
-    values: Vec[(string, ArtifactValue)],
-    name: string,
-) -> Result[string, string] {
+fn artifact_json_field_string(values: Vec[(string, ArtifactValue)], name: string) -> Result[
+    string,
+    string,
+] {
     match artifact_json_required_field(values, name) {
         Ok(value) => artifact_json_string_value(value, "string field " + name),
         Err(error) => Result::Err(error),
     }
 }
 
-fn artifact_json_field_array(
-    values: Vec[(string, ArtifactValue)],
-    name: string,
-) -> Result[Vec[ArtifactValue], string] {
+fn artifact_json_field_array(values: Vec[(string, ArtifactValue)], name: string) -> Result[
+    Vec[ArtifactValue],
+    string,
+] {
     match artifact_json_required_field(values, name) {
         Ok(value) => artifact_json_array(value, "array field " + name),
         Err(error) => Result::Err(error),
     }
 }
 
-fn artifact_json_field_object(
-    values: Vec[(string, ArtifactValue)],
-    name: string,
-) -> Result[Vec[(string, ArtifactValue)], string] {
+fn artifact_json_field_object(values: Vec[(string, ArtifactValue)], name: string) -> Result[
+    Vec[(string, ArtifactValue)],
+    string,
+] {
     match artifact_json_required_field(values, name) {
         Ok(value) => artifact_json_object(value, "object field " + name),
         Err(error) => Result::Err(error),
@@ -160,10 +145,10 @@ fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
     }
 }
 
-fn artifact_decode_string_array(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[Vec[string], string] {
+fn artifact_decode_string_array(value: ArtifactValue, expected: string) -> Result[
+    Vec[string],
+    string,
+] {
     let values = match artifact_json_array(value, expected) {
         Ok(values) => values,
         Err(error) => return Result::Err(error),
@@ -197,10 +182,10 @@ fn artifact_decode_type_array(
     Result::Ok(result)
 }
 
-fn artifact_decode_trait_ref(
-    context: ArtifactDecodeContext,
-    value: ArtifactValue,
-) -> Result[tast::TraitRef, string] {
+fn artifact_decode_trait_ref(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
+    tast::TraitRef,
+    string,
+] {
     let object = match artifact_json_object(value, "trait reference") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -219,10 +204,10 @@ fn artifact_decode_trait_ref(
     Result::Ok(tast::TraitRef { name, args })
 }
 
-fn artifact_decode_optional_trait_ref(
-    context: ArtifactDecodeContext,
-    value: ArtifactValue,
-) -> Result[Option[tast::TraitRef], string] {
+fn artifact_decode_optional_trait_ref(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
+    Option[tast::TraitRef],
+    string,
+] {
     match value {
         Null => Result::Ok(Option::None),
         other => match artifact_decode_trait_ref(context, other) {
@@ -269,10 +254,10 @@ fn artifact_decode_element_type(
     }
 }
 
-fn artifact_decode_type(
-    context: ArtifactDecodeContext,
-    value: ArtifactValue,
-) -> Result[tast::Type, string] {
+fn artifact_decode_type(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
+    tast::Type,
+    string,
+] {
     match value {
         String(name) => match name {
             "TUnit" => Result::Ok(tast::Type::Unit),
@@ -330,11 +315,7 @@ fn artifact_decode_type(
                     Err(error) => return Result::Err(error),
                 };
                 match artifact_json_required_field(object, "typs") {
-                    Ok(value) => match artifact_decode_type_array(
-                        context,
-                        value,
-                        "tuple elements",
-                    ) {
+                    Ok(value) => match artifact_decode_type_array(context, value, "tuple elements") {
                         Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
                         Err(error) => Result::Err(error),
                     },
@@ -360,11 +341,7 @@ fn artifact_decode_type(
                     Err(error) => return Result::Err(error),
                 };
                 match artifact_json_field_string(object, "name") {
-                    Ok(name) => Result::Ok(tast::Type::Projection {
-                        for_ty,
-                        name,
-                        trait_ref,
-                    }),
+                    Ok(name) => Result::Ok(tast::Type::Projection { for_ty, name, trait_ref }),
                     Err(error) => Result::Err(error),
                 }
             } else if kind == "TApp" {
@@ -380,11 +357,7 @@ fn artifact_decode_type(
                     Err(error) => return Result::Err(error),
                 };
                 match artifact_json_required_field(object, "args") {
-                    Ok(value) => match artifact_decode_type_array(
-                        context,
-                        value,
-                        "type arguments",
-                    ) {
+                    Ok(value) => match artifact_decode_type_array(context, value, "type arguments") {
                         Ok(value) => Result::Ok(tast::Type::App { ty: base, args: value }),
                         Err(error) => Result::Err(error),
                     },
@@ -411,10 +384,7 @@ fn artifact_decode_type(
                 };
                 match artifact_json_required_field(object, "elem") {
                     Ok(value) => match artifact_decode_type(context, value) {
-                        Ok(value) => Result::Ok(tast::Type::Array {
-                            len: length,
-                            elem: value,
-                        }),
+                        Ok(value) => Result::Ok(tast::Type::Array { len: length, elem: value }),
                         Err(error) => Result::Err(error),
                     },
                     Err(error) => Result::Err(error),
@@ -489,10 +459,10 @@ fn artifact_decode_type(
     }
 }
 
-fn artifact_decode_predicate(
-    context: ArtifactDecodeContext,
-    value: ArtifactValue,
-) -> Result[tast::TypePredicate, string] {
+fn artifact_decode_predicate(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
+    tast::TypePredicate,
+    string,
+] {
     let fields = match artifact_json_object(value, "type predicate") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -513,10 +483,7 @@ fn artifact_decode_predicate(
         };
         match artifact_json_required_field(payload, "trait_ref") {
             Ok(value) => match artifact_decode_trait_ref(context, value) {
-                Ok(value) => Result::Ok(tast::TypePredicate::Trait {
-                    for_ty,
-                    trait_ref: value,
-                }),
+                Ok(value) => Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref: value }),
                 Err(error) => Result::Err(error),
             },
             Err(error) => Result::Err(error),
@@ -535,10 +502,7 @@ fn artifact_decode_predicate(
         };
         match artifact_json_required_field(payload, "rhs") {
             Ok(value) => match artifact_decode_type(context, value) {
-                Ok(value) => Result::Ok(tast::TypePredicate::Equality {
-                    lhs: left,
-                    rhs: value,
-                }),
+                Ok(value) => Result::Ok(tast::TypePredicate::Equality { lhs: left, rhs: value }),
                 Err(error) => Result::Err(error),
             },
             Err(error) => Result::Err(error),

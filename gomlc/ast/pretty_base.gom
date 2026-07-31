@@ -27,11 +27,7 @@ fn pretty_write_path(builder: text::StringBuilder, value: Path) -> unit {
     }
 }
 
-fn pretty_write_strings(
-    builder: text::StringBuilder,
-    values: Vec[string],
-    separator: string,
-) -> unit {
+fn pretty_write_strings(builder: text::StringBuilder, values: Vec[string], separator: string) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -44,11 +40,7 @@ fn pretty_write_strings(
     }
 }
 
-fn pretty_write_types(
-    builder: text::StringBuilder,
-    values: Vec[TypeExpr],
-    separator: string,
-) -> unit {
+fn pretty_write_types(builder: text::StringBuilder, values: Vec[TypeExpr], separator: string) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -126,11 +118,7 @@ fn pretty_write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit
     }
 }
 
-fn pretty_write_trait_refs(
-    builder: text::StringBuilder,
-    values: Vec[TraitRef],
-    separator: string,
-) -> unit {
+fn pretty_write_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef], separator: string) -> unit {
     let index = Ref::new(0);
     for value in values {
         if index.get() > 0 {
@@ -143,10 +131,7 @@ fn pretty_write_trait_refs(
     }
 }
 
-fn pretty_find_bounds(
-    values: Vec[(string, Vec[TraitRef])],
-    name: string,
-) -> Option[Vec[TraitRef]] {
+fn pretty_find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Option[Vec[TraitRef]] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
         let value = values[index.get()];
@@ -201,10 +186,7 @@ fn pretty_write_bounded_generics(
     }
 }
 
-fn pretty_write_predicates(
-    builder: text::StringBuilder,
-    values: Vec[Predicate],
-) -> unit {
+fn pretty_write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
     if values.len() > 0 {
         builder.write_string(" where ");
         let index = Ref::new(0);
@@ -425,17 +407,10 @@ fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: i
     builder.write_char('}')
 }
 
-fn pretty_write_trait_method(
-    builder: text::StringBuilder,
-    value: TraitMethodSignature,
-) -> unit {
+fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
-    pretty_write_bounded_generics(
-        builder,
-        value.generics,
-        value.generic_bounds,
-    );
+    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
     for index in range(0, value.params.len()) {
         if index > 0 {
@@ -498,11 +473,7 @@ fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: 
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("fn ");
     builder.write_string(value.name);
-    pretty_write_bounded_generics(
-        builder,
-        value.generics,
-        value.generic_bounds,
-    );
+    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
     let index = Ref::new(0);
     for param in value.params {
@@ -534,11 +505,7 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
     pretty_write_visibility(builder, value.visibility);
     builder.write_string("extern fn ");
     builder.write_string(value.name);
-    pretty_write_bounded_generics(
-        builder,
-        value.generics,
-        value.generic_bounds,
-    );
+    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
     let index = Ref::new(0);
     for param in value.params {

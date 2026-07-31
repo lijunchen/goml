@@ -14,7 +14,13 @@ fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> unit {
 }
 
 fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
-    let count = Ref::new(if cst::node_kind_equal(cst::node_kind(node), kind) { 1 } else { 0 });
+    let count = Ref::new(
+        if cst::node_kind_equal(cst::node_kind(node), kind) {
+            1
+        } else {
+            0
+        },
+    );
     for child in cst::node_children(node) {
         match child {
             Node(inner) => count.set(count.get() + count_nodes(inner, kind)),
@@ -30,8 +36,7 @@ fn has_prefix_with_direct_child(node: cst::CstNode, kind: cst::NodeKind) -> bool
         match child {
             Node(inner) => {
                 if cst::node_kind_equal(cst::node_kind(node), cst::NodeKind::EXPR_PREFIX)
-                    && cst::node_kind_equal(cst::node_kind(inner), kind)
-                {
+                    && cst::node_kind_equal(cst::node_kind(inner), kind) {
                     found.set(true)
                 } else if has_prefix_with_direct_child(inner, kind) {
                     found.set(true)

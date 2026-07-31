@@ -3,9 +3,7 @@ package formatter;
 use gomlc::cst;
 use gomlc::lexer;
 
-fn direct_delimiter_tokens(
-    node: LocatedNode,
-) -> Option[(LocatedToken, LocatedToken)] {
+fn direct_delimiter_tokens(node: LocatedNode) -> Option[(LocatedToken, LocatedToken)] {
     let first: Ref[Option[LocatedToken]] = Ref::new(Option::None);
     let last: Ref[Option[LocatedToken]] = Ref::new(Option::None);
     let cursor = child_cursor(node);
@@ -13,13 +11,7 @@ fn direct_delimiter_tokens(
         match cursor.next() {
             Some(Token(token)) => {
                 let delimiter = match token.token.kind {
-                    LParen
-                    | RParen
-                    | LBracket
-                    | RBracket
-                    | LBrace
-                    | RBrace
-                    | Pipe => true,
+                    LParen | RParen | LBracket | RBracket | LBrace | RBrace | Pipe => true,
                     _ => false,
                 };
                 if delimiter {
@@ -43,10 +35,11 @@ fn direct_delimiter_tokens(
 }
 
 fn list_requires_flat_comma(kind: cst::NodeKind, items: int) -> bool {
-    items == 1 && match kind {
-        EXPR_TUPLE | TYPE_TUPLE | PATTERN_TUPLE => true,
-        _ => false,
-    }
+    items == 1
+        && match kind {
+            EXPR_TUPLE | TYPE_TUPLE | PATTERN_TUPLE => true,
+            _ => false,
+        }
 }
 
 fn delimiter_uses_edge_space(value: LocatedToken) -> bool {
@@ -59,8 +52,7 @@ fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
     while cursor.remaining() > 0 {
         match cursor.next() {
             Some(Token(token)) => if token.start < open.start
-                && !lexer::token_is_trivia(token.token.kind)
-            {
+                && !lexer::token_is_trivia(token.token.kind) {
                 values.push(token_doc(token))
             } else {
                 ()
@@ -104,14 +96,8 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
         built(concat(Vec::[prefix, open_doc, close_doc]), first, last)
     } else {
         let group_id = value.docs.new_group_id();
-        let separated = join(
-            concat2(text(","), Doc::SoftLine),
-            items,
-        );
-        let tail = if list_requires_flat_comma(
-            cst::node_kind(node.node),
-            item_nodes.len(),
-        ) {
+        let separated = join(concat2(text(","), Doc::SoftLine), items);
+        let tail = if list_requires_flat_comma(cst::node_kind(node.node), item_nodes.len()) {
             text(",")
         } else {
             if_break(group_id, text(","), nil())
@@ -121,26 +107,14 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
         } else {
             Doc::Line
         };
-        let content = concat(Vec::[
-            prefix,
-            open_doc,
-            edge,
-            indent(concat2(separated, tail)),
-            edge,
-            close_doc,
-        ]);
-        built(
-            value.docs.group_with_id(group_id, content).doc,
-            first,
-            last,
-        )
+        let content = concat(
+            Vec::[prefix, open_doc, edge, indent(concat2(separated, tail)), edge, close_doc],
+        );
+        built(value.docs.group_with_id(group_id, content).doc, first, last)
     }
 }
 
-fn format_commented_delimited_list(
-    value: Builder,
-    node: LocatedNode,
-) -> BuiltDoc {
+fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
     let delimiters = match direct_delimiter_tokens(node) {
         Some(value) => value,
         None => return format_generic(value, node),
@@ -151,9 +125,7 @@ fn format_commented_delimited_list(
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
-            Some(Node(child)) => if child.start > open.start
-                && child.end <= close.start
-            {
+            Some(Node(child)) => if child.start > open.start && child.end <= close.start {
                 if body.values.len() > 0 && body.trailing_lines.get() == 0 {
                     body.ensure_lines(1)
                 } else {
@@ -161,11 +133,13 @@ fn format_commented_delimited_list(
                 };
                 body.push_syntax(format_item_content(value, child));
                 if body.trailing_lines.get() == 0 {
-                    body.push_syntax(built(
-                        text(","),
-                        Option::Some(lexer::TokenKind::Comma),
-                        Option::Some(lexer::TokenKind::Comma),
-                    ))
+                    body.push_syntax(
+                        built(
+                            text(","),
+                            Option::Some(lexer::TokenKind::Comma),
+                            Option::Some(lexer::TokenKind::Comma),
+                        ),
+                    )
                 } else {
                     ()
                 };
@@ -173,10 +147,8 @@ fn format_commented_delimited_list(
             } else {
                 ()
             },
-            Some(Token(token)) => if token.start <= open.start
-                || token.start >= close.start
-                || token_is(token, lexer::TokenKind::Comma)
-            {
+            Some(Token(token)) => if token.start <= open.start || token.start >= close.start
+                || token_is(token, lexer::TokenKind::Comma) {
                 ()
             } else if token_is(token, lexer::TokenKind::Whitespace) {
                 body.add_pending_newlines(whitespace_newlines(token.token.text))
@@ -205,23 +177,13 @@ fn format_commented_delimited_list(
         None => Option::None,
     };
     built(
-        concat(Vec::[
-            prefix,
-            token_doc(open),
-            Doc::HardLine,
-            indent(body_doc.doc),
-            closing,
-        ]),
+        concat(Vec::[prefix, token_doc(open), Doc::HardLine, indent(body_doc.doc), closing]),
         first,
         Option::Some(close.token.kind),
     )
 }
 
-fn format_where_clause_with_body(
-    value: Builder,
-    node: LocatedNode,
-    body_follows: bool,
-) -> BuiltDoc {
+fn format_where_clause_with_body(value: Builder, node: LocatedNode, body_follows: bool) -> BuiltDoc {
     if node_has_comment(node) {
         return format_generic(value, node)
     } else {
@@ -239,23 +201,18 @@ fn format_where_clause_with_body(
     };
     let group_id = value.docs.new_group_id();
     let tail = if body_follows {
-        if_break(
-            group_id,
-            concat2(text(","), Doc::HardLine),
-            text(" "),
-        )
+        if_break(group_id, concat2(text(","), Doc::HardLine), text(" "))
     } else {
         nil()
     };
-    let content = concat(Vec::[
-        Doc::SoftLine,
-        text("where"),
-        indent(concat(Vec::[
+    let content = concat(
+        Vec::[
             Doc::SoftLine,
-            join(concat2(text(","), Doc::SoftLine), docs),
-        ])),
-        tail,
-    ]);
+            text("where"),
+            indent(concat(Vec::[Doc::SoftLine, join(concat2(text(","), Doc::SoftLine), docs)])),
+            tail,
+        ],
+    );
     let result = value.docs.group_with_id(group_id, content);
     BuiltDoc {
         doc: result.doc,
@@ -277,9 +234,6 @@ fn format_where_clause(value: Builder, node: LocatedNode) -> BuiltDoc {
     format_where_clause_with_body(value, node, true)
 }
 
-fn format_where_clause_signature(
-    value: Builder,
-    node: LocatedNode,
-) -> BuiltDoc {
+fn format_where_clause_signature(value: Builder, node: LocatedNode) -> BuiltDoc {
     format_where_clause_with_body(value, node, false)
 }

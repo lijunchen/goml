@@ -139,10 +139,7 @@ impl DocBuilder {
     }
 
     fn group_with_id(self: DocBuilder, id: int, content: Doc) -> GroupedDoc {
-        GroupedDoc {
-            id,
-            doc: Doc::Group(id, content),
-        }
+        GroupedDoc { id, doc: Doc::Group(id, content) }
     }
 
     fn group(self: DocBuilder, content: Doc) -> GroupedDoc {

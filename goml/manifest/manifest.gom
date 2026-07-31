@@ -38,10 +38,7 @@ fn strip_comment(value: string) -> string {
 
 fn parse_string(value: string) -> Result[string, string] {
     let value = util::trim(value);
-    if value.byte_len() < 2
-        || value.byte_get(0) != 34
-        || value.byte_get(value.byte_len() - 1) != 34
-    {
+    if value.byte_len() < 2 || value.byte_get(0) != 34 || value.byte_get(value.byte_len() - 1) != 34 {
         return Result::Err("manifest values must be quoted strings")
     } else {
         ()
@@ -78,12 +75,9 @@ fn valid_segment(value: string) -> bool {
     };
     for index in range(0, value.byte_len()) {
         let byte = value.byte_get(index);
-        if (byte >= 48 && byte <= 57)
-            || (byte >= 65 && byte <= 90)
-            || (byte >= 97 && byte <= 122)
+        if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
             || byte == 95
-            || byte == 45
-        {
+            || byte == 45 {
             ()
         } else {
             return false
@@ -144,10 +138,8 @@ pub fn load(path: string) -> Result[Manifest, string] {
         let line = util::trim(strip_comment(original));
         if line == "" {
             ()
-        } else if line.byte_len() >= 2
-            && line.byte_get(0) == 91
-            && line.byte_get(line.byte_len() - 1) == 93
-        {
+        } else if line.byte_len() >= 2 && line.byte_get(0) == 91
+            && line.byte_get(line.byte_len() - 1) == 93 {
             section.set(util::trim(line.byte_slice(1, line.byte_len() - 1)))
         } else {
             let equals = Ref::new(-1);
@@ -164,10 +156,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
                 ()
             };
             let key = util::trim(line.byte_slice(0, equals.get()));
-            let value = match parse_string(line.byte_slice(
-                equals.get() + 1,
-                line.byte_len(),
-            )) {
+            let value = match parse_string(line.byte_slice(equals.get() + 1, line.byte_len())) {
                 Ok(value) => value,
                 Err(message) => return Result::Err(message),
             };
@@ -195,11 +184,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
         Err(message) => return Result::Err(message),
     };
     match validate_target_dir(target_dir.get()) {
-        Ok(()) => Result::Ok(Manifest {
-            module_path,
-            target_dir: target_dir.get(),
-            dependencies,
-        }),
+        Ok(()) => Result::Ok(Manifest { module_path, target_dir: target_dir.get(), dependencies }),
         Err(message) => Result::Err(message),
     }
 }

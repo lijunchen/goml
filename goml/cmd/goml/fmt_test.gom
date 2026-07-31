@@ -17,10 +17,7 @@ fn write_fmt_project(root: string) -> unit {
         path::join(root, "goml.toml"),
         "[module]\npath = \"fmt_test\"\n\n[build]\ntarget-dir = \"build/output\"\n",
     );
-    test_support::write_file(
-        path::join(root, "main.gom"),
-        "package main;\nfn main( )->unit{()}\n",
-    );
+    test_support::write_file(path::join(root, "main.gom"), "package main;\nfn main( )->unit{()}\n");
 }
 
 #[test]
@@ -28,15 +25,9 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     let root = test_support::workspace("fmt_module");
     write_fmt_project(root);
     let source = path::join(path::join(root, "src"), "lib.gom");
-    test_support::write_file(
-        source,
-        "package lib;\npub fn value( )->int{1}\n",
-    );
+    test_support::write_file(source, "package lib;\npub fn value( )->int{1}\n");
     let test_source = path::join(root, "main_test.gom");
-    test_support::write_file(
-        test_source,
-        "package main;\nfn helper( )->unit{()}\n",
-    );
+    test_support::write_file(test_source, "package main;\nfn helper( )->unit{()}\n");
     let ignored = Vec::[
         path::join(path::join(root, "build/output"), "invalid.gom"),
         path::join(path::join(root, "_artifact"), "invalid.gom"),
@@ -51,14 +42,8 @@ fn fmt_formats_module_from_nested_directory() -> unit {
         path::join(nested_module, "goml.toml"),
         "[module]\npath = \"nested\"\n",
     );
-    test_support::write_file(
-        path::join(nested_module, "invalid.gom"),
-        "invalid {",
-    );
-    let output = test_support::run(
-        Vec::["fmt"],
-        path::join(root, "src"),
-    );
+    test_support::write_file(path::join(nested_module, "invalid.gom"), "invalid {");
+    let output = test_support::run(Vec::["fmt"], path::join(root, "src"));
     test_support::assert_success(output);
     testing::assert_eq(
         test_support::read_file(path::join(root, "main.gom")),
@@ -91,10 +76,7 @@ fn fmt_check_reports_differences_without_writing() -> unit {
     testing::assert_eq(fmt_status_code(changed), 1);
     testing::assert_eq(test_support::read_file(main), original);
     test_support::assert_success(test_support::run(Vec::["fmt"], root));
-    test_support::assert_success(test_support::run(
-        Vec::["fmt", "--check"],
-        root,
-    ))
+    test_support::assert_success(test_support::run(Vec::["fmt", "--check"], root))
 }
 
 #[test]
@@ -103,10 +85,7 @@ fn fmt_does_not_write_when_any_file_is_invalid() -> unit {
     write_fmt_project(root);
     let main = path::join(root, "main.gom");
     let original = test_support::read_file(main);
-    test_support::write_file(
-        path::join(root, "invalid.gom"),
-        "package main;\nfn broken( {",
-    );
+    test_support::write_file(path::join(root, "invalid.gom"), "package main;\nfn broken( {");
     let output = test_support::run(Vec::["fmt"], root);
     testing::assert_eq(fmt_status_code(output), 2);
     testing::assert_eq(test_support::read_file(main), original)
@@ -117,13 +96,7 @@ fn fmt_reports_missing_formatter() -> unit {
     let root = test_support::workspace("fmt_missing_formatter");
     write_fmt_project(root);
     let missing = path::join(root, "missing-gomlfmt");
-    let output = test_support::run(
-        Vec::["fmt", "--formatter", missing],
-        root,
-    );
+    let output = test_support::run(Vec::["fmt", "--formatter", missing], root);
     test_support::assert_failure(output);
-    test_support::assert_contains(
-        test_support::stderr(output),
-        "failed to find gomlfmt",
-    )
+    test_support::assert_contains(test_support::stderr(output), "failed to find gomlfmt")
 }

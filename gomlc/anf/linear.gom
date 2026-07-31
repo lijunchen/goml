@@ -33,35 +33,39 @@ fn probe_linear_expr(state: State, value: core::Expr) -> bool {
     match try_imm(value) {
         Some(_) => true,
         None => match value {
-            ConstrGet { expr, constructor: _, field_index: _, ty: _ }
-            | Unary { op: _, expr, ty: _ }
-            | Cast { expr, ty: _ }
-            | ToDyn { trait_name: _, for_ty: _, expr, ty: _ }
-            | Go { expr, ty: _ }
-            | Proj { tuple: expr, index: _, ty: _ } => {
+            ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary { op: _, expr, ty: _ } | Cast {
+                expr,
+                ty: _,
+            } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } | Go { expr, ty: _ } | Proj {
+                tuple: expr,
+                index: _,
+                ty: _,
+            } => {
                 probe_linear_expr(state, expr) && probe_bound_value(state)
             },
             Binary { op, lhs, rhs, ty: _ } => match op {
                 And | Or => false,
-                _ => probe_linear_expr(state, lhs)
-                    && probe_linear_expr(state, rhs)
+                _ => probe_linear_expr(state, lhs) && probe_linear_expr(state, rhs)
                     && probe_bound_value(state),
             },
             Assign { name: _, value: expr, target_ty: _, ty: _ } => {
                 probe_linear_expr(state, expr) && probe_bound_value(state)
             },
-            Constr { constructor: _, args, ty: _ }
-            | Tuple { items: args, ty: _ }
-            | Array { items: args, ty: _ } => {
+            Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+                items: args,
+                ty: _,
+            } => {
                 probe_linear_list(state, args) && probe_bound_value(state)
             },
             Call { func, args, ty: _ } => probe_linear_expr(state, func)
                 && probe_linear_list(state, args)
                 && probe_bound_value(state),
-            DynCall { trait_name: _, method_name: _, receiver, args, ty: _ }
-            | TraitCall { receiver, args, .. } => {
-                probe_linear_expr(state, receiver)
-                    && probe_linear_list(state, args)
+            DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
+                receiver,
+                args,
+                ..,
+            } => {
+                probe_linear_expr(state, receiver) && probe_linear_list(state, args)
                     && probe_bound_value(state)
             },
             _ => false,

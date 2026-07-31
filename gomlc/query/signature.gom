@@ -12,16 +12,10 @@ pub struct SignatureResult {
     pub span: ast::Span,
 }
 
-fn call_target_name(
-    value: Analysis,
-    fact: tast::CallFact,
-) -> string {
+fn call_target_name(value: Analysis, fact: tast::CallFact) -> string {
     match fact.target {
         Local(local) => local.hint,
-        Definition(_) => match token_text(
-            value,
-            fact.callee_span.start,
-        ) {
+        Definition(_) => match token_text(value, fact.callee_span.start) {
             Some(name) => name,
             None => "<function>",
         },
@@ -31,10 +25,7 @@ fn call_target_name(
     }
 }
 
-fn signature_label(
-    parameters: Vec[string],
-    return_type: string,
-) -> string {
+fn signature_label(parameters: Vec[string], return_type: string) -> string {
     let builder = text::StringBuilder::new();
     builder.write_char('(');
     let index = Ref::new(0);
@@ -54,15 +45,9 @@ fn signature_label(
 
 fn method_call_target(value: tast::ReferenceTarget) -> bool {
     match value {
-        Callable(
-            TraitMethod { .. },
-        )
-        | Callable(
-            DynTraitMethod { .. },
-        )
-        | Callable(
-            InherentMethod { .. },
-        ) => true,
+        Callable(TraitMethod { .. },) | Callable(DynTraitMethod { .. },) | Callable(InherentMethod {
+            ..,
+        },) => true,
         _ => false,
     }
 }
@@ -83,11 +68,9 @@ fn extern_parameter_names(value: ast::ExternFunction) -> Vec[string] {
     result
 }
 
-fn item_parameter_names(
-    value: ast::Item,
-    expected: string,
-    expected_owner: Option[string],
-) -> Option[Vec[string]] {
+fn item_parameter_names(value: ast::Item, expected: string, expected_owner: Option[string]) -> Option[
+    Vec[string],
+] {
     match value {
         Function(function) => if function.name == expected {
             Option::Some(function_parameter_names(function))
@@ -102,9 +85,7 @@ fn item_parameter_names(
         ImplBlock(block) => {
             match expected_owner {
                 Some(owner) => match explicit_type_name(block.for_type) {
-                    Some(actual) => if short_type_name(actual)
-                        != short_type_name(owner)
-                    {
+                    Some(actual) => if short_type_name(actual) != short_type_name(owner) {
                         return Option::None
                     } else {
                         ()
@@ -126,9 +107,7 @@ fn item_parameter_names(
         },
         TraitDef(definition) => {
             match expected_owner {
-                Some(owner) => if short_type_name(definition.name)
-                    != short_type_name(owner)
-                {
+                Some(owner) => if short_type_name(definition.name) != short_type_name(owner) {
                     return Option::None
                 } else {
                     ()
@@ -156,30 +135,18 @@ fn item_parameter_names(
 
 fn signature_target_owner(value: tast::ReferenceTarget) -> Option[string] {
     match value {
-        Callable(
-            TraitMethod { trait_ref, method_name: _ },
-        ) => Option::Some(trait_ref.name),
-        Callable(
-            DynTraitMethod {
-                trait_name,
-                dispatch_name: _,
-                method_name: _,
-            },
-        ) => Option::Some(trait_name),
-        Callable(
-            InherentMethod {
-                receiver_ty,
-                method_name: _,
-            },
-        ) => Option::Some(type_owner_name(receiver_ty)),
+        Callable(TraitMethod { trait_ref, method_name: _ },) => Option::Some(trait_ref.name),
+        Callable(DynTraitMethod { trait_name, dispatch_name: _, method_name: _ },) => Option::Some(
+            trait_name,
+        ),
+        Callable(InherentMethod { receiver_ty, method_name: _ },) => Option::Some(
+            type_owner_name(receiver_ty),
+        ),
         _ => Option::None,
     }
 }
 
-fn signature_parameter_names(
-    value: Analysis,
-    fact: tast::CallFact,
-) -> Option[Vec[string]] {
+fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Vec[string]] {
     let expected = short_type_name(call_target_name(value, fact));
     let expected_owner = signature_target_owner(fact.target);
     let source_index = Ref::new(value.sources.len() - 1);
@@ -207,24 +174,18 @@ fn signature_parameter_names(
     Option::None
 }
 
-fn signature_parameters(
-    value: Analysis,
-    fact: tast::CallFact,
-    types: Vec[tast::Type],
-) -> Vec[string] {
+fn signature_parameters(value: Analysis, fact: tast::CallFact, types: Vec[tast::Type]) -> Vec[
+    string,
+] {
     let is_method = method_call_target(fact.target);
-    let type_start = if is_method
-        && types.len() > fact.argument_spans.len()
-    {
+    let type_start = if is_method && types.len() > fact.argument_spans.len() {
         1
     } else {
         0
     };
     let names = signature_parameter_names(value, fact);
     let name_start = match names {
-        Some(values) => if is_method
-            && values.len() > fact.argument_spans.len()
-        {
+        Some(values) => if is_method && values.len() > fact.argument_spans.len() {
             1
         } else {
             0
@@ -245,11 +206,13 @@ fn signature_parameters(
             },
             None => "",
         };
-        result.push(if name == "" {
-            type_text
-        } else {
-            name + ": " + type_text
-        })
+        result.push(
+            if name == "" {
+                type_text
+            } else {
+                name + ": " + type_text
+            },
+        )
     };
     result
 }
@@ -270,23 +233,16 @@ fn active_parameter(fact: tast::CallFact, offset: int) -> int {
     active.get()
 }
 
-pub fn signature_help(
-    value: Analysis,
-    offset: int,
-) -> Option[SignatureResult] {
+pub fn signature_help(value: Analysis, offset: int) -> Option[SignatureResult] {
     let calls = value.checked.typeck_results.calls;
     let best = Ref::new(-1);
     for candidate in range(0, calls.len()) {
         let fact = calls[candidate];
         let fact_width = fact.span.end - fact.span.start;
-        if fact.source_path == value.source_path
-            && fact.span.start <= offset
+        if fact.source_path == value.source_path && fact.span.start <= offset
             && offset < fact.span.end
             && (best.get() < 0
-                || fact_width
-                    <= calls[best.get()].span.end
-                        - calls[best.get()].span.start)
-        {
+                || fact_width <= calls[best.get()].span.end - calls[best.get()].span.start) {
             best.set(candidate)
         } else {
             ()
@@ -301,15 +257,14 @@ pub fn signature_help(
             Func { params, ret_ty } => {
                 let parameters = signature_parameters(value, fact, params);
                 let return_type = tast::diagnostic_type_text(ret_ty);
-                Option::Some(SignatureResult {
-                    label: signature_label(
+                Option::Some(
+                    SignatureResult {
+                        label: signature_label(parameters, return_type),
                         parameters,
-                        return_type,
-                    ),
-                    parameters,
-                    active_parameter: active_parameter(fact, offset),
-                    span: fact.span,
-                })
+                        active_parameter: active_parameter(fact, offset),
+                        span: fact.span,
+                    },
+                )
             },
             _ => Option::None,
         },

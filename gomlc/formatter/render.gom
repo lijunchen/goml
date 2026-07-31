@@ -55,36 +55,43 @@ fn limited_add(left: int, right: int, limit: int) -> int {
     }
 }
 
-fn flat_width(
-    value: Doc,
-    broken_groups: HashMap[int, unit],
-    limit: int,
-) -> int {
+fn flat_width(value: Doc, broken_groups: HashMap[int, unit], limit: int) -> int {
     match value {
         Nil => 0,
-        Text(_, width) => if width > limit { limit + 1 } else { width },
+        Text(_, width) => if width > limit {
+            limit + 1
+        } else {
+            width
+        },
         Verbatim(text_value) => if string_contains_newline(text_value) {
             limit + 1
         } else {
             let width = codepoint_width(text_value);
-            if width > limit { limit + 1 } else { width }
+            if width > limit {
+                limit + 1
+            } else {
+                width
+            }
         },
         Concat(values) => {
             let width: Ref[int] = Ref::new(0);
             for child in values {
-                width.set(limited_add(
-                    width.get(),
-                    flat_width(
-                        child,
-                        broken_groups,
-                        limit - if width.get() > limit {
+                width.set(
+                    limited_add(
+                        width.get(),
+                        flat_width(
+                            child,
+                            broken_groups,
                             limit
-                        } else {
-                            width.get()
-                        },
+                                - if width.get() > limit {
+                                    limit
+                                } else {
+                                    width.get()
+                                },
+                        ),
+                        limit,
                     ),
-                    limit,
-                ))
+                )
             };
             width.get()
         },
@@ -98,7 +105,11 @@ fn flat_width(
         } else {
             flat_width(flat, broken_groups, limit)
         },
-        SoftLine => if limit < 1 { limit + 1 } else { 1 },
+        SoftLine => if limit < 1 {
+            limit + 1
+        } else {
+            1
+        },
         Line => 0,
         HardLine => limit + 1,
         Indent(content) => flat_width(content, broken_groups, limit),
@@ -187,12 +198,7 @@ fn write_newline(value: Renderer) -> unit {
     value.line_start.set(true)
 }
 
-fn render_group(
-    value: Renderer,
-    id: int,
-    content: Doc,
-    mode: RenderMode,
-) -> unit {
+fn render_group(value: Renderer, id: int, content: Doc, mode: RenderMode) -> unit {
     if render_mode_flat(mode) {
         render_doc(value, content, RenderMode::Flat)
     } else {

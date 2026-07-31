@@ -34,10 +34,7 @@ fn package_node_name_present(values: Vec[PackageOrderNode], name: string) -> boo
     false
 }
 
-fn package_node_is_ready(
-    value: PackageOrderNode,
-    remaining: Vec[PackageOrderNode],
-) -> bool {
+fn package_node_is_ready(value: PackageOrderNode, remaining: Vec[PackageOrderNode]) -> bool {
     for dependency in value.dependencies {
         if package_node_name_present(remaining, dependency) {
             return false
@@ -66,11 +63,7 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
             let value = remaining[index];
             if package_node_is_ready(value, remaining)
                 && (candidate.get() < 0
-                    || artifact_string_less(
-                        value.name,
-                        remaining[candidate.get()].name,
-                    ))
-            {
+                    || artifact_string_less(value.name, remaining[candidate.get()].name)) {
                 candidate.set(index)
             } else {
                 ()
@@ -85,17 +78,20 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
     Result::Ok(result)
 }
 
-fn order_artifact_compilations(
-    values: Vec[ArtifactCompilation],
-) -> Result[Vec[ArtifactCompilation], string] {
+fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
+    Vec[ArtifactCompilation],
+    string,
+] {
     let nodes = Vec::new();
     for index in range(0, values.len()) {
         let value = values[index];
-        nodes.push(PackageOrderNode {
-            name: value.package_name,
-            dependencies: value.dependency_names,
-            position: index,
-        })
+        nodes.push(
+            PackageOrderNode {
+                name: value.package_name,
+                dependencies: value.dependency_names,
+                position: index,
+            },
+        )
     };
     match order_package_nodes(nodes) {
         Ok(order) => {

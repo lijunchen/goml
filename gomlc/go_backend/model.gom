@@ -21,14 +21,33 @@ pub enum Type {
     Float64,
     String,
     Char,
-    Named { name: string },
-    Pointer { elem: Type },
-    Array { len: int, elem: Type },
-    Slice { elem: Type },
-    Map { key: Type, value: Type },
-    Chan { elem: Type },
-    Func { params: Vec[Type], ret_ty: Type },
-    Multi { items: Vec[Type] },
+    Named {
+        name: string,
+    },
+    Pointer {
+        elem: Type,
+    },
+    Array {
+        len: int,
+        elem: Type,
+    },
+    Slice {
+        elem: Type,
+    },
+    Map {
+        key: Type,
+        value: Type,
+    },
+    Chan {
+        elem: Type,
+    },
+    Func {
+        params: Vec[Type],
+        ret_ty: Type,
+    },
+    Multi {
+        items: Vec[Type],
+    },
 }
 
 pub enum UnaryOp {
@@ -63,25 +82,79 @@ pub enum BinaryOp {
 pub enum Expr {
     Nil,
     Unit,
-    Var { name: string },
-    Bool { value: bool },
-    Int { value: string },
-    Float { value: string },
-    String { value: string },
-    Call { func: Expr, args: Vec[Expr] },
-    Unary { op: UnaryOp, expr: Expr },
-    Binary { op: BinaryOp, lhs: Expr, rhs: Expr },
-    Field { expr: Expr, field_name: string },
-    Index { base: Expr, index: Expr },
-    Slice { base: Expr, start: Expr, end: Expr },
-    Cast { expr: Expr, ty: Type },
-    Convert { ty: Type, expr: Expr },
-    Make { ty: Type, args: Vec[Expr] },
-    Send { channel: Expr, value: Expr },
-    Receive { channel: Expr },
-    StructLiteral { ty: Type, fields: Vec[(string, Expr)] },
-    ArrayLiteral { ty: Type, items: Vec[Expr] },
-    FuncLit { params: Vec[(string, Type)], ret_ty: Type, body: Block },
+    Var {
+        name: string,
+    },
+    Bool {
+        value: bool,
+    },
+    Int {
+        value: string,
+    },
+    Float {
+        value: string,
+    },
+    String {
+        value: string,
+    },
+    Call {
+        func: Expr,
+        args: Vec[Expr],
+    },
+    Unary {
+        op: UnaryOp,
+        expr: Expr,
+    },
+    Binary {
+        op: BinaryOp,
+        lhs: Expr,
+        rhs: Expr,
+    },
+    Field {
+        expr: Expr,
+        field_name: string,
+    },
+    Index {
+        base: Expr,
+        index: Expr,
+    },
+    Slice {
+        base: Expr,
+        start: Expr,
+        end: Expr,
+    },
+    Cast {
+        expr: Expr,
+        ty: Type,
+    },
+    Convert {
+        ty: Type,
+        expr: Expr,
+    },
+    Make {
+        ty: Type,
+        args: Vec[Expr],
+    },
+    Send {
+        channel: Expr,
+        value: Expr,
+    },
+    Receive {
+        channel: Expr,
+    },
+    StructLiteral {
+        ty: Type,
+        fields: Vec[(string, Expr)],
+    },
+    ArrayLiteral {
+        ty: Type,
+        items: Vec[Expr],
+    },
+    FuncLit {
+        params: Vec[(string, Type)],
+        ret_ty: Type,
+        body: Block,
+    },
 }
 
 pub struct Block {
@@ -99,30 +172,77 @@ pub struct TypeSwitchCase {
 }
 
 pub enum Stmt {
-    Expr { expr: Expr },
-    Go { call: Expr },
-    Var { name: string, ty: Type, value: Option[Expr] },
-    Assign { name: string, value: Expr },
-    FieldAssign { target: Expr, field_name: string, value: Expr },
-    IndexAssign { base: Expr, index: Expr, value: Expr },
-    MultiAssign { names: Vec[string], value: Expr },
-    Return { expr: Option[Expr] },
-    ReturnMulti { exprs: Vec[Expr] },
-    If { cond: Expr, then_: Block, else_: Option[Block] },
-    Loop { body: Block },
-    LabeledLoop { label: string, body: Block },
-    Range { names: Vec[string], expr: Expr, body: Block },
+    Expr {
+        expr: Expr,
+    },
+    Go {
+        call: Expr,
+    },
+    Var {
+        name: string,
+        ty: Type,
+        value: Option[Expr],
+    },
+    Assign {
+        name: string,
+        value: Expr,
+    },
+    FieldAssign {
+        target: Expr,
+        field_name: string,
+        value: Expr,
+    },
+    IndexAssign {
+        base: Expr,
+        index: Expr,
+        value: Expr,
+    },
+    MultiAssign {
+        names: Vec[string],
+        value: Expr,
+    },
+    Return {
+        expr: Option[Expr],
+    },
+    ReturnMulti {
+        exprs: Vec[Expr],
+    },
+    If {
+        cond: Expr,
+        then_: Block,
+        else_: Option[Block],
+    },
+    Loop {
+        body: Block,
+    },
+    LabeledLoop {
+        label: string,
+        body: Block,
+    },
+    Range {
+        names: Vec[string],
+        expr: Expr,
+        body: Block,
+    },
     Break,
-    BreakLabel { label: string },
+    BreakLabel {
+        label: string,
+    },
     Continue,
-    Switch { expr: Expr, cases: Vec[SwitchCase], default: Option[Block] },
+    Switch {
+        expr: Expr,
+        cases: Vec[SwitchCase],
+        default: Option[Block],
+    },
     TypeSwitch {
         binding: Option[string],
         expr: Expr,
         cases: Vec[TypeSwitchCase],
         default: Option[Block],
     },
-    Panic { message: string },
+    Panic {
+        message: string,
+    },
     Unreachable,
 }
 

@@ -295,12 +295,7 @@ fn debug_token_text(value: string) -> string {
     }
 }
 
-fn debug_write_node(
-    value: CstNode,
-    start: int,
-    depth: int,
-    builder: text::StringBuilder,
-) -> int {
+fn debug_write_node(value: CstNode, start: int, depth: int, builder: text::StringBuilder) -> int {
     let end = start + value.byte_len;
     debug_write_spaces(builder, depth);
     builder.write_string(node_kind_name(value.kind));
@@ -312,12 +307,9 @@ fn debug_write_node(
     let cursor = Ref::new(start);
     for child in value.children {
         match child {
-            Node(child_node) => cursor.set(debug_write_node(
-                child_node,
-                cursor.get(),
-                depth + 1,
-                builder,
-            )),
+            Node(child_node) => cursor.set(
+                debug_write_node(child_node, cursor.get(), depth + 1, builder),
+            ),
             Token(token) => {
                 let token_end = cursor.get() + token.text.byte_len();
                 debug_write_spaces(builder, depth + 1);

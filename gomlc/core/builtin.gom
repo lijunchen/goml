@@ -20,19 +20,12 @@ fn non_root(value: Function) -> Function {
 
 pub fn lower_builtins(counter: Ref[int]) -> File {
     lower_with_counter(
-        tast::check(hir::lower(
-            ast::lower(parser::parse(builtin_source())),
-            "builtin_contract.gom",
-        )),
+        tast::check(hir::lower(ast::lower(parser::parse(builtin_source())), "builtin_contract.gom")),
         counter,
     )
 }
 
-pub fn link_with_dependencies(
-    builtins: File,
-    dependencies: Vec[File],
-    user: File,
-) -> File {
+pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: File) -> File {
     let functions: Vec[Function] = Vec::new();
     for function in builtins.functions {
         functions.push(non_root(function))

@@ -73,33 +73,36 @@ impl string {
 
     fn chars(self: string) -> FnIterator[char] {
         let index = Ref::new(0);
-        FnIterator::from_fn(|| {
-            match self.decode_at(index.get()) {
-                Option::Some(decoded) => {
-                    let (value, width) = decoded;
-                    index.set(index.get() + width);
-                    Option::Some(value)
-                },
-                Option::None => Option::None,
-            }
-        })
+        FnIterator::from_fn(
+            || {
+                match self.decode_at(index.get()) {
+                    Option::Some(decoded) => {
+                        let (value, width) = decoded;
+                        index.set(index.get() + width);
+                        Option::Some(value)
+                    },
+                    Option::None => Option::None,
+                }
+            },
+        )
     }
 
     fn char_indices(self: string) -> FnIterator[(int, char)] {
         let index = Ref::new(0);
-        FnIterator::from_fn(|| {
-            let current = index.get();
-            match self.decode_at(current) {
-                Option::Some(decoded) => {
-                    let (value, width) = decoded;
-                    index.set(current + width);
-                    Option::Some((current, value))
-                },
-                Option::None => Option::None,
-            }
-        })
+        FnIterator::from_fn(
+            || {
+                let current = index.get();
+                match self.decode_at(current) {
+                    Option::Some(decoded) => {
+                        let (value, width) = decoded;
+                        index.set(current + width);
+                        Option::Some((current, value))
+                    },
+                    Option::None => Option::None,
+                }
+            },
+        )
     }
-
 }
 
 impl ToString for unit {
@@ -290,7 +293,11 @@ impl Hash for unit {
 
 impl Hash for bool {
     fn hash(self: bool) -> uint64 {
-        if self { 1 } else { 0 }
+        if self {
+            1
+        } else {
+            0
+        }
     }
 }
 
@@ -372,32 +379,32 @@ impl Hash for float64 {
     }
 }
 
-impl [T] Eq for Ref[T] {
+impl[T] Eq for Ref[T] {
     fn eq(self: Ref[T], other: Ref[T]) -> bool {
         ptr_eq(self, other)
     }
 }
 
-impl [T] Hash for Ref[T] {
+impl[T] Hash for Ref[T] {
     fn hash(self: Ref[T]) -> uint64 {
         ptr_hash(self)
     }
 }
 
-impl [T: ToString] ToString for Ref[T] {
+impl[T: ToString] ToString for Ref[T] {
     fn to_string(self: Ref[T]) -> string {
         let v: T = self.get();
         "ref(" + ToString::to_string(v) + ")"
     }
 }
 
-impl [T] FnIterator[T] {
+impl[T] FnIterator[T] {
     fn from_fn(next_fn: () -> Option[T]) -> Self {
         FnIterator { next_fn }
     }
 }
 
-impl [T] Iterator for FnIterator[T] {
+impl[T] Iterator for FnIterator[T] {
     type Item = T;
 
     fn next(self: Self) -> Option[T] {
@@ -405,10 +412,7 @@ impl [T] Iterator for FnIterator[T] {
     }
 }
 
-impl [A, B, I: Iterator] Iterator for MapIterator[A, B, I]
-where
-    I::Item = A,
-{
+impl[A, B, I: Iterator] Iterator for MapIterator[A, B, I] where I::Item = A  {
     type Item = B;
 
     fn next(self: Self) -> Option[B] {
@@ -419,10 +423,7 @@ where
     }
 }
 
-impl [T, I: Iterator] Iterator for FilterIterator[T, I]
-where
-    I::Item = T,
-{
+impl[T, I: Iterator] Iterator for FilterIterator[T, I] where I::Item = T  {
     type Item = T;
 
     fn next(self: Self) -> Option[T] {
@@ -440,7 +441,7 @@ where
     }
 }
 
-impl [I: Iterator] Iterator for TakeIterator[I] {
+impl[I: Iterator] Iterator for TakeIterator[I] {
     type Item = I::Item;
 
     fn next(self: Self) -> Option[I::Item] {
@@ -454,8 +455,9 @@ impl [I: Iterator] Iterator for TakeIterator[I] {
     }
 }
 
-impl [I: Iterator] IntoIterator for I {
+impl[I: Iterator] IntoIterator for I {
     type Item = I::Item;
+
     type IntoIter = I;
 
     fn into_iter(self: I) -> I {
@@ -463,20 +465,14 @@ impl [I: Iterator] IntoIterator for I {
     }
 }
 
-fn iterator_map[A, B, I: Iterator](
-    iterator: I,
-    map_fn: (A) -> B,
-) -> MapIterator[A, B, I]
+fn iterator_map[A, B, I: Iterator](iterator: I, map_fn: (A) -> B) -> MapIterator[A, B, I]
 where
     I::Item = A,
 {
     MapIterator { iterator, map_fn }
 }
 
-fn iterator_filter[T, I: Iterator](
-    iterator: I,
-    predicate: (T) -> bool,
-) -> FilterIterator[T, I]
+fn iterator_filter[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> FilterIterator[T, I]
 where
     I::Item = T,
 {
@@ -484,18 +480,15 @@ where
 }
 
 fn iterator_take[I: Iterator](iterator: I, count: int) -> TakeIterator[I] {
-    let remaining = if count > 0 { count } else { 0 };
-    TakeIterator {
-        iterator,
-        remaining: Ref::new(remaining),
-    }
+    let remaining = if count > 0 {
+        count
+    } else {
+        0
+    };
+    TakeIterator { iterator, remaining: Ref::new(remaining) }
 }
 
-fn iterator_fold[T, A, I: Iterator](
-    iterator: I,
-    initial: A,
-    combine: (A, T) -> A,
-) -> A
+fn iterator_fold[T, A, I: Iterator](iterator: I, initial: A, combine: (A, T) -> A) -> A
 where
     I::Item = T,
 {
@@ -509,10 +502,7 @@ where
     accumulator.get()
 }
 
-fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T]
-where
-    I::Item = T,
-{
+fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
     let values: Vec[T] = Vec::new();
     while true {
         match Iterator::next(iterator) {
@@ -523,7 +513,7 @@ where
     values
 }
 
-impl [T] Vec[T] {
+impl[T] Vec[T] {
     fn new() -> Self {
         vec_new()
     }
@@ -672,21 +662,24 @@ impl [T] Vec[T] {
     fn iter(self: Self) -> FnIterator[T] {
         let index = Ref::new(0);
         let len = self.len();
-        FnIterator::from_fn(|| {
-            let current = index.get();
-            if current < len {
-                let value = self.get(current);
-                index.set(current + 1);
-                Option::Some(value)
-            } else {
-                Option::None
-            }
-        })
+        FnIterator::from_fn(
+            || {
+                let current = index.get();
+                if current < len {
+                    let value = self.get(current);
+                    index.set(current + 1);
+                    Option::Some(value)
+                } else {
+                    Option::None
+                }
+            },
+        )
     }
 }
 
-impl [T] IntoIterator for Vec[T] {
+impl[T] IntoIterator for Vec[T] {
     type Item = T;
+
     type IntoIter = FnIterator[T];
 
     fn into_iter(self: Vec[T]) -> FnIterator[T] {
@@ -694,7 +687,7 @@ impl [T] IntoIterator for Vec[T] {
     }
 }
 
-impl [T] Slice[T] {
+impl[T] Slice[T] {
     fn get(self: Self, index: int) -> T {
         slice_get(self, index)
     }
@@ -710,21 +703,24 @@ impl [T] Slice[T] {
     fn iter(self: Self) -> FnIterator[T] {
         let index = Ref::new(0);
         let len = self.len();
-        FnIterator::from_fn(|| {
-            let current = index.get();
-            if current < len {
-                let value = self.get(current);
-                index.set(current + 1);
-                Option::Some(value)
-            } else {
-                Option::None
-            }
-        })
+        FnIterator::from_fn(
+            || {
+                let current = index.get();
+                if current < len {
+                    let value = self.get(current);
+                    index.set(current + 1);
+                    Option::Some(value)
+                } else {
+                    Option::None
+                }
+            },
+        )
     }
 }
 
-impl [T] IntoIterator for Slice[T] {
+impl[T] IntoIterator for Slice[T] {
     type Item = T;
+
     type IntoIter = FnIterator[T];
 
     fn into_iter(self: Slice[T]) -> FnIterator[T] {
@@ -732,7 +728,7 @@ impl [T] IntoIterator for Slice[T] {
     }
 }
 
-impl [K: Hash + Eq, V] HashMap[K, V] {
+impl[K: Hash + Eq, V] HashMap[K, V] {
     fn new() -> Self {
         hashmap_new()
     }
@@ -762,7 +758,7 @@ impl [K: Hash + Eq, V] HashMap[K, V] {
     }
 }
 
-impl [T] Ref[T] {
+impl[T] Ref[T] {
     fn new(value: T) -> Self {
         ref(value)
     }
@@ -776,7 +772,7 @@ impl [T] Ref[T] {
     }
 }
 
-impl [T] Channel[T] {
+impl[T] Channel[T] {
     fn new(capacity: int) -> Self {
         channel_new(capacity)
     }
@@ -802,15 +798,17 @@ impl [T] Channel[T] {
 #[lang("range")]
 fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
     let current = Ref::new(start);
-    FnIterator::from_fn(|| {
-        let value = current.get();
-        if value < end {
-            current.set(value + 1);
-            Option::Some(value)
-        } else {
-            Option::None
-        }
-    })
+    FnIterator::from_fn(
+        || {
+            let value = current.get();
+            if value < end {
+                current.set(value + 1);
+                Option::Some(value)
+            } else {
+                Option::None
+            }
+        },
+    )
 }
 
 fn range(start: int, end: int) -> FnIterator[int] {
@@ -837,8 +835,7 @@ impl Hash for uint {
 
 impl string {
     fn starts_with(self: string, prefix: string) -> bool {
-        prefix.byte_len() <= self.byte_len()
-            && self.is_char_boundary(prefix.byte_len())
+        prefix.byte_len() <= self.byte_len() && self.is_char_boundary(prefix.byte_len())
             && self.byte_slice(0, prefix.byte_len()) == prefix
     }
 
@@ -847,8 +844,7 @@ impl string {
             false
         } else {
             let start = self.byte_len() - suffix.byte_len();
-            self.is_char_boundary(start)
-                && self.byte_slice(start, self.byte_len()) == suffix
+            self.is_char_boundary(start) && self.byte_slice(start, self.byte_len()) == suffix
         }
     }
 
@@ -858,15 +854,10 @@ impl string {
         } else if expected.byte_len() > self.byte_len() {
             false
         } else {
-            for start in range(
-                0,
-                self.byte_len() - expected.byte_len() + 1,
-            ) {
+            for start in range(0, self.byte_len() - expected.byte_len() + 1) {
                 let end = start + expected.byte_len();
-                if self.is_char_boundary(start)
-                    && self.is_char_boundary(end)
-                    && self.byte_slice(start, end) == expected
-                {
+                if self.is_char_boundary(start) && self.is_char_boundary(end)
+                    && self.byte_slice(start, end) == expected {
                     return true
                 } else {
                     ()
@@ -898,7 +889,7 @@ struct ChainIterator[T, A, B] {
     first_done: Ref[bool],
 }
 
-impl [I: Iterator] Iterator for EnumerateIterator[I] {
+impl[I: Iterator] Iterator for EnumerateIterator[I] {
     type Item = (int, I::Item);
 
     fn next(self: Self) -> Option[(int, I::Item)] {
@@ -913,7 +904,7 @@ impl [I: Iterator] Iterator for EnumerateIterator[I] {
     }
 }
 
-impl [A: Iterator, B: Iterator] Iterator for ZipIterator[A, B] {
+impl[A: Iterator, B: Iterator] Iterator for ZipIterator[A, B] {
     type Item = (A::Item, B::Item);
 
     fn next(self: Self) -> Option[(A::Item, B::Item)] {
@@ -927,7 +918,7 @@ impl [A: Iterator, B: Iterator] Iterator for ZipIterator[A, B] {
     }
 }
 
-impl [I: Iterator] Iterator for SkipIterator[I] {
+impl[I: Iterator] Iterator for SkipIterator[I] {
     type Item = I::Item;
 
     fn next(self: Self) -> Option[I::Item] {
@@ -944,11 +935,11 @@ impl [I: Iterator] Iterator for SkipIterator[I] {
     }
 }
 
-impl [T, A: Iterator, B: Iterator] Iterator for ChainIterator[T, A, B]
+impl[T, A: Iterator, B: Iterator] Iterator for ChainIterator[T, A, B]
 where
     A::Item = T,
     B::Item = T,
-{
+ {
     type Item = T;
 
     fn next(self: Self) -> Option[T] {
@@ -965,45 +956,35 @@ where
 }
 
 fn iterator_enumerate[I: Iterator](iterator: I) -> EnumerateIterator[I] {
-    EnumerateIterator {
-        iterator,
-        index: Ref::new(0),
-    }
+    EnumerateIterator { iterator, index: Ref::new(0) }
 }
 
-fn iterator_zip[A: Iterator, B: Iterator](
-    left: A,
-    right: B,
-) -> ZipIterator[A, B] {
+fn iterator_zip[A: Iterator, B: Iterator](left: A, right: B) -> ZipIterator[A, B] {
     ZipIterator { left, right }
 }
 
 fn iterator_skip[I: Iterator](iterator: I, count: int) -> SkipIterator[I] {
     SkipIterator {
         iterator,
-        remaining: Ref::new(if count > 0 { count } else { 0 }),
+        remaining: Ref::new(
+            if count > 0 {
+                count
+            } else {
+                0
+            },
+        ),
     }
 }
 
-fn iterator_chain[T, A: Iterator, B: Iterator](
-    first: A,
-    second: B,
-) -> ChainIterator[T, A, B]
+fn iterator_chain[T, A: Iterator, B: Iterator](first: A, second: B) -> ChainIterator[T, A, B]
 where
     A::Item = T,
     B::Item = T,
 {
-    ChainIterator {
-        first,
-        second,
-        first_done: Ref::new(false),
-    }
+    ChainIterator { first, second, first_done: Ref::new(false) }
 }
 
-fn iterator_find[T, I: Iterator](
-    iterator: I,
-    predicate: (T) -> bool,
-) -> Option[T]
+fn iterator_find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[T]
 where
     I::Item = T,
 {
@@ -1020,26 +1001,14 @@ where
     Option::None
 }
 
-fn iterator_any[T, I: Iterator](
-    iterator: I,
-    predicate: (T) -> bool,
-) -> bool
-where
-    I::Item = T,
-{
+fn iterator_any[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
     match iterator_find(iterator, predicate) {
         Option::Some(_) => true,
         Option::None => false,
     }
 }
 
-fn iterator_all[T, I: Iterator](
-    iterator: I,
-    predicate: (T) -> bool,
-) -> bool
-where
-    I::Item = T,
-{
+fn iterator_all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
     iterator_any(iterator, |value: T| predicate(value) == false) == false
 }
 
@@ -1054,7 +1023,7 @@ fn iterator_count[I: Iterator](iterator: I) -> int {
     count.get()
 }
 
-impl [T] Option[T] {
+impl[T] Option[T] {
     fn is_some(self: Option[T]) -> bool {
         match self {
             Option::Some(_) => true,
@@ -1081,7 +1050,7 @@ impl [T] Option[T] {
     }
 }
 
-impl [T, E] Result[T, E] {
+impl[T, E] Result[T, E] {
     fn is_ok(self: Result[T, E]) -> bool {
         match self {
             Result::Ok(_) => true,
@@ -1108,7 +1077,7 @@ impl [T, E] Result[T, E] {
     }
 }
 
-impl [T] Option[T] {
+impl[T] Option[T] {
     fn map[U](self: Option[T], map_fn: (T) -> U) -> Option[U] {
         match self {
             Option::Some(value) => Option::Some(map_fn(value)),
@@ -1116,10 +1085,7 @@ impl [T] Option[T] {
         }
     }
 
-    fn and_then[U](
-        self: Option[T],
-        next: (T) -> Option[U],
-    ) -> Option[U] {
+    fn and_then[U](self: Option[T], next: (T) -> Option[U]) -> Option[U] {
         match self {
             Option::Some(value) => next(value),
             Option::None => Option::None,
@@ -1134,31 +1100,22 @@ impl [T] Option[T] {
     }
 }
 
-impl [T, E] Result[T, E] {
-    fn map[U](
-        self: Result[T, E],
-        map_fn: (T) -> U,
-    ) -> Result[U, E] {
+impl[T, E] Result[T, E] {
+    fn map[U](self: Result[T, E], map_fn: (T) -> U) -> Result[U, E] {
         match self {
             Result::Ok(value) => Result::Ok(map_fn(value)),
             Result::Err(error) => Result::Err(error),
         }
     }
 
-    fn map_err[F](
-        self: Result[T, E],
-        map_fn: (E) -> F,
-    ) -> Result[T, F] {
+    fn map_err[F](self: Result[T, E], map_fn: (E) -> F) -> Result[T, F] {
         match self {
             Result::Ok(value) => Result::Ok(value),
             Result::Err(error) => Result::Err(map_fn(error)),
         }
     }
 
-    fn and_then[U](
-        self: Result[T, E],
-        next: (T) -> Result[U, E],
-    ) -> Result[U, E] {
+    fn and_then[U](self: Result[T, E], next: (T) -> Result[U, E]) -> Result[U, E] {
         match self {
             Result::Ok(value) => next(value),
             Result::Err(error) => Result::Err(error),

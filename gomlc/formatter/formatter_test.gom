@@ -33,16 +33,14 @@ fn token_signature(source: string) -> string {
     let in_where: Ref[bool] = Ref::new(false);
     for index in range(0, tokens.len()) {
         let token = tokens[index];
-        let optional_trailing_comma = lexer::token_kind_equal(
-            token.kind,
-            lexer::TokenKind::Comma,
-        ) && match next_non_trivia(tokens, index + 1) {
-            Some(kind) => closing_delimiter(kind)
-                || in_where.get()
-                    && (lexer::token_kind_equal(kind, lexer::TokenKind::LBrace)
-                        || lexer::token_kind_equal(kind, lexer::TokenKind::Semi)),
-            None => false,
-        };
+        let optional_trailing_comma = lexer::token_kind_equal(token.kind, lexer::TokenKind::Comma)
+            && match next_non_trivia(tokens, index + 1) {
+                Some(kind) => closing_delimiter(kind)
+                    || in_where.get()
+                        && (lexer::token_kind_equal(kind, lexer::TokenKind::LBrace)
+                            || lexer::token_kind_equal(kind, lexer::TokenKind::Semi)),
+                None => false,
+            };
         if lexer::token_is_trivia(token.kind) || optional_trailing_comma {
             ()
         } else {
@@ -54,8 +52,7 @@ fn token_signature(source: string) -> string {
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::WhereKeyword) {
             in_where.set(true)
         } else if lexer::token_kind_equal(token.kind, lexer::TokenKind::LBrace)
-            || lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi)
-        {
+            || lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi) {
             in_where.set(false)
         } else {
             ()
@@ -79,17 +76,7 @@ fn token_kind_signature(source: string, expected: lexer::TokenKind) -> string {
 
 fn literal_token(kind: lexer::TokenKind) -> bool {
     match kind {
-        Float
-        | IntLit
-        | Str
-        | MultilineStr
-        | FStringStart
-        | FStringText
-        | FStringExprStart
-        | FStringExprEnd
-        | FStringEnd
-        | CharLit
-        | ByteCharLit => true,
+        Float | IntLit | Str | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit => true,
         _ => false,
     }
 }
@@ -244,61 +231,49 @@ fn formats_basic_file() -> unit {
 #[test]
 fn renders_flat_and_broken_groups() -> unit {
     let docs = doc_builder();
-    let document = docs.group(concat(Vec::[
-        text("call("),
-        Doc::Line,
-        indent(join(concat2(text(","), Doc::SoftLine), Vec::[
-            text("first"),
-            text("second"),
-        ])),
-        Doc::Line,
-        text(")"),
-    ])).doc;
+    let document = docs.group(
+        concat(
+            Vec::[
+                text("call("),
+                Doc::Line,
+                indent(
+                    join(concat2(text(","), Doc::SoftLine), Vec::[text("first"), text("second")]),
+                ),
+                Doc::Line,
+                text(")"),
+            ],
+        ),
+    ).doc;
     testing::assert_eq(render(document, 40), "call(first, second)");
-    testing::assert_eq(
-        render(document, 10),
-        "call(\n    first,\n    second\n)",
-    )
+    testing::assert_eq(render(document, 10), "call(\n    first,\n    second\n)")
 }
 
 #[test]
 fn renders_nested_groups_independently() -> unit {
     let docs = doc_builder();
-    let inner = docs.group(concat(Vec::[
-        text("inner("),
-        Doc::Line,
-        indent(join(concat2(text(","), Doc::SoftLine), Vec::[
-            text("one"),
-            text("two"),
-        ])),
-        Doc::Line,
-        text(")"),
-    ])).doc;
-    let outer = docs.group(concat(Vec::[
-        text("a_very_long_outer_prefix"),
-        Doc::SoftLine,
-        indent(inner),
-    ])).doc;
-    testing::assert_eq(
-        render(outer, 28),
-        "a_very_long_outer_prefix\n    inner(one, two)",
-    )
+    let inner = docs.group(
+        concat(
+            Vec::[
+                text("inner("),
+                Doc::Line,
+                indent(join(concat2(text(","), Doc::SoftLine), Vec::[text("one"), text("two")])),
+                Doc::Line,
+                text(")"),
+            ],
+        ),
+    ).doc;
+    let outer = docs.group(
+        concat(Vec::[text("a_very_long_outer_prefix"), Doc::SoftLine, indent(inner)]),
+    ).doc;
+    testing::assert_eq(render(outer, 28), "a_very_long_outer_prefix\n    inner(one, two)")
 }
 
 #[test]
 fn measures_unicode_by_codepoint() -> unit {
     let docs = doc_builder();
-    let fits = docs.group(concat(Vec::[
-        text("你好"),
-        Doc::SoftLine,
-        text("世界"),
-    ])).doc;
+    let fits = docs.group(concat(Vec::[text("你好"), Doc::SoftLine, text("世界")])).doc;
     testing::assert_eq(render(fits, 5), "你好 世界");
-    let breaks = doc_builder().group(concat(Vec::[
-        text("你好"),
-        Doc::SoftLine,
-        text("世界"),
-    ])).doc;
+    let breaks = doc_builder().group(concat(Vec::[text("你好"), Doc::SoftLine, text("世界")])).doc;
     testing::assert_eq(render(breaks, 4), "你好\n世界")
 }
 
@@ -306,23 +281,22 @@ fn measures_unicode_by_codepoint() -> unit {
 fn renders_conditional_commas_suffixes_and_verbatim_text() -> unit {
     let docs = doc_builder();
     let id = docs.new_group_id();
-    let list = docs.group_with_id(id, concat(Vec::[
-        text("["),
-        Doc::Line,
-        indent(concat(Vec::[
-            text("alphabet"),
-            if_break(id, text(","), nil()),
-        ])),
-        Doc::Line,
-        text("]"),
-        line_suffix(concat2(text(" "), text("// 尾注释"))),
-        Doc::HardLine,
-        verbatim("\\\\raw\n\\\\text"),
-    ])).doc;
-    testing::assert_eq(
-        render(list, 8),
-        "[\n    alphabet,\n] // 尾注释\n\\\\raw\n\\\\text",
-    )
+    let list = docs.group_with_id(
+        id,
+        concat(
+            Vec::[
+                text("["),
+                Doc::Line,
+                indent(concat(Vec::[text("alphabet"), if_break(id, text(","), nil())])),
+                Doc::Line,
+                text("]"),
+                line_suffix(concat2(text(" "), text("// 尾注释"))),
+                Doc::HardLine,
+                verbatim("\\\\raw\n\\\\text"),
+            ],
+        ),
+    ).doc;
+    testing::assert_eq(render(list, 8), "[\n    alphabet,\n] // 尾注释\n\\\\raw\n\\\\text")
 }
 
 #[test]

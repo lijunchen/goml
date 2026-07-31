@@ -110,8 +110,7 @@ fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
                 meaningful.set(true)
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::LBrace)
-                || token_is(token, lexer::TokenKind::RBrace)
-            {
+                || token_is(token, lexer::TokenKind::RBrace) {
                 ()
             } else if token_is(token, lexer::TokenKind::Whitespace) {
                 content.add_pending_newlines(whitespace_newlines(token.token.text))
@@ -139,12 +138,7 @@ fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
             concat2(Doc::HardLine, text("}"))
         };
         built(
-            concat(Vec::[
-                text("{"),
-                Doc::HardLine,
-                indent(body.doc),
-                closing,
-            ]),
+            concat(Vec::[text("{"), Doc::HardLine, indent(body.doc), closing]),
             Option::Some(lexer::TokenKind::LBrace),
             Option::Some(lexer::TokenKind::RBrace),
         )
@@ -209,13 +203,7 @@ fn format_impl(value: Builder, node: LocatedNode) -> BuiltDoc {
             concat2(Doc::HardLine, text("}"))
         };
         built(
-            concat(Vec::[
-                header_doc.doc,
-                text(" {"),
-                Doc::HardLine,
-                indent(body_doc.doc),
-                closing,
-            ]),
+            concat(Vec::[header_doc.doc, text(" {"), Doc::HardLine, indent(body_doc.doc), closing]),
             header_doc.first,
             Option::Some(lexer::TokenKind::RBrace),
         )
@@ -244,14 +232,14 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
                     ()
                 };
                 content.push_syntax(format_node(value, child));
-                if vertical_body_uses_comma(kind)
-                    && content.trailing_lines.get() == 0
-                {
-                    content.push_syntax(built(
-                        text(","),
-                        Option::Some(lexer::TokenKind::Comma),
-                        Option::Some(lexer::TokenKind::Comma),
-                    ))
+                if vertical_body_uses_comma(kind) && content.trailing_lines.get() == 0 {
+                    content.push_syntax(
+                        built(
+                            text(","),
+                            Option::Some(lexer::TokenKind::Comma),
+                            Option::Some(lexer::TokenKind::Comma),
+                        ),
+                    )
                 } else {
                     ()
                 };
@@ -259,8 +247,7 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::RBrace)
                 || owns_open && token_is(token, lexer::TokenKind::LBrace)
-                || token_is(token, lexer::TokenKind::Comma)
-            {
+                || token_is(token, lexer::TokenKind::Comma) {
                 ()
             } else if token_is(token, lexer::TokenKind::Whitespace) {
                 content.add_pending_newlines(whitespace_newlines(token.token.text))
@@ -295,18 +282,9 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
         };
         BuiltDoc {
             doc: if owns_open {
-                concat(Vec::[
-                    text("{"),
-                    Doc::HardLine,
-                    indent(body.doc),
-                    closing,
-                ])
+                concat(Vec::[text("{"), Doc::HardLine, indent(body.doc), closing])
             } else {
-                concat(Vec::[
-                    Doc::HardLine,
-                    indent(body.doc),
-                    closing,
-                ])
+                concat(Vec::[Doc::HardLine, indent(body.doc), closing])
             },
             first: if owns_open {
                 Option::Some(lexer::TokenKind::LBrace)

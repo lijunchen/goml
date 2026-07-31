@@ -14,9 +14,10 @@ fn artifact_binary_value_section_id() -> uint16 {
     2
 }
 
-fn artifact_binary_interface_sections(
-    value: ArtifactInterfaceUnit,
-) -> Result[Vec[ArtifactBinarySection], string] {
+fn artifact_binary_interface_sections(value: ArtifactInterfaceUnit) -> Result[
+    Vec[ArtifactBinarySection],
+    string,
+] {
     let collector = new_artifact_binary_string_collector();
     artifact_json_interface_unit(collector, value);
     let table = artifact_binary_collected_string_table(collector);
@@ -27,25 +28,25 @@ fn artifact_binary_interface_sections(
         Err(error) => return Result::Err(error),
     };
     Result::Ok(
-        Vec::new()
-            .pushed(ArtifactBinarySection {
+        Vec::new().pushed(
+            ArtifactBinarySection {
                 id: artifact_binary_string_table_section_id(),
                 version: 1,
                 flags: artifact_binary_required_section_flag(),
                 data: encode_artifact_binary_string_table(table),
-            })
-            .pushed(ArtifactBinarySection {
+            },
+        ).pushed(
+            ArtifactBinarySection {
                 id: artifact_binary_value_section_id(),
                 version: 4,
                 flags: artifact_binary_required_section_flag(),
                 data: payload,
-            }),
+            },
+        ),
     )
 }
 
-fn encode_artifact_interface_binary(
-    value: ArtifactInterfaceUnit,
-) -> Result[bytes::Bytes, string] {
+fn encode_artifact_interface_binary(value: ArtifactInterfaceUnit) -> Result[bytes::Bytes, string] {
     let sections = match artifact_binary_interface_sections(value) {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -53,42 +54,29 @@ fn encode_artifact_interface_binary(
     encode_artifact_binary_container(1, sections)
 }
 
-fn artifact_binary_validate_interface_sections(
-    value: ArtifactBinaryContainer,
-) -> Result[unit, string] {
+fn artifact_binary_validate_interface_sections(value: ArtifactBinaryContainer) -> Result[
+    unit,
+    string,
+] {
     for section in value.sections {
         if section.id == artifact_binary_string_table_section_id() {
             if section.version != 1 {
-                return Result::Err(
-                    "unsupported binary interface artifact section version",
-                )
-            } else if section.flags
-                != artifact_binary_required_section_flag()
-            {
-                return Result::Err(
-                    "invalid binary interface artifact section flags",
-                )
+                return Result::Err("unsupported binary interface artifact section version")
+            } else if section.flags != artifact_binary_required_section_flag() {
+                return Result::Err("invalid binary interface artifact section flags")
             } else {
                 ()
             }
         } else if section.id == artifact_binary_value_section_id() {
             if section.version != 4 {
-                return Result::Err(
-                    "unsupported binary interface artifact section version",
-                )
-            } else if section.flags
-                != artifact_binary_required_section_flag()
-            {
-                return Result::Err(
-                    "invalid binary interface artifact section flags",
-                )
+                return Result::Err("unsupported binary interface artifact section version")
+            } else if section.flags != artifact_binary_required_section_flag() {
+                return Result::Err("invalid binary interface artifact section flags")
             } else {
                 ()
             }
         } else if section.flags & artifact_binary_required_section_flag() != 0 {
-            return Result::Err(
-                "unsupported required binary interface artifact section",
-            )
+            return Result::Err("unsupported required binary interface artifact section")
         } else {
             ()
         }
@@ -96,9 +84,7 @@ fn artifact_binary_validate_interface_sections(
     Result::Ok(())
 }
 
-fn decode_artifact_interface_binary(
-    data: bytes::Bytes,
-) -> Result[ArtifactInterfaceUnit, string] {
+fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[ArtifactInterfaceUnit, string] {
     let container = match decode_artifact_binary_container(data) {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
@@ -118,9 +104,7 @@ fn decode_artifact_interface_binary(
     ) {
         Some(value) => value,
         None => {
-            return Result::Err(
-                "binary interface artifact is missing string table",
-            )
+            return Result::Err("binary interface artifact is missing string table")
         },
     };
     let value_section = match artifact_binary_find_section(
@@ -132,9 +116,7 @@ fn decode_artifact_interface_binary(
             return Result::Err("binary interface artifact is missing value")
         },
     };
-    let table = match decode_artifact_binary_string_table(
-        string_section.data,
-    ) {
+    let table = match decode_artifact_binary_string_table(string_section.data) {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
     };

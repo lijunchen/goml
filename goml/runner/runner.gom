@@ -107,14 +107,16 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
             Some(value) => json::as_string(value),
             None => Option::None,
         };
-        result.push(Test {
-            id,
-            display_name,
-            ignored,
-            ignore_reason,
-            kind: group.kind,
-            executable: group.executable,
-        })
+        result.push(
+            Test {
+                id,
+                display_name,
+                ignored,
+                ignore_reason,
+                kind: group.kind,
+                executable: group.executable,
+            },
+        )
     };
     Result::Ok(result)
 }
@@ -179,9 +181,7 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
                 None => "null",
             };
             io::println(
-                "{\"event\":\"test\",\"ignored\":"
-                    + test.ignored.to_string()
-                    + ",\"kind\":\""
+                "{\"event\":\"test\",\"ignored\":" + test.ignored.to_string() + ",\"kind\":\""
                     + escape_json(test.kind)
                     + "\",\"name\":\""
                     + escape_json(test.display_name)
@@ -197,25 +197,14 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
     }
 }
 
-fn run_one(
-    module_dir: string,
-    index: int,
-    test: Test,
-    options: Options,
-) -> Execution {
+fn run_one(module_dir: string, index: int, test: Test, options: Options) -> Execution {
     if test.ignored && !options.ignored && !options.include_ignored {
-        Execution {
-            index,
-            test,
-            status: Status::Ignored,
-            stdout: "",
-            stderr: "",
-        }
+        Execution { index, test, status: Status::Ignored, stdout: "", stderr: "" }
     } else {
-        let command = process::Command::new(test.executable)
-            .arg(test.id)
-            .current_dir(module_dir)
-            .env("TZ", "UTC");
+        let command = process::Command::new(test.executable).arg(test.id).current_dir(module_dir).env(
+            "TZ",
+            "UTC",
+        );
         if options.nocapture {
             match command.status_timeout(options.timeout_ms) {
                 Ok(result) => Execution {
@@ -226,10 +215,12 @@ fn run_one(
                     } else if process::ExitStatus::success(result.0) {
                         Status::Passed
                     } else {
-                        Status::Failed(match process::ExitStatus::code(result.0) {
-                            Some(value) => value,
-                            None => -1,
-                        })
+                        Status::Failed(
+                            match process::ExitStatus::code(result.0) {
+                                Some(value) => value,
+                                None => -1,
+                            },
+                        )
                     },
                     stdout: "",
                     stderr: "",
@@ -251,17 +242,15 @@ fn run_one(
                         test,
                         status: if result.1 {
                             Status::TimedOut
-                        } else if process::ExitStatus::success(
-                            process::Output::status(output),
-                        ) {
+                        } else if process::ExitStatus::success(process::Output::status(output)) {
                             Status::Passed
                         } else {
-                            Status::Failed(match process::ExitStatus::code(
-                                process::Output::status(output),
-                            ) {
-                                Some(value) => value,
-                                None => -1,
-                            })
+                            Status::Failed(
+                                match process::ExitStatus::code(process::Output::status(output)) {
+                                    Some(value) => value,
+                                    None => -1,
+                                },
+                            )
                         },
                         stdout: bytes_text(process::Output::stdout(output)),
                         stderr: bytes_text(process::Output::stderr(output)),
@@ -287,21 +276,13 @@ fn worker(
 ) -> unit {
     while true {
         match work.recv() {
-            Some(item) => results.send(run_one(
-                module_dir,
-                item.0,
-                item.1,
-                options,
-            )),
+            Some(item) => results.send(run_one(module_dir, item.0, item.1, options)),
             None => break,
         }
     }
 }
 
-fn execution_insert_index(
-    values: Vec[Execution],
-    value: Execution,
-) -> int {
+fn execution_insert_index(values: Vec[Execution], value: Execution) -> int {
     for index in range(0, values.len()) {
         if value.index < values[index].index {
             return index
@@ -338,9 +319,7 @@ fn report_text(values: Vec[Execution]) -> int {
             Ignored => {
                 ignored.set(ignored.get() + 1);
                 io::println(
-                    "test "
-                        + value.test.display_name
-                        + " ... "
+                    "test " + value.test.display_name + " ... "
                         + match value.test.ignore_reason {
                             Some(reason) => "ignored: " + reason,
                             None => "ignored",
@@ -358,9 +337,7 @@ fn report_text(values: Vec[Execution]) -> int {
                     },
                     _ => "FAILED",
                 };
-                io::println(
-                    "test " + value.test.display_name + " ... " + status,
-                );
+                io::println("test " + value.test.display_name + " ... " + status);
                 if value.stdout != "" {
                     io::println("---- stdout ----");
                     io::print(value.stdout)
@@ -378,7 +355,11 @@ fn report_text(values: Vec[Execution]) -> int {
     };
     io::println(
         "\ntest result: "
-            + if failed.get() == 0 { "ok" } else { "FAILED" }
+            + if failed.get() == 0 {
+                "ok"
+            } else {
+                "FAILED"
+            }
             + ". "
             + passed.get().to_string()
             + " passed; "
@@ -406,21 +387,14 @@ fn report_json(values: Vec[Execution]) -> int {
             },
         };
         io::println(
-            "{\"event\":\""
-                + event
-                + "\",\"name\":\""
-                + escape_json(value.test.display_name)
+            "{\"event\":\"" + event + "\",\"name\":\"" + escape_json(value.test.display_name)
                 + "\"}",
         )
     };
     failed.get()
 }
 
-pub fn run(
-    module_dir: string,
-    groups: Vec[Group],
-    options: Options,
-) -> Result[unit, string] {
+pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[unit, string] {
     let loaded = Vec::new();
     for group in groups {
         let values = match load_tests(group) {
@@ -443,9 +417,7 @@ pub fn run(
         print_list(selected_tests, options);
         return Result::Ok(())
     } else if !options.json {
-        io::println(
-            "running " + selected_tests.len().to_string() + " tests\n",
-        )
+        io::println("running " + selected_tests.len().to_string() + " tests\n")
     } else {
         ()
     };

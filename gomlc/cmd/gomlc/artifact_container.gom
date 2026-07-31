@@ -25,22 +25,13 @@ fn artifact_binary_directory_entry_size() -> int {
 
 fn artifact_binary_magic() -> bytes::Bytes {
     bytes::Bytes::from_vec(
-        Vec::new()
-            .pushed(71)
-            .pushed(79)
-            .pushed(77)
-            .pushed(76)
-            .pushed(65)
-            .pushed(82)
-            .pushed(84)
-            .pushed(0),
+        Vec::new().pushed(71).pushed(79).pushed(77).pushed(76).pushed(65).pushed(82).pushed(84).pushed(
+            0,
+        ),
     )
 }
 
-fn artifact_binary_bytes_equal(
-    left: bytes::Bytes,
-    right: bytes::Bytes,
-) -> bool {
+fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool {
     if left.len() != right.len() {
         false
     } else {
@@ -91,9 +82,7 @@ fn artifact_binary_section_insert_index(
     values.len()
 }
 
-fn artifact_binary_sort_sections(
-    values: Vec[ArtifactBinarySection],
-) -> Vec[ArtifactBinarySection] {
+fn artifact_binary_sort_sections(values: Vec[ArtifactBinarySection]) -> Vec[ArtifactBinarySection] {
     let result = Vec::new();
     for value in values {
         let index = artifact_binary_section_insert_index(result, value);
@@ -106,9 +95,7 @@ fn artifact_binary_sort_sections(
     result
 }
 
-fn artifact_binary_sections_valid(
-    values: Vec[ArtifactBinarySection],
-) -> bool {
+fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
     let previous: Ref[Option[uint16]] = Ref::new(Option::None);
     for value in values {
         match previous.get() {
@@ -124,10 +111,10 @@ fn artifact_binary_sections_valid(
     true
 }
 
-fn encode_artifact_binary_container(
-    kind: uint8,
-    sections: Vec[ArtifactBinarySection],
-) -> Result[bytes::Bytes, string] {
+fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinarySection]) -> Result[
+    bytes::Bytes,
+    string,
+] {
     if kind != 1 && kind != 2 && kind != 3 {
         return Result::Err("invalid binary artifact kind")
     } else {
@@ -156,15 +143,11 @@ fn encode_artifact_binary_container(
     artifact_binary_write_u32(writer, 3);
     artifact_binary_write_u16(writer, sections.len() as uint16);
     artifact_binary_write_u16(writer, 0);
-    artifact_binary_write_u64(
-        writer,
-        artifact_binary_header_size() as uint64,
-    );
+    artifact_binary_write_u64(writer, artifact_binary_header_size() as uint64);
     artifact_binary_write_u64(writer, payload.len() as uint64);
     artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(payload));
     let offset = Ref::new(
-        artifact_binary_header_size()
-            + artifact_binary_directory_entry_size() * sections.len(),
+        artifact_binary_header_size() + artifact_binary_directory_entry_size() * sections.len(),
     );
     for section in sections {
         artifact_binary_write_u16(writer, section.id);
@@ -173,34 +156,25 @@ fn encode_artifact_binary_container(
         artifact_binary_write_u16(writer, 0);
         artifact_binary_write_u64(writer, offset.get() as uint64);
         artifact_binary_write_u64(writer, section.data.len() as uint64);
-        artifact_binary_write_raw_bytes(
-            writer,
-            artifact_binary_sha256(section.data),
-        );
+        artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(section.data));
         offset.set(offset.get() + section.data.len())
     };
     artifact_binary_write_raw_bytes(writer, payload);
     Result::Ok(artifact_binary_writer_finish(writer))
 }
 
-fn artifact_binary_checked_int(
-    reader: ArtifactBinaryReader,
-    value: uint64,
-    name: string,
-) -> Result[int, string] {
+fn artifact_binary_checked_int(reader: ArtifactBinaryReader, value: uint64, name: string) -> Result[
+    int,
+    string,
+] {
     if value > 2147483647 {
-        Result::Err(artifact_binary_reader_error(
-            reader,
-            name + " exceeds supported size",
-        ))
+        Result::Err(artifact_binary_reader_error(reader, name + " exceeds supported size"))
     } else {
         Result::Ok(value as int)
     }
 }
 
-fn decode_artifact_binary_container(
-    data: bytes::Bytes,
-) -> Result[ArtifactBinaryContainer, string] {
+fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinaryContainer, string] {
     let reader = new_artifact_binary_reader(data);
     let magic = match artifact_binary_read_raw_bytes(reader, 8) {
         Ok(value) => value,
@@ -269,22 +243,14 @@ fn decode_artifact_binary_container(
         ()
     };
     let directory_offset = match artifact_binary_read_u64(reader) {
-        Ok(value) => match artifact_binary_checked_int(
-            reader,
-            value,
-            "directory offset",
-        ) {
+        Ok(value) => match artifact_binary_checked_int(reader, value, "directory offset") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         },
         Err(error) => return Result::Err(error),
     };
     let payload_length = match artifact_binary_read_u64(reader) {
-        Ok(value) => match artifact_binary_checked_int(
-            reader,
-            value,
-            "payload length",
-        ) {
+        Ok(value) => match artifact_binary_checked_int(reader, value, "payload length") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         },
@@ -301,9 +267,7 @@ fn decode_artifact_binary_container(
     };
     let payload_offset = artifact_binary_header_size()
         + section_count * artifact_binary_directory_entry_size();
-    if payload_offset > data.len()
-        || payload_length != data.len() - payload_offset
-    {
+    if payload_offset > data.len() || payload_length != data.len() - payload_offset {
         return Result::Err("invalid binary artifact payload length")
     } else {
         ()
@@ -319,12 +283,8 @@ fn decode_artifact_binary_container(
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };
-        if section_ids.len() > 0
-            && id <= section_ids[section_ids.len() - 1]
-        {
-            return Result::Err(
-                "binary artifact section directory is not sorted",
-            )
+        if section_ids.len() > 0 && id <= section_ids[section_ids.len() - 1] {
+            return Result::Err("binary artifact section directory is not sorted")
         } else {
             ()
         };
@@ -346,22 +306,14 @@ fn decode_artifact_binary_container(
             ()
         };
         let offset = match artifact_binary_read_u64(reader) {
-            Ok(value) => match artifact_binary_checked_int(
-                reader,
-                value,
-                "section offset",
-            ) {
+            Ok(value) => match artifact_binary_checked_int(reader, value, "section offset") {
                 Ok(value) => value,
                 Err(error) => return Result::Err(error),
             },
             Err(error) => return Result::Err(error),
         };
         let length = match artifact_binary_read_u64(reader) {
-            Ok(value) => match artifact_binary_checked_int(
-                reader,
-                value,
-                "section length",
-            ) {
+            Ok(value) => match artifact_binary_checked_int(reader, value, "section length") {
                 Ok(value) => value,
                 Err(error) => return Result::Err(error),
             },
@@ -382,10 +334,7 @@ fn decode_artifact_binary_container(
     for index in range(0, payload_length) {
         payload.push(data.get(payload_offset + index))
     };
-    if !artifact_binary_bytes_equal(
-        payload_hash,
-        artifact_binary_sha256(payload),
-    ) {
+    if !artifact_binary_bytes_equal(payload_hash, artifact_binary_sha256(payload)) {
         return Result::Err("binary artifact payload checksum mismatch")
     } else {
         ()
@@ -395,9 +344,7 @@ fn decode_artifact_binary_container(
     for index in range(0, section_count) {
         let offset = section_offsets[index];
         let length = section_lengths[index];
-        if offset != previous_end.get()
-            || length > data.len() - offset
-        {
+        if offset != previous_end.get() || length > data.len() - offset {
             return Result::Err("invalid binary artifact section range")
         } else {
             ()
@@ -406,20 +353,19 @@ fn decode_artifact_binary_container(
         for item in range(0, length) {
             section_data.push(data.get(offset + item))
         };
-        if !artifact_binary_bytes_equal(
-            section_hashes[index],
-            artifact_binary_sha256(section_data),
-        ) {
+        if !artifact_binary_bytes_equal(section_hashes[index], artifact_binary_sha256(section_data)) {
             return Result::Err("binary artifact section checksum mismatch")
         } else {
             ()
         };
-        result.push(ArtifactBinarySection {
-            id: section_ids[index],
-            version: section_versions[index],
-            flags: section_flags[index],
-            data: section_data,
-        });
+        result.push(
+            ArtifactBinarySection {
+                id: section_ids[index],
+                version: section_versions[index],
+                flags: section_flags[index],
+                data: section_data,
+            },
+        );
         previous_end.set(offset + length)
     };
     if previous_end.get() != data.len() {
@@ -427,17 +373,13 @@ fn decode_artifact_binary_container(
     } else if !artifact_binary_sections_valid(result) {
         Result::Err("duplicate binary artifact section")
     } else {
-        Result::Ok(ArtifactBinaryContainer {
-            kind,
-            sections: result,
-        })
+        Result::Ok(ArtifactBinaryContainer { kind, sections: result })
     }
 }
 
-fn artifact_binary_find_section(
-    value: ArtifactBinaryContainer,
-    id: uint16,
-) -> Option[ArtifactBinarySection] {
+fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: uint16) -> Option[
+    ArtifactBinarySection,
+] {
     for offset in range(0, value.sections.len()) {
         let section = value.sections[value.sections.len() - 1 - offset];
         if section.id == id {

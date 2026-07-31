@@ -8,10 +8,7 @@ struct NameSet {
 }
 
 fn new_name_set() -> NameSet {
-    NameSet {
-        values: Vec::new(),
-        present: HashMap::new(),
-    }
+    NameSet { values: Vec::new(), present: HashMap::new() }
 }
 
 fn name_present(values: NameSet, expected: string) -> bool {
@@ -50,24 +47,7 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
                 collect_type_names(result, value)
             }
         },
-        Void
-        | Any
-        | Unit
-        | Bool
-        | Int
-        | Int8
-        | Int16
-        | Int32
-        | Int64
-        | Uint
-        | Uint8
-        | Uint16
-        | Uint32
-        | Uint64
-        | Float32
-        | Float64
-        | String
-        | Char => (),
+        Void | Any | Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => (),
     }
 }
 
@@ -129,12 +109,7 @@ fn collect_expr_names(result: NameSet, value: Expr) -> unit {
             collect_type_names(result, ret_ty);
             collect_block_names(result, body)
         },
-        Nil
-        | Unit
-        | Bool { value: _ }
-        | Int { value: _ }
-        | Float { value: _ }
-        | String { value: _ } => (),
+        Nil | Unit | Bool { value: _ } | Int { value: _ } | Float { value: _ } | String { value: _ } => (),
     }
 }
 
@@ -203,11 +178,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                 None => (),
             }
         },
-        Break
-        | BreakLabel { label: _ }
-        | Continue
-        | Panic { message: _ }
-        | Unreachable => (),
+        Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
     }
 }
 
@@ -223,8 +194,7 @@ fn name_uses_import(name: string, alias: string) -> bool {
     } else if name.byte_len() <= alias.byte_len() {
         false
     } else {
-        strings::starts_with(name, alias)
-            && name.byte_get(alias.byte_len()) == 46
+        strings::starts_with(name, alias) && name.byte_get(alias.byte_len()) == 46
     }
 }
 
@@ -335,8 +305,7 @@ pub fn prune_functions(value: File) -> File {
             match item {
                 Function(function) => {
                     if name_present(reachable, function.name)
-                        && name_present(expanded, function.name) == false
-                    {
+                        && name_present(expanded, function.name) == false {
                         add_reachable(expanded, function.name);
                         collect_block_names(reachable, function.body);
                     } else {
@@ -357,8 +326,7 @@ pub fn prune_functions(value: File) -> File {
         for item in value.items {
             match item {
                 Global(global) => if name_present(reachable, global.name)
-                    && name_present(expanded, global.name) == false
-                {
+                    && name_present(expanded, global.name) == false {
                     add_reachable(expanded, global.name);
                     collect_expr_names(reachable, global.value)
                 } else {
@@ -379,8 +347,7 @@ pub fn prune_functions(value: File) -> File {
             match item {
                 ConstGroup(group) => for spec in group.specs {
                     if name_present(reachable, spec.name)
-                        && name_present(expanded, spec.name) == false
-                    {
+                        && name_present(expanded, spec.name) == false {
                         add_reachable(expanded, spec.name);
                         collect_expr_names(reachable, spec.value)
                     } else {

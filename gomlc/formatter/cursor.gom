@@ -27,11 +27,7 @@ struct ChildCursor {
 }
 
 fn located_node(node: cst::CstNode, start: int) -> LocatedNode {
-    LocatedNode {
-        node,
-        start,
-        end: start + cst::node_byte_len(node),
-    }
+    LocatedNode { node, start, end: start + cst::node_byte_len(node) }
 }
 
 fn child_cursor(value: LocatedNode) -> ChildCursor {
@@ -40,16 +36,16 @@ fn child_cursor(value: LocatedNode) -> ChildCursor {
     for element in cst::node_children(value.node) {
         let length = cst::element_byte_len(element);
         match element {
-            Node(node) => elements.push(LocatedElement::Node(LocatedNode {
-                node,
-                start: offset.get(),
-                end: offset.get() + length,
-            })),
-            Token(token) => elements.push(LocatedElement::Token(LocatedToken {
-                token,
-                start: offset.get(),
-                end: offset.get() + length,
-            })),
+            Node(node) => elements.push(
+                LocatedElement::Node(
+                    LocatedNode { node, start: offset.get(), end: offset.get() + length },
+                ),
+            ),
+            Token(token) => elements.push(
+                LocatedElement::Token(
+                    LocatedToken { token, start: offset.get(), end: offset.get() + length },
+                ),
+            ),
         };
         offset.set(offset.get() + length)
     };
@@ -248,10 +244,7 @@ fn node_significant_source(value: LocatedNode) -> string {
     match (first_significant_token(value), last_significant_token(value)) {
         (Some(first), Some(last)) => {
             let source = node_source(value);
-            source.byte_slice(
-                first.start - value.start,
-                last.end - value.start,
-            )
+            source.byte_slice(first.start - value.start, last.end - value.start)
         },
         _ => "",
     }

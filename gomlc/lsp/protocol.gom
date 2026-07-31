@@ -12,11 +12,7 @@ fn json_fields(values: Vec[(string, json::Value)]) -> json::Value {
     json::Value::Object(values)
 }
 
-fn push_json_field(
-    values: Vec[(string, json::Value)],
-    name: string,
-    value: json::Value,
-) -> unit {
+fn push_json_field(values: Vec[(string, json::Value)], name: string, value: json::Value) -> unit {
     values.push((name, value))
 }
 
@@ -27,9 +23,7 @@ pub fn parse_rpc_message(value: json::Value) -> Result[RpcMessage, string] {
         } else {
             ()
         },
-        Some(_) => return Result::Err(
-            "JSON-RPC version must be a string",
-        ),
+        Some(_) => return Result::Err("JSON-RPC version must be a string"),
         None => return Result::Err("JSON-RPC message has no version"),
     };
     let method = match json::field(value, "method") {
@@ -55,11 +49,7 @@ pub fn rpc_success(id: json::Value, result: json::Value) -> json::Value {
     json_fields(fields)
 }
 
-pub fn rpc_error(
-    id: json::Value,
-    code: int,
-    message: string,
-) -> json::Value {
+pub fn rpc_error(id: json::Value, code: int, message: string) -> json::Value {
     let error = Vec::new();
     push_json_field(error, "code", json::Value::Number(code.to_string()));
     push_json_field(error, "message", json::Value::String(message));
@@ -80,10 +70,7 @@ pub fn rpc_notification(method: string, params: json::Value) -> json::Value {
 
 pub fn framed_json(value: json::Value) -> string {
     let body = json::encode(value);
-    "Content-Length: "
-        + body.byte_len().to_string()
-        + "\r\n\r\n"
-        + body
+    "Content-Length: " + body.byte_len().to_string() + "\r\n\r\n" + body
 }
 
 fn ascii_lower(value: uint8) -> uint8 {
@@ -94,17 +81,12 @@ fn ascii_lower(value: uint8) -> uint8 {
     }
 }
 
-fn ascii_prefix_equal_case_insensitive(
-    value: string,
-    expected: string,
-) -> bool {
+fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool {
     if value.byte_len() < expected.byte_len() {
         false
     } else {
         for index in range(0, expected.byte_len()) {
-            if ascii_lower(value.byte_get(index))
-                != ascii_lower(expected.byte_get(index))
-            {
+            if ascii_lower(value.byte_get(index)) != ascii_lower(expected.byte_get(index)) {
                 return false
             } else {
                 ()
@@ -117,9 +99,7 @@ fn ascii_prefix_equal_case_insensitive(
 fn header_line_content(value: string) -> string {
     let end = Ref::new(value.byte_len());
     while end.get() > 0
-        && (value.byte_get(end.get() - 1) == 10
-            || value.byte_get(end.get() - 1) == 13)
-    {
+        && (value.byte_get(end.get() - 1) == 10 || value.byte_get(end.get() - 1) == 13) {
         end.set(end.get() - 1)
     };
     value.byte_slice(0, end.get())
@@ -151,9 +131,7 @@ pub fn content_length(value: string) -> Result[int, string] {
     } else {
         let start = Ref::new(prefix.byte_len());
         while start.get() < line.byte_len()
-            && (line.byte_get(start.get()) == 32
-                || line.byte_get(start.get()) == 9)
-        {
+            && (line.byte_get(start.get()) == 32 || line.byte_get(start.get()) == 9) {
             start.set(start.get() + 1)
         };
         decimal_length(line.byte_slice(start.get(), line.byte_len()))
@@ -167,16 +145,8 @@ fn is_content_length_header(value: string) -> bool {
 
 pub fn position_json(value: Position) -> json::Value {
     let fields = Vec::new();
-    push_json_field(
-        fields,
-        "line",
-        json::Value::Number(value.line.to_string()),
-    );
-    push_json_field(
-        fields,
-        "character",
-        json::Value::Number(value.character.to_string()),
-    );
+    push_json_field(fields, "line", json::Value::Number(value.line.to_string()));
+    push_json_field(fields, "character", json::Value::Number(value.character.to_string()));
     json_fields(fields)
 }
 
