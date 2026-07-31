@@ -93,20 +93,19 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
 }
 
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
-    let file: Ref[Option[string]] = Ref::new(Option::None);
+    let mut file: Option[string] = Option::None;
     let seen: HashMap[string, unit] = HashMap::{};
     let used_dumps = Vec::new();
-    let positional = Ref::new(false);
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
-        if positional.get() == false && argument == "--" {
-            positional.set(true);
-            index.set(index.get() + 1)
-        } else if positional.get() == false && cli_help_argument(argument) {
+    let mut positional = false;
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
+        if positional == false && argument == "--" {
+            positional = true;
+            index += 1;
+        } else if positional == false && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
-        } else if positional.get() == false
-            && option_string_present(inline_cli_value(argument, "--help")) {
+        } else if positional == false && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
@@ -117,23 +116,23 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 "gomlc run-single --help <--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go|FILE>"
             };
             return Result::Err(unexpected_value_error_with_usage(value, "--help", usage))
-        } else if positional.get() == false && dump_argument(argument) {
+        } else if positional == false && dump_argument(argument) {
             if seen.contains(argument) {
                 return Result::Err(repeated_argument_error("run-single", argument))
             } else {
                 seen[argument] = ();
                 used_dumps.push(argument);
-                index.set(index.get() + 1)
+                index += 1;
             }
-        } else if positional.get() == false
+        } else if positional == false
             && inline_dump_argument_present(inline_dump_argument(argument)) {
             match inline_dump_argument(argument) {
                 Some((name, value)) => return Result::Err(
-                    unexpected_value_error("run-single", value, name, name + " <FILE>"),
+                    unexpected_value_error("run-single", value, name, f"{name} <FILE>"),
                 ),
                 None => (),
             }
-        } else if positional.get() == false && cli_option(argument) {
+        } else if positional == false && cli_option(argument) {
             match similar_cli_argument("run-single", argument) {
                 Some(similar) => {
                     let usage = if similar == "--help" {
@@ -150,25 +149,25 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 },
                 None => (),
             };
-            let usage = if used_dumps.len() > 0 || option_string_present(file.get()) {
+            let usage = if used_dumps.len() > 0 || file.is_some() {
                 selected_run_usage(used_dumps)
             } else {
                 command_usage("run-single")
             };
             return Result::Err(unexpected_argument_error_with_usage(argument, true, usage))
         } else {
-            match file.get() {
+            match file {
                 Some(_) => return Result::Err(
                     unexpected_argument_error("run-single", argument, false),
                 ),
                 None => {
-                    file.set(Option::Some(argument));
-                    index.set(index.get() + 1)
+                    file = Option::Some(argument);
+                    index += 1;
                 },
             }
         }
     };
-    match file.get() {
+    match file {
         Some(value) => Result::Ok(
             RunArgs {
                 file: value,

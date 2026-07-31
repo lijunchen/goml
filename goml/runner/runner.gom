@@ -60,9 +60,9 @@ fn required_string(value: json::Value, name: string) -> Result[string, string] {
     match json::field(value, name) {
         Some(value) => match json::as_string(value) {
             Some(value) => Result::Ok(value),
-            None => Result::Err(name + " must be a string"),
+            None => Result::Err(f"{name} must be a string"),
         },
-        None => Result::Err("test manifest omitted " + name),
+        None => Result::Err(f"test manifest omitted {name}"),
     }
 }
 
@@ -70,9 +70,9 @@ fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
     match json::field(value, name) {
         Some(value) => match json::as_bool(value) {
             Some(value) => Result::Ok(value),
-            None => Result::Err(name + " must be boolean"),
+            None => Result::Err(f"{name} must be boolean"),
         },
-        None => Result::Err("test manifest omitted " + name),
+        None => Result::Err(f"test manifest omitted {name}"),
     }
 }
 
@@ -175,7 +175,7 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
                     + "}",
             )
         } else if test.ignored {
-            io::println(test.display_name + ": ignored")
+            io::println(f"{test.display_name}: ignored")
         } else {
             io::println(test.display_name)
         }
@@ -292,37 +292,35 @@ fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
 }
 
 fn report_text(values: Vec[Execution]) -> int {
-    let passed = Ref::new(0);
-    let failed = Ref::new(0);
-    let ignored = Ref::new(0);
+    let mut passed = 0;
+    let mut failed = 0;
+    let mut ignored = 0;
     for value in values {
         match value.status {
             Passed => {
-                passed.set(passed.get() + 1);
-                io::println("test " + value.test.display_name + " ... ok")
+                passed += 1;
+                io::println(f"test {value.test.display_name} ... ok")
             },
             Ignored => {
-                ignored.set(ignored.get() + 1);
-                io::println(
-                    "test " + value.test.display_name + " ... "
-                        + match value.test.ignore_reason {
-                            Some(reason) => "ignored: " + reason,
-                            None => "ignored",
-                        },
-                )
+                ignored += 1;
+                let status = match value.test.ignore_reason {
+                    Some(reason) => f"ignored: {reason}",
+                    None => "ignored",
+                };
+                io::println(f"test {value.test.display_name} ... {status}")
             },
             TimedOut | Failed(_) => {
-                failed.set(failed.get() + 1);
+                failed += 1;
                 let status = match value.status {
                     TimedOut => "FAILED (timed out)",
                     Failed(code) => if code < 0 {
                         "FAILED (terminated by signal)"
                     } else {
-                        "FAILED (exit code " + code.to_string() + ")"
+                        f"FAILED (exit code {code})"
                     },
                     _ => "FAILED",
                 };
-                io::println("test " + value.test.display_name + " ... " + status);
+                io::println(f"test {value.test.display_name} ... {status}");
                 if value.stdout != "" {
                     io::println("---- stdout ----");
                     io::print(value.stdout)
@@ -338,36 +336,27 @@ fn report_text(values: Vec[Execution]) -> int {
             },
         }
     };
-    io::println(
-        "\ntest result: "
-            + if failed.get() == 0 {
-                "ok"
-            } else {
-                "FAILED"
-            }
-            + ". "
-            + passed.get().to_string()
-            + " passed; "
-            + failed.get().to_string()
-            + " failed; "
-            + ignored.get().to_string()
-            + " ignored",
-    );
-    failed.get()
+    let result = if failed == 0 {
+        "ok"
+    } else {
+        "FAILED"
+    };
+    io::println(f"\ntest result: {result}. {passed} passed; {failed} failed; {ignored} ignored");
+    failed
 }
 
 fn report_json(values: Vec[Execution]) -> int {
-    let failed = Ref::new(0);
+    let mut failed = 0;
     for value in values {
         let event = match value.status {
             Passed => "ok",
             Ignored => "ignored",
             Failed(_) => {
-                failed.set(failed.get() + 1);
+                failed += 1;
                 "failed"
             },
             TimedOut => {
-                failed.set(failed.get() + 1);
+                failed += 1;
                 "timed_out"
             },
         };
@@ -376,7 +365,7 @@ fn report_json(values: Vec[Execution]) -> int {
                 + "\"}",
         )
     };
-    failed.get()
+    failed
 }
 
 pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[unit, string] {
@@ -399,7 +388,7 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
         print_list(selected_tests, options);
         return Result::Ok(())
     } else if !options.json {
-        io::println("running " + selected_tests.len().to_string() + " tests\n")
+        io::println(f"running {selected_tests.len()} tests\n")
     } else {
         ()
     };
@@ -443,6 +432,6 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
     if failures == 0 {
         Result::Ok(())
     } else {
-        Result::Err(failures.to_string() + " test(s) failed")
+        Result::Err(f"{failures} test(s) failed")
     }
 }

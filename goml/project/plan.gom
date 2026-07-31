@@ -22,11 +22,11 @@ fn package_artifact_base(root: string, graph: Graph, package_name: string) -> st
         Some(value) => value,
         None => return path::join(root, package_name),
     };
-    let result = Ref::new(path::join(root, package_value.artifact_prefix));
+    let mut result = path::join(root, package_value.artifact_prefix);
     for segment in util::split(package_name, "::") {
-        result.set(path::join(result.get(), segment))
+        result = path::join(result, segment);
     };
-    path::join(result.get(), last_segment(package_name))
+    path::join(result, last_segment(package_name))
 }
 
 fn linked_go_output(root: string, graph: Graph, package_name: string) -> string {
@@ -50,13 +50,13 @@ fn last_segment(value: string) -> string {
 }
 
 fn executable_path_for(context: Context, entry_package: string) -> string {
-    let result = Ref::new(path::join(context.artifact_root, "bin"));
+    let mut result = path::join(context.artifact_root, "bin");
     let module_segments = util::split(context.graph.module_path, "::");
     let entry_segments = util::split(entry_package, "::");
     for index in range(module_segments.len(), entry_segments.len()) {
-        result.set(path::join(result.get(), entry_segments[index]))
+        result = path::join(result, entry_segments[index]);
     };
-    path::join(result.get(), last_segment(entry_package))
+    path::join(result, last_segment(entry_package))
 }
 
 fn collect_dependencies(
@@ -67,7 +67,7 @@ fn collect_dependencies(
 ) -> Result[unit, string] {
     let package_value = match package_by_name(graph, package_name) {
         Some(value) => value,
-        None => return Result::Err("missing package " + package_name),
+        None => return Result::Err(f"missing package {package_name}"),
     };
     for dependency in package_value.imports {
         if seen.contains(dependency) {
@@ -158,7 +158,7 @@ fn compile_package_command(
 ) -> Result[Command, string] {
     let package_value = match package_by_name(graph, package_name) {
         Some(value) => value,
-        None => return Result::Err("missing package " + package_name),
+        None => return Result::Err(f"missing package {package_name}"),
     };
     let inputs = Vec::new();
     for file in package_value.files {
@@ -294,7 +294,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
     for package_name in context.graph.order {
         let package_value = match package_by_name(context.graph, package_name) {
             Some(value) => value,
-            None => return Result::Err("missing package " + package_name),
+            None => return Result::Err(f"missing package {package_name}"),
         };
         if package_value.declared_name == "main" {
             entries.push(package_name)
@@ -656,17 +656,17 @@ fn progress_label(value: Command) -> string {
     match value {
         PrepareWorld { .. } => "preparing compiler world",
         Compile { subcommand, package_name, .. } => if subcommand == "check" {
-            "checking " + package_name
+            f"checking {package_name}"
         } else if subcommand == "build" {
-            "compiling " + package_name
+            f"compiling {package_name}"
         } else if subcommand == "test-check" {
-            "checking tests for " + package_name
+            f"checking tests for {package_name}"
         } else if subcommand == "test-build" {
-            "compiling tests for " + package_name
+            f"compiling tests for {package_name}"
         } else {
-            subcommand + " " + package_name
+            f"{subcommand} {package_name}"
         },
-        Link { entry_package, .. } => "linking " + entry_package,
+        Link { entry_package, .. } => f"linking {entry_package}",
         TestLink { .. } => "linking test runner",
         GoBuild { .. } => "building executable",
     }
@@ -695,10 +695,7 @@ fn progress_bar(completed: int, total: int) -> string {
 }
 
 fn display_progress(completed: int, total: int, label: string) -> unit {
-    io::eprintln(
-        progress_bar(completed, total) + " " + completed.to_string() + "/" + total.to_string() + " "
-            + label,
-    )
+    io::eprintln(f"{progress_bar(completed, total)} {completed}/{total} {label}")
 }
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
@@ -740,7 +737,7 @@ fn execute_command(context: Context, value: Command) -> Result[unit, string] {
         Ok(status) => if process::ExitStatus::success(status) {
             Result::Ok(())
         } else {
-            Result::Err(display_command(value) + " failed")
+            Result::Err(f"{display_command(value)} failed")
         },
         Err(message) => Result::Err(message),
     }
@@ -833,24 +830,24 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
         let dependencies = Vec::new();
         match cache_spec(command) {
             Some(spec) => for input in spec.inputs {
-                let previous = Ref::new(-1);
-                let following = Ref::new(-1);
+                let mut previous = -1;
+                let mut following = -1;
                 match producers[input] {
                     Some(values) => for candidate in values {
-                        if candidate < index && candidate > previous.get() {
-                            previous.set(candidate)
-                        } else if candidate > index && following.get() < 0 {
-                            following.set(candidate)
+                        if candidate < index && candidate > previous {
+                            previous = candidate;
+                        } else if candidate > index && following < 0 {
+                            following = candidate;
                         } else {
                             ()
                         }
                     },
                     None => (),
                 };
-                let producer = if previous.get() >= 0 {
-                    previous.get()
+                let producer = if previous >= 0 {
+                    previous
                 } else {
-                    following.get()
+                    following
                 };
                 if producer >= 0 && !util::int_vec_contains(dependencies, producer) {
                     dependencies.push(producer)
@@ -862,19 +859,19 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
         };
         match cache_spec(command) {
             Some(spec) => for output in spec.outputs {
-                let previous = Ref::new(-1);
+                let mut previous = -1;
                 match producers[output] {
                     Some(values) => for candidate in values {
-                        if candidate < index && candidate > previous.get() {
-                            previous.set(candidate)
+                        if candidate < index && candidate > previous {
+                            previous = candidate;
                         } else {
                             ()
                         }
                     },
                     None => (),
                 };
-                if previous.get() >= 0 && !util::int_vec_contains(dependencies, previous.get()) {
-                    dependencies.push(previous.get())
+                if previous >= 0 && !util::int_vec_contains(dependencies, previous) {
+                    dependencies.push(previous)
                 } else {
                     ()
                 }
@@ -946,7 +943,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         ()
     };
     let total = plan.commands.len();
-    let completed = Ref::new(0);
+    let mut completed = 0;
     let identity = if dry_run {
         ""
     } else {
@@ -962,9 +959,9 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         for node in graph.nodes {
             initial.push(node.index)
         };
-        let pending = Ref::new(initial);
+        let mut pending = initial;
         let completed_nodes = Vec::new();
-        let running = Ref::new(0);
+        let mut running = 0;
         let worker_count = if jobs < total {
             jobs
         } else {
@@ -975,29 +972,29 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         for _ in range(0, worker_count) {
             go || execute_plan_worker(context, work, results)
         };
-        while pending.get().len() > 0 || running.get() > 0 {
+        while pending.len() > 0 || running > 0 {
             let blocked = Vec::new();
-            for index in pending.get() {
+            for index in pending {
                 let node = match build_node(graph.nodes, index) {
                     Some(value) => value,
-                    None => return Result::Err("build graph omitted node " + index.to_string()),
+                    None => return Result::Err(f"build graph omitted node {index}"),
                 };
-                if running.get() < worker_count && !build_node_ready(node, completed_nodes) {
+                if running < worker_count && !build_node_ready(node, completed_nodes) {
                     blocked.push(index)
-                } else if running.get() < worker_count {
-                    display_progress(completed.get(), total, progress_label(node.command));
+                } else if running < worker_count {
+                    display_progress(completed, total, progress_label(node.command));
                     match prepare_cached_command(context, node.command, identity) {
                         Ok(Fresh) => {
                             completed_nodes.push(node.index);
-                            completed.set(completed.get() + 1)
+                            completed += 1;
                         },
                         Ok(Execute(cache)) => {
                             work.send(BuildWork { index: node.index, command: node.command, cache });
-                            running.set(running.get() + 1)
+                            running += 1;
                         },
                         Err(message) => {
                             work.close();
-                            for _ in range(0, running.get()) {
+                            for _ in range(0, running) {
                                 match results.recv() {
                                     Some(value) => discard_prepared_command(context, value.cache),
                                     None => (),
@@ -1011,27 +1008,27 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                     blocked.push(index)
                 }
             };
-            pending.set(blocked);
-            if running.get() == 0 && pending.get().len() > 0 {
+            pending = blocked;
+            if running == 0 && pending.len() > 0 {
                 work.close();
                 results.close();
                 return Result::Err("build plan contains a dependency cycle")
             } else {
                 ()
             };
-            if running.get() > 0 {
+            if running > 0 {
                 match results.recv() {
                     Some(value) => match value.result {
                         Ok(()) => match finish_prepared_command(context, identity, value.cache) {
                             Ok(()) => {
                                 completed_nodes.push(value.index);
-                                completed.set(completed.get() + 1)
+                                completed += 1;
                             },
                             Err(message) => {
-                                completed.set(completed.get() + 1);
-                                running.set(running.get() - 1);
+                                completed += 1;
+                                running -= 1;
                                 work.close();
-                                for _ in range(0, running.get()) {
+                                for _ in range(0, running) {
                                     match results.recv() {
                                         Some(other) => {
                                             discard_prepared_command(context, other.cache)
@@ -1044,10 +1041,10 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                             },
                         },
                         Err(message) => {
-                            completed.set(completed.get() + 1);
-                            running.set(running.get() - 1);
+                            completed += 1;
+                            running -= 1;
                             work.close();
-                            for _ in range(0, running.get()) {
+                            for _ in range(0, running) {
                                 match results.recv() {
                                     Some(_) => (),
                                     None => (),
@@ -1059,7 +1056,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                     },
                     None => return Result::Err("build result channel closed early"),
                 };
-                running.set(running.get() - 1)
+                running -= 1;
             } else {
                 ()
             }
@@ -1070,7 +1067,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
     if dry_run {
         ()
     } else {
-        display_progress(completed.get(), total, "finished")
+        display_progress(completed, total, "finished")
     };
     Result::Ok(())
 }
@@ -1089,7 +1086,7 @@ pub fn run_executable(context: Context, executable: string, args: Vec[string], d
                 Result::Ok(())
             } else {
                 match process::ExitStatus::code(status) {
-                    Some(code) => Result::Err("program exited with status " + code.to_string()),
+                    Some(code) => Result::Err(f"program exited with status {code}"),
                     None => Result::Err("program terminated by signal"),
                 }
             },
