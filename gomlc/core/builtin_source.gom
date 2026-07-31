@@ -891,7 +891,7 @@ pub fn builtin_source() -> string {
         \\        } else if expected.byte_len() > self.byte_len() {
         \\            false
         \\        } else {
-        \\            for start in range(0, self.byte_len() - expected.byte_len() + 1) {
+        \\            for start in 0..self.byte_len() - expected.byte_len() + 1 {
         \\                let end = start + expected.byte_len();
         \\                if self.is_char_boundary(start) && self.is_char_boundary(end)
         \\                    && self.byte_slice(start, end) == expected {

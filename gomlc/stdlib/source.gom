@@ -1645,7 +1645,7 @@ pub fn collections_source() -> string {
         \\        ()
         \\    };
         \\    let buffer: Vec[T] = Vec::with_capacity(length);
-        \\    for index in range(0, length) {
+        \\    for index in 0..length {
         \\        buffer.push(values[index])
         \\    };
         \\    let mut width = 1;
@@ -1679,7 +1679,7 @@ pub fn collections_source() -> string {
         \\            };
         \\            left = right;
         \\        };
-        \\        for index in range(0, length) {
+        \\        for index in 0..length {
         \\            values[index] = buffer[index];
         \\        };
         \\        width = if width > length / 2 {
@@ -1713,7 +1713,7 @@ pub fn collections_source() -> string {
         \\}
         \\
         \\pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
-        \\    for index in range(0, values.len()) {
+        \\    for index in 0..values.len() {
         \\        if predicate(values[index]) {
         \\            return Option::Some(index)
         \\        } else {
@@ -1732,7 +1732,7 @@ pub fn collections_source() -> string {
         \\        Option::None
         \\    } else {
         \\        let mut best = values[0];
-        \\        for index in range(1, values.len()) {
+        \\        for index in 1..values.len() {
         \\            let value = values[index];
         \\            if compare(value, best) < 0 {
         \\                best = value;
@@ -1749,7 +1749,7 @@ pub fn collections_source() -> string {
         \\        Option::None
         \\    } else {
         \\        let mut best = values[0];
-        \\        for index in range(1, values.len()) {
+        \\        for index in 1..values.len() {
         \\            let value = values[index];
         \\            if compare(value, best) > 0 {
         \\                best = value;
@@ -1768,7 +1768,7 @@ pub fn collections_source() -> string {
         \\        ()
         \\    };
         \\    let mut output = 1;
-        \\    for index in range(1, values.len()) {
+        \\    for index in 1..values.len() {
         \\        let value = values[index];
         \\        if equal(values[output - 1], value) == false {
         \\            values[output] = value;
@@ -1842,7 +1842,7 @@ pub fn json_source() -> string {
         \\        Result::Err(json_error(value, "incomplete unicode escape"))
         \\    } else {
         \\        let mut result = 0 as uint32;
-        \\        for offset in range(0, 4) {
+        \\        for offset in 0..4 {
         \\            match hex_digit(value.input.byte_get(value.index.get() + offset)) {
         \\                Some(digit) => {
         \\                    result = result * 16 + digit;
@@ -2150,7 +2150,7 @@ pub fn json_source() -> string {
         \\fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
         \\    builder.write_char('"');
         \\    let mut start = 0;
-        \\    for index in range(0, value.byte_len()) {
+        \\    for index in 0..value.byte_len() {
         \\        let byte = value.byte_get(index);
         \\        if byte == b'"' || byte == b'\\' || byte == b'\b' || byte == b'\t' || byte == b'\n'
         \\            || byte == b'\f'
@@ -2358,7 +2358,7 @@ pub fn text_source() -> string {
         \\
         \\    pub fn write_string(self: StringBuilder, value: string) -> unit {
         \\        self.values.reserve(value.byte_len());
-        \\        for index in range(0, value.byte_len()) {
+        \\        for index in 0..value.byte_len() {
         \\            self.values.push(value.byte_get(index))
         \\        }
         \\    }
@@ -2497,7 +2497,7 @@ pub fn text_source() -> string {
         \\    } else {
         \\        ()
         \\    };
-        \\    for index in range(0, result.len()) {
+        \\    for index in 0..result.len() {
         \\        let line = result[index];
         \\        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
         \\            result[index] = line.byte_slice(0, line.byte_len() - 1);
@@ -2533,7 +2533,7 @@ pub fn text_source() -> string {
         \\
         \\pub fn join(values: Vec[string], separator: string) -> string {
         \\    let builder = StringBuilder::new();
-        \\    for index in range(0, values.len()) {
+        \\    for index in 0..values.len() {
         \\        if index > 0 {
         \\            builder.write_string(separator)
         \\        } else {
@@ -2549,7 +2549,7 @@ pub fn text_source() -> string {
         \\        ""
         \\    } else {
         \\        let builder = StringBuilder::with_capacity(value.byte_len() * count);
-        \\        for _ in range(0, count) {
+        \\        for _ in 0..count {
         \\            builder.write_string(value)
         \\        };
         \\        builder.finish()
@@ -2557,7 +2557,7 @@ pub fn text_source() -> string {
         \\}
         \\
         \\pub fn is_ascii(value: string) -> bool {
-        \\    for index in range(0, value.byte_len()) {
+        \\    for index in 0..value.byte_len() {
         \\        if value.byte_get(index) > 127 {
         \\            return false
         \\        } else {
@@ -2569,7 +2569,7 @@ pub fn text_source() -> string {
         \\
         \\pub fn to_ascii_lowercase(value: string) -> string {
         \\    let values = value.to_bytes();
-        \\    for index in range(0, values.len()) {
+        \\    for index in 0..values.len() {
         \\        let current = values[index];
         \\        if current >= b'A' && current <= b'Z' {
         \\            values[index] = current + (b'a' - b'A');
@@ -2583,7 +2583,7 @@ pub fn text_source() -> string {
         \\
         \\pub fn to_ascii_uppercase(value: string) -> string {
         \\    let values = value.to_bytes();
-        \\    for index in range(0, values.len()) {
+        \\    for index in 0..values.len() {
         \\        let current = values[index];
         \\        if current >= b'a' && current <= b'z' {
         \\            values[index] = current - (b'a' - b'A');

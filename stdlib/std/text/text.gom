@@ -99,7 +99,7 @@ pub fn lines(value: string) -> Vec[string] {
     } else {
         ()
     };
-    for index in range(0, result.len()) {
+    for index in 0..result.len() {
         let line = result[index];
         if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
             result[index] = line.byte_slice(0, line.byte_len() - 1);
@@ -135,7 +135,7 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
 
 pub fn join(values: Vec[string], separator: string) -> string {
     let builder = StringBuilder::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(separator)
         } else {
@@ -151,7 +151,7 @@ pub fn repeat(value: string, count: int) -> string {
         ""
     } else {
         let builder = StringBuilder::with_capacity(value.byte_len() * count);
-        for _ in range(0, count) {
+        for _ in 0..count {
             builder.write_string(value)
         };
         builder.finish()
@@ -159,7 +159,7 @@ pub fn repeat(value: string, count: int) -> string {
 }
 
 pub fn is_ascii(value: string) -> bool {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) > 127 {
             return false
         } else {
@@ -171,7 +171,7 @@ pub fn is_ascii(value: string) -> bool {
 
 pub fn to_ascii_lowercase(value: string) -> string {
     let values = value.to_bytes();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let current = values[index];
         if current >= b'A' && current <= b'Z' {
             values[index] = current + (b'a' - b'A');
@@ -185,7 +185,7 @@ pub fn to_ascii_lowercase(value: string) -> string {
 
 pub fn to_ascii_uppercase(value: string) -> string {
     let values = value.to_bytes();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let current = values[index];
         if current >= b'a' && current <= b'z' {
             values[index] = current - (b'a' - b'A');

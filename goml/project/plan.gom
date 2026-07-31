@@ -53,7 +53,7 @@ fn executable_path_for(context: Context, entry_package: string) -> string {
     let mut result = path::join(context.artifact_root, "bin");
     let module_segments = util::split(context.graph.module_path, "::");
     let entry_segments = util::split(entry_package, "::");
-    for index in range(module_segments.len(), entry_segments.len()) {
+    for index in module_segments.len()..entry_segments.len() {
         result = path::join(result, entry_segments[index]);
     };
     path::join(result, last_segment(entry_package))
@@ -681,7 +681,7 @@ fn progress_bar(completed: int, total: int) -> string {
     };
     let builder = text::StringBuilder::with_capacity(width + 2);
     builder.write_char('[');
-    for index in range(0, width) {
+    for index in 0..width {
         builder.write_char(
             if index < filled {
                 '#'
@@ -813,7 +813,7 @@ fn discard_prepared_command(context: Context, cache: Option[PreparedCache]) -> u
 
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     let producers: HashMap[string, Vec[int]] = HashMap::{};
-    for index in range(0, commands.len()) {
+    for index in 0..commands.len() {
         match cache_spec(commands[index]) {
             Some(spec) => for output in spec.outputs {
                 match producers[output] {
@@ -825,7 +825,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
         }
     };
     let result = Vec::new();
-    for index in range(0, commands.len()) {
+    for index in 0..commands.len() {
         let command = commands[index];
         let dependencies = Vec::new();
         match cache_spec(command) {
@@ -969,7 +969,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         };
         let work: Channel[BuildWork] = Channel::new(total);
         let results: Channel[BuildWorkResult] = Channel::new(total);
-        for _ in range(0, worker_count) {
+        for _ in 0..worker_count {
             go || execute_plan_worker(context, work, results)
         };
         while pending.len() > 0 || running > 0 {
@@ -994,7 +994,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                         },
                         Err(message) => {
                             work.close();
-                            for _ in range(0, running) {
+                            for _ in 0..running {
                                 match results.recv() {
                                     Some(value) => discard_prepared_command(context, value.cache),
                                     None => (),
@@ -1028,7 +1028,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                                 completed += 1;
                                 running -= 1;
                                 work.close();
-                                for _ in range(0, running) {
+                                for _ in 0..running {
                                     match results.recv() {
                                         Some(other) => {
                                             discard_prepared_command(context, other.cache)
@@ -1044,7 +1044,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                             completed += 1;
                             running -= 1;
                             work.close();
-                            for _ in range(0, running) {
+                            for _ in 0..running {
                                 match results.recv() {
                                     Some(_) => (),
                                     None => (),

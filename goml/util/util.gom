@@ -38,7 +38,7 @@ pub fn contains(value: string, needle: string) -> bool {
     } else {
         ()
     };
-    for index in range(0, value.byte_len() - needle.byte_len() + 1) {
+    for index in 0..value.byte_len() - needle.byte_len() + 1 {
         if value.byte_slice(index, index + needle.byte_len()) == needle {
             return true
         } else {
@@ -73,7 +73,7 @@ pub fn int_vec_contains(values: Vec[int], expected: int) -> bool {
 pub fn split_lines(value: string) -> Vec[string] {
     let result = Vec::new();
     let start = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 10 {
             let end = if index > start.get() && value.byte_get(index - 1) == 13 {
                 index - 1
@@ -119,7 +119,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
 
 pub fn join(values: Vec[string], separator: string) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(separator)
         } else {
@@ -131,7 +131,7 @@ pub fn join(values: Vec[string], separator: string) -> string {
 }
 
 fn string_insert_index(values: Vec[string], value: string) -> int {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if value < values[index] {
             return index
         } else {
@@ -173,7 +173,7 @@ pub fn parse_positive_int(value: string) -> Result[int, string] {
         ()
     };
     let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte < 48 || byte > 57 {
             return Result::Err("expected a positive integer")
@@ -213,7 +213,7 @@ fn shell_plain(value: string) -> bool {
     if value.byte_len() == 0 {
         false
     } else {
-        for index in range(0, value.byte_len()) {
+        for index in 0..value.byte_len() {
             let byte = value.byte_get(index);
             if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90)
                 || (byte >= 97 && byte <= 122)

@@ -108,7 +108,7 @@ fn sha256_message_word(value: Vec[byte], offset: int, padded_len: int, bit_len: 
 
 fn sha256_write_hex(builder: text::StringBuilder, value: uint32) -> unit {
     let digits = "0123456789abcdef";
-    for index in range(0, 8) {
+    for index in 0..8 {
         let shift = ((7 - index) * 4) as uint32;
         builder.write_char(digits.get(((value >> shift) & 15) as int))
     }
@@ -130,14 +130,14 @@ fn sha256_bytes(value: Vec[byte]) -> string {
     let mut h6 = 528734635;
     let mut h7 = 1541459225;
     let words: Vec[uint32] = Vec::with_capacity(64);
-    for _ in range(0, 64) {
+    for _ in 0..64 {
         words.push(0)
     };
-    for chunk in range(0, padded_len / 64) {
-        for index in range(0, 16) {
+    for chunk in 0..padded_len / 64 {
+        for index in 0..16 {
             words[index] = sha256_message_word(value, chunk * 64 + index * 4, padded_len, bit_len);
         };
-        for index in range(16, 64) {
+        for index in 16..64 {
             let first = words[index - 15];
             let second = words[index - 2];
             let sigma0 = sha256_rotate_right(first, 7) ^ sha256_rotate_right(first, 18)
@@ -154,7 +154,7 @@ fn sha256_bytes(value: Vec[byte]) -> string {
         let mut f = h5;
         let mut g = h6;
         let mut h = h7;
-        for index in range(0, 64) {
+        for index in 0..64 {
             let sigma1 = sha256_rotate_right(e, 6) ^ sha256_rotate_right(e, 11)
                 ^ sha256_rotate_right(e, 25);
             let choice = (e & f) ^ (~e & g);
@@ -375,7 +375,7 @@ fn cache_is_fresh(context: Context, spec: CacheSpec, fingerprint: string) -> Res
         Ok(None) => return Result::Ok(false),
         Err(message) => return Result::Err(message),
     };
-    for index in range(0, actual.len()) {
+    for index in 0..actual.len() {
         if lines[index + 1] != actual[index] {
             return Result::Ok(false)
         } else {

@@ -19,7 +19,7 @@ pub struct Manifest {
 fn strip_comment(value: string) -> string {
     let quoted = Ref::new(false);
     let escaped = Ref::new(false);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if escaped.get() {
             escaped.set(false)
@@ -73,7 +73,7 @@ fn valid_segment(value: string) -> bool {
     } else {
         ()
     };
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
             || byte == 95
@@ -140,7 +140,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
             section.set(util::trim(line.byte_slice(1, line.byte_len() - 1)))
         } else {
             let equals = Ref::new(-1);
-            for index in range(0, line.byte_len()) {
+            for index in 0..line.byte_len() {
                 if equals.get() < 0 && line.byte_get(index) == 61 {
                     equals.set(index)
                 } else {

@@ -59,7 +59,7 @@ fn config_registry_source() -> Result[string, string] {
             section.set(line.byte_slice(1, line.byte_len() - 1))
         } else if section.get() == "registry" && util::starts_with(line, "default") {
             let equals = Ref::new(-1);
-            for index in range(0, line.byte_len()) {
+            for index in 0..line.byte_len() {
                 if equals.get() < 0 && line.byte_get(index) == 61 {
                     equals.set(index)
                 } else {
@@ -192,7 +192,7 @@ fn dependency_line_name(line: string) -> Option[string] {
     } else {
         ()
     };
-    for index in range(1, line.byte_len()) {
+    for index in 1..line.byte_len() {
         if line.byte_get(index) == 34 {
             let rest = util::trim(line.byte_slice(index + 1, line.byte_len()));
             if util::starts_with(rest, "=") {

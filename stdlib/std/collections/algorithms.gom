@@ -16,7 +16,7 @@ pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
         ()
     };
     let buffer: Vec[T] = Vec::with_capacity(length);
-    for index in range(0, length) {
+    for index in 0..length {
         buffer.push(values[index])
     };
     let mut width = 1;
@@ -50,7 +50,7 @@ pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
             };
             left = right;
         };
-        for index in range(0, length) {
+        for index in 0..length {
             values[index] = buffer[index];
         };
         width = if width > length / 2 {
@@ -84,7 +84,7 @@ pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
 }
 
 pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if predicate(values[index]) {
             return Option::Some(index)
         } else {
@@ -103,7 +103,7 @@ pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
         Option::None
     } else {
         let mut best = values[0];
-        for index in range(1, values.len()) {
+        for index in 1..values.len() {
             let value = values[index];
             if compare(value, best) < 0 {
                 best = value;
@@ -120,7 +120,7 @@ pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
         Option::None
     } else {
         let mut best = values[0];
-        for index in range(1, values.len()) {
+        for index in 1..values.len() {
             let value = values[index];
             if compare(value, best) > 0 {
                 best = value;
@@ -139,7 +139,7 @@ pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
         ()
     };
     let mut output = 1;
-    for index in range(1, values.len()) {
+    for index in 1..values.len() {
         let value = values[index];
         if equal(values[output - 1], value) == false {
             values[output] = value;

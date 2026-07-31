@@ -32,7 +32,7 @@ fn decimal_number(value: string) -> Option[int] {
         ()
     };
     let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte < 48 || byte > 57 {
             return Option::None
@@ -78,7 +78,7 @@ fn version_equal(left: SemVersion, right: SemVersion) -> bool {
 fn quoted_values(value: string) -> Vec[string] {
     let result = Vec::new();
     let start: Ref[Option[int]] = Ref::new(Option::None);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 34 {
             match start.get() {
                 Some(offset) => {
@@ -159,7 +159,7 @@ fn valid_identifier(value: string) -> bool {
     } else {
         ()
     };
-    for index in range(1, value.byte_len()) {
+    for index in 1..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
             || byte == 95 {
@@ -312,7 +312,7 @@ pub fn cached_root() -> Result[string, string] {
 }
 
 fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if values[index].name == name {
             return Option::Some(index)
         } else {
