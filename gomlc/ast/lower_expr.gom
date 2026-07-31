@@ -43,12 +43,22 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                             } else {
                                 Option::None
                             };
+                            let else_branch = match first_child(node, cst::NodeKind::BLOCK) {
+                                Some(block_node) => match lower_block(ctx, block_node) {
+                                    Some(block) => Option::Some(
+                                        Expr::Block { block, span: node_span(block_node) },
+                                    ),
+                                    None => Option::None,
+                                },
+                                None => Option::None,
+                            };
                             Option::Some(
                                 Stmt::Let {
                                     is_mut: has_token(node, lexer::TokenKind::MutKeyword),
                                     pat,
                                     annotation,
                                     value,
+                                    else_branch,
                                     span: node_span(node),
                                 },
                             )
@@ -645,6 +655,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_CHAR => lower_char_expr(ctx, node, trailing_args),
             EXPR_BYTE => lower_byte_expr(ctx, node, trailing_args),
             EXPR_STR => lower_string_expr(ctx, node, trailing_args),
+            EXPR_RAW_STR => lower_raw_string_expr(ctx, node, trailing_args),
             EXPR_MULTILINE_STR => if reject_trailing(
                 ctx,
                 node,
@@ -686,6 +697,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_MATCH => lower_match_expr(ctx, node, trailing_args),
             EXPR_IF => lower_if_expr(ctx, node, trailing_args),
             EXPR_WHILE => lower_while_expr(ctx, node, trailing_args),
+            EXPR_LOOP => lower_loop_expr(ctx, node, trailing_args),
             EXPR_FOR => lower_for_expr(ctx, node, trailing_args),
             EXPR_BREAK => if reject_trailing(
                 ctx,
@@ -695,7 +707,13 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             ) {
                 Option::None
             } else {
-                Option::Some(Expr::Break { span: value_span })
+                let values = expr_children(node);
+                let value = if values.len() > 0 {
+                    lower_expr(ctx, values[0])
+                } else {
+                    Option::None
+                };
+                Option::Some(Expr::Break { value, span: value_span })
             },
             EXPR_CONTINUE => if reject_trailing(
                 ctx,
@@ -861,6 +879,36 @@ fn lower_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
             },
             None => {
                 push_error(ctx, node_span(node), "StrExpr has no value");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_raw_string_expr(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    trailing_args: Vec[Expr],
+) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
+        Option::None
+    } else {
+        match first_token(node, lexer::TokenKind::RawStr) {
+            Some(token) => {
+                let source = token.token.text;
+                let mut hash_count = 0;
+                while 1 + hash_count < source.byte_len()
+                    && source.byte_get(1 + hash_count) == b'#' {
+                    hash_count = hash_count + 1;
+                };
+                let start = hash_count + 2;
+                let end = source.byte_len() - hash_count - 1;
+                Option::Some(
+                    Expr::String { value: source.byte_slice(start, end), span: node_span(node) },
+                )
+            },
+            None => {
+                push_error(ctx, node_span(node), "Raw string expression has no value");
                 Option::None
             },
         }

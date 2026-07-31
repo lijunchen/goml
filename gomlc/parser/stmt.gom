@@ -27,6 +27,15 @@ fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
         } else {
             ()
         };
+        if parser.eat(lexer::TokenKind::ElseKeyword) {
+            if parser.at(lexer::TokenKind::LBrace) {
+                block(parser)
+            } else {
+                parser.error("`let else` requires a block after `else`")
+            }
+        } else {
+            ()
+        };
         parser.expect(lexer::TokenKind::Semi);
         Option::Some(parser.close(marker, cst::NodeKind::STMT_LET))
     }

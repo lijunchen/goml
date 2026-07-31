@@ -235,6 +235,7 @@ pub enum Stmt {
         pat: Pat,
         annotation: Option[TypeExpr],
         value: Expr,
+        else_branch: Option[Expr],
         span: Span,
     },
     Assign {
@@ -376,6 +377,10 @@ pub enum Expr {
         body: Expr,
         span: Span,
     },
+    Loop {
+        body: Expr,
+        span: Span,
+    },
     For {
         pat: Pat,
         iterator: Expr,
@@ -383,6 +388,7 @@ pub enum Expr {
         span: Span,
     },
     Break {
+        value: Option[Expr],
         span: Span,
     },
     Continue {
@@ -555,8 +561,9 @@ pub fn expr_span(value: Expr) -> Span {
         } | Array { span, .. } | VecLiteral { span, .. } | HashMapLiteral { span, .. } | Closure {
             span,
             ..,
-        } | Match { span, .. } | If { span, .. } | While { span, .. } | For { span, .. } | Break {
+        } | Match { span, .. } | If { span, .. } | While { span, .. } | Loop { span, .. } | For { span, .. } | Break {
             span,
+            ..,
         } | Continue { span } | Return { span, .. } | Go { span, .. } | Call { span, .. } | Unary {
             span,
             ..,

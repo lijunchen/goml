@@ -211,6 +211,11 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_expr(builder, cond);
             encode_expr(builder, body)
         },
+        Loop { body, span: value_span } => {
+            encode_open(builder, "Expr.Loop");
+            encode_span(builder, value_span);
+            encode_expr(builder, body)
+        },
         For { pat, iterator, body, span: value_span } => {
             encode_open(builder, "Expr.For");
             encode_span(builder, value_span);
@@ -218,9 +223,16 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_expr(builder, iterator);
             encode_expr(builder, body)
         },
-        Break { span: value_span } => {
+        Break { value, span: value_span } => {
             encode_open(builder, "Expr.Break");
-            encode_span(builder, value_span)
+            encode_span(builder, value_span);
+            match value {
+                Some(expr) => {
+                    encode_some(builder);
+                    encode_expr(builder, expr)
+                },
+                None => encode_none(builder),
+            }
         },
         Continue { span: value_span } => {
             encode_open(builder, "Expr.Continue");

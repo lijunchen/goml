@@ -154,10 +154,18 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: Artifact
         let body = artifact_decode_core_expr_field(context, object, "body")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::While { cond, body, ty })
+    } else if kind == "ELoop" {
+        let body = artifact_decode_core_expr_field(context, object, "body")?;
+        let ty = artifact_decode_core_type_field(context, object, "ty")?;
+        Result::Ok(core::Expr::Loop { body, ty })
     } else if kind == "EBreak" || kind == "EContinue" {
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         if kind == "EBreak" {
-            Result::Ok(core::Expr::Break { ty })
+            let value = match artifact_json_optional_field(object, "value")? {
+                Some(value) => artifact_decode_optional_core_expr(context, value)?,
+                None => Option::None,
+            };
+            Result::Ok(core::Expr::Break { value, ty })
         } else {
             Result::Ok(core::Expr::Continue { ty })
         }

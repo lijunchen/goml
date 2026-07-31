@@ -17,7 +17,12 @@ fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
 fn tast_stmt_exits(value: tast::Stmt) -> bool {
     match value {
         Expr { expr } => tast_expr_exits(expr),
-        Let { is_mut: _, pat: _, value: _ } | Assign { target: _, op: _, value: _ } => false,
+        Let { is_mut: _, pat: _, value: _ } | LetElse {
+            is_mut: _,
+            pat: _,
+            value: _,
+            else_branch: _,
+        } | Assign { target: _, op: _, value: _ } => false,
     }
 }
 
@@ -48,7 +53,7 @@ fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
 
 fn tast_expr_exits(value: tast::Expr) -> bool {
     match value {
-        Break { ty: _ } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
             ty: _,
@@ -77,6 +82,10 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
             tast_expr_exits(then_branch) && tast_expr_exits(else_branch)
         },
         While { cond, body: _, ty: _ } => tast_expr_exits(cond),
+        Loop { body: _, ty } => match tast::resolve_type(ty) {
+            Never => true,
+            _ => false,
+        },
         For {
             pat: _,
             iterator,

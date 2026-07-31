@@ -1559,7 +1559,14 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             body: specialize_expr(ctx, bindings, body),
             ty: specialize_type(ctx, ty, bindings),
         },
-        Break { ty } => core::Expr::Break { ty: specialize_type(ctx, ty, bindings) },
+        Loop { body, ty } => core::Expr::Loop {
+            body: specialize_expr(ctx, bindings, body),
+            ty: specialize_type(ctx, ty, bindings),
+        },
+        Break { value, ty } => core::Expr::Break {
+            value: specialize_optional_expr(ctx, bindings, value),
+            ty: specialize_type(ctx, ty, bindings),
+        },
         Continue { ty } => {
             core::Expr::Continue { ty: specialize_type(ctx, ty, bindings) }
         },
@@ -1768,6 +1775,7 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             ensure_runtime_trait_impls_for_expr(ctx, cond);
             ensure_runtime_trait_impls_for_expr(ctx, body)
         },
+        Loop { body, ty: _ } => ensure_runtime_trait_impls_for_expr(ctx, body),
         Return { expr, ty: _ } => ensure_runtime_trait_impls_for_optional_expr(ctx, expr),
         Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
             op: _,
@@ -1801,9 +1809,13 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break {
+        Break { value, ty: _ } => match value {
+            Some(expr) => ensure_runtime_trait_impls_for_expr(ctx, expr),
+            None => (),
+        },
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
-        } | Continue { ty: _ } => (),
+        } => (),
     }
 }
 

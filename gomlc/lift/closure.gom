@@ -162,6 +162,7 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_expr(values, cond);
             collect_used_expr(values, body)
         },
+        Loop { body, ty: _ } => collect_used_expr(values, body),
         Return { expr, ty: _ } => collect_used_optional_expr(values, expr),
         Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
             op: _,
@@ -191,9 +192,13 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
-        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break {
+        Break { value, ty: _ } => match value {
+            Some(expr) => collect_used_expr(values, expr),
+            None => (),
+        },
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
-        } | Continue { ty: _ } => (),
+        } => (),
     }
 }
 
@@ -415,6 +420,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, cond);
             observe_expr(maximum, body)
         },
+        Loop { body, ty: _ } => observe_expr(maximum, body),
         Return { expr, ty: _ } => observe_optional_expr(maximum, expr),
         Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
             op: _,
@@ -438,7 +444,8 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break { ty: _ } | Continue {
+        Break { value, ty: _ } => observe_optional_expr(maximum, value),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
         } => (),
     }
@@ -629,7 +636,13 @@ fn transform_expr(state: State, scope: Vec[ScopeEntry], value: core::Expr, conte
             body: transform_expr(state, scope, body, context),
             ty,
         },
-        Break { ty } => core::Expr::Break { ty },
+        Loop { body, ty } => {
+            core::Expr::Loop { body: transform_expr(state, scope, body, context), ty }
+        },
+        Break { value, ty } => core::Expr::Break {
+            value: transform_optional_expr(state, scope, value, context),
+            ty,
+        },
         Continue { ty } => core::Expr::Continue { ty },
         Return { expr, ty } => core::Expr::Return {
             expr: transform_optional_expr(state, scope, expr, context),
@@ -799,6 +812,7 @@ fn collect_captured(
             collect_captured(cond, bound, captured, scope);
             collect_captured(body, bound, captured, scope)
         },
+        Loop { body, ty: _ } => collect_captured(body, bound, captured, scope),
         Return { expr, ty: _ } => {
             collect_captured_optional(expr, bound, captured, scope)
         },
@@ -828,7 +842,11 @@ fn collect_captured(
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break { ty: _ } | Continue {
+        Break { value, ty: _ } => match value {
+            Some(expr) => collect_captured(expr, bound, captured, scope),
+            None => (),
+        },
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
         } => (),
     }

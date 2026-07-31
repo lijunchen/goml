@@ -5,7 +5,7 @@ use gomlc::lexer;
 
 fn is_expr_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        IntLit | Float | Str | MultilineStr | FStringStart | CharLit | ByteCharLit | UnsupportedByteStr | Ident | TrueKeyword | FalseKeyword | Minus | Bang | Tilde | LParen | LBracket | IfKeyword | MatchKeyword | WhileKeyword | ForKeyword | BreakKeyword | ContinueKeyword | ReturnKeyword | Pipe | OrOr | GoKeyword => true,
+        IntLit | Float | Str | RawStr | MultilineStr | FStringStart | CharLit | ByteCharLit | UnsupportedByteStr | Ident | TrueKeyword | FalseKeyword | Minus | Bang | Tilde | LParen | LBracket | IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword | BreakKeyword | ContinueKeyword | ReturnKeyword | Pipe | OrOr | GoKeyword => true,
         _ => false,
     }
 }
@@ -352,9 +352,20 @@ fn for_expression(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_FOR)
 }
 
+fn loop_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LoopKeyword);
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.error("`loop` requires a block body")
+    };
+    parser.close(marker, cst::NodeKind::EXPR_LOOP)
+}
+
 fn return_stops_expression(kind: lexer::TokenKind) -> bool {
     match kind {
-        Semi | Comma | RParen | RBracket | RBrace | Eof => true,
+        Semi | Comma | LBrace | RParen | RBracket | RBrace | Eof => true,
         _ => false,
     }
 }
@@ -371,6 +382,20 @@ fn return_expression(parser: Parser) -> MarkerClosed {
         ()
     };
     parser.close(marker, cst::NodeKind::EXPR_RETURN)
+}
+
+fn break_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::BreakKeyword);
+    if return_stops_expression(parser.peek()) == false
+        && expect_expr_with_message(parser, "expected an expression after `break`") == false {
+        while parser.eof() == false && return_stops_expression(parser.peek()) == false {
+            parser.advance()
+        }
+    } else {
+        ()
+    };
+    parser.close(marker, cst::NodeKind::EXPR_BREAK)
 }
 
 fn go_expression(parser: Parser) -> MarkerClosed {
@@ -393,6 +418,7 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         Float => simple_expression(parser, cst::NodeKind::EXPR_FLOAT),
         LBracket => array_literal(parser),
         Str => simple_expression(parser, cst::NodeKind::EXPR_STR),
+        RawStr => simple_expression(parser, cst::NodeKind::EXPR_RAW_STR),
         MultilineStr => simple_expression(parser, cst::NodeKind::EXPR_MULTILINE_STR),
         FStringStart => interpolated_string(parser),
         CharLit => simple_expression(parser, cst::NodeKind::EXPR_CHAR),
@@ -415,8 +441,9 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         IfKeyword => if_expression(parser),
         MatchKeyword => match_expression(parser),
         WhileKeyword => while_expression(parser),
+        LoopKeyword => loop_expression(parser),
         ForKeyword => for_expression(parser),
-        BreakKeyword => simple_expression(parser, cst::NodeKind::EXPR_BREAK),
+        BreakKeyword => break_expression(parser),
         ContinueKeyword => simple_expression(parser, cst::NodeKind::EXPR_CONTINUE),
         ReturnKeyword => return_expression(parser),
         GoKeyword => go_expression(parser),

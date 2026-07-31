@@ -63,7 +63,7 @@ fn kind_is(kind: lexer::TokenKind, expected: lexer::TokenKind) -> bool {
 
 fn is_word(kind: lexer::TokenKind) -> bool {
     match kind {
-        ExternKeyword | PackageKeyword | UseKeyword | ImportKeyword | AsKeyword | PubKeyword | ModKeyword | CrateKeyword | SuperKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | WhileKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | ArrayKeyword | Ident | Float | IntLit | Str | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit | UnsupportedByteStr => true,
+        ExternKeyword | PackageKeyword | UseKeyword | ImportKeyword | AsKeyword | PubKeyword | ModKeyword | CrateKeyword | SuperKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | WhileKeyword | LoopKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | ArrayKeyword | Ident | Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit | UnsupportedByteStr => true,
         _ => false,
     }
 }
@@ -92,7 +92,7 @@ fn needs_space(previous: lexer::TokenKind, current: lexer::TokenKind) -> bool {
     } else if kind_is(current, lexer::TokenKind::LParen) {
         is_operator(previous)
             || match previous {
-                Colon | Semi | LetKeyword | IfKeyword | WhileKeyword | ForKeyword | MatchKeyword | ReturnKeyword | GoKeyword => true,
+                Colon | Semi | LetKeyword | IfKeyword | WhileKeyword | LoopKeyword | ForKeyword | MatchKeyword | ReturnKeyword | GoKeyword => true,
                 _ => false,
             }
     } else if kind_is(current, lexer::TokenKind::LBracket) {
@@ -125,7 +125,7 @@ fn needs_space(previous: lexer::TokenKind, current: lexer::TokenKind) -> bool {
     } {
         true
     } else if match previous {
-        IfKeyword | WhileKeyword | ForKeyword | MatchKeyword | ReturnKeyword | GoKeyword | InKeyword | DynKeyword => true,
+        IfKeyword | WhileKeyword | LoopKeyword | ForKeyword | MatchKeyword | ReturnKeyword | GoKeyword | InKeyword | DynKeyword => true,
         _ => false,
     } {
         true
@@ -135,7 +135,8 @@ fn needs_space(previous: lexer::TokenKind, current: lexer::TokenKind) -> bool {
 }
 
 fn token_doc(value: LocatedToken) -> Doc {
-    if token_is(value, lexer::TokenKind::MultilineStr) {
+    if token_is(value, lexer::TokenKind::MultilineStr)
+        || token_is(value, lexer::TokenKind::RawStr) {
         verbatim(value.token.text)
     } else {
         text(value.token.text)
@@ -297,6 +298,11 @@ fn format_node(value: Builder, node: LocatedNode) -> BuiltDoc {
         EXPR_BINARY => format_binary(value, node),
         EXPR_PREFIX => format_prefix(value, node),
         EXPR_MULTILINE_STR => format_multiline_string(node),
+        EXPR_RAW_STR => built(
+            verbatim(node_significant_source(node)),
+            Option::Some(lexer::TokenKind::RawStr),
+            Option::Some(lexer::TokenKind::RawStr),
+        ),
         ATTRIBUTE_LIST => format_attribute_list(value, node),
         WHERE_CLAUSE => format_where_clause(value, node),
         EXPR_INTERPOLATED_STRING | ATTRIBUTE => {

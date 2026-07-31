@@ -226,7 +226,10 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                                             Arm {
                                                 pat: Pat::Wild { span: node_span(node) },
                                                 guard: Option::None,
-                                                body: Expr::Break { span: node_span(node) },
+                                                body: Expr::Break {
+                                                    value: Option::None,
+                                                    span: node_span(node),
+                                                },
                                             },
                                         );
                                         Option::Some(
@@ -261,6 +264,28 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             },
             None => {
                 push_error(ctx, node_span(node), "While expression missing condition");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_loop_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to loop expression") {
+        Option::None
+    } else {
+        match first_child(node, cst::NodeKind::BLOCK) {
+            Some(body_node) => match lower_block(ctx, body_node) {
+                Some(body) => Option::Some(
+                    Expr::Loop {
+                        body: Expr::Block { block: body, span: node_span(body_node) },
+                        span: node_span(node),
+                    },
+                ),
+                None => Option::None,
+            },
+            None => {
+                push_error(ctx, node_span(node), "Loop expression missing body");
                 Option::None
             },
         }

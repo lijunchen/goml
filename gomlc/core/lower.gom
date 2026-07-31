@@ -866,7 +866,15 @@ fn direct_for_body(
         block: Block {
             stmts,
             tail: Option::Some(
-                lower_pattern_continuation(ctx, item_name, item_ty, pattern, body, tast::Type::Unit),
+                lower_pattern_continuation(
+                    ctx,
+                    item_name,
+                    item_ty,
+                    pattern,
+                    body,
+                    Option::None,
+                    tast::Type::Unit,
+                ),
             ),
         },
         ty: tast::Type::Unit,
@@ -1082,7 +1090,7 @@ fn lower_iterator_for(
                 ty: option_ty,
             },
             guard: Option::None,
-            body: tast::Expr::Break { ty: tast::Type::Unit },
+            body: tast::Expr::Break { value: Option::None, ty: tast::Type::Unit },
         },
     );
     let loop_stmts: Vec[LetStmt] = Vec::new();
@@ -1161,6 +1169,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         While { cond, body, ty } => {
             Expr::While { cond: lower_expr(ctx, cond), body: lower_expr(ctx, body), ty }
         },
+        Loop { body, ty } => Expr::Loop { body: lower_expr(ctx, body), ty },
         For {
             pat: pattern,
             iterator,
@@ -1170,7 +1179,13 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             body,
             ty: _,
         } => lower_for(ctx, pattern, iterator, into_iterator, iterator_trait, iterator_ty, body),
-        Break { ty } => Expr::Break { ty },
+        Break { value, ty } => Expr::Break {
+            value: match value {
+                Some(expr) => Option::Some(lower_expr(ctx, expr)),
+                None => Option::None,
+            },
+            ty,
+        },
         Continue { ty } => Expr::Continue { ty },
         Return { expr: value, ty } => Expr::Return {
             expr: match value {
@@ -1270,6 +1285,7 @@ fn lower_pattern_continuation(
     source_ty: tast::Type,
     pattern: tast::Pat,
     body: tast::Expr,
+    failure: Option[tast::Expr],
     ty: tast::Type,
 ) -> Expr {
     if pattern_requires_ordered(pattern) {
@@ -1278,7 +1294,10 @@ fn lower_pattern_continuation(
             pattern,
             Expr::Var { name: source_name, ty: source_ty },
             lower_expr(ctx, body),
-            missing_expr(ty),
+            match failure {
+                Some(value) => lower_expr(ctx, value),
+                None => missing_expr(ty),
+            },
             ty,
         )
     } else {
@@ -1286,6 +1305,22 @@ fn lower_pattern_continuation(
         columns.push(PatternColumn { source: source_name, source_ty, pattern });
         let rows: Vec[PatternRow] = Vec::new();
         rows.push(PatternRow { columns, bindings: Vec::new(), body });
+        match failure {
+            Some(value) => {
+                let fallback_columns: Vec[PatternColumn] = Vec::new();
+                fallback_columns.push(
+                    PatternColumn {
+                        source: source_name,
+                        source_ty,
+                        pattern: tast::Pat::Wild { ty: source_ty },
+                    },
+                );
+                rows.push(
+                    PatternRow { columns: fallback_columns, bindings: Vec::new(), body: value },
+                )
+            },
+            None => (),
+        };
         lower_pattern_rows(ctx, rows, ty)
     }
 }
@@ -1336,6 +1371,7 @@ fn lower_block_from(
                             value_ty,
                             pattern,
                             body,
+                            Option::None,
                             ty,
                         );
                         let result: Vec[LetStmt] = Vec::new();
@@ -1343,6 +1379,24 @@ fn lower_block_from(
                         Block { stmts: result, tail: Option::Some(matched) }
                     },
                 }
+            },
+            LetElse { is_mut: _, pat: pattern, value, else_branch } => {
+                let value_ty = tast::expr_type(value);
+                let core_value = lower_expr(ctx, value);
+                let name = gensym(ctx, "mtmp");
+                let body = remaining_tast_block(stmts, index + 1, tail, ty);
+                let matched = lower_pattern_continuation(
+                    ctx,
+                    name,
+                    value_ty,
+                    pattern,
+                    body,
+                    Option::Some(else_branch),
+                    ty,
+                );
+                let result: Vec[LetStmt] = Vec::new();
+                result.push(LetStmt { name, value: core_value, ty: value_ty });
+                Block { stmts: result, tail: Option::Some(matched) }
             },
             Expr { expr: value } => {
                 let value_ty = tast::expr_type(value);

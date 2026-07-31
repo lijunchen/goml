@@ -263,6 +263,7 @@ pub enum Stmt {
         pat: Pat,
         annotation: Option[TypeExpr],
         value: Expr,
+        else_branch: Option[Expr],
     },
     Assign {
         target: Expr,
@@ -359,12 +360,17 @@ pub enum ExprKind {
         cond: Expr,
         body: Expr,
     },
+    Loop {
+        body: Expr,
+    },
     For {
         pat: Pat,
         iterator: Expr,
         body: Expr,
     },
-    Break,
+    Break {
+        value: Option[Expr],
+    },
     Continue,
     Return {
         expr: Option[Expr],

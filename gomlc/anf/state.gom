@@ -8,6 +8,7 @@ struct LoopCtx {
     loop_id: string,
     exit_id: string,
     exit_ret_ty: tast::Type,
+    exit_takes_arg: bool,
 }
 
 struct ReturnCtx {
@@ -104,7 +105,7 @@ fn expr_is_control(value: core::Expr) -> bool {
             arms: _,
             default: _,
             ty: _,
-        } | While { cond: _, body: _, ty: _ } | Break { ty: _ } | Continue { ty: _ } | Return {
+        } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue { ty: _ } | Return {
             expr: _,
             ty: _,
         } => true,
@@ -128,7 +129,7 @@ fn match_has_catch_all(arms: Vec[core::Arm], default: Option[core::Expr]) -> boo
 
 fn expr_always_exits(value: core::Expr) -> bool {
     match value {
-        Break { ty: _ } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
         Constr { constructor: _, args, ty: _ } => exprs_always_exit(args),
         Tuple { items, ty: _ } | Array { items, ty: _ } => {
             exprs_always_exit(items)
@@ -162,6 +163,10 @@ fn expr_always_exits(value: core::Expr) -> bool {
             true
         },
         While { cond, body: _, ty: _ } => expr_always_exits(cond),
+        Loop { body: _, ty } => match tast::resolve_type(ty) {
+            Never => true,
+            _ => false,
+        },
         Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
             op: _,
             expr,

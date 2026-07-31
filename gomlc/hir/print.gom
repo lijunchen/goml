@@ -459,7 +459,7 @@ fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit 
 
 fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
-        Let { is_mut, pat, annotation, value: expr } => {
+        Let { is_mut, pat, annotation, value: expr, else_branch } => {
             builder.write_string("let ");
             if is_mut {
                 builder.write_string("mut ")
@@ -475,7 +475,14 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                 None => (),
             };
             builder.write_string(" = ");
-            write_expr(builder, expr, indent)
+            write_expr(builder, expr, indent);
+            match else_branch {
+                Some(value) => {
+                    builder.write_string(" else ");
+                    write_expr(builder, value, indent)
+                },
+                None => (),
+            }
         },
         Assign { target, op, value: expr } => {
             write_expr(builder, target, indent);
@@ -698,6 +705,10 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             newline(builder, indent);
             builder.write_char('}')
         },
+        Loop { body } => {
+            builder.write_string("loop ");
+            write_expr(builder, body, indent)
+        },
         For { pat, iterator, body } => {
             builder.write_string("for ");
             write_pat(builder, pat, indent);
@@ -706,7 +717,16 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             builder.write_char(' ');
             write_expr(builder, body, indent)
         },
-        Break => builder.write_string("break"),
+        Break { value } => {
+            builder.write_string("break");
+            match value {
+                Some(expr) => {
+                    builder.write_char(' ');
+                    write_expr(builder, expr, indent)
+                },
+                None => (),
+            }
+        },
         Continue => builder.write_string("continue"),
         Return { expr } => {
             builder.write_string("return");

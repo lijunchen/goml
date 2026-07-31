@@ -824,8 +824,14 @@ fn lower_block(
     let stmts: Vec[Stmt] = Vec::new();
     for stmt in value.stmts {
         match stmt {
-            Let { is_mut, pat, annotation, value: expr, span: _ } => {
+            Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
                 let lowered_expr = lower_expr(ctx, expr, env, type_params);
+                let lowered_else = match else_branch {
+                    Some(value) => {
+                        Option::Some(lower_expr(ctx, value, copy_bindings(env), type_params))
+                    },
+                    None => Option::None,
+                };
                 let lowered_pat = lower_pattern(ctx, pat, env);
                 stmts.push(
                     Stmt::Let {
@@ -836,6 +842,7 @@ fn lower_block(
                             None => Option::None,
                         },
                         value: lowered_expr,
+                        else_branch: lowered_else,
                     },
                 )
             },
@@ -1056,6 +1063,9 @@ fn lower_expr_value(
             cond: lower_expr(ctx, cond, env, type_params),
             body: lower_expr(ctx, body, copy_bindings(env), type_params),
         },
+        Loop { body, span: _ } => ExprKind::Loop {
+            body: lower_expr(ctx, body, copy_bindings(env), type_params),
+        },
         For { pat, iterator, body, span: _ } => {
             let body_env = copy_bindings(env);
             let lowered_iterator = lower_expr(ctx, iterator, env, type_params);
@@ -1066,7 +1076,12 @@ fn lower_expr_value(
                 body: lower_expr(ctx, body, body_env, type_params),
             }
         },
-        Break { span: _ } => ExprKind::Break,
+        Break { value, span: _ } => ExprKind::Break {
+            value: match value {
+                Some(expr) => Option::Some(lower_expr(ctx, expr, env, type_params)),
+                None => Option::None,
+            },
+        },
         Continue { span: _ } => ExprKind::Continue,
         Return { expr, span: _ } => ExprKind::Return {
             expr: match expr {

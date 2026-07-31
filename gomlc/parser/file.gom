@@ -1054,7 +1054,7 @@ fn block(parser: Parser) -> unit {
             ()
         } else if is_expr_first(parser.peek()) {
             let semicolon_optional = match parser.peek() {
-                IfKeyword | MatchKeyword | WhileKeyword | ForKeyword => true,
+                IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword => true,
                 _ => false,
             };
             match expr(parser) {

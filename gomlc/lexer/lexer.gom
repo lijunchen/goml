@@ -81,6 +81,7 @@ pub enum TokenKind {
     ReturnKeyword,
     GoKeyword,
     WhileKeyword,
+    LoopKeyword,
     BreakKeyword,
     ContinueKeyword,
     DynKeyword,
@@ -108,6 +109,7 @@ pub enum TokenKind {
     Float,
     IntLit,
     Str,
+    RawStr,
     MultilineStr,
     FStringStart,
     FStringText,
@@ -203,6 +205,7 @@ fn keyword_kind(text_value: string) -> TokenKind {
         "return" => TokenKind::ReturnKeyword,
         "go" => TokenKind::GoKeyword,
         "while" => TokenKind::WhileKeyword,
+        "loop" => TokenKind::LoopKeyword,
         "break" => TokenKind::BreakKeyword,
         "continue" => TokenKind::ContinueKeyword,
         "dyn" => TokenKind::DynKeyword,
@@ -428,6 +431,51 @@ fn scan_string(source: string, start: int) -> (bool, int) {
     (false, index)
 }
 
+fn raw_string_hash_count(source: string, start: int) -> Option[int] {
+    if start >= source.byte_len() || byte_at(source, start) != b'r' {
+        Option::None
+    } else {
+        let mut index = start + 1;
+        while index < source.byte_len() && byte_at(source, index) == b'#' {
+            index = index + 1;
+        };
+        if index < source.byte_len() && byte_at(source, index) == b'"' {
+            Option::Some(index - start - 1)
+        } else {
+            Option::None
+        }
+    }
+}
+
+fn starts_raw_string(source: string, start: int) -> bool {
+    match raw_string_hash_count(source, start) {
+        Some(_) => true,
+        None => false,
+    }
+}
+
+fn scan_raw_string_end(source: string, start: int, hash_count: int) -> Option[int] {
+    let mut index = start + hash_count + 2;
+    while index < source.byte_len() {
+        if byte_at(source, index) == b'"' {
+            let mut hash_index = 0;
+            while hash_index < hash_count && index + 1 + hash_index < source.byte_len()
+                && byte_at(source, index + 1 + hash_index) == b'#' {
+                hash_index = hash_index + 1;
+            };
+            if hash_index == hash_count {
+                return Option::Some(index + hash_count + 1)
+            } else {
+                ()
+            }
+        } else {
+            ()
+        };
+        index = index + 1;
+    };
+    Option::None
+}
+
 fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
     let mut index = start;
     let mut depth = 1;
@@ -438,6 +486,16 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
             index = position + 2;
             while index < source.byte_len() && byte_at(source, index) != b'\n' {
                 index = index + 1;
+            }
+        } else if value == b'r' && starts_raw_string(source, position) {
+            match raw_string_hash_count(source, position) {
+                Some(hash_count) => match scan_raw_string_end(source, position, hash_count) {
+                    Some(end) => {
+                        index = end;
+                    },
+                    None => return Option::None,
+                },
+                None => return Option::None,
             }
         } else if value == b'f' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'"' {
@@ -890,6 +948,20 @@ pub fn lex(source: string) -> Vec[Token] {
                     push_token(tokens, source, TokenKind::Error, start, start + 2)
                 },
             }
+        } else if value == b'r' && starts_raw_string(source, start) {
+            match raw_string_hash_count(source, start) {
+                Some(hash_count) => match scan_raw_string_end(source, start, hash_count) {
+                    Some(end) => {
+                        index = end;
+                        push_token(tokens, source, TokenKind::RawStr, start, end)
+                    },
+                    None => {
+                        index = source.byte_len();
+                        push_token(tokens, source, TokenKind::Error, start, source.byte_len())
+                    },
+                },
+                None => (),
+            }
         } else if value == b'f' && start + 1 < source.byte_len()
             && byte_at(source, start + 1) == b'"' {
             index = lex_fstring(tokens, source, start);
@@ -1054,6 +1126,7 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         ReturnKeyword => "return",
         GoKeyword => "go",
         WhileKeyword => "while",
+        LoopKeyword => "loop",
         BreakKeyword => "break",
         ContinueKeyword => "continue",
         DynKeyword => "dyn",
@@ -1081,6 +1154,7 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         Float => "float",
         IntLit => "int_lit",
         Str => "str",
+        RawStr => "raw_str",
         MultilineStr => "multiline_str",
         FStringStart => "f\"",
         FStringText => "interpolated string text",

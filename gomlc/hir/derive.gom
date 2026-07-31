@@ -243,7 +243,14 @@ fn concat_parts(parts: Vec[ast::Expr]) -> ast::Expr {
 }
 
 fn let_stmt(pat: ast::Pat, annotation: Option[ast::TypeExpr], value: ast::Expr) -> ast::Stmt {
-    ast::Stmt::Let { is_mut: false, pat, annotation, value, span: dummy_span() }
+    ast::Stmt::Let {
+        is_mut: false,
+        pat,
+        annotation,
+        value,
+        else_branch: Option::None,
+        span: dummy_span(),
+    }
 }
 
 fn block_expr(stmts: Vec[ast::Stmt], tail: ast::Expr) -> ast::Expr {

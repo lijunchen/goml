@@ -565,7 +565,7 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
 
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
-        Break { ty: _ } | Continue { ty: _ } | Return { expr: _, ty: _ } => value,
+        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => value,
         _ => match expected {
             Some(expected_ty) => match prune(expected_ty) {
                 Var(variable) => match variable.get() {
@@ -3633,6 +3633,7 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
             Expr::If { cond, then_branch, else_branch, ty }
         },
         While { cond, body, ty: _ } => Expr::While { cond, body, ty },
+        Loop { body, ty: _ } => Expr::Loop { body, ty },
         For {
             pat,
             iterator,
@@ -3652,7 +3653,7 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
                 ty,
             }
         },
-        Break { ty: _ } => Expr::Break { ty },
+        Break { value, ty: _ } => Expr::Break { value, ty },
         Continue { ty: _ } => Expr::Continue { ty },
         Return { expr: value, ty: _ } => Expr::Return { expr: value, ty },
         Go { expr: value, ty: _ } => Expr::Go { expr: value, ty },
@@ -4069,9 +4070,11 @@ fn check_for_expr(ctx: Checker, pat: hir::Pat, iterator_source: hir::Expr, body_
         )
     };
     ctx.loop_depth.set(ctx.loop_depth.get() + 1);
+    ctx.loop_results.push(LoopResult { result_ty: Option::None, has_break: Ref::new(false) });
     let body = check_expr(ctx, body_source, Option::None);
     expect_type_at(ctx, Type::Unit, expr_type(body), Option::Some(body_span));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
+    let _ = ctx.loop_results.pop();
     let projected_iterator_ty = trait_projection(source_ty, "IntoIter", "IntoIterator");
     let normalized_iterator_ty = normalize_type(ctx, projected_iterator_ty);
     let iterator_ty = if types_equal(normalized_iterator_ty, projected_iterator_ty)
@@ -4119,9 +4122,56 @@ fn check_while_expr(ctx: Checker, cond_source: hir::Expr, body_source: hir::Expr
     ctx.condition_depth.set(previous_condition_depth);
     ctx.condition_loop_depth.set(previous_condition_loop_depth);
     ctx.loop_depth.set(ctx.loop_depth.get() + 1);
+    ctx.loop_results.push(LoopResult { result_ty: Option::None, has_break: Ref::new(false) });
     let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
+    let _ = ctx.loop_results.pop();
     Expr::While { cond, body, ty: Type::Unit }
+}
+
+fn check_loop_expr(ctx: Checker, body_source: hir::Expr, expected: Option[Type]) -> Expr {
+    let result_ty = match propagated_expected(expected) {
+        Some(ty) => ty,
+        None => fresh_type(ctx.counter, VarKind::Any),
+    };
+    let loop_result = LoopResult { result_ty: Option::Some(result_ty), has_break: Ref::new(false) };
+    ctx.loop_depth.set(ctx.loop_depth.get() + 1);
+    ctx.loop_results.push(loop_result);
+    let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
+    let _ = ctx.loop_results.pop();
+    ctx.loop_depth.set(ctx.loop_depth.get() - 1);
+    Expr::Loop { body, ty: if loop_result.has_break.get() { result_ty } else { Type::Never } }
+}
+
+fn check_break_expr(ctx: Checker, source: Option[hir::Expr]) -> Expr {
+    check_loop_control(ctx, true);
+    if ctx.loop_results.len() == 0 {
+        let value = match source {
+            Some(expr) => Option::Some(check_expr(ctx, expr, Option::None)),
+            None => Option::None,
+        };
+        Expr::Break { value, ty: Type::Never }
+    } else {
+        let current = ctx.loop_results[ctx.loop_results.len() - 1];
+        current.has_break.set(true);
+        let value = match current.result_ty {
+            Some(result_ty) => match source {
+                Some(expr) => Option::Some(check_expr(ctx, expr, Option::Some(result_ty))),
+                None => {
+                    expect_type(ctx, Type::Unit, result_ty);
+                    Option::None
+                },
+            },
+            None => match source {
+                Some(expr) => {
+                    push_diagnostic(ctx, "`break` with a value is only allowed in `loop`");
+                    Option::Some(check_expr(ctx, expr, Option::None))
+                },
+                None => Option::None,
+            },
+        };
+        Expr::Break { value, ty: Type::Never }
+    }
 }
 
 fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
@@ -4210,11 +4260,9 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
             },
             While { cond, body } => check_while_expr(ctx, cond, body),
+            Loop { body } => check_loop_expr(ctx, body, Option::None),
             For { pat, iterator, body } => check_for_expr(ctx, pat, iterator, body),
-            Break => {
-                check_loop_control(ctx, true);
-                Expr::Break { ty: Type::Never }
-            },
+            Break { value } => check_break_expr(ctx, value),
             Continue => {
                 check_loop_control(ctx, false);
                 Expr::Continue { ty: Type::Never }
@@ -4496,6 +4544,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         If { cond, then_branch, else_branch } => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },
+        Loop { body } => check_loop_expr(ctx, body, expected),
         Block { block } => {
             let typed = check_block(ctx, block, expected);
             let result = Expr::Block { block: typed.0, ty: typed.1 };
@@ -5026,7 +5075,7 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
 
 fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
     match value {
-        Let { is_mut, pat, annotation, value: source } => {
+        Let { is_mut, pat, annotation, value: source, else_branch } => {
             let closure_value = match source.kind {
                 Closure { params: _, body: _ } => true,
                 _ => false,
@@ -5080,18 +5129,57 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 _ => false,
             };
             let pattern = check_pattern(ctx, pat, pattern_ty);
-            if simple_pattern {
-                ()
-            } else if pattern_is_irrefutable(ctx, pattern) {
-                ()
-            } else {
-                push_diagnostic_at(
-                    ctx,
-                    "Refutable pattern is not allowed in let binding; use match instead",
-                    Option::Some(pat.span),
-                )
-            };
-            Stmt::Let { is_mut, pat: pattern, value: expression }
+            let irrefutable = simple_pattern || pattern_is_irrefutable(ctx, pattern);
+            match else_branch {
+                Some(source_else) => {
+                    if irrefutable {
+                        push_diagnostic_at(
+                            ctx,
+                            "`let else` requires a refutable pattern",
+                            Option::Some(pat.span),
+                        )
+                    } else {
+                        ()
+                    };
+                    let syntactically_exits = hir_expr_always_exits_loop_control(source_else);
+                    let checked_else = check_expr(ctx, source_else, Option::None);
+                    let exits = syntactically_exits || match resolve_type(expr_type(checked_else)) {
+                        Never => true,
+                        _ => false,
+                    };
+                    if exits {
+                        ()
+                    } else {
+                        push_diagnostic_at(
+                            ctx,
+                            "`let else` branch must exit the surrounding control flow",
+                            Option::Some(source_else.span),
+                        )
+                    };
+                    Stmt::LetElse {
+                        is_mut,
+                        pat: pattern,
+                        value: expression,
+                        else_branch: if exits {
+                            with_expr_type(checked_else, Type::Never)
+                        } else {
+                            checked_else
+                        },
+                    }
+                },
+                None => {
+                    if irrefutable {
+                        ()
+                    } else {
+                        push_diagnostic_at(
+                            ctx,
+                            "Refutable pattern is not allowed in let binding; use match instead",
+                            Option::Some(pat.span),
+                        )
+                    };
+                    Stmt::Let { is_mut, pat: pattern, value: expression }
+                },
+            }
         },
         Assign { target, op, value: source } => {
             let target_span = target.span;
@@ -5214,7 +5302,7 @@ fn hir_match_bodies_all_exit_loop_control(arms: Vec[hir::Arm]) -> bool {
 
 fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
     match value.kind {
-        Break | Continue | Return { expr: _ } => true,
+        Break { value: _ } | Continue | Return { expr: _ } => true,
         ConstructorValue { constructor: _ } => false,
         Constr { constructor: _, args } => hir_exprs_any_exit_loop_control(args),
         StructLiteral { name: _, fields, base } => {

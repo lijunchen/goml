@@ -5,7 +5,7 @@ use gomlc::lexer;
 
 fn is_pattern_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        TrueKeyword | FalseKeyword | Ident | LParen | LBracket | WildcardKeyword | Minus | IntLit | Float | Str | CharLit | ByteCharLit => true,
+        TrueKeyword | FalseKeyword | Ident | LParen | LBracket | WildcardKeyword | Minus | IntLit | Float | Str | RawStr | CharLit | ByteCharLit => true,
         _ => false,
     }
 }
@@ -150,7 +150,7 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
             Minus => negative_pattern(parser),
             IntLit => numeric_pattern(parser, cst::NodeKind::PATTERN_INT),
             Float => numeric_pattern(parser, cst::NodeKind::PATTERN_FLOAT),
-            Str => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
+            Str | RawStr => numeric_pattern(parser, cst::NodeKind::PATTERN_STRING),
             CharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_CHAR),
             ByteCharLit => numeric_pattern(parser, cst::NodeKind::PATTERN_BYTE),
             WildcardKeyword => numeric_pattern(parser, cst::NodeKind::PATTERN_WILDCARD),

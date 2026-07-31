@@ -38,6 +38,22 @@ fn strip_delimiters(value: string) -> Option[string] {
     }
 }
 
+fn raw_string_pattern_value(node: LocatedNode) -> Option[string] {
+    match literal_value(node, lexer::TokenKind::RawStr) {
+        Some(source) => {
+            let mut hash_count = 0;
+            while 1 + hash_count < source.byte_len()
+                && source.byte_get(1 + hash_count) == b'#' {
+                hash_count = hash_count + 1;
+            };
+            Option::Some(
+                source.byte_slice(hash_count + 2, source.byte_len() - hash_count - 1),
+            )
+        },
+        None => Option::None,
+    }
+}
+
 fn path_from_single_ident(value: string) -> Path {
     let segments: Vec[PathSegment] = Vec::new();
     segments.push(PathSegment { ident: value, span: span(0, 0) });
@@ -111,9 +127,12 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     Some(value) => Option::Some(Pat::String { value, span: value_span }),
                     None => Option::None,
                 },
-                None => {
-                    push_error(ctx, value_span, "StringPat has no value");
-                    Option::None
+                None => match raw_string_pattern_value(node) {
+                    Some(value) => Option::Some(Pat::String { value, span: value_span }),
+                    None => {
+                        push_error(ctx, value_span, "StringPat has no value");
+                        Option::None
+                    },
                 },
             },
             PATTERN_CHAR => match literal_value(node, lexer::TokenKind::CharLit) {

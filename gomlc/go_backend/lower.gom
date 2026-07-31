@@ -1710,7 +1710,11 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
                         let _ = visited.remove(visited.len() - 1);
                         result
                     },
-                    None => Option::None,
+                    None => if strings::starts_with(target, "exit") {
+                        Option::Some(target)
+                    } else {
+                        Option::None
+                    },
                 }
             }
         },
@@ -2014,10 +2018,14 @@ fn compile_loop_term_leaf(
 ) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::new();
     match value {
-        Jump { target, args: _, ret_ty: _ } => {
+        Jump { target, args, ret_ty: _ } => {
             if target == loop_name {
                 result.push(Stmt::Continue)
             } else if target == exit_name {
+                match find_join(env.joins, target) {
+                    Some(join) => append_stmts(result, compile_jump_args(env, join, args)),
+                    None => (),
+                };
                 result.push(Stmt::BreakLabel { label })
             } else {
                 match find_join(env.joins, target) {
@@ -2364,6 +2372,13 @@ fn compile_joinrec_in_loop(
                 loop_names.push(value.name)
             },
             None => if single
+                && strings::starts_with(value.name, "loop_expr")
+                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) {
+                let label = fresh_loop_label(env, value.name);
+                let body = compile_loop_block(env, value.body, value.name, "", label);
+                stmts.push(loop_stmt(label, body));
+                loop_names.push(value.name)
+            } else if single
                 && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false {
                 append_stmts(
                     stmts,
@@ -2465,6 +2480,13 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
                 loop_names.push(value.name)
             },
             None => if single
+                && strings::starts_with(value.name, "loop_expr")
+                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) {
+                let label = fresh_loop_label(env, value.name);
+                let body = compile_loop_block(env, value.body, value.name, "", label);
+                stmts.push(loop_stmt(label, body));
+                loop_names.push(value.name)
+            } else if single
                 && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false {
                 append_stmts(stmts, compile_block(env, value.body).stmts);
                 loop_names.push(value.name)

@@ -125,6 +125,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, cond);
             observe_expr(maximum, body)
         },
+        Loop { body, ty: _ } => observe_expr(maximum, body),
         Return { expr, ty: _ } => observe_optional_expr(maximum, expr),
         Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
             op: _,
@@ -148,9 +149,10 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Break {
+        Break { value, ty: _ } => observe_optional_expr(maximum, value),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
-        } | Continue { ty: _ } => (),
+        } => (),
     }
 }
 

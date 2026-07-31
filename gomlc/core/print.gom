@@ -285,7 +285,20 @@ fn write_expr(
             newline(builder, indent);
             builder.write_char('}')
         },
-        Break { ty: _ } => builder.write_string("break"),
+        Loop { body, ty: _ } => {
+            builder.write_string("loop ");
+            write_expr(builder, body, indent, mono_style, flatten_blocks)
+        },
+        Break { value, ty: _ } => {
+            builder.write_string("break");
+            match value {
+                Some(expr) => {
+                    builder.write_char(' ');
+                    write_expr(builder, expr, indent, mono_style, flatten_blocks)
+                },
+                None => (),
+            }
+        },
         Continue { ty: _ } => builder.write_string("continue"),
         Return { expr: value, ty: _ } => {
             builder.write_string("return");

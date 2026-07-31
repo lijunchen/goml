@@ -3,8 +3,12 @@ package anf;
 use gomlc::core;
 use gomlc::tast;
 
-fn reify_k(state: State, value_ty: tast::Type, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
-    let name = fresh(state, "k");
+fn reify_k_with_name(
+    state: State,
+    name: string,
+    value_ty: tast::Type,
+    k: (Imm) -> Block,
+) -> (JoinBind, tast::Type) {
     if type_is_unit(value_ty) {
         let body = k(unit_imm());
         let ret_ty = block_type(body);
@@ -17,6 +21,10 @@ fn reify_k(state: State, value_ty: tast::Type, k: (Imm) -> Block) -> (JoinBind, 
         params.push((param, value_ty));
         (JoinBind { name, params, ret_ty, body }, ret_ty)
     }
+}
+
+fn reify_k(state: State, value_ty: tast::Type, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
+    reify_k_with_name(state, fresh(state, "k"), value_ty, k)
 }
 
 fn reify_k_for_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
@@ -195,7 +203,9 @@ fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Blo
     let exit = JoinBind { name: exit_id, params: Vec::new(), ret_ty: exit_ret_ty, body: exit_body };
     let loop_id = fresh(state, "loop");
     let previous = state.loop_ctx.get();
-    state.loop_ctx.set(Option::Some(LoopCtx { loop_id, exit_id, exit_ret_ty }));
+    state.loop_ctx.set(
+        Option::Some(LoopCtx { loop_id, exit_id, exit_ret_ty, exit_takes_arg: false }),
+    );
     let loop_body = lower_expr(
         state,
         cond,
@@ -217,6 +227,43 @@ fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Blo
             Block {
                 binds: no_binds(),
                 term: Term::If { cond, then_: then_block, else_: else_block, ret_ty: exit_ret_ty },
+            }
+        },
+    );
+    state.loop_ctx.set(previous);
+    let recursive = Vec::new();
+    recursive.push(
+        JoinBind { name: loop_id, params: Vec::new(), ret_ty: exit_ret_ty, body: loop_body },
+    );
+    let binds = Vec::new();
+    binds.push(Bind::Join(exit));
+    binds.push(Bind::JoinRec(recursive));
+    Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }
+}
+
+fn lower_loop(
+    state: State,
+    body: core::Expr,
+    ty: tast::Type,
+    k: (Imm) -> Block,
+) -> Block {
+    let exit_result = reify_k_with_name(state, fresh(state, "exit"), ty, k);
+    let exit = exit_result.0;
+    let exit_ret_ty = exit_result.1;
+    let exit_id = exit.name;
+    let exit_takes_arg = exit.params.len() > 0;
+    let loop_id = fresh(state, "loop_expr");
+    let previous = state.loop_ctx.get();
+    state.loop_ctx.set(
+        Option::Some(LoopCtx { loop_id, exit_id, exit_ret_ty, exit_takes_arg }),
+    );
+    let loop_body = lower_expr(
+        state,
+        body,
+        |_| {
+            Block {
+                binds: no_binds(),
+                term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty },
             }
         },
     );
@@ -262,14 +309,27 @@ fn lower_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> Block {
                 lower_match(state, scrutinee, arms, default, ty, k)
             },
             While { cond, body, ty: _ } => lower_while(state, cond, body, k),
-            Break { ty: _ } => match state.loop_ctx.get() {
-                Some(ctx) => Block {
-                    binds: no_binds(),
-                    term: Term::Jump {
-                        target: ctx.exit_id,
-                        args: no_imms(),
-                        ret_ty: ctx.exit_ret_ty,
-                    },
+            Loop { body, ty } => lower_loop(state, body, ty, k),
+            Break { value, ty: _ } => match state.loop_ctx.get() {
+                Some(ctx) => match value {
+                    Some(expr) => lower_expr(
+                        state,
+                        expr,
+                        |value| {
+                            jump_block(
+                                ctx.exit_id,
+                                value,
+                                ctx.exit_takes_arg,
+                                ctx.exit_ret_ty,
+                            )
+                        },
+                    ),
+                    None => jump_block(
+                        ctx.exit_id,
+                        unit_imm(),
+                        ctx.exit_takes_arg,
+                        ctx.exit_ret_ty,
+                    ),
                 },
                 None => Block {
                     binds: no_binds(),

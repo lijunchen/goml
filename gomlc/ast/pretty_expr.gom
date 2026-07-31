@@ -69,7 +69,7 @@ fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int) -
 
 fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
-        Let { is_mut, pat, annotation, value: expr, span: _ } => {
+        Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
             builder.write_string("let ");
             if is_mut {
                 builder.write_string("mut ")
@@ -85,7 +85,14 @@ fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> 
                 None => (),
             };
             builder.write_string(" = ");
-            pretty_write_expr(builder, expr, indent)
+            pretty_write_expr(builder, expr, indent);
+            match else_branch {
+                Some(value) => {
+                    builder.write_string(" else ");
+                    pretty_write_expr(builder, value, indent)
+                },
+                None => (),
+            }
         },
         Assign { target, op, value: expr, span: _ } => {
             pretty_write_expr(builder, target, indent);
@@ -341,6 +348,10 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             pretty_newline(builder, indent);
             builder.write_char('}')
         },
+        Loop { body, span: _ } => {
+            builder.write_string("loop ");
+            pretty_write_expr(builder, body, indent)
+        },
         For { pat, iterator, body, span: _ } => {
             builder.write_string("for ");
             pretty_write_pat(builder, pat, indent);
@@ -349,7 +360,16 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char(' ');
             pretty_write_expr(builder, body, indent)
         },
-        Break { span: _ } => builder.write_string("break"),
+        Break { value, span: _ } => {
+            builder.write_string("break");
+            match value {
+                Some(expr) => {
+                    builder.write_char(' ');
+                    pretty_write_expr(builder, expr, indent)
+                },
+                None => (),
+            }
+        },
         Continue { span: _ } => builder.write_string("continue"),
         Return { expr, span: _ } => {
             builder.write_string("return");

@@ -264,6 +264,10 @@ pub enum Expr {
         body: Expr,
         ty: Type,
     },
+    Loop {
+        body: Expr,
+        ty: Type,
+    },
     For {
         pat: Pat,
         iterator: Expr,
@@ -274,6 +278,7 @@ pub enum Expr {
         ty: Type,
     },
     Break {
+        value: Option[Expr],
         ty: Type,
     },
     Continue {
@@ -341,6 +346,12 @@ pub enum Stmt {
         is_mut: bool,
         pat: Pat,
         value: Expr,
+    },
+    LetElse {
+        is_mut: bool,
+        pat: Pat,
+        value: Expr,
+        else_branch: Expr,
     },
     Assign {
         target: Expr,
@@ -503,7 +514,7 @@ pub fn expr_type(value: Expr) -> Type {
         } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
             ty,
             ..,
-        } | While { ty, .. } | For { ty, .. } | Break { ty } | Continue { ty } | Return { ty, .. } | Go {
+        } | While { ty, .. } | Loop { ty, .. } | For { ty, .. } | Break { ty, .. } | Continue { ty } | Return { ty, .. } | Go {
             ty,
             ..,
         } | Call { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Proj { ty, .. } | Field {

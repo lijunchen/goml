@@ -619,9 +619,20 @@ fn artifact_json_core_expr(
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)
         },
-        Break { ty } => {
+        Loop { body, ty } => {
+            artifact_json_name(writer, "ELoop");
+            artifact_json_begin_object(writer);
+            artifact_json_name(writer, "body");
+            artifact_json_core_expr(writer, context, body);
+            artifact_json_name(writer, "ty");
+            artifact_json_type(writer, context, ty);
+            artifact_json_end_object(writer)
+        },
+        Break { value, ty } => {
             artifact_json_name(writer, "EBreak");
             artifact_json_begin_object(writer);
+            artifact_json_name(writer, "value");
+            artifact_json_optional_core_expr(writer, context, value);
             artifact_json_name(writer, "ty");
             artifact_json_type(writer, context, ty);
             artifact_json_end_object(writer)

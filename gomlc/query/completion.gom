@@ -1034,6 +1034,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         "int32",
         "int64",
         "let",
+        "loop",
         "match",
         "package",
         "pub",
@@ -1118,7 +1119,8 @@ fn call_argument_context(source: string, offset: int) -> bool {
     match call_open_before(source, start) {
         Some(open) => {
             let previous = completion_word_before(source, open);
-            previous != "" && previous != "if" && previous != "while" && previous != "for"
+            previous != "" && previous != "if" && previous != "while" && previous != "loop"
+                && previous != "for"
                 && previous != "match"
                 && previous != "fn"
         },

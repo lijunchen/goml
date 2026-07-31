@@ -702,7 +702,14 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
                 ty: collapse_type(ctx, ty),
             }
         },
-        Break { ty } => core::Expr::Break { ty: collapse_type(ctx, ty) },
+        Loop { body, ty } => core::Expr::Loop {
+            body: lower_expr(ctx, body),
+            ty: collapse_type(ctx, ty),
+        },
+        Break { value, ty } => core::Expr::Break {
+            value: lower_optional_expr(ctx, value),
+            ty: collapse_type(ctx, ty),
+        },
         Continue { ty } => core::Expr::Continue { ty: collapse_type(ctx, ty) },
         Return { expr, ty } => {
             core::Expr::Return { expr: lower_optional_expr(ctx, expr), ty: collapse_type(ctx, ty) }
@@ -903,7 +910,9 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             collect_expr_type_names(ctx, cond);
             collect_expr_type_names(ctx, body)
         },
-        Break { ty: _ } | Continue { ty: _ } => (),
+        Loop { body, ty: _ } => collect_expr_type_names(ctx, body),
+        Break { value, ty: _ } => collect_optional_expr_type_names(ctx, value),
+        Continue { ty: _ } => (),
         Return { expr, ty: _ } => collect_optional_expr_type_names(ctx, expr),
         Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
             tuple: expr,
