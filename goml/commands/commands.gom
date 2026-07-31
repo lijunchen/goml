@@ -118,7 +118,7 @@ fn ensure_project_directory(value: string) -> Result[unit, string] {
         return Result::Err("target directory " + value + " already exists and is not empty")
     } else if fs::is_dir(value) {
         let entries = fs::read_dir(value)?;
-        if entries.len() > 0 {
+        if !entries.is_empty() {
             return Result::Err("target directory " + value + " already exists and is not empty")
         } else {
             Result::Ok(())
@@ -160,40 +160,40 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
 }
 
 pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
-    let name: Ref[Option[string]] = Ref::new(Option::None);
-    let base = Ref::new(".");
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
+    let mut name: Option[string] = Option::None;
+    let mut base = ".";
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
         if argument == "--path" {
-            if index.get() + 1 >= args.len() {
+            if index + 1 >= args.len() {
                 return Result::Err("--path requires a value")
             } else {
-                base.set(args[index.get() + 1]);
-                index.set(index.get() + 2)
+                base = args[index + 1];
+                index += 2;
             }
         } else if util::starts_with(argument, "--path=") {
             let value = argument.byte_slice(7, argument.byte_len());
             if value == "" {
                 return Result::Err("--path requires a value")
             } else {
-                base.set(value);
-                index.set(index.get() + 1)
+                base = value;
+                index += 1;
             }
         } else if util::starts_with(argument, "-") {
             return Result::Err("unknown option " + argument)
         } else {
-            match name.get() {
+            match name {
                 Some(_) => return Result::Err("unexpected argument " + argument),
                 None => {
-                    name.set(Option::Some(argument));
-                    index.set(index.get() + 1)
+                    name = Option::Some(argument);
+                    index += 1;
                 },
             }
         }
     };
-    match name.get() {
-        Some(value) => new_project(value, base.get()),
+    match name {
+        Some(value) => new_project(value, base),
         None => Result::Err("project name is required"),
     }
 }

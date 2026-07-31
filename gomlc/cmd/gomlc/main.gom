@@ -59,7 +59,7 @@ fn dump_argument(value: string) -> bool {
 }
 
 fn inline_dump_argument(value: string) -> Option[(string, string)] {
-    let names = Vec::new();
+    let names: Vec[string] = Vec::[];
     names.push("--dump-ast");
     names.push("--dump-hir");
     names.push("--dump-tast");
@@ -95,28 +95,28 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let mut file: Option[string] = Option::None;
     let seen: HashMap[string, unit] = HashMap::{};
-    let used_dumps = Vec::new();
+    let used_dumps: Vec[string] = Vec::[];
     let mut positional = false;
     let mut index = 2;
     while index < args.len() {
         let argument = args[index];
-        if positional == false && argument == "--" {
+        if !positional && argument == "--" {
             positional = true;
             index += 1;
-        } else if positional == false && cli_help_argument(argument) {
+        } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
-        } else if positional == false && option_string_present(inline_cli_value(argument, "--help")) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
             };
-            let usage = if used_dumps.len() == 0 {
+            let usage = if used_dumps.is_empty() {
                 "gomlc run-single --help <FILE>"
             } else {
                 "gomlc run-single --help <--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go|FILE>"
             };
             return Result::Err(unexpected_value_error_with_usage(value, "--help", usage))
-        } else if positional == false && dump_argument(argument) {
+        } else if !positional && dump_argument(argument) {
             if seen.contains(argument) {
                 return Result::Err(repeated_argument_error("run-single", argument))
             } else {
@@ -124,7 +124,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 used_dumps.push(argument);
                 index += 1;
             }
-        } else if positional == false
+        } else if !positional
             && inline_dump_argument_present(inline_dump_argument(argument)) {
             match inline_dump_argument(argument) {
                 Some((name, value)) => return Result::Err(
@@ -132,7 +132,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 ),
                 None => (),
             }
-        } else if positional == false && cli_option(argument) {
+        } else if !positional && cli_option(argument) {
             match similar_cli_argument("run-single", argument) {
                 Some(similar) => {
                     let usage = if similar == "--help" {
@@ -149,7 +149,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 },
                 None => (),
             };
-            let usage = if used_dumps.len() > 0 || file.is_some() {
+            let usage = if !used_dumps.is_empty() || file.is_some() {
                 selected_run_usage(used_dumps)
             } else {
                 command_usage("run-single")
@@ -182,7 +182,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             },
         ),
         None => {
-            let missing = Vec::new();
+            let missing: Vec[string] = Vec::[];
             missing.push("<FILE>");
             Result::Err(
                 missing_required_arguments_error_with_usage(missing, selected_run_usage(used_dumps)),

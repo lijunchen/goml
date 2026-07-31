@@ -23,16 +23,16 @@ fn canonical(value: string) -> Result[string, string] {
 }
 
 pub fn find_module_root(start: string) -> Result[string, string] {
-    let current = Ref::new(start);
+    let mut current = start;
     loop {
-        if fs::is_file(path::join(current.get(), "goml.toml")) {
-            return Result::Ok(current.get())
+        if fs::is_file(path::join(current, "goml.toml")) {
+            return Result::Ok(current)
         } else {
-            match path::parent(current.get()) {
-                Some(parent) => if parent == current.get() {
+            match path::parent(current) {
+                Some(parent) => if parent == current {
                     return Result::Err("could not find goml.toml")
                 } else {
-                    current.set(parent)
+                    current = parent;
                 },
                 None => return Result::Err("could not find goml.toml"),
             }
@@ -106,7 +106,7 @@ fn package_name_for_directory(module_dir: string, module_path: string, directory
         ()
     };
     let relative = relative_path(module_dir, directory);
-    let segments = Vec::new();
+    let segments: Vec[string] = Vec::[];
     let current = text::StringBuilder::new();
     for character in relative.chars() {
         if character == '/' || character == '\\' {
@@ -125,7 +125,7 @@ fn package_name_for_directory(module_dir: string, module_path: string, directory
     } else {
         ()
     };
-    if segments.len() == 0 {
+    if segments.is_empty() {
         Result::Ok(module_path)
     } else {
         Result::Ok(module_path + "::" + util::join(segments, "::"))
@@ -142,24 +142,24 @@ fn directory_for_package(module_dir: string, module_path: string, package_name: 
         if !util::starts_with(package_name, prefix) {
             Option::None
         } else {
-            let result = Ref::new(module_dir);
+            let mut result = module_dir;
             let suffix = package_name.byte_slice(prefix.byte_len(), package_name.byte_len());
             for segment in util::split(suffix, "::") {
-                result.set(path::join(result.get(), segment));
-                if fs::is_file(path::join(result.get(), "goml.toml")) {
+                result = path::join(result, segment);
+                if fs::is_file(path::join(result, "goml.toml")) {
                     return Option::None
                 } else {
                     ()
                 }
             };
-            Option::Some(result.get())
+            Option::Some(result)
         }
     }
 }
 
 fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], string] {
     let names = fs::read_dir(directory)?;
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for name in names {
         let source_path = path::join(directory, name);
         if fs::is_file(source_path)
@@ -262,7 +262,7 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
         },
         None => return Result::Err("package-info omitted files"),
     };
-    let result = Vec::new();
+    let result: Vec[PackageInfoFile] = Vec::[];
     for value in values {
         let source_path = match json::field(value, "path") {
             Some(value) => match json::as_string(value) {
@@ -292,7 +292,7 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
             },
             None => return Result::Err("package-info omitted uses"),
         };
-        let parsed_uses = Vec::new();
+        let parsed_uses: Vec[PackageInfoUse] = Vec::[];
         for use_value in uses {
             let use_path = match json::field(use_value, "path") {
                 Some(value) => match json::as_string(value) {
@@ -318,7 +318,7 @@ fn select_package_info(module_dir: string, all_info: Vec[PackageInfoFile], files
     Vec[PackageInfoFile],
     string,
 ] {
-    let result = Vec::new();
+    let result: Vec[PackageInfoFile] = Vec::[];
     for file in files {
         let relative = relative_path(module_dir, file);
         let before = result.len();
@@ -350,47 +350,51 @@ fn source_by_name(sources: Vec[ModuleSource], name: string) -> Option[ModuleSour
 }
 
 fn source_for_package(sources: Vec[ModuleSource], package_name: string) -> Option[ModuleSource] {
-    let selected: Ref[Option[ModuleSource]] = Ref::new(Option::None);
+    let mut selected: Option[ModuleSource] = Option::None;
     for source in sources {
         if package_name == source.name || util::starts_with(package_name, source.name + "::") {
-            match selected.get() {
+            match selected {
                 Some(current) => if source.name.byte_len() > current.name.byte_len() {
-                    selected.set(Option::Some(source))
+                    selected = Option::Some(source);
                 } else {
                     ()
                 },
-                None => selected.set(Option::Some(source)),
+                None => {
+                    selected = Option::Some(source);
+                },
             }
         } else {
             ()
         }
     };
-    selected.get()
+    selected
 }
 
 fn source_for_package_directory(sources: Vec[ModuleSource], directory: string) -> Option[
     ModuleSource,
 ] {
-    let selected: Ref[Option[ModuleSource]] = Ref::new(Option::None);
+    let mut selected: Option[ModuleSource] = Option::None;
     for source in sources {
         if path_inside(source.directory, directory) {
-            match selected.get() {
+            match selected {
                 Some(current) => if source.directory.byte_len() > current.directory.byte_len() {
-                    selected.set(Option::Some(source))
+                    selected = Option::Some(source);
                 } else {
                     ()
                 },
-                None => selected.set(Option::Some(source)),
+                None => {
+                    selected = Option::Some(source);
+                },
             }
         } else {
             ()
         }
     };
-    selected.get()
+    selected
 }
 
 fn dependency_names(dependencies: Vec[manifest::Dependency]) -> Vec[string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for dependency in dependencies {
         result.push(dependency.name)
     };
@@ -401,7 +405,7 @@ fn module_sources(module_dir: string, module_manifest: manifest::Manifest) -> Re
     Vec[ModuleSource],
     string,
 ] {
-    let result = Vec::new();
+    let result: Vec[ModuleSource] = Vec::[];
     result.push(
         ModuleSource {
             name: module_manifest.module_path,
@@ -410,7 +414,7 @@ fn module_sources(module_dir: string, module_manifest: manifest::Manifest) -> Re
             dependencies: dependency_names(module_manifest.dependencies),
         },
     );
-    if module_manifest.dependencies.len() == 0 {
+    if module_manifest.dependencies.is_empty() {
         return Result::Ok(result)
     } else {
         ()
@@ -493,14 +497,14 @@ fn package_from_info(
     files: Vec[string],
     info: Vec[PackageInfoFile],
 ) -> Result[Package, string] {
-    let declared_name = Ref::new("");
-    let imports = Vec::new();
+    let mut declared_name = "";
+    let imports: Vec[string] = Vec::[];
     for file in info {
         if !file.package_explicit {
             return Result::Err(file.path + " must declare package <name>;")
-        } else if declared_name.get() == "" {
-            declared_name.set(file.package_name)
-        } else if declared_name.get() != file.package_name {
+        } else if declared_name == "" {
+            declared_name = file.package_name;
+        } else if declared_name != file.package_name {
             return Result::Err("package declaration mismatch in " + file.path)
         } else {
             ()
@@ -516,7 +520,7 @@ fn package_from_info(
     Result::Ok(
         Package {
             name: package_name,
-            declared_name: declared_name.get(),
+            declared_name,
             module_name: source.name,
             directory,
             artifact_prefix: source.artifact_prefix,
@@ -549,7 +553,7 @@ fn extend_package_with_info(
     } else {
         ()
     };
-    let imports = Vec::new();
+    let imports: Vec[string] = Vec::[];
     for value in package_value.imports {
         imports.push(value)
     };
@@ -584,7 +588,7 @@ fn load_package(
         return Result::Err("invalid package " + package_name)
     };
     let files = source_files(directory, include_entry_tests && package_name == entry_package)?;
-    if files.len() == 0 {
+    if files.is_empty() {
         return Result::Err("package has no .gom files: " + package_name)
     } else {
         ()
@@ -628,7 +632,7 @@ fn visit_package(
 }
 
 fn topological_order(packages: Vec[Package], entry: string) -> Result[Vec[string], string] {
-    let output = Vec::new();
+    let output: Vec[string] = Vec::[];
     match visit_package(packages, HashMap::{}, output, entry) {
         Ok(()) => Result::Ok(output),
         Err(message) => Result::Err(message),
@@ -636,9 +640,9 @@ fn topological_order(packages: Vec[Package], entry: string) -> Result[Vec[string
 }
 
 fn topological_order_all(packages: Vec[Package]) -> Result[Vec[string], string] {
-    let output = Vec::new();
+    let output: Vec[string] = Vec::[];
     let states: HashMap[string, int] = HashMap::{};
-    let names = Vec::new();
+    let names: Vec[string] = Vec::[];
     for package_value in packages {
         names.push(package_value.name)
     };
@@ -660,9 +664,9 @@ fn collect_package_directories(
         ()
     };
     let names = fs::read_dir(directory)?;
-    let source_files: Vec[string] = Vec::new();
-    let test_directories: Vec[string] = Vec::new();
-    let children = Vec::new();
+    let source_files: Vec[string] = Vec::[];
+    let test_directories: Vec[string] = Vec::[];
+    let children: Vec[string] = Vec::[];
     for name in names {
         let value = path::join(directory, name);
         if fs::is_file(value)
@@ -687,10 +691,10 @@ fn collect_package_directories(
             ()
         }
     };
-    if test_directories.len() > 0 {
+    if !test_directories.is_empty() {
         let value = test_directories[test_directories.len() - 1];
         let files = black_box_test_files(value)?;
-        if files.len() > 0 && source_files.len() == 0 {
+        if !files.is_empty() && source_files.is_empty() {
             return Result::Err(
                 "black-box test package " + value + " has no parent production package",
             )
@@ -700,7 +704,7 @@ fn collect_package_directories(
     } else {
         ()
     };
-    if source_files.len() > 0 {
+    if !source_files.is_empty() {
         result.push(directory)
     } else {
         ()
@@ -718,20 +722,20 @@ fn discover_module_graph(
     artifact_root: string,
     sources: Vec[ModuleSource],
 ) -> Result[Graph, string] {
-    let directories = Vec::new();
+    let directories: Vec[string] = Vec::[];
     for source in sources {
         collect_package_directories(source.directory, source.directory, artifact_root, directories)?
     };
-    if directories.len() == 0 {
+    if directories.is_empty() {
         return Result::Err("module has no package directories")
     } else {
         ()
     };
-    let package_files = Vec::new();
-    let all_files = Vec::new();
+    let package_files: Vec[(string, Vec[string])] = Vec::[];
+    let all_files: Vec[string] = Vec::[];
     for directory in directories {
         let files = source_files(directory, false)?;
-        if files.len() == 0 {
+        if files.is_empty() {
             return Result::Err("package has no .gom files: " + directory)
         } else {
             ()
@@ -742,7 +746,7 @@ fn discover_module_graph(
         package_files.push((directory, files))
     };
     let all_info = compiler_package_info(compiler, module_dir, all_files)?;
-    let packages = Vec::new();
+    let packages: Vec[Package] = Vec::[];
     for item in package_files {
         let directory = item.0;
         let files = item.1;
@@ -776,12 +780,14 @@ fn discover_graph(
     sources: Vec[ModuleSource],
 ) -> Result[Graph, string] {
     let entry_package = package_name_for_directory(module_dir, module_path, entry_dir)?;
-    let packages = Vec::new();
-    let pending = Vec::new();
+    let packages: Vec[Package] = Vec::[];
+    let pending: Vec[string] = Vec::[];
+    let mut cursor = 0;
     let seen: HashMap[string, bool] = HashMap::{};
     pending.push(entry_package);
-    while pending.len() > 0 {
-        let package_name = pending.remove(0);
+    while cursor < pending.len() {
+        let package_name = pending[cursor];
+        cursor += 1;
         if seen.contains(package_name) {
             ()
         } else {
@@ -964,7 +970,7 @@ pub fn load_target_context(
 }
 
 fn graph_with_entry(base: Graph, extra: Graph, entry: string) -> Result[Graph, string] {
-    let packages = Vec::new();
+    let packages: Vec[Package] = Vec::[];
     for package_value in base.packages {
         packages.push(package_value)
     };
@@ -995,7 +1001,7 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
     Graph,
     string,
 ] {
-    let packages = Vec::new();
+    let packages: Vec[Package] = Vec::[];
     let seen: HashMap[string, bool] = HashMap::{};
     for current in context.graph.packages {
         if current.name == package_value.name {
@@ -1005,7 +1011,8 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
         };
         seen[current.name] = true;
     };
-    let pending = Vec::new();
+    let pending: Vec[string] = Vec::[];
+    let mut cursor = 0;
     for dependency in test_package.imports {
         if !seen.contains(dependency) {
             pending.push(dependency)
@@ -1013,8 +1020,9 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
             ()
         }
     };
-    while pending.len() > 0 {
-        let package_name = pending.remove(0);
+    while cursor < pending.len() {
+        let package_name = pending[cursor];
+        cursor += 1;
         if seen.contains(package_name) {
             ()
         } else {
@@ -1051,8 +1059,8 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
 }
 
 pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
-    let result = Vec::new();
-    let names = Vec::new();
+    let result: Vec[Graph] = Vec::[];
+    let names: Vec[string] = Vec::[];
     for package_value in context.graph.packages {
         if package_value.module_name == context.graph.module_path {
             let files = source_files(package_value.directory, true)?;
@@ -1065,14 +1073,14 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             ()
         }
     };
-    let package_files = Vec::new();
-    let all_files = Vec::new();
+    let package_files: Vec[(Package, Vec[string], Vec[string])] = Vec::[];
+    let all_files: Vec[string] = Vec::[];
     for package_name in util::sorted(names) {
         let Some(package_value) = find_package(context.graph.packages, package_name) else {
             return Result::Err("missing package " + package_name)
         };
         let files = source_files(package_value.directory, true)?;
-        let test_files = Vec::new();
+        let test_files: Vec[string] = Vec::[];
         for file in files {
             if !util::string_vec_contains(package_value.files, file) {
                 test_files.push(file);
@@ -1083,7 +1091,7 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
         };
         package_files.push((package_value, files, test_files))
     };
-    if package_files.len() == 0 {
+    if package_files.is_empty() {
         return Result::Ok(result)
     } else {
         ()
@@ -1108,8 +1116,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
 }
 
 pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], string] {
-    let result = Vec::new();
-    let names = Vec::new();
+    let result: Vec[ExternalTest] = Vec::[];
+    let names: Vec[string] = Vec::[];
     for package_value in context.graph.packages {
         if package_value.module_name == context.graph.module_path {
             names.push(package_value.name)
@@ -1128,7 +1136,7 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
             return Result::Err(tests_dir + " must be a directory")
         } else {
             let files = black_box_test_files(tests_dir)?;
-            if files.len() == 0 {
+            if files.is_empty() {
                 ()
             } else {
                 let graph = discover_graph(

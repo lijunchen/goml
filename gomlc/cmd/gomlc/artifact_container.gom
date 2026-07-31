@@ -1,6 +1,7 @@
 package main;
 
 use gomlc::go_backend;
+use std::collections;
 use std::bytes;
 
 struct ArtifactBinarySection {
@@ -64,37 +65,28 @@ fn artifact_binary_sha256(value: bytes::Bytes) -> bytes::Bytes {
     result
 }
 
-fn artifact_binary_section_insert_index(
-    values: Vec[ArtifactBinarySection],
-    value: ArtifactBinarySection,
+fn artifact_binary_section_compare(
+    left: ArtifactBinarySection,
+    right: ArtifactBinarySection,
 ) -> int {
-    for index in 0..values.len() {
-        if value.id < values[index].id {
-            return index
-        } else {
-            ()
-        }
-    };
-    values.len()
+    if left.id < right.id {
+        -1
+    } else if left.id > right.id {
+        1
+    } else {
+        0
+    }
 }
 
 fn artifact_binary_sort_sections(values: Vec[ArtifactBinarySection]) -> Vec[ArtifactBinarySection] {
-    let result = Vec::new();
-    for value in values {
-        let index = artifact_binary_section_insert_index(result, value);
-        if index == result.len() {
-            result.push(value)
-        } else {
-            result.insert(index, value)
-        }
-    };
-    result
+    collections::sort_by(values, artifact_binary_section_compare);
+    values
 }
 
 fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
-    let previous: Ref[Option[uint16]] = Ref::new(Option::None);
+    let mut previous: Option[uint16] = Option::None;
     for value in values {
-        match previous.get() {
+        match previous {
             Some(id) => if id == value.id {
                 return false
             } else {
@@ -102,7 +94,7 @@ fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
             },
             None => (),
         };
-        previous.set(Option::Some(value.id))
+        previous = Option::Some(value.id);
     };
     true
 }
@@ -142,18 +134,17 @@ fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinarySec
     artifact_binary_write_u64(writer, artifact_binary_header_size() as uint64);
     artifact_binary_write_u64(writer, payload.len() as uint64);
     artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(payload));
-    let offset = Ref::new(
-        artifact_binary_header_size() + artifact_binary_directory_entry_size() * sections.len(),
-    );
+    let mut offset =
+        artifact_binary_header_size() + artifact_binary_directory_entry_size() * sections.len();
     for section in sections {
         artifact_binary_write_u16(writer, section.id);
         artifact_binary_write_u16(writer, section.version);
         artifact_binary_write_u16(writer, section.flags);
         artifact_binary_write_u16(writer, 0);
-        artifact_binary_write_u64(writer, offset.get() as uint64);
+        artifact_binary_write_u64(writer, offset as uint64);
         artifact_binary_write_u64(writer, section.data.len() as uint64);
         artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(section.data));
-        offset.set(offset.get() + section.data.len())
+        offset = offset + section.data.len();
     };
     artifact_binary_write_raw_bytes(writer, payload);
     Result::Ok(artifact_binary_writer_finish(writer))
@@ -245,7 +236,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
     let section_hashes = Vec::with_capacity(section_count);
     for _ in 0..section_count {
         let id = artifact_binary_read_u16(reader)?;
-        if section_ids.len() > 0 && id <= section_ids[section_ids.len() - 1] {
+        if !section_ids.is_empty() && id <= section_ids[section_ids.len() - 1] {
             return Result::Err("binary artifact section directory is not sorted")
         } else {
             ()
@@ -285,12 +276,12 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
     } else {
         ()
     };
-    let result = Vec::new();
-    let previous_end = Ref::new(payload_offset);
+    let result: Vec[ArtifactBinarySection] = Vec::[];
+    let mut previous_end = payload_offset;
     for index in 0..section_count {
         let offset = section_offsets[index];
         let length = section_lengths[index];
-        if offset != previous_end.get() || length > data.len() - offset {
+        if offset != previous_end || length > data.len() - offset {
             return Result::Err("invalid binary artifact section range")
         } else {
             ()
@@ -312,9 +303,9 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
                 data: section_data,
             },
         );
-        previous_end.set(offset + length)
+        previous_end = offset + length;
     };
-    if previous_end.get() != data.len() {
+    if previous_end != data.len() {
         Result::Err("invalid binary artifact section coverage")
     } else if !artifact_binary_sections_valid(result) {
         Result::Err("duplicate binary artifact section")

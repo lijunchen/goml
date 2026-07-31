@@ -125,7 +125,7 @@ fn add_entry_variant_names(
     function_names: FunctionNames,
 ) -> unit {
     for definition in enums {
-        if definition.generics.len() == 0 {
+        if definition.generics.is_empty() {
             for variant in definition.variants {
                 let name = variant_go_name(
                     definition.name,
@@ -187,13 +187,13 @@ fn entry_wrapper_name(
     if !name_present(used, "main0") {
         "main0"
     } else {
-        let index = Ref::new(1);
-        let result = Ref::new("main0__" + index.get().to_string());
-        while name_present(used, result.get()) {
-            index.set(index.get() + 1);
-            result.set("main0__" + index.get().to_string())
+        let mut index = 1;
+        let mut result = "main0__" + index.to_string();
+        while name_present(used, result) {
+            index = index + 1;
+            result = "main0__" + index.to_string();
         };
-        result.get()
+        result
     }
 }
 
@@ -295,7 +295,7 @@ fn compile_constant_expr(value: tast::ConstExpr) -> Expr {
 }
 
 fn compile_constants(values: Vec[tast::Constant]) -> ConstGroup {
-    let specs: Vec[ConstSpec] = Vec::new();
+    let specs: Vec[ConstSpec] = Vec::[];
     for value in values {
         specs.push(
             ConstSpec {
@@ -340,11 +340,11 @@ fn compile_runtime_imm(env: LowerEnv, value: anf::Imm, name: string) -> Compiled
     let expr = compile_imm(env, value);
     match value {
         Prim { value: _, ty } => {
-            let stmts = Vec::new();
+            let stmts: Vec[Stmt] = Vec::[];
             stmts.push(Stmt::Var { name, ty: lower_type(ty), value: Option::Some(expr) });
             CompiledValue { stmts, expr: Expr::Var { name } }
         },
-        _ => CompiledValue { stmts: Vec::new(), expr },
+        _ => CompiledValue { stmts: Vec::[], expr },
     }
 }
 
@@ -357,11 +357,11 @@ fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
     if segments.len() == 4 && segments[0] == "inherent" && segments[1] == segments[2]
         && segments[3] == "apply"
         && is_closure_struct_name(segments[1])
-        && value.params.len() > 0 {
+        && !value.params.is_empty() {
         match tast::resolve_type(value.params[0].1) {
             Con { name } => {
                 if name == segments[1] {
-                    let params: Vec[tast::Type] = Vec::new();
+                    let params: Vec[tast::Type] = Vec::[];
                     for index in 1..value.params.len() {
                         params.push(value.params[index].1)
                     };
@@ -385,7 +385,7 @@ fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
 }
 
 fn collect_closure_infos(values: Vec[anf::Function]) -> Vec[ClosureInfo] {
-    let result: Vec[ClosureInfo] = Vec::new();
+    let result: Vec[ClosureInfo] = Vec::[];
     for value in values {
         match closure_info_from_function(value) {
             Some(info) => result.push(info),
@@ -398,13 +398,13 @@ fn collect_closure_infos(values: Vec[anf::Function]) -> Vec[ClosureInfo] {
 fn find_closure_info(values: Vec[ClosureInfo], ty: tast::Type) -> Option[ClosureInfo] {
     match tast::resolve_type(ty) {
         Con { name } => {
-            let index = Ref::new(values.len() - 1);
-            while index.get() >= 0 {
-                let value = values[index.get()];
+            let mut index = values.len() - 1;
+            while index >= 0 {
+                let value = values[index];
                 if value.struct_name == name {
                     return Option::Some(value)
                 } else {
-                    index.set(index.get() - 1)
+                    index = index - 1;
                 }
             };
             Option::None
@@ -421,15 +421,15 @@ fn compile_closure_function(
 ) -> Expr {
     match tast::resolve_type(target_ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::new();
-            let args: Vec[Expr] = Vec::new();
+            let params: Vec[(string, Type)] = Vec::[];
+            let args: Vec[Expr] = Vec::[];
             args.push(compile_imm(env, value));
             for index in 0..param_types.len() {
                 let name = "p" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
                 args.push(Expr::Var { name })
             };
-            let stmts: Vec[Stmt] = Vec::new();
+            let stmts: Vec[Stmt] = Vec::[];
             stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -449,7 +449,7 @@ fn compile_closure_function(
 fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: tast::Type) -> Expr {
     match value {
         Tag { index: tag, ty: owner_ty } => match variant_type(env.variants, owner_ty, tag) {
-            Some(ty) => Expr::StructLiteral { ty, fields: Vec::new() },
+            Some(ty) => Expr::StructLiteral { ty, fields: Vec::[] },
             None => compile_imm(env, value),
         },
         _ => match find_closure_info(env.closures, anf::imm_type(value)) {
@@ -470,7 +470,7 @@ fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: tast::Type)
 fn compile_imms_expected(env: LowerEnv, values: Vec[anf::Imm], expected: Vec[tast::Type]) -> Vec[
     Expr,
 ] {
-    let result: Vec[Expr] = Vec::new();
+    let result: Vec[Expr] = Vec::[];
     for index in 0..values.len() {
         if index < expected.len() {
             result.push(compile_imm_expected(env, values[index], expected[index]))
@@ -485,13 +485,13 @@ fn find_dyn_method(functions: Vec[anf::Function], trait_name: string, method_nam
     DynMethod,
 ] {
     let methods = dyn_methods(functions, trait_name);
-    let index = Ref::new(methods.len() - 1);
-    while index.get() >= 0 {
-        let method = methods[index.get()];
+    let mut index = methods.len() - 1;
+    while index >= 0 {
+        let method = methods[index];
         if method.name == method_name {
             return Option::Some(method)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -568,12 +568,12 @@ fn intrinsic_owner_type(key: string, function_ty: tast::Type, args: Vec[anf::Imm
             Func { params: _, ret_ty } => Option::Some(ret_ty),
             _ => Option::None,
         }
-    } else if args.len() > 0 {
+    } else if !args.is_empty() {
         Option::Some(anf::imm_type(args[0]))
     } else {
         match tast::resolve_type(function_ty) {
             Func { params, ret_ty: _ } => {
-                if params.len() > 0 {
+                if !params.is_empty() {
                     Option::Some(params[0])
                 } else {
                     Option::None
@@ -621,8 +621,8 @@ fn intrinsic_helper_call_name(key: string, function_ty: tast::Type, args: Vec[an
 fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
     match tast::resolve_type(function_ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::new();
-            let vars: Vec[Expr] = Vec::new();
+            let params: Vec[(string, Type)] = Vec::[];
+            let vars: Vec[Expr] = Vec::[];
             for index in 0..param_types.len() {
                 let name = "p" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
@@ -637,13 +637,13 @@ fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
             } else if key == "slice.get" {
                 Expr::Index { base: vars[0], index: vars[1] }
             } else if key == "slice.len" {
-                let args: Vec[Expr] = Vec::new();
+                let args: Vec[Expr] = Vec::[];
                 args.push(vars[0]);
                 Expr::Call { func: Expr::Var { name: "len" }, args }
             } else {
                 Expr::Slice { base: vars[0], start: vars[1], end: vars[2] }
             };
-            let stmts: Vec[Stmt] = Vec::new();
+            let stmts: Vec[Stmt] = Vec::[];
             stmts.push(Stmt::Return { expr: Option::Some(value) });
             Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
         },
@@ -654,16 +654,16 @@ fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
 fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
     match tast::resolve_type(function_ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::new();
-            let vars: Vec[Expr] = Vec::new();
+            let params: Vec[(string, Type)] = Vec::[];
+            let vars: Vec[Expr] = Vec::[];
             for index in 0..param_types.len() {
                 let name = "p" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
                 vars.push(Expr::Var { name })
             };
-            let stmts: Vec[Stmt] = Vec::new();
+            let stmts: Vec[Stmt] = Vec::[];
             if key == "channel.new" {
-                let args: Vec[Expr] = Vec::new();
+                let args: Vec[Expr] = Vec::[];
                 args.push(vars[0]);
                 stmts.push(
                     Stmt::Return { expr: Option::Some(Expr::Make { ty: lower_type(ret_ty), args }) },
@@ -684,7 +684,7 @@ fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
                         value: Expr::Receive { channel: vars[0] },
                     },
                 );
-                let fields: Vec[(string, Expr)] = Vec::new();
+                let fields: Vec[(string, Expr)] = Vec::[];
                 fields.push(("_0", Expr::Var { name: "value" }));
                 fields.push(("_1", Expr::Var { name: "ok" }));
                 stmts.push(
@@ -693,7 +693,7 @@ fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
                     },
                 )
             } else {
-                let args: Vec[Expr] = Vec::new();
+                let args: Vec[Expr] = Vec::[];
                 args.push(vars[0]);
                 stmts.push(
                     Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: "close" }, args } },
@@ -713,7 +713,7 @@ fn compile_intrinsic_callable(key: string, function_ty: tast::Type) -> Expr {
         || key == "channel.close" {
         compile_channel_callable(key, function_ty)
     } else {
-        match intrinsic_helper_call_name(key, function_ty, Vec::new()) {
+        match intrinsic_helper_call_name(key, function_ty, Vec::[]) {
             Some(name) => Expr::Var { name },
             None => Expr::Var { name: go_ident(key) },
         }
@@ -735,7 +735,7 @@ fn compile_callable(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr 
 fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
     match find_closure_info(env.closures, anf::imm_type(func)) {
         Some(info) => {
-            let values: Vec[Expr] = Vec::new();
+            let values: Vec[Expr] = Vec::[];
             values.push(compile_imm(env, func));
             for value in compile_imms_expected(env, args, info.params) {
                 values.push(value)
@@ -748,7 +748,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
         None => {
             let expected = match tast::resolve_type(anf::imm_type(func)) {
                 Func { params, ret_ty: _ } => params,
-                _ => Vec::new(),
+                _ => Vec::[],
             };
             let compiled = compile_imms_expected(env, args, expected);
             match func {
@@ -764,7 +764,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
                     } else if key == "slice.get" {
                         Expr::Index { base: compiled[0], index: compiled[1] }
                     } else if key == "slice.len" {
-                        let len_args: Vec[Expr] = Vec::new();
+                        let len_args: Vec[Expr] = Vec::[];
                         len_args.push(compiled[0]);
                         Expr::Call { func: Expr::Var { name: "len" }, args: len_args }
                     } else if key == "slice.sub" {
@@ -829,13 +829,13 @@ fn append_struct_field_types(
 }
 
 fn struct_field_types(env: LowerEnv, value: tast::Type) -> Vec[tast::Type] {
-    let result: Vec[tast::Type] = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     match tast::resolve_type(value) {
         Con { name } => match find_struct(env.structs, name) {
             Some(definition) => append_struct_field_types(
                 result,
                 definition,
-                Vec::new(),
+                Vec::[],
                 env.instances,
             ),
             None => match instance_by_name(env.instances, name) {
@@ -873,7 +873,7 @@ fn compile_constructor(
     args: Vec[anf::Imm],
     ty: tast::Type,
 ) -> Expr {
-    let expected: Vec[tast::Type] = Vec::new();
+    let expected: Vec[tast::Type] = Vec::[];
     if constructor.is_struct {
         for field_ty in struct_field_types(env, ty) {
             expected.push(field_ty)
@@ -891,7 +891,7 @@ fn compile_constructor(
             None => (),
         }
     };
-    let fields: Vec[(string, Expr)] = Vec::new();
+    let fields: Vec[(string, Expr)] = Vec::[];
     for index in 0..args.len() {
         let name = if constructor.is_struct && index < constructor.fields.len() {
             go_ident(constructor.fields[index])
@@ -920,12 +920,12 @@ fn compile_constructor(
 }
 
 fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_ty: tast::Type) -> CompiledValue {
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     let expr = match value {
         Imm(value) => compile_imm_expected(env, value, expected_ty),
         Constr { constructor, args, ty } => compile_constructor(env, constructor, args, ty),
         Tuple { items, ty } => {
-            let fields: Vec[(string, Expr)] = Vec::new();
+            let fields: Vec[(string, Expr)] = Vec::[];
             match tast::resolve_type(ty) {
                 Tuple { items: item_types } => {
                     for index in 0..items.len() {
@@ -948,13 +948,13 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         Array { items, ty } => {
             let expected = match tast::resolve_type(ty) {
                 Array { len: _, elem } => {
-                    let values: Vec[tast::Type] = Vec::new();
+                    let values: Vec[tast::Type] = Vec::[];
                     for _ in items {
                         values.push(elem)
                     };
                     values
                 },
-                _ => Vec::new(),
+                _ => Vec::[],
             };
             Expr::ArrayLiteral {
                 ty: lower_type(ty),
@@ -985,7 +985,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         Unary { op, expr: operand, ty: _ } => {
             let compiled = match op {
                 BitNot => compile_runtime_imm(env, operand, go_local_ident(bind_name) + "_operand"),
-                _ => CompiledValue { stmts: Vec::new(), expr: compile_imm(env, operand) },
+                _ => CompiledValue { stmts: Vec::[], expr: compile_imm(env, operand) },
             };
             append_stmts(stmts, compiled.stmts);
             Expr::Unary { op: compile_unary(op), expr: compiled.expr }
@@ -1003,12 +1003,12 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             let compiled_lhs = if materializes_binary_operands(op) {
                 compile_runtime_imm(env, lhs, go_local_ident(bind_name) + "_lhs")
             } else {
-                CompiledValue { stmts: Vec::new(), expr: compile_imm(env, lhs) }
+                CompiledValue { stmts: Vec::[], expr: compile_imm(env, lhs) }
             };
             let compiled_rhs = if materializes_binary_operands(op) {
                 compile_runtime_imm(env, rhs, go_local_ident(bind_name) + "_rhs")
             } else {
-                CompiledValue { stmts: Vec::new(), expr: compile_imm(env, rhs) }
+                CompiledValue { stmts: Vec::[], expr: compile_imm(env, rhs) }
             };
             append_stmts(stmts, compiled_lhs.stmts);
             append_stmts(stmts, compiled_rhs.stmts);
@@ -1025,7 +1025,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         },
         Call { func, args, ty: _ } => compile_call(env, func, args),
         ToDyn { trait_name, for_ty, expr, ty } => {
-            let fields: Vec[(string, Expr)] = Vec::new();
+            let fields: Vec[(string, Expr)] = Vec::[];
             let compiled = compile_imm_expected(env, expr, for_ty);
             let data = match tast::resolve_type(for_ty) {
                 Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | Char => Expr::Convert {
@@ -1042,7 +1042,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                         func: Expr::Var {
                             name: dyn_factory_name(env.dyn_helper_names, trait_name, for_ty),
                         },
-                        args: Vec::new(),
+                        args: Vec::[],
                     },
                 ),
             );
@@ -1051,11 +1051,11 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         DynCall { trait_name, method_name: method, receiver, args, ty: _ } => {
             let method_name = dyn_method_parts(method, trait_name).1;
             let receiver = compile_imm(env, receiver);
-            let values: Vec[Expr] = Vec::new();
+            let values: Vec[Expr] = Vec::[];
             values.push(Expr::Field { expr: receiver, field_name: "data" });
             let expected = match find_dyn_method(env.functions, trait_name, method_name) {
                 Some(info) => info.params,
-                None => Vec::new(),
+                None => Vec::[],
             };
             for arg in compile_imms_expected(env, args, expected) {
                 values.push(arg)
@@ -1069,7 +1069,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             }
         },
         Go { closure: value, ty: _ } => {
-            let call = compile_call(env, value, Vec::new());
+            let call = compile_call(env, value, Vec::[]);
             stmts.push(Stmt::Go { call });
             Expr::Unit
         },
@@ -1081,7 +1081,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
 }
 
 fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     let compiled = compile_value(env, value.name, value.value, value.ty);
     append_stmts(result, compiled.stmts);
     result.push(
@@ -1132,13 +1132,13 @@ fn collect_joins_block(result: Vec[anf::JoinBind], value: anf::Block) -> unit {
 }
 
 fn find_join(values: Vec[anf::JoinBind], name: string) -> Option[anf::JoinBind] {
-    let index = Ref::new(values.len() - 1);
-    while index.get() >= 0 {
-        let value = values[index.get()];
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
         if value.name == name {
             return Option::Some(value)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -1161,7 +1161,7 @@ fn same_target(lhs: Option[string], rhs: Option[string]) -> Option[string] {
 }
 
 fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Option[string] {
-    if arms.len() == 0 {
+    if arms.is_empty() {
         return match default {
             Some(body) => block_target(body),
             None => Option::None,
@@ -1206,19 +1206,19 @@ fn term_target(value: anf::Term) -> Option[string] {
 }
 
 fn find_block_join(value: anf::Block, name: string) -> Option[anf::JoinBind] {
-    let index = Ref::new(value.binds.len() - 1);
-    while index.get() >= 0 {
-        let bind = value.binds[index.get()];
+    let mut index = value.binds.len() - 1;
+    while index >= 0 {
+        let bind = value.binds[index];
         match bind {
             Join(join) => {
                 if join.name == name {
                     return Option::Some(join)
                 } else {
-                    index.set(index.get() - 1)
+                    index = index - 1;
                 }
             },
             Let(_) | JoinRec(_) => {
-                index.set(index.get() - 1)
+                index = index - 1;
             },
         }
     };
@@ -1245,7 +1245,7 @@ fn block_target_with_visited(value: anf::Block, visited: Vec[string]) -> Option[
 }
 
 fn block_target(value: anf::Block) -> Option[string] {
-    block_target_with_visited(value, Vec::new())
+    block_target_with_visited(value, Vec::[])
 }
 
 fn blocks_reach_target(
@@ -1265,7 +1265,7 @@ fn blocks_reach_target(
 }
 
 fn compile_jump_args(env: LowerEnv, value: anf::JoinBind, args: Vec[anf::Imm]) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     for index in 0..args.len() {
         if index < value.params.len() && value.params[index].0 != "_" {
             result.push(
@@ -1282,9 +1282,9 @@ fn compile_jump_args(env: LowerEnv, value: anf::JoinBind, args: Vec[anf::Imm]) -
 }
 
 fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join: anf::JoinBind) -> Block {
-    let stmts: Vec[Stmt] = Vec::new();
-    let pending: Vec[anf::JoinBind] = Vec::new();
-    let loop_names: Vec[string] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let pending: Vec[anf::JoinBind] = Vec::[];
+    let loop_names: Vec[string] = Vec::[];
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -1315,7 +1315,7 @@ fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.len() == 0 && vecs::contains(loop_names, target)
+            args.is_empty() && vecs::contains(loop_names, target)
         },
         _ => false,
     };
@@ -1359,7 +1359,7 @@ fn match_scrutinee_is_unit(value: anf::Imm) -> bool {
 }
 
 fn first_match_body(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Option[anf::Block] {
-    if arms.len() > 0 {
+    if !arms.is_empty() {
         Option::Some(arms[0].body)
     } else {
         default
@@ -1372,14 +1372,14 @@ fn compile_match_leaf(
     arms: Vec[anf::Arm],
     default: Option[anf::Block],
 ) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     if match_scrutinee_is_unit(scrut) {
         match first_match_body(arms, default) {
             Some(body) => append_stmts(result, compile_block(env, body).stmts),
             None => append_stmts(result, non_exhaustive_block().stmts),
         }
     } else if match_uses_types(env, arms) {
-        let cases: Vec[TypeSwitchCase] = Vec::new();
+        let cases: Vec[TypeSwitchCase] = Vec::[];
         for arm in arms {
             match arm_type(env, arm.lhs) {
                 Some(ty) => cases.push(TypeSwitchCase { ty, body: compile_block(env, arm.body) }),
@@ -1399,7 +1399,7 @@ fn compile_match_leaf(
             },
         )
     } else {
-        let cases: Vec[SwitchCase] = Vec::new();
+        let cases: Vec[SwitchCase] = Vec::[];
         for arm in arms {
             cases.push(
                 SwitchCase { value: compile_imm(env, arm.lhs), body: compile_block(env, arm.body) },
@@ -1432,13 +1432,13 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
 }
 
 fn non_exhaustive_block() -> Block {
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Panic { message: "non-exhaustive match" });
     Block { stmts }
 }
 
 fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     match value {
         Return(value) => result.push(
             Stmt::Return {
@@ -1470,7 +1470,7 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
 fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: anf::JoinBind) -> Vec[
     Stmt,
 ] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     match value {
         Jump { target: _, args, ret_ty: _ } => {
             append_stmts(result, compile_jump_args(env, join, args))
@@ -1492,7 +1492,7 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                     None => append_stmts(result, non_exhaustive_block().stmts),
                 }
             } else if match_uses_types(env, arms) {
-                let cases: Vec[TypeSwitchCase] = Vec::new();
+                let cases: Vec[TypeSwitchCase] = Vec::[];
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
                         Some(ty) => cases.push(
@@ -1517,7 +1517,7 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                     },
                 )
             } else {
-                let cases: Vec[SwitchCase] = Vec::new();
+                let cases: Vec[SwitchCase] = Vec::[];
                 for arm in arms {
                     cases.push(
                         SwitchCase {
@@ -1546,7 +1546,7 @@ fn compile_term_with_pending(env: LowerEnv, value: anf::Term, pending: Vec[anf::
     match term_target(value) {
         Some(target) => match find_join(pending, target) {
             Some(join) => {
-                let result: Vec[Stmt] = Vec::new();
+                let result: Vec[Stmt] = Vec::[];
                 append_stmts(result, compile_term_to_join(env, value, target, join));
                 append_stmts(result, compile_block(env, join.body).stmts);
                 result
@@ -1580,7 +1580,7 @@ fn fresh_loop_label(env: LowerEnv, value: string) -> string {
 }
 
 fn scoped_joins(parent: Vec[anf::JoinBind], value: anf::Block) -> Vec[anf::JoinBind] {
-    let result: Vec[anf::JoinBind] = Vec::new();
+    let result: Vec[anf::JoinBind] = Vec::[];
     for join in parent {
         result.push(join)
     };
@@ -1616,7 +1616,7 @@ fn term_reaches_target(
 ) -> bool {
     match value {
         Jump { target: name, args, ret_ty: _ } => {
-            if name == target && args.len() == 0 {
+            if name == target && args.is_empty() {
                 true
             } else if vecs::contains(visited, name) {
                 false
@@ -1660,7 +1660,7 @@ fn match_tail_target_through_joins(
     joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> Option[string] {
-    if arms.len() == 0 {
+    if arms.is_empty() {
         return match default {
             Some(body) => block_tail_target_through_joins(body, joins, visited),
             None => Option::None,
@@ -1698,7 +1698,7 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
 ] {
     match value {
         Jump { target, args, ret_ty: _ } => {
-            if args.len() == 0 {
+            if args.is_empty() {
                 Option::Some(target)
             } else if vecs::contains(visited, target) {
                 Option::None
@@ -1794,7 +1794,7 @@ fn term_all_paths_reach_or_terminate(
 }
 
 fn all_paths_reach_or_terminate(value: anf::Block, target: string) -> bool {
-    block_all_paths_reach_or_terminate(value, target, Vec::new(), Vec::new())
+    block_all_paths_reach_or_terminate(value, target, Vec::[], Vec::[])
 }
 
 enum LoopBranchTarget {
@@ -1804,10 +1804,10 @@ enum LoopBranchTarget {
 }
 
 fn loop_branch_target(body: anf::Block, loop_name: string, joins: Vec[anf::JoinBind]) -> LoopBranchTarget {
-    if block_reaches_target(body, loop_name, joins, Vec::new()) {
+    if block_reaches_target(body, loop_name, joins, Vec::[]) {
         LoopBranchTarget::Continue
     } else {
-        match block_tail_target_through_joins(body, joins, Vec::new()) {
+        match block_tail_target_through_joins(body, joins, Vec::[]) {
             Some(target) => LoopBranchTarget::Exit(target),
             None => LoopBranchTarget::Invalid,
         }
@@ -1815,21 +1815,21 @@ fn loop_branch_target(body: anf::Block, loop_name: string, joins: Vec[anf::JoinB
 }
 
 fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
-    let joins = scoped_joins(Vec::new(), value);
+    let joins = scoped_joins(Vec::[], value);
     match value.term {
         If { cond: _, then_, else_, ret_ty: _ } => {
-            let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::new());
-            let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::new());
+            let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::[]);
+            let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::[]);
             if then_reaches && !else_reaches {
-                block_tail_target_through_joins(else_, joins, Vec::new())
+                block_tail_target_through_joins(else_, joins, Vec::[])
             } else if else_reaches && !then_reaches {
-                block_tail_target_through_joins(then_, joins, Vec::new())
+                block_tail_target_through_joins(then_, joins, Vec::[])
             } else {
                 Option::None
             }
         },
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
-            let targets: Vec[LoopBranchTarget] = Vec::new();
+            let targets: Vec[LoopBranchTarget] = Vec::[];
             for arm in arms {
                 targets.push(loop_branch_target(arm.body, loop_name, joins))
             };
@@ -1837,8 +1837,8 @@ fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
                 Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
                 None => (),
             };
-            let exits: Vec[string] = Vec::new();
-            let continues: Vec[unit] = Vec::new();
+            let exits: Vec[string] = Vec::[];
+            let continues: Vec[unit] = Vec::[];
             for target in targets {
                 match target {
                     Continue => continues.push(()),
@@ -1846,7 +1846,7 @@ fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
                     Invalid => return Option::None,
                 }
             };
-            if continues.len() == 0 || exits.len() == 0 {
+            if continues.is_empty() || exits.is_empty() {
                 return Option::None
             } else {
                 ()
@@ -1896,9 +1896,9 @@ fn compile_loop_branch_to_join(
     exit_name: string,
     label: string,
 ) -> Block {
-    let stmts: Vec[Stmt] = Vec::new();
-    let pending: Vec[anf::JoinBind] = Vec::new();
-    let loop_names: Vec[string] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let pending: Vec[anf::JoinBind] = Vec::[];
+    let loop_names: Vec[string] = Vec::[];
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -1929,7 +1929,7 @@ fn compile_loop_branch_to_join(
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.len() == 0 && vecs::contains(loop_names, target)
+            args.is_empty() && vecs::contains(loop_names, target)
         },
         _ => false,
     };
@@ -2016,7 +2016,7 @@ fn compile_loop_term_leaf(
     exit_name: string,
     label: string,
 ) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     match value {
         Jump { target, args, ret_ty: _ } => {
             if target == loop_name {
@@ -2062,7 +2062,7 @@ fn compile_loop_term_leaf(
                     None => append_stmts(result, non_exhaustive_block().stmts),
                 }
             } else if match_uses_types(env, arms) {
-                let cases: Vec[TypeSwitchCase] = Vec::new();
+                let cases: Vec[TypeSwitchCase] = Vec::[];
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
                         Some(ty) => cases.push(
@@ -2089,7 +2089,7 @@ fn compile_loop_term_leaf(
                     },
                 )
             } else {
-                let cases: Vec[SwitchCase] = Vec::new();
+                let cases: Vec[SwitchCase] = Vec::[];
                 for arm in arms {
                     cases.push(
                         SwitchCase {
@@ -2123,7 +2123,7 @@ fn compile_loop_term_to_join(
     exit_name: string,
     label: string,
 ) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::new();
+    let result: Vec[Stmt] = Vec::[];
     match value {
         Jump { target: _, args, ret_ty: _ } => {
             append_stmts(result, compile_jump_args(env, join, args))
@@ -2171,7 +2171,7 @@ fn compile_loop_term_to_join(
                     None => append_stmts(result, non_exhaustive_block().stmts),
                 }
             } else if match_uses_types(env, arms) {
-                let cases: Vec[TypeSwitchCase] = Vec::new();
+                let cases: Vec[TypeSwitchCase] = Vec::[];
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
                         Some(ty) => cases.push(
@@ -2214,7 +2214,7 @@ fn compile_loop_term_to_join(
                     },
                 )
             } else {
-                let cases: Vec[SwitchCase] = Vec::new();
+                let cases: Vec[SwitchCase] = Vec::[];
                 for arm in arms {
                     cases.push(
                         SwitchCase {
@@ -2266,7 +2266,7 @@ fn compile_loop_term_with_pending(
     match term_target(value) {
         Some(target) => match find_join(pending, target) {
             Some(join) => {
-                let result: Vec[Stmt] = Vec::new();
+                let result: Vec[Stmt] = Vec::[];
                 append_stmts(
                     result,
                     compile_loop_term_to_join(env, value, target, join, loop_name, exit_name, label),
@@ -2290,9 +2290,9 @@ fn compile_loop_block(
     exit_name: string,
     label: string,
 ) -> Block {
-    let stmts: Vec[Stmt] = Vec::new();
-    let pending: Vec[anf::JoinBind] = Vec::new();
-    let loop_names: Vec[string] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let pending: Vec[anf::JoinBind] = Vec::[];
+    let loop_names: Vec[string] = Vec::[];
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -2323,7 +2323,7 @@ fn compile_loop_block(
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.len() == 0 && vecs::contains(loop_names, target)
+            args.is_empty() && vecs::contains(loop_names, target)
         },
         _ => false,
     };
@@ -2345,8 +2345,8 @@ fn compile_joinrec_in_loop(
     outer_exit_name: string,
     outer_label: string,
 ) -> JoinRecResult {
-    let stmts: Vec[Stmt] = Vec::new();
-    let loop_names: Vec[string] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let loop_names: Vec[string] = Vec::[];
     let single = values.len() == 1;
     for value in values {
         match find_loop_exit(value.body, value.name) {
@@ -2373,13 +2373,13 @@ fn compile_joinrec_in_loop(
             },
             None => if single
                 && strings::starts_with(value.name, "loop_expr")
-                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) {
+                && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
             } else if single
-                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false {
+                && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 append_stmts(
                     stmts,
                     compile_loop_block(
@@ -2462,8 +2462,8 @@ fn loop_stmt(label: string, body: Block) -> Stmt {
 }
 
 fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
-    let stmts: Vec[Stmt] = Vec::new();
-    let loop_names: Vec[string] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let loop_names: Vec[string] = Vec::[];
     let single = values.len() == 1;
     for value in values {
         match find_loop_exit(value.body, value.name) {
@@ -2481,13 +2481,13 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
             },
             None => if single
                 && strings::starts_with(value.name, "loop_expr")
-                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) {
+                && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
             } else if single
-                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false {
+                && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 append_stmts(stmts, compile_block(env, value.body).stmts);
                 loop_names.push(value.name)
             } else {
@@ -2499,9 +2499,9 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
 }
 
 fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
-    let stmts: Vec[Stmt] = Vec::new();
-    let pending: Vec[anf::JoinBind] = Vec::new();
-    let loop_names: Vec[string] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let pending: Vec[anf::JoinBind] = Vec::[];
+    let loop_names: Vec[string] = Vec::[];
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -2532,7 +2532,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.len() == 0 && vecs::contains(loop_names, target)
+            args.is_empty() && vecs::contains(loop_names, target)
         },
         _ => false,
     };
@@ -2549,7 +2549,7 @@ struct CollectedTypes {
 }
 
 fn new_collected_types() -> CollectedTypes {
-    CollectedTypes { values: Vec::new() }
+    CollectedTypes { values: Vec::[] }
 }
 
 fn add_collected_type(result: CollectedTypes, value: tast::Type) -> unit {
@@ -2621,14 +2621,14 @@ fn collect_runtime_imm(
 ) -> unit {
     match value {
         Callable { callable: Runtime(key), ty: _ } => {
-            if vecs::contains(result, key) == false {
+            if !vecs::contains(result, key) {
                 result.push(key)
             } else {
                 ()
             }
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
-            if vecs::contains(intrinsics, key) == false {
+            if !vecs::contains(intrinsics, key) {
                 intrinsics.push(key)
             } else {
                 ()
@@ -2855,11 +2855,11 @@ fn collect_type_definition_fields(
     instances: Vec[core::TypeInstance],
 ) -> unit {
     for definition in structs {
-        if definition.generics.len() == 0 {
+        if definition.generics.is_empty() {
             for field in definition.fields {
                 collect_type(
                     result,
-                    instantiate_type(field.1, definition.generics, Vec::new(), instances),
+                    instantiate_type(field.1, definition.generics, Vec::[], instances),
                 )
             }
         } else {
@@ -2867,12 +2867,12 @@ fn collect_type_definition_fields(
         }
     };
     for definition in enums {
-        if definition.generics.len() == 0 {
+        if definition.generics.is_empty() {
             for variant in definition.variants {
                 for field in tast::enum_variant_field_types(variant.fields) {
                     collect_type(
                         result,
-                        instantiate_type(field, definition.generics, Vec::new(), instances),
+                        instantiate_type(field, definition.generics, Vec::[], instances),
                     )
                 }
             }
@@ -2920,14 +2920,14 @@ fn collect_type_definition_fields(
 fn runtime_struct(value: tast::Type) -> StructDef {
     match tast::resolve_type(value) {
         Tuple { items: values } => {
-            let fields: Vec[(string, Type)] = Vec::new();
+            let fields: Vec[(string, Type)] = Vec::[];
             for index in 0..values.len() {
                 fields.push(("_" + index.to_string(), lower_type(values[index])))
             };
             StructDef { name: type_name(value), fields }
         },
         RefType { elem } => {
-            let fields: Vec[(string, Type)] = Vec::new();
+            let fields: Vec[(string, Type)] = Vec::[];
             fields.push(("value", lower_type(elem)));
             StructDef {
                 name: go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x"),
@@ -2935,14 +2935,14 @@ fn runtime_struct(value: tast::Type) -> StructDef {
             }
         },
         VecType { elem } => {
-            let fields: Vec[(string, Type)] = Vec::new();
+            let fields: Vec[(string, Type)] = Vec::[];
             fields.push(("items", Type::Slice { elem: lower_type(elem) }));
             StructDef {
                 name: go_generated_ident("_goml_vec_" + go_ident(encode_type(elem))),
                 fields,
             }
         },
-        _ => StructDef { name: "Error", fields: Vec::new() },
+        _ => StructDef { name: "Error", fields: Vec::[] },
     }
 }
 
@@ -3006,15 +3006,15 @@ fn compile_function(
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
 ) -> Function {
-    let joins: Vec[anf::JoinBind] = Vec::new();
+    let joins: Vec[anf::JoinBind] = Vec::[];
     collect_joins_block(joins, value.body);
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     for param in value.params {
         params.push((go_local_ident(param.0), lower_type(param.1)))
     };
     let env = LowerEnv {
         joins,
-        emitted_loop_labels: Vec::new(),
+        emitted_loop_labels: Vec::[],
         variants,
         closures,
         structs,
@@ -3032,16 +3032,16 @@ fn compile_function(
 }
 
 fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, string)]) -> Function {
-    let cases: Vec[SwitchCase] = Vec::new();
+    let cases: Vec[SwitchCase] = Vec::[];
     for test_case in test_cases {
         let function_name = match mapped_function_name(function_names, test_case.1) {
             Some(name) => name,
             None => function_name(test_case.1),
         };
-        let body_stmts: Vec[Stmt] = Vec::new();
+        let body_stmts: Vec[Stmt] = Vec::[];
         body_stmts.push(
             Stmt::Expr {
-                expr: Expr::Call { func: Expr::Var { name: function_name }, args: Vec::new() },
+                expr: Expr::Call { func: Expr::Var { name: function_name }, args: Vec::[] },
             },
         );
         cases.push(
@@ -3051,8 +3051,8 @@ fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, st
             },
         )
     };
-    let default_stmts: Vec[Stmt] = Vec::new();
-    let fail_args: Vec[Expr] = Vec::new();
+    let default_stmts: Vec[Stmt] = Vec::[];
+    let fail_args: Vec[Expr] = Vec::[];
     fail_args.push(Expr::String { value: "unknown test id" });
     default_stmts.push(
         Stmt::Expr {
@@ -3062,7 +3062,7 @@ fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, st
             },
         },
     );
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Switch {
             expr: Expr::Index {
@@ -3073,7 +3073,7 @@ fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, st
             default: Option::Some(Block { stmts: default_stmts }),
         },
     );
-    Function { name: "main", params: Vec::new(), ret_ty: Option::None, body: Block { stmts } }
+    Function { name: "main", params: Vec::[], ret_ty: Option::None, body: Block { stmts } }
 }
 
 fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(string, string)]) -> File {
@@ -3083,12 +3083,12 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
     let constants = value.constants;
     let closures = collect_closure_infos(value.functions);
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
-    let items: Vec[Item] = Vec::new();
+    let items: Vec[Item] = Vec::[];
     let types = new_collected_types();
-    let runtime_hooks: Vec[string] = Vec::new();
-    let intrinsics: Vec[string] = Vec::new();
+    let runtime_hooks: Vec[string] = Vec::[];
+    let intrinsics: Vec[string] = Vec::[];
     let missing_types = new_collected_types();
-    let coercions: Vec[DynCoercion] = Vec::new();
+    let coercions: Vec[DynCoercion] = Vec::[];
     let variants = new_variant_infos();
     for function in value.functions {
         for param in function.params {
@@ -3118,7 +3118,7 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
         function_names,
     );
     emit_user_type_items(items, variants, enums, structs, type_instances, function_names);
-    if constants.len() > 0 {
+    if !constants.is_empty() {
         items.push(Item::ConstGroup(compile_constants(constants)))
     } else {
         ()
@@ -3151,21 +3151,21 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
     if testing {
         items.push(Item::Function(test_main_function(function_names, test_cases)))
     } else {
-        let stmts: Vec[Stmt] = Vec::new();
+        let stmts: Vec[Stmt] = Vec::[];
         let entry_name = match mapped_function_name(function_names, "main") {
             Some(name) => name,
             None => "main0",
         };
         stmts.push(
             Stmt::Expr {
-                expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::new() },
+                expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::[] },
             },
         );
         items.push(
             Item::Function(
                 Function {
                     name: "main",
-                    params: Vec::new(),
+                    params: Vec::[],
                     ret_ty: Option::None,
                     body: Block { stmts },
                 },
@@ -3176,7 +3176,7 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
 }
 
 pub fn lower(value: anf::File) -> File {
-    lower_with_test_cases(value, false, Vec::new())
+    lower_with_test_cases(value, false, Vec::[])
 }
 
 pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string)]) -> File {

@@ -128,7 +128,7 @@ fn artifact_decode_predicates(context: ArtifactDecodeContext, value: ArtifactVal
     string,
 ] {
     let values = artifact_json_array(value, "type predicates")?;
-    let result = Vec::new();
+    let result: Vec[tast::TypePredicate] = Vec::[];
     for value in values {
         result.push(artifact_decode_predicate(context, value)?)
     };
@@ -140,7 +140,7 @@ fn artifact_decode_trait_refs(context: ArtifactDecodeContext, value: ArtifactVal
     string,
 ] {
     let values = artifact_json_array(value, "trait references")?;
-    let result = Vec::new();
+    let result: Vec[tast::TraitRef] = Vec::[];
     for value in values {
         result.push(artifact_decode_trait_ref(context, value)?)
     };
@@ -173,7 +173,7 @@ fn artifact_decode_fn_map(context: ArtifactDecodeContext, value: ArtifactValue) 
     string,
 ] {
     let object = artifact_json_object(value, "function map")?;
-    let result = Vec::new();
+    let result: Vec[ArtifactFnScheme] = Vec::[];
     for item in object {
         result.push(artifact_decode_fn_scheme(context, item.0, item.1)?)
     };
@@ -186,7 +186,7 @@ fn artifact_decode_type_pairs(
     expected: string,
 ) -> Result[Vec[(string, tast::Type)], string] {
     let values = artifact_json_array(value, expected)?;
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         let pair = artifact_json_array(value, expected)?;
         if pair.len() != 2 {
@@ -248,7 +248,7 @@ fn artifact_decode_enum_def(context: ArtifactDecodeContext, value: ArtifactValue
         "enum generics",
     )?;
     let values = artifact_json_field_array(object, "variants")?;
-    let variants = Vec::new();
+    let variants: Vec[tast::EnumVariantDef] = Vec::[];
     for value in values {
         let variant = artifact_json_object(value, "enum variant")?;
         let variant_name = artifact_json_field_string(variant, "name")?;
@@ -275,7 +275,7 @@ fn artifact_decode_struct_def(context: ArtifactDecodeContext, value: ArtifactVal
         artifact_json_required_field(object, "fields")?,
         "struct fields",
     )?;
-    let public_fields = Vec::new();
+    let public_fields: Vec[string] = Vec::[];
     for field in fields {
         public_fields.push(field.0)
     };
@@ -304,7 +304,7 @@ fn artifact_decode_associated_type_defs(context: ArtifactDecodeContext, value: A
     string,
 ] {
     let object = artifact_json_object(value, "associated type definitions")?;
-    let result = Vec::new();
+    let result: Vec[ArtifactAssociatedTypeDef] = Vec::[];
     for item in object {
         let definition = artifact_json_object(item.1, "associated type definition")?;
         let bounds = artifact_decode_trait_refs(
@@ -348,7 +348,7 @@ fn artifact_decode_associated_types(context: ArtifactDecodeContext, value: Artif
     string,
 ] {
     let object = artifact_json_object(value, "associated types")?;
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for item in object {
         result.push((item.0, artifact_decode_type(context, item.1)?))
     };
@@ -385,7 +385,7 @@ fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: ArtifactVa
     string,
 ] {
     let values = artifact_json_array(value, "trait implementations")?;
-    let result = Vec::new();
+    let result: Vec[ArtifactTraitImpl] = Vec::[];
     for value in values {
         let pair = artifact_json_array(value, "trait implementation")?;
         if pair.len() != 2 {
@@ -432,7 +432,7 @@ fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: Artifac
     string,
 ] {
     let values = artifact_json_array(value, "inherent implementations")?;
-    let result = Vec::new();
+    let result: Vec[ArtifactInherentImpl] = Vec::[];
     for value in values {
         let pair = artifact_json_array(value, "inherent implementation")?;
         if pair.len() != 2 {
@@ -459,7 +459,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
     for item in struct_map {
         artifact_add_type_name(context.struct_names, item.0)
     };
-    let enums = Vec::new();
+    let enums: Vec[tast::EnumDef] = Vec::[];
     for item in enum_map {
         let value = artifact_decode_enum_def(context, item.1)?;
         if value.name == item.0 {
@@ -468,7 +468,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
             return Result::Err(artifact_decode_error("matching enum name"))
         }
     };
-    let structs = Vec::new();
+    let structs: Vec[tast::StructDef] = Vec::[];
     for item in struct_map {
         let value = artifact_decode_struct_def(context, item.1)?;
         if value.name == item.0 {
@@ -478,13 +478,13 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
         }
     };
     let alias_map = artifact_json_field_object(type_env, "aliases")?;
-    let type_aliases = Vec::new();
+    let type_aliases: Vec[tast::TypeAliasInfo] = Vec::[];
     for item in alias_map {
         type_aliases.push(artifact_decode_type_alias(context, item.0, item.1)?)
     };
     let trait_env = artifact_json_field_object(object, "trait_env")?;
     let trait_map = artifact_json_field_object(trait_env, "trait_defs")?;
-    let traits = Vec::new();
+    let traits: Vec[ArtifactTraitDef] = Vec::[];
     for item in trait_map {
         traits.push(artifact_decode_trait_def(context, item.0, item.1)?)
     };
@@ -502,7 +502,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
         artifact_json_required_field(value_env, "funcs")?,
     )?;
     let constant_map = artifact_json_field_object(value_env, "consts")?;
-    let constants = Vec::new();
+    let constants: Vec[tast::ConstantScheme] = Vec::[];
     for item in constant_map {
         let definition = artifact_json_object(item.1, "constant scheme")?;
         let ty = artifact_decode_type(context, artifact_json_required_field(definition, "ty")?)?;
@@ -532,13 +532,13 @@ fn artifact_decode_package_interface(value: ArtifactValue) -> Result[
     let package_name = artifact_json_field_string(object, "package")?;
     let name = artifact_json_field_string(object, "name")?;
     let value_map = artifact_json_field_object(object, "value_exports")?;
-    let value_exports = Vec::new();
+    let value_exports: Vec[(string, int)] = Vec::[];
     for item in value_map {
         let number = artifact_json_number_value(item.1, "value export index")?;
         value_exports.push((item.0, artifact_parse_nonnegative_int(number)?))
     };
     let enum_map = artifact_json_field_object(object, "enum_variants")?;
-    let enum_variants = Vec::new();
+    let enum_variants: Vec[(string, Vec[string])] = Vec::[];
     for item in enum_map {
         enum_variants.push((item.0, artifact_decode_string_array(item.1, "enum variant names")?))
     };
@@ -550,7 +550,7 @@ fn artifact_decode_string_map(value: ArtifactValue, expected: string) -> Result[
     string,
 ] {
     let object = artifact_json_object(value, expected)?;
-    let result = Vec::new();
+    let result: Vec[(string, string)] = Vec::[];
     for item in object {
         result.push((item.0, artifact_json_string_value(item.1, expected)?))
     };

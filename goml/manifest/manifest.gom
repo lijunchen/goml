@@ -17,17 +17,17 @@ pub struct Manifest {
 }
 
 fn strip_comment(value: string) -> string {
-    let quoted = Ref::new(false);
-    let escaped = Ref::new(false);
+    let mut quoted = false;
+    let mut escaped = false;
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
-        if escaped.get() {
-            escaped.set(false)
-        } else if quoted.get() && byte == b'\\' {
-            escaped.set(true)
+        if escaped {
+            escaped = false;
+        } else if quoted && byte == b'\\' {
+            escaped = true;
         } else if byte == b'"' {
-            quoted.set(!(quoted.get()))
-        } else if !(quoted.get()) && byte == b'#' {
+            quoted = !quoted;
+        } else if !quoted && byte == b'#' {
             return value.byte_slice(0, index)
         } else {
             ()
@@ -46,22 +46,22 @@ fn parse_string(value: string) -> Result[string, string] {
     };
     let content = value.byte_slice(1, value.byte_len() - 1);
     let builder = text::StringBuilder::with_capacity(content.byte_len());
-    let escaped = Ref::new(false);
+    let mut escaped = false;
     for character in content.chars() {
-        if escaped.get() {
+        if escaped {
             if character == '"' || character == '\\' {
                 builder.write_char(character);
-                escaped.set(false)
+                escaped = false;
             } else {
                 return Result::Err("unsupported manifest string escape")
             }
         } else if character == '\\' {
-            escaped.set(true)
+            escaped = true;
         } else {
             builder.write_char(character)
         }
     };
-    if escaped.get() {
+    if escaped {
         Result::Err("invalid manifest string escape")
     } else {
         Result::Ok(builder.finish())
@@ -90,7 +90,7 @@ fn valid_segment(value: string) -> bool {
 
 fn validate_module_path(value: string) -> Result[unit, string] {
     let segments = util::split(value, "::");
-    if segments.len() == 0 {
+    if segments.is_empty() {
         return Result::Err("module.path is empty")
     } else {
         ()
@@ -129,38 +129,38 @@ fn validate_target_dir(value: string) -> Result[unit, string] {
 
 pub fn load(path: string) -> Result[Manifest, string] {
     let source = fs::read_file(path)?;
-    let section = Ref::new("");
-    let module_path: Ref[Option[string]] = Ref::new(Option::None);
-    let target_dir = Ref::new("_artifact");
-    let dependencies = Vec::new();
+    let mut section = "";
+    let mut module_path: Option[string] = Option::None;
+    let mut target_dir = "_artifact";
+    let dependencies: Vec[Dependency] = Vec::[];
     for original in util::split_lines(source) {
         let line = util::trim(strip_comment(original));
         if line == "" {
             ()
         } else if line.byte_len() >= 2 && line.byte_get(0) == b'['
             && line.byte_get(line.byte_len() - 1) == b']' {
-            section.set(util::trim(line.byte_slice(1, line.byte_len() - 1)))
+            section = util::trim(line.byte_slice(1, line.byte_len() - 1));
         } else {
-            let equals = Ref::new(-1);
+            let mut equals = -1;
             for index in 0..line.byte_len() {
-                if equals.get() < 0 && line.byte_get(index) == b'=' {
-                    equals.set(index)
+                if equals < 0 && line.byte_get(index) == b'=' {
+                    equals = index;
                 } else {
                     ()
                 }
             };
-            if equals.get() < 0 {
+            if equals < 0 {
                 return Result::Err("invalid manifest line: " + original)
             } else {
                 ()
             };
-            let key = util::trim(line.byte_slice(0, equals.get()));
-            let value = parse_string(line.byte_slice(equals.get() + 1, line.byte_len()))?;
-            if section.get() == "module" && key == "path" {
-                module_path.set(Option::Some(value))
-            } else if section.get() == "build" && key == "target-dir" {
-                target_dir.set(value)
-            } else if section.get() == "dependencies" {
+            let key = util::trim(line.byte_slice(0, equals));
+            let value = parse_string(line.byte_slice(equals + 1, line.byte_len()))?;
+            if section == "module" && key == "path" {
+                module_path = Option::Some(value);
+            } else if section == "build" && key == "target-dir" {
+                target_dir = value;
+            } else if section == "dependencies" {
                 let name = parse_string(key)?;
                 dependencies.push(Dependency { name, version: value })
             } else {
@@ -168,12 +168,12 @@ pub fn load(path: string) -> Result[Manifest, string] {
             }
         }
     };
-    let Some(module_path) = module_path.get() else {
+    let Some(module_path) = module_path else {
         return Result::Err("goml.toml is missing [module].path")
     };
     validate_module_path(module_path)?;
-    match validate_target_dir(target_dir.get()) {
-        Ok(()) => Result::Ok(Manifest { module_path, target_dir: target_dir.get(), dependencies }),
+    match validate_target_dir(target_dir) {
+        Ok(()) => Result::Ok(Manifest { module_path, target_dir, dependencies }),
         Err(message) => Result::Err(message),
     }
 }

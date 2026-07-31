@@ -27,7 +27,7 @@ pub fn toolchain_lib_dir() -> Result[string, string] {
 
 fn read_sources(relative_paths: Vec[string]) -> Result[Vec[Source], string] {
     let lib_dir = toolchain_lib_dir()?;
-    let result = Vec::new();
+    let result: Vec[Source] = Vec::[];
     for relative_path in relative_paths {
         let source_path = path::join(lib_dir, relative_path);
         match fs::read_file(source_path) {

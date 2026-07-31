@@ -44,7 +44,7 @@ fn built(doc: Doc, first: Option[lexer::TokenKind], last: Option[lexer::TokenKin
 
 fn parts() -> Parts {
     Parts {
-        values: Vec::new(),
+        values: Vec::[],
         first: Ref::new(Option::None),
         last: Ref::new(Option::None),
         starts_with_line: Ref::new(false),
@@ -185,7 +185,7 @@ impl Parts {
                     },
                     _ => (),
                 };
-                if self.values.len() == 0 && value.starts_with_line {
+                if self.values.is_empty() && value.starts_with_line {
                     self.starts_with_line.set(true)
                 } else {
                     ()
@@ -216,9 +216,9 @@ impl Parts {
             self.values.push(Doc::BreakParent);
             self.push_line()
         } else {
-            if self.pending_newlines.get() >= 2 && self.values.len() > 0 {
+            if self.pending_newlines.get() >= 2 && !self.values.is_empty() {
                 self.ensure_lines(2)
-            } else if self.values.len() > 0 {
+            } else if !self.values.is_empty() {
                 self.ensure_lines(1)
             } else {
                 ()

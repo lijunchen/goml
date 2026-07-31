@@ -5,14 +5,14 @@ use gomlc::lexer;
 
 fn parse_path_always(parser: Parser) -> unit {
     let marker = parser.open();
-    if parser.at(lexer::TokenKind::Ident) == false {
+    if !parser.at(lexer::TokenKind::Ident) {
         parser.advance_with_error("expected a path segment");
         let _ = parser.close(marker, cst::NodeKind::PATH);
         ()
     } else {
         parser.advance();
         while parser.at(lexer::TokenKind::ColonColon)
-            && token_is(parser.nth(1), lexer::TokenKind::LBracket) == false {
+            && !token_is(parser.nth(1), lexer::TokenKind::LBracket) {
             parser.expect(lexer::TokenKind::ColonColon);
             if parser.at(lexer::TokenKind::Ident) {
                 parser.advance()

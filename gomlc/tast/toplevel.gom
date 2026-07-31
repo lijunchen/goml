@@ -23,8 +23,8 @@ fn function_context(
         package_name: base.package_name,
         source_path: base.source_path,
         current_span: base.current_span,
-        coercion_constraints: Vec::new(),
-        numeric_literal_constraints: Vec::new(),
+        coercion_constraints: Vec::[],
+        numeric_literal_constraints: Vec::[],
         defer_coercion_depth: Ref::new(0),
         package_aliases: base.package_aliases,
         in_scope_traits: base.in_scope_traits,
@@ -48,20 +48,20 @@ fn function_context(
         predicates,
         param_aliases,
         projection_aliases,
-        field_constraints: Vec::new(),
-        silent_field_receivers: Vec::new(),
-        required_predicates: Vec::new(),
-        locals: Vec::new(),
-        unresolved_locals: Vec::new(),
-        unresolved_inference_vars: Vec::new(),
-        reported_inference_spans: Vec::new(),
+        field_constraints: Vec::[],
+        silent_field_receivers: Vec::[],
+        required_predicates: Vec::[],
+        locals: Vec::[],
+        unresolved_locals: Vec::[],
+        unresolved_inference_vars: Vec::[],
+        reported_inference_spans: Vec::[],
         suppress_unresolved_ref_diagnostic: Ref::new(0),
-        mutable_locals: Vec::new(),
+        mutable_locals: Vec::[],
         return_ty: ret_ty,
         self_ty,
         type_params,
         loop_depth: Ref::new(0),
-        loop_results: Vec::new(),
+        loop_results: Vec::[],
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
     }
@@ -113,7 +113,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         self_ty: base.self_ty,
         type_params: base.type_params,
         loop_depth: Ref::new(0),
-        loop_results: Vec::new(),
+        loop_results: Vec::[],
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
     }
@@ -134,7 +134,7 @@ fn deferred_method_name(value: Callable) -> Option[string] {
 }
 
 fn resolve_deferred_exprs(ctx: Checker, values: Vec[Expr]) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::new();
+    let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(resolve_deferred_expr(ctx, value))
     };
@@ -142,7 +142,7 @@ fn resolve_deferred_exprs(ctx: Checker, values: Vec[Expr]) -> Vec[Expr] {
 }
 
 fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     for stmt in value.stmts {
         stmts.push(
             match stmt {
@@ -188,8 +188,8 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
             let func = match func {
                 Callable { callable, ty: callable_ty } => {
                     match deferred_method_name(callable) {
-                        Some(name) => if args.len() > 0 {
-                            let arg_types: Vec[Type] = Vec::new();
+                        Some(name) => if !args.is_empty() {
+                            let arg_types: Vec[Type] = Vec::[];
                             for index in 1..args.len() {
                                 arg_types.push(expr_type(args[index]))
                             };
@@ -199,7 +199,7 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                                 name,
                                 arg_types,
                                 Option::Some(ty),
-                                Vec::new(),
+                                Vec::[],
                             ) {
                                 Some(value) => Expr::Callable {
                                     callable: value.callable,
@@ -423,12 +423,12 @@ fn check_function(
 ) -> Function {
     match self_ty {
         None => if value.name == "main" {
-            if value.params.len() > 0 {
+            if !value.params.is_empty() {
                 push_diagnostic_at(base, "main function must not have parameters", Option::None)
             } else {
                 ()
             };
-            if value.generics.len() > 0 {
+            if !value.generics.is_empty() {
                 push_diagnostic_at(
                     base,
                     "main function must not have type parameters",
@@ -460,7 +460,7 @@ fn check_function(
     let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
     base.current_span.set(previous_span);
     let ctx = function_context(base, ret_ty, self_ty, type_params, predicates);
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     for param in value.params {
         let index = params.len();
         let previous_span = ctx.current_span.get();
@@ -545,8 +545,8 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
     base.current_span.set(Option::Some(value.ty_span));
     let ty = resolve_signature_type(
         base,
-        type_from_hir(value.ty, Vec::new(), Option::None),
-        Vec::new(),
+        type_from_hir(value.ty, Vec::[], Option::None),
+        Vec::[],
         true,
     );
     if !constant_type_supported(ty) {
@@ -555,7 +555,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
         ()
     };
     base.current_span.set(Option::Some(value.value.span));
-    let ctx = function_context(base, ty, Option::None, Vec::new(), Vec::new());
+    let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[]);
     let checked = check_expr(ctx, value.value, Option::Some(ty));
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
@@ -609,7 +609,7 @@ fn constant_reaches(values: Vec[Constant], current: string, target: string, visi
         visited.push(current);
         match checked_constant_by_name(values, current) {
             Some(value) => {
-                let references: Vec[string] = Vec::new();
+                let references: Vec[string] = Vec::[];
                 constant_expr_references(value.value, references);
                 for reference in references {
                     if reference == target || constant_reaches(values, reference, target, visited) {
@@ -627,7 +627,7 @@ fn constant_reaches(values: Vec[Constant], current: string, target: string, visi
 
 fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> unit {
     for value in values {
-        if constant_reaches(values, value.name, value.name, Vec::new()) {
+        if constant_reaches(values, value.name, value.name, Vec::[]) {
             push_global_diagnostic(ctx, "Cyclic constant " + short_name(value.name))
         } else {
             ()
@@ -729,7 +729,7 @@ fn validate_impl_type_params(
     for_type: Type,
     span: ast::Span,
 ) -> unit {
-    let constrained: Vec[string] = Vec::new();
+    let constrained: Vec[string] = Vec::[];
     collect_injective_type_params(for_type, constrained);
     match reference {
         Some(reference) => for arg in reference.args {
@@ -823,7 +823,7 @@ fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
 }
 
 fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
-    let invalid = Ref::new(false);
+    let mut invalid = false;
     let previous_span = base.current_span.get();
     base.current_span.set(Option::Some(value.for_type_span));
     let raw_for_type = type_from_hir(value.for_type, value.generics, Option::None);
@@ -831,18 +831,18 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     let for_type = resolve_signature_type(
         base,
         raw_for_type,
-        Vec::new(),
+        Vec::[],
         !type_contains_projection(raw_for_type),
     );
     base.current_span.set(previous_span);
     if wrong_arity {
         return ImplBlock {
             generics: value.generics,
-            predicates: Vec::new(),
+            predicates: Vec::[],
             trait_ref: Option::None,
             for_type,
-            associated_types: Vec::new(),
-            methods: Vec::new(),
+            associated_types: Vec::[],
+            methods: Vec::[],
         }
     } else {
         ()
@@ -875,7 +875,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     let validation_start = base.diagnostics.len();
     validate_impl_type_params(base, value.generics, trait_ref, for_type, value.for_type_span);
     if base.diagnostics.len() > validation_start {
-        invalid.set(true)
+        invalid = true;
     } else {
         ()
     };
@@ -887,15 +887,15 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 predicates,
                 trait_ref,
                 for_type,
-                associated_types: Vec::new(),
-                methods: Vec::new(),
+                associated_types: Vec::[],
+                methods: Vec::[],
             }
         } else {
             ()
         },
         None => (),
     };
-    let associated_types: Vec[(string, Type)] = Vec::new();
+    let associated_types: Vec[(string, Type)] = Vec::[];
     for associated in value.associated_types {
         let associated_predicates = match trait_ref {
             Some(reference) => if hir_type_uses_self_projection(associated.1) {
@@ -933,7 +933,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 predicates,
             );
             if base.diagnostics.len() > validation_start {
-                invalid.set(true)
+            invalid = true;
             } else {
                 ()
             };
@@ -941,7 +941,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         },
         None => (),
     };
-    let methods: Vec[Function] = Vec::new();
+    let methods: Vec[Function] = Vec::[];
     for method in value.methods {
         methods.push(
             check_function(base, method, value.generics, predicates, Option::Some(for_type)),
@@ -960,14 +960,14 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 predicates.len(),
             );
             if base.diagnostics.len() > validation_start {
-                invalid.set(true)
+            invalid = true;
             } else {
                 ()
             }
         },
         None => validate_inherent_impl(base, for_type, methods),
     };
-    if invalid.get() {
+    if invalid {
         mark_impl_invalid_at(base, value.for_type_span)
     } else {
         ()
@@ -1021,7 +1021,7 @@ fn validate_method_signature(
     owner_generic_count: int,
     owner_predicate_count: int,
 ) -> unit {
-    let actual_method_generics = Vec::new();
+    let actual_method_generics: Vec[string] = Vec::[];
     for index in owner_generic_count..actual.generics.len() {
         actual_method_generics.push(actual.generics[index])
     };
@@ -1049,7 +1049,7 @@ fn validate_method_signature(
             },
         )
     };
-    let expected_params: Vec[Type] = Vec::new();
+    let expected_params: Vec[Type] = Vec::[];
     for param in expected.params {
         expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
     };
@@ -1098,11 +1098,11 @@ fn validate_method_signature(
     } else {
         ()
     };
-    let expected_predicates: Vec[TypePredicate] = Vec::new();
+    let expected_predicates: Vec[TypePredicate] = Vec::[];
     for predicate in expected.predicates {
         expected_predicates.push(substitute_predicate(predicate, substitutions))
     };
-    let actual_predicates: Vec[TypePredicate] = Vec::new();
+    let actual_predicates: Vec[TypePredicate] = Vec::[];
     for index in owner_predicate_count..actual.predicates.len() {
         actual_predicates.push(actual.predicates[index])
     };
@@ -1124,7 +1124,7 @@ fn validate_trait_associated_types(
     for_type: Type,
     associated_types: Vec[(string, Type)],
 ) -> unit {
-    let seen: Vec[string] = Vec::new();
+    let seen: Vec[string] = Vec::[];
     for associated in associated_types {
         if !contains_associated_type(info.associated_types, associated.0) {
             push_diagnostic(
@@ -1284,7 +1284,7 @@ fn validate_associated_type_cycles(
     associated_types: Vec[(string, Type)],
 ) -> unit {
     for associated in associated_types {
-        if associated_type_reaches(associated_types, associated.1, associated.0, Vec::new()) {
+        if associated_type_reaches(associated_types, associated.1, associated.0, Vec::[]) {
             push_diagnostic_at(
                 ctx,
                 "Associated type " + associated.0 + " has a cyclic definition in impl of trait "
@@ -1309,7 +1309,7 @@ fn predicate_text(value: TypePredicate) -> string {
 }
 
 fn resolve_impl_alias_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
-    let result: Vec[Type] = Vec::new();
+    let result: Vec[Type] = Vec::[];
     for value in values {
         result.push(resolve_impl_alias_type(ctx, value))
     };
@@ -1448,7 +1448,7 @@ fn validate_trait_impl_definition_requirements(
                 ctx,
                 Type::Unit,
                 Option::Some(for_type),
-                Vec::new(),
+                Vec::[],
                 predicates,
             );
             validate_associated_type_cycles(validation_ctx, reference, associated_types);
@@ -1535,7 +1535,7 @@ fn validate_trait_impl(
                     },
                 )
             };
-            let seen: Vec[string] = Vec::new();
+            let seen: Vec[string] = Vec::[];
             for method in methods {
                 match find_trait_method(info, method.name) {
                     Some(expected) => if vecs::contains(seen, method.name) {
@@ -1582,7 +1582,7 @@ fn validate_trait_impl(
 }
 
 fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) -> unit {
-    let seen: Vec[string] = Vec::new();
+    let seen: Vec[string] = Vec::[];
     for method in methods {
         if vecs::contains(seen, method.name) {
             push_diagnostic(
@@ -1597,7 +1597,7 @@ fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) 
 }
 
 fn copied_names(values: Vec[string]) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
+    let result: Vec[string] = Vec::[];
     for value in values {
         result.push(value)
     };
@@ -1606,7 +1606,7 @@ fn copied_names(values: Vec[string]) -> Vec[string] {
 
 fn struct_application_parts(value: Type) -> Option[(string, Vec[Type])] {
     match prune(value) {
-        Con { name } => Option::Some((name, Vec::new())),
+        Con { name } => Option::Some((name, Vec::[])),
         App { ty: Con { name }, args } => Option::Some((name, args)),
         _ => Option::None,
     }
@@ -1712,7 +1712,7 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
         let info = ctx.traits[index];
         for reference in info.supertraits {
             let path = Vec::[short_name(info.name), short_name(reference.name)];
-            if supertrait_path(ctx, reference.name, info.name, Vec::new(), path) {
+            if supertrait_path(ctx, reference.name, info.name, Vec::[], path) {
                 push_diagnostic_at(
                     ctx,
                     "Supertrait cycle detected: " + cycle_text(path),
@@ -1785,7 +1785,7 @@ fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, 
 }
 
 fn builtin_enum_definitions() -> Vec[EnumDef] {
-    let result: Vec[EnumDef] = Vec::new();
+    let result: Vec[EnumDef] = Vec::[];
     result.push(
         EnumDef {
             name: "Option",
@@ -1834,7 +1834,7 @@ fn push_declaration_diagnostic(ctx: Checker, message: string) -> unit {
 }
 
 fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> unit {
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     for name in values {
         if vecs::contains(names, name) {
             push_declaration_diagnostic(
@@ -1848,7 +1848,7 @@ fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> unit {
 }
 
 fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit {
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     for param in value.params {
         let name = param.0.hint;
         if vecs::contains(names, name) {
@@ -1860,7 +1860,7 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
 }
 
 fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     for variant in value.variants {
         if vecs::contains(names, variant.name) {
             push_declaration_diagnostic(
@@ -1872,7 +1872,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
         };
         match variant.fields {
             Struct(fields) => {
-                let field_names: Vec[string] = Vec::new();
+                let field_names: Vec[string] = Vec::[];
                 for field in fields {
                     if vecs::contains(field_names, field.0) {
                         push_declaration_diagnostic(
@@ -1893,7 +1893,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
 }
 
 fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     for field in value.fields {
         if vecs::contains(names, field.0) {
             push_declaration_diagnostic(
@@ -1907,7 +1907,7 @@ fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
 }
 
 fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
-    let methods: Vec[string] = Vec::new();
+    let methods: Vec[string] = Vec::[];
     for method in value.method_sigs {
         if vecs::contains(methods, method.name) {
             push_declaration_diagnostic(
@@ -1918,7 +1918,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
             methods.push(method.name)
         }
     };
-    let associated_types: Vec[string] = Vec::new();
+    let associated_types: Vec[string] = Vec::[];
     for associated in value.associated_types {
         if vecs::contains(associated_types, associated.name) {
             push_declaration_diagnostic(
@@ -1964,10 +1964,10 @@ fn mixed_value_declaration_message(name: string) -> string {
 }
 
 fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
-    let nominal_names: Vec[string] = Vec::new();
-    let nominal_kinds: Vec[int] = Vec::new();
-    let function_names: Vec[string] = Vec::new();
-    let function_kinds: Vec[int] = Vec::new();
+    let nominal_names: Vec[string] = Vec::[];
+    let nominal_kinds: Vec[int] = Vec::[];
+    let function_names: Vec[string] = Vec::[];
+    let function_kinds: Vec[int] = Vec::[];
     for item in value.items {
         let nominal = match item {
             EnumDef(definition) => Option::Some((definition.name, 1)),
@@ -2077,20 +2077,20 @@ fn validate_cross_file_declaration_names(
     value: hir::File,
     package_files: Vec[hir::File],
 ) -> unit {
-    let files: Vec[hir::File] = Vec::new();
+    let files: Vec[hir::File] = Vec::[];
     files.push(value);
     for file in package_files {
         files.push(file)
     };
-    let nominal_names: Vec[string] = Vec::new();
-    let nominal_kinds: Vec[int] = Vec::new();
-    let function_names: Vec[string] = Vec::new();
-    let function_kinds: Vec[int] = Vec::new();
+    let nominal_names: Vec[string] = Vec::[];
+    let nominal_kinds: Vec[int] = Vec::[];
+    let function_names: Vec[string] = Vec::[];
+    let function_kinds: Vec[int] = Vec::[];
     for file in files {
-        let local_nominal_names: Vec[string] = Vec::new();
-        let local_nominal_kinds: Vec[int] = Vec::new();
-        let local_function_names: Vec[string] = Vec::new();
-        let local_function_kinds: Vec[int] = Vec::new();
+        let local_nominal_names: Vec[string] = Vec::[];
+        let local_nominal_kinds: Vec[int] = Vec::[];
+        let local_function_names: Vec[string] = Vec::[];
+        let local_function_kinds: Vec[int] = Vec::[];
         for item in file.items {
             let nominal = match item {
                 EnumDef(definition) => Option::Some((definition.name, 1)),
@@ -2242,7 +2242,7 @@ fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: str
     if anchor_index < 0 {
         values
     } else {
-        let moved: Vec[Diagnostic] = Vec::new();
+        let moved: Vec[Diagnostic] = Vec::[];
         for value in values {
             if value.message == message {
                 moved.push(value)
@@ -2250,7 +2250,7 @@ fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: str
                 ()
             }
         };
-        let result: Vec[Diagnostic] = Vec::new();
+        let result: Vec[Diagnostic] = Vec::[];
         for index in 0..values.len() {
             let value = values[index];
             if value.message == message {
@@ -2293,22 +2293,20 @@ fn diagnostics_have_message(values: Vec[Diagnostic], message: string) -> bool {
 }
 
 fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
-    let result = Ref::new(ctx.diagnostics);
+    let mut result = ctx.diagnostics;
     for value in ctx.rejected_externs {
         if value.local {
             let name = short_name(value.name);
-            result.set(
-                move_diagnostics_before(
-                    result.get(),
-                    "Internal error: Function " + name + " not found in environment",
-                    "extern " + name + " is not permitted in this source",
-                ),
-            )
+            result = move_diagnostics_before(
+                result,
+                "Internal error: Function " + name + " not found in environment",
+                "extern " + name + " is not permitted in this source",
+            );
         } else {
             ()
         }
     };
-    result.get()
+    result
 }
 
 fn attach_diagnostic_span(ctx: Checker, message: string, span: Option[ast::Span]) -> unit {
@@ -2359,7 +2357,7 @@ fn attach_type_diagnostic_span(ctx: Checker, value: hir::TypeExpr, span: Option[
             match ty {
                 Con { name } => match nominal_arity(ctx, name) {
                     Some(expected) => if expected != args.len() {
-                        let category = if expected == 0 && args.len() > 0 {
+                        let category = if expected == 0 && !args.is_empty() {
                             match find_struct_by_name(ctx, name) {
                                 Some(_) => "Struct",
                                 None => "Type",
@@ -2580,7 +2578,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                     },
                 }
             },
-            StructDef(value) => if value.generics.len() == 0 {
+            StructDef(value) => if value.generics.is_empty() {
                 for index in 0..value.fields.len() {
                     attach_type_diagnostic_span(
                         ctx,
@@ -2661,7 +2659,7 @@ fn check_file_with_package(
             ConstantScheme {
                 def_id: constant.def_id,
                 name: constant.name,
-                ty: resolve_signature_type(ctx, constant.ty, Vec::new(), false),
+                ty: resolve_signature_type(ctx, constant.ty, Vec::[], false),
             },
         )
     };
@@ -2673,7 +2671,7 @@ fn check_file_with_package(
                 let _ = resolve_signature_type(
                     ctx,
                     type_from_hir(alias.ty, alias.generics, Option::None),
-                    Vec::new(),
+                    Vec::[],
                     true,
                 );
                 ctx.current_span.set(previous)
@@ -2694,7 +2692,7 @@ fn check_file_with_package(
     expand_in_scope_supertraits(ctx);
     validate_impl_overlaps(ctx);
     validate_builtin_impl_overlaps(ctx, value);
-    let constants: Vec[Constant] = Vec::new();
+    let constants: Vec[Constant] = Vec::[];
     for item in value.items {
         match item {
             Constant(value) => constants.push(check_constant(ctx, value)),
@@ -2702,12 +2700,12 @@ fn check_file_with_package(
         }
     };
     validate_constant_cycles(ctx, constants);
-    let items: Vec[Item] = Vec::new();
+    let items: Vec[Item] = Vec::[];
     for item in value.items {
         match item {
             ImplBlock(value) => items.push(Item::ImplBlock(check_impl(ctx, value))),
             Function(value) => items.push(
-                Item::Function(check_function(ctx, value, Vec::new(), Vec::new(), Option::None)),
+                Item::Function(check_function(ctx, value, Vec::[], Vec::[], Option::None)),
             ),
             _ => (),
         }
@@ -2716,17 +2714,17 @@ fn check_file_with_package(
     let enums = if include_builtin_types {
         builtin_enum_definitions()
     } else {
-        Vec::new()
+        Vec::[]
     };
     for index in 0..local_enum_count {
         let value = ctx.enums[index];
-        let variants: Vec[EnumVariantDef] = Vec::new();
+        let variants: Vec[EnumVariantDef] = Vec::[];
         for variant in value.variants {
             variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
         };
         enums.push(EnumDef { name: value.name, generics: value.generics, variants })
     };
-    let structs: Vec[StructDef] = Vec::new();
+    let structs: Vec[StructDef] = Vec::[];
     for index in 0..local_struct_count {
         let value = ctx.structs[index];
         structs.push(
@@ -2755,7 +2753,7 @@ fn check_file(
 ) -> CheckResult {
     check_file_with_package(
         value,
-        Vec::new(),
+        Vec::[],
         dependency_environments(dependencies),
         diagnostics,
         include_builtin_types,
@@ -2768,7 +2766,7 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
     match value.hir {
         Some(file) => check_file(
             file,
-            Vec::new(),
+            Vec::[],
             diagnostics_from_lower(value.diagnostics, value.source_path),
             true,
             false,
@@ -2785,7 +2783,7 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
     match value.hir {
         Some(file) => check_file(
             file,
-            Vec::new(),
+            Vec::[],
             diagnostics_from_lower(value.diagnostics, value.source_path),
             false,
             false,
@@ -2848,7 +2846,7 @@ pub fn check_package_files_for_link_with_dependencies(
 }
 
 pub fn check_builtin_package_files(values: Vec[hir::File]) -> CheckResult {
-    check_package_files_for_link_with_environments_options(values, Vec::new(), false, true)
+    check_package_files_for_link_with_environments_options(values, Vec::[], false, true)
 }
 
 pub fn check_package_files_for_link_with_dependencies_allowing_externs(
@@ -2876,15 +2874,15 @@ fn check_package_files_for_link_with_environments_options(
     allow_externs: bool,
     include_builtin_types: bool,
 ) -> CheckResult {
-    let items: Vec[Item] = Vec::new();
-    let enums: Vec[EnumDef] = Vec::new();
-    let structs: Vec[StructDef] = Vec::new();
-    let constants: Vec[Constant] = Vec::new();
-    let diagnostics: Vec[Diagnostic] = Vec::new();
+    let items: Vec[Item] = Vec::[];
+    let enums: Vec[EnumDef] = Vec::[];
+    let structs: Vec[StructDef] = Vec::[];
+    let constants: Vec[Constant] = Vec::[];
+    let diagnostics: Vec[Diagnostic] = Vec::[];
     let typeck_results = empty_typeck_results();
-    let valid = Ref::new(true);
+    let mut valid = true;
     for index in 0..values.len() {
-        let package_files: Vec[hir::File] = Vec::new();
+        let package_files: Vec[hir::File] = Vec::[];
         for other in 0..values.len() {
             if other != index {
                 package_files.push(values[other])
@@ -2896,7 +2894,7 @@ fn check_package_files_for_link_with_environments_options(
             values[index],
             package_files,
             dependencies,
-            Vec::new(),
+            Vec::[],
             include_builtin_types && index == 0,
             index == 0,
             allow_externs,
@@ -2920,17 +2918,19 @@ fn check_package_files_for_link_with_environments_options(
                     constants.push(value)
                 }
             },
-            None => valid.set(false),
+            None => {
+                valid = false;
+            },
         }
     };
-    let diagnostic_source = if values.len() > 0 {
+    let diagnostic_source = if !values.is_empty() {
         values[0].source_path
     } else {
         "<unknown>"
     };
     for value in constants {
         let message = "Cyclic constant " + short_name(value.name);
-        if constant_reaches(constants, value.name, value.name, Vec::new())
+        if constant_reaches(constants, value.name, value.name, Vec::[])
             && !diagnostics_have_message(diagnostics, message) {
             diagnostics.push(new_diagnostic("typer", message, diagnostic_source, Option::None))
         } else {
@@ -2938,7 +2938,7 @@ fn check_package_files_for_link_with_environments_options(
         }
     };
     CheckResult {
-        tast: if valid.get() {
+        tast: if valid {
             Option::Some(File { items, enums, structs, constants })
         } else {
             Option::None

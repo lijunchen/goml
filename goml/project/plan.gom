@@ -41,7 +41,7 @@ fn extension(value: string, suffix: string) -> string {
 
 fn last_segment(value: string) -> string {
     let segments = util::split(value, "::");
-    if segments.len() == 0 {
+    if segments.is_empty() {
         value
     } else {
         segments[segments.len() - 1]
@@ -83,9 +83,9 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     Vec[string],
     string,
 ] {
-    let names = Vec::new();
+    let names: Vec[string] = Vec::[];
     collect_dependencies(graph, package_name, HashMap::{}, names)?;
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for name in util::sorted_unique(names) {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
     };
@@ -98,7 +98,7 @@ fn compile_commands(
     entry_command: string,
     dependency_command: string,
 ) -> Result[Vec[Command], string] {
-    let result = Vec::new();
+    let result: Vec[Command] = Vec::[];
     for package_name in context.graph.order {
         let command = if package_name == context.graph.entry_package {
             entry_command
@@ -157,12 +157,12 @@ fn compile_package_command(
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
-    let inputs = Vec::new();
+    let inputs: Vec[string] = Vec::[];
     for file in package_value.files {
         inputs.push(module_relative(module_dir, file))
     };
     let interfaces = dependency_interfaces(graph, package_name, interface_root)?;
-    let relative_interfaces = Vec::new();
+    let relative_interfaces: Vec[string] = Vec::[];
     for value in interfaces {
         relative_interfaces.push(module_relative(module_dir, value))
     };
@@ -230,7 +230,7 @@ fn compile_test_package_command(
 }
 
 fn core_outputs(context: Context, output_root: string) -> Vec[string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for package_name in context.graph.order {
         result.push(
             module_relative(
@@ -279,7 +279,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
         Plan {
             commands: commands_with_world(context, commands),
             executable: Option::None,
-            test_groups: Vec::new(),
+            test_groups: Vec::[],
         },
     )
 }
@@ -287,7 +287,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
 pub fn build_plan(context: Context) -> Result[Plan, string] {
     let output_root = path::join(context.artifact_root, "build");
     let commands = compile_commands(context, output_root, "build", "build")?;
-    let entries = Vec::new();
+    let entries: Vec[string] = Vec::[];
     for package_name in context.graph.order {
         let Some(package_value) = package_by_name(context.graph, package_name) else {
             return Result::Err(f"missing package {package_name}")
@@ -320,7 +320,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         Plan {
             commands: commands_with_world(context, commands),
             executable: Option::None,
-            test_groups: Vec::new(),
+            test_groups: Vec::[],
         },
     )
 }
@@ -348,7 +348,7 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
         Plan {
             commands: commands_with_world(context, commands),
             executable: Option::Some(executable),
-            test_groups: Vec::new(),
+            test_groups: Vec::[],
         },
     )
 }
@@ -405,7 +405,7 @@ fn append_test_group(
     for graph in graphs {
         test_packages[graph.entry_package] = true;
     };
-    let input_cores = Vec::new();
+    let input_cores: Vec[string] = Vec::[];
     let added: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
         let root = if test_packages.contains(package_name) {
@@ -469,15 +469,15 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     for package_name in context.graph.order {
         compiled_dependencies[package_name] = true;
     };
-    let groups = Vec::new();
-    let internal = if kind == "internal" || kind == "all" {
+    let groups: Vec[TestGroup] = Vec::[];
+    let internal: Vec[Graph] = if kind == "internal" || kind == "all" {
         internal_test_graphs(context)?
     } else {
-        Vec::new()
+        Vec::[]
     };
     let internal_root = path::join(path::join(context.artifact_root, "test"), "internal");
-    let internal_graphs = Vec::new();
-    let internal_packages = Vec::new();
+    let internal_graphs: Vec[Graph] = Vec::[];
+    let internal_packages: Vec[string] = Vec::[];
     for graph in internal {
         let package_name = graph.entry_package;
         match append_test_package(
@@ -495,7 +495,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             Err(message) => return Result::Err(message),
         }
     };
-    if internal_graphs.len() > 0 {
+    if !internal_graphs.is_empty() {
         append_test_group(
             context,
             internal_graphs,
@@ -509,14 +509,14 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     } else {
         ()
     };
-    let external = if kind == "external" || kind == "all" {
+    let external: Vec[ExternalTest] = if kind == "external" || kind == "all" {
         external_test_graphs(context)?
     } else {
-        Vec::new()
+        Vec::[]
     };
     let external_root = path::join(path::join(context.artifact_root, "test"), "external");
-    let external_graphs = Vec::new();
-    let external_packages = Vec::new();
+    let external_graphs: Vec[Graph] = Vec::[];
+    let external_packages: Vec[string] = Vec::[];
     for test in external {
         let package_name = test.graph.entry_package;
         match append_test_package(
@@ -535,7 +535,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             Err(message) => return Result::Err(message),
         }
     };
-    if external_graphs.len() > 0 {
+    if !external_graphs.is_empty() {
         append_test_group(
             context,
             external_graphs,
@@ -572,7 +572,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
         PrepareWorld { output } => ("gomlc", Vec::["prepare-world", "--output", output]),
         Compile { subcommand, package_name, input_files, interface_files, output, world } => {
-            let args = Vec::new();
+            let args: Vec[string] = Vec::[];
             args.push(subcommand);
             args.push("--package");
             args.push(package_name);
@@ -596,7 +596,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             ("gomlc", args)
         },
         Link { input_cores, entry_package, output, world } => {
-            let args = Vec::new();
+            let args: Vec[string] = Vec::[];
             args.push("link");
             args.push("--input");
             for input in input_cores {
@@ -616,7 +616,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             ("gomlc", args)
         },
         TestLink { input_cores, packages, output, manifest, world } => {
-            let args = Vec::new();
+            let args: Vec[string] = Vec::[];
             args.push("test-link");
             args.push("--input");
             for input in input_cores {
@@ -820,56 +820,55 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
             None => (),
         }
     };
-    let result = Vec::new();
+    let result: Vec[BuildNode] = Vec::[];
     for index in 0..commands.len() {
         let command = commands[index];
-        let dependencies = Vec::new();
+        let dependencies: Vec[int] = Vec::[];
         match cache_spec(command) {
-            Some(spec) => for input in spec.inputs {
-                let mut previous = -1;
-                let mut following = -1;
-                match producers[input] {
-                    Some(values) => for candidate in values {
-                        if candidate < index && candidate > previous {
-                            previous = candidate;
-                        } else if candidate > index && following < 0 {
-                            following = candidate;
-                        } else {
-                            ()
-                        }
-                    },
-                    None => (),
+            Some(spec) => {
+                for input in spec.inputs {
+                    let mut previous = -1;
+                    let mut following = -1;
+                    match producers[input] {
+                        Some(values) => for candidate in values {
+                            if candidate < index && candidate > previous {
+                                previous = candidate;
+                            } else if candidate > index && following < 0 {
+                                following = candidate;
+                            } else {
+                                ()
+                            }
+                        },
+                        None => (),
+                    };
+                    let producer = if previous >= 0 {
+                        previous
+                    } else {
+                        following
+                    };
+                    if producer >= 0 && !util::int_vec_contains(dependencies, producer) {
+                        dependencies.push(producer)
+                    } else {
+                        ()
+                    }
                 };
-                let producer = if previous >= 0 {
-                    previous
-                } else {
-                    following
-                };
-                if producer >= 0 && !util::int_vec_contains(dependencies, producer) {
-                    dependencies.push(producer)
-                } else {
-                    ()
-                }
-            },
-            None => (),
-        };
-        match cache_spec(command) {
-            Some(spec) => for output in spec.outputs {
-                let mut previous = -1;
-                match producers[output] {
-                    Some(values) => for candidate in values {
-                        if candidate < index && candidate > previous {
-                            previous = candidate;
-                        } else {
-                            ()
-                        }
-                    },
-                    None => (),
-                };
-                if previous >= 0 && !util::int_vec_contains(dependencies, previous) {
-                    dependencies.push(previous)
-                } else {
-                    ()
+                for output in spec.outputs {
+                    let mut previous = -1;
+                    match producers[output] {
+                        Some(values) => for candidate in values {
+                            if candidate < index && candidate > previous {
+                                previous = candidate;
+                            } else {
+                                ()
+                            }
+                        },
+                        None => (),
+                    };
+                    if previous >= 0 && !util::int_vec_contains(dependencies, previous) {
+                        dependencies.push(previous)
+                    } else {
+                        ()
+                    }
                 }
             },
             None => (),
@@ -880,14 +879,11 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
 }
 
 fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
-    for node in nodes {
-        if node.index == index {
-            return Option::Some(node)
-        } else {
-            ()
-        }
-    };
-    Option::None
+    if index >= 0 && index < nodes.len() {
+        Option::Some(nodes[index])
+    } else {
+        Option::None
+    }
 }
 
 fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
@@ -951,12 +947,12 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         }
     } else {
         let graph = build_graph(plan.commands)?;
-        let initial = Vec::new();
+        let initial: Vec[int] = Vec::[];
         for node in graph.nodes {
             initial.push(node.index)
         };
         let mut pending = initial;
-        let completed_nodes = Vec::new();
+        let completed_nodes: Vec[int] = Vec::[];
         let mut running = 0;
         let worker_count = if jobs < total {
             jobs
@@ -968,8 +964,8 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         for _ in 0..worker_count {
             go || execute_plan_worker(context, work, results)
         };
-        while pending.len() > 0 || running > 0 {
-            let blocked = Vec::new();
+        while !pending.is_empty() || running > 0 {
+            let blocked: Vec[int] = Vec::[];
             for index in pending {
                 let Some(node) = build_node(graph.nodes, index) else {
                     return Result::Err(f"build graph omitted node {index}")
@@ -1004,7 +1000,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                 }
             };
             pending = blocked;
-            if running == 0 && pending.len() > 0 {
+            if running == 0 && !pending.is_empty() {
                 work.close();
                 results.close();
                 return Result::Err("build plan contains a dependency cycle")

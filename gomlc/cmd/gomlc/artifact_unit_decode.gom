@@ -49,7 +49,7 @@ fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[TestDescripto
 
 fn artifact_decode_tests(value: ArtifactValue) -> Result[Vec[TestDescriptor], string] {
     let values = artifact_json_array(value, "test descriptors")?;
-    let result = Vec::new();
+    let result: Vec[TestDescriptor] = Vec::[];
     for value in values {
         result.push(artifact_decode_test_descriptor(value)?)
     };
@@ -57,7 +57,7 @@ fn artifact_decode_tests(value: ArtifactValue) -> Result[Vec[TestDescriptor], st
 }
 
 fn artifact_test_descriptors_valid(package_name: string, values: Vec[TestDescriptor]) -> bool {
-    let ids = Vec::new();
+    let ids: Vec[string] = Vec::[];
     for value in values {
         if value.package_name != package_name || value.id == "" || value.symbol == ""
             || value.display_name == ""
@@ -94,7 +94,7 @@ fn artifact_decode_core_value(value: ArtifactValue) -> Result[ArtifactCoreUnit, 
     )?;
     let tests = match artifact_json_optional_field(object, "tests")? {
         Some(value) => artifact_decode_tests(value)?,
-        None => Vec::new(),
+        None => Vec::[],
     };
     if !artifact_test_descriptors_valid(package_name, tests) {
         Result::Err(artifact_decode_error("valid test descriptors"))

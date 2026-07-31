@@ -34,8 +34,8 @@ fn world_core_unit(
         exports,
         core_ir: value,
         deps: interface.deps,
-        sources: Vec::new(),
-        tests: Vec::new(),
+        sources: Vec::[],
+        tests: Vec::[],
     }
 }
 
@@ -249,35 +249,35 @@ fn write_package_world(path: string, value: PackageWorld) -> Result[unit, string
 }
 
 fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
-    let output: Ref[Option[string]] = Ref::new(Option::None);
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
+    let mut output: Option[string] = Option::None;
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
         if cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if argument == "--output" {
-            if option_string_present(output.get()) {
+            if option_string_present(output) {
                 return Result::Err(repeated_argument_error("prepare-world", "--output <OUTPUT>"))
-            } else if index.get() + 1 >= args.len() || cli_option(args[index.get() + 1]) {
+            } else if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
             } else {
-                output.set(Option::Some(args[index.get() + 1]));
-                index.set(index.get() + 2)
+                output = Option::Some(args[index + 1]);
+                index = index + 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
-            if option_string_present(output.get()) {
+            if option_string_present(output) {
                 return Result::Err(repeated_argument_error("prepare-world", "--output <OUTPUT>"))
             } else if option_string_empty(inline_cli_value(argument, "--output")) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
             } else {
-                output.set(inline_cli_value(argument, "--output"));
-                index.set(index.get() + 1)
+                output = inline_cli_value(argument, "--output");
+                index = index + 1;
             }
         } else {
             return Result::Err(unexpected_argument_error("prepare-world", argument, false))
         }
     };
-    match output.get() {
+    match output {
         Some(value) => Result::Ok(value),
         None => {
             let missing: Vec[string] = Vec::["--output <OUTPUT>"];

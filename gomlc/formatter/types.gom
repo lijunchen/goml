@@ -47,7 +47,7 @@ fn delimiter_uses_edge_space(value: LocatedToken) -> bool {
 }
 
 fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
-    let values: Vec[Doc] = Vec::new();
+    let values: Vec[Doc] = Vec::[];
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -79,7 +79,7 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
         ()
     };
     let item_nodes = direct_nodes(node);
-    let items: Vec[Doc] = Vec::new();
+    let items: Vec[Doc] = Vec::[];
     for item in item_nodes {
         items.push(format_item_content(value, item).doc)
     };
@@ -91,7 +91,7 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
         None => Option::None,
     };
     let last = Option::Some(close.token.kind);
-    if items.len() == 0 {
+    if items.is_empty() {
         built(concat(Vec::[prefix, open_doc, close_doc]), first, last)
     } else {
         let group_id = value.docs.new_group_id();
@@ -124,7 +124,7 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
     while cursor.remaining() > 0 {
         match cursor.next() {
             Some(Node(child)) => if child.start > open.start && child.end <= close.start {
-                if body.values.len() > 0 && body.trailing_lines.get() == 0 {
+                if !body.values.is_empty() && body.trailing_lines.get() == 0 {
                     body.ensure_lines(1)
                 } else {
                     ()
@@ -158,7 +158,7 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
             None => (),
         }
     };
-    if item_count.get() == 0 && body.values.len() == 0 {
+    if item_count.get() == 0 && body.values.is_empty() {
         return format_generic(value, node)
     } else {
         ()
@@ -188,12 +188,12 @@ fn format_where_clause_with_body(value: Builder, node: LocatedNode, body_follows
         ()
     };
     let predicates = direct_nodes(node);
-    if predicates.len() == 0 {
+    if predicates.is_empty() {
         return format_generic(value, node)
     } else {
         ()
     };
-    let docs: Vec[Doc] = Vec::new();
+    let docs: Vec[Doc] = Vec::[];
     for predicate in predicates {
         docs.push(format_node(value, predicate).doc)
     };

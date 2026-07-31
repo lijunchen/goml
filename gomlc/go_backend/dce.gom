@@ -12,7 +12,7 @@ struct DceResult {
 }
 
 fn new_dce_names() -> DceNames {
-    DceNames { values: Vec::new(), present: HashMap::{} }
+    DceNames { values: Vec::[], present: HashMap::{} }
 }
 
 fn contains_name(values: DceNames, expected: string) -> bool {
@@ -323,7 +323,7 @@ fn append_call(value: Expr) -> bool {
 }
 
 fn append_target(values: Vec[Expr]) -> Option[string] {
-    if values.len() > 0 {
+    if !values.is_empty() {
         match values[0] {
             Var { name } => Option::Some(name),
             _ => Option::None,
@@ -419,10 +419,10 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
     let live = copy_names(live_out);
     let needs_decl = new_dce_names();
     let output: Vec[Stmt] = Vec::with_capacity(value.stmts.len());
-    let index = Ref::new(value.stmts.len());
-    while index.get() > 0 {
-        index.set(index.get() - 1);
-        match value.stmts[index.get()] {
+    let mut index = value.stmts.len();
+    while index > 0 {
+        index = index - 1;
+        match value.stmts[index] {
             Expr { expr } => {
                 if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);

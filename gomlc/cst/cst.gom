@@ -261,9 +261,9 @@ fn debug_write_control_escape(builder: text::StringBuilder, value: uint8) -> uni
 
 fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"');
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte == b'"' {
             builder.write_string("\\\"")
         } else if byte == b'\\' {
@@ -280,9 +280,9 @@ fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> uni
             debug_write_control_escape(builder, byte)
         } else {
             let width = debug_utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + debug_utf8_width(byte))
+        index = index + debug_utf8_width(byte);
     };
     builder.write_char('"')
 }
@@ -291,11 +291,11 @@ fn debug_token_text(value: string) -> string {
     if value.byte_len() < 25 {
         value
     } else {
-        let boundary = Ref::new(21);
-        while !value.is_char_boundary(boundary.get()) {
-            boundary.set(boundary.get() + 1)
+        let mut boundary = 21;
+        while !value.is_char_boundary(boundary) {
+            boundary = boundary + 1;
         };
-        value.byte_slice(0, boundary.get()) + " ..."
+        value.byte_slice(0, boundary) + " ..."
     }
 }
 
@@ -308,24 +308,24 @@ fn debug_write_node(value: CstNode, start: int, depth: int, builder: text::Strin
     builder.write_string("..");
     builder.write_string(end.to_string());
     builder.write_char('\n');
-    let cursor = Ref::new(start);
+    let mut cursor = start;
     for child in value.children {
         match child {
-            Node(child_node) => cursor.set(
-                debug_write_node(child_node, cursor.get(), depth + 1, builder),
-            ),
+            Node(child_node) => {
+                cursor = debug_write_node(child_node, cursor, depth + 1, builder);
+            },
             Token(token) => {
-                let token_end = cursor.get() + token.text.byte_len();
+                let token_end = cursor + token.text.byte_len();
                 debug_write_spaces(builder, depth + 1);
                 builder.write_string(cst_token_kind_name(token.kind));
                 builder.write_char('@');
-                builder.write_string(cursor.get().to_string());
+                builder.write_string(cursor.to_string());
                 builder.write_string("..");
                 builder.write_string(token_end.to_string());
                 builder.write_char(' ');
                 debug_write_quoted_string(builder, debug_token_text(token.text));
                 builder.write_char('\n');
-                cursor.set(token_end)
+                cursor = token_end;
             },
         }
     };
@@ -348,21 +348,23 @@ fn encode_node(value: CstNode, start: int, builder: text::StringBuilder) -> int 
     builder.write_string("\t");
     builder.write_string(end.to_string());
     builder.write_string("\n");
-    let cursor = Ref::new(start);
+    let mut cursor = start;
     for child in value.children {
         match child {
-            Node(child_node) => cursor.set(encode_node(child_node, cursor.get(), builder)),
+            Node(child_node) => {
+                cursor = encode_node(child_node, cursor, builder);
+            },
             Token(token) => {
                 builder.write_string("T\t");
                 builder.write_string(cst_token_kind_name(token.kind));
                 builder.write_string("\t");
-                builder.write_string(cursor.get().to_string());
+                builder.write_string(cursor.to_string());
                 builder.write_string("\t");
-                builder.write_string((cursor.get() + token.text.byte_len()).to_string());
+                builder.write_string((cursor + token.text.byte_len()).to_string());
                 builder.write_string("\t");
                 builder.write_string(lexer::encode_text_hex(token.text));
                 builder.write_string("\n");
-                cursor.set(cursor.get() + token.text.byte_len())
+                cursor = cursor + token.text.byte_len();
             },
         }
     };

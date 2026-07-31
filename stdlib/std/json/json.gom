@@ -254,7 +254,7 @@ fn parse_json_literal(value: JsonParser, expected: string, result: Value) -> Res
 fn parse_json_array(value: JsonParser) -> Result[Value, string] {
     value.index.set(value.index.get() + 1);
     skip_json_whitespace(value);
-    let result = Vec::new();
+    let result: Vec[Value] = Vec::[];
     if value.index.get() < value.input.byte_len() && value.input.byte_get(value.index.get()) == b']' {
         value.index.set(value.index.get() + 1);
         return Result::Ok(Value::Array(result))
@@ -283,7 +283,7 @@ fn parse_json_array(value: JsonParser) -> Result[Value, string] {
 fn parse_json_object(value: JsonParser) -> Result[Value, string] {
     value.index.set(value.index.get() + 1);
     skip_json_whitespace(value);
-    let result = Vec::new();
+    let result: Vec[(string, Value)] = Vec::[];
     if value.index.get() < value.input.byte_len() && value.input.byte_get(value.index.get()) == b'}' {
         value.index.set(value.index.get() + 1);
         return Result::Ok(Value::Object(result))

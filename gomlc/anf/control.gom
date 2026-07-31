@@ -12,12 +12,12 @@ fn reify_k_with_name(
     if type_is_unit(value_ty) {
         let body = k(unit_imm());
         let ret_ty = block_type(body);
-        (JoinBind { name, params: Vec::new(), ret_ty, body }, ret_ty)
+        (JoinBind { name, params: Vec::[], ret_ty, body }, ret_ty)
     } else {
         let param = fresh(state, "jp");
         let body = k(Imm::Var { name: param, ty: value_ty });
         let ret_ty = block_type(body);
-        let params = Vec::new();
+        let params: Vec[(string, tast::Type)] = Vec::[];
         params.push((param, value_ty));
         (JoinBind { name, params, ret_ty, body }, ret_ty)
     }
@@ -39,7 +39,7 @@ fn reify_k_for_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> (Join
         (
             JoinBind {
                 name,
-                params: Vec::new(),
+                params: Vec::[],
                 ret_ty,
                 body: Block { binds: no_binds(), term: Term::Unreachable { ty: ret_ty } },
             },
@@ -126,7 +126,7 @@ fn lower_if(
     let join = reified.0;
     let ret_ty = reified.1;
     let join_id = join.name;
-    let takes_arg = join.params.len() > 0;
+    let takes_arg = !join.params.is_empty();
     lower_expr(
         state,
         cond,
@@ -148,7 +148,7 @@ fn lower_arms(
     join_ret_ty: tast::Type,
     join_takes_arg: bool,
 ) -> Vec[Arm] {
-    let result = Vec::new();
+    let result: Vec[Arm] = Vec::[];
     for value in values {
         result.push(
             Arm {
@@ -173,7 +173,7 @@ fn lower_match(
     let join = reified.0;
     let ret_ty = reified.1;
     let join_id = join.name;
-    let takes_arg = join.params.len() > 0;
+    let takes_arg = !join.params.is_empty();
     lower_expr(
         state,
         scrutinee,
@@ -200,7 +200,7 @@ fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Blo
     let exit_id = fresh(state, "exit");
     let exit_body = k(unit_imm());
     let exit_ret_ty = block_type(exit_body);
-    let exit = JoinBind { name: exit_id, params: Vec::new(), ret_ty: exit_ret_ty, body: exit_body };
+    let exit = JoinBind { name: exit_id, params: Vec::[], ret_ty: exit_ret_ty, body: exit_body };
     let loop_id = fresh(state, "loop");
     let previous = state.loop_ctx.get();
     state.loop_ctx.set(
@@ -231,11 +231,11 @@ fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Blo
         },
     );
     state.loop_ctx.set(previous);
-    let recursive = Vec::new();
+    let recursive: Vec[JoinBind] = Vec::[];
     recursive.push(
-        JoinBind { name: loop_id, params: Vec::new(), ret_ty: exit_ret_ty, body: loop_body },
+        JoinBind { name: loop_id, params: Vec::[], ret_ty: exit_ret_ty, body: loop_body },
     );
-    let binds = Vec::new();
+    let binds: Vec[Bind] = Vec::[];
     binds.push(Bind::Join(exit));
     binds.push(Bind::JoinRec(recursive));
     Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }
@@ -251,7 +251,7 @@ fn lower_loop(
     let exit = exit_result.0;
     let exit_ret_ty = exit_result.1;
     let exit_id = exit.name;
-    let exit_takes_arg = exit.params.len() > 0;
+    let exit_takes_arg = !exit.params.is_empty();
     let loop_id = fresh(state, "loop_expr");
     let previous = state.loop_ctx.get();
     state.loop_ctx.set(
@@ -268,11 +268,11 @@ fn lower_loop(
         },
     );
     state.loop_ctx.set(previous);
-    let recursive = Vec::new();
+    let recursive: Vec[JoinBind] = Vec::[];
     recursive.push(
-        JoinBind { name: loop_id, params: Vec::new(), ret_ty: exit_ret_ty, body: loop_body },
+        JoinBind { name: loop_id, params: Vec::[], ret_ty: exit_ret_ty, body: loop_body },
     );
-    let binds = Vec::new();
+    let binds: Vec[Bind] = Vec::[];
     binds.push(Bind::Join(exit));
     binds.push(Bind::JoinRec(recursive));
     Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }

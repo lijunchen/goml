@@ -8,7 +8,7 @@ struct ArtifactDecodeContext {
 }
 
 fn new_artifact_decode_context() -> ArtifactDecodeContext {
-    ArtifactDecodeContext { enum_names: Vec::new(), struct_names: Vec::new() }
+    ArtifactDecodeContext { enum_names: Vec::[], struct_names: Vec::[] }
 }
 
 fn artifact_decode_error(expected: string) -> string {
@@ -57,7 +57,7 @@ fn artifact_json_required_field(values: Vec[(string, ArtifactValue)], name: stri
     ArtifactValue,
     string,
 ] {
-    let matches: Vec[ArtifactValue] = Vec::new();
+    let matches: Vec[ArtifactValue] = Vec::[];
     for value in values {
         if value.0 == name {
             matches.push(value.1)
@@ -76,7 +76,7 @@ fn artifact_json_optional_field(values: Vec[(string, ArtifactValue)], name: stri
     Option[ArtifactValue],
     string,
 ] {
-    let matches: Vec[ArtifactValue] = Vec::new();
+    let matches: Vec[ArtifactValue] = Vec::[];
     for value in values {
         if value.0 == name {
             matches.push(value.1)
@@ -127,21 +127,21 @@ fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
     if value.byte_len() == 0 {
         Result::Err(artifact_decode_error("nonnegative integer"))
     } else {
-        let result = Ref::new(0);
+        let mut result = 0;
         for index in 0..value.byte_len() {
             let byte = value.byte_get(index);
             if byte < b'0' || byte > b'9' {
                 return Result::Err(artifact_decode_error("nonnegative integer"))
             } else {
-                result.set(result.get() * 10 + (byte - 48) as int64)
+                result = result * 10 + (byte - 48) as int64;
             };
-            if result.get() > 2147483647 {
+            if result > 2147483647 {
                 return Result::Err(artifact_decode_error("32-bit integer"))
             } else {
                 ()
             }
         };
-        Result::Ok(result.get() as int)
+        Result::Ok(result as int)
     }
 }
 
@@ -150,7 +150,7 @@ fn artifact_decode_string_array(value: ArtifactValue, expected: string) -> Resul
     string,
 ] {
     let values = artifact_json_array(value, expected)?;
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for value in values {
         result.push(artifact_json_string_value(value, expected)?)
     };
@@ -163,7 +163,7 @@ fn artifact_decode_type_array(
     expected: string,
 ) -> Result[Vec[tast::Type], string] {
     let values = artifact_json_array(value, expected)?;
-    let result = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(artifact_decode_type(context, value)?)
     };

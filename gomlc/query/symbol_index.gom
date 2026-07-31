@@ -90,9 +90,9 @@ fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[Syntax
 
 fn owner_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken] {
     if cst::node_kind_equal(node.kind, cst::NodeKind::IMPL) {
-        let index = Ref::new(syntax.nodes.len() - 1);
-        while index.get() >= 0 {
-            let candidate = syntax.nodes[index.get()];
+        let mut index = syntax.nodes.len() - 1;
+        while index >= 0 {
+            let candidate = syntax.nodes[index];
             if match candidate.parent {
                 Some(parent) => parent == node.id,
                 None => false,
@@ -100,7 +100,7 @@ fn owner_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken
                 && type_node_kind(candidate.kind) {
                 return first_type_name_token(syntax, candidate)
             } else {
-                index.set(index.get() - 1)
+                index = index - 1;
             }
         };
         first_identifier(syntax, node)
@@ -142,16 +142,16 @@ fn parent_with_kind(
     first: cst::NodeKind,
     second: cst::NodeKind,
 ) -> Option[SyntaxNode] {
-    let current = Ref::new(node.parent);
-    while current.get().is_some() {
-        match current.get() {
+    let mut current = node.parent;
+    while current.is_some() {
+        match current {
             Some(id) => {
                 let parent = syntax.nodes[id];
                 if cst::node_kind_equal(parent.kind, first)
                     || cst::node_kind_equal(parent.kind, second) {
                     return Option::Some(parent)
                 } else {
-                    current.set(parent.parent)
+                    current = parent.parent;
                 }
             },
             None => (),
@@ -251,7 +251,7 @@ pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
 }
 
 pub fn build_symbol_index_from_sources(sources: Vec[SourceFile]) -> SymbolIndex {
-    let symbols = Vec::new();
+    let symbols: Vec[Symbol] = Vec::[];
     for source in sources {
         index_source(source, symbols)
     };
@@ -271,7 +271,7 @@ pub fn find_symbol(index: SymbolIndex, qualified_name: string) -> Option[Symbol]
             ()
         }
     };
-    let suffixes = Vec::new();
+    let suffixes: Vec[Symbol] = Vec::[];
     for symbol in index.symbols {
         if symbol_name_ends_with(qualified_name, symbol.qualified_name)
             || symbol_name_ends_with(symbol.qualified_name, qualified_name) {

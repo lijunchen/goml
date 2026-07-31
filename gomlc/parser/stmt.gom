@@ -4,7 +4,7 @@ use gomlc::cst;
 use gomlc::lexer;
 
 fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
-    if parser.at(lexer::TokenKind::LetKeyword) == false {
+    if !parser.at(lexer::TokenKind::LetKeyword) {
         Option::None
     } else {
         let marker = parser.open();

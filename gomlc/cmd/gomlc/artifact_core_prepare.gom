@@ -44,25 +44,25 @@ fn artifact_core_function_matches_scheme(value: core::Function, scheme: Artifact
 }
 
 fn artifact_core_method_name(value: string) -> Option[string] {
-    let separator = Ref::new(-1);
+    let mut separator = -1;
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'#' {
-            separator.set(index)
+            separator = index;
         } else {
             ()
         }
     };
-    if separator.get() < 0 {
+    if separator < 0 {
         Option::None
     } else {
-        Option::Some(value.byte_slice(separator.get() + 1, value.byte_len()))
+        Option::Some(value.byte_slice(separator + 1, value.byte_len()))
     }
 }
 
 fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::TypePredicate]) -> Vec[
     tast::TypePredicate,
 ] {
-    let result = Vec::new();
+    let mut result: Vec[tast::TypePredicate] = Vec::[];
     for predicate in inherited {
         result.push(predicate)
     };
@@ -73,37 +73,36 @@ fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::
 }
 
 fn artifact_prepare_core_function_metadata(value: core::Function, exports: ArtifactPackageExports) -> core::Function {
-    let predicates = Ref::new(value.predicates);
+    let mut predicates = value.predicates;
     for function in exports.functions {
         if function.name == value.name && artifact_core_function_matches_scheme(value, function) {
-            predicates.set(function.constraints)
+            predicates = function.constraints;
         } else {
             ()
         }
     };
     let trait_impl = match value.trait_impl {
         Some(metadata) => {
-            let associated_types = Ref::new(metadata.associated_types);
-            let generic_count = Ref::new(metadata.generic_count);
-            let predicate_count = Ref::new(metadata.predicate_count);
+            let mut associated_types = metadata.associated_types;
+            let mut generic_count = metadata.generic_count;
+            let mut predicate_count = metadata.predicate_count;
             let method_name = artifact_core_method_name(value.name);
             for implementation in exports.trait_impls {
                 if implementation.definition.valid
                     && artifact_core_trait_refs_equal(metadata.trait_ref, implementation.trait_ref)
                     && artifact_core_types_equal(metadata.for_ty, implementation.for_ty) {
-                    associated_types.set(implementation.definition.associated_types);
-                    generic_count.set(implementation.definition.params.len());
-                    predicate_count.set(implementation.definition.constraints.len());
+                    associated_types = implementation.definition.associated_types;
+                    generic_count = implementation.definition.params.len();
+                    predicate_count = implementation.definition.constraints.len();
                     match method_name {
                         Some(method_name) => for method in implementation.definition.methods {
                             if method.name == method_name
                                 && artifact_core_function_matches_scheme(value, method) {
-                                predicates.set(
+                                predicates =
                                     artifact_core_predicates(
                                         implementation.definition.constraints,
                                         method.constraints,
-                                    ),
-                                )
+                                    );
                             } else {
                                 ()
                             }
@@ -118,9 +117,9 @@ fn artifact_prepare_core_function_metadata(value: core::Function, exports: Artif
                 core::TraitImpl {
                     trait_ref: metadata.trait_ref,
                     for_ty: metadata.for_ty,
-                    associated_types: associated_types.get(),
-                    generic_count: generic_count.get(),
-                    predicate_count: predicate_count.get(),
+                    associated_types,
+                    generic_count,
+                    predicate_count,
                 },
             )
         },
@@ -132,12 +131,11 @@ fn artifact_prepare_core_function_metadata(value: core::Function, exports: Artif
                         for method in implementation.definition.methods {
                             if method.name == method_name
                                 && artifact_core_function_matches_scheme(value, method) {
-                                predicates.set(
+                                predicates =
                                     artifact_core_predicates(
                                         implementation.definition.constraints,
                                         method.constraints,
-                                    ),
-                                )
+                                    );
                             } else {
                                 ()
                             }
@@ -155,7 +153,7 @@ fn artifact_prepare_core_function_metadata(value: core::Function, exports: Artif
         name: value.name,
         root: value.root,
         generics: value.generics,
-        predicates: predicates.get(),
+        predicates,
         trait_impl,
         params: value.params,
         ret_ty: value.ret_ty,
@@ -164,7 +162,7 @@ fn artifact_prepare_core_function_metadata(value: core::Function, exports: Artif
 }
 
 fn artifact_fill_constructor_fields(value: tast::Constructor, definitions: Vec[tast::StructDef]) -> unit {
-    if value.is_struct && value.fields.len() == 0 {
+    if value.is_struct && value.fields.is_empty() {
         for definition in definitions {
             if definition.name == value.name {
                 for field in definition.fields {
@@ -275,7 +273,7 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDe
 fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[ArtifactCoreUnit]) -> Vec[
     tast::StructDef,
 ] {
-    let result = Vec::new();
+    let mut result: Vec[tast::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
     };
@@ -310,7 +308,7 @@ fn artifact_prepare_core_units(world: PackageWorld, values: Vec[ArtifactCoreUnit
 }
 
 fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef] {
-    let result = Vec::new();
+    let result: Vec[tast::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
     };

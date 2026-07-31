@@ -17,7 +17,7 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
                     ()
                 }
             },
-            Err(error) => if data.len() > 0 {
+            Err(error) => if !data.is_empty() {
                 return Result::Ok(data)
             } else {
                 return Result::Err(error)
@@ -27,18 +27,20 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
 }
 
 pub fn read_rpc_payload() -> Result[string, string] {
-    let length = Ref::new(Option::None);
+    let mut length: Option[int] = Option::None;
     let length = loop {
         let line = read_stdin_line()?.to_string()?;
         if header_line_content(line) == "" {
-            break length.get()
+            break length
         } else if is_content_length_header(line) {
-            match length.get() {
+            match length {
                 Some(_) => {
                     return Result::Err("duplicate Content-Length header")
                 },
                 None => match content_length(line) {
-                    Ok(value) => length.set(Option::Some(value)),
+                    Ok(value) => {
+                        length = Option::Some(value);
+                    },
                     Err(error) => return Result::Err(error),
                 },
             }

@@ -51,9 +51,9 @@ fn integer_digit_in_base(value: byte, base: int) -> bool {
 
 pub fn normalize_integer(value: string) -> Option[string] {
     let (base, start) = integer_parts(value);
-    let digits: Vec[int] = Vec::new();
+    let digits: Vec[int] = Vec::[];
     digits.push(0);
-    let found = Ref::new(false);
+    let mut found = false;
     for index in start..value.byte_len() {
         let source = value.byte_get(index);
         if source == b'_' {
@@ -67,16 +67,16 @@ pub fn normalize_integer(value: string) -> Option[string] {
         } else {
             match integer_digit(source) {
                 Some(part) => if part < base {
-                    found.set(true);
-                    let carry = Ref::new(part);
+                    found = true;
+                    let mut carry = part;
                     for position in 0..digits.len() {
-                        let current = digits[position] * base + carry.get();
+                        let current = digits[position] * base + carry;
                         digits[position] = current % 10;
-                        carry.set(current / 10)
+                        carry = current / 10;
                     };
-                    while carry.get() > 0 {
-                        digits.push(carry.get() % 10);
-                        carry.set(carry.get() / 10)
+                    while carry > 0 {
+                        digits.push(carry % 10);
+                        carry = carry / 10;
                     }
                 } else {
                     return Option::None
@@ -85,7 +85,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
             }
         }
     };
-    if found.get() == false {
+    if !found {
         Option::None
     } else {
         let builder = text::StringBuilder::with_capacity(digits.len());

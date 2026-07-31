@@ -31,7 +31,7 @@ fn located_node(node: cst::CstNode, start: int) -> LocatedNode {
 }
 
 fn child_cursor(value: LocatedNode) -> ChildCursor {
-    let elements: Vec[LocatedElement] = Vec::new();
+    let elements: Vec[LocatedElement] = Vec::[];
     let offset: Ref[int] = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         let length = cst::element_byte_len(element);
@@ -148,7 +148,7 @@ impl ChildCursor {
     }
 
     fn consume_trivia(self: ChildCursor) -> Vec[LocatedToken] {
-        let result: Vec[LocatedToken] = Vec::new();
+        let result: Vec[LocatedToken] = Vec::[];
         loop {
             match self.peek() {
                 Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
@@ -250,7 +250,7 @@ fn node_significant_source(value: LocatedNode) -> string {
 }
 
 fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::new();
+    let result: Vec[LocatedNode] = Vec::[];
     let cursor = child_cursor(value);
     while cursor.remaining() > 0 {
         match cursor.next() {

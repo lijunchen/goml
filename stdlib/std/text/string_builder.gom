@@ -8,7 +8,7 @@ pub struct StringBuilder {
 
 impl StringBuilder {
     pub fn new() -> StringBuilder {
-        StringBuilder { values: Vec::new() }
+        StringBuilder { values: Vec::[] }
     }
 
     pub fn with_capacity(capacity: int) -> StringBuilder {
@@ -20,12 +20,13 @@ impl StringBuilder {
     }
 
     pub fn is_empty(self: StringBuilder) -> bool {
-        self.values.len() == 0
+        self.values.is_empty()
     }
 
     pub fn write_string(self: StringBuilder, value: string) -> unit {
-        self.values.reserve(value.byte_len());
-        for index in 0..value.byte_len() {
+        let length = value.byte_len();
+        self.values.reserve(length);
+        for index in 0..length {
             self.values.push(value.byte_get(index))
         }
     }

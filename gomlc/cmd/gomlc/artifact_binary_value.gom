@@ -8,7 +8,7 @@ struct ArtifactBinaryStringTable {
 }
 
 fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
-    ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::{} }
+    ArtifactBinaryStringTable { values: Vec::[], indexes: HashMap::{} }
 }
 
 fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
@@ -42,7 +42,7 @@ fn artifact_binary_collect_value_strings(
 
 fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
     let seen: HashMap[string, unit] = HashMap::{};
-    let values = Vec::new();
+    let values: Vec[string] = Vec::[];
     artifact_binary_collect_value_strings(seen, values, value);
     artifact_binary_string_table_from_values(values)
 }

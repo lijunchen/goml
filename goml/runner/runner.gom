@@ -2,6 +2,7 @@ package runner;
 
 use gomlang::bootstrap_goml::util;
 use std::bytes;
+use std::collections;
 use std::fs;
 use std::io;
 use std::json;
@@ -82,7 +83,7 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
     let Some(values) = json::as_array(root) else {
         return Result::Err("test manifest must be an array")
     };
-    let result = Vec::new();
+    let result: Vec[Test] = Vec::[];
     for value in values {
         let id = required_string(value, "id")?;
         let display_name = required_string(value, "display_name")?;
@@ -113,28 +114,19 @@ fn selected(test: Test, options: Options) -> bool {
     filter_matches && (!options.ignored || test.ignored)
 }
 
-fn test_insert_index(values: Vec[Test], value: Test) -> int {
-    for index in 0..values.len() {
-        if value.display_name < values[index].display_name {
-            return index
-        } else {
-            ()
-        }
-    };
-    values.len()
+fn compare_tests(left: Test, right: Test) -> int {
+    if left.display_name < right.display_name {
+        -1
+    } else if left.display_name > right.display_name {
+        1
+    } else {
+        0
+    }
 }
 
 fn sorted_tests(values: Vec[Test]) -> Vec[Test] {
-    let result = Vec::new();
-    for value in values {
-        let index = test_insert_index(result, value);
-        if index == result.len() {
-            result.push(value)
-        } else {
-            result.insert(index, value)
-        }
-    };
-    result
+    collections::sort_by(values, compare_tests);
+    values
 }
 
 fn escape_json(value: string) -> string {
@@ -266,28 +258,19 @@ fn worker(
     }
 }
 
-fn execution_insert_index(values: Vec[Execution], value: Execution) -> int {
-    for index in 0..values.len() {
-        if value.index < values[index].index {
-            return index
-        } else {
-            ()
-        }
-    };
-    values.len()
+fn compare_executions(left: Execution, right: Execution) -> int {
+    if left.index < right.index {
+        -1
+    } else if left.index > right.index {
+        1
+    } else {
+        0
+    }
 }
 
 fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
-    let result = Vec::new();
-    for value in values {
-        let index = execution_insert_index(result, value);
-        if index == result.len() {
-            result.push(value)
-        } else {
-            result.insert(index, value)
-        }
-    };
-    result
+    collections::sort_by(values, compare_executions);
+    values
 }
 
 fn report_text(values: Vec[Execution]) -> int {
@@ -368,14 +351,14 @@ fn report_json(values: Vec[Execution]) -> int {
 }
 
 pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[unit, string] {
-    let loaded = Vec::new();
+    let loaded: Vec[Test] = Vec::[];
     for group in groups {
         let values = load_tests(group)?;
         for value in values {
             loaded.push(value)
         }
     };
-    let selected_tests = Vec::new();
+    let selected_tests: Vec[Test] = Vec::[];
     for test in sorted_tests(loaded) {
         if selected(test, options) {
             selected_tests.push(test)
@@ -391,7 +374,7 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
     } else {
         ()
     };
-    if selected_tests.len() == 0 {
+    if selected_tests.is_empty() {
         if !options.json {
             io::println("test result: ok. 0 passed; 0 failed; 0 ignored")
         } else {
@@ -415,7 +398,7 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
     for _ in 0..worker_count {
         go || worker(module_dir, options, work, results)
     };
-    let executions = Vec::new();
+    let executions: Vec[Execution] = Vec::[];
     for _ in 0..selected_tests.len() {
         match results.recv() {
             Some(value) => executions.push(value),

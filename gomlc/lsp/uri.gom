@@ -54,28 +54,28 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
     if !strings::starts_with(value, prefix) {
         Result::Err("unsupported URI: " + value)
     } else {
-        let decoded_bytes = Vec::new();
-        let index = Ref::new(prefix.byte_len());
-        while index.get() < value.byte_len() {
-            let byte = value.byte_get(index.get());
+        let decoded_bytes: Vec[uint8] = Vec::[];
+        let mut index = prefix.byte_len();
+        while index < value.byte_len() {
+            let byte = value.byte_get(index);
             if byte == b'%' {
-                if index.get() + 2 >= value.byte_len() {
+                if index + 2 >= value.byte_len() {
                     return Result::Err("invalid URI escape")
                 } else {
                     match (
-                        uri_hex_value(value.byte_get(index.get() + 1)),
-                        uri_hex_value(value.byte_get(index.get() + 2)),
+                        uri_hex_value(value.byte_get(index + 1)),
+                        uri_hex_value(value.byte_get(index + 2)),
                     ) {
                         (Some(high), Some(low)) => {
                             decoded_bytes.push(high * 16 + low);
-                            index.set(index.get() + 3)
+                            index = index + 3;
                         },
                         _ => return Result::Err("invalid URI escape"),
                     }
                 }
             } else {
                 decoded_bytes.push(byte);
-                index.set(index.get() + 1)
+                index = index + 1;
             }
         };
         match bytes::Bytes::from_vec(decoded_bytes).to_string() {

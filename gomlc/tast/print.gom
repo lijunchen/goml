@@ -158,7 +158,7 @@ pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
         },
         App { ty: base, args } => {
             write_type(builder, base);
-            if args.len() > 0 {
+            if !args.is_empty() {
                 builder.write_char('[');
                 write_types(builder, args);
                 builder.write_char(']')
@@ -234,7 +234,7 @@ fn diagnostic_type(value: Type) -> Type {
             Link(inner) => diagnostic_type(inner),
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for value in values {
                 result.push(diagnostic_type(value))
             };
@@ -248,7 +248,7 @@ fn diagnostic_type(value: Type) -> Type {
             Type::Projection { for_ty: diagnostic_type(base), name, trait_ref: qualifier }
         },
         App { ty: base, args } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for value in args {
                 result.push(diagnostic_type(value))
             };
@@ -263,7 +263,7 @@ fn diagnostic_type(value: Type) -> Type {
         },
         Channel { elem } => Type::Channel { elem: diagnostic_type(elem) },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for value in params {
                 result.push(diagnostic_type(value))
             };
@@ -274,7 +274,7 @@ fn diagnostic_type(value: Type) -> Type {
 }
 
 fn diagnostic_trait_ref(value: TraitRef) -> TraitRef {
-    let args: Vec[Type] = Vec::new();
+    let args: Vec[Type] = Vec::[];
     for value in value.args {
         args.push(diagnostic_type(value))
     };
@@ -287,7 +287,7 @@ pub fn diagnostic_type_text(value: Type) -> string {
 
 pub fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
     builder.write_string(value.name);
-    if value.args.len() > 0 {
+    if !value.args.is_empty() {
         builder.write_char('[');
         write_types(builder, value.args);
         builder.write_char(']')
@@ -406,7 +406,7 @@ fn write_constructor_expr(
 ) -> unit {
     builder.write_string(constructor.name);
     if constructor.is_struct {
-        if args.len() == 0 {
+        if args.is_empty() {
             builder.write_string(" {}")
         } else {
             builder.write_string(" { ");
@@ -426,7 +426,7 @@ fn write_constructor_expr(
             };
             builder.write_string(" }")
         }
-    } else if args.len() > 0 {
+    } else if !args.is_empty() {
         builder.write_char('(');
         write_exprs(builder, args, indent);
         builder.write_char(')')
@@ -436,7 +436,7 @@ fn write_constructor_expr(
 }
 
 fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
-    if value.stmts.len() == 0 {
+    if value.stmts.is_empty() {
         match value.tail {
             None => builder.write_string("{}"),
             Some(tail) => {
@@ -537,7 +537,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             builder.write_char(']')
         },
         Closure { params, body, ty: _ } => {
-            if params.len() == 0 {
+            if params.is_empty() {
                 builder.write_string("||")
             } else {
                 builder.write_char('|');
@@ -712,7 +712,7 @@ fn write_constructor_pat(
 ) -> unit {
     builder.write_string(constructor.name);
     if constructor.is_struct {
-        if args.len() == 0 {
+        if args.is_empty() {
             builder.write_string(" {}")
         } else {
             builder.write_string(" { ");
@@ -732,7 +732,7 @@ fn write_constructor_pat(
             };
             builder.write_string(" }")
         }
-    } else if args.len() > 0 {
+    } else if !args.is_empty() {
         builder.write_char('(');
         write_pats(builder, args, indent);
         builder.write_char(')')
@@ -1013,7 +1013,7 @@ fn encode_file(value: File) -> string {
         };
         write_constant(builder, value.constants[index])
     };
-    if value.constants.len() > 0 && value.items.len() > 0 {
+    if !value.constants.is_empty() && !value.items.is_empty() {
         builder.write_string("\n\n")
     } else {
         ()

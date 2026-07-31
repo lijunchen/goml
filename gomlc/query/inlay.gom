@@ -14,20 +14,19 @@ pub struct InlayHint {
 fn smallest_node_containing_span(syntax: SyntaxIndex, span: ast::Span, kind: cst::NodeKind) -> Option[
     SyntaxNode,
 ] {
-    let best = Ref::new(-1);
+    let mut best = -1;
     for candidate in 0..syntax.nodes.len() {
         let node = syntax.nodes[candidate];
         let node_width = node.end - node.start;
         if cst::node_kind_equal(node.kind, kind) && node.start <= span.start && node.end >= span.end
-            && (best.get() < 0
-                || node_width < syntax.nodes[best.get()].end - syntax.nodes[best.get()].start) {
-            best.set(candidate)
+            && (best < 0 || node_width < syntax.nodes[best].end - syntax.nodes[best].start) {
+            best = candidate;
         } else {
             ()
         }
     };
-    if best.get() >= 0 {
-        Option::Some(syntax.nodes[best.get()])
+    if best >= 0 {
+        Option::Some(syntax.nodes[best])
     } else {
         Option::None
     }
@@ -54,7 +53,7 @@ fn let_has_annotation(syntax: SyntaxIndex, statement: SyntaxNode) -> bool {
 }
 
 pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
-    let hints = Vec::new();
+    let hints: Vec[InlayHint] = Vec::[];
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match local_definition_span(value, fact.local) {

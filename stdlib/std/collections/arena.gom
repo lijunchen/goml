@@ -28,7 +28,7 @@ pub struct Arena[T] {
 
 impl[T] Arena[T] {
     pub fn new() -> Arena[T] {
-        Arena { values: Vec::new() }
+        Arena { values: Vec::[] }
     }
 
     pub fn len(self: Arena[T]) -> int {
@@ -36,7 +36,7 @@ impl[T] Arena[T] {
     }
 
     pub fn is_empty(self: Arena[T]) -> bool {
-        self.values.len() == 0
+        self.values.is_empty()
     }
 
     pub fn alloc(self: Arena[T], value: T) -> ArenaId[T] {

@@ -50,12 +50,12 @@ fn artifact_binary_write_u64(writer: ArtifactBinaryWriter, value: uint64) -> uni
 }
 
 fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: uint64) -> unit {
-    let remaining = Ref::new(value);
-    while remaining.get() >= 128 {
-        writer.data.push(((remaining.get() & 127) as uint8) | 128);
-        remaining.set(remaining.get() >> 7)
+    let mut remaining = value;
+    while remaining >= 128 {
+        writer.data.push(((remaining & 127) as uint8) | 128);
+        remaining = remaining >> 7;
     };
-    writer.data.push(remaining.get() as uint8)
+    writer.data.push(remaining as uint8)
 }
 
 fn artifact_binary_write_zigzag(writer: ArtifactBinaryWriter, value: int64) -> unit {
@@ -173,29 +173,29 @@ fn artifact_binary_read_u64(reader: ArtifactBinaryReader) -> Result[uint64, stri
     } else {
         let offset = reader.offset.get();
         reader.offset.set(offset + 8);
-        let value = Ref::new(0 as uint64);
+        let mut value = 0 as uint64;
         for index in 0..8 {
-            value.set(value.get() | ((reader.data.get(offset + index) as uint64) << (index * 8)))
+            value = value | ((reader.data.get(offset + index) as uint64) << (index * 8));
         };
-        Result::Ok(value.get())
+        Result::Ok(value)
     }
 }
 
 fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[uint64, string] {
-    let value = Ref::new(0 as uint64);
-    let index = Ref::new(0);
-    while index.get() < 10 {
+    let mut value = 0 as uint64;
+    let mut index = 0;
+    while index < 10 {
         let byte = artifact_binary_read_u8(reader)?;
-        if index.get() == 9 && byte > 1 {
+        if index == 9 && byte > 1 {
             return Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
         } else {
             ()
         };
-        value.set(value.get() | (((byte & 127) as uint64) << (index.get() * 7)));
+        value = value | (((byte & 127) as uint64) << (index * 7));
         if byte & 128 == 0 {
-            return Result::Ok(value.get())
+            return Result::Ok(value)
         } else {
-            index.set(index.get() + 1)
+            index = index + 1;
         }
     };
     Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))

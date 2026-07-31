@@ -68,7 +68,7 @@ fn input_eof(parser: Parser) -> bool {
 }
 
 fn input_skip(parser: Parser) -> unit {
-    if input_eof(parser) == false {
+    if !input_eof(parser) {
         parser.cursor.set(parser.cursor.get() + 1)
     } else {
         ()
@@ -127,7 +127,7 @@ fn current_range(parser: Parser) -> (int, int) {
     if parser.cursor.get() < parser.tokens.len() {
         let token = parser.tokens[parser.cursor.get()];
         (token.start, token.end)
-    } else if parser.tokens.len() > 0 {
+    } else if !parser.tokens.is_empty() {
         let token = parser.tokens[parser.tokens.len() - 1];
         (token.start, token.end)
     } else {
@@ -140,8 +140,8 @@ fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
         tokens,
         cursor: Ref::new(0),
         fuel: Ref::new(256),
-        events: Vec::new(),
-        diagnostics: Vec::new(),
+        events: Vec::[],
+        diagnostics: Vec::[],
         stuck_reported: Ref::new(false),
         depth_limit_hit: Ref::new(false),
         expr_depth: Ref::new(0),
@@ -153,7 +153,7 @@ fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
 
 impl Parser {
     pub fn report_stuck(self: Parser) -> unit {
-        if self.stuck_reported.get() == false {
+        if !self.stuck_reported.get() {
             let (start, end) = current_range(self);
             self.diagnostics.push(
                 cst::diagnostic("parser did not consume input while parsing", start, end),
@@ -324,7 +324,7 @@ impl Parser {
             let message = "expect \"" + lexer::token_kind_display(kind) + "\", actual \""
                 + lexer::token_kind_display(actual)
                 + "\"";
-            if self.at(lexer::TokenKind::Eof) || should_consume_on_expect_failure(actual) == false {
+            if self.at(lexer::TokenKind::Eof) || !should_consume_on_expect_failure(actual) {
                 self.events.push(Event::Error(message))
             } else {
                 self.advance_with_error(message)
@@ -393,7 +393,7 @@ impl Parser {
 
     pub fn enter_depth(self: Parser, depth: Ref[int], message: string) -> bool {
         if depth.get() >= 512 {
-            if self.depth_limit_hit.get() == false {
+            if !self.depth_limit_hit.get() {
                 self.error(message);
                 self.depth_limit_hit.set(true)
             } else {
@@ -434,24 +434,24 @@ impl MarkerOpened {
 }
 
 fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
-    lexer::token_kind_equal(kind, lexer::TokenKind::FnKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::PubKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::ModKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::StructKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::EnumKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::TraitKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::ImplKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::ExternKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::PackageKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::UseKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::ImportKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::LetKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::ReturnKeyword) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::RBrace) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::RParen) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::RBracket) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::Semi) == false
-        && lexer::token_kind_equal(kind, lexer::TokenKind::Comma) == false
+    !lexer::token_kind_equal(kind, lexer::TokenKind::FnKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::PubKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::ModKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::StructKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::EnumKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::TraitKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::ImplKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::ExternKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::PackageKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::UseKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::ImportKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::LetKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::ReturnKeyword)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::RBrace)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::RParen)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::RBracket)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::Semi)
+        && !lexer::token_kind_equal(kind, lexer::TokenKind::Comma)
 }
 
 fn element_byte_len(element: cst::CstElement) -> int {
@@ -469,7 +469,7 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
                 byte_len = byte_len + element_byte_len(child);
             };
             let complete = cst::node(value.kind, value.children, byte_len);
-            if stack.len() > 0 {
+            if !stack.is_empty() {
                 stack[stack.len() - 1].children.push(cst::CstElement::Node(complete))
             } else {
                 roots.push(complete)
@@ -480,7 +480,7 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
 }
 
 fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
-    if stack.len() > 0 {
+    if !stack.is_empty() {
         stack[stack.len() - 1].children.push(cst::CstElement::Token(token))
     } else {
         ()
@@ -496,15 +496,15 @@ fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
 
 fn build_tree(parser: Parser) -> cst::ParseResult {
     let mut cursor = 0;
-    let stack: Vec[cst::CstNode] = Vec::new();
-    let roots: Vec[cst::CstNode] = Vec::new();
+    let stack: Vec[cst::CstNode] = Vec::[];
+    let roots: Vec[cst::CstNode] = Vec::[];
     let mut index = 0;
     while index < parser.events.len() {
         let event = parser.events[index];
         parser.events[index] = event_tombstone();
         match event {
             Open { kind, forward_parent } => {
-                let kinds: Vec[cst::NodeKind] = Vec::new();
+                let kinds: Vec[cst::NodeKind] = Vec::[];
                 kinds.push(kind);
                 let mut event_index = index;
                 let mut parent = forward_parent;
@@ -528,8 +528,8 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 let mut kind_index = kinds.len() - 1;
                 while kind_index >= 0 {
                     let current = kinds[kind_index];
-                    if cst::node_kind_equal(current, cst::NodeKind::TombStone) == false {
-                        stack.push(cst::node(current, Vec::new(), 0))
+                    if !cst::node_kind_equal(current, cst::NodeKind::TombStone) {
+                        stack.push(cst::node(current, Vec::[], 0))
                     } else {
                         ()
                     };
@@ -549,7 +549,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 let range = if cursor < parser.tokens.len() {
                     let token = parser.tokens[cursor];
                     (token.start, token.end)
-                } else if parser.tokens.len() > 0 {
+                } else if !parser.tokens.is_empty() {
                     let token = parser.tokens[parser.tokens.len() - 1];
                     (token.start, token.end)
                 } else {
@@ -565,10 +565,10 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
         };
         index = index + 1;
     };
-    let root = if roots.len() > 0 {
+    let root = if !roots.is_empty() {
         roots[0]
     } else {
-        cst::node(cst::NodeKind::FILE, Vec::new(), 0)
+        cst::node(cst::NodeKind::FILE, Vec::[], 0)
     };
     cst::parse_result(root, parser.diagnostics)
 }

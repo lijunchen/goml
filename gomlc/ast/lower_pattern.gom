@@ -55,7 +55,7 @@ fn raw_string_pattern_value(node: LocatedNode) -> Option[string] {
 }
 
 fn path_from_single_ident(value: string) -> Path {
-    let segments: Vec[PathSegment] = Vec::new();
+    let segments: Vec[PathSegment] = Vec::[];
     segments.push(PathSegment { ident: value, span: span(0, 0) });
     Path { segments }
 }
@@ -159,14 +159,14 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             },
             PATTERN_CONSTR => lower_constr_pat(ctx, node),
             PATTERN_TUPLE => {
-                let pats: Vec[Pat] = Vec::new();
+                let pats: Vec[Pat] = Vec::[];
                 for child in pattern_children(node) {
                     match lower_pat_inner(ctx, child) {
                         Some(value) => pats.push(value),
                         None => (),
                     }
                 };
-                if has_token(node, lexer::TokenKind::Comma) == false && pats.len() == 1 {
+                if !has_token(node, lexer::TokenKind::Comma) && pats.len() == 1 {
                     Option::Some(pats[0])
                 } else {
                     Option::Some(Pat::Tuple { items: pats, span: value_span })
@@ -176,7 +176,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             PATTERN_ALIAS => {
                 let names = tokens_of_kind(node, lexer::TokenKind::Ident);
                 let pats = pattern_children(node);
-                if names.len() > 0 && pats.len() > 0 {
+                if !names.is_empty() && !pats.is_empty() {
                     match lower_pat_inner(ctx, pats[0]) {
                         Some(pat) => Option::Some(
                             Pat::Alias { name: names[0].token.text, pat, span: value_span },
@@ -188,15 +188,17 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 }
             },
             PATTERN_OR => {
-                let pats: Vec[Pat] = Vec::new();
-                let valid = Ref::new(true);
+                let pats: Vec[Pat] = Vec::[];
+                let mut valid = true;
                 for child in pattern_children(node) {
                     match lower_pat_inner(ctx, child) {
                         Some(value) => pats.push(value),
-                        None => valid.set(false),
+                        None => {
+                            valid = false;
+                        },
                     }
                 };
-                if valid.get() {
+                if valid {
                     Option::Some(Pat::Or { pats, span: value_span })
                 } else {
                     Option::None
@@ -240,16 +242,18 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
         Some(path_node) => match lower_path(ctx, path_node) {
             Some(path) => match first_child(node, cst::NodeKind::STRUCT_PATTERN_FIELD_LIST) {
                 Some(list) => {
-                    let fields: Vec[(string, Pat)] = Vec::new();
-                    let valid = Ref::new(true);
+                    let fields: Vec[(string, Pat)] = Vec::[];
+                    let mut valid = true;
                     for field in children_of_kind(list, cst::NodeKind::STRUCT_PATTERN_FIELD) {
                         match first_token(field, lexer::TokenKind::Ident) {
                             Some(name_token) => {
                                 let patterns = pattern_children(field);
-                                if patterns.len() > 0 {
+                                if !patterns.is_empty() {
                                     match lower_pat_inner(ctx, patterns[0]) {
                                         Some(pat) => fields.push((name_token.token.text, pat)),
-                                        None => valid.set(false),
+                                        None => {
+                                            valid = false;
+                                        },
                                     }
                                 } else if has_token(field, lexer::TokenKind::Colon) {
                                     push_error(
@@ -257,7 +261,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                                         node_span(field),
                                         "Struct pattern field missing pattern",
                                     );
-                                    valid.set(false)
+                                    valid = false;
                                 } else {
                                     fields.push(
                                         (
@@ -276,11 +280,11 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                                     node_span(field),
                                     "Struct pattern field missing name",
                                 );
-                                valid.set(false)
+                                valid = false;
                             },
                         }
                     };
-                    if valid.get() {
+                    if valid {
                         Option::Some(
                             Pat::Struct {
                                 name: path,
@@ -294,7 +298,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     }
                 },
                 None => {
-                    let pats: Vec[Pat] = Vec::new();
+                    let pats: Vec[Pat] = Vec::[];
                     for child in pattern_children(node) {
                         match lower_pat_inner(ctx, child) {
                             Some(value) => pats.push(value),
@@ -316,29 +320,31 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
 }
 
 fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
-    let prefix: Vec[Pat] = Vec::new();
-    let suffix: Vec[Pat] = Vec::new();
-    let rest = Ref::new(Option::None);
-    let valid = Ref::new(true);
+    let prefix: Vec[Pat] = Vec::[];
+    let suffix: Vec[Pat] = Vec::[];
+    let mut rest: Option[ArrayPatRest] = Option::None;
+    let mut valid = true;
     for child in pattern_children(node) {
         if cst::node_kind_equal(node_kind(child), cst::NodeKind::PATTERN_REST) {
             let binding = match first_token(child, lexer::TokenKind::Ident) {
                 Some(token) => Option::Some(token.token.text),
                 None => Option::None,
             };
-            rest.set(Option::Some(ArrayPatRest { binding, span: node_span(child) }))
+            rest = Option::Some(ArrayPatRest { binding, span: node_span(child) });
         } else {
             match lower_pat_inner(ctx, child) {
-                Some(value) => match rest.get() {
+                Some(value) => match rest {
                     Some(_) => suffix.push(value),
                     None => prefix.push(value),
                 },
-                None => valid.set(false),
+                None => {
+                    valid = false;
+                },
             }
         }
     };
-    if valid.get() {
-        Option::Some(Pat::Array { prefix, rest: rest.get(), suffix, span: node_span(node) })
+    if valid {
+        Option::Some(Pat::Array { prefix, rest, suffix, span: node_span(node) })
     } else {
         Option::None
     }

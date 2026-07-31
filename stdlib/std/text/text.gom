@@ -6,17 +6,19 @@ fn is_ascii_whitespace_byte(value: byte) -> bool {
 }
 
 fn find_from(value: string, expected: string, start: int) -> Option[int] {
-    if start < 0 || start > value.byte_len() {
+    let value_len = value.byte_len();
+    let expected_len = expected.byte_len();
+    if start < 0 || start > value_len {
         Option::None
-    } else if expected.byte_len() == 0 {
+    } else if expected_len == 0 {
         Option::Some(start)
-    } else if expected.byte_len() > value.byte_len() - start {
+    } else if expected_len > value_len - start {
         Option::None
     } else {
-        let limit = value.byte_len() - expected.byte_len();
+        let limit = value_len - expected_len;
         let mut index = start;
         while index <= limit {
-            let end = index + expected.byte_len();
+            let end = index + expected_len;
             if value.is_char_boundary(index) && value.is_char_boundary(end)
                 && value.byte_slice(index, end) == expected {
                 return Option::Some(index)
@@ -53,8 +55,10 @@ pub fn trim(value: string) -> string {
 }
 
 pub fn split(value: string, separator: string) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
-    if separator.byte_len() == 0 {
+    let result: Vec[string] = Vec::[];
+    let separator_len = separator.byte_len();
+    let value_len = value.byte_len();
+    if separator_len == 0 {
         result.push(value);
         return result
     } else {
@@ -65,10 +69,10 @@ pub fn split(value: string, separator: string) -> Vec[string] {
         match find_from(value, separator, start) {
             Some(index) => {
                 result.push(value.byte_slice(start, index));
-                start = index + separator.byte_len();
+                start = index + separator_len;
             },
             None => {
-                result.push(value.byte_slice(start, value.byte_len()));
+                result.push(value.byte_slice(start, value_len));
                 break
             },
         }
@@ -77,14 +81,16 @@ pub fn split(value: string, separator: string) -> Vec[string] {
 }
 
 pub fn split_once(value: string, separator: string) -> Option[(string, string)] {
-    if separator.byte_len() == 0 {
+    let separator_len = separator.byte_len();
+    let value_len = value.byte_len();
+    if separator_len == 0 {
         Option::None
     } else {
         match find(value, separator) {
             Some(index) => Option::Some(
                 (
                     value.byte_slice(0, index),
-                    value.byte_slice(index + separator.byte_len(), value.byte_len()),
+                    value.byte_slice(index + separator_len, value_len),
                 ),
             ),
             None => Option::None,
@@ -94,7 +100,7 @@ pub fn split_once(value: string, separator: string) -> Option[(string, string)] 
 
 pub fn lines(value: string) -> Vec[string] {
     let result = split(value, "\n");
-    if result.len() > 0 && result[result.len() - 1] == "" {
+    if !result.is_empty() && result[result.len() - 1] == "" {
         let _ = result.pop();
     } else {
         ()
@@ -134,7 +140,16 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
 }
 
 pub fn join(values: Vec[string], separator: string) -> string {
-    let builder = StringBuilder::new();
+    let mut capacity = separator.byte_len() * values.len();
+    for value in values {
+        capacity += value.byte_len();
+    };
+    if !values.is_empty() {
+        capacity -= separator.byte_len();
+    } else {
+        ()
+    };
+    let builder = StringBuilder::with_capacity(capacity);
     for index in 0..values.len() {
         if index > 0 {
             builder.write_string(separator)

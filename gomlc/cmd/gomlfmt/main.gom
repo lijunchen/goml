@@ -28,7 +28,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     let mut write = false;
     let mut list = false;
     let mut check = false;
-    let paths: Vec[string] = Vec::new();
+    let paths: Vec[string] = Vec::[];
     let mut positional = false;
     for index in 1..args.len() {
         let argument = args[index];
@@ -56,7 +56,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     } else if paths.len() > 1 && !write && !list && !check {
         Result::Err("multiple files require -w, -l, or --check")
     } else {
-        if paths.len() == 0 {
+        if paths.is_empty() {
             paths.push("-")
         } else {
             ()
@@ -108,7 +108,7 @@ fn diagnostic_error(path: string, error: formatter::FormatError) -> string {
 }
 
 fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
-    let result: Vec[FormattedFile] = Vec::new();
+    let result: Vec[FormattedFile] = Vec::[];
     for path in paths {
         let source = match read_source(path) {
             Ok(value) => value,

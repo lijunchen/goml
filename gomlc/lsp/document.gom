@@ -25,8 +25,8 @@ pub struct Server {
 
 pub fn new_server() -> Server {
     Server {
-        documents: Vec::new(),
-        analyses: Vec::new(),
+        documents: Vec::[],
+        analyses: Vec::[],
         generation: Ref::new(0),
         running: Ref::new(true),
         shutdown: Ref::new(false),
@@ -43,12 +43,12 @@ pub fn invalidate_analyses(value: Server) -> unit {
 }
 
 fn document_index(value: Server, uri: string) -> Option[int] {
-    let index = Ref::new(value.documents.len() - 1);
-    while index.get() >= 0 {
-        if value.documents[index.get()].uri == uri {
-            return Option::Some(index.get())
+    let mut index = value.documents.len() - 1;
+    while index >= 0 {
+        if value.documents[index].uri == uri {
+            return Option::Some(index)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -94,7 +94,7 @@ pub fn close_document(value: Server, uri: string) -> unit {
 }
 
 fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
-    let result = Vec::new();
+    let result: Vec[query::SourceOverride] = Vec::[];
     for document in value.documents {
         result.push(query::SourceOverride { path: document.path, source: document.text })
     };
@@ -102,13 +102,13 @@ fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
 }
 
 pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
-    let index = Ref::new(value.analyses.len() - 1);
-    while index.get() >= 0 {
-        let cached = value.analyses[index.get()];
+    let mut index = value.analyses.len() - 1;
+    while index >= 0 {
+        let cached = value.analyses[index];
         if cached.path == document.path && cached.generation == value.generation.get() {
             return cached.analysis
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     let analysis = query::analyze_with_overrides(

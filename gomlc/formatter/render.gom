@@ -25,7 +25,7 @@ fn renderer(line_width: int) -> Renderer {
         line_width,
         line_start: Ref::new(true),
         broken_groups: HashMap::{},
-        suffixes: Vec::new(),
+        suffixes: Vec::[],
     }
 }
 
@@ -169,11 +169,11 @@ fn write_verbatim(value: Renderer, content: string) -> unit {
 }
 
 fn flush_suffixes(value: Renderer) -> unit {
-    while value.suffixes.len() > 0 {
+    while !value.suffixes.is_empty() {
         match value.suffixes.pop() {
             Some(suffix) => {
-                let pending: Vec[Doc] = Vec::new();
-                while value.suffixes.len() > 0 {
+                let pending: Vec[Doc] = Vec::[];
+                while !value.suffixes.is_empty() {
                     match value.suffixes.pop() {
                         Some(item) => pending.push(item),
                         None => (),

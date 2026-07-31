@@ -21,11 +21,11 @@ fn ident_starts_upper(value: string) -> bool {
 }
 
 fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
-    let segments: Vec[PathSegment] = Vec::new();
+    let segments: Vec[PathSegment] = Vec::[];
     for token in tokens_of_kind(node, lexer::TokenKind::Ident) {
         segments.push(PathSegment { ident: token.token.text, span: token_span(token) })
     };
-    if segments.len() == 0 {
+    if segments.is_empty() {
         push_error(ctx, node_span(node), "Paths must contain at least one identifier");
         Option::None
     } else {
@@ -34,7 +34,7 @@ fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
 }
 
 fn path_last(path: Path) -> Option[string] {
-    if path.segments.len() == 0 {
+    if path.segments.is_empty() {
         Option::None
     } else {
         Option::Some(path.segments[path.segments.len() - 1].ident)
@@ -42,7 +42,7 @@ fn path_last(path: Path) -> Option[string] {
 }
 
 fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
-    let attrs: Vec[Attribute] = Vec::new();
+    let attrs: Vec[Attribute] = Vec::[];
     match first_child(node, cst::NodeKind::ATTRIBUTE_LIST) {
         Some(list) => for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
             attrs.push(Attribute { span: node_span(attr), text: node_text(attr) })
@@ -62,35 +62,35 @@ fn lower_visibility(node: LocatedNode) -> Visibility {
 
 fn attribute_matches(value: Attribute, expected: string) -> bool {
     let text_value = value.text;
-    let index = Ref::new(0);
-    while index.get() < text_value.byte_len()
-        && (text_value.byte_get(index.get()) == b' ' || text_value.byte_get(index.get()) == b'\t'
-            || text_value.byte_get(index.get()) == b'\n'
-            || text_value.byte_get(index.get()) == b'\r') {
-        index.set(index.get() + 1)
+    let mut index = 0;
+    while index < text_value.byte_len()
+        && (text_value.byte_get(index) == b' ' || text_value.byte_get(index) == b'\t'
+            || text_value.byte_get(index) == b'\n'
+            || text_value.byte_get(index) == b'\r') {
+        index = index + 1;
     };
-    if index.get() + 2 > text_value.byte_len()
-        || text_value.byte_slice(index.get(), index.get() + 2) != "#[" {
+    if index + 2 > text_value.byte_len()
+        || text_value.byte_slice(index, index + 2) != "#[" {
         false
     } else {
-        index.set(index.get() + 2);
-        while index.get() < text_value.byte_len()
-            && (text_value.byte_get(index.get()) == b' '
-                || text_value.byte_get(index.get()) == b'\t'
-                || text_value.byte_get(index.get()) == b'\n'
-                || text_value.byte_get(index.get()) == b'\r') {
-            index.set(index.get() + 1)
+        index = index + 2;
+        while index < text_value.byte_len()
+            && (text_value.byte_get(index) == b' '
+                || text_value.byte_get(index) == b'\t'
+                || text_value.byte_get(index) == b'\n'
+                || text_value.byte_get(index) == b'\r') {
+            index = index + 1;
         };
-        let start = index.get();
-        while index.get() < text_value.byte_len() {
-            let byte = text_value.byte_get(index.get());
+        let start = index;
+        while index < text_value.byte_len() {
+            let byte = text_value.byte_get(index);
             if byte == b'(' || byte == b']' || byte == b' ' || byte == b'\t' {
                 break
             } else {
-                index.set(index.get() + 1)
+                index = index + 1;
             }
         };
-        let path_text = text_value.byte_slice(start, index.get());
+        let path_text = text_value.byte_slice(start, index);
         match strings::rfind(path_text, "::") {
             Some(separator) => {
                 path_text.byte_slice(separator + 2, path_text.byte_len()) == expected
@@ -112,7 +112,7 @@ fn find_attribute(attrs: Vec[Attribute], expected: string) -> Option[Attribute] 
 }
 
 fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
-    let result: Vec[TypeExpr] = Vec::new();
+    let result: Vec[TypeExpr] = Vec::[];
     for child in type_children(node) {
         match lower_ty(ctx, child) {
             Some(value) => result.push(value),
@@ -123,11 +123,11 @@ fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
 }
 
 fn normalized_array_length(value: string) -> Option[string] {
-    let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == b'0' {
-        index.set(index.get() + 1)
+    let mut index = 0;
+    while index + 1 < value.byte_len() && value.byte_get(index) == b'0' {
+        index = index + 1;
     };
-    let normalized = value.byte_slice(index.get(), value.byte_len());
+    let normalized = value.byte_slice(index, value.byte_len());
     let maximum = "9223372036854775807";
     if normalized.byte_len() < maximum.byte_len() {
         Option::Some(normalized)
@@ -175,7 +175,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
             TYPE_TUPLE => match first_child(node, cst::NodeKind::TYPE_LIST) {
                 Some(list) => {
                     let types = lower_type_list(ctx, list);
-                    if types.len() == 0 {
+                    if types.is_empty() {
                         Option::Some(TypeExpr::Unit)
                     } else if types.len() == 1 {
                         Option::Some(types[0])
@@ -189,7 +189,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                 Some(path_node) => match lower_path(ctx, path_node) {
                     Some(path) => {
                         match path_last(path) {
-                            Some(name) => if ident_starts_upper(name) == false && name != "byte" {
+                            Some(name) => if !ident_starts_upper(name) && name != "byte" {
                                 push_error(
                                     ctx,
                                     node_span(node),
@@ -202,10 +202,10 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                         };
                         let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
                             Some(list) => lower_type_list(ctx, list),
-                            None => Vec::new(),
+                            None => Vec::[],
                         };
                         let base = TypeExpr::Con { path };
-                        if args.len() == 0 {
+                        if args.is_empty() {
                             Option::Some(base)
                         } else {
                             Option::Some(TypeExpr::App { ty: base, args })
@@ -228,7 +228,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                     Some(length_token) => match normalized_array_length(
                         strip_suffix(length_token.token.text, ""),
                     ) {
-                        Some(length) => if types.len() > 0 {
+                        Some(length) => if !types.is_empty() {
                             match lower_ty(ctx, types[0]) {
                                 Some(element) => Option::Some(
                                     TypeExpr::Array { len: length, elem: element },
@@ -269,10 +269,10 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                             ) {
                                 match first_child(param_node, cst::NodeKind::TYPE_LIST) {
                                     Some(list) => lower_type_list(ctx, list),
-                                    None => Vec::new(),
+                                    None => Vec::[],
                                 }
                             } else {
-                                let values: Vec[TypeExpr] = Vec::new();
+                                let values: Vec[TypeExpr] = Vec::[];
                                 match lower_ty(ctx, param_node) {
                                     Some(value) => values.push(value),
                                     None => (),
@@ -293,7 +293,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
 }
 
 fn lower_trait_ref(ctx: LowerCtx, node: LocatedNode) -> Option[TraitRef] {
-    if cst::node_kind_equal(node_kind(node), cst::NodeKind::TYPE_TAPP) == false {
+    if !cst::node_kind_equal(node_kind(node), cst::NodeKind::TYPE_TAPP) {
         push_error(ctx, node_span(node), "Expected a trait name with optional type arguments");
         Option::None
     } else {
@@ -302,7 +302,7 @@ fn lower_trait_ref(ctx: LowerCtx, node: LocatedNode) -> Option[TraitRef] {
                 Some(path) => {
                     let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
                         Some(list) => lower_type_list(ctx, list),
-                        None => Vec::new(),
+                        None => Vec::[],
                     };
                     Option::Some(TraitRef { path, args })
                 },
@@ -314,7 +314,7 @@ fn lower_trait_ref(ctx: LowerCtx, node: LocatedNode) -> Option[TraitRef] {
 }
 
 fn lower_trait_set(ctx: LowerCtx, node: LocatedNode) -> Vec[TraitRef] {
-    let result: Vec[TraitRef] = Vec::new();
+    let result: Vec[TraitRef] = Vec::[];
     for child in type_children(node) {
         match lower_trait_ref(ctx, child) {
             Some(value) => result.push(value),
@@ -325,8 +325,8 @@ fn lower_trait_set(ctx: LowerCtx, node: LocatedNode) -> Vec[TraitRef] {
 }
 
 fn lower_generics(ctx: LowerCtx, node: LocatedNode) -> (Vec[string], Vec[(string, Vec[TraitRef])]) {
-    let generics: Vec[string] = Vec::new();
-    let bounds: Vec[(string, Vec[TraitRef])] = Vec::new();
+    let generics: Vec[string] = Vec::[];
+    let bounds: Vec[(string, Vec[TraitRef])] = Vec::[];
     match first_child(node, cst::NodeKind::GENERIC_LIST) {
         Some(list) => for generic in children_of_kind(list, cst::NodeKind::GENERIC) {
             match first_token(generic, lexer::TokenKind::Ident) {
@@ -347,11 +347,11 @@ fn lower_generics(ctx: LowerCtx, node: LocatedNode) -> (Vec[string], Vec[(string
 }
 
 fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
-    let result: Vec[Predicate] = Vec::new();
+    let result: Vec[Predicate] = Vec::[];
     match first_child(node, cst::NodeKind::WHERE_CLAUSE) {
         Some(clause) => for predicate in children_of_kind(clause, cst::NodeKind::WHERE_PREDICATE) {
             let types = type_children(predicate);
-            if types.len() == 0 {
+            if types.is_empty() {
                 push_error(ctx, node_span(predicate), "Where predicate is missing a type")
             } else {
                 match lower_ty(ctx, types[0]) {
@@ -406,19 +406,19 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
 
 fn lower_result(result: cst::ParseResult) -> LowerResult {
     let diagnostics = result.diagnostics;
-    if diagnostics.len() > 0 {
+    if !diagnostics.is_empty() {
         LowerResult { ast: Option::None, diagnostics }
     } else {
         let root = root_node(result);
         let ctx = LowerCtx {
             diagnostics,
-            invalid_self_type_spans: Vec::new(),
+            invalid_self_type_spans: Vec::[],
             expr_depth: Ref::new(0),
             pattern_depth: Ref::new(0),
             type_depth: Ref::new(0),
         };
         let package_node = first_child(root, cst::NodeKind::PACKAGE);
-        let package_explicit = option_node_is_none(package_node) == false;
+        let package_explicit = !option_node_is_none(package_node);
         let package_name = match package_node {
             Some(node) => match first_token(node, lexer::TokenKind::Ident) {
                 Some(token) => token.token.text,
@@ -426,21 +426,21 @@ fn lower_result(result: cst::ParseResult) -> LowerResult {
             },
             None => "main",
         };
-        let uses: Vec[UseDecl] = Vec::new();
+        let uses: Vec[UseDecl] = Vec::[];
         for use_node in children_of_kind(root, cst::NodeKind::USE) {
             match lower_use(ctx, use_node) {
                 Some(value) => uses.push(value),
                 None => (),
             }
         };
-        let items: Vec[Item] = Vec::new();
+        let items: Vec[Item] = Vec::[];
         for item_node in item_children(root) {
             match lower_item(ctx, item_node) {
                 Some(value) => items.push(value),
                 None => (),
             }
         };
-        let ast = if ctx.diagnostics.len() == 0 {
+        let ast = if ctx.diagnostics.is_empty() {
             Option::Some(
                 File {
                     package_name,
@@ -462,7 +462,7 @@ pub fn lower(result: cst::ParseResult) -> LowerResult {
 }
 
 pub fn lower_package(results: Vec[cst::ParseResult]) -> Vec[LowerResult] {
-    let lowered: Vec[LowerResult] = Vec::new();
+    let lowered: Vec[LowerResult] = Vec::[];
     for result in results {
         lowered.push(lower_result(result))
     };

@@ -27,14 +27,14 @@ fn node_span(value: LocatedNode) -> Span {
 }
 
 fn trimmed_node_end(value: LocatedNode) -> int {
-    let cursor = Ref::new(value.start);
-    let end = Ref::new(value.start);
+    let mut cursor = value.start;
+    let mut end = value.start;
     for element in cst::node_children(value.node) {
         match element {
             Node(child) => {
-                let child_end = trimmed_node_end(LocatedNode { node: child, start: cursor.get() });
-                if child_end > end.get() {
-                    end.set(child_end)
+                let child_end = trimmed_node_end(LocatedNode { node: child, start: cursor });
+                if child_end > end {
+                    end = child_end;
                 } else {
                     ()
                 }
@@ -42,12 +42,12 @@ fn trimmed_node_end(value: LocatedNode) -> int {
             Token(token) => if lexer::token_is_trivia(token.kind) {
                 ()
             } else {
-                end.set(cursor.get() + token.text.byte_len())
+                end = cursor + token.text.byte_len();
             },
         };
-        cursor.set(cursor.get() + cst::element_byte_len(element))
+        cursor = cursor + cst::element_byte_len(element);
     };
-    end.get()
+    end
 }
 
 fn trimmed_node_span(value: LocatedNode) -> Span {
@@ -55,11 +55,11 @@ fn trimmed_node_span(value: LocatedNode) -> Span {
 }
 
 fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
-    let cursor = Ref::new(value.start);
+    let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
             Node(child) => {
-                match first_significant_token_span(LocatedNode { node: child, start: cursor.get() }) {
+                match first_significant_token_span(LocatedNode { node: child, start: cursor }) {
                     Some(value) => return Option::Some(value),
                     None => (),
                 }
@@ -67,10 +67,10 @@ fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
             Token(token) => if lexer::token_is_trivia(token.kind) {
                 ()
             } else {
-                return Option::Some(span(cursor.get(), cursor.get() + token.text.byte_len()))
+                return Option::Some(span(cursor, cursor + token.text.byte_len()))
             },
         };
-        cursor.set(cursor.get() + cst::element_byte_len(element))
+        cursor = cursor + cst::element_byte_len(element);
     };
     Option::None
 }
@@ -83,33 +83,33 @@ fn type_head_span(value: LocatedNode) -> Span {
 }
 
 fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::new();
-    let cursor = Ref::new(value.start);
+    let result: Vec[LocatedNode] = Vec::[];
+    let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
-            Node(child) => result.push(LocatedNode { node: child, start: cursor.get() }),
+            Node(child) => result.push(LocatedNode { node: child, start: cursor }),
             Token(_) => (),
         };
-        cursor.set(cursor.get() + cst::element_byte_len(element))
+        cursor = cursor + cst::element_byte_len(element);
     };
     result
 }
 
 fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
-    let result: Vec[LocatedToken] = Vec::new();
-    let cursor = Ref::new(value.start);
+    let result: Vec[LocatedToken] = Vec::[];
+    let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
             Node(_) => (),
-            Token(token) => result.push(LocatedToken { token, start: cursor.get() }),
+            Token(token) => result.push(LocatedToken { token, start: cursor }),
         };
-        cursor.set(cursor.get() + cst::element_byte_len(element))
+        cursor = cursor + cst::element_byte_len(element);
     };
     result
 }
 
 fn children_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::new();
+    let result: Vec[LocatedNode] = Vec::[];
     for child in direct_nodes(value) {
         if cst::node_kind_equal(node_kind(child), kind) {
             result.push(child)
@@ -132,7 +132,7 @@ fn first_child(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
 }
 
 fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToken] {
-    let result: Vec[LocatedToken] = Vec::new();
+    let result: Vec[LocatedToken] = Vec::[];
     for token in direct_tokens(value) {
         if lexer::token_kind_equal(token.token.kind, kind) {
             result.push(token)
@@ -163,16 +163,16 @@ fn token_span(value: LocatedToken) -> Span {
 }
 
 fn write_node_text(value: LocatedNode, builder: text::StringBuilder) -> unit {
-    let cursor = Ref::new(value.start);
+    let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
             Node(child) => write_node_text(
-                LocatedNode { node: child, start: cursor.get() },
+                LocatedNode { node: child, start: cursor },
                 builder,
             ),
             Token(token) => builder.write_string(token.text),
         };
-        cursor.set(cursor.get() + cst::element_byte_len(element))
+        cursor = cursor + cst::element_byte_len(element);
     }
 }
 
@@ -218,7 +218,7 @@ fn is_type_kind(kind: cst::NodeKind) -> bool {
 }
 
 fn filtered_children(value: LocatedNode, selector: (cst::NodeKind) -> bool) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::new();
+    let result: Vec[LocatedNode] = Vec::[];
     for child in direct_nodes(value) {
         if selector(node_kind(child)) {
             result.push(child)

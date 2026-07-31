@@ -728,7 +728,7 @@ fn unify_parameter_aliases(left: Type, right: Type, substitutions: Vec[TypeSubst
 }
 
 fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
-    let substitutions: Vec[TypeSubst] = Vec::new();
+    let substitutions: Vec[TypeSubst] = Vec::[];
     for predicate in predicates {
         match predicate {
             Equality { lhs: left, rhs: right } => match (prune(left), prune(right)) {
@@ -747,15 +747,15 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
 }
 
 fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int {
-    let result = Ref::new(-1);
+    let mut result = -1;
     for index in 0..values.len() {
-        if result.get() < 0 && types_equal(values[index].projection, projection) {
-            result.set(index)
+        if result < 0 && types_equal(values[index].projection, projection) {
+            result = index;
         } else {
             ()
         }
     };
-    result.get()
+    result
 }
 
 fn projection_alias(values: Vec[ProjectionAlias], projection: Type) -> Option[Type] {
@@ -792,24 +792,26 @@ fn type_list_contains(values: Vec[Type], expected: Type) -> bool {
 }
 
 fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type {
-    let current = Ref::new(value);
-    let seen = Vec::new();
+    let mut current = value;
+    let seen: Vec[Type] = Vec::[];
     loop {
-        if type_list_contains(seen, current.get()) {
-            break current.get()
+        if type_list_contains(seen, current) {
+            break current
         } else {
-            seen.push(current.get());
-            match projection_alias(aliases, current.get()) {
-                Some(next) => current.set(next),
-                None => break current.get(),
+            seen.push(current);
+            match projection_alias(aliases, current) {
+                Some(next) => {
+                    current = next;
+                },
+                None => break current,
             }
         }
     }
 }
 
 fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[ProjectionAlias] {
-    let aliases = Vec::new();
-    let equalities: Vec[(Type, Type)] = Vec::new();
+    let aliases: Vec[ProjectionAlias] = Vec::[];
+    let equalities: Vec[(Type, Type)] = Vec::[];
     for predicate in predicates {
         match predicate {
             Equality { lhs: left, rhs: right } => match (left, right) {
@@ -904,14 +906,14 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
                 Type::Projection {
                     for_ty: args[0],
                     name: "Item",
-                    trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                    trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
                 },
             )
         } else if (owner == "EnumerateIterator" || owner == "SkipIterator") && args.len() == 1 {
             let item = Type::Projection {
                 for_ty: args[0],
                 name: "Item",
-                trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
             };
             if owner == "EnumerateIterator" {
                 Option::Some(Type::Tuple { items: Vec::[Type::Int, item] })
@@ -925,12 +927,12 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
                         Type::Projection {
                             for_ty: args[0],
                             name: "Item",
-                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
                         },
                         Type::Projection {
                             for_ty: args[1],
                             name: "Item",
-                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
                         },
                     ],
                 },
@@ -995,14 +997,14 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
 fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[TraitRef]) -> Option[
     Type,
 ] {
-    let candidates: Vec[Type] = Vec::new();
+    let candidates: Vec[Type] = Vec::[];
     for impl_info in ctx.impls {
         match associated_binding(impl_info, name) {
             Some(associated) => {
                 let substitutions = instantiate_substitutions(
                     ctx.counter,
                     impl_info.generics,
-                    Vec::new(),
+                    Vec::[],
                 );
                 let owner = substitute_type(impl_info.for_type, substitutions);
                 let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
@@ -1039,7 +1041,7 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
 }
 
 fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
-    let result: Vec[Type] = Vec::new();
+    let result: Vec[Type] = Vec::[];
     for value in values {
         result.push(normalize_type(ctx, value))
     };
@@ -1142,7 +1144,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             None => Type::Param { name },
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for item in values {
                 result.push(substitute_type(item, substitutions))
             };
@@ -1162,7 +1164,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             }
         },
         App { ty: base, args } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for arg in args {
                 result.push(substitute_type(arg, substitutions))
             };
@@ -1180,7 +1182,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             value: substitute_type(item, substitutions),
         },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for param in params {
                 result.push(substitute_type(param, substitutions))
             };
@@ -1191,7 +1193,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
 }
 
 pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Type {
-    let substitutions: Vec[TypeSubst] = Vec::new();
+    let substitutions: Vec[TypeSubst] = Vec::[];
     for index in 0..names.len() {
         if index < args.len() {
             substitutions.push(TypeSubst { name: names[index], ty: args[index] })
@@ -1205,7 +1207,7 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
 fn instantiate_substitutions(counter: Ref[int], params: Vec[string], explicit: Vec[Type]) -> Vec[
     TypeSubst,
 ] {
-    let result: Vec[TypeSubst] = Vec::new();
+    let result: Vec[TypeSubst] = Vec::[];
     for index in 0..params.len() {
         result.push(
             TypeSubst {
@@ -1230,7 +1232,7 @@ pub fn resolve_type(value: Type) -> Type {
             Unbound { id: _, kind: Any } => Type::Error,
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for item in values {
                 result.push(resolve_type(item))
             };
@@ -1239,7 +1241,7 @@ pub fn resolve_type(value: Type) -> Type {
         Projection { for_ty: base, name, trait_ref: qualifier } => {
             let qualifier = match qualifier {
                 Some(reference) => {
-                    let args: Vec[Type] = Vec::new();
+                    let args: Vec[Type] = Vec::[];
                     for arg in reference.args {
                         args.push(resolve_type(arg))
                     };
@@ -1250,7 +1252,7 @@ pub fn resolve_type(value: Type) -> Type {
             Type::Projection { for_ty: resolve_type(base), name, trait_ref: qualifier }
         },
         App { ty: base, args } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for arg in args {
                 result.push(resolve_type(arg))
             };
@@ -1266,7 +1268,7 @@ pub fn resolve_type(value: Type) -> Type {
         },
         Channel { elem } => Type::Channel { elem: resolve_type(elem) },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for param in params {
                 result.push(resolve_type(param))
             };
@@ -1291,7 +1293,7 @@ fn default_numeric_type(value: Type) -> Type {
             _ => Type::Var(variable),
         },
         Tuple { items } => {
-            let result = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for item in items {
                 result.push(default_numeric_type(item))
             };
@@ -1300,7 +1302,7 @@ fn default_numeric_type(value: Type) -> Type {
         Projection { for_ty, name, trait_ref } => {
             let trait_ref = match trait_ref {
                 Some(reference) => {
-                    let args = Vec::new();
+                    let args: Vec[Type] = Vec::[];
                     for arg in reference.args {
                         args.push(default_numeric_type(arg))
                     };
@@ -1311,7 +1313,7 @@ fn default_numeric_type(value: Type) -> Type {
             Type::Projection { for_ty: default_numeric_type(for_ty), name, trait_ref }
         },
         App { ty, args } => {
-            let result = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for arg in args {
                 result.push(default_numeric_type(arg))
             };
@@ -1327,7 +1329,7 @@ fn default_numeric_type(value: Type) -> Type {
         },
         Channel { elem } => Type::Channel { elem: default_numeric_type(elem) },
         Func { params, ret_ty } => {
-            let result = Vec::new();
+            let result: Vec[Type] = Vec::[];
             for param in params {
                 result.push(default_numeric_type(param))
             };
@@ -1378,7 +1380,7 @@ fn nominal_type(name: string, args: Vec[Type]) -> Type {
         Type::HashMap { key: args[0], value: args[1] }
     } else if name == "Channel" && args.len() == 1 {
         Type::Channel { elem: args[0] }
-    } else if args.len() == 0 {
+    } else if args.is_empty() {
         Type::Con { name }
     } else {
         Type::App { ty: Type::Con { name }, args }
@@ -1386,14 +1388,14 @@ fn nominal_type(name: string, args: Vec[Type]) -> Type {
 }
 
 fn parse_array_length(value: string) -> int {
-    let result = Ref::new(0);
+    let mut result = 0;
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte >= b'0' && byte <= b'9' {
-            result.set(result.get() * 10 + (byte - 48) as int)
+            result = result * 10 + (byte - 48) as int;
         } else {
             ()
         }
     };
-    result.get()
+    result
 }

@@ -22,14 +22,14 @@ fn standard_library_children(package_name: string) -> Vec[string] {
     } else if package_name == "std::internal" {
         Vec::["host"]
     } else {
-        Vec::new()
+        Vec::[]
     }
 }
 
 fn standard_library_sources(package_name: string) -> Result[Option[Vec[SourceFile]], string] {
     match resources::standard_sources(package_name)? {
         Some(values) => {
-            let result = Vec::new();
+            let result: Vec[SourceFile] = Vec::[];
             for value in values {
                 result.push(
                     SourceFile {

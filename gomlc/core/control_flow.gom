@@ -101,7 +101,7 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
 }
 
 fn exit_expr_as(ctx: Lowerer, value: Expr, ty: tast::Type) -> Expr {
-    let stmts: Vec[LetStmt] = Vec::new();
+    let stmts: Vec[LetStmt] = Vec::[];
     stmts.push(LetStmt { name: gensym(ctx, "_wild"), ty: expr_type(value), value });
     Expr::Block { block: Block { stmts, tail: Option::Some(missing_expr(ty)) }, ty }
 }

@@ -34,35 +34,35 @@ fn ascii_whitespace(value: uint8) -> bool {
 }
 
 fn trim_ascii(value: string) -> string {
-    let start = Ref::new(0);
-    let end = Ref::new(value.byte_len());
-    while start.get() < end.get() && ascii_whitespace(value.byte_get(start.get())) {
-        start.set(start.get() + 1)
+    let mut start = 0;
+    let mut end = value.byte_len();
+    while start < end && ascii_whitespace(value.byte_get(start)) {
+        start = start + 1;
     };
-    while end.get() > start.get() && ascii_whitespace(value.byte_get(end.get() - 1)) {
-        end.set(end.get() - 1)
+    while end > start && ascii_whitespace(value.byte_get(end - 1)) {
+        end = end - 1;
     };
-    value.byte_slice(start.get(), end.get())
+    value.byte_slice(start, end)
 }
 
 fn manifest_module_path(source: string) -> Option[string] {
-    let cursor = Ref::new(0);
-    let in_module = Ref::new(false);
-    while cursor.get() <= source.byte_len() {
-        let end = Ref::new(cursor.get());
-        while end.get() < source.byte_len() && source.byte_get(end.get()) != b'\n' {
-            end.set(end.get() + 1)
+    let mut cursor = 0;
+    let mut in_module = false;
+    while cursor <= source.byte_len() {
+        let mut end = cursor;
+        while end < source.byte_len() && source.byte_get(end) != b'\n' {
+            end = end + 1;
         };
-        let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
+        let line = trim_ascii(source.byte_slice(cursor, end));
         if strings::starts_with(line, "[") {
-            in_module.set(line == "[module]")
-        } else if in_module.get() && strings::starts_with(line, "path") {
-            let equals = Ref::new(0);
-            while equals.get() < line.byte_len() && line.byte_get(equals.get()) != b'=' {
-                equals.set(equals.get() + 1)
+            in_module = line == "[module]";
+        } else if in_module && strings::starts_with(line, "path") {
+            let mut equals = 0;
+            while equals < line.byte_len() && line.byte_get(equals) != b'=' {
+                equals = equals + 1;
             };
-            if equals.get() < line.byte_len() {
-                let value = trim_ascii(line.byte_slice(equals.get() + 1, line.byte_len()));
+            if equals < line.byte_len() {
+                let value = trim_ascii(line.byte_slice(equals + 1, line.byte_len()));
                 if value.byte_len() >= 2 && value.byte_get(0) == b'"'
                     && value.byte_get(value.byte_len() - 1) == b'"' {
                     return Option::Some(value.byte_slice(1, value.byte_len() - 1))
@@ -75,10 +75,10 @@ fn manifest_module_path(source: string) -> Option[string] {
         } else {
             ()
         };
-        if end.get() == source.byte_len() {
-            cursor.set(source.byte_len() + 1)
+        if end == source.byte_len() {
+            cursor = source.byte_len() + 1;
         } else {
-            cursor.set(end.get() + 1)
+            cursor = end + 1;
         }
     };
     Option::None
@@ -92,14 +92,14 @@ fn source_directory(source_path: string) -> string {
 }
 
 fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
-    let current = Ref::new(source_directory(source_path));
+    let mut current = source_directory(source_path);
     let result = loop {
-        let manifest = path::join(current.get(), "goml.toml");
+        let manifest = path::join(current, "goml.toml");
         if fs::is_file(manifest) {
             match fs::read_file(manifest) {
                 Ok(source) => match manifest_module_path(source) {
                     Some(module_path) => break Option::Some(
-                        ModuleInfo { root: current.get(), path: module_path },
+                        ModuleInfo { root: current, path: module_path },
                     ),
                     None => (),
                 },
@@ -108,13 +108,13 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
         } else {
             ()
         };
-        match path::parent(current.get()) {
+        match path::parent(current) {
             Some(parent) => {
                 let parent = path::clean(parent);
-                if parent == current.get() {
+                if parent == current {
                     break Option::None
                 } else {
-                    current.set(parent)
+                    current = parent;
                 }
             },
             None => break Option::None,
@@ -144,15 +144,15 @@ fn package_name(module_root: string, module_path: string, package_dir: string) -
             let builder = text::StringBuilder::new();
             builder.write_string(module_path);
             builder.write_string("::");
-            let index = Ref::new(0);
-            while index.get() < relative.byte_len() {
-                let byte = relative.byte_get(index.get());
+            let mut index = 0;
+            while index < relative.byte_len() {
+                let byte = relative.byte_get(index);
                 if byte == b'/' || byte == b'\\' {
                     builder.write_string("::")
                 } else {
-                    builder.write_string(relative.byte_slice(index.get(), index.get() + 1))
+                    builder.write_string(relative.byte_slice(index, index + 1))
                 };
-                index.set(index.get() + 1)
+                index = index + 1;
             };
             Result::Ok(builder.finish())
         }
@@ -168,13 +168,13 @@ fn same_path(left: string, right: string) -> bool {
 }
 
 fn override_source(overrides: Vec[SourceOverride], source_path: string) -> Option[string] {
-    let index = Ref::new(overrides.len() - 1);
-    while index.get() >= 0 {
-        let value = overrides[index.get()];
+    let mut index = overrides.len() - 1;
+    while index >= 0 {
+        let value = overrides[index];
         if same_path(value.path, source_path) {
             return Option::Some(value.source)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -221,7 +221,7 @@ fn collect_package_files(
     source: string,
     overrides: Vec[SourceOverride],
 ) -> Result[Vec[SourceFile], string] {
-    let files = Vec::new();
+    let files: Vec[SourceFile] = Vec::[];
     let include_tests = strings::ends_with(source_path, "_test.gom");
     match fs::read_dir(package_dir) {
         Ok(names) => for name in names {
@@ -267,33 +267,33 @@ fn local_package_directory(module_root: string, module_path: string, package_nam
             Option::None
         } else {
             let suffix = package_name.byte_slice(prefix.byte_len(), package_name.byte_len());
-            let directory = Ref::new(module_root);
-            let start = Ref::new(0);
-            let index = Ref::new(0);
-            while index.get() <= suffix.byte_len() {
-                let at_end = index.get() == suffix.byte_len();
-                let separator = !at_end && index.get() + 1 < suffix.byte_len()
-                    && suffix.byte_get(index.get()) == b':'
-                    && suffix.byte_get(index.get() + 1) == b':';
+            let mut directory = module_root;
+            let mut start = 0;
+            let mut index = 0;
+            while index <= suffix.byte_len() {
+                let at_end = index == suffix.byte_len();
+                let separator = !at_end && index + 1 < suffix.byte_len()
+                    && suffix.byte_get(index) == b':'
+                    && suffix.byte_get(index + 1) == b':';
                 if at_end || separator {
-                    let segment = suffix.byte_slice(start.get(), index.get());
+                    let segment = suffix.byte_slice(start, index);
                     if segment == "" || segment == "." || segment == ".." {
                         return Option::None
                     } else {
-                        directory.set(path::join(directory.get(), segment))
+                        directory = path::join(directory, segment);
                     };
                     if separator {
-                        index.set(index.get() + 1);
-                        start.set(index.get() + 1)
+                        index = index + 1;
+                        start = index + 1;
                     } else {
                         ()
                     }
                 } else {
                     ()
                 };
-                index.set(index.get() + 1)
+                index = index + 1;
             };
-            Option::Some(directory.get())
+            Option::Some(directory)
         }
     }
 }
@@ -302,7 +302,7 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
     Vec[SourceFile],
     string,
 ] {
-    let files = Vec::new();
+    let files: Vec[SourceFile] = Vec::[];
     match fs::read_dir(package_dir) {
         Ok(names) => for name in names {
             let file_path = path::join(package_dir, name);
@@ -328,7 +328,7 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
             ()
         }
     };
-    if files.len() == 0 {
+    if files.is_empty() {
         Result::Err("package directory " + package_dir + " has no .gom files")
     } else {
         Result::Ok(files)
@@ -336,7 +336,7 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
 }
 
 fn source_files_with_package(files: Vec[SourceFile], package_name: string) -> Vec[SourceFile] {
-    let result = Vec::new();
+    let result: Vec[SourceFile] = Vec::[];
     for file in files {
         result.push(SourceFile { path: file.path, source: file.source, package_name })
     };

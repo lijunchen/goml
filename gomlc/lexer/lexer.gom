@@ -354,7 +354,7 @@ fn scan_number(source: string, start: int) -> (TokenKind, int) {
     } else {
         ()
     };
-    if valid == false {
+    if !valid {
         (TokenKind::Error, number_end)
     } else if number_end != integer_end {
         if strings::starts_with_at(source, number_end, "f32") {
@@ -969,7 +969,7 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
 }
 
 pub fn lex(source: string) -> Vec[Token] {
-    let tokens: Vec[Token] = Vec::new();
+    let tokens: Vec[Token] = Vec::[];
     let mut index = 0;
     while index < source.byte_len() {
         let start = index;

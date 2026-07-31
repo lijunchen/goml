@@ -27,7 +27,7 @@ fn artifact_decode_core_exprs(
     expected: string,
 ) -> Result[Vec[core::Expr], string] {
     let values = artifact_json_array(value, expected)?;
-    let result = Vec::new();
+    let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(artifact_decode_core_expr(context, value)?)
     };
@@ -58,7 +58,7 @@ fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: Art
     string,
 ] {
     let values = artifact_json_array(value, "closure parameters")?;
-    let result = Vec::new();
+    let result: Vec[tast::ClosureParam] = Vec::[];
     for value in values {
         let object = artifact_json_object(value, "closure parameter")?;
         let name = artifact_json_field_string(object, "name")?;
@@ -73,7 +73,7 @@ fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: Artifact
     string,
 ] {
     let values = artifact_json_array(value, "match arms")?;
-    let result = Vec::new();
+    let result: Vec[core::Arm] = Vec::[];
     for value in values {
         let object = artifact_json_object(value, "match arm")?;
         let lhs = artifact_decode_core_expr_field(context, object, "lhs")?;
@@ -278,7 +278,7 @@ fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: Artifac
 ] {
     let object = artifact_json_object(value, "Core block")?;
     let values = artifact_json_field_array(object, "stmts")?;
-    let stmts = Vec::new();
+    let stmts: Vec[core::LetStmt] = Vec::[];
     for value in values {
         let statement = artifact_json_object(value, "Core let statement")?;
         let name = artifact_json_field_string(statement, "name")?;
@@ -324,7 +324,7 @@ fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: Artifa
     string,
 ] {
     let values = artifact_json_array(value, "Core function parameters")?;
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         let pair = artifact_json_array(value, "Core function parameter")?;
         if pair.len() != 2 {
@@ -437,12 +437,12 @@ fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: Artifact
 ] {
     let object = artifact_json_object(value, "Core file")?;
     let values = artifact_json_field_array(object, "toplevels")?;
-    let functions = Vec::new();
+    let functions: Vec[core::Function] = Vec::[];
     for value in values {
         functions.push(artifact_decode_core_function(context, value)?)
     };
     let constant_values = artifact_json_field_array(object, "constants")?;
-    let constants = Vec::new();
+    let constants: Vec[tast::Constant] = Vec::[];
     for value in constant_values {
         constants.push(artifact_decode_constant(context, value)?)
     };
